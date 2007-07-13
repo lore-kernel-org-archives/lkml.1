@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934400AbXGMGJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935105AbXGMGKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934400AbXGMGJo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbXGMGJh
+	id S935105AbXGMGKS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933043AbXGMGKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:09:37 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32915 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752992AbXGMGJg (ORCPT
+	Fri, 13 Jul 2007 02:10:01 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:22250 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbXGMGKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:09:36 -0400
-Date: Thu, 12 Jul 2007 23:09:34 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Len Brown <len.brown@intel.com>
-cc: linux-kernel@vger.kernel.org, travis@sgi.com, ak@suse.de
-Subject: ACPI: Use cpu_physical_id() instead oif arch_cpu_to_apicid
-Message-ID: <Pine.LNX.4.64.0707122307460.17074@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 13 Jul 2007 02:10:00 -0400
+X-IronPort-AV: i="4.16,535,1175486400"; 
+   d="scan'208"; a="45363552:sNHT30723371"
+Subject: Re: Linux 2.6.22.1
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org,
+       Nish Aravamudan <nish.aravamudan@gmail.com>
+In-Reply-To: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com>
+References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Fri, 13 Jul 2007 14:16:20 +0800
+Message-Id: <1184307380.8943.7.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+X-OriginalArrivalTime: 13 Jul 2007 06:09:58.0771 (UTC) FILETIME=[70E96430:01C7C514]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-processor_core.c currently tries to determine the apicid by special casing
-for IA64 and x86. The desired information is readily available via
+On Fri, 2007-07-13 at 02:35 +0800, Nish Aravamudan wrote:
+> On 7/10/07, Greg KH <greg@kroah.com> wrote: 
+> > We (the -stable team) are announcing the release of the 2.6.22.1
+> kernel. 
+> > It contains a security fix for SCTP that somehow forgot to be added
+> to 
+> > the 2.6.22 kernel (was already released in the 2.6.21.y releases). 
+> > Thanks to Patrick McHardy for noticing the mistake. 
+> > 
+> > I'll also be replying to this message with a copy of the patch
+> between 
+> > 2.6.22 and 2.6.22.1 
+> > 
+> > The updated 2.6.22.y git tree can be found at: 
+> >
+> git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
+> 
+> Can you please also update
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6-stable.git
+> 
+> ? Maybe make that update part of whatever process you use to push out 
+> the 2.6.Y trees, as I've had to ask for this more than once now?
+> 
 
-	cpu_physical_id()
+Could you please open http:// git-pull? I was blocked by company's
+firewall except http method -:((.
 
-on IA64, i386 and x86_64.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- drivers/acpi/processor_core.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
-
-Index: linux-2.6.22-rc6-mm1/drivers/acpi/processor_core.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/drivers/acpi/processor_core.c	2007-07-12 23:02:11.000000000 -0700
-+++ linux-2.6.22-rc6-mm1/drivers/acpi/processor_core.c	2007-07-12 23:03:37.000000000 -0700
-@@ -417,12 +417,6 @@ static int map_lsapic_id(struct acpi_sub
- 	return 0;
- }
- 
--#ifdef CONFIG_IA64
--#define arch_cpu_to_apicid 	ia64_cpu_to_sapicid
--#else
--#define arch_cpu_to_apicid 	x86_cpu_to_apicid
--#endif
--
- static int map_madt_entry(u32 acpi_id)
- {
- 	unsigned long madt_end, entry;
-@@ -496,7 +490,7 @@ static int get_cpu_id(acpi_handle handle
- 		return apic_id;
- 
- 	for (i = 0; i < NR_CPUS; ++i) {
--		if (arch_cpu_to_apicid[i] == apic_id)
-+		if (cpu_physical_id(i) == apic_id)
- 			return i;
- 	}
- 	return -1;
+Thanks a lot
+-Bryan Wu
