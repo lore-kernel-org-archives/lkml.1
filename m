@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936603AbXGMWvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937868AbXGMWvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936603AbXGMWvZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 18:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937028AbXGMWrG
+	id S937868AbXGMWvr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 18:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937613AbXGMWuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 18:47:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51038
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S934345AbXGMWrD (ORCPT
+	Fri, 13 Jul 2007 18:50:37 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33716 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935046AbXGMWue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 18:47:03 -0400
-Date: Fri, 13 Jul 2007 15:47:02 -0700 (PDT)
-Message-Id: <20070713.154702.17863636.davem@davemloft.net>
-To: linas@austin.ibm.com
-Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070713200515.GS5549@austin.ibm.com>
-References: <20070713200515.GS5549@austin.ibm.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jul 2007 18:50:34 -0400
+Date: Fri, 13 Jul 2007 15:50:33 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: ak@suse.de, linux-kernel@vger.kernel.org, travis@sgi.com, jeremy@goop.org
+Subject: Re: x86: Convert cpu_core_map to be a per cpu variable
+In-Reply-To: <20070713.154119.15263594.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0707131546140.26352@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0707122354340.17278@schroedinger.engr.sgi.com>
+ <20070713.000814.102125147.davem@davemloft.net>
+ <Pine.LNX.4.64.0707130933140.21777@schroedinger.engr.sgi.com>
+ <20070713.154119.15263594.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: linas@austin.ibm.com (Linas Vepstas)
-Date: Fri, 13 Jul 2007 15:05:15 -0500
 
-> 
-> This is a patch (& bug report) for a crash in sysctl_set_parent() 
-> in 2.6.22-git2. 
-> 
-> Problem: 2.6.22-git2 crashes with a stack trace 
-> [c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
-> [c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
-> [c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
-> [c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
-> [c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
-> [c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
-> [c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
-> 
-> A bit of poking around makes it clear what the problem is:
-> In sysctl_set_parent(), the for loop 
-> 
->    for (; table->ctl_name || table->procname; table++) {
-> 
-> walks off the end of the table, and into garbage.  Basically,
-> this for-loop iterator expects all table arrays to be 
-> "null terminated".  However, net/ipv4/devinet.c statically 
-> declares an array that is not null-terminated.  The patch 
-> below fixes that; it works for me.  Its somewhat conservative;
-> if one wishes to assume that the compiler will always zero out
-> the empty parts of the structure, then this pach can be shrunk 
-> to one line: +	ctl_table		devinet_root_dir[3];
-> 
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+On Fri, 13 Jul 2007, David Miller wrote:
 
-Thanks for tracking this down, I'll apply your patch.
+> I see, the acessor is abstracted via a function.
+
+Yes. The accessor for the scheduler is defined for each arch in topology.c
+
+> That seems pointless, and allows you to do things like this, improving
+> the implementation on one set of platforms yet leave others using
+> SMT/multi-core scheduling behind.
+> 
+> It makes a lot more sense to make the implementation consistent
+> and therefore the improvements are seen on every platform.
+
+Slight differences exist on each platform. I already have enough trouble 
+here right now to deal with the x86_64 overlap into i386. There are 
+numerous other x86 specific maps that will have to be treated the same way 
+and they are all handled in arch specific files.
+
+Core cpu and node maps exist in the page allocator and are defined in 
+nodemask.h and cpumask.h. I have recently introduced a framework that 
+allows the definition of new masks that could be used in the future to 
+abstract these out of the arches (See the memoryless node patchees). But 
+that work has not been merged yet and is likely going to be a separate 
+project.
+
+
