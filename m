@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935600AbXGMTSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXGMTTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935600AbXGMTSH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 15:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbXGMTR4
+	id S932664AbXGMTTQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 15:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760675AbXGMTTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 15:17:56 -0400
-Received: from dns.hk.18mail.cn ([210.245.210.181]:54876 "EHLO
-	hkm1.server.hk.18mail.cn" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758316AbXGMTR4 (ORCPT
+	Fri, 13 Jul 2007 15:19:04 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:55218
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759624AbXGMTTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 15:17:56 -0400
-X-Greylist: delayed 1604 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Jul 2007 15:17:56 EDT
-Message-ID: <4697C980.1040902@zh-kernel.org>
-Date: Sat, 14 Jul 2007 02:50:40 +0800
-From: TripleX Chung <triplex@zh-kernel.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 13 Jul 2007 15:19:03 -0400
+Date: Fri, 13 Jul 2007 21:20:23 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 0/5] use mutex instead of semaphore in several drivers
+Message-ID: <20070713192023.GD18159@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 MIME-Version: 1.0
-To: trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Ask for help, about the trivial patches.
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am working on the chinese translated version of
-Documentation/SubmittingPatches and get some problem about the "Trivial
-patches".I can not understand what "Trivial patches" exactly means.The
-documentation said:
+This patchset converts semaphores that are used as mutexes to the
+mutex API in the following drivers/code:
 
-Trivial patches must qualify for one of the following rules:
+SPI core/init code
+USB gadget serial
+ELAN U132 adapter
+Adutux
+FTDI ELAN 
 
- Spelling fixes in documentation
- //Understand
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
- Spelling fixes which could break grep(1)
- //Is there any wrong spelling won't break grep(1)?
-
- Warning fixes (cluttering with useless warnings is bad)
- //Understand
-
- Compilation fixes (only if they are actually correct)
- //Understand
-
- Runtime fixes (only if they actually fix things)
- //What kind of runtime fixes? Could anyone give some examples?
-
- Removing use of deprecated functions/macros (eg. check_region)
- //Understand
-
- Contact detail and documentation fixes
- //Means Contact detail fixes and documentation fixes, right?
-   Are all the documentation fixes "trivial"?
-
- Non-portable code replaced by portable code (even in arch-specific,
- since people copy, as long as it's trivial)
- //Do not understand the words in the brackets.
-
- Any fix by the author/maintainer of the file (ie. patch monkey
- in re-transmission mode)
- //It means if I am the author of a file, when I modify the file, the
-patch is trivial, right?
-
-Please give me some advice. Thanks in advance.
-
+             You must have a plan. If you don't have a plan,
+               you'll become part of somebody else's plan
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
