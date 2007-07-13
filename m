@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbXGMAEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934433AbXGMAG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932398AbXGMAEZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 20:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbXGMAEQ
+	id S934433AbXGMAG2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 20:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759146AbXGMAGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 20:04:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58628 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758736AbXGMAEP (ORCPT
+	Thu, 12 Jul 2007 20:06:21 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:49466 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759071AbXGMAGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 20:04:15 -0400
-Date: Thu, 12 Jul 2007 17:03:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [GIT PATCH] USB patches for 2.6.22
-In-Reply-To: <20070712234233.GA22339@kroah.com>
-Message-ID: <alpine.LFD.0.999.0707121647420.20061@woody.linux-foundation.org>
-References: <20070712234233.GA22339@kroah.com>
+	Thu, 12 Jul 2007 20:06:20 -0400
+Date: Thu, 12 Jul 2007 17:06:16 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>
+Subject: [patch] x86_64: Avoid too many remote cpu references due to /proc/stat
+Message-ID: <20070713000615.GA11942@localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Too many remote cpu references due to /proc/stat.
 
-On Thu, 12 Jul 2007, Greg KH wrote:
->
-> Here are a bunch of USB patches and fixes against your 2.6.22 git tree.
+On x86_64, with newer kernel versions, kstat_irqs is a bit of a problem.
+On every call to kstat_irqs, the process brings in per-cpu data from all
+online cpus.  Doing this for NR_IRQS, which is now 256 + 32 * NR_CPUS
+results in (256+32*63) * 63 remote cpu references on a 64 cpu config.
+/proc/stat is parsed by common commands like top, who etc, causing
+lots of cacheline transfers
 
-This also seems to contain some *totally*pointless* config variable 
-changes, that actually break simple things like "make oldconfig".
+This statistic seems useless. Other 'big iron' arches disable this.
+Can we disable computing/reporting this statistic?  This piece of
+statistic is not human readable on x86_64 anymore,
 
-This commit is insane: acb11c8b8020f1f1b2545152020675ef32d09a58 "USB: fix 
-gregkh-usb-usb-use-menuconfig-objects"
+If not, can we optimize computing this statistic so as to avoid
+too many remote references (patch to follow)
 
-It fixes nothing at all, quite the reverse. It makes the default be 
-somethign that breaks everything, and more irritatingly, even if you 
-answer 'y' (against the default), it breaks "make oldconfig", which will 
-have ignored all the old options and now will ask you for all of them 
-again.
+Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
 
-Yeah, that second part may be a "make oldconfig" bug, but regardless, 
-these kinds of Kconfig changes are BAD, BAD, BAD!
-
-I hate how people do just stupid things to "clean up" config files 
-(renaming config options etc), apparently never even bothering to think 
-about whether a question is sane or not, or whether normal users want to 
-see it or not.
-
-I know I'm not the only one who does "make oldconfig". Answering the same 
-questions over and over again is not something *anybody* wants to do.
-
-So please stop this madness. I've reverted the change that left the 
-menuconfig entry without a default, which at least fixes "make oldconfig", 
-but I just found this really irritating. I can pretty much guarantee that 
-nobody actually *tested* this change, did they?
-
-		Linus
+Index: linux-2.6.22/fs/proc/proc_misc.c
+===================================================================
+--- linux-2.6.22.orig/fs/proc/proc_misc.c	2007-07-12 16:31:02.000000000 -0700
++++ linux-2.6.22/fs/proc/proc_misc.c	2007-07-12 16:33:45.226221759 -0700
+@@ -498,7 +498,8 @@ static int show_stat(struct seq_file *p,
+ 	}
+ 	seq_printf(p, "intr %llu", (unsigned long long)sum);
+ 
+-#if !defined(CONFIG_PPC64) && !defined(CONFIG_ALPHA) && !defined(CONFIG_IA64)
++#if !defined(CONFIG_PPC64) && !defined(CONFIG_ALPHA) && !defined(CONFIG_IA64) \
++					&& !defined(CONFIG_X86_64)
+ 	for (i = 0; i < NR_IRQS; i++)
+ 		seq_printf(p, " %u", kstat_irqs(i));
+ #endif
