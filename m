@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934477AbXGMVrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935086AbXGMVtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934477AbXGMVrX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 17:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758381AbXGMVrN
+	id S935086AbXGMVtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 17:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758996AbXGMVtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 17:47:13 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43961 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756367AbXGMVrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 17:47:11 -0400
-Subject: Re: [EXT4 set 3][PATCH 1/1] ext4 nanosecond timestamp
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Kalpak Shah <kalpak@clusterfs.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Fri, 13 Jul 2007 17:49:07 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:49033 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756292AbXGMVtF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 17:49:05 -0400
+Date: Fri, 13 Jul 2007 14:47:46 -0700
+From: Zach Brown <zach.brown@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, cmm@us.ibm.com,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Andreas Dilger <adilger@clusterfs.com>
-In-Reply-To: <1184310318.4372.5.camel@garfield>
-References: <1183275416.4010.125.camel@localhost.localdomain>
-	 <20070710163027.1bf7e94e.akpm@linux-foundation.org>
-	 <1184245126.4299.20.camel@garfield>  <4696FFBE.3030806@linux.vnet.ibm.com>
-	 <1184310318.4372.5.camel@garfield>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 13 Jul 2007 14:46:58 -0700
-Message-Id: <1184363218.16045.0.camel@localhost.localdomain>
+       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support features in larger inode
+Message-ID: <20070713214746.GH23255@mami.zabbo.net>
+References: <1183275482.4010.133.camel@localhost.localdomain> <20070710163247.5c8bfa3f.akpm@linux-foundation.org> <20070713020529.1486491f.akpm@linux-foundation.org> <1184333621.20032.85.camel@twins> <20070713121259.20066d5b.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713121259.20066d5b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 12:35 +0530, Kalpak Shah wrote:
-> On Fri, 2007-07-13 at 09:59 +0530, Aneesh Kumar K.V wrote:
-> > 
-> > Kalpak Shah wrote:
-> > > On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
-> > >> On Sun, 01 Jul 2007 03:36:56 -0400
-> > >> Mingming Cao <cmm@us.ibm.com> wrote:
-> > >>
-> > >>> This patch is a spinoff of the old nanosecond patches.
-> > >> I don't know what the "old nanosecond patches" are.  A link to a suitable
-> > >> changlog for those patches would do in a pinch.  Preferable would be to
-> > >> write a proper changelog for this patch.
-> > > 
-> > > The incremental patch contains a proper changelog describing the patch.
-> > > 
-> > 
-> > 
-> > Instead of  putting incremental patches it would be nice if we can have replacement patches.
-> > for the already existing patches with the comments addressed. For example if we have a 
-> > review comment on the patch message ( commit log ) then adding an incremental patch doesn't help.
-> 
-> I think that it would be easier to review just the changes that have
-> been made to the patches instead of having people go through the entire
-> patch again. I was hoping that someone with write access to ext4-git
-> would update the commit logs.
-> 
-> If replacement patches are preferred, then I will send them again.
-> 
+> I fear the consequences of this change :(
 
-No need, I already fold your fix patch to the parent patches, so in the
-updated ext4-patch-queue it saved the updated nanosecond patch.
+I love it.  In the past I've lost time by working with patches which
+didn't quite realize that ext3 holds a transaction open during
+->direct_IO.
 
-> Thanks,
-> Kalpak.
-> 
-> > 
-> > 
-> > -aneesh
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> Oh well, please keep it alive, maybe beat on it a bit, resend it
+> later on?
 
+I can test the patch to make sure that it catches mistakes I've made in
+the past.  Peter, do you have any interest in seeing how far we can get
+at tracking lock_page()?  I'm not holding my breath, but any little bit
+would probably help.
+
+- z
