@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbXGMCBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761694AbXGMCH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762196AbXGMCBW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 22:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbXGMCBJ
+	id S1761694AbXGMCH3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 22:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbXGMCHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 22:01:09 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:40705 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753973AbXGMCBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 22:01:07 -0400
-Date: Thu, 12 Jul 2007 19:00:59 -0700
-From: Mike Anderson <andmike@us.ibm.com>
-To: device-mapper development <dm-devel@redhat.com>
-Cc: Matt Mackall <mpm@selenic.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>
-Subject: Re: [dm-devel] Re: [2.6.23 PATCH 13/18] dm: netlink
-Message-ID: <20070713020059.GA5402@us.ibm.com>
-References: <20070711210137.GE24114@agk.fab.redhat.com> <20070711142712.e646995b.akpm@linux-foundation.org> <20070712231920.GZ11166@waste.org> <20070712163115.ee686f8d.akpm@linux-foundation.org>
+	Thu, 12 Jul 2007 22:07:21 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:50184 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbXGMCHU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 22:07:20 -0400
+Date: Fri, 13 Jul 2007 03:07:10 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@lst.de>, "Hallyn, Serge" <serue@us.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] Simplify /proc/<pid|self>/exe symlink code
+Message-ID: <20070713020710.GA21668@ftp.linux.org.uk>
+References: <1184292012.13479.14.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070712163115.ee686f8d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <1184292012.13479.14.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu, 12 Jul 2007 18:19:20 -0500
-> Matt Mackall <mpm@selenic.com> wrote:
-> 
-> > On Wed, Jul 11, 2007 at 02:27:12PM -0700, Andrew Morton wrote:
-> > > On Wed, 11 Jul 2007 22:01:37 +0100
-> > > Alasdair G Kergon <agk@redhat.com> wrote:
-> > > 
-> > > > From: Mike Anderson <andmike@us.ibm.com>
-> > > > 
-> > > > This patch adds a dm-netlink skeleton support to the Makefile, and the dm
-> > > > directory.
-> > > > 
-> > > > ...
-> > > >  
-> > > > +config DM_NETLINK
-> > > > +	bool "DM netlink events (EXPERIMENTAL)"
-> > > > +	depends on BLK_DEV_DM && EXPERIMENTAL
-> > > > +	---help---
-> > > > +	Generate netlink events for DM events.
-> > > 
-> > > Need a dependency on NET there?
-> > 
-> > It's really sad to make DM dependent on the network layer.
-> > 
-> 
-> Yes, it would be somewhat sad.  However one can presumably continue to use
-> DM, just without "DM netlink events".
-> 
+On Thu, Jul 12, 2007 at 07:00:12PM -0700, Matt Helsley wrote:
+> This patch avoids holding the mmap semaphore while walking VMAs in response to
+> programs which read or follow the /proc/<pid|self>/exe symlink. This also allows
+> us to merge mmu and nommu proc_exe_link() functions. The costs are holding the
+> task lock, a separate reference to the executable file stored in the task
+> struct, and increased code in fork, exec, and exit paths.
 
-Yes, if you deselect you just do not receive the events through netlink.
+I don't think it's a food idea.  Consider a program that deliberately
+creates an executable anon memory, copies the binary there, jumps there
+and unmaps the original.   In the current tree you'll get nothing
+pinning the binary; with your patch it will remained busy.
 
-> But that probably means that one will not be able to use the standard DM
-> admin tools without networking.  Maybe there will remain alternative but
-> cruder ways to get things done?
-
-No, all admin tools and interfaces function as they do today. The
-dm-netlink patch series only contains 9 deletions (actual just one true
-deletion of existing kernel code the others are due to break up of the
-patch into compilable chunks). The intent was not to break users or force
-migration.
-
-
--andmike
---
-Michael Anderson
-andmike@us.ibm.com
+It's not a common situation, of course, but there are legitimate uses
+for such technics...
