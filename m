@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938048AbXGMXEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937396AbXGMXHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938048AbXGMXEs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 19:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760506AbXGMXEj
+	id S937396AbXGMXHL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 19:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbXGMXGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 19:04:39 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:54723 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759346AbXGMXEi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 19:04:38 -0400
-X-Sasl-enc: gFmfOBJcwbZa8om3gH8Shvv68OjdAiltXMJkMPs2FGk6 1184367877
-Message-ID: <46980610.9080705@imap.cc>
-Date: Sat, 14 Jul 2007 01:09:04 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: -mm merge plans for 2.6.23
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <Pine.LNX.4.64.0707101107340.11053@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0707101107340.11053@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig25ACA098E83F99DFBFF6FE48"
+	Fri, 13 Jul 2007 19:06:55 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36932 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759749AbXGMXGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 19:06:54 -0400
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Jens Axboe <axboe@kernel.dk>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1184331741.3402.13.camel@localhost.localdomain>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	 <20070704132346.591348000@pademelon.sonytel.be>
+	 <1184331741.3402.13.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 14 Jul 2007 09:06:10 +1000
+Message-Id: <1184367971.6059.268.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig25ACA098E83F99DFBFF6FE48
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2007-07-13 at 09:02 -0400, James Bottomley wrote:
+> On Wed, 2007-07-04 at 15:22 +0200, Geert Uytterhoeven wrote:
+> > +                       kaddr = kmap_atomic(sgpnt->page, KM_USER0);
+> > +                       if (!kaddr)
+> > +                               return -1;
+> > +                       len = sgpnt->length;
+> > +                       if ((req_len + len) > buflen) {
+> > +                               active = 0;
+> > +                               len = buflen - req_len;
+> > +                       }
+> > +                       memcpy(kaddr + sgpnt->offset, buf + req_len,
+> > len);
+> > +                       kunmap_atomic(kaddr, KM_USER0);
+> 
+> This isn't a SCSI objection, but this sequence appears several times in
+> this driver.  It's wrong for a non-PIPT architecture (and I believe the
+> PS3 is VIPT) because you copy into the kernel alias for the page, which
+> dirties the line in the cache of that alias (the user alias cache line
+> was already invalidated).  However, unless you flush the kernel alias to
+> main memory, the user could read stale data.  The way this is supposed
+> to be done is to do a 
 
-Am 13.07.2007 11:46 schrieb Jan Engelhardt:
-> On Jul 10 2007 01:31, Andrew Morton wrote:
->=20
->> use-menuconfig-objects-isdn-config_isdn_i4l.patch
->>
->> tilman didn't like it - might drop
->=20
-> Or replace by his suggestion patch ( http://lkml.org/lkml/2007/5/31/222=
- )
+Nah, we have no cache aliasing on ppc, at least not that matter here and
+not on cell.
 
-That posting was just a change proposal for the drivers/isdn/Kconfig
-part, not a complete replacement for the entire patch. If you'd care to
-reissue that patch with the modification I proposed, I'll gladly ack it.
-Alternatively I can also send a full replacement patch if you prefer.
+Ben.
 
-Regards,
-Tilman
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig25ACA098E83F99DFBFF6FE48
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGmAYZMdB4Whm86/kRAlJOAJoCRFoLB//tNEs8E8fJIBbmLPZa2QCfQmL7
-4CUOiSf3JXSyiJxbsUCbmrs=
-=1lOS
------END PGP SIGNATURE-----
-
---------------enig25ACA098E83F99DFBFF6FE48--
