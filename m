@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761547AbXGMOjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936617AbXGMOj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761547AbXGMOjO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 10:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935593AbXGMOiU
+	id S936617AbXGMOj5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 10:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936393AbXGMOjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 10:38:20 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:50721 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S932377AbXGMOiS (ORCPT
+	Fri, 13 Jul 2007 10:39:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51980 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936375AbXGMOjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 10:38:18 -0400
-Date: Fri, 13 Jul 2007 10:37:55 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Nix <nix@esperi.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 2/3] UML - Limit request size on COWed devices
-Message-ID: <20070713143755.GA6244@c2.user-mode-linux.org>
+	Fri, 13 Jul 2007 10:39:13 -0400
+Subject: Re: [realtime-preempt] [x86_64] HR_TIMER and/or DYNTICKS cause an
+	early boot freeze
+From: Peter Zijlstra <peterz@infradead.org>
+To: Maarten Maathuis <madman2003@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6d4bc9fc0707130702l41f58c20l72423be27292d884@mail.gmail.com>
+References: <6d4bc9fc0707130702l41f58c20l72423be27292d884@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 16:39:11 +0200
+Message-Id: <1184337551.20032.89.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-COWed devices can't handle more than 32 (64 on x86_64) sectors in one
-request due to the size of the bitmap being carried around in the
-io_thread_req.
+On Fri, 2007-07-13 at 16:02 +0200, Maarten Maathuis wrote:
+> I have determined that version 2.6.22.1-rt2 freeze after:
+> 
+> NET: Register protocol family 2
+> 
+> This is very early in the boot stage, and i cannot determine what
+> exactly causes it.
+> 
+> It happens if either high resolution timers or dynamic ticks are active.
+> 
+> I have included the config file that does work (so dynticks and
+> hr_timers are disabled).
+> 
+> Please CC any replies, as i am not a member of this mailinglist.
 
-Enforce that by telling the block layer not to put too many sectors in
-requests to COWed devices.
+Try -rt3, that solved this issue for me.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/drivers/ubd_kern.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6.17/arch/um/drivers/ubd_kern.c
-===================================================================
---- linux-2.6.17.orig/arch/um/drivers/ubd_kern.c	2007-07-09 08:53:09.000000000 -0400
-+++ linux-2.6.17/arch/um/drivers/ubd_kern.c	2007-07-09 18:08:33.000000000 -0400
-@@ -712,6 +712,8 @@ static int ubd_add(int n, char **error_o
- 	ubd_dev->queue->queuedata = ubd_dev;
- 
- 	blk_queue_max_hw_segments(ubd_dev->queue, MAX_SG);
-+	if(ubd_dev->cow.file != NULL)
-+		blk_queue_max_sectors(ubd_dev->queue, 8 * sizeof(long));
- 	err = ubd_disk_register(MAJOR_NR, ubd_dev->size, n, &ubd_gendisk[n]);
- 	if(err){
- 		*error_out = "Failed to register device";
