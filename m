@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761114AbXGMNMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761114AbXGMNP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761114AbXGMNMd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbXGMNM0
+	id S1761114AbXGMNP5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbXGMNPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:12:26 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:47043 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755077AbXGMNMZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:12:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=YCAG58N59e9Zu3gQkdVFy0MLvjSkwnGC7Dhne5vxb0J2e/BO32ekpPWZD8ayGCk30nUxSD3cYkPfyDtVmd8dS7xdzlU5zuddES1tlR+UzwejvLM51kPpOo2JqYw2+03YrybRxs75Hfh5zYpvv0q8nZpJZDrOw1CQYdo5lROuQpg=
-Date: Fri, 13 Jul 2007 21:14:58 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, kirk@hpc.ee.ntu.edu.tw,
-       akpm@osdl.org, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
-Message-ID: <20070713131458.GA1997@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20070712150135.GA4102@localhost.localdomain> <1184256718.32199.111.camel@weaponx.rchland.ibm.com> <20070713034822.GA2370@localhost.localdomain> <1184320602.2785.18.camel@shinybook.infradead.org>
+	Fri, 13 Jul 2007 09:15:50 -0400
+Received: from mail.screens.ru ([213.234.233.54]:52593 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755077AbXGMNPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 09:15:49 -0400
+Date: Fri, 13 Jul 2007 17:16:55 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Schmidt <mschmidt@redhat.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] destroy_workqueue() can livelock
+Message-ID: <20070713131655.GA1033@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184320602.2785.18.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 10:56:42AM +0100, David Woodhouse wrote:
->On Fri, 2007-07-13 at 11:48 +0800, WANG Cong wrote:
->>                 if(map_banks[idx] == NULL) {
->>                         ret = -ENOMEM;
->> -                       /* FIXME: What if some MTD devices were probed already? */
->> +                       /* FIXME: What if some MTD devices were probed
->> +                       already? */
->>                         goto error_mem;
->>                 } 
->
->
->That's just horrid. Leave it as it was.
->
+Pointed out by Michal Schmidt <mschmidt@redhat.com>.
 
-Sorry, I can't fully understand you. You mean only the above change is horrid or
-the entire patch?
+The bug was introduced in 2.6.22 by me.
 
-I have some questions about mtd/maps drivers. Even when I use `make allyesconfig`,
-I still can't compile some drivers. I should add the corresponding CONFIGs manually.
-Why this? And I still got some errors and warnings, such as:
+cleanup_workqueue_thread() does flush_cpu_workqueue(cwq) in a loop until
+->worklist becomes empty. This is live-lockable, a re-niced caller can
+get CPU after wake_up() and insert a new barrier before the lower-priority
+cwq->thread has a chance to clear ->current_work.
 
-drivers/mtd/maps/pmcmsp-flash.c:40:22: error: msp_prom.h: No such file or directory
-drivers/mtd/maps/pmcmsp-flash.c:41:22: error: msp_regs.h: No such file or directory
-drivers/mtd/maps/pmcmsp-flash.c: In function 'init_msp_flash':
-drivers/mtd/maps/pmcmsp-flash.c:62: error: 'DEV_ID_REG' undeclared (first use in this function)
-drivers/mtd/maps/pmcmsp-flash.c:62: error: (Each undeclared identifier is reported only once
-drivers/mtd/maps/pmcmsp-flash.c:62: error: for each function it appears in.)
-drivers/mtd/maps/pmcmsp-flash.c:62: error: 'DEV_ID_SINGLE_PC' undeclared (first use in this function)
-drivers/mtd/maps/pmcmsp-flash.c:63: error: 'ELB_1PC_EN_REG' undeclared (first use in this function)
-drivers/mtd/maps/pmcmsp-flash.c:63: error: 'SINGLE_PCCARD' undeclared (first use in this function)
+Change cleanup_workqueue_thread() to do flush_cpu_workqueue(cwq) only once.
+We can rely on the fact that run_workqueue() won't return until it flushes
+all works. So it is safe to call kthread_stop() after that, the "should stop"
+request won't be noticed until run_workqueue() returns.
 
-Did I miss something?
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
+--- t/kernel/workqueue.c~LIVELOCK	2007-06-13 18:26:56.000000000 +0400
++++ t/kernel/workqueue.c	2007-07-13 16:46:27.000000000 +0400
+@@ -739,18 +739,17 @@ static void cleanup_workqueue_thread(str
+ 	if (cwq->thread == NULL)
+ 		return;
+ 
++	flush_cpu_workqueue(cwq);
+ 	/*
+-	 * If the caller is CPU_DEAD the single flush_cpu_workqueue()
+-	 * is not enough, a concurrent flush_workqueue() can insert a
+-	 * barrier after us.
++	 * If the caller is CPU_DEAD and cwq->worklist was not empty,
++	 * a concurrent flush_workqueue() can insert a barrier after us.
++	 * However, in that case run_workqueue() won't return and check
++	 * kthread_should_stop() until it flushes all work_struct's.
+ 	 * When ->worklist becomes empty it is safe to exit because no
+ 	 * more work_structs can be queued on this cwq: flush_workqueue
+ 	 * checks list_empty(), and a "normal" queue_work() can't use
+ 	 * a dead CPU.
+ 	 */
+-	while (flush_cpu_workqueue(cwq))
+-		;
+-
+ 	kthread_stop(cwq->thread);
+ 	cwq->thread = NULL;
+ }
 
-Thanks!
-
--- 
-
-If loving computers is wrong, I don't want to be right.
