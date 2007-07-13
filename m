@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937272AbXGMUgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763452AbXGMUoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937272AbXGMUgi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 16:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXGMUg3
+	id S1763452AbXGMUoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 16:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757759AbXGMUoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 16:36:29 -0400
-Received: from mga01.intel.com ([192.55.52.88]:60941 "EHLO mga01.intel.com"
+	Fri, 13 Jul 2007 16:44:13 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:4953 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932810AbXGMUg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 16:36:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,537,1175497200"; 
-   d="scan'208";a="268023461"
-Message-ID: <4697E24A.4030609@intel.com>
-Date: Fri, 13 Jul 2007 13:36:26 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+	id S1756419AbXGMUoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 16:44:12 -0400
+Date: Fri, 13 Jul 2007 22:43:54 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Chuck Ebbert <cebbert@redhat.com>, neilb@suse.de,
+       nfs@lists.sourceforge.net,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: nfsd oops in current -git
+Message-ID: <20070713204353.GB5328@kernel.dk>
+References: <469780BB.3070206@trash.net> <4697A7EC.6050006@redhat.com> <20070713163337.GT5328@kernel.dk> <20070713165001.GV5328@kernel.dk> <4697DF7F.3030400@trash.net>
 MIME-Version: 1.0
-To: William Montgomery <william@opinicus.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: e100 PCI bridge problem
-References: <4697B85B.4040902@opinicus.com>
-In-Reply-To: <4697B85B.4040902@opinicus.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Jul 2007 20:36:26.0942 (UTC) FILETIME=[7C46BDE0:01C7C58D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4697DF7F.3030400@trash.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Montgomery wrote:
-> In an earlier post to the list I described a hard lockup condition
-> that occurs on linux kernels 2.4.22, 2.6.13, and 2.6.17 when using
-> a 4 port 10/100 fast ethernet card.  The lockup is easily repeatable
-> and occurs on 2 out of 3 computers.
+On Fri, Jul 13 2007, Patrick McHardy wrote:
+> Jens Axboe wrote:
+> >>>On 07/13/2007 09:40 AM, Patrick McHardy wrote:
+> >>>
+> >>>>I get this oops with current -git:
+> >>>>
+> >>>>[ 3437.018923] Pid: 4432, comm: nfsd Not tainted 2.6.22 #5
+> >>>>[ 3437.018926] RIP: 0010:[<ffffffff81054eff>]  [<ffffffff81054eff>]
+> >>>>put_page+0x4/0xb3
 > 
-> Further testing has revealed that the lockup can be prevented on all
-> computers by making sure the card is installed on the primary PCI bus.
-> If the card is installed in a slot on the secondary PCI bus (behind a
-> PCI to PCI bridge) the lockup occurs.
+> > Patrick, does this work?
+> 
+> 
+> Seems to work fine, thanks Jens.
 
-sounds like int-A/B/C/D routing issues
+Wonderful, thanks for testing!
 
-> Are there any PCI tuning registers that I can tweak to get around
-> this problem?  Any changes I could make to the e100 driver to fix this?
+-- 
+Jens Axboe
 
-this issue might be resolvable by quirking the bridgee chips and adjusting any 
-APIC where needed. Unfortunately I don't know much about this but it's 
-physically not possible from the e100 driver. The special (non-intel) card that 
-has these 4 ports onboard contains a bridge chip itself which explains the 
-issues. Even a BIOS issue could be the cause here.
-
-Perhaps the linuxfirmwarekit will reveal more information. In any case, fixing 
-this in software would be a gigantic effort.
-
-Auke
