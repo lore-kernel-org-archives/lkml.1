@@ -1,138 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762565AbXGMQuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935519AbXGMQut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762565AbXGMQuV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 12:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933876AbXGMQsl
+	id S935519AbXGMQut (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 12:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935371AbXGMQuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 12:48:41 -0400
-Received: from sccrmhc12.comcast.net ([204.127.200.82]:59237 "EHLO
-	sccrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933704AbXGMQsj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 12:48:39 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, "Huang\, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707131359.53309.rjw@sisk.pl> <87abu01gnv.fsf@jbms.ath.cx>
-	<200707131745.43055.rjw@sisk.pl>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Fri, 13 Jul 2007 12:48:36 -0400
-In-Reply-To: <200707131745.43055.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri\, 13 Jul 2007 17\:45\:41 +0200")
-Message-ID: <87644o1c7v.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
+	Fri, 13 Jul 2007 12:50:20 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:29876 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934830AbXGMQuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 12:50:18 -0400
+Date: Fri, 13 Jul 2007 18:50:01 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Patrick McHardy <kaber@trash.net>, neilb@suse.de,
+       nfs@lists.sourceforge.net,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: nfsd oops in current -git
+Message-ID: <20070713165001.GV5328@kernel.dk>
+References: <469780BB.3070206@trash.net> <4697A7EC.6050006@redhat.com> <20070713163337.GT5328@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713163337.GT5328@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Fri, Jul 13 2007, Jens Axboe wrote:
+> On Fri, Jul 13 2007, Chuck Ebbert wrote:
+> > On 07/13/2007 09:40 AM, Patrick McHardy wrote:
+> > > I get this oops with current -git:
+> > > 
+> > > [ 3437.018862] PGD 9acab067 PUD 9acaa067 PMD 0
+> > > [ 3437.018870] CPU 1
+> > > [ 3437.018872] Modules linked in: nfsd exportfs ppdev lp nfs lockd
+> > > nfs_acl sunrpc deflate zlib_deflate zlib_inflate twofish twofish_common
+> > > camellia serpent blowfish des cbc ecb blkcipher aes xcbc sha256
+> > > crypto_null af_key rfcomm l2cap fuse nfnetlink_queue nfnetlink_log
+> > > nf_conntrack_netlink nf_nat nf_conntrack_ipv6 nf_conntrack_ipv4
+> > > nf_conntrack nfnetlink ip6_tables ip_tables x_tables hangcheck_timer
+> > > cpufreq_ondemand powernow_k8 freq_table video backlight thermal
+> > > processor fan ide_generic ide_disk ide_cd cdrom generic hci_usb
+> > > bluetooth usbhid hid snd_via82xx snd_seq_dummy snd_seq_oss
+> > > snd_via82xx_modem snd_ac97_codec ac97_bus snd_seq_midi
+> > > snd_seq_midi_event snd_pcm_oss snd_mixer_oss snd_mpu401 snd_pcm
+> > > snd_mpu401_uart snd_seq snd_timer snd_rawmidi snd_seq_device parport_pc
+> > > snd psmouse parport via82cxxx serio_raw i2c_viapro evdev ehci_hcd sky2
+> > > snd_page_alloc uhci_hcd ide_core soundcore pcspkr
+> > > [ 3437.018923] Pid: 4432, comm: nfsd Not tainted 2.6.22 #5
+> > > [ 3437.018926] RIP: 0010:[<ffffffff81054eff>]  [<ffffffff81054eff>]
+> > > put_page+0x4/0xb3
+> > > [ 3437.018932] RSP: 0018:ffff8101335f5c40  EFLAGS: 00010203
+> > > [ 3437.018935] RAX: 0000000000000000 RBX: ffff810133576000 RCX:
+> > > ffff8100a0fa5ab8
+> > > [ 3437.018938] RDX: ffff810003754428 RSI: ffff8100a0fa5868 RDI:
+> > > 0000000000000000
+> > > [ 3437.018942] RBP: ffff810003754428 R08: ffff8100a1b7c5d8 R09:
+> > > ffff8101335f5c10
+> > > [ 3437.018946] R10: ffff810003739a78 R11: ffff81009ec61d40 R12:
+> > > ffff810133576570
+> > > [ 3437.018950] R13: ffff8100a0fa5868 R14: 0000000000001000 R15:
+> > > ffff810133576168
+> > > [ 3437.018954] FS:  00002ad8e9fab6f0(0000) GS:ffff81013fc72e40(0000)
+> > > knlGS:00000000f7e426c0
+> > > [ 3437.018957] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > > [ 3437.018959] CR2: 0000000000000000 CR3: 000000009a91a000 CR4:
+> > > 00000000000006e0
+> > > [ 3437.018963] Process nfsd (pid: 4432, threadinfo ffff8101335f4000,
+> > > task ffff81013f969040)
+> > > [ 3437.018965] Stack:  ffff810133576000 ffff810003754428
+> > > ffff810133576570 ffffffff8830e001
+> > > [ 3437.018973]  ffff810003747500 ffff8100a0fa5868 ffff8100a0fa5800
+> > > ffff8101335f5d80
+> > > [ 3437.018978]  0000000000000000 0000000000000000 ffffffff8122c440
+> > > ffffffff810892ac
+> > > [ 3437.018982] Call Trace:
+> > > [ 3437.019002]  [<ffffffff8830e001>] :nfsd:nfsd_splice_actor+0x71/0xea
+> > > [ 3437.019010]  [<ffffffff810892ac>] __splice_from_pipe+0x58/0x1bf
+> > > [ 3437.019023]  [<ffffffff8830df90>] :nfsd:nfsd_splice_actor+0x0/0xea
+> > > [ 3437.019040]  [<ffffffff8830d326>]
+> > > :nfsd:nfsd_direct_splice_actor+0x10/0x12
+> > > [ 3437.019044]  [<ffffffff81088efc>] splice_direct_to_actor+0xfd/0x19d
+> > > [ 3437.019058]  [<ffffffff8830d316>] :nfsd:nfsd_direct_splice_actor+0x0/0x12
+> > > [ 3437.019076]  [<ffffffff8830d1f4>] :nfsd:nfsd_vfs_read+0x22b/0x34d
+> > > [ 3437.019098]  [<ffffffff8830d715>] :nfsd:nfsd_read+0xa7/0xc4
+> > > [ 3437.019117]  [<ffffffff88314539>] :nfsd:nfsd3_proc_read+0x117/0x15a
+> > > [ 3437.019133]  [<ffffffff8830924d>] :nfsd:nfsd_dispatch+0xdd/0x19e
+> > > [ 3437.019156]  [<ffffffff88280194>] :sunrpc:svc_process+0x3f3/0x703
+> > > [ 3437.019164]  [<ffffffff81212423>] __lock_text_start+0x23/0x7e
+> > > [ 3437.019180]  [<ffffffff88309817>] :nfsd:nfsd+0x193/0x2b0
+> > > [ 3437.019188]  [<ffffffff8100a9c8>] child_rip+0xa/0x12
+> > > [ 3437.019207]  [<ffffffff88309684>] :nfsd:nfsd+0x0/0x2b0
+> > > [ 3437.019212]  [<ffffffff8100a9be>] child_rip+0x0/0x12
+> > 
+> > Does Jens's patch fix it?
+> > 
+> > http://marc.info/?l=linux-netdev&m=118432481101579&q=raw
+> 
+> Probably not, that's for another bug. I'll try and see if I can take a
+> look tonight.
 
-[snip]
+Patrick, does this work?
 
-> Okay, I have thought it through and I think that, as an initial step, we can do
-> something like this:
-
-> - preload the image-saving kernel before hibernation
-> - in the hibernation code path replace device_suspend() with the shutting down
-> of
->   all devices without unregistering them (not very nice, but should be
-> sufficient
->   for a while)
-
-It seems that the effect of what is done by the current hibernate
-implementations is to shutdown all of the devices, but according to
-kernel data structures, have it look like the devices were merely
-suspended (i.e. device_suspend).  Then in the resume path, the "restore
-image" kernel also calls device_suspend just before jumping to the
-hibernated kernel, so all of the devices the "restore image" kernel knew
-about are in the state device_suspend expects them to be in, except that
-they were actually suspended by a different kernel, so they might not be
-in quite the right state.  There is also the issue that the "restore
-image" kernel might not know about all of the devices; for instance, if
-USB support is modular, and, as is likely to be the case, the user
-didn't load the USB modules in the "restore image" kernel from an initrd
-or something, then the USB devices will actually be powered off, rather
-than "suspended".  Despite these apparent discrepancies, it seems that
-for many devices (I'm not sure USB devices are included, though),
-device_restore happens to do the right thing so that the device is
-placed back in the state it needs to be so that the driver can begin
-talking to it as it did before, and the device is recognized as the same
-device as was there before (since otherwise mounted filesystems backed
-by block devices that came back as a different device would cause great
-havoc).
-
-Since I recall there being issues with USB devices being recognized as
-the same devices post-hibernate-resume, without looking at the code I'm
-inclined to believe that the USB drivers still don't end up resuming
-from hibernate correctly.
-
-Note that I am describing what is done currently, not what is planned to
-be done (i.e. change device_suspend to quiesce and device_resume to
-unquiesce).  It seems that ironically, despite everyone believing that
-device_suspend/device_resume is incorrect for hibernate, many of the
-things that those functions do (like saving the PCI configuration,
-perhaps, and then restoring it later, or re-initializing the device) are
-actually necessary, especially for modular drivers that won't be loaded
-by the "restore image" kernel.
-
-What needs to be done is for the devices to be shut down (or possibly
-just quiesced for a select few, but we won't worry about that
-complication until later; in the case of the current implementations,
-they should all be quiesced rather than shut down), but whatever
-information that will be needed later to reinitialize the device
-(ideally the reinitialization should be able to handle the device either
-being in a quiesced state or completely off) and recognize it as the
-same device must be saved.  This probably means they cannot be
-"unregistered", as otherwise there would be nothing with which to
-associate the saved information.
-
-The resume path needs to use the saved state to reinitialize the device
-and recognize it as the same device.  It seems that the existing
-reprobing code may not be sufficient for this.  Note that exactly the
-same thing must be done on resume for both the current hibernate
-implementations and the kexec approach.  It seems that properly
-restoring the devices should be relatively easy for the devices that
-already get this correct, like IDE devices and basic PCI devices (and
-SATA and SCSI devices as well perhaps?), and possibly harder for
-Firewire or USB devices.
-
-> - when we've called device_power_down() and save_processor_state(), jump to
->   the image-saving kernel and let it run
-> - make the image-saving kernel set up everything, save the image without
->   starting any user space (we may use the existing image-saving code for this
->   purpose, with some modifications) and power off the system (or make it enter
->   S4)
-
-I suppose this has the advantage of not requiring that a
-kernel-to-userspace interface be created for this purpose.
-
-> - use the existing restoration code to load the image and jump to the
->   hibernated kernel
-
-This would again avoid the need for a separate userspace-kernelspace
-interface for the purpose, so I agree it could be a useful thing to do
-initially.
-
-> - in the restore code patch replace device_resume() with the reprobing of all
->   devices.
-
-See my comments above.
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 8604e35..945b1ce 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -879,6 +879,7 @@ nfsd_vfs_read(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+ 			.u.data		= rqstp,
+ 		};
+ 
++		rqstp->rq_resused = 1;
+ 		host_err = splice_direct_to_actor(file, &sd, nfsd_direct_splice_actor);
+ 	} else {
+ 		oldfs = get_fs();
 
 -- 
-Jeremy Maitin-Shepard
+Jens Axboe
+
