@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761342AbXGMRBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbXGMRC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761342AbXGMRBq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 13:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbXGMRBh
+	id S1762242AbXGMRC6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 13:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbXGMRCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 13:01:37 -0400
-Received: from styx.suse.cz ([82.119.242.94]:47529 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755054AbXGMRBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 13:01:37 -0400
-Date: Fri, 13 Jul 2007 19:16:59 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kirill Korotaev <dev@openvz.org>, devel@openvz.org,
+	Fri, 13 Jul 2007 13:02:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:54290 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbXGMRCs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 13:02:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c8ZSNv4RoDR4S7Lz8DpFOomTNN3wnBqQyRScyLBtJq+zNeZUKybksyJ8QyW1m0mAYnTkNZi/1xlot4a46hT5GMQdGSeE2v0IgIm0rs9SEHONaKq/vePguXSaQhNBmZOHMB75Hwio8AzurCnrYepx7S/WX2aW3l6ihmIQdHwJeck=
+Message-ID: <29495f1d0707131002l6549b253o96a85efcb22aa56e@mail.gmail.com>
+Date: Fri, 13 Jul 2007 10:02:46 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: -mm merge plans -- anti-fragmentation
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Mel Gorman" <mel@skynet.ie>,
+       npiggin@suse.de, kenchen@google.com, jschopp@austin.ibm.com,
+       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
+       y-goto@jp.fujitsu.com, clameter@sgi.com, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: Lost JBD fix
-Message-ID: <20070713171659.GA24155@duck.suse.cz>
-References: <20070709181443.GF30433@duck.suse.cz> <46951992.8040700@redhat.com>
+In-Reply-To: <469751E9.7060904@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46951992.8040700@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070710102043.GA20303@skynet.ie>
+	 <20070712122925.192a6601.akpm@linux-foundation.org>
+	 <469751E9.7060904@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 11-07-07 13:55:30, Chuck Ebbert wrote:
-> On 07/09/2007 02:14 PM, Jan Kara wrote:
-> >   Hi Andrew,
-> > 
-> >   it seems we've accidentally lost one JBD fix (probably it was my mistake
-> > when rediffing some checkpointing changes) as Kirill has noted. A transaction
-> > can currently be released when there are still some buffers on one of its
-> > checkpointing lists. Attached patch should fix it (it still seems to apply
-> > fine). Please apply it. Thanks.
-> > 
-> > 								Honza
-> > 
-> > 
-> > ------------------------------------------------------------------------
-> > 
-> > We have to check that also the second checkpoint list is non-empty before
-> > dropping the transaction.
-> > 
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > 
-> > diff -rupX /home/jack/.kerndiffexclude linux-2.6.16-rc1/fs/jbd/commit.c linux-2.6.16-rc1-1-checkpoint-fix/fs/jbd/commit.c
-> > --- linux-2.6.16-rc1/fs/jbd/commit.c	2006-01-15 00:20:12.000000000 +0100
-> > +++ linux-2.6.16-rc1-1-checkpoint-fix/fs/jbd/commit.c	2006-01-17 23:35:19.000000000 +0100
-> > @@ -829,7 +829,8 @@ restart_loop:
-> >  	journal->j_committing_transaction = NULL;
-> >  	spin_unlock(&journal->j_state_lock);
-> >  
-> > -	if (commit_transaction->t_checkpoint_list == NULL) {
-> > +	if (commit_transaction->t_checkpoint_list == NULL &&
-> > +	    commit_transaction->t_checkpoint_io_list == NULL) {
-> >  		__journal_drop_transaction(journal, commit_transaction);
-> >  	} else {
-> >  		if (journal->j_checkpoint_transactions == NULL) {
-> 
-> Critical bugfix -- 2.6.22-stable (no earlier versions) should get
-> this too, right?
-  Yes, the bugfix is probably obvious enough to go into -stable. 
+On 7/13/07, Andy Whitcroft <apw@shadowen.org> wrote:
+> Andrew Morton wrote:
+> > On Tue, 10 Jul 2007 11:20:43 +0100
+> > mel@skynet.ie (Mel Gorman) wrote:
+> >
+> >>> create-the-zone_movable-zone.patch
+> >>> allow-huge-page-allocations-to-use-gfp_high_movable.patch
+> >>> handle-kernelcore=-generic.patch
+> >>>
+> >>>  Mel's moveable-zone work.  In a similar situation.  We need to stop whatever
+> >>>  we're doing and get down and work out what we're going to do with all this
+> >>>  stuff.
+> >>>
+> >> Whatever about grouping pages by mobility, I would like to see these go
+> >> through. They have a real application for hugetlb pool resizing where the
+> >> administrator knows the range of hugepages that will be required but doesn't
+> >> want to waste memory when the required number of hugepages is small. I've
+> >> cc'd Kenneth Chen as I believe he has run into this problem recently where
+> >> I believe partitioning memory would have helped. He'll either confirm or deny.
+> >
+> > Still no decision here, really.
+> >
+> > Should we at least go for
+> >
+> > add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
+> > create-the-zone_movable-zone.patch
+> > allow-huge-page-allocations-to-use-gfp_high_movable.patch
+> > handle-kernelcore=-generic.patch
+> >
+> > in 2.6.23?
+>
+> These patches are pretty simple and self-contained utilising the
+> existing zone infrastructure.  They provide a significant degree of
+> placement control when configured, which gives a lot of the benefits of
+> grouping-pages-by-mobility.  Merging these would seem like a low-risk
+> option.
+>
+> Having a degree of placement control as delivered by ZONE_MOVABLE
+> greatly increases the effectiveness of lumpy reclaim at higher orders.
+> These patches plus lumpy would (IMO) provide a good base for further
+> development.  In particular I would envisage better usability for
+> hugepage users in terms of simpler configuration.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+This is also where I (as a libhugetlbfs maintainer/developer) see
+these patches being very helpful (for example, see Adam Litke's recent
+posting on resizing the hugepage pool dynamically). Making hugepages
+"easier" to use -- and in this case that means more likely to
+successfully resize the hugepage pool at run-time -- is a good thing.
+
+> I would like to see ZONE_MOVABLE and lumpy considered for 2.6.23.
+
+Ack.
+
+Thanks,
+Nish
