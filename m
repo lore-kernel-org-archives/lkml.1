@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbXGMQyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbXGMQ4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbXGMQyM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 12:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXGMQxy
+	id S1758472AbXGMQ4c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 12:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbXGMQ4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 12:53:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33086 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750956AbXGMQxx (ORCPT
+	Fri, 13 Jul 2007 12:56:22 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34282 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753776AbXGMQ4V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 12:53:53 -0400
-Date: Fri, 13 Jul 2007 09:53:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kalpak Shah <kalpak@clusterfs.com>
-Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [EXT4 set 7][PATCH 1/1]Remove 32000 subdirs limit.
-Message-Id: <20070713095343.d2e76775.akpm@linux-foundation.org>
-In-Reply-To: <1184322648.4315.2.camel@garfield.linsyssoft.com>
-References: <1183275498.4010.135.camel@localhost.localdomain>
-	<20070710224011.e60b9864.akpm@linux-foundation.org>
-	<1184322648.4315.2.camel@garfield.linsyssoft.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jul 2007 12:56:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       <david@lang.hm>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       <nigel@nigel.suspend2.net>, <linux-kernel@vger.kernel.org>,
+       <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+References: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
+Date: Fri, 13 Jul 2007 10:54:42 -0600
+In-Reply-To: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Fri, 13 Jul 2007 11:50:11 -0400 (EDT)")
+Message-ID: <m1fy3sdz1p.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 16:00:48 +0530 Kalpak Shah <kalpak@clusterfs.com> wrote:
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-> > >  
-> > > -	if (inode->i_nlink >= EXT4_LINK_MAX)
-> > > +	if (EXT4_DIR_LINK_MAX(inode))
-> > >  		return -EMLINK;
-> > 
-> > argh.  WHY_IS_EXT4_FULL_OF_UPPER_CASE_MACROS_WHICH_COULD_BE_IMPLEMENTED
-> > as_lower_case_inlines?  Sigh.  It's all the old-timers, I guess.
-> > 
-> > EXT4_DIR_LINK_MAX() is buggy: it evaluates its arg twice.
-> 
-> #define EXT4_DIR_LINK_MAX(dir) (!is_dx(dir) && (dir)->i_nlink >= EXT4_LINK_MAX)
-> 
-> This just checks if directory has hash indexing in which case we need not worry about EXT4_LINK_MAX subdir limit. If directory is not hash indexed then we will need to enforce a max subdir limit. 
-> 
-> Sorry, I didn't understand what is the problem with this macro?
+> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
+>
+>> Okay, I have thought it through and I think that, as an initial step, we can
+> do
+>> something like this:
+>> 
+>> - preload the image-saving kernel before hibernation
+>> - in the hibernation code path replace device_suspend() with the shutting down
+> of
+>> all devices without unregistering them (not very nice, but should be
+> sufficient
+>>   for a while)
+>> - when we've called device_power_down() and save_processor_state(), jump to
+>>   the image-saving kernel and let it run
+>> - make the image-saving kernel set up everything, save the image without
+>>   starting any user space (we may use the existing image-saving code for this
+>> purpose, with some modifications) and power off the system (or make it enter
+>>   S4)
+>> - use the existing restoration code to load the image and jump to the
+>>   hibernated kernel
+>> - in the restore code patch replace device_resume() with the reprobing of all
+>>   devices.
+>> 
+>> Comments?
+>
+> I doubt that re-probing devices will work.  The probe routine won't 
+> expect there to be any registered children, so it will try to 
+> re-register them.
 
-Macros should never evaluate their argument more than once, because if they
-do they will misbehave when someone passes them an
-expression-with-side-effects:
+So really unregister the children.  All we really need to do is disassociate
+the drivers from the devices (to reuse the existing code) we don't
+need to rescan for the devices.  The associating the device drivers
+with devices takes human measurable amount of time.  The only thing
+that takes time is waiting on hardware.  Maybe things will suck
+and associating the drivers with the device tree with take a whole
+second on a bad day, I don't think that is enough time to add
+complicated new code paths for the drivers to maintain.
 
-	struct inode *p = q;
+> On the other hand, post_restore methods could be written to expect 
+> something like this.
 
-	EXT4_DIR_LINK_MAX(p++);
+Please Please Plaese do not start with the existing software suspend
+to disk code and thinking.  We are not implementing suspend to ram
+here or anything like it.  We already have proven code paths that
+know how to quiesce hardware.  We already have proven code paths
+that know how to take quite hardware and make it run.  Please let's
+just use them.  At least until we can see that they are insufficient
+to the task.
 
-one expects `p' to have the value q+1 here.  But it might be q+2.
-
-and
-
-	EXT4_DIR_LINK_MAX(some_function());
-
-might cause some_function() to be called twice.
-
-
-This is one of the many problems which gets fixed when we write code in C
-rather than in cpp.
+Eric
