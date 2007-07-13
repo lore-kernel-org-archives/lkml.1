@@ -1,148 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbXGMAQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbXGMATe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbXGMAQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jul 2007 20:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXGMAQJ
+	id S1761001AbXGMATe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jul 2007 20:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758772AbXGMAT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jul 2007 20:16:09 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:32004 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756165AbXGMAQI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jul 2007 20:16:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=VsZrgF+UYobmkdEIBVam56iBdpU/ZncVCjzRdufN2l5ZxczS4yeJ02CWFqWUUbafVTIVe3jmkH//D0jrvJKr2jw7kUhoGsn49NDfFpdFD5RsWv3IenxX8XCUBW5Ds48aQkCi2Iq75ihtVOHjf5tjjD4Kq04TYPrZMff9Bs3pVzY=
-Subject: Re: [patch 2/4] fbdev: Add fb_append_extra_logo()
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       James Simmons <jsimmons@infradead.org>,
-       linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <20070710123540.678435000@pademelon.sonytel.be>
-References: <20070710122702.765654000@pademelon.sonytel.be>
-	 <20070710123540.678435000@pademelon.sonytel.be>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 08:15:57 +0800
-Message-Id: <1184285757.4566.11.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jul 2007 20:19:28 -0400
+Received: from mail.suse.de ([195.135.220.2]:37677 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756165AbXGMAT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jul 2007 20:19:27 -0400
+Date: Thu, 12 Jul 2007 17:19:06 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [GIT PATCH] USB patches for 2.6.22
+Message-ID: <20070713001906.GA24272@suse.de>
+References: <20070712234233.GA22339@kroah.com> <alpine.LFD.0.999.0707121647420.20061@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707121647420.20061@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-10 at 14:27 +0200, Geert Uytterhoeven wrote:
-> plain text document attachment (spe-logo)
-> Add fb_append_extra_logo(), to append extra lines of logos below the standard
-> Linux logo.
+On Thu, Jul 12, 2007 at 05:03:46PM -0700, Linus Torvalds wrote:
 > 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> Acked-By: James Simmons <jsimmons@infradead.org>
-> ---
->  drivers/video/fbmem.c      |   50 +++++++++++++++++++++++++++++++++++++++++----
->  include/linux/linux_logo.h |    8 +++++++
->  2 files changed, 54 insertions(+), 4 deletions(-)
+> On Thu, 12 Jul 2007, Greg KH wrote:
+> >
+> > Here are a bunch of USB patches and fixes against your 2.6.22 git tree.
 > 
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -318,6 +318,13 @@ static struct logo_data {
->  	const struct linux_logo *logo;
->  } fb_logo __read_mostly;
->  
-> +#define FB_LOGO_EX_NUM_MAX 10
-> +static struct logo_data_extra {
-> +	const struct linux_logo *logo;
-> +	unsigned int n;
-> +} fb_logo_ex[FB_LOGO_EX_NUM_MAX];
-> +static unsigned int fb_logo_ex_num;
-> +
->  static void fb_rotate_logo_ud(const u8 *in, u8 *out, u32 width, u32 height)
->  {
->  	u32 size = width * height, i;
-> @@ -411,10 +418,22 @@ static void fb_do_show_logo(struct fb_in
->  	}
->  }
->  
-> +#ifdef CONFIG_FB
+> This also seems to contain some *totally*pointless* config variable 
+> changes, that actually break simple things like "make oldconfig".
+> 
+> This commit is insane: acb11c8b8020f1f1b2545152020675ef32d09a58 "USB: fix 
+> gregkh-usb-usb-use-menuconfig-objects"
+> 
+> It fixes nothing at all, quite the reverse. It makes the default be 
+> somethign that breaks everything, and more irritatingly, even if you 
+> answer 'y' (against the default), it breaks "make oldconfig", which will 
+> have ignored all the old options and now will ask you for all of them 
+> again.
+> 
+> Yeah, that second part may be a "make oldconfig" bug, but regardless, 
+> these kinds of Kconfig changes are BAD, BAD, BAD!
+> 
+> I hate how people do just stupid things to "clean up" config files 
+> (renaming config options etc), apparently never even bothering to think 
+> about whether a question is sane or not, or whether normal users want to 
+> see it or not.
+> 
+> I know I'm not the only one who does "make oldconfig". Answering the same 
+> questions over and over again is not something *anybody* wants to do.
+> 
+> So please stop this madness. I've reverted the change that left the 
+> menuconfig entry without a default, which at least fixes "make oldconfig", 
+> but I just found this really irritating. I can pretty much guarantee that 
+> nobody actually *tested* this change, did they?
 
-The #ifdef is redundant.
+Hm, odd.  Ok, I see how it went.
 
-> +void fb_append_extra_logo(const struct linux_logo *logo, unsigned int n)
-> +{
-> +	if (!n || fb_logo_ex_num == FB_LOGO_EX_NUM_MAX)
-> +		return;
-> +
-> +	fb_logo_ex[fb_logo_ex_num].logo = logo;
-> +	fb_logo_ex[fb_logo_ex_num].n = n;
-> +	fb_logo_ex_num++;
-> +}
-> +#endif
-> +
->  int fb_prepare_logo(struct fb_info *info, int rotate)
->  {
->  	int depth = fb_get_color_depth(&info->var, &info->fix);
-> -	int yres;
-> +	unsigned int yres, height, i;
->  
->  	memset(&fb_logo, 0, sizeof(struct logo_data));
->  
-> @@ -474,7 +493,21 @@ int fb_prepare_logo(struct fb_info *info
->  		fb_logo.depth = 4;
->  	else
->  		fb_logo.depth = 1;		
-> -	return fb_logo.logo->height;
-> +
-> +	/* FIXME: logo_ex supports only truecolor fb. */
-> +	if (info->fix.visual != FB_VISUAL_TRUECOLOR)
-> +		fb_logo_ex_num = 0;
-> +
-> +	height = fb_logo.logo->height;
-> +	for (i = 0; i < fb_logo_ex_num; i++) {
-> +		height += fb_logo_ex[i].logo->height;
-> +		if (height > yres) {
-> +			height -= fb_logo_ex[i].logo->height;
-> +			fb_logo_ex_num = i;
-> +			break;
-> +		}
-> +	}
-> +	return height;
->  }
->  
->  static int fb_show_logo_line(struct fb_info *info, int rotate,
-> @@ -547,8 +580,17 @@ static int fb_show_logo_line(struct fb_i
->  
->  int fb_show_logo(struct fb_info *info, int rotate)
->  {
-> -	return fb_show_logo_line(info, rotate, fb_logo.logo, 0,
-> -				 num_online_cpus());
-> +	int y, i;
-> +
-> +	y = fb_show_logo_line(info, rotate, fb_logo.logo, 0,
-> +			      num_online_cpus());
-> +
-> +	for (i = 0; i < fb_logo_ex_num; i++) {
-> +		y += fb_show_logo_line(info, rotate,
-> +				       fb_logo_ex[i].logo, y, fb_logo_ex[i].n);
-> +	}
-> +
-> +	return y;
->  }
->  #else
->  int fb_prepare_logo(struct fb_info *info, int rotate) { return 0; }
-> --- a/include/linux/linux_logo.h
-> +++ b/include/linux/linux_logo.h
-> @@ -33,5 +33,13 @@ struct linux_logo {
->  };
->  
->  extern const struct linux_logo *fb_find_logo(int depth);
-> +#if defined(CONFIG_LOGO) && defined(CONFIG_FB)
+I tested it _before_ that change went in with make oldconfig, and then
+later after that patch went in.  If you do that (running oldconfig
+between the patches) you do not get asked the zillion different USB
+questions.  If, however, you just start with all of the patches at once,
+it becomes annoying as hell.
 
-The CONFIG_LOGO is also probably redundant, but that's arguable.
+So sorry about this fix, I agree with the revert, and am going to have
+to try to figure out some way to check for things like this in the
+future (rolling back .config files to the last version or something...)
 
-Tony
+thanks,
 
-
+greg k-h
