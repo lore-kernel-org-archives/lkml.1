@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933293AbXGMR3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762669AbXGMRc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933293AbXGMR3G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 13:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXGMR2y
+	id S1762669AbXGMRc1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 13:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbXGMRcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 13:28:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49172 "EHLO
+	Fri, 13 Jul 2007 13:32:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34382 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751153AbXGMR2y (ORCPT
+	by vger.kernel.org with ESMTP id S1752327AbXGMRcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 13:28:54 -0400
-Date: Fri, 13 Jul 2007 10:27:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Gabriel C <nix.or.die@googlemail.com>,
-       linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: On current git head webservers stopped working
-In-Reply-To: <20070713093459.GB5328@kernel.dk>
-Message-ID: <alpine.LFD.0.999.0707131025550.20061@woody.linux-foundation.org>
-References: <469745A8.6010005@googlemail.com>
- <20070713093459.GB5328@kernel.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 13 Jul 2007 13:32:19 -0400
+Date: Fri, 13 Jul 2007 10:31:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Herbert van den Bergh <herbert.van.den.bergh@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Dave McCracken <dave.mccracken@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [PATCH] do not limit locked memory when RLIMIT_MEMLOCK is
+ RLIM_INFINITY
+Message-Id: <20070713103132.38e782e5.akpm@linux-foundation.org>
+In-Reply-To: <46979C4E.6000205@oracle.com>
+References: <4692D9E0.1000308@oracle.com>
+	<20070713004408.b7162501.akpm@linux-foundation.org>
+	<46979C4E.6000205@oracle.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 13 Jul 2007 08:37:50 -0700 Herbert van den Bergh <herbert.van.den.bergh@oracle.com> wrote:
 
-
-On Fri, 13 Jul 2007, Jens Axboe wrote:
+> Andrew Morton wrote:
+> > 
+> > OK.  Seems like a nasty bug if one happens to want to do that.  Should we
+> > backport this into 2.6.22.x?
+> > 
 > 
-> Does this work?
+> Yes, please.  Do you need me to do anything for that?
+> 
 
-Ok, so it apparently works, but:
+Nope.  I stick a "Cc: <stable@kernel.org>" into the changelog and then
+magic happens: the -stable maintainers get a copy of the patch when it goes
+to Linus, they get notification when I drop it after Linus merged it and
+then they (hopeully) take the patch from Linus's tree.
 
-> diff --git a/fs/splice.c b/fs/splice.c
-> index ed2ce99..92646aa 100644
-> --- a/fs/splice.c
-> +++ b/fs/splice.c
-> @@ -491,7 +491,7 @@ ssize_t generic_file_splice_read(struct file *in, loff_t *ppos,
->  
->  	ret = 0;
->  	spliced = 0;
-> -	while (len) {
-> +	while (len && !spliced) {
->  		ret = __generic_file_splice_read(in, ppos, pipe, len, flags);
-
-This hunk basically make sthe whole "while" loop pointless. You'll never 
-go through it more than once.
-
-So at that point, maybe the loop should be removed entirely? Or maybe this 
-part of the patch is wrong, and the fix was in the _other_ parts?
-
-		Linus
+(But the last step is a bit of a hassle - I suspect they take my emailed
+version instead, but it would be super-rare for that to differ from the
+version which Linus merged)
