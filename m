@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935255AbXGMPIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936252AbXGMPKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935255AbXGMPIk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 11:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760565AbXGMPIc
+	id S936252AbXGMPKZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 11:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761283AbXGMPKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 11:08:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:47995 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760320AbXGMPIc (ORCPT
+	Fri, 13 Jul 2007 11:10:07 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:49524 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1760565AbXGMPKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 11:08:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=VD1jpu0GLBYpq5UxS+sQITA7shvUBIOswBMPJJsfVO3aldF0OZY0i8Rk1VLOCLjlAWcFEQAem6djCbj05+PfnpwHDDhUP9hZEYJChsW1umSuGJ9q1gHCmWs5LkilGr6xtQRoNBSYPkd5wPePHIfF2OK4XJn9eFEJAEhQ3x+ndrg=
-Date: Fri, 13 Jul 2007 23:11:06 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>, kirk@hpc.ee.ntu.edu.tw,
-       akpm@osdl.org, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
-Message-ID: <20070713151106.GB4023@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20070712150135.GA4102@localhost.localdomain> <1184256718.32199.111.camel@weaponx.rchland.ibm.com> <20070713034822.GA2370@localhost.localdomain> <1184320602.2785.18.camel@shinybook.infradead.org> <20070713131458.GA1997@localhost.localdomain> <1184333884.8809.5.camel@hades.cambridge.redhat.com> <20070713142442.GA8190@linux-mips.org> <1184337089.8809.11.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184337089.8809.11.camel@hades.cambridge.redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 13 Jul 2007 11:10:05 -0400
+Date: Fri, 13 Jul 2007 17:10:03 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: linuxppc-dev@ozlabs.org, James Bottomley <James.Bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+In-Reply-To: <200707131619.54898.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+ <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
+ <1184335333.3402.20.camel@localhost.localdomain> <200707131619.54898.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-967579323-1184339403=:18802"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 03:31:29PM +0100, David Woodhouse wrote:
->On Fri, 2007-07-13 at 15:24 +0100, Ralf Baechle wrote:
->> +config MTD_PMC_MSP_EVM
->> +       tristate "CFI Flash device mapped on PMC-Sierra MSP"
->> +       depends on PMC_MSP && MTD_CFI
->> +       select MTD_PARTITIONS
->> 
->> drivers/mtd/maps/Makefile:obj-$(CONFIG_MTD_PMC_MSP_EVM)   +=
->> pmcmsp-flash.o
->> 
->> Is he trying to build something else than very recent kernel.org
->> tree? 
->
->Hm. His mail did say "Even when I use `make allyesconfig`, I still can't
->compile some drivers. I should add the corresponding CONFIGs manually."
->          
->I wonder if he disabled the correct conditions and then tried building
->it in an i386 kernel?
->
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Er, I first used 'make allyesconfig', then added CONFIG_MTD_PMC_MSP_EVM=y
-manually. And yes, I am on i386.
+---584337861-967579323-1184339403=:18802
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
--- 
+On Fri, 13 Jul 2007, Arnd Bergmann wrote:
+> On Friday 13 July 2007, James Bottomley wrote:
+> > > IC.
+> > > 
+> > >   - flush_kernel_dcache_page() is a no-op on ppc64
+> > >     (ARCH_HAS_FLUSH_KERNEL_DCACHE_PAGE is defined on parisc only).
+> > > 
+> > >   - For reference, drivers/scsi/ipr.c (another ppc64 driver) just uses a plain
+> > >     kmap/memcpy/kunmap sequence
+> > > 
+> > > So what should I do?
+> > 
+> > Ask someone who knows the architecture ... Anton, Paulus or Benh ... I'm
+> > fairly certain PPC is VIPT and will need some kind of alias
+> > resolution ... perhaps its associative enough not to let the aliases be
+> > a problem.
+> 
+> I'm pretty sure that no ppc64 machine needs alias resolution in the kernel,
+> although some are VIPT. Last time we discussed this, Segher explained it
+> to me, but I don't remember which way Cell does it. IIRC, it automatically
+> flushes cache lines that are accessed through aliases.
 
-If loving computers is wrong, I don't want to be right.
+Thanks for confirming!
+
+> It's probably a good idea to have the flush_kernel_dcache_page() in there
+> anyway, if only to serve as an example for people that copy it into
+> architecture-independent drivers, same as what we do for the
+> k{,un}map_atomic() that is also not required on ppc64.
+
+Now my next question: why should I add it, if currently no single driver in
+mainline calls flush_kernel_dcache_page()? 
+
+`git grep' finds it in the following files only:
+    Documentation/cachetlb.txt
+    arch/parisc/kernel/cache.c
+    arch/parisc/kernel/pacache.S
+    include/asm-parisc/cacheflush.h
+    include/linux/highmem.h
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village Â· Da Vincilaan 7-D1 Â· B-1935 Zaventem Â· Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 Â· B-1840 Londerzeel Â· Belgium	
+VAT BE 0413.825.160 Â· RPR Brussels	
+Fortis Bank Zaventem Â· Swift GEBABEBB08A Â· IBAN BE39001382358619
+---584337861-967579323-1184339403=:18802--
