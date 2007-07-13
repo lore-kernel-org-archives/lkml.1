@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbXGMLo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758541AbXGMLqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758269AbXGMLo3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 07:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbXGMLoT
+	id S1758541AbXGMLqO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 07:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbXGMLp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 07:44:19 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:60018 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754876AbXGMLoS (ORCPT
+	Fri, 13 Jul 2007 07:45:59 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:4866 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755009AbXGMLp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 07:44:18 -0400
-Subject: Re: Documentation of kernel messages (Summary)
-From: Li Yang <leoli@freescale.com>
-Reply-To: leoli@freescale.com
-To: Rob Landley <rob@landley.net>, gregkh@suse.de
-Cc: Gerrit Huizenga <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
-       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
-       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
-       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
-In-Reply-To: <200707121335.55817.rob@landley.net>
-References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
-	 <200707121335.55817.rob@landley.net>
+	Fri, 13 Jul 2007 07:45:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=SMosy2dbCDYWZR1lFmbVOSdm5K7j3nMTCVoWhQhK8lxQzkkvXGFkzmhf0tvGsEYoPr/31Wi75CQSXRp9Pr4Bdd2RpnqbekPBgLNSLB2eI8b7CZ4nmuVyA5vK2WB3T3b5uGqOvGrvbxfnWjUW/2526dPzmg4MycDS2ed7j7XE1HA=
+Subject: Re: [patch 2/4] fbdev: Add fb_append_extra_logo()
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       James Simmons <jsimmons@infradead.org>,
+       linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <Pine.LNX.4.62.0707130855360.15603@pademelon.sonytel.be>
+References: <20070710122702.765654000@pademelon.sonytel.be>
+	 <20070710123540.678435000@pademelon.sonytel.be>
+	 <1184285757.4566.11.camel@daplas>
+	 <Pine.LNX.4.62.0707130855360.15603@pademelon.sonytel.be>
 Content-Type: text/plain
-Organization: Freescale Semiconductor
-Date: Fri, 13 Jul 2007 19:54:37 +0800
-Message-Id: <1184327677.23373.51.camel@Gundam>
+Date: Fri, 13 Jul 2007 19:45:34 +0800
+Message-Id: <1184327134.4702.6.camel@daplas>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Jul 2007 11:44:11.0586 (UTC) FILETIME=[21522220:01C7C543]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 13:35 -0400, Rob Landley wrote:
-> On Thursday 12 July 2007 9:53:54 am Li Yang-r58472 wrote:
-> > > Fielding patches and questions sounds like plenty to me...)
-> >
-> > I do think the documentation translation is very necessary even when
-> > there is a language maintainer, especially for the policy documents as
-> > HOWTO, codestyle , and etc.  The contributors should go through these
-> > policies and check their code for compliance before going to the
-> > language maintainer for help, or there will be too much for the language
-> > maintainer to translate.  The language maintainer doesn't need to
-> > translate all the documents himself, but he can help to coordinate the
-> > translation effort and help to make it update to date.
+On Fri, 2007-07-13 at 08:56 +0200, Geert Uytterhoeven wrote:
+> On Fri, 13 Jul 2007, Antonino A. Daplas wrote:
+> > On Tue, 2007-07-10 at 14:27 +0200, Geert Uytterhoeven wrote:
+> > > --- a/drivers/video/fbmem.c
+> > > +++ b/drivers/video/fbmem.c
+> > > @@ -318,6 +318,13 @@ static struct logo_data {
+> > >  	const struct linux_logo *logo;
+> > >  } fb_logo __read_mostly;
+> > >  
+> > > +#define FB_LOGO_EX_NUM_MAX 10
+> > > +static struct logo_data_extra {
+> > > +	const struct linux_logo *logo;
+> > > +	unsigned int n;
+> > > +} fb_logo_ex[FB_LOGO_EX_NUM_MAX];
+> > > +static unsigned int fb_logo_ex_num;
+> > > +
+> > >  static void fb_rotate_logo_ud(const u8 *in, u8 *out, u32 width, u32 height)
+> > >  {
+> > >  	u32 size = width * height, i;
+> > > @@ -411,10 +418,22 @@ static void fb_do_show_logo(struct fb_in
+> > >  	}
+> > >  }
+> > >  
+> > > +#ifdef CONFIG_FB
+> > 
+> > The #ifdef is redundant.
 > 
-> It would help if all the policy documents got grouped into a single 
-> Documentation/development directory so we could separate "policy documents in 
-> each language would be nice" from "that document about the amiga zorro bus 
-> really needs to be kept up-to-date in Navajo and that should be in the kernel 
-> tarball please".
-> 
-> Lemme see, which ones are we talking about?  The candidates are:
->   applying-patches.txt
->   BUG-HUNTING
->   Changes
->   CodingStyle
->   debugging-modules.txt
->   feature-removal-schedule.txt
->   HOWTO
->   kernel-docs.txt
->   language-maintainers.txt
->   ManagementStyle
->   oops-tracing.txt
->   SecurityBugs
->   sparse.txt
->   stable_api_nonsense.txt
->   stable_kernel_rules.txt
->   SubmitChecklist
->   SubmittingDrivers
->   SubmittingPatches
->   volatile-considered-harmful.txt
-> 
-> That's everything I noticed in the top level directory that's a good candidate 
-> to be grouped into a "development" subdirectory.  Did I miss anything?
-> 
-> I note that Changes is a bit stale in places (16 bit assembly?), 
-> feature-removal-schedule.txt changes often but is good to know, 
-> kernel-docs.txt might be useless to translate considering it's mostly links 
-> to english documentation, language-maintainers.txt is assuming my patch from 
-> earlier today gets accepted...
-> 
-> I can submit a patch grouping all that stuff together into a subdirectory if 
-> it would help...
-> 
-> > If we do need a contact person, I can do it.  However I don't think
-> > there will be much translation work to do here.  As I stated before,
-> > most Chinese programmers are more or less capable of read/write
-> > technical English.  The difficult part is to let them know the benefit
-> > of merging code in kernel and teach them how to do it.  That's why the
-> > policy documents in native language will be very useful.
-> 
-> Does the above look like a good list?  There are more that need to be written, 
-> but that's what I saw in Documentation...
+> IIRC, it's needed for the CONFIG_FB=m case.
 
-Yes, I do think this is a good list for translation.
+What would happen if CONFIG_FB=m? (We already have a patch that prevents
+logo drawing if the driver or fbcon is modular)
 
-Greg,
-Do you have anything to add?
-
-- Leo
+Tony
 
 
