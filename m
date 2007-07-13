@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXGMKVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbXGMKVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbXGMKVS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 06:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbXGMKVD
+	id S1756638AbXGMKVh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 06:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbXGMKV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 06:21:03 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1811 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbXGMKVB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 06:21:01 -0400
-Message-ID: <469751E9.7060904@shadowen.org>
-Date: Fri, 13 Jul 2007 11:20:25 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mel Gorman <mel@skynet.ie>, npiggin@suse.de, kenchen@google.com,
-       jschopp@austin.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-       a.p.zijlstra@chello.nl, y-goto@jp.fujitsu.com, clameter@sgi.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans -- anti-fragmentation
-References: <20070710102043.GA20303@skynet.ie> <20070712122925.192a6601.akpm@linux-foundation.org>
-In-Reply-To: <20070712122925.192a6601.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jul 2007 06:21:28 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:39329 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757103AbXGMKVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 06:21:22 -0400
+Date: Fri, 13 Jul 2007 14:21:12 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix sparse false positives re BUG_ON(ptr)
+Message-ID: <20070713102111.GA11046@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 10 Jul 2007 11:20:43 +0100
-> mel@skynet.ie (Mel Gorman) wrote:
-> 
->>> create-the-zone_movable-zone.patch
->>> allow-huge-page-allocations-to-use-gfp_high_movable.patch
->>> handle-kernelcore=-generic.patch
->>>
->>>  Mel's moveable-zone work.  In a similar situation.  We need to stop whatever
->>>  we're doing and get down and work out what we're going to do with all this
->>>  stuff.
->>>
->> Whatever about grouping pages by mobility, I would like to see these go
->> through. They have a real application for hugetlb pool resizing where the
->> administrator knows the range of hugepages that will be required but doesn't
->> want to waste memory when the required number of hugepages is small. I've
->> cc'd Kenneth Chen as I believe he has run into this problem recently where
->> I believe partitioning memory would have helped. He'll either confirm or deny.
-> 
-> Still no decision here, really.
-> 
-> Should we at least go for
-> 
-> add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
-> create-the-zone_movable-zone.patch
-> allow-huge-page-allocations-to-use-gfp_high_movable.patch
-> handle-kernelcore=-generic.patch
-> 
-> in 2.6.23?
+sparse now warns if one compares pointers with integers. However, there are
+false positives, like:
 
-These patches are pretty simple and self-contained utilising the
-existing zone infrastructure.  They provide a significant degree of
-placement control when configured, which gives a lot of the benefits of
-grouping-pages-by-mobility.  Merging these would seem like a low-risk
-option.
+	fs/filesystems.c:72:2: warning: Using plain integer as NULL pointer
 
-Having a degree of placement control as delivered by ZONE_MOVABLE
-greatly increases the effectiveness of lumpy reclaim at higher orders.
-These patches plus lumpy would (IMO) provide a good base for further
-development.  In particular I would envisage better usability for
-hugepage users in terms of simpler configuration.
+Every time BUG_ON(ptr) is used, ptr is checked against integer zero. Avoid that
+and save ~70 false positives from allyesconfig run.
 
-I would like to see ZONE_MOVABLE and lumpy considered for 2.6.23.
+mentioned by Al.
 
--apw
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
+
+ include/asm-generic/bug.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/asm-generic/bug.h
++++ b/include/asm-generic/bug.h
+@@ -28,7 +28,7 @@ struct bug_entry {
+ #endif
+ 
+ #ifndef HAVE_ARCH_BUG_ON
+-#define BUG_ON(condition) do { if (unlikely((condition)!=0)) BUG(); } while(0)
++#define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
+ #endif
+ 
+ #ifndef HAVE_ARCH_WARN_ON
+
