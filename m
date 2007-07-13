@@ -1,56 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936642AbXGMJdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964940AbXGMJf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936642AbXGMJdu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 05:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761714AbXGMJdn
+	id S964940AbXGMJf1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 05:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934288AbXGMJfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 05:33:43 -0400
-Received: from mga09.intel.com ([134.134.136.24]:27339 "EHLO mga09.intel.com"
+	Fri, 13 Jul 2007 05:35:15 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9585 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759312AbXGMJdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 05:33:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,536,1175497200"; 
-   d="scan'208";a="105860000"
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-From: "Huang, Ying" <ying.huang@intel.com>
-To: david@lang.hm
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-In-Reply-To: <Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	 <200707121453.49616.rjw@sisk.pl>
-	 <Pine.LNX.4.64.0707121150460.25614@asgard.lang.hm>
-	 <200707122134.29991.rjw@sisk.pl>
-	 <Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 13 Jul 2007 17:32:54 +0000
-Message-Id: <1184347974.4523.30.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 13 Jul 2007 09:33:37.0022 (UTC) FILETIME=[E38E89E0:01C7C530]
+	id S933801AbXGMJfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 05:35:13 -0400
+Date: Fri, 13 Jul 2007 11:34:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: On current git head webservers stopped working
+Message-ID: <20070713093459.GB5328@kernel.dk>
+References: <469745A8.6010005@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469745A8.6010005@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-12 at 20:06 -0700, david@lang.hm wrote:
-> >> I agree, a stipped down hibernate kernel can be very small, not allocating
-> >> this memory until it's needed is a step for the final polishing.
-> >
-> > I'm not sure if I agree with that.  In any case, having to use two different
-> > kernels for hibernation would be a big drawback.
+On Fri, Jul 13 2007, Gabriel C wrote:
+> Hello ,
 > 
-> I see it as a big advantage to not have to use the main kernel for the 
-> suspend. please keep it as an option at least.
+> While doing some tests with 2.6.22-git2 ( at the time head
+> 4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4 ) all my webservers stopped
+> working.
+> I can't get any file using wget or whatever else , everything hangs
+> after 1% forever.
+> 
+> I bisected this and here the result:
+> 
+> 534f2aaa6ab07cd71164180bc958a7dcde41db11 is first bad commit
+> commit 534f2aaa6ab07cd71164180bc958a7dcde41db11
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Fri Jun 1 14:52:37 2007 +0200
+> 
+>     sys_sendfile: switch to using ->splice_read, if available
+> 
+>     This patch makes sendfile prefer to use ->splice_read(), if it's
+>     available in the file_operations structure.
+> 
+>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> 
+> :040000 040000 b19013793692eee0f632b3703dca0bd40cea753f
+> ed50576c0d3f0d3ce9f1a2ac9336d1164b45f63f M      fs
 
-Yes. It has additional bonus to make it possible to write/read image
-from a program other than main kernel. For example, for a specific
-mobile device product (Such as Intel MID), a customized ultra-small
-program (or kernel) can be composed to write/read image. That way, the
-hibernate/resume time can be reduced to minimal.
+Does this work?
 
-Best Regards,
-Huang Ying
+diff --git a/fs/splice.c b/fs/splice.c
+index ed2ce99..92646aa 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -491,7 +491,7 @@ ssize_t generic_file_splice_read(struct file *in, loff_t *ppos,
+ 
+ 	ret = 0;
+ 	spliced = 0;
+-	while (len) {
++	while (len && !spliced) {
+ 		ret = __generic_file_splice_read(in, ppos, pipe, len, flags);
+ 
+ 		if (ret < 0)
+@@ -1051,15 +1051,10 @@ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
+ 	sd->flags &= ~SPLICE_F_NONBLOCK;
+ 
+ 	while (len) {
+-		size_t read_len, max_read_len;
+-
+-		/*
+-		 * Do at most PIPE_BUFFERS pages worth of transfer:
+-		 */
+-		max_read_len = min(len, (size_t)(PIPE_BUFFERS*PAGE_SIZE));
++		size_t read_len;
+ 
+-		ret = do_splice_to(in, &sd->pos, pipe, max_read_len, flags);
+-		if (unlikely(ret < 0))
++		ret = do_splice_to(in, &sd->pos, pipe, len, flags);
++		if (unlikely(ret <= 0))
+ 			goto out_release;
+ 
+ 		read_len = ret;
+@@ -1071,26 +1066,17 @@ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
+ 		 * could get stuck data in the internal pipe:
+ 		 */
+ 		ret = actor(pipe, sd);
+-		if (unlikely(ret < 0))
++		if (unlikely(ret <= 0))
+ 			goto out_release;
+ 
+ 		bytes += ret;
+ 		len -= ret;
+ 
+-		/*
+-		 * In nonblocking mode, if we got back a short read then
+-		 * that was due to either an IO error or due to the
+-		 * pagecache entry not being there. In the IO error case
+-		 * the _next_ splice attempt will produce a clean IO error
+-		 * return value (not a short read), so in both cases it's
+-		 * correct to break out of the loop here:
+-		 */
+-		if ((flags & SPLICE_F_NONBLOCK) && (read_len < max_read_len))
+-			break;
++		if (ret < read_len)
++			goto out_release;
+ 	}
+ 
+ 	pipe->nrbufs = pipe->curbuf = 0;
+-
+ 	return bytes;
+ 
+ out_release:
+@@ -1152,10 +1138,12 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
+ 		.pos		= *ppos,
+ 		.u.file		= out,
+ 	};
+-	size_t ret;
++	long ret;
+ 
+ 	ret = splice_direct_to_actor(in, &sd, direct_splice_actor);
+-	*ppos = sd.pos;
++	if (ret > 0)
++		*ppos += ret;
++
+ 	return ret;
+ }
+ 
+
+-- 
+Jens Axboe
+
