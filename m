@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbXGMLhL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758259AbXGMLhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758086AbXGMLhL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 07:37:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755009AbXGMLg6
+	id S1758259AbXGMLhy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 07:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXGMLhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 07:36:58 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:21738 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753817AbXGMLg5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 07:36:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BSm+R+Anifmk8aui/UyX+fWRk7EbATCoIN4YzK8SvVUUkG/OK6cXi+c4UVejMS6xK71QVssTNPjd/0tOn1094cv6MpJvPjUL6OqX5C0KUj9BsIivaFJYYfFE25QQtyCZyTrqYKJDEfrM9IY8XFQG/9pVyyNN3G6kgU3jW2OU6W0=
-Message-ID: <3efb10970707130436v70ddbae2w51af0a19fa5c297c@mail.gmail.com>
-Date: Fri, 13 Jul 2007 13:36:56 +0200
-From: "Remy Bohmer" <l.pinguin@gmail.com>
-Reply-To: linux@bohmer.net
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: v2.6.22.1-rt3
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1184325752.12353.312.camel@chaos>
+	Fri, 13 Jul 2007 07:37:47 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:64535 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753817AbXGMLhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 07:37:46 -0400
+Message-ID: <46976387.3010509@rfo.atmel.com>
+Date: Fri, 13 Jul 2007 13:35:35 +0200
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+CC: LKML <linux-kernel@vger.kernel.org>, Andrew Victor <andrew@sanpeople.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Manuel Lauss <mano@roarinelk.homelinux.net>,
+       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Pavel Pisa <pisa@cmp.felk.cvut.cz>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, David Brownell <david-b@pacbell.net>,
+       =?ISO-8859-1?Q?Juha_Yrj=F6l=E4?= <juha.yrjola@solidboot.com>,
+       Carlos Aguiar <carlos.aguiar@indt.org.br>,
+       "Briglia >> \"Anderson F. Briglia\"" <anderson.briglia@indt.org.br>,
+       Kyungmin Park <kmpark@infradead.org>, "Khasim, Syed" <x0khasim@ti.com>
+Subject: Re: [RFC] Orphaning MMC host drivers
+References: <4648BAC9.5020405@drzeus.cx>
+In-Reply-To: <4648BAC9.5020405@drzeus.cx>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1184325752.12353.312.camel@chaos>
+X-ESAFE-STATUS: Mail clean
+X-ESAFE-DETAILS: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+Pierre Ossman :
+> +ATMEL AT91 MCI DRIVER
+> +S:	Orphan
+> +
 
->  http://www.tglx.de/projects/preempt-rt/2.6.22.1
+Hi Pierre,
 
-This is a dead link...
-It should be: http://www.tglx.de/projects/preempt-rt/2.6.22.1-rt3/
+I come back on this request... better late than never ;-)
 
-Remy
+As I have patched the AT91 MCI driver these days, with the kind help of 
+a few people, I think I can now add myself as maintainer for this 
+driver. Here is the entry below.
 
->
-> more info about the -rt patchset can be found in the RT wiki:
->
->    http://rt.wiki.kernel.org
->
-> This release is bugfix release:
->
-> - update of the x8664 -hrt queue (resolve boot problems)
-> - gtod vsyscall fix from Gregory Haskins
->
-> to build a 2.6.22.1-rt3 tree, the following patches should be applied:
->
->    http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
->    http://www.tglx.de/projects/preempt-rt/2.6.22.1-rt3/patch-2.6.22.1-rt3.patch
->
->
->         Thomas
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Kind regards,
+-- 
+Nicolas Ferre
+
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -662,7 +662,12 @@
+  S:	Maintained
+
+  ATMEL AT91 MCI DRIVER
+-S:	Orphan
++P:	Nicolas Ferre
++M:	nicolas.ferre@rfo.atmel.com
++L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++W:	http://www.atmel.com/products/AT91/
++W:	http://www.at91.com/
++S:	Maintained
+
+  ATMEL MACB ETHERNET DRIVER
+  P:	Haavard Skinnemoen
+
+
