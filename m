@@ -1,37 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935293AbXGMUqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936230AbXGMUrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935293AbXGMUqk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 16:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761032AbXGMUqc
+	id S936230AbXGMUrT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 16:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761032AbXGMUrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 16:46:32 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:52177 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760507AbXGMUqc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 16:46:32 -0400
-Date: Fri, 13 Jul 2007 16:46:16 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Nix <nix@esperi.org.uk>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 2/3] UML - Limit request size on COWed devices
-Message-ID: <20070713204616.GA10094@c2.user-mode-linux.org>
-References: <20070713143755.GA6244@c2.user-mode-linux.org> <87odigw2ma.fsf@hades.wkstn.nix>
+	Fri, 13 Jul 2007 16:47:11 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53972 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761267AbXGMUrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 16:47:10 -0400
+Date: Fri, 13 Jul 2007 22:48:17 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: maps2-move-the-page-walker-code-to-lib.patch
+Message-ID: <20070713204817.GA3529@uranus.ravnborg.org>
+References: <1183873796.6005.269.camel@localhost.localdomain> <20070709202217.GS11115@waste.org> <1184033195.6005.439.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87odigw2ma.fsf@hades.wkstn.nix>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <1184033195.6005.439.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 08:00:13PM +0100, Nix wrote:
-> This feels like a -stable candidate to me.
+On Tue, Jul 10, 2007 at 12:06:35PM +1000, Rusty Russell wrote:
+> On Mon, 2007-07-09 at 15:22 -0500, Matt Mackall wrote:
+> > On Sun, Jul 08, 2007 at 03:49:56PM +1000, Rusty Russell wrote:
+> > > Matt wrote:
+> > > > This lets it get shared outside of proc/ and linked in only when needed.
+> > > 
+> > > Erk, this really belongs in the mm dir.  You can use "lib-y +=
+> > > pagewalk.o" there, and it seems to work as well as doing it in lib.
+> > 
+> > Are you sure? I tested that a few months ago and it didn't work for
+> > me. I seem to recall it wanted a chunk of makefile surgery.
+> 
+> Well, I tested here and it worked unless I screwed something (producing
+> lib.a in mm/ and linking it in).  And when I turned off all the CONFIG
+> options which required it, the symbols disappeared from the vmlinux...
 
-Right you are - that's the first place I sent it.
+I think you had some additional change somewhere...
+kbuild will only look for lib.a files (produced from all files
+listed with lib-y _except_ files listed with obj-y too).
 
-				Jeff
+kbuild by default know about lib/ but almost all archs
+add the directory: arch/$(ARCH)/lib but no-one
+add mm/.
+See assignment to libs-y.
 
--- 
-Work email - jdike at linux dot intel dot com
+Add see the bad documentation in Documentation/kbuild/makefiles.txt
+
+	Sam
