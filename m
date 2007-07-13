@@ -1,77 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932485AbXGMNij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbXGMNkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932485AbXGMNij (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbXGMNib
+	id S1760211AbXGMNkk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXGMNkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:38:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58260 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755164AbXGMNia (ORCPT
+	Fri, 13 Jul 2007 09:40:33 -0400
+Received: from stinky.trash.net ([213.144.137.162]:42276 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751219AbXGMNkc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:38:30 -0400
-Subject: Re: [Resend][Patch] drivers/mtd/maps/tqm8xxl.c: Do some cleanups
-From: David Woodhouse <dwmw2@infradead.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, kirk@hpc.ee.ntu.edu.tw,
-       akpm@osdl.org, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org
-In-Reply-To: <20070713131458.GA1997@localhost.localdomain>
-References: <20070712150135.GA4102@localhost.localdomain>
-	 <1184256718.32199.111.camel@weaponx.rchland.ibm.com>
-	 <20070713034822.GA2370@localhost.localdomain>
-	 <1184320602.2785.18.camel@shinybook.infradead.org>
-	 <20070713131458.GA1997@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 14:38:03 +0100
-Message-Id: <1184333884.8809.5.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6.dwmw2.1) 
+	Fri, 13 Jul 2007 09:40:32 -0400
+Message-ID: <469780BB.3070206@trash.net>
+Date: Fri, 13 Jul 2007 15:40:11 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: jens.axboe@oracle.com
+CC: neilb@suse.de, nfs@lists.sourceforge.net,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: nfsd oops in current -git
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 21:14 +0800, WANG Cong wrote:
-> On Fri, Jul 13, 2007 at 10:56:42AM +0100, David Woodhouse wrote:
-> >On Fri, 2007-07-13 at 11:48 +0800, WANG Cong wrote:
-> >>                 if(map_banks[idx] == NULL) {
-> >>                         ret = -ENOMEM;
-> >> -                       /* FIXME: What if some MTD devices were probed already? */
-> >> +                       /* FIXME: What if some MTD devices were probed
-> >> +                       already? */
-> >>                         goto error_mem;
-> >>                 } 
-> >
-> >
-> >That's just horrid. Leave it as it was.
-> >
-> 
-> Sorry, I can't fully understand you. You mean only the above change is horrid or
-> the entire patch?
+I get this oops with current -git:
 
-Just the above change. See Linus' comments about strict limits on 80
-columns being a Nazi dream.
+[ 3437.018862] PGD 9acab067 PUD 9acaa067 PMD 0
+[ 3437.018870] CPU 1
+[ 3437.018872] Modules linked in: nfsd exportfs ppdev lp nfs lockd
+nfs_acl sunrpc deflate zlib_deflate zlib_inflate twofish twofish_common
+camellia serpent blowfish des cbc ecb blkcipher aes xcbc sha256
+crypto_null af_key rfcomm l2cap fuse nfnetlink_queue nfnetlink_log
+nf_conntrack_netlink nf_nat nf_conntrack_ipv6 nf_conntrack_ipv4
+nf_conntrack nfnetlink ip6_tables ip_tables x_tables hangcheck_timer
+cpufreq_ondemand powernow_k8 freq_table video backlight thermal
+processor fan ide_generic ide_disk ide_cd cdrom generic hci_usb
+bluetooth usbhid hid snd_via82xx snd_seq_dummy snd_seq_oss
+snd_via82xx_modem snd_ac97_codec ac97_bus snd_seq_midi
+snd_seq_midi_event snd_pcm_oss snd_mixer_oss snd_mpu401 snd_pcm
+snd_mpu401_uart snd_seq snd_timer snd_rawmidi snd_seq_device parport_pc
+snd psmouse parport via82cxxx serio_raw i2c_viapro evdev ehci_hcd sky2
+snd_page_alloc uhci_hcd ide_core soundcore pcspkr
+[ 3437.018923] Pid: 4432, comm: nfsd Not tainted 2.6.22 #5
+[ 3437.018926] RIP: 0010:[<ffffffff81054eff>]  [<ffffffff81054eff>]
+put_page+0x4/0xb3
+[ 3437.018932] RSP: 0018:ffff8101335f5c40  EFLAGS: 00010203
+[ 3437.018935] RAX: 0000000000000000 RBX: ffff810133576000 RCX:
+ffff8100a0fa5ab8
+[ 3437.018938] RDX: ffff810003754428 RSI: ffff8100a0fa5868 RDI:
+0000000000000000
+[ 3437.018942] RBP: ffff810003754428 R08: ffff8100a1b7c5d8 R09:
+ffff8101335f5c10
+[ 3437.018946] R10: ffff810003739a78 R11: ffff81009ec61d40 R12:
+ffff810133576570
+[ 3437.018950] R13: ffff8100a0fa5868 R14: 0000000000001000 R15:
+ffff810133576168
+[ 3437.018954] FS:  00002ad8e9fab6f0(0000) GS:ffff81013fc72e40(0000)
+knlGS:00000000f7e426c0
+[ 3437.018957] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[ 3437.018959] CR2: 0000000000000000 CR3: 000000009a91a000 CR4:
+00000000000006e0
+[ 3437.018963] Process nfsd (pid: 4432, threadinfo ffff8101335f4000,
+task ffff81013f969040)
+[ 3437.018965] Stack:  ffff810133576000 ffff810003754428
+ffff810133576570 ffffffff8830e001
+[ 3437.018973]  ffff810003747500 ffff8100a0fa5868 ffff8100a0fa5800
+ffff8101335f5d80
+[ 3437.018978]  0000000000000000 0000000000000000 ffffffff8122c440
+ffffffff810892ac
+[ 3437.018982] Call Trace:
+[ 3437.019002]  [<ffffffff8830e001>] :nfsd:nfsd_splice_actor+0x71/0xea
+[ 3437.019010]  [<ffffffff810892ac>] __splice_from_pipe+0x58/0x1bf
+[ 3437.019023]  [<ffffffff8830df90>] :nfsd:nfsd_splice_actor+0x0/0xea
+[ 3437.019040]  [<ffffffff8830d326>]
+:nfsd:nfsd_direct_splice_actor+0x10/0x12
+[ 3437.019044]  [<ffffffff81088efc>] splice_direct_to_actor+0xfd/0x19d
+[ 3437.019058]  [<ffffffff8830d316>] :nfsd:nfsd_direct_splice_actor+0x0/0x12
+[ 3437.019076]  [<ffffffff8830d1f4>] :nfsd:nfsd_vfs_read+0x22b/0x34d
+[ 3437.019098]  [<ffffffff8830d715>] :nfsd:nfsd_read+0xa7/0xc4
+[ 3437.019117]  [<ffffffff88314539>] :nfsd:nfsd3_proc_read+0x117/0x15a
+[ 3437.019133]  [<ffffffff8830924d>] :nfsd:nfsd_dispatch+0xdd/0x19e
+[ 3437.019156]  [<ffffffff88280194>] :sunrpc:svc_process+0x3f3/0x703
+[ 3437.019164]  [<ffffffff81212423>] __lock_text_start+0x23/0x7e
+[ 3437.019180]  [<ffffffff88309817>] :nfsd:nfsd+0x193/0x2b0
+[ 3437.019188]  [<ffffffff8100a9c8>] child_rip+0xa/0x12
+[ 3437.019207]  [<ffffffff88309684>] :nfsd:nfsd+0x0/0x2b0
+[ 3437.019212]  [<ffffffff8100a9be>] child_rip+0x0/0x12
+[ 3437.019215]
+[ 3437.019216]
+[ 3437.019217] Code: 8b 07 48 89 fb f6 c4 40 74 09 5b 5d 41 5c e9 42 fb
+ff ff f0
 
-> I have some questions about mtd/maps drivers. Even when I use `make allyesconfig`,
-> I still can't compile some drivers. I should add the corresponding CONFIGs manually.
-> Why this? And I still got some errors and warnings, such as:
-> 
-> drivers/mtd/maps/pmcmsp-flash.c:40:22: error: msp_prom.h: No such file or directory
-> drivers/mtd/maps/pmcmsp-flash.c:41:22: error: msp_regs.h: No such file or directory
-> drivers/mtd/maps/pmcmsp-flash.c: In function 'init_msp_flash':
-> drivers/mtd/maps/pmcmsp-flash.c:62: error: 'DEV_ID_REG' undeclared (first use in this function)
-> drivers/mtd/maps/pmcmsp-flash.c:62: error: (Each undeclared identifier is reported only once
-> drivers/mtd/maps/pmcmsp-flash.c:62: error: for each function it appears in.)
-> drivers/mtd/maps/pmcmsp-flash.c:62: error: 'DEV_ID_SINGLE_PC' undeclared (first use in this function)
-> drivers/mtd/maps/pmcmsp-flash.c:63: error: 'ELB_1PC_EN_REG' undeclared (first use in this function)
-> drivers/mtd/maps/pmcmsp-flash.c:63: error: 'SINGLE_PCCARD' undeclared (first use in this function)
-> 
-> Did I miss something?
 
-I think that map driver should probably depend on CONFIG_PMC_MSP. Ralf?
-
--- 
-dwmw2
-
+It seems to be related to the splice patches. I tried fixing the
+crash by adding a NULL ptr check before the first put_page in
+nfsd_read_actor, that fixed the crash but the files contained
+what looks like random garbage afterwards.
