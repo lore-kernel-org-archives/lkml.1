@@ -1,37 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964944AbXGMJqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936871AbXGMJr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964944AbXGMJqi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 05:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759867AbXGMJq0
+	id S936871AbXGMJr1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 05:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935867AbXGMJrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 05:46:26 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:14797 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755948AbXGMJqZ (ORCPT
+	Fri, 13 Jul 2007 05:47:12 -0400
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:2238 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935567AbXGMJrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 05:46:25 -0400
-Date: Fri, 13 Jul 2007 11:46:24 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tilman@imap.c
-Subject: Re: -mm merge plans for 2.6.23
-In-Reply-To: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707101107340.11053@fbirervta.pbzchgretzou.qr>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 13 Jul 2007 05:47:10 -0400
+Date: Fri, 13 Jul 2007 11:47:41 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] w1_ds2760: Fix binary file read callback signature
+Message-ID: <20070713114741.6f510063@hyperion.delvare>
+In-Reply-To: <20070713093851.GA11658@2ka.mipt.ru>
+References: <20070713112643.6a6daf73@hyperion.delvare>
+	<20070713093851.GA11658@2ka.mipt.ru>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Evgeniy,
 
-On Jul 10 2007 01:31, Andrew Morton wrote:
+On Fri, 13 Jul 2007 13:38:51 +0400, Evgeniy Polyakov wrote:
+> On Fri, Jul 13, 2007 at 11:26:43AM +0200, Jean Delvare (khali@linux-fr.org) wrote:
+> > Commit 91a6902958f052358899f58683d44e36228d85c2 changed the binary
+> > sysfs file signatures at the same time the w1_ds2760 driver was added.
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> 
+> I have no problem with this patch. Should I forward it to Andrew or you
+> will pick this up?
 
->use-menuconfig-objects-isdn-config_isdn_i4l.patch
->
-> tilman didn't like it - might drop
+Please forward it to Andrew.
 
-Or replace by his suggestion patch ( http://lkml.org/lkml/2007/5/31/222 )
-
-
-	Jan
+Thanks,
 -- 
+Jean Delvare
