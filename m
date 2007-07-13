@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934822AbXGMGZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934352AbXGMG33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934822AbXGMGZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbXGMGZQ
+	id S934352AbXGMG33 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXGMG3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:25:16 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:47011 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbXGMGZO (ORCPT
+	Fri, 13 Jul 2007 02:29:23 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:36504 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754061AbXGMG3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:25:14 -0400
-Date: Thu, 12 Jul 2007 23:27:56 -0700
-From: Greg KH <greg@kroah.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: Move prototypes for EXPORT_SYMBOL functions to
-	include/linux/pci.h
-Message-ID: <20070713062756.GG24317@kroah.com>
-References: <Pine.LNX.4.64.0707130015550.1975@blarg.am.freescale.net> <20070713053303.GB17039@kroah.com> <9A567C91-1DE7-46CC-91A0-58D498B8248B@kernel.crashing.org> <20070713060511.GA23618@kroah.com> <Pine.LNX.4.64.0707130108490.25195@gate.crashing.org>
+	Fri, 13 Jul 2007 02:29:22 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Dave Jones <davej@redhat.com>
+Subject: Re: CPUFreq compilation failure with current GIT.
+Date: Fri, 13 Jul 2007 16:29:18 +1000
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>
+References: <200707131323.22185.nigel@nigel.suspend2.net> <20070713045346.GA28641@redhat.com>
+In-Reply-To: <20070713045346.GA28641@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707130108490.25195@gate.crashing.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: multipart/signed;
+  boundary="nextPart5387538.ZGh0OJsm6P";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707131629.20063.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 01:10:46AM -0500, Kumar Gala wrote:
-> On Thu, 12 Jul 2007, Greg KH wrote:
-> 
-> > On Fri, Jul 13, 2007 at 12:55:39AM -0500, Kumar Gala wrote:
-> > >
-> > >  On Jul 13, 2007, at 12:33 AM, Greg KH wrote:
-> > >
-> > > > On Fri, Jul 13, 2007 at 12:16:29AM -0500, Kumar Gala wrote:
-> > > >> pci_do_scan_bus() and pci_bus_find_capability() are marked EXPORT_SYMBOL
-> > > >> and thus usable outside of the PCI drive core itself.  Make the prototypes
-> > > >> for these functions accessible to everyone.
-> > > >
-> > > > Well, no, I'd like to only have the pci hotplug drivers use them if
-> > > > possible.  So until we have proper namespaces on the exported symbols,
-> > > > I'd really like to keep these as-is if possible.
-> > > >
-> > > > Or are you needing these symbols for some code outside of the
-> > > > drivers/pci/ directory tree?
-> > >
-> > >  I need pci_bus_find_capability() in arch/powerpc pci code.
-> > >
-> > >  I'm using it as a way to tell if we are a PCIe PHB.
-> >
-> > Ok, care to export only that function then?
-> 
-> that's fine, will do.
-> 
-> I assume we want to kill the prototype pci_bus_alloc_resource() in
-> drivers/pci/pci.h since its duplicated in include/linux/pci.h
+--nextPart5387538.ZGh0OJsm6P
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yes.
+Hi Dave et al.
 
-> Also, I wasn't sure 'extern int pci_bus_find_capability'.. or just 'int
-> pci_bus_find_capability'?
+On Friday 13 July 2007 14:53:46 Dave Jones wrote:
+> On Fri, Jul 13, 2007 at 01:23:16PM +1000, Nigel Cunningham wrote:
+> Fixed in cpufreq.git, will go to linus real soon.
+> patch below..
 
-Whatever matches the surrounding code, I don't have a preference but I
-think others might.
+Thanks!
 
-thanks,
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
 
-greg k-h
+--nextPart5387538.ZGh0OJsm6P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGlxvAN0y+n1M3mo0RAsd8AKCwSn75dJUTZ3TIA0p4nIMEkH1kkQCcCdhG
+bp2GOKu/oK1NWqFWQ2vWLEI=
+=TNUf
+-----END PGP SIGNATURE-----
+
+--nextPart5387538.ZGh0OJsm6P--
