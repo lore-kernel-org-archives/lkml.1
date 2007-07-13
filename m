@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935342AbXGMGrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935096AbXGMGuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935342AbXGMGrb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933813AbXGMGrT
+	id S935096AbXGMGuR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbXGMGuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:47:19 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59791 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933651AbXGMGrR (ORCPT
+	Fri, 13 Jul 2007 02:50:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59376 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751699AbXGMGuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:47:17 -0400
-Date: Fri, 13 Jul 2007 08:47:51 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Greg KH <greg@kroah.com>
-Cc: Bryan Wu <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-Subject: Re: Linux 2.6.22.1
-Message-ID: <20070713064751.GA3492@stusta.de>
-References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com> <1184307380.8943.7.camel@roc-desktop> <20070713061617.GA24317@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070713061617.GA24317@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 13 Jul 2007 02:50:04 -0400
+Date: Thu, 12 Jul 2007 23:49:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Jin <joe.jin@oracle.com>
+Cc: bill.irwin@oracle.com, linux-kernel@vger.kernel.org,
+       gurudas.pai@oracle.com
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-Id: <20070712234938.c77f3a48.akpm@linux-foundation.org>
+In-Reply-To: <20070713064004.GA21833@joejin-pc.cn.oracle.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+	<20070712221842.f5e47065.akpm@linux-foundation.org>
+	<20070713064004.GA21833@joejin-pc.cn.oracle.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 11:16:17PM -0700, Greg KH wrote:
-> On Fri, Jul 13, 2007 at 02:16:20PM +0800, Bryan Wu wrote:
-> > On Fri, 2007-07-13 at 02:35 +0800, Nish Aravamudan wrote:
-> > > On 7/10/07, Greg KH <greg@kroah.com> wrote: 
-> > > > We (the -stable team) are announcing the release of the 2.6.22.1
-> > > kernel. 
-> > > > It contains a security fix for SCTP that somehow forgot to be added
-> > > to 
-> > > > the 2.6.22 kernel (was already released in the 2.6.21.y releases). 
-> > > > Thanks to Patrick McHardy for noticing the mistake. 
-> > > > 
-> > > > I'll also be replying to this message with a copy of the patch
-> > > between 
-> > > > 2.6.22 and 2.6.22.1 
-> > > > 
-> > > > The updated 2.6.22.y git tree can be found at: 
-> > > >
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
-> > > 
-> > > Can you please also update
-> > > 
-> > >  git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6-stable.git
-> > > 
-> > > ? Maybe make that update part of whatever process you use to push out 
-> > > the 2.6.Y trees, as I've had to ask for this more than once now?
-> > > 
+On Fri, 13 Jul 2007 14:40:04 +0800 Joe Jin <joe.jin@oracle.com> wrote:
+
+> On 2007-07-12 22:18, Andrew Morton wrote:
+> > On Fri, 13 Jul 2007 10:45:07 +0800 Joe Jin <joe.jin@oracle.com> wrote:
 > > 
-> > Could you please open http:// git-pull? I was blocked by company's
-> > firewall except http method -:((.
+> > Something like this?
+> > 
+> > --- a/mm/hugetlb.c~a
+> > +++ a/mm/hugetlb.c
+> > @@ -105,13 +105,20 @@ static void free_huge_page(struct page *
+> >  
+> >  static int alloc_fresh_huge_page(void)
+> >  {
+> > -	static int nid = 0;
+> > +	static int prev_nid;
+> > +	static DEFINE_SPINLOCK(nid_lock);
+> >  	struct page *page;
+> > -	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> > -					HUGETLB_PAGE_ORDER);
+> > -	nid = next_node(nid, node_online_map);
+> > +	int nid;
+> > +
+> > +	spin_lock(&nid_lock);
+> > +	nid = next_node(prev_nid, node_online_map);
+> >  	if (nid == MAX_NUMNODES)
+> >  		nid = first_node(node_online_map);
+> > +	prev_nid = nid;
+> > +	spin_unlock(&nid_lock);
+> > +
+> > +	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> > +					HUGETLB_PAGE_ORDER);
+> >  	if (page) {
+> >  		set_compound_page_dtor(page, free_huge_page);
+> >  		spin_lock(&hugetlb_lock);
+> > _
+> > 
 > 
-> That is up to the kernel.org admins, but last time I checked, I think it
-> was enabled already.  Can you pull anything else from kernel.org with
-> http but not this tree?
+> The patch looks good for this bug, thanks :)
 
-I found the problem and (ab)used my kstable group rights to fix it:
+If you have time could you test it and sent it back at me please?
 
-objects/info/alternates of linux-2.6.22.y.git contained
-  /home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/objects
-instead of
-  /pub/scm/linux/kernel/git/torvalds/linux-2.6.git/objects
+> if other caller give a invalid nid to alloc_pages_node(), __alloc_pages
+> will crash again.
 
-This seems to exist on git.kernel.org but not on www.kernel.org, 
-explaining why the http method didn't work.
+That would be a buggy caller, so we should fix that caller.
 
-> thanks,
+> So I think we add some sanity check for nid at alloc_pages_node is
+> meaningful.  
 > 
-> greg k-h
+> another question, if (nid >= MAX_NUMNODES),  may I set nid to 0 directly
+> like following code?
+> 
+> 	if (unlikly(nid >= MAX_NUMNODES)
+> 		nid = 0
 
-cu
-Adrian
+if (nid > MAX_NUMNODES) then that is a bug and we should report it (doing
+this via a BUG() is OK) rather than quietly covering it up.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+if (nid == MAX_NUMNODES) then we should set it to
+first_node(node_online_map);
