@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbXGMMjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759787AbXGMMm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760218AbXGMMjY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 08:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbXGMMjF
+	id S1759787AbXGMMm4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 08:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbXGMMmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 08:39:05 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:8947 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757480AbXGMMjD (ORCPT
+	Fri, 13 Jul 2007 08:42:49 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44777 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755253AbXGMMms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 08:39:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type;
-        b=ZNStbCK4ptp6XSUWjhhzuLg22O9cZ1mm6LGvBXoIz4a8m3LjK0h7ZHE3ojm8Gl1AhUJDgnAxYlhYDEQcyN7dq1DPRrtkrPcPQPX/PURYqYxPuOusfSa2hPvOO0fKo78vA4SPZktrrMfNEa+w4KZQWiz7LhXJ+HDjDa90AOa1gAo=
-Message-ID: <25ae38200707130539j3b6689eet91bff4298023aa28@mail.gmail.com>
-Date: Fri, 13 Jul 2007 18:09:02 +0530
-From: "Anand Jahagirdar" <anandjigar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Patch Related with Fork Bombing Attack
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_27331_19057156.1184330342349"
+	Fri, 13 Jul 2007 08:42:48 -0400
+Date: Fri, 13 Jul 2007 05:42:45 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Joe Jin <joe.jin@oracle.com>
+Cc: akpm@linux-foundation.org, joe.jin@oracle.com, bill.irwin@oracle.com,
+       linux-kernel@vger.kernel.org, gurudas.pai@oracle.com
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-Id: <20070713054245.b1319207.pj@sgi.com>
+In-Reply-To: <20070713121846.GA25236@joejin-pc.cn.oracle.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+	<20070712221842.f5e47065.akpm@linux-foundation.org>
+	<20070713064004.GA21833@joejin-pc.cn.oracle.com>
+	<20070712234938.c77f3a48.akpm@linux-foundation.org>
+	<20070713080336.GB21833@joejin-pc.cn.oracle.com>
+	<20070713011543.22797645.akpm@linux-foundation.org>
+	<20070713121846.GA25236@joejin-pc.cn.oracle.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_27331_19057156.1184330342349
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Joe wrote:
+> --- linux-2.6.22/mm/hugetlb.c.orig	2007-07-12 15:02:19.000000000 +0800
+> +++ linux-2.6.22/mm/hugetlb.c	2007-07-13 17:33:45.000000000 +0800
+> @@ -101,13 +101,20 @@ static void free_huge_page(struct page *
+>  
+>  static int alloc_fresh_huge_page(void)
+>  {
+>	...
 
-Hello All
-            I have searched for Maintainers List to get the correct
-Maintainer for my patch. But i am not getting exact maintainer to
-which i should forward my patch. Will any body please tell me,to which
-maintainer i should forward my patch for its inclusion?
+Patch looks ok to me, except for ...
 
-Summery of the Patch:
+> Ha.., the patch against 2.6.22, at your patch have use htlb_alloc_mask, but I
+> cannot found it at 2.6.22 kernel tree, I think you must use difference kernel
+> tree :)
 
-This patch Warns the administrator about the fork bombing attack
-(whenever any user is crossing its process limit). I have used
-printk_ratelimit function in this patch. This function helps to
-prevent flooding of syslog and prints message as per the values set by
-root user in following files:-
+Yes, as a matter of fact, he does have a different kernel tree, found at:
 
-1) /proc/sys/kernel/printk_ratelimit:- This file contains value for,
-how many times message should be printed in syslog.
+    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/
 
-2) /proc/sys/kernel/printk_ratelimit_burst: - This file contains value
-for, after how much time message should be repeated.
+This is the infamous *-mm tree, which is currently at the following
+version 2.6.22-rc6-mm1, and also available as a quilt patch set,
+beneath:
 
-This patch is really helpful for administrator/root user from security
-point of view. They can take action against attacker by looking at
-syslog messages related with fork bombing attack.
+    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/
 
-Added comments will definitely help developers.
+My guess is Andrew will prefer a patch against this *-mm kernel, though
+sometimes he is a good chap and fixes up minor differences, such as
+this involving htlb_alloc_mask replacing GFP_HIGHUSER.  If you had the
+chance to verify your testing of this change against this
+2.6.22-rc6-mm1, that would be worth doing.  Probably the change to
+htlb_alloc_mask from GFP_HIGHUSER won't be any problem, but I suppose
+that there's a small chance that some other patch in *-mm will interact
+poorly with your proposed change.
 
-Signed-Off-by: Anand Jahagirdar <anandjigar@gmail.com>
+Thanks for getting on this so quickly.
 
-------=_Part_27331_19057156.1184330342349
-Content-Type: text/plain; name=fork.patch; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_d2xk33u4
-Content-Disposition: attachment; filename="fork.patch"
-
-SW5kZXg6IHJvb3QvRGVza3RvcC9hMS9saW51eC0yLjYuMTcudGFyLmJ6Ml9GSUxFUy9saW51eC0y
-LjYuMTcva2VybmVsL2ZvcmsuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSByb290Lm9yaWcvRGVza3RvcC9hMS9s
-aW51eC0yLjYuMTcudGFyLmJ6Ml9GSUxFUy9saW51eC0yLjYuMTcva2VybmVsL2ZvcmsuYwkyMDA3
-LTA2LTI2IDIwOjQwOjA2LjAwMDAwMDAwMCArMDUzMAorKysgcm9vdC9EZXNrdG9wL2ExL2xpbnV4
-LTIuNi4xNy50YXIuYnoyX0ZJTEVTL2xpbnV4LTIuNi4xNy9rZXJuZWwvZm9yay5jCTIwMDctMDYt
-MjYgMjA6NDE6NDEuMDAwMDAwMDAwICswNTMwCkBAIC05NTcsMTIgKzk1NywxOSBAQAogCiAJcmV0
-dmFsID0gLUVBR0FJTjsKIAkKLSAgICAgICAgCisgICAgICAgIC8qCisgICAgICAgICAqIGZvbGxv
-d2luZyBjb2RlIGRvZXMgbm90IGFsbG93IE5vbiBSb290IFVzZXIgdG8gY3Jvc3MgaXRzIHByb2Nl
-c3MKKyAgICAgICAgICogbGltaXQgYW5kIGl0IGFsZXJ0cyBhZG1pbmlzdHJhdG9yIGFib3V0IHVz
-ZXIgY3Jvc3NpbmcgdGhlIHByb2Nlc3MgbGltaXQuCisgICAgICAgICAqLworIAogICAgICAgCWlm
-IChhdG9taWNfcmVhZCgmcC0+dXNlci0+cHJvY2Vzc2VzKSA+PSBwLT5zaWduYWwtPnJsaW1bUkxJ
-TUlUX05QUk9DXS5ybGltX2N1cikgCiAJCWlmICghY2FwYWJsZShDQVBfU1lTX0FETUlOKSAmJiAh
-Y2FwYWJsZShDQVBfU1lTX1JFU09VUkNFKSAmJgotCQkJCXAtPnVzZXIgIT0gJnJvb3RfdXNlcikg
-CisJCQkJcC0+dXNlciAhPSAmcm9vdF91c2VyKSAgeworICAgICAgICAgICAgICAgICAgICAgICAg
-aWYgKHByaW50a19yYXRlbGltaXQoKSkKKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-cHJpbnRrKEtFUk5fV0FSTklORyAiVXNlciB3aXRoIHVpZCAldSBpcyBjcm9zc2luZyB0aGUgcHJv
-Y2VzcyBsaW1pdFxuIixwLT51c2VyLT51aWQpOworCiAJCQkgZ290byBiYWRfZm9ya19mcmVlOwot
-CQkJCisJCX0JCQkKIAkJCQogCWF0b21pY19pbmMoJnAtPnVzZXItPl9fY291bnQpOwogCWF0b21p
-Y19pbmMoJnAtPnVzZXItPnByb2Nlc3Nlcyk7Cg==
-------=_Part_27331_19057156.1184330342349--
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
