@@ -1,49 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbXGMLD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbXGMLFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757466AbXGMLD6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 07:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXGMLDw
+	id S1757578AbXGMLFu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 07:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXGMLFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 07:03:52 -0400
-Received: from smtp.cce.hp.com ([161.114.21.25]:45997 "EHLO
-	ccerelrim04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbXGMLDv (ORCPT
+	Fri, 13 Jul 2007 07:05:43 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57570 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710AbXGMLFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 07:03:51 -0400
-X-Greylist: delayed 1349 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Jul 2007 07:03:51 EDT
-From: "Paul Moore" <paul.moore@hp.com>
-Subject: Re: [GIT] SELinux changes for 2.6.23 (updated)
-Date: 13 Jul 2007 06:41:00 -0400
-To: <jmorris@namei.org>
-X-Mailer: ChatterEmail+ for Treo 6xx/700p (3.0.8)
-Message-ID: <3267153665.17485311@mail.hp.com>
-Cc: <michal.k.k.piotrowski@gmail.com>, <torvalds@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <sds@tycho.nsa.gov>
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.7.13.32233
+	Fri, 13 Jul 2007 07:05:42 -0400
+To: Neil Horman <nhorman@redhat.com>
+Cc: Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Determine version of kernel that produced vmcore
+In-reply-to: <20070710120243.GA10121@hmsendeavour.rdu.redhat.com>
+Message-Id: <20070713200533oomichi@mail.jp.nec.com>
+References: <20070710120243.GA10121@hmsendeavour.rdu.redhat.com>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:5W0000
+From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Date: Fri, 13 Jul 2007 20:05:33 +0900
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------Original Message-----
-From: James Morris <jmorris@namei.org>
-Date: Thursday, Jul 12, 2007 10:50 pm
-Subject: Re: [GIT] SELinux changes for 2.6.23 (updated)
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,	linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>,	Paul Moore <paul.moore@hp.com>
 
-On Fri, 13 Jul 2007, Michal Piotrowski wrote:
->
+Hi all,
+
+2007/07/10 08:02:43 -0400, Neil Horman <nhorman@redhat.com> wrote:
+>> Besides Dan's plan, I'm planning the change of CONFIGFILE for distributors.
+>> In the kernel building process, distributors need to make CONFIGFILE
+>> on an older kernel (ex. RHEL5 kernel is built on RHEL4), and OSRELEASE
+>> may be an older kernel. So OSRELEASE should be modified to the building
+>> kernel version by hand, but it is not smart.
 >> 
-> My system is too secure, I can not login :)
->
->Do you have CONFIG_NETLABEL=y ?
->
->If so, please try disabling it.
+>> To solve this problem, I'm proposing 2 plans.
+>> Could you give me your opinion ?
+>> 
+>> Plan 1:
+>>   A new option [--osrelease="string"] is added.
+>>   The OSRELEASE of CONFIGFILE is overwritten by "string".
+>>   In the kernel building process, distributors should specify "string"
+>>   as the building kernel version.
+>> 
+>> Plan2:
+>>   Remove the OSRELEASE from CONFIGFILE.
+>>   Instead of checking the OSRELEASE, makedumpfile only checks whether the
+>>   area of /proc/vmcore specified by the symbol "system_utsname" in CONFIGFILE
+>>   is the string "2.6.". If CONFIGFILE and /proc/vmcore don't match, the
+>>   "system_utsname" must not point to the correct area in most cases.
+>>   Old makedumpfile needs OSRELEASE, and it cannot work by new CONFIGFILE.
+>>   But I think there are not any problems because old makedumpfile will not
+>>   read new CONFIGFILE. Now, CONFIGFILE is used only by RHEL5's kdump initramfs,
+>>   the CONFIGFILE is generated during 1st-kernel running. Even if CONFIGFILE
+>>   will be updated, makedumpfile can read the CONFIGFILE because makedumpfile
+>>   should be updated with CONFIGFILE.
+>> 
+>> 
+>> I'd like to change the name of CONFIGFILE to mkdfinfo.
+>> 
+>Why not, instead of either plan above, just redefine OSRELEASE to be the version
+>of the kernel the config file was built against?  i.e. when you build a config
+>file, you need to specify a kernel to extract symbol information from, why not
+>grab the utsname from that kernel and use that to set OSRELEASE?  When you're
+>building a config file the running kernel on the system isn't really relevent
+>anyway.
 
-Disabling NetLabel should solve the problem.  The recommended solution to this problem, as discussed on the SELinux list and mentioned in the patch description, is to upgrade your SELinux policy to the latest Reference Policy sources.  For those with custom SELinux policy, the patch description explains the changes to the SELinux policy required. 
+Did you say "makedumpfile should get OSRELEASE from a vmlinux file,
+and output it to a mkdfinfo file", right ?
+If so, you are right. I'm creating the patch for it.
 
-If needed I can post more instructions later, let me know, but right now I'm tapping this out on my phone while at the airport.
+BTW, I'd like to remove PAGESIZE from a mkdfinfo file.
+While 2nd-kernel is running, new makedumpfile comes to consider
+2nd-kernel PAGESIZE as 1st-kernel PAGESIZE without getting PAGESIZE
+from a mkdfinfo file.
 
-. paul moore
-. linux security @ hp
+In current implementation, makedumpfile considers 2nd-kernel PAGESIZE
+as 1st-kernel PAGESIZE if a vmlinux file is specified instead of a
+mkdfinfo file. On the other hand, makedumpfile can get 1st-kernel
+PAGESIZE correctly if a mkdfinfo file is specified, because there
+is the rule that a mkdfinfo file should be generated on 1st-kernel.
+
+Now, I will change this rule for generating a mkdfinfo file on the
+kernel-building environment. I feel considering 2nd-kernel PAGESIZE
+as 1st-kernel PAGESIZE is better than considering the PAGESIZE of
+kernel-building environment, because 1st-kernel and 2nd-kernel have
+the same PAGESIZE in most cases such as relocatable kernel.
 
 
+Please let me know your opinion.
+
+
+Thanks
+Ken'ichi Ohmichi
