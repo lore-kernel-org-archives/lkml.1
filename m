@@ -1,160 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937067AbXGMUBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937370AbXGMUCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937067AbXGMUBH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 16:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbXGMUAz
+	id S937370AbXGMUCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 16:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbXGMUB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 16:00:55 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:33429 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757643AbXGMUAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 16:00:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=DnauiwuwnikX06pgBncCxtkzN69cpFwBzxMk1eAZlBjc+SS4jl6neUftqXGev5wTXBwckRS9ZLUbnMRKsFMMk+7IFNprNRz4eGtaktA6huaRuelu529/+o68QbvUBTi/qtWpdEcQiCQr18c7gDBB0mGFFGefDIl5bi/7hHM6yPs=  ;
-X-YMail-OSG: dMq2HxAVM1kljuRSP.A5jeKqCaJh9iV3ABDXTXGIVxORgo6f2G2Vlh_Vd0KohiqMvaQBZg1hRiow02ExDNLgj.2FzY9iTQw7Ps3SPG1IlIe5cXW_fZyKBZUj07Md
-From: David Brownell <david-b@pacbell.net>
-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-Subject: Re: [PATCH 2/5] use mutex instead of semaphore in the USB gadget serial driver
-Date: Fri, 13 Jul 2007 13:00:52 -0700
-User-Agent: KMail/1.9.6
-Cc: dbrownell@users.sourceforge.net, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       alborchers@steinerpoint.com
-References: <20070713192023.GD18159@traven> <20070713192525.GF18159@traven>
-In-Reply-To: <20070713192525.GF18159@traven>
+	Fri, 13 Jul 2007 16:01:58 -0400
+Received: from h155.mvista.com ([63.81.120.155]:46365 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758358AbXGMUB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 16:01:57 -0400
+Message-ID: <4697DAAE.5090704@ru.mvista.com>
+Date: Sat, 14 Jul 2007 00:03:58 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Mark Lord <lkml@rtr.ca>
+Cc: Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
+References: <20070221011922.GA1777@freefall.freebsd.org>	<200702210342.20775.bzolnier@gmail.com>	<466EEFD6.9030001@ru.mvista.com>	<200706160123.55636.bzolnier@gmail.com>	<4693D9B6.4090408@ru.mvista.com> <20070713161612.2f2ebb0b@the-village.bc.nu> <46979652.6040201@rtr.ca> <4697987E.3040406@ru.mvista.com> <4697D425.7000300@rtr.ca> <4697D518.7010108@ru.mvista.com> <4697D686.6090104@rtr.ca>
+In-Reply-To: <4697D686.6090104@rtr.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707131300.52923.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 July 2007, Matthias Kaehlcke wrote:
-> The USB gadget serial driver uses a semaphore as mutex. Use the
-> mutex API instead of the (binary) semaphore.
-> 
-> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Mark Lord wrote:
 
-ACK (and thanks)
+>>>>    The original question concerned specifically the DMA command 
+>>>> timeout which is twice more than the usual one, WAIT_CMD (10 seconds)...
 
-> 
-> --
-> 
-> diff --git a/drivers/usb/gadget/serial.c b/drivers/usb/gadget/serial.c
-> index dd33ff0..4192d24 100644
-> --- a/drivers/usb/gadget/serial.c
-> +++ b/drivers/usb/gadget/serial.c
-> @@ -33,6 +33,7 @@
->  #include <linux/device.h>
->  #include <linux/tty.h>
->  #include <linux/tty_flip.h>
-> +#include <linux/mutex.h>
->  
->  #include <asm/byteorder.h>
->  #include <asm/io.h>
-> @@ -258,7 +259,7 @@ static const char *EP_IN_NAME;
->  static const char *EP_OUT_NAME;
->  static const char *EP_NOTIFY_NAME;
->  
-> -static struct semaphore	gs_open_close_sem[GS_NUM_PORTS];
-> +static struct mutex gs_open_close_lock[GS_NUM_PORTS];
->  
->  static unsigned int read_q_size = GS_DEFAULT_READ_Q_SIZE;
->  static unsigned int write_q_size = GS_DEFAULT_WRITE_Q_SIZE;
-> @@ -595,7 +596,7 @@ static int __init gs_module_init(void)
->  	tty_set_operations(gs_tty_driver, &gs_tty_ops);
->  
->  	for (i=0; i < GS_NUM_PORTS; i++)
-> -		sema_init(&gs_open_close_sem[i], 1);
-> +		mutex_init(&gs_open_close_lock[i]);
->  
->  	retval = tty_register_driver(gs_tty_driver);
->  	if (retval) {
-> @@ -635,7 +636,7 @@ static int gs_open(struct tty_struct *tty, struct file *file)
->  	struct gs_port *port;
->  	struct gs_dev *dev;
->  	struct gs_buf *buf;
-> -	struct semaphore *sem;
-> +	struct mutex *mtx;
->  	int ret;
->  
->  	port_num = tty->index;
-> @@ -656,10 +657,10 @@ static int gs_open(struct tty_struct *tty, struct file *file)
->  		return -ENODEV;
->  	}
->  
-> -	sem = &gs_open_close_sem[port_num];
-> -	if (down_interruptible(sem)) {
-> +	mtx = &gs_open_close_lock[port_num];
-> +	if (mutex_lock_interruptible(mtx)) {
->  		printk(KERN_ERR
-> -		"gs_open: (%d,%p,%p) interrupted waiting for semaphore\n",
-> +		"gs_open: (%d,%p,%p) interrupted waiting for mutex\n",
->  			port_num, tty, file);
->  		return -ERESTARTSYS;
->  	}
-> @@ -754,12 +755,12 @@ static int gs_open(struct tty_struct *tty, struct file *file)
->  
->  exit_unlock_port:
->  	spin_unlock_irqrestore(&port->port_lock, flags);
-> -	up(sem);
-> +	mutex_unlock(mtx);
->  	return ret;
->  
->  exit_unlock_dev:
->  	spin_unlock_irqrestore(&dev->dev_lock, flags);
-> -	up(sem);
-> +	mutex_unlock(mtx);
->  	return ret;
->  
->  }
-> @@ -781,7 +782,7 @@ exit_unlock_dev:
->  static void gs_close(struct tty_struct *tty, struct file *file)
->  {
->  	struct gs_port *port = tty->driver_data;
-> -	struct semaphore *sem;
-> +	struct mutex *mtx;
->  
->  	if (port == NULL) {
->  		printk(KERN_ERR "gs_close: NULL port pointer\n");
-> @@ -790,8 +791,8 @@ static void gs_close(struct tty_struct *tty, struct file *file)
->  
->  	gs_debug("gs_close: (%d,%p,%p)\n", port->port_num, tty, file);
->  
-> -	sem = &gs_open_close_sem[port->port_num];
-> -	down(sem);
-> +	mtx = &gs_open_close_lock[port->port_num];
-> +	mutex_lock(mtx);
->  
->  	spin_lock_irq(&port->port_lock);
->  
-> @@ -846,7 +847,7 @@ static void gs_close(struct tty_struct *tty, struct file *file)
->  
->  exit:
->  	spin_unlock_irq(&port->port_lock);
-> -	up(sem);
-> +	mutex_unlock(mtx);
->  }
->  
->  /*
-> 
-> -- 
-> Matthias Kaehlcke
-> Linux Application Developer
-> Barcelona
-> 
->              If liberty means anything at all, it means the
->            right to tell people what they do not want to hear
->                             (George Orwell)
->                                                                  .''`.
->     using free software / Debian GNU/Linux | http://debian.org  : :'  :
->                                                                 `. `'`
-> gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
-> 
+>>> When a drive is in standby, we don't send it anything special to wake 
+>>> up.
+>>> So even DMA commands have to have a long enough timeout to allow
+>>> for spinning up.
 
+>>    Yes, but why *twice* as long as the others?
 
+> I would guess simply because DMA has to transfer up to 256 sectors of data,
+> possibly with sector reallocations, in addition to waiting for the drive
+> to spin up.  Other commands don't.
+
+    What?! PIO commands don't have to do this as well? :-)
+
+> At the time that was coded (?), I suspect that PIO READ/WRITE commands
+> were fed data as it became available to/from the drive.  This may or may
+
+    I don't see *any* difference with the DMA commands here -- the drive has 
+always been free to assert and deassert DMARQ at its well.
+
+> not still be the case, but it does imply that they don't need to hang
+> around as long on the timeouts as do DMA commands (which have to wait
+> for *everything* to be transferred).
+
+    Ah, that makes sense -- during PIO interrupts happen a lot more often.
+20 secs still seem to be too much.
+
+> Cheers
+
+MBR, Sergei
+
+PS: Your mail server still keeps bouncing me off. :-(
