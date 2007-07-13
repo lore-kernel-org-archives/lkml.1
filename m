@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934352AbXGMG33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbXGMGdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934352AbXGMG33 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 02:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXGMG3X
+	id S932615AbXGMGdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 02:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbXGMGdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 02:29:23 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:36504 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754061AbXGMG3W (ORCPT
+	Fri, 13 Jul 2007 02:33:03 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:35220
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753676AbXGMGdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 02:29:22 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@suspend2.net
-To: Dave Jones <davej@redhat.com>
-Subject: Re: CPUFreq compilation failure with current GIT.
-Date: Fri, 13 Jul 2007 16:29:18 +1000
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Mark Langsdorf <mark.langsdorf@amd.com>
-References: <200707131323.22185.nigel@nigel.suspend2.net> <20070713045346.GA28641@redhat.com>
-In-Reply-To: <20070713045346.GA28641@redhat.com>
+	Fri, 13 Jul 2007 02:33:01 -0400
+Date: Thu, 12 Jul 2007 23:27:41 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Joseph Fannin <jfannin@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: Hibernating To Swap Considered Harmful
+In-Reply-To: <20070713062039.GA29055@nineveh.local>
+Message-ID: <Pine.LNX.4.64.0707122319270.25614@asgard.lang.hm>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+ <200707121453.49616.rjw@sisk.pl> <Pine.LNX.4.64.0707121150460.25614@asgard.lang.hm>
+ <200707122134.29991.rjw@sisk.pl> <Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
+ <20070713054244.GA20082@nineveh.local> <Pine.LNX.4.64.0707122250170.25614@asgard.lang.hm>
+ <20070713062039.GA29055@nineveh.local>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5387538.ZGh0OJsm6P";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707131629.20063.nigel@nigel.suspend2.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5387538.ZGh0OJsm6P
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 13 Jul 2007, Joseph Fannin wrote:
 
-Hi Dave et al.
+> On Thu, Jul 12, 2007 at 10:57:04PM -0700, david@lang.hm wrote:
+>> On Fri, 13 Jul 2007, Joseph Fannin wrote:
+>>
+>> the only justification I have heard for why the hibernate image must be
+>> written to the swap partition is backwards compatibility (i.e., we've
+>> always done it that way)
+>>
+>> if you are going to reserve disk space for hibernation, what is so bad
+>> about useing a normal partition?
+>>
+>    You have to either repartition when you upgrade your memory, or
+> waste a bunch of disk space with a partition as large as you think
+> your RAM might ever expand to.
 
-On Friday 13 July 2007 14:53:46 Dave Jones wrote:
-> On Fri, Jul 13, 2007 at 01:23:16PM +1000, Nigel Cunningham wrote:
-> Fixed in cpufreq.git, will go to linus real soon.
-> patch below..
+memory upgrades are rare and tools are available nowdays to resize linux 
+partitions.
 
-Thanks!
+>    Swap/hibernate files can be created, deleted, and resized without
+> partitioning.
 
-Nigel
-=2D-=20
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
+if you just use the hibernate file as a reserved set of blocks and never 
+touch them from the main OS things will work, but if you do anything that 
+could put those blocks into the OS write cache all bets are off.
 
---nextPart5387538.ZGh0OJsm6P
-Content-Type: application/pgp-signature
+>    Also: not all platforms support a large number of partitions.
+> It's not academic -- Intel Macintoshes are limited to four, with two
+> taken by Mac OS.  Add Windows and a Linux /, and you're out --
+> there's no room for a swap file.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+interesting, I didn't know that. I know that the Tivo's use Mac style 
+partition tables and they have many partitions (10+). it seems odd that 
+when switching from powerpc to x86 that they would lock themselves down 
+like that. are you sure that they can't have extended partitions like 
+standard PC's? it seems odd that they would have such a special partition 
+table type if windows can access it.
 
-iD8DBQBGlxvAN0y+n1M3mo0RAsd8AKCwSn75dJUTZ3TIA0p4nIMEkH1kkQCcCdhG
-bp2GOKu/oK1NWqFWQ2vWLEI=
-=TNUf
------END PGP SIGNATURE-----
-
---nextPart5387538.ZGh0OJsm6P--
+David Lang
