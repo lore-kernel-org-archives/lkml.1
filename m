@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935225AbXGMJE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935987AbXGMJGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935225AbXGMJE7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 05:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXGMJEu
+	id S935987AbXGMJGY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 05:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbXGMJGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 05:04:50 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:3329 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751994AbXGMJEt (ORCPT
+	Fri, 13 Jul 2007 05:06:14 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41026 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752536AbXGMJGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 05:04:49 -0400
-Message-ID: <4697402C.9000402@imap.cc>
-Date: Fri, 13 Jul 2007 11:04:44 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Gmail and flowed text (was Re: Correction to LZO1X)
-References: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com>
-In-Reply-To: <a781481a0707110636l3b56a25j174603a5a8af3186@mail.gmail.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig85D1F4A8A319745939A04CD3"
+	Fri, 13 Jul 2007 05:06:12 -0400
+Date: Fri, 13 Jul 2007 02:05:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
+ features in larger inode
+Message-Id: <20070713020529.1486491f.akpm@linux-foundation.org>
+In-Reply-To: <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
+References: <1183275482.4010.133.camel@localhost.localdomain>
+	<20070710163247.5c8bfa3f.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig85D1F4A8A319745939A04CD3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 10 Jul 2007 16:32:47 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Satyam Sharma schrieb:
-> And yet another patch falls victim to format=3Dflowed ...
->=20
-> I need some ideas here myself:
->=20
-> I don't want to subscribe from my university mail account [...]
-> Which leaves Gmail, [...]
+> > +	brelse(bh);
+> > +	up_write(&EXT4_I(inode)->xattr_sem);
+> > +	return error;
+> > +}
+> > +
+> 
+> We're doing GFP_KERNEL memory allocations while holding xattr_sem.  This
+> can cause the VM to reenter the filesystem, perhaps taking i_mutex and/or
+> i_truncate_sem and/or journal_start() (I forget whether this still
+> happens).  Have we checked whether this can occur and if so, whether we are
+> OK from a lock ranking POV?  Bear in mind that journalled-data mode is more
+> complex in this regard.
 
-Other E-mail providers do exist, some of them even free.
+I notice that everyone carefully avoided addressing this ;)
 
-> I suspect others must have come across this ... any suggestions?
+Oh well, hopefully people are testing with lockdep enabled.  As long
+as the fs is put under extreme memory pressure, most bugs should be reported.
 
-Get a real E-mail account. :-)
-
-Seriously: after years of hassles with freemailers, I finally
-decided that E-mail is so important for me it's worth spending
-a small yearly amount. Never regretted the step.
-
-HTH
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+Except lockdep doesn't know about journal_start(), which has ranking
+requirements similar to a semaphore.  Nor does it know about lock_page().
+We already have hard-to-hit but deadlockable bugs in this area.
 
 
---------------enig85D1F4A8A319745939A04CD3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGl0AsMdB4Whm86/kRAreoAJ9fCL97QnVNVVZdFk9H2/xkaUSTPACeJBIr
-qmq+SvqJkyP3/m0TF51ba7A=
-=OVZT
------END PGP SIGNATURE-----
-
---------------enig85D1F4A8A319745939A04CD3--
