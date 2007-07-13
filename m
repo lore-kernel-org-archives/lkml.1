@@ -1,50 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbXGMN2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbXGMNeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760859AbXGMN2R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 09:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbXGMN2G
+	id S932416AbXGMNeE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 09:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbXGMNdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 09:28:06 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42374 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbXGMN2F (ORCPT
+	Fri, 13 Jul 2007 09:33:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46220 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbXGMNds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 09:28:05 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46977D5D.6050002@s5r6.in-berlin.de>
-Date: Fri, 13 Jul 2007 15:25:49 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Theodore Tso <tytso@mit.edu>, Rob Landley <rob@landley.net>,
-       leoli@freescale.com, Gerrit Huizenga <gh@us.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
-       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
-       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
-       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
-Subject: Re: Documentation of kernel messages (Summary)
-References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com>	<200707101212.38981.rob@landley.net>	<1184163990.23373.46.camel@Gundam>	<200707111413.03513.rob@landley.net>	<20070711213234.GE19456@thunk.org> <20070713115321.23e3544f@the-village.bc.nu>
-In-Reply-To: <20070713115321.23e3544f@the-village.bc.nu>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 13 Jul 2007 09:33:48 -0400
+Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
+	features in larger inode
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cmm@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <20070713020529.1486491f.akpm@linux-foundation.org>
+References: <1183275482.4010.133.camel@localhost.localdomain>
+	 <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
+	 <20070713020529.1486491f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 15:33:41 +0200
+Message-Id: <1184333621.20032.85.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> The English versions need a last updated too, that way we would know when
-> they are past their best before date (as most of them are)
+On Fri, 2007-07-13 at 02:05 -0700, Andrew Morton wrote:
 
-I've got the impression that whenever I saw a "last updated:" note in a
-documentation, this note was out of date.
--- 
-Stefan Richter
--=====-=-=== -=== -==-=
-http://arcgraph.de/sr/
+> Except lockdep doesn't know about journal_start(), which has ranking
+> requirements similar to a semaphore.  
+
+Something like so?
+
+Or can journal_stop() be done by a different task than the one that did
+journal_start()? - in which case nothing much can be done :-/
+
+This seems to boot... albeit I did not push it hard.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/jbd/transaction.c |    9 +++++++++
+ include/linux/jbd.h  |    5 +++++
+ 2 files changed, 14 insertions(+)
+
+Index: linux-2.6/fs/jbd/transaction.c
+===================================================================
+--- linux-2.6.orig/fs/jbd/transaction.c
++++ linux-2.6/fs/jbd/transaction.c
+@@ -233,6 +233,8 @@ out:
+ 	return ret;
+ }
+ 
++static struct lock_class_key jbd_handle_key;
++
+ /* Allocate a new handle.  This should probably be in a slab... */
+ static handle_t *new_handle(int nblocks)
+ {
+@@ -243,6 +245,8 @@ static handle_t *new_handle(int nblocks)
+ 	handle->h_buffer_credits = nblocks;
+ 	handle->h_ref = 1;
+ 
++	lockdep_init_map(&handle->h_lockdep_map, "jbd_handle", &jbd_handle_key, 0);
++
+ 	return handle;
+ }
+ 
+@@ -286,6 +290,9 @@ handle_t *journal_start(journal_t *journ
+ 		current->journal_info = NULL;
+ 		handle = ERR_PTR(err);
+ 	}
++
++	lock_acquire(&handle->h_lockdep_map, 0, 0, 0, 2, _THIS_IP_);
++
+ 	return handle;
+ }
+ 
+@@ -1411,6 +1418,8 @@ int journal_stop(handle_t *handle)
+ 		spin_unlock(&journal->j_state_lock);
+ 	}
+ 
++	lock_release(&handle->h_lockdep_map, 1, _THIS_IP_);
++
+ 	jbd_free_handle(handle);
+ 	return err;
+ }
+Index: linux-2.6/include/linux/jbd.h
+===================================================================
+--- linux-2.6.orig/include/linux/jbd.h
++++ linux-2.6/include/linux/jbd.h
+@@ -30,6 +30,7 @@
+ #include <linux/bit_spinlock.h>
+ #include <linux/mutex.h>
+ #include <linux/timer.h>
++#include <linux/lockdep.h>
+ 
+ #include <asm/semaphore.h>
+ #endif
+@@ -405,6 +406,10 @@ struct handle_s
+ 	unsigned int	h_sync:		1;	/* sync-on-close */
+ 	unsigned int	h_jdata:	1;	/* force data journaling */
+ 	unsigned int	h_aborted:	1;	/* fatal error on handle */
++
++#ifdef CONFIG_LOCKDEP
++	struct lockdep_map	h_lockdep_map;
++#endif
+ };
+ 
+ 
+
+
