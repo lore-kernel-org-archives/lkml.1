@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbXGMLCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbXGMLD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757227AbXGMLCW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 07:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXGMLCQ
+	id S1757466AbXGMLD6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 07:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXGMLDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 07:02:16 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:65446 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbXGMLCP (ORCPT
+	Fri, 13 Jul 2007 07:03:52 -0400
+Received: from smtp.cce.hp.com ([161.114.21.25]:45997 "EHLO
+	ccerelrim04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752369AbXGMLDv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 07:02:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pLb4KQwk2wqizjkMN6bsGQxm5Qw06mVnubnqKI6dr9XbMeidxX+ROgjqwjmm0zY0PYr9iTbKmPYcdYWW/2YT1IngWYpR1U6pkgvz+DX2k/jaqCKOzkzfknq/Yyh+/nxxmjhjgaOJS06ik5bkdjDp3qDkDbTy2IyFIEM5bIrLgdc=
-Message-ID: <5699f8f00707130402r23ba80cdpd940562f4cb515c@mail.gmail.com>
-Date: Fri, 13 Jul 2007 13:02:13 +0200
-From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
-To: "Vijayakumar Subburaj" <vijayakumar.subburaj@gmail.com>
-Subject: Re: Linux Kernel Story
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <b07b02c50707120627se95d62dybc70ef80efdbf24@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b07b02c50707120627se95d62dybc70ef80efdbf24@mail.gmail.com>
+	Fri, 13 Jul 2007 07:03:51 -0400
+X-Greylist: delayed 1349 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Jul 2007 07:03:51 EDT
+From: "Paul Moore" <paul.moore@hp.com>
+Subject: Re: [GIT] SELinux changes for 2.6.23 (updated)
+Date: 13 Jul 2007 06:41:00 -0400
+To: <jmorris@namei.org>
+X-Mailer: ChatterEmail+ for Treo 6xx/700p (3.0.8)
+Message-ID: <3267153665.17485311@mail.hp.com>
+Cc: <michal.k.k.piotrowski@gmail.com>, <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <sds@tycho.nsa.gov>
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.7.13.32233
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/12/07, Vijayakumar Subburaj <vijayakumar.subburaj@gmail.com> wrote:
-> My first mail to lkml.
+-----Original Message-----
+From: James Morris <jmorris@namei.org>
+Date: Thursday, Jul 12, 2007 10:50 pm
+Subject: Re: [GIT] SELinux changes for 2.6.23 (updated)
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,	linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>,	Paul Moore <paul.moore@hp.com>
+
+On Fri, 13 Jul 2007, Michal Piotrowski wrote:
 >
-> I would like to know what happened to linux kernel from its 1.0.
+>> 
+> My system is too secure, I can not login :)
+>
+>Do you have CONFIG_NETLABEL=y ?
+>
+>If so, please try disabling it.
 
-It might be interesting to look at this timeline:
-http://www.levenez.com/unix/
+Disabling NetLabel should solve the problem.  The recommended solution to this problem, as discussed on the SELinux list and mentioned in the patch description, is to upgrade your SELinux policy to the latest Reference Policy sources.  For those with custom SELinux policy, the patch description explains the changes to the SELinux policy required. 
 
-Which shows when the first linux kernel was released, and a lot more
-info (like how in the older days, there were 2 types of linux,
-"stable" and "unstable")
-It also shows the different influences the various unices had on each
-other (like how Linux was inspired by / losely based on Minix)
+If needed I can post more instructions later, let me know, but right now I'm tapping this out on my phone while at the airport.
+
+. paul moore
+. linux security @ hp
+
+
