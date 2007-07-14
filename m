@@ -1,76 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbXGNSgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762352AbXGNSis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762346AbXGNSgP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 14:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759376AbXGNSgA
+	id S1762352AbXGNSis (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 14:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759375AbXGNSim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 14:36:00 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:63398 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759466AbXGNSf7 (ORCPT
+	Sat, 14 Jul 2007 14:38:42 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:10846 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759305AbXGNSil convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 14:35:59 -0400
-Date: Sat, 14 Jul 2007 14:35:57 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH -rt 4/5] use migrate_disable for __local_begin
-Message-ID: <20070714183557.GG6975@Krystal>
-References: <20070714175733.194012000@chello.nl> <20070714175840.153584000@chello.nl> <20070714171644.GC6975@Krystal> <1184434342.5284.49.camel@lappy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Jul 2007 14:38:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=p8f6XtiDjZCOzKI+1exG+h3z0EciHe/vnsWzs8WWnGC4dIUTs61xprCXHVZ96nMakapT2DJD1jCdpv8bIAoiXWQYv55ZANHlcXsud5Psp7W8AKh8OdsdfKsdktu7RP4gHRbUKZOAfPTfgtP4sVIQUiJ7jrcjZGgA0zTLzgtapBk=
+Message-ID: <fc94aae90707141138l49839c88r956be8e4d9981967@mail.gmail.com>
+Date: Sat, 14 Jul 2007 20:38:40 +0200
+From: "Michael Lothian" <mike@fireburn.co.uk>
+To: linux-kernel@vger.kernel.org
+Subject: Merging Nozomi Driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1184434342.5284.49.camel@lappy>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:34:36 up 7 days,  8:39,  2 users,  load average: 0.09, 0.18, 0.17
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Google-Sender-Auth: 2ab63b945ba5bb39
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
-> On Sat, 2007-07-14 at 13:16 -0400, Mathieu Desnoyers wrote:
-> > * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
-> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > ---
-> > >  include/asm-i386/local.h   |    7 ++++---
-> > >  include/asm-x86_64/local.h |    7 ++++---
-> > >  2 files changed, 8 insertions(+), 6 deletions(-)
-> > > 
-> > > Index: linux-2.6/include/asm-i386/local.h
-> > > ===================================================================
-> > > --- linux-2.6.orig/include/asm-i386/local.h
-> > > +++ linux-2.6/include/asm-i386/local.h
-> > > @@ -197,11 +197,12 @@ static __inline__ long local_sub_return(
-> > >  #define __local_begin(__flags)					\
-> > >  {								\
-> > >  	(__flags) = 0;						\
-> > > -	preempt_disable();					\
-> > > +	migrate_disable();					\
-> > 
-> > Brrrr. That's wrong. Your non atomic __local*() updates only makes sense
-> > when preempt_disable/enable() protects them from concurrent threads on
-> > the same CPU, which is not the case of migrate_disable/enable(). This is
-> > why I suggest that you use local_begin/end() mapped to
-> > migrate_disable/enable() for normal local variables, and, if you really
-> > want a __local_begin/end(), then it should be mapped to
-> > preempt_disable/enable() and should state that it provides no protection
-> > against interrupts.
-> 
-> Sure, but on -rt it does suffice, this part of the patch is rather WIP.
-> 
-> 
+Hi
 
-Hrm, how can it suffice, I wonder ? migrate_disable() does not protect
-against other threads on the same CPU, so you could suffer from
-concurrent updates to the same variables. How is it different in -rt ?
+I was wondering if there are any plans to merge the Nozomi driver
+which has been living in mm for quite a while now into the main line
+kernel.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I spoke about this a wee bitafter rc1 of 2.6.22 but I´m not sure if
+the discussed clean up was ever implemented
+
+I´d be greatful for any info
+
+Thanks
+
+Mike
