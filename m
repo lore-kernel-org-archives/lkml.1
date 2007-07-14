@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbXGNJRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbXGNJVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760262AbXGNJRe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 05:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbXGNJRZ
+	id S1761147AbXGNJVS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 05:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbXGNJVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 05:17:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34978 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbXGNJRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 05:17:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Sat, 14 Jul 2007 11:24:56 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm> <Pine.LNX.4.64.0707140128210.25614@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707140128210.25614@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 14 Jul 2007 05:21:03 -0400
+Received: from shards.monkeyblade.net ([198.137.202.13]:47510 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753626AbXGNJVB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 05:21:01 -0400
+X-Greylist: delayed 2748 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Jul 2007 05:21:00 EDT
+Subject: Re: kernel.org needs gitweb help
+From: "J.H." <warthog19@eaglescrag.net>
+To: Junio C Hamano <gitster@pobox.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>
+In-Reply-To: <7vmyxzjtdq.fsf@assigned-by-dhcp.cox.net>
+References: <469806EC.1050104@zytor.com>
+	 <7vmyxzjtdq.fsf@assigned-by-dhcp.cox.net>
+Content-Type: text/plain
+Date: Sat, 14 Jul 2007 01:33:48 -0700
+Message-Id: <1184402028.2954.85.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707141124.57935.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 14 July 2007 10:33, david@lang.hm wrote:
-> by the way, a data point on kernel sizes
-> 
-> -rw-r--r-- 1 root root  864648 Jul 14 00:53 vmlinuz.2.6.22.1.hibernate
-> -rw-r--r-- 1 root root  659496 Jul 14 01:17 vmlinuz.2.6.22.1.hibernate.stripped
-> -rw-r--r-- 1 root root 3948168 Jul 14 01:10 vmlinuz.2.6.22.1.running
-> 
-> the running one matches the config I'm running on my home server, the 
-> hibernate is a pretty stripped down version, and the stripped is close to 
-> a minimum (including turning off printk and BUG()). All three are with all 
-> drivers built-in, no module support.
-> 
-> this is on a amd64 64 bit system
-> 
-> configs are available if anyone cares, the point is how much smaller a 
-> kernel could be if it doesn't need all the stuff that you put in your main 
-> kernel. In my case this includes not enabling the 3-ware card that holds 
-> my 12-disk raid array, instead the hibernate image would be stored on one 
-> of the scsi drives attached to the adaptec 78xx card.
-> 
-> I expect that on a normal desktop/laptop with more features (like sound) 
-> the savings could be even more significant
+There's a todo list in the back of my head, I will try and write it up
+this weekend and get it posted.
 
-But the kernel needs some data to work too (a 'struct page' for each memory
-page etc.).
+- John 'Warthog9' Hawley
 
-Greetings,
-Rafael
+On Sat, 2007-07-14 at 01:12 -0700, Junio C Hamano wrote:
+> "H. Peter Anvin" <hpa@zytor.com> writes:
+> 
+> > A lot of people have asked me if there is anything they can do to help
+> > out kernel.org.  At this point, the number one thing anyone could do to
+> > help, and which would be reasonably self-contained a project, would be
+> > to help maintain our fork of gitweb:
+> >
+> > http://git.kernel.org/?p=git/warthog9/gitweb.git;a=summary
+> >
+> > We really need the caching version of gitweb, but it does have a number
+> > of problems, including the non-working tarball generator.
+> 
+> Are there an issues-list for the forked gitweb somewhere, or
+> would the first step of people who would want to help be to
+> build such a list?
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe git" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
