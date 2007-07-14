@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbXGNXMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932550AbXGNXOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932253AbXGNXMS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 19:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761085AbXGNXMH
+	id S932550AbXGNXOf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 19:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761159AbXGNXO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 19:12:07 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:56697 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753219AbXGNXMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 19:12:06 -0400
-Date: Sat, 14 Jul 2007 19:12:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>, Anton Vorontsov <cbou@mail.ru>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] pda_power: clean up irq, timer, return usage
-Message-ID: <20070714231204.GA23582@havoc.gtf.org>
+	Sat, 14 Jul 2007 19:14:28 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:40768 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761085AbXGNXO2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 19:14:28 -0400
+Date: Sat, 14 Jul 2007 19:09:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH] Immediate Values - Pre fix powerpc Optimization
+Message-ID: <20070714230916.GH18674@Krystal>
+References: <20070714012439.285079881@polymtl.ca> <20070714012624.842959793@polymtl.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070714012624.842959793@polymtl.ca>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:08:14 up 7 days, 13:13,  3 users,  load average: 0.50, 0.48, 0.38
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Immediate Values - Pre fix powerpc Optimization
 
-Clean up pda_power interrupt handling:
+Since I removed the immediate-values-non-optimized-architectures.patch, we need
+to redo it to apply immediate-values-powerpc-optimization.patch correctly.
 
-Prior to this patch, the driver would pass information it needed
-to the interrupt handler dev_id pointer, and then prompt forget it
-ever did so, recreating that same information after a couple passes
-through the timer-based state machine.
+It applies _before_ immediate-values-powerpc-optimization.patch and can
+be folded with it.
 
-This patch removes the redundant checks by passing the
-pda_power_supply[] pointer through the state machine.  The current
-code passed 'irq' through the state machine, as an index to recreate
-the pointer, when we could more simply pass around the pointer itself.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Christoph Hellwig <hch@infradead.org>
+---
+ include/asm-powerpc/immediate.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-Additionally, bogus "return;" statements were removed.
-
-This patch makes it easier to remove the 'irq' argument in the future,
-in addition to cleaning up the driver today.
-
-P.S.  Where are the MAINTAINERS entries for this driver, and
-drivers/power in general?
-
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
-
-diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
-index 4e1eb04..dacbe50 100644
---- a/drivers/power/pda_power.c
-+++ b/drivers/power/pda_power.c
-@@ -97,36 +97,31 @@ static void update_charger(void)
- 		dev_dbg(dev, "charger off\n");
- 		pdata->set_charge(0);
- 	}
--
--	return;
- }
- 
--static void supply_timer_func(unsigned long irq)
-+static void supply_timer_func(unsigned long power_supply_ptr)
- {
--	if (ac_irq && irq == ac_irq->start)
--		power_supply_changed(&pda_power_supplies[0]);
--	else if (usb_irq && irq == usb_irq->start)
--		power_supply_changed(&pda_power_supplies[1]);
--	return;
-+	void *power_supply = (void *) power_supply_ptr;
-+
-+	power_supply_changed(power_supply);
- }
- 
--static void charger_timer_func(unsigned long irq)
-+static void charger_timer_func(unsigned long power_supply_ptr)
- {
- 	update_charger();
- 
- 	/* Okay, charger set. Now wait a bit before notifying supplicants,
- 	 * charge power should stabilize. */
--	supply_timer.data = irq;
-+	supply_timer.data = power_supply_ptr;
- 	mod_timer(&supply_timer,
- 		  jiffies + msecs_to_jiffies(pdata->wait_for_charger));
--	return;
- }
- 
--static irqreturn_t power_changed_isr(int irq, void *unused)
-+static irqreturn_t power_changed_isr(int irq, void *power_supply)
- {
- 	/* Wait a bit before reading ac/usb line status and setting charger,
- 	 * because ac/usb status readings may lag from irq. */
--	charger_timer.data = irq;
-+	charger_timer.data = (unsigned long) power_supply;
- 	mod_timer(&charger_timer,
- 		  jiffies + msecs_to_jiffies(pdata->wait_for_status));
- 	return IRQ_HANDLED;
-@@ -252,7 +247,6 @@ static int __init pda_power_init(void)
- static void __exit pda_power_exit(void)
- {
- 	platform_driver_unregister(&pda_power_pdrv);
--	return;
- }
- 
- module_init(pda_power_init);
+Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2007-07-14 18:21:07.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
