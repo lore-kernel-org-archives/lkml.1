@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbXGNFAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbXGNFEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbXGNFAq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 01:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXGNFAg
+	id S1754480AbXGNFEd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 01:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXGNFE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 01:00:36 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52330 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbXGNFAf (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 01:00:35 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Adrian Bunk <bunk@stusta.de>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] cleanup congestion control options
-In-Reply-To: Your message of "Sat, 14 Jul 2007 06:09:54 +0200."
-             <20070714040953.GE3565@stusta.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20070714040953.GE3565@stusta.de>
+	Sat, 14 Jul 2007 01:04:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60000 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750877AbXGNFEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 01:04:25 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/WfE9t+LzWkELTTN2FjSxnq2AXSQmmj9mVRWYTuX
+	THtIb54RWLQVhp
+Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
+From: Mike Galbraith <efault@gmx.de>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <Pine.LNX.4.64.0707131728070.1817@scrub.home>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+	 <20070711211638.GE18767@one.firstfloor.org>
+	 <20070711214649.GK14435@v2.random>
+	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>
+	 <1184302024.6709.11.camel@Homer.simpson.net>
+	 <Pine.LNX.4.64.0707131728070.1817@scrub.home>
+Content-Type: text/plain
+Date: Sat, 14 Jul 2007 07:04:16 +0200
+Message-Id: <1184389456.6632.13.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1184389170_3376P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Date: Sat, 14 Jul 2007 00:59:30 -0400
-Message-ID: <4992.1184389170@turing-police.cc.vt.edu>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1184389170_3376P
-Content-Type: text/plain; charset=us-ascii
+On Fri, 2007-07-13 at 19:23 +0200, Roman Zippel wrote:
+> Hi,
+> 
+> On Fri, 13 Jul 2007, Mike Galbraith wrote:
+> 
+> > > The new scheduler does _a_lot_ of heavy 64 bit calculations without any 
+> > > attempt to scale that down a little...
+> > 
+> > See prio_to_weight[], prio_to_wmult[] and sysctl_sched_stat_granularity.
+> > Perhaps more can be done, but "without any attempt..." isn't accurate.
+> 
+> Calculating these values at runtime would have been completely insane, the 
+> alternative would be a crummy approximation, so using a lookup table is 
+> actually a good thing. That's not the problem.
 
-On Sat, 14 Jul 2007 06:09:54 +0200, Adrian Bunk said:
-> This patch contains the following cleanups:
-> - note in the prompt if an option depends on EXPERIMENTAL
+I meant see usage.
 
-Who decided whether a particular option is 'experimental' or not?
-
-Lawrence S. Brakmo and Larry L. Peterson. TCP Vegas: end to end congestion
-avoidance on a global Internet. IEEE Journal on Selected Areas in
-Communications, 13(8), October 1995.
-
->  config TCP_CONG_VEGAS
-> -	tristate "TCP Vegas"
-> +	tristate "TCP Vegas (EXPERIMENTAL)"
->  	depends on EXPERIMENTAL
-
-I think the *right* fix here is '- depends on EXPERIMENTAL'.  1995. Geez. :)
-
-(Probably *all* of the 'experimental' tags for congestion control need an in-depth
-review - but Vegas struck me as particularly egregious.)
+	-Mike
 
 
---==_Exmh_1184389170_3376P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGmFgycC3lWbTT17ARAtlyAKCLmarBpPMr4y/EMGceX7+xglJcYwCdE9E7
-EAwSSdx8W1Qmvq4IfBeBj38=
-=FDgm
------END PGP SIGNATURE-----
-
---==_Exmh_1184389170_3376P--
