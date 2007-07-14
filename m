@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbXGNHdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758642AbXGNHlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbXGNHdU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 03:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbXGNHdN
+	id S1758642AbXGNHlz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 03:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXGNHls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 03:33:13 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:64716 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbXGNHdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 03:33:12 -0400
-Date: Sat, 14 Jul 2007 01:35:09 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH 5/7] ICH Force HPET: ICH5 quirk to force detect enable
-In-reply-to: <fa.GJG5uLURdrisg2rJw413ItLjGTg@ifi.uio.no>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Message-id: <46987CAD.9020209@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.GJG5uLURdrisg2rJw413ItLjGTg@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Sat, 14 Jul 2007 03:41:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33681 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751844AbXGNHlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 03:41:47 -0400
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 14 Jul 2007 09:41:45 +0200
+From: "Michael Kerrisk" <mtk-manpages@gmx.net>
+Message-ID: <20070714074145.277260@gmx.net>
+MIME-Version: 1.0
+Subject: signalfd() semantics after execve()
+To: Davide Libenzi <davidel@xmailserver.org>
+X-Authenticated: #24879014
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX19co5lnLEJcrzZEDo+5kyBhNQTxtssfAoKcwurWmr
+ psT1Cw6XUdK8jJz8SQgg4hSpQT1fslBv/BBw== 
+Content-Transfer-Encoding: 7bit
+X-GMX-UID: bhvqZioNeSEqRsf8EHUhSWV+IGRvbwA2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Venki Pallipadi wrote:
-> 
-> force_enable hpet for ICH5.
-> 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> 
-> ---
->  arch/i386/kernel/hpet.c   |    2 
->  arch/i386/kernel/quirks.c |  101 +++++++++++++++++++++++++++++++++++++++++++++-
->  include/asm-i386/hpet.h   |    2 
->  include/linux/pci_ids.h   |    1 
->  4 files changed, 103 insertions(+), 3 deletions(-)
-> 
+Davide, 
 
-According to some reports, and a quick test I did on my laptop, this 
-same method appears to work on the ICH4 chipset, even though the HPET is 
-not documented on that chipset. Does Intel have any info on HPET support 
-on ICH4 and whether there's any reason we should not force enable it 
-there as well?
+I'm working on the signalfd(2) man page, and I've come
+acorss some puzzling behaviour...  
+
+What are the intended semantics of a signalfd file descriptor
+after an execve()?
+
+As far as I can work out, after an execve() the file descriptor
+is still available, but reads from it always return 0, even if:
+
+a) there were signals pending before the execve().
+   However, sigpending() shows the signal as pending,
+   and the signal can be accepted using sigwaitinfo().
+
+b) we generate a signal after the execve().
+ 
+Is this intended behavior (the "orphaned sighand" condition
+mentioned in the draft man page you sent me?)?  Is it a bug?
+
+Cheers,
+
+Michael
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+
+Want to help with man page maintenance?  
+Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages , 
+read the HOWTOHELP file and grep the source 
+files for 'FIXME'.
 
