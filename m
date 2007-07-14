@@ -1,261 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765880AbXGNBad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763534AbXGNBaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765880AbXGNBad (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765117AbXGNB1O
+	id S1763534AbXGNBaw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765156AbXGNB1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:27:14 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:38492 "EHLO smtp.polymtl.ca"
+	Fri, 13 Jul 2007 21:27:16 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38501 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764743AbXGNB1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:27:07 -0400
-Message-Id: <20070714012624.842959793@polymtl.ca>
+	id S1764763AbXGNB1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 21:27:13 -0400
+Message-Id: <20070714012624.150971859@polymtl.ca>
 References: <20070714012439.285079881@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Jul 2007 21:24:46 -0400
+Date: Fri, 13 Jul 2007 21:24:44 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 7/8] Immediate Value - PowerPC Optimization
-Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:26:25 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, prasanna@in.ibm.com,
+       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: [patch 5/8] Immediate Values - kprobe header fix
+Content-Disposition: inline; filename=immediate-values-kprobes-headers.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:26:24 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC optimization of the immediate values which uses a li instruction,
-patched with an immediate value.
+Since the immediate values depend on the same int3 handler as kprobes implements
+for i386, we have to get architecture specific defines available for the kprobes
+trap handler (especially restore_interrupts()) wven when CONFIG_KPROBES is not
+selected.
+
+That kind of ifdef around a whole header does not make sense in the first place
+anyway.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: prasanna@in.ibm.com
+CC: ananth@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
 ---
- arch/powerpc/kernel/Makefile    |    1 
- arch/powerpc/kernel/immediate.c |   98 ++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/immediate.h |  107 +++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 205 insertions(+), 1 deletion(-)
+ include/linux/kprobes.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+Index: linux-2.6-lttng/include/linux/kprobes.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-powerpc/immediate.h	2007-07-13 19:26:18.000000000 -0400
-+++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2007-07-13 19:28:49.000000000 -0400
-@@ -1 +1,106 @@
--#include <asm-generic/immediate.h>
-+#ifndef _ASM_POWERPC_IMMEDIATE_H
-+#define _ASM_POWERPC_IMMEDIATE_H
-+
-+/*
-+ * Immediate values. PowerPC architecture optimizations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <asm/asm-compat.h>
-+
-+struct module;
-+
-+struct __immediate {
-+	long var;		/* Identifier variable of the immediate value */
-+	long immediate;		/*
-+				 * Pointer to the memory location that holds
-+				 * the immediate value within the load immediate
-+				 * instruction.
-+				 */
-+	long size;		/* Type size. */
-+};
-+
-+/*
-+ * Optimized version of the immediate.
-+ * Make sure the 2 bytes update will be atomic by aligning the immediate
-+ * value.
-+ * Use a normal memory read for the 4 bytes immediate because there is no way to
-+ * atomically update it without using a seqlock read side, which would cost more
-+ * in term of total i-cache and d-cache space than a simple memory read.
-+ * Do not use in __init and __exit functions. Use _immediate_read() instead.
-+ */
-+#define immediate_read(var)						\
-+	({								\
-+		__typeof__((var)->value) value;				\
-+		switch (sizeof(value)) {				\
-+		case 1:							\
-+			asm (	".section __immediate, \"a\", @progbits;\n\t" \
-+					PPC_LONG "%1, ((0f)+3), 1;\n\t"	\
-+					".previous;\n\t"		\
-+					"0:\n\t"			\
-+					"li %0,%2;\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&(var)->value),			\
-+				  "i" (0));				\
-+			break;						\
-+		case 2:							\
-+			asm (	".section __immediate, \"a\", @progbits;\n\t" \
-+					PPC_LONG "%1, ((0f)+2), 2;\n\t"	\
-+					".previous;\n\t"		\
-+					".align 2\n\t"			\
-+					"0:\n\t"			\
-+					"li %0,%2;\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&(var)->value),			\
-+				  "i" (0));				\
-+			break;						\
-+		default:						\
-+			value = (var)->value;				\
-+			break;						\
-+		};							\
-+		value;							\
-+	})
-+
-+/*
-+ * Update immediate value, can take module mutex.
-+ */
-+#define immediate_set(var, i) \
-+	(var)->value = (i); \
-+	immediate_update(1);
-+
-+/*
-+ * Update immediate value. Module mutex must already be taken.
-+ */
-+#define _immediate_set(var, i) \
-+	(var)->value = (i); \
-+	immediate_update(0);
-+
-+/*
-+ * Update immediate value at early boot.
-+ */
-+#define immediate_set_early(var, i) \
-+	(var)->value = (i); \
-+	immediate_update_early();
-+
-+/*
-+ * Branch depending on an immediate value. Could eventually be optimized further
-+ * by improving gcc to give the ability to patch a jump instruction instead of
-+ * the value it depends on.
-+ * Do not use in __init and __exit functions. Use _immediate_if() instead.
-+ */
-+#define immediate_if(var)	if (unlikely(immediate_read(var)))
-+
-+/*
-+ * Used internally.
-+ */
-+extern void immediate_update(int lock);
-+extern void module_immediate_setup(struct module *mod);
-+extern void immediate_update_early(void);
-+extern int arch_immediate_update(const struct __immediate *immediate);
-+extern void arch_immediate_update_early(const struct __immediate *immediate);
-+
-+#endif /* _ASM_POWERPC_IMMEDIATE_H */
-Index: linux-2.6-lttng/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/Makefile	2007-07-13 19:26:18.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/Makefile	2007-07-13 19:28:29.000000000 -0400
-@@ -103,3 +103,4 @@
+--- linux-2.6-lttng.orig/include/linux/kprobes.h	2007-07-13 18:47:57.000000000 -0400
++++ linux-2.6-lttng/include/linux/kprobes.h	2007-07-13 18:48:45.000000000 -0400
+@@ -36,9 +36,9 @@
+ #include <linux/spinlock.h>
+ #include <linux/rcupdate.h>
  
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
- extra-$(CONFIG_PPC64)		+= entry_64.o
-+obj-$(CONFIG_IMMEDIATE)		+= immediate.o
-Index: linux-2.6-lttng/arch/powerpc/kernel/immediate.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/arch/powerpc/kernel/immediate.c	2007-07-13 19:28:29.000000000 -0400
-@@ -0,0 +1,98 @@
-+/*
-+ * Powerpc optimized immediate values enabling/disabling.
-+ *
-+ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/immediate.h>
-+#include <linux/string.h>
-+#include <linux/kprobes.h>
-+#include <asm/cacheflush.h>
-+#include <asm/page.h>
-+
-+#define LI_OPCODE_LEN	2
-+
-+/*
-+ * The immediate value are aligned.
-+ */
-+int arch_immediate_update(const struct __immediate *immediate)
-+{
+-#ifdef CONFIG_KPROBES
+ #include <asm/kprobes.h>
+ 
 +#ifdef CONFIG_KPROBES
-+	kprobe_opcode_t *insn;
-+	/*
-+	 * Fail if a kprobe has been set on this instruction.
-+	 * (TODO: we could eventually do better and modify all the (possibly
-+	 * nested) kprobes for this site if kprobes had an API for this.
-+	 */
-+	switch (immediate->size) {
-+		case 1:	/* The uint8_t points to the 3rd byte of the
-+			 * instruction */
-+			insn = (void*)(immediate->immediate - 1 - LI_OPCODE_LEN);
-+			break;
-+		case 2:	insn = (void*)(immediate->immediate - LI_OPCODE_LEN);
-+			break;
-+		default:
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(*insn == BREAKPOINT_INSTRUCTION)) {
-+		printk(KERN_WARNING "Immediate value in conflict with kprobe. "
-+				    "Variable at %p, "
-+				    "instruction at %p, size %lu\n",
-+				    (void*)immediate->immediate,
-+				    (void*)immediate->var, immediate->size);
-+		return -EBUSY;
-+	}
-+#endif
-+
-+	/*
-+	 * If the variable and the instruction have the same value, there is
-+	 * nothing to do.
-+	 */
-+	switch (immediate->size) {
-+		case 1:	if (*(uint8_t*)immediate->immediate
-+					== *(uint8_t*)immediate->var)
-+				return 0;
-+			break;
-+		case 2:	if (*(uint16_t*)immediate->immediate
-+					== *(uint16_t*)immediate->var)
-+				return 0;
-+			break;
-+		default:return -EINVAL;
-+	}
-+	memcpy((void*)immediate->immediate, (void*)immediate->var,
-+			immediate->size);
-+	flush_icache_range((unsigned long)immediate->immediate,
-+				immediate->size);
-+	return 0;
-+}
-+
-+/*
-+ * Very early initialization of the in-core immediate values.
-+ * We can use flush_icache_range, since the cpu identification has been done in
-+ * the early_init stage.
-+ */
-+void __init arch_immediate_update_early(const struct __immediate *immediate)
-+{
-+	/*
-+	 * If the variable and the instruction have the same value, there is
-+	 * nothing to do.
-+	 */
-+	switch (immediate->size) {
-+		case 1:	if (*(uint8_t*)immediate->immediate
-+					== *(uint8_t*)immediate->var)
-+				return;
-+			break;
-+		case 2:	if (*(uint16_t*)immediate->immediate
-+					== *(uint16_t*)immediate->var)
-+				return;
-+			break;
-+		default:return;
-+	}
-+	memcpy((void*)immediate->immediate, (void*)immediate->var,
-+			immediate->size);
-+	flush_icache_range((unsigned long)immediate->immediate,
-+				immediate->size);
-+}
-+
+ /* kprobe_status settings */
+ #define KPROBE_HIT_ACTIVE	0x00000001
+ #define KPROBE_HIT_SS		0x00000002
 
 -- 
 Mathieu Desnoyers
