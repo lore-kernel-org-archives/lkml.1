@@ -1,36 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765816AbXGNVlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765353AbXGNWMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765816AbXGNVlM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 17:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765475AbXGNVkw
+	id S1765353AbXGNWMv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 18:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763593AbXGNWMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 17:40:52 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:50070 "EHLO aun.it.uu.se"
+	Sat, 14 Jul 2007 18:12:43 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47504 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764942AbXGNVkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 17:40:51 -0400
-Date: Sat, 14 Jul 2007 23:40:41 +0200 (MEST)
-Message-Id: <200707142140.l6ELefgh028149@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: hpa@zytor.com, olaf@aepfle.de
-Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+	id S1762102AbXGNWMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 18:12:42 -0400
+Date: Sun, 15 Jul 2007 00:13:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Paprocki <andrew@ishiboo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Geode GX framebuffer driver: Arcom vs. AMD
+Message-ID: <20070714221356.GA15254@uranus.ravnborg.org>
+References: <76366b180707141201u14585c2eyeb58f0b7b279ea1b@mail.gmail.com> <20070714191854.GD13823@uranus.ravnborg.org> <76366b180707141357g39eca7a8p706f39a7a515719a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <76366b180707141357g39eca7a8p706f39a7a515719a@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jul 2007 14:12:57 -0700, H. Peter Anvin wrote:
-> Olaf Hering wrote:
-> > Declare PAGE_SIZE as getpagesize() for userspace.
-> > PAGE_SIZE is used in resource.h and shm.h
+On Sat, Jul 14, 2007 at 04:57:11PM -0400, Andrew Paprocki wrote:
 > 
-> I would think it would be better to not define it at all.  Several
-> architectures already don't have PAGE_SIZE visible to userspace in any way.
+> >-> There seems to be a _lot_ of specific defines in lib/cimarron - I wonder
+> >   if this is the way used in the rest of the kernel?
+> 
+> Which defines are you referring to? I know there are a few 'settings'
+> which are modified by changing #defines in one of the .h files. I'm
+> assuming that those would be moved to Kconfig values if this was ever
+> in the kernel.
+Sorry - meant to say declarations.
+But I guess this is just typical grapicah chipset constants for the
+various settings.
 
-Furthermore, the kernel should /not/ export a would-be kernel
-interface by defining it in terms of a non-kernel interface.
-getpagesize() belongs to libc, and might not exist at all or
-have that form.
-
-Linux is not Solaris. There can be many different libcs in a system.
-
-/Mikael
+	Sam
