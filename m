@@ -1,49 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764535AbXGNBXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764633AbXGNBYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764535AbXGNBXf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761489AbXGNBX2
+	id S1764633AbXGNBYY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761811AbXGNBYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:23:28 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60676 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760283AbXGNBX1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:23:27 -0400
-Date: Sat, 14 Jul 2007 03:23:01 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Roland McGrath <roland@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] Use --build-id ld option
-Message-ID: <20070714012301.GB3565@stusta.de>
-References: <4695B28E.2020603@goop.org> <20070712062458.6B2BD4D0489@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070712062458.6B2BD4D0489@magilla.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 13 Jul 2007 21:24:17 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38060 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758508AbXGNBYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 21:24:16 -0400
+Message-Id: <20070714012133.612727310@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Fri, 13 Jul 2007 21:21:33 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/8] Text Edit Lock
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:24:11 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 11:24:58PM -0700, Roland McGrath wrote:
-> > Does this mean that performing the same link twice *will* produce an 
-> > identical result?
-> 
-> Yes.
+Hi Andrew,
 
-But note that twice compiling a kernel with the same .config will result 
-in a different one.
+After refactoring of architecture independant code (mutex to protect text
+edition) vs architecture dependant code (marking/unmarking pages RW) and
+thorough testing, here is the new version of the text edit lock.
 
-cu
-Adrian
+Mathieu
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
