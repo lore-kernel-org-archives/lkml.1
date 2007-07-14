@@ -1,29 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936924AbXGNBd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937314AbXGNBeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936924AbXGNBd5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760283AbXGNBaI
+	id S937314AbXGNBeg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765348AbXGNBaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:30:08 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:38840 "EHLO smtp.polymtl.ca"
+	Fri, 13 Jul 2007 21:30:12 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38839 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765620AbXGNBaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:30:06 -0400
-Message-Id: <20070714012752.912348630@polymtl.ca>
+	id S1765558AbXGNBaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 21:30:05 -0400
+Message-Id: <20070714012904.168027916@polymtl.ca>
+References: <20070714012752.912348630@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Jul 2007 21:27:52 -0400
+Date: Fri, 13 Jul 2007 21:27:53 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 0/3] Architectures missing DATA_DATA in linker script
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, starvik@axis.com,
+       dev-etrax@axis.com
+Subject: [patch 1/3] Use DATA_DATA in CRIS
+Content-Disposition: inline; filename=use-data-data-in-cris.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:29:04 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Newer asm-generic/vmlinux.lds.h provides a DATA_DATA macro which defines the
+content of what is normally referred to by *(.data). It permits adding more
+"subsections" (declared by gcc with the section attribute or in assembly), which
+will be linked in the .data section.
 
-Here is a repost, with proper header, of these missing bits to 2.6.22-rc6-mm1.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: starvik@axis.com
+CC: dev-etrax@axis.com
+---
+ arch/cris/arch-v10/vmlinux.lds.S |    2 +-
+ arch/cris/arch-v32/vmlinux.lds.S |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Mathieu
+Index: linux-2.6-lttng/arch/cris/arch-v10/vmlinux.lds.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/cris/arch-v10/vmlinux.lds.S	2007-06-16 22:12:58.000000000 -0400
++++ linux-2.6-lttng/arch/cris/arch-v10/vmlinux.lds.S	2007-06-16 22:13:28.000000000 -0400
+@@ -44,7 +44,7 @@
+ 	___data_start = . ;
+ 	__Sdata = . ;
+ 	.data : {                     /* Data */
+-		*(.data)
++		DATA_DATA
+ 	}
+ 	__edata = . ;                 /* End of data section */
+ 	_edata = . ;
+Index: linux-2.6-lttng/arch/cris/arch-v32/vmlinux.lds.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/cris/arch-v32/vmlinux.lds.S	2007-06-16 22:13:03.000000000 -0400
++++ linux-2.6-lttng/arch/cris/arch-v32/vmlinux.lds.S	2007-06-16 22:13:42.000000000 -0400
+@@ -49,7 +49,7 @@
+ 	___data_start = . ;
+ 	__Sdata = . ;
+ 	.data : {                     /* Data */
+-		*(.data)
++		DATA_DATA
+ 	}
+ 	__edata = . ;		/* End of data section. */
+ 	_edata = . ;
 
 -- 
 Mathieu Desnoyers
