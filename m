@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765488AbXGNVVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764960AbXGNVeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765488AbXGNVVP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 17:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757859AbXGNVVA
+	id S1764960AbXGNVeK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 17:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761276AbXGNVd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 17:21:00 -0400
-Received: from mail.screens.ru ([213.234.233.54]:44412 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762472AbXGNVU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 17:20:59 -0400
-Date: Sun, 15 Jul 2007 01:21:02 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM
-Message-ID: <20070714212102.GA214@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 14 Jul 2007 17:33:57 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:44099 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757645AbXGNVd4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 17:33:56 -0400
+Date: Sat, 14 Jul 2007 23:34:12 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
+Message-ID: <20070714213412.GA10196@aepfle.de>
+References: <20070714205709.GA9478@aepfle.de> <46993C59.1030902@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <46993C59.1030902@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am sorry for being completely off-topic, but
+On Sat, Jul 14, H. Peter Anvin wrote:
 
-Miklos Szeredi wrote:
->
-> SIGKILL won't work on a stopped task.  Neither on a traced task.
+> Olaf Hering wrote:
+> > Declare PAGE_SIZE as getpagesize() for userspace.
+> > PAGE_SIZE is used in resource.h and shm.h
+> 
+> I would think it would be better to not define it at all.  Several
+> architectures already don't have PAGE_SIZE visible to userspace in any way.
 
-Why do you think so? It works in both cases (ptracer can use
-PT_TRACE_EXIT, but the task is killed anyway).
+i386 has it, so everyone uses it.
 
-> Neither on a zombie (how many newbies are thoroughly confused about
-> that ;)
+asm/user.h uses it for NBPG, which appears in gdb configure scripts.
+Maybe it doesnt trigger there because the sysconf SC_* macros match.
 
-This is true. Unless this zombie is a group leader, and we have other
-threads.
-
-Oleg.
-
+other places where asm/page.h is used:
+util-linux configure scripts, strace, xorg-11, and alot more.
+Have to check if they really need it.
