@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbXGNJVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbXGNJXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761147AbXGNJVS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 05:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbXGNJVD
+	id S1761371AbXGNJXt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 05:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbXGNJXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 05:21:03 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:47510 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753626AbXGNJVB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 05:21:01 -0400
-X-Greylist: delayed 2748 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Jul 2007 05:21:00 EDT
-Subject: Re: kernel.org needs gitweb help
-From: "J.H." <warthog19@eaglescrag.net>
-To: Junio C Hamano <gitster@pobox.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Git Mailing List <git@vger.kernel.org>
-In-Reply-To: <7vmyxzjtdq.fsf@assigned-by-dhcp.cox.net>
-References: <469806EC.1050104@zytor.com>
-	 <7vmyxzjtdq.fsf@assigned-by-dhcp.cox.net>
-Content-Type: text/plain
-Date: Sat, 14 Jul 2007 01:33:48 -0700
-Message-Id: <1184402028.2954.85.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Sat, 14 Jul 2007 05:23:43 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:38489 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753626AbXGNJXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 05:23:42 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Surya <surya.prabhakar@gmail.com>
+Subject: Re: [PATCH 0/12] drivers/isdn: replace pci_find_device with pci_get_device
+Date: Sat, 14 Jul 2007 12:23:23 +0300
+User-Agent: KMail/1.9.7
+Cc: kkeil@suse.de, linux-kernel@vger.kernel.org, surya.prabhakar@wipro.com
+References: <b8c19edb0707140027y6f525dbew52b60128012007b2@mail.gmail.com>
+In-Reply-To: <b8c19edb0707140027y6f525dbew52b60128012007b2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1887587.ueV3vKvvrn";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707141223.26704.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's a todo list in the back of my head, I will try and write it up
-this weekend and get it posted.
+--nextPart1887587.ueV3vKvvrn
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-- John 'Warthog9' Hawley
+Hi;
 
-On Sat, 2007-07-14 at 01:12 -0700, Junio C Hamano wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
-> 
-> > A lot of people have asked me if there is anything they can do to help
-> > out kernel.org.  At this point, the number one thing anyone could do to
-> > help, and which would be reasonably self-contained a project, would be
-> > to help maintain our fork of gitweb:
-> >
-> > http://git.kernel.org/?p=git/warthog9/gitweb.git;a=summary
-> >
-> > We really need the caching version of gitweb, but it does have a number
-> > of problems, including the non-working tarball generator.
-> 
-> Are there an issues-list for the forked gitweb somewhere, or
-> would the first step of people who would want to help be to
-> build such a list?
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe git" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+14 Tem 2007 Cts tarihinde, Surya =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=C4=B1:=
+=20
+>    Recently Keil has accepted few isdn related , pci_find_device
+> cleanup patches, which are currently in -mm tree and would probably be
+> in mainline kernel soon..
+>
+> look the below url shows a mail from karsten keil..
+> http://marc.info/?l=3Dlinux-kernel&m=3D118029832418653&w=3D2
+> Just make sure patch only the files not listed in the above patch..
+> Also look at the kernel archives before you start patching , just to
+> make sure somebody has not done it already..
 
+Ahh, i was checked the -mm and isdn tree before sending these but somehow i=
+=20
+missed that one, thanks for the info and sorry for noise :)
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart1887587.ueV3vKvvrn
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGmJYOy7E6i0LKo6YRAs63AKCeZFQtZuTsfGm5oaiwLIC2FsTrswCfT3JM
+c6r7Y4ZfH8DRzLd0jB5GDsE=
+=Z4gP
+-----END PGP SIGNATURE-----
+
+--nextPart1887587.ueV3vKvvrn--
