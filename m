@@ -1,82 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764270AbXGNBUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764317AbXGNBV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764270AbXGNBUm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762603AbXGNBUf
+	id S1764317AbXGNBV6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761489AbXGNBVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:20:35 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:34748 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761889AbXGNBUf (ORCPT
+	Fri, 13 Jul 2007 21:21:50 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:60751 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760283AbXGNBVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:20:35 -0400
-Date: Fri, 13 Jul 2007 21:20:33 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Fri, 13 Jul 2007 21:21:49 -0400
+Subject: [PATCH] hugetlbfs read() support
+From: Badari Pulavarty <pbadari@us.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>
-Subject: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
-Message-ID: <20070714012033.GC31649@Krystal>
+Cc: Bill Irwin <bill.irwin@oracle.com>, nacc@us.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain
+Date: Fri, 13 Jul 2007 18:23:33 -0700
+Message-Id: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:19:15 up 6 days, 15:24,  2 users,  load average: 0.13, 0.21, 0.19
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Powerpc - Include pagemap.h in asm/powerpc/tlb.h
+Hi Andrew,
 
-Fixes this powerpc build error in 2.6.22-rc6-mm1 for powerpc 64 :
+Here is the patch to support read() for hugetlbfs, needed to get
+oprofile working on executables backed by largepages. 
 
-In file included from include2/asm/tlb.h:60,
-                 from /home/compudj/git/linux-2.6-lttng/arch/powerpc/mm/init_64.
-c:56:
-/home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In function 'tlb_fl
-ush_mmu':
-/home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:76: error: implicit 
-declaration of function 'release_pages'
-/home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h: In function 'tlb_re
-move_page':
-/home/compudj/git/linux-2.6-lttng/include/asm-generic/tlb.h:105: error: implicit
- declaration of function 'page_cache_release'
-make[2]: *** [arch/powerpc/mm/init_64.o] Error 1
+If you plan to consider Christoph Lameter's pagecache cleanup patches,
+I will re-write this. Otherwise, please consider this for -mm.
 
-release_pages is declared in linux/pagemap.h, but cannot be included in
-linux/swap.h because of a sparc related comment:
+Thanks,
+Badari
 
-/* only sparc can not include linux/pagemap.h in this file
- * so leave page_cache_release and release_pages undeclared... */
-#define free_page_and_swap_cache(page) \
-        page_cache_release(page)
-#define free_pages_and_swap_cache(pages, nr) \
-        release_pages((pages), (nr), 0);
+Support for reading from hugetlbfs files. libhugetlbfs lets application
+text/data to be placed in large pages. When we do that, oprofile doesn't
+work - since libbfd tries to read from it.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: linuxppc-dev@ozlabs.org
-CC: Paul Mackerras <paulus@samba.org>
----
- include/asm-powerpc/tlb.h |    2 ++
- 1 file changed, 2 insertions(+)
+This code is very similar to what do_generic_mapping_read() does, but
+I can't use it since it has PAGE_CACHE_SIZE assumptions.
 
-Index: linux-2.6-lttng/include/asm-powerpc/tlb.h
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+Acked-by: William Irwin <bill.irwin@oracle.com>
+Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
+
+ fs/hugetlbfs/inode.c |  113 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 113 insertions(+)
+
+Index: linux-2.6.22/fs/hugetlbfs/inode.c
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-powerpc/tlb.h	2007-07-13 11:30:54.000000000 -0400
-+++ linux-2.6-lttng/include/asm-powerpc/tlb.h	2007-07-13 11:31:22.000000000 -0400
-@@ -23,6 +23,8 @@
- #include <asm/mmu.h>
+--- linux-2.6.22.orig/fs/hugetlbfs/inode.c	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.22/fs/hugetlbfs/inode.c	2007-07-13 19:24:36.000000000 -0700
+@@ -156,6 +156,118 @@ full_search:
+ }
  #endif
  
-+#include <linux/pagemap.h>
++static int
++hugetlbfs_read_actor(struct page *page, unsigned long offset,
++			char __user *buf, unsigned long count,
++			unsigned long size)
++{
++	char *kaddr;
++	unsigned long left, copied = 0;
++	int i, chunksize;
 +
- struct mmu_gather;
++	if (size > count)
++		size = count;
++
++	/* Find which 4k chunk and offset with in that chunk */
++	i = offset >> PAGE_CACHE_SHIFT;
++	offset = offset & ~PAGE_CACHE_MASK;
++
++	while (size) {
++		chunksize = PAGE_CACHE_SIZE;
++		if (offset)
++			chunksize -= offset;
++		if (chunksize > size)
++			chunksize = size;
++		kaddr = kmap(&page[i]);
++		left = __copy_to_user(buf, kaddr + offset, chunksize);
++		kunmap(&page[i]);
++		if (left) {
++			copied += (chunksize - left);
++			break;
++		}
++		offset = 0;
++		size -= chunksize;
++		buf += chunksize;
++		copied += chunksize;
++		i++;
++	}
++	return copied ? copied : -EFAULT;
++}
++
++/*
++ * Support for read() - Find the page attached to f_mapping and copy out the
++ * data. Its *very* similar to do_generic_mapping_read(), we can't use that
++ * since it has PAGE_CACHE_SIZE assumptions.
++ */
++ssize_t
++hugetlbfs_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
++{
++	struct address_space *mapping = filp->f_mapping;
++	struct inode *inode = mapping->host;
++	unsigned long index = *ppos >> HPAGE_SHIFT;
++	unsigned long end_index;
++	loff_t isize;
++	unsigned long offset;
++	ssize_t retval = 0;
++
++	/* validate length */
++	if (len == 0)
++		goto out;
++
++	isize = i_size_read(inode);
++	if (!isize)
++		goto out;
++
++	offset = *ppos & ~HPAGE_MASK;
++	end_index = (isize - 1) >> HPAGE_SHIFT;
++	for (;;) {
++		struct page *page;
++		int nr, ret;
++
++		/* nr is the maximum number of bytes to copy from this page */
++		nr = HPAGE_SIZE;
++		if (index >= end_index) {
++			if (index > end_index)
++				goto out;
++			nr = ((isize - 1) & ~HPAGE_MASK) + 1;
++			if (nr <= offset) {
++				goto out;
++			}
++		}
++		nr = nr - offset;
++
++		/* Find the page */
++		page = find_get_page(mapping, index);
++		if (unlikely(page == NULL)) {
++			/*
++			 * We can't find the page in the cache - bail out ?
++			 */
++			goto out;
++		}
++		/*
++		 * Ok, we have the page, copy it to user space buffer.
++		 */
++		ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
++		if (ret < 0) {
++			retval = retval ? : ret;
++			goto out;
++		}
++
++		offset += ret;
++		retval += ret;
++		len -= ret;
++		index += offset >> HPAGE_SHIFT;
++		offset &= ~HPAGE_MASK;
++
++		page_cache_release(page);
++		if (ret == nr && len)
++			continue;
++		goto out;
++	}
++out:
++	return retval;
++}
++
+ /*
+  * Read a page. Again trivial. If it didn't already exist
+  * in the page cache, it is zero-filled.
+@@ -560,6 +672,7 @@ static void init_once(void *foo, struct 
+ }
  
- #define tlb_start_vma(tlb, vma)	do { } while (0)
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ const struct file_operations hugetlbfs_file_operations = {
++	.read			= hugetlbfs_read,
+ 	.mmap			= hugetlbfs_file_mmap,
+ 	.fsync			= simple_sync_file,
+ 	.get_unmapped_area	= hugetlb_get_unmapped_area,
+
+
