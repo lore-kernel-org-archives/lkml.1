@@ -1,184 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764317AbXGNBV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764404AbXGNBWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764317AbXGNBV6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761489AbXGNBVu
+	id S1764404AbXGNBWl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761489AbXGNBWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:21:50 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60751 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760283AbXGNBVt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:21:49 -0400
-Subject: [PATCH] hugetlbfs read() support
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bill Irwin <bill.irwin@oracle.com>, nacc@us.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 18:23:33 -0700
-Message-Id: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com>
+	Fri, 13 Jul 2007 21:22:33 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:58417 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760283AbXGNBWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 21:22:32 -0400
+Date: Fri, 13 Jul 2007 18:22:25 -0700
+From: sukadev@us.ibm.com
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>, Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 3/3] Dynamic kmem cache allocator for pid namespaces
+Message-ID: <20070714012225.GA29647@us.ibm.com>
+References: <46939561.4070100@openvz.org> <4693977A.5030501@openvz.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4693977A.5030501@openvz.org>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Pavel Emelianov [xemul@openvz.org] wrote:
+| Add kmem_cache to pid_namespace to allocate pids from.
+| 
+| Since booth implementations expand the struct pid to carry
+| more numerical values each namespace should have separate
+| cache to store pids of different sizes.
+| 
+| Each kmem cache is names "pid_<NR>", where <NR> is the number
+| of numerical ids on the pid. Different namespaces with same
+| level of nesting will have same caches.
+| 
+| This patch has two FIXMEs that are to be fixed after we reach
+| the consensus about the struct pid itself.
+| 
+| The first one is that the namespace to free the pid from in
+| free_pid() must be taken from pid. Now the init_pid_ns is
+| used.
+| 
+| The second FIXME is about the cache allocation. When we do know
+| how long the object will be then we'll have to calculate this
+| size in create_pid_cachep. Right now the sizeof(struct pid)
+| value is used.
+| 
+| Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+| Acked-by: Cedric Le Goater <clg@fr.ibm.com>
+| Acked-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+| 
+| ---
+| 
+| diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
+| index ddb9a4c..27cfad3 100644
+| --- a/include/linux/pid_namespace.h
+| +++ b/include/linux/pid_namespace.h
+| @@ -20,6 +20,7 @@ struct pid_namespace {
+|  	struct pidmap pidmap[PIDMAP_ENTRIES];
+|  	int last_pid;
+|  	struct task_struct *child_reaper;
+| +	struct kmem_cache_t *pid_cachep;
 
-Here is the patch to support read() for hugetlbfs, needed to get
-oprofile working on executables backed by largepages. 
-
-If you plan to consider Christoph Lameter's pagecache cleanup patches,
-I will re-write this. Otherwise, please consider this for -mm.
-
-Thanks,
-Badari
-
-Support for reading from hugetlbfs files. libhugetlbfs lets application
-text/data to be placed in large pages. When we do that, oprofile doesn't
-work - since libbfd tries to read from it.
-
-This code is very similar to what do_generic_mapping_read() does, but
-I can't use it since it has PAGE_CACHE_SIZE assumptions.
-
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-Acked-by: William Irwin <bill.irwin@oracle.com>
-Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
-
- fs/hugetlbfs/inode.c |  113 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 113 insertions(+)
-
-Index: linux-2.6.22/fs/hugetlbfs/inode.c
-===================================================================
---- linux-2.6.22.orig/fs/hugetlbfs/inode.c	2007-07-08 16:32:17.000000000 -0700
-+++ linux-2.6.22/fs/hugetlbfs/inode.c	2007-07-13 19:24:36.000000000 -0700
-@@ -156,6 +156,118 @@ full_search:
- }
- #endif
- 
-+static int
-+hugetlbfs_read_actor(struct page *page, unsigned long offset,
-+			char __user *buf, unsigned long count,
-+			unsigned long size)
-+{
-+	char *kaddr;
-+	unsigned long left, copied = 0;
-+	int i, chunksize;
-+
-+	if (size > count)
-+		size = count;
-+
-+	/* Find which 4k chunk and offset with in that chunk */
-+	i = offset >> PAGE_CACHE_SHIFT;
-+	offset = offset & ~PAGE_CACHE_MASK;
-+
-+	while (size) {
-+		chunksize = PAGE_CACHE_SIZE;
-+		if (offset)
-+			chunksize -= offset;
-+		if (chunksize > size)
-+			chunksize = size;
-+		kaddr = kmap(&page[i]);
-+		left = __copy_to_user(buf, kaddr + offset, chunksize);
-+		kunmap(&page[i]);
-+		if (left) {
-+			copied += (chunksize - left);
-+			break;
-+		}
-+		offset = 0;
-+		size -= chunksize;
-+		buf += chunksize;
-+		copied += chunksize;
-+		i++;
-+	}
-+	return copied ? copied : -EFAULT;
-+}
-+
-+/*
-+ * Support for read() - Find the page attached to f_mapping and copy out the
-+ * data. Its *very* similar to do_generic_mapping_read(), we can't use that
-+ * since it has PAGE_CACHE_SIZE assumptions.
-+ */
-+ssize_t
-+hugetlbfs_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
-+{
-+	struct address_space *mapping = filp->f_mapping;
-+	struct inode *inode = mapping->host;
-+	unsigned long index = *ppos >> HPAGE_SHIFT;
-+	unsigned long end_index;
-+	loff_t isize;
-+	unsigned long offset;
-+	ssize_t retval = 0;
-+
-+	/* validate length */
-+	if (len == 0)
-+		goto out;
-+
-+	isize = i_size_read(inode);
-+	if (!isize)
-+		goto out;
-+
-+	offset = *ppos & ~HPAGE_MASK;
-+	end_index = (isize - 1) >> HPAGE_SHIFT;
-+	for (;;) {
-+		struct page *page;
-+		int nr, ret;
-+
-+		/* nr is the maximum number of bytes to copy from this page */
-+		nr = HPAGE_SIZE;
-+		if (index >= end_index) {
-+			if (index > end_index)
-+				goto out;
-+			nr = ((isize - 1) & ~HPAGE_MASK) + 1;
-+			if (nr <= offset) {
-+				goto out;
-+			}
-+		}
-+		nr = nr - offset;
-+
-+		/* Find the page */
-+		page = find_get_page(mapping, index);
-+		if (unlikely(page == NULL)) {
-+			/*
-+			 * We can't find the page in the cache - bail out ?
-+			 */
-+			goto out;
-+		}
-+		/*
-+		 * Ok, we have the page, copy it to user space buffer.
-+		 */
-+		ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
-+		if (ret < 0) {
-+			retval = retval ? : ret;
-+			goto out;
-+		}
-+
-+		offset += ret;
-+		retval += ret;
-+		len -= ret;
-+		index += offset >> HPAGE_SHIFT;
-+		offset &= ~HPAGE_MASK;
-+
-+		page_cache_release(page);
-+		if (ret == nr && len)
-+			continue;
-+		goto out;
-+	}
-+out:
-+	return retval;
-+}
-+
- /*
-  * Read a page. Again trivial. If it didn't already exist
-  * in the page cache, it is zero-filled.
-@@ -560,6 +672,7 @@ static void init_once(void *foo, struct 
- }
- 
- const struct file_operations hugetlbfs_file_operations = {
-+	.read			= hugetlbfs_read,
- 	.mmap			= hugetlbfs_file_mmap,
- 	.fsync			= simple_sync_file,
- 	.get_unmapped_area	= hugetlb_get_unmapped_area,
-
-
+Shouldn't this be 'struct kmem_cache *' ?
