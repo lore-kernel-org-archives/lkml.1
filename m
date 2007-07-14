@@ -1,38 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936855AbXGNBbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765244AbXGNBc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936855AbXGNBbu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764968AbXGNB1d
+	id S1765244AbXGNBc1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765230AbXGNB2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:27:33 -0400
-Received: from gw.goop.org ([64.81.55.164]:56909 "EHLO mail.goop.org"
+	Fri, 13 Jul 2007 21:28:41 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38655 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765318AbXGNB1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:27:31 -0400
-Message-ID: <4698264B.7080406@goop.org>
-Date: Fri, 13 Jul 2007 18:26:35 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] Use --build-id ld option
-References: <4695B28E.2020603@goop.org> <20070712062458.6B2BD4D0489@magilla.localdomain> <20070714012301.GB3565@stusta.de>
-In-Reply-To: <20070714012301.GB3565@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1765514AbXGNB2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 21:28:39 -0400
+Message-Id: <20070714012642.499375439@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Fri, 13 Jul 2007 21:26:42 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/2] Immediate Values - in kernel users
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:27:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> But note that twice compiling a kernel with the same .config will result 
-> in a different one.
+Here are the first users of the immediate values : f00f bug handler and
+profiling.
 
-Is that true even if you reset the .version counter each time?  I'm 
-thinking of product build systems, in which they value being able to 
-reproduce the same build (ideally, bit for bit).
+It applies to 2.6.22-rc6-mm1 and depends on the Immediate Values.
 
-    J
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
