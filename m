@@ -1,99 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbXGNNpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762010AbXGNOCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760857AbXGNNpW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 09:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbXGNNpJ
+	id S1762010AbXGNOCh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 10:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbXGNOCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 09:45:09 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:40371 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757433AbXGNNpH (ORCPT
+	Sat, 14 Jul 2007 10:02:30 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:39880
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757919AbXGNOC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 09:45:07 -0400
-Date: Sat, 14 Jul 2007 08:44:55 -0500
-From: David Fries <david@fries.net>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: NetDev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6 patch] eepro100 resume patch
-Message-ID: <20070714134454.GA1781@spacedout.fries.net>
-References: <20070714000151.GA31482@spacedout.fries.net> <46984CF0.8080700@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 14 Jul 2007 10:02:29 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] pure_initcall ID inconsistency
+Date: Sat, 14 Jul 2007 16:00:43 +0200
+User-Agent: KMail/1.9.6
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46984CF0.8080700@intel.com>
-User-Agent: Mutt/1.5.4i
+Message-Id: <200707141600.43551.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 09:11:28PM -0700, Kok, Auke wrote:
-> [adding netdev]
-> 
-> David Fries wrote:
-> >When I did a software suspend to disk then resumed the Intel network
-> >card using eepro100 driver would be unable to transmit packets.  I
-> >tracked this down and found a register write after the print message
-> >"DP83840 specific setup" which wasn't being executed when the system
-> >was restored.  This fix moves that write and another write which
-> >forces the link speed and duplex.
-> >
-> >After doing this work and preparing the patch I checked out the
-> >mailing list only to find a patch that removes the eepro100.  I then
-> >updated Kconfig, though I wonder why it didn't have a similar message
-> >in it long time ago.
-> >
-> >I too had tried the e100 driver some time ago and it didn't work,
-> 
-> That argument is pretty useless right now. Please *test* e100 and *report 
-> issues*. I recently did some very intensive suspend/resume testing (and 
-> fixes) on e100 and I have yet to hear of any problems with it since... that 
-> was 2.6.18 or so even.
-> 
-> >eepro100 did and I've been using it so long that I've almost forgotten
-> >about that.  I just gave the e100 driver a try and I've been running
-> >for about an hour now without any problems and it does resume after a
-> >suspend to disk operation.
-> 
-> I don't think I need to NAK this. I doubt that Jeff Garzik will apply this 
-> in the first place. eepro100 is on it's way out, so let's focus on what 
-> matters.
-> 
-> Auke
+pure_initcall uses the same ID as core_initcall.
+I guess that's a typo and it should use its own ID.
 
-Sorry for not making the point of my e-mail clear.
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-It would be a good idea when a driver is being obsoleted to flag that
-in the Kconfig and give alternatives when they exist.  It will
-increase the chance that people will pick the supported driver.
-
-My other point was that e100 didn't use to work with my hardware, I
-now have about 12 hours of using the e100 driver without any issues
-that I've seen.  Consider that a success report.
-0000:00:08.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] (rev 01)
-
-Signed-off-by: David Fries <David@Fries.net>
-
-Index: drivers/net/Kconfig
+Index: linux-2.6/include/linux/init.h
 ===================================================================
-RCS file: 
-/home/david/kernel/k/spacedout/patches/linux/drivers/net/Attic/Kconfig,v
-retrieving revision 1.1.2.1
-diff -u -r1.1.2.1 Kconfig
---- drivers/net/Kconfig	13 Jul 2007 23:16:36 -0000	1.1.2.1
-+++ drivers/net/Kconfig	13 Jul 2007 23:31:29 -0000
-@@ -1467,6 +1467,11 @@
- 	depends on NET_PCI && PCI
- 	select MII
- 	help
-+	  ** Warning ** eepro100 (this driver) has been requested to be
-+	  removed from the kernel source tree.  Please use e100 and report
-+	  any bugs as that is the driver that will be supported going
-+	  forward.
-+
- 	  If you have an Intel EtherExpress PRO/100 PCI network (Ethernet)
- 	  card, say Y and read the Ethernet-HOWTO, available from
- 	  <http://www.tldp.org/docs.html#howto>.
+--- linux-2.6.orig/include/linux/init.h	2007-05-26 19:56:35.000000000 +0200
++++ linux-2.6/include/linux/init.h	2007-07-14 15:59:07.000000000 +0200
+@@ -114,7 +114,7 @@ void prepare_namespace(void);
+  *
+  * This only exists for built-in code, not for modules.
+  */
+-#define pure_initcall(fn)		__define_initcall("0",fn,1)
++#define pure_initcall(fn)		__define_initcall("0",fn,0)
+ 
+ #define core_initcall(fn)		__define_initcall("1",fn,1)
+ #define core_initcall_sync(fn)		__define_initcall("1s",fn,1s)
 
 -- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
+Greetings Michael.
