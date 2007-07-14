@@ -1,158 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXGNIX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbXGNI2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbXGNIX6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 04:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXGNIXr
+	id S1759978AbXGNI2n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 04:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXGNI2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 04:23:47 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40378 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753307AbXGNIXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 04:23:44 -0400
-Cc: mtk-manpages@gmx.net, dgc@sgi.com, adilger@clusterfs.com,
-       suparna@in.ibm.com, cmm@us.ibm.com, tytso@mit.edu, xfs@oss.sgi.com
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 14 Jul 2007 10:23:42 +0200
-From: "Michael Kerrisk" <michael.kerrisk@gmx.net>
-In-Reply-To: <20070713124601.GA22961@amitarora.in.ibm.com>
-Message-ID: <20070714082342.174830@gmx.net>
-MIME-Version: 1.0
-References: <20070713123816.GA18000@amitarora.in.ibm.com>
- <20070713124601.GA22961@amitarora.in.ibm.com>
-Subject: Re: [PATCH 1/6][TAKE7] manpage for fallocate
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-X-Authenticated: #2864774
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1+cg6wTxaGcAz4gi4XCR13sM//fOak11Udsr8ZQN3
- CR/NbtFAaUQhkygxj1pMahwzxKHJxi0+mvjg== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: PL6tdz4sbUk7H7CFGWgnW35sZ2hlN4rR
+	Sat, 14 Jul 2007 04:28:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41962 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbXGNI2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 04:28:34 -0400
+Date: Sat, 14 Jul 2007 10:28:07 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@skynet.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>, kenchen@google.com,
+       jschopp@austin.ibm.com, apw@shadowen.org,
+       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
+       y-goto@jp.fujitsu.com, clameter@sgi.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add a movablecore= parameter for sizing ZONE_MOVABLE
+Message-ID: <20070714082807.GC1198@wotan.suse.de>
+References: <20070710102043.GA20303@skynet.ie> <20070712122925.192a6601.akpm@linux-foundation.org> <20070712213241.GA7279@skynet.ie> <20070713155610.GD14125@skynet.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070713155610.GD14125@skynet.ie>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC += mtk-manpages@gmx.net]
-
-Amit,
-
-Thanks for this page.  I will endeavour to review it in 
-the coming days.  In the meantime, the better address to CC
-me on fot man pages stuff is mtk-manpages@gmx.net.
-
-Cheers,
-
-Michael
-
-> Following is the modified version of the manpage originally submitted by
-> David Chinner. Please use `nroff -man fallocate.2 | less` to view.
+On Fri, Jul 13, 2007 at 04:56:10PM +0100, Mel Gorman wrote:
+> On (12/07/07 22:32), Mel Gorman didst pronounce:
 > 
-> This includes changes suggested by Heikki Orsila and Barry Naujok.
+> > > Should we at least go for
+> > > 
+> > > add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
+> > > create-the-zone_movable-zone.patch
+> > > allow-huge-page-allocations-to-use-gfp_high_movable.patch
+> > > handle-kernelcore=-generic.patch
+> > > 
+> > > in 2.6.23?
+> > 
+> > Well, yes please from me obviously :) . There is one additional patch
+> > I would like to send on tomorrow and that is providing the movablecore=
 > 
-> 
-> .TH fallocate 2
-> .SH NAME
-> fallocate \- allocate or remove file space
-> .SH SYNOPSIS
-> .nf
-> .B #include <fcntl.h>
-> .PP
-> .BI "long fallocate(int " fd ", int " mode ", loff_t " offset ", loff_t "
-> len);
-> .SH DESCRIPTION
-> The
-> .B fallocate
-> syscall allows a user to directly manipulate the allocated disk space
-> for the file referred to by
-> .I fd
-> for the byte range starting at
-> .I offset
-> and continuing for
-> .I len
-> bytes.
-> The
-> .I mode
-> parameter determines the operation to be performed on the given range.
-> Currently there are two modes:
-> .TP
-> .B FALLOC_ALLOCATE
-> allocates and initialises to zero the disk space within the given range.
-> After a successful call, subsequent writes are guaranteed not to fail
-> because
-> of lack of disk space.  If the size of the file is less than
-> .IR offset + len ,
-> then the file is increased to this size; otherwise the file size is left
-> unchanged.
-> .B FALLOC_ALLOCATE
-> closely resembles
-> .BR posix_fallocate (3)
-> and is intended as a method of optimally implementing this function.
-> .B FALLOC_ALLOCATE
-> may allocate a larger range than that was specified.
-> .TP
-> .B FALLOC_RESV_SPACE
-> provides the same functionality as
-> .B FALLOC_ALLOCATE
-> except it does not ever change the file size. This allows allocation
-> of zero blocks beyond the end of file and is useful for optimising
-> append workloads.
-> .SH RETURN VALUE
-> .B fallocate
-> returns zero on success, or an error number on failure.
-> Note that
-> .I errno
-> is not set.
-> .SH ERRORS
-> .TP
-> .B EBADF
-> .I fd
-> is not a valid file descriptor, or is not opened for writing.
-> .TP
-> .B EFBIG
-> .IR offset + len
-> exceeds the maximum file size.
-> .TP
-> .B EINVAL
-> .I offset
-> was less than 0, or
-> .I len
-> was less than or equal to 0.
-> .TP
-> .B ENODEV
-> .I fd
-> does not refer to a regular file or a directory.
-> .TP
-> .B ENOSPC
-> There is not enough space left on the device containing the file
-> referred to by
-> .IR fd .
-> .TP
-> .B ESPIPE
-> .I fd
-> refers to a pipe of file descriptor.
-> .TP
-> .B ENOSYS
-> The filesystem underlying the file descriptor does not support this
-> operation.
-> .TP
-> .B EINTR
-> A signal was caught during execution
-> .TP
-> .B EIO
-> An I/O error occurred while reading from or writing to a file system.
-> .TP
-> .B EOPNOTSUPP
-> The mode is not supported on the file descriptor.
-> .SH AVAILABILITY
-> The
-> .B fallocate
-> system call is available since 2.6.XX
-> .SH SEE ALSO
-> .BR syscall (2),
-> .BR posix_fadvise (3),
-> .BR ftruncate (3).
+> This is the patch. It has been boot-tested on a number of machines and
+> behaves as expected. Nick, with this in addition, do you have any
+> objection to the ZONE_MOVABLE patches going through to 2.6.23?
 
--- 
-Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
-Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
+What's the status of making it configurable? I didn't see something
+in -mm for that yet?
+
+But that's not as important as ensuring the concept and user visible
+stuff is in good shape, which I no longer have any problems with. So
+yeah I think it would be good to get this in and get people up and
+running with it.
