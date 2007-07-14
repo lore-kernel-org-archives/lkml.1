@@ -1,154 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764775AbXGNBYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763486AbXGNBZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764775AbXGNBYj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763059AbXGNBYR
+	id S1763486AbXGNBZM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763220AbXGNBYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:24:17 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:38065 "EHLO smtp.polymtl.ca"
+	Fri, 13 Jul 2007 21:24:45 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38139 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761489AbXGNBYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:24:16 -0400
-Message-Id: <20070714012412.380213021@polymtl.ca>
+	id S1764825AbXGNBYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 21:24:44 -0400
+Message-Id: <20070714012411.845928928@polymtl.ca>
 References: <20070714012133.612727310@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Jul 2007 21:21:36 -0400
+Date: Fri, 13 Jul 2007 21:21:35 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 3/8] Text Edit Lock - i386
-Content-Disposition: inline; filename=text-edit-lock-i386.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:24:13 +0000
+Subject: [patch 2/8] Text Edit Lock - Architecture Independent Code
+Content-Disposition: inline; filename=text-edit-lock-architecture-independent-code.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:24:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interface to use for code patching : makes sure the page is writable
-between calls to kernel_text_mark_rw() and kernel_text_unmark().
+This is an architecture independant synchronization around kernel text
+modifications through use of a global mutex.
+
+A mutex has been chosen so that kprobes, the main user of this, can sleep during
+memory allocation between the memory read of the instructions it must replace
+and the memory write of the breakpoint.
+
+Other users of this interface: paravirt, alternatives and immediate values.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- arch/i386/mm/init.c           |   60 ++++++++++++++++++++++++++++++++----------
- include/asm-i386/cacheflush.h |    9 ++++++
- 2 files changed, 56 insertions(+), 13 deletions(-)
+ include/linux/memory.h |    7 +++++++
+ mm/memory.c            |   24 ++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
 
-Index: linux-2.6-lttng/arch/i386/mm/init.c
+Index: linux-2.6-lttng/include/linux/memory.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/i386/mm/init.c	2007-07-13 17:01:24.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/mm/init.c	2007-07-13 17:02:31.000000000 -0400
-@@ -31,6 +31,7 @@
- #include <linux/memory_hotplug.h>
- #include <linux/initrd.h>
- #include <linux/cpumask.h>
-+#include <linux/kprobes.h>
- 
- #include <asm/processor.h>
- #include <asm/system.h>
-@@ -53,6 +54,10 @@
- 
- static int noinline do_test_wp_bit(void);
- 
-+#ifdef CONFIG_DEBUG_RODATA
-+static int rodata_marked;
-+#endif
-+
- /*
-  * Creates a middle page table and puts a pointer to it in the
-  * given global directory entry. This only returns the gd entry
-@@ -796,24 +801,16 @@
+--- linux-2.6-lttng.orig/include/linux/memory.h	2007-07-13 17:01:24.000000000 -0400
++++ linux-2.6-lttng/include/linux/memory.h	2007-07-13 17:14:38.000000000 -0400
+@@ -86,4 +86,11 @@
+ 	register_memory_notifier(&fn##_mem_nb);			\
  }
  
- #ifdef CONFIG_DEBUG_RODATA
--
- void mark_rodata_ro(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long size = PFN_ALIGN(_etext) - start;
- 
--#ifndef CONFIG_KPROBES
--#ifdef CONFIG_HOTPLUG_CPU
--	/* It must still be possible to apply SMP alternatives. */
--	if (num_possible_cpus() <= 1)
--#endif
--	{
--		change_page_attr(virt_to_page(start),
--		                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
--		printk("Write protecting the kernel text: %luk\n", size >> 10);
--		kernel_text_is_ro = 1;
--	}
--#endif
-+	change_page_attr(virt_to_page(start),
-+	                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
-+	printk("Write protecting the kernel text: %luk\n", size >> 10);
-+	kernel_text_is_ro = 1;
++/*
++ * Take and release the kernel text modification lock, used for code patching.
++ * Users of this lock can sleep.
++ */
++extern void kernel_text_lock(void);
++extern void kernel_text_unlock(void);
 +
- 	start += size;
- 	size = (unsigned long)__end_rodata - start;
- 	change_page_attr(virt_to_page(start),
-@@ -828,9 +825,46 @@
- 	 * of who is the culprit.
- 	 */
- 	global_flush_tlb();
-+	rodata_marked = 1;
-+}
+ #endif /* _LINUX_MEMORY_H_ */
+Index: linux-2.6-lttng/mm/memory.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/memory.c	2007-07-13 17:01:24.000000000 -0400
++++ linux-2.6-lttng/mm/memory.c	2007-07-13 17:01:26.000000000 -0400
+@@ -50,6 +50,8 @@
+ #include <linux/delayacct.h>
+ #include <linux/init.h>
+ #include <linux/writeback.h>
++#include <linux/kprobes.h>
++#include <linux/mutex.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <asm/uaccess.h>
+@@ -84,6 +86,12 @@
+ 
+ int randomize_va_space __read_mostly = 1;
+ 
++/*
++ * mutex protecting text section modification (dynamic code patching).
++ * some users need to sleep (allocating memory...) while they hold this lock.
++ */
++static DEFINE_MUTEX(text_mutex);
++
+ static int __init disable_randmaps(char *s)
+ {
+ 	randomize_va_space = 0;
+@@ -2811,3 +2819,19 @@
+ 	return buf - old_buf;
+ }
+ EXPORT_SYMBOL_GPL(access_process_vm);
 +
 +/*
-+ * Lock the kernel text for mutual write exclusion.
-+ * Make sure the pages are writable.
++ * Lock the kernel text for mutual write exclusion. Used for dynamic code
++ * patching.
 + */
-+void __kprobes kernel_text_mark_rw(unsigned long address, size_t len)
++void __kprobes kernel_text_lock(void)
 +{
-+	if (rodata_marked && address >= PFN_ALIGN(_text)
-+			&& (address + len) <= PFN_ALIGN(_etext)) {
-+		unsigned long nr_pages;
-+		nr_pages = ((address + len) >> PAGE_SHIFT)
-+				- (address >> PAGE_SHIFT) + 1;
-+		change_page_attr(virt_to_page(address), nr_pages,
-+				PAGE_KERNEL_EXEC);
-+		mb();
-+		global_flush_tlb();
-+		mb();
-+	}
- }
-+EXPORT_SYMBOL_GPL(kernel_text_mark_rw);
- #endif
- 
-+void __kprobes kernel_text_unmark(unsigned long address, size_t len)
-+{
-+	if (rodata_marked && address >= PFN_ALIGN(_text)
-+			&& (address + len) <= PFN_ALIGN(_etext)) {
-+		unsigned long nr_pages;
-+		nr_pages = ((address + len) >> PAGE_SHIFT)
-+				- (address >> PAGE_SHIFT) + 1;
-+		change_page_attr(virt_to_page(address), nr_pages,
-+				PAGE_KERNEL_RX);
-+		mb();
-+		global_flush_tlb();
-+		mb();
-+	}
++	mutex_lock(&text_mutex);
 +}
-+EXPORT_SYMBOL_GPL(kernel_text_unmark);
++EXPORT_SYMBOL_GPL(kernel_text_lock);
 +
- void free_init_pages(char *what, unsigned long begin, unsigned long end)
- {
- 	unsigned long addr;
-Index: linux-2.6-lttng/include/asm-i386/cacheflush.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-i386/cacheflush.h	2007-07-13 17:01:24.000000000 -0400
-+++ linux-2.6-lttng/include/asm-i386/cacheflush.h	2007-07-13 17:01:26.000000000 -0400
-@@ -36,4 +36,13 @@
- void mark_rodata_ro(void);
- #endif
- 
-+#if defined(CONFIG_DEBUG_RODATA)
-+/* mark kernel text pages writable */
-+extern void kernel_text_mark_rw(unsigned long address, size_t len);
-+extern void kernel_text_unmark(unsigned long address, size_t len);
-+#else
-+void kernel_text_mark_rw(unsigned long address, size_t len) { }
-+void kernel_text_unmark(unsigned long address, size_t len) { }
-+#endif
-+
- #endif /* _I386_CACHEFLUSH_H */
++void __kprobes kernel_text_unlock(void)
++{
++	mutex_unlock(&text_mutex);
++}
++EXPORT_SYMBOL_GPL(kernel_text_unlock);
 
 -- 
 Mathieu Desnoyers
