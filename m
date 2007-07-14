@@ -1,86 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbXGNGIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbXGNGyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbXGNGIR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 02:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXGNGIG
+	id S1756405AbXGNGyx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 02:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXGNGyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 02:08:06 -0400
-Received: from [212.12.190.191] ([212.12.190.191]:33114 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751755AbXGNGIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 02:08:04 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Sat, 14 Jul 2007 09:07:54 +0300
-User-Agent: KMail/1.5
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <200707130808.31109.a1426z@gawab.com> <200707131828.54094.a1426z@gawab.com> <200707131750.31309.rjw@sisk.pl>
-In-Reply-To: <200707131750.31309.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 14 Jul 2007 02:54:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59184
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751891AbXGNGym (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 02:54:42 -0400
+Date: Fri, 13 Jul 2007 23:54:42 -0700 (PDT)
+Message-Id: <20070713.235442.75191469.davem@davemloft.net>
+To: bunk@stusta.de
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] cleanup congestion control options
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070714040953.GE3565@stusta.de>
+References: <20070714040953.GE3565@stusta.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707140907.54607.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang, Ying wrote:
->
-> Hibernating process:
->
->   1. Normal kernel running
->   2. Hibernating is triggered, sys_kexec_load is used to load
->      hibernating kernel and initramfs into memory. Then
->      sys_reboot(LINUX_REBOOT_CMD_KSPAWN) is invoked.
->   3. In sys_reboot, kexec_jump is called to save device/CPU state,
->      then relocate_kernel is called. kexec_jump and relocate_kernel
->      reside in individual page in 16M~512M.
->   4. In relocate_kernel, 0~16M is backupped firstly, then the
->      hibernating kernel and initramfs is copied to 0~16M, after that,
->      the hibernating kernel is booted.
->   5. In hibernating kernel, the memory of normal kernel (it is in
->      16M~512M) is saved into a hibernation image through /dev/mem
->      and ELF header.
->
->
-> Resume process:
->
->   1. Resuming kernel is booted as a normal kernel, but the memory is
->      restricted to 0~16M.
->   2. Checking whether there is a effective hibernation image. If
->      there isn't, the memory of 16M~512M is hot added, and the normal
->      boot up process continues; If there is, a resuming process is
->      triggered.
->   3. sys_kexec_load is used to restore the memory state of hibernated
->      kernel. The sys_kexec_load works in crashdump way, that is, the
->      hibernation image is copied to destination location in 16M~512M
->      in sys_kexec_load instead of relocate_kernel. There is no half
->      of memory size restriction.
->   4. sys_reboot is called to trigger jumping back, which will jump back
->      to kexec_jump of hibernated kernel.
->   5. In kexec_jump of hibernated kernel, the memory of 0~16M is copied
->      back from the backup area in 16M~512M. The memory state of
->      hibernated kernel is restored totally. The CPU and device state
->      can be restored after that.
->
->
-> If there is too much difficulty to hot add memory in step 2. A more
-> conservative method can be used as step 1 and step 2.
->
->   1. A normal kernel is booted.
->   2. Checking whether there is a effective hibernation image. If there
->      isn't, continue the normal boot process; otherwise, a resuming
->      kernel is kexeced in memory 0~16M. The resuming process will
->      continue in kexeced resuming kernel.
+From: Adrian Bunk <bunk@stusta.de>
+Date: Sat, 14 Jul 2007 06:09:54 +0200
 
-During Resume no kexec'ing is necessary; the normal kernel should be able to 
-read the hibernation image via the /dev/snapshot interface.
+> This patch contains the following cleanups:
+> - note in the prompt if an option depends on EXPERIMENTAL
+> - remove "default n"s that didn't have any effect
+> - remove "default m"s from options under TCP_CONG_ADVANCED:
+>   if you manually choose congestion control modules you should
+>   know which ones you want
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-
-Thanks!
-
---
-Al
-
+I'm not so sure about any of this, sorry Adrian, I'm
+not applying this.
