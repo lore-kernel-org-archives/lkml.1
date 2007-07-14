@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXGNW7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932090AbXGNXBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932184AbXGNW7q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 18:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765047AbXGNW7a
+	id S932090AbXGNXBz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 19:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbXGNXBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 18:59:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:38616 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764820AbXGNW73 (ORCPT
+	Sat, 14 Jul 2007 19:01:48 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:40049 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751365AbXGNXBs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 18:59:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ukEb+ZjWmOCzZsHGc5dbgjLRlaHYcShCgjskHQCMQS5biQ3qkfHG1BuetzfkEuAe6loOaM2WP4347PU8EZR/vW5HnLBdv44znEGwIOyNqrdwbjwR6O5yeMhICOoO8tceqBtEbGZ4vpDHcg1c2WWwjEti2IDKBPonh7LG58vn9pk=
-Message-ID: <8bd0f97a0707141559s4880c86dtf74dc6c73476ad5f@mail.gmail.com>
-Date: Sat, 14 Jul 2007 18:59:28 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Olaf Hering" <olaf@aepfle.de>
-Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070714213412.GA10196@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 14 Jul 2007 19:01:48 -0400
+Date: Sat, 14 Jul 2007 19:01:46 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 5/8] Immediate Values - kprobe header fix
+Message-ID: <20070714230146.GE18674@Krystal>
+References: <20070714012439.285079881@polymtl.ca> <20070714012624.150971859@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070714205709.GA9478@aepfle.de> <46993C59.1030902@zytor.com>
-	 <20070714213412.GA10196@aepfle.de>
+In-Reply-To: <20070714012624.150971859@polymtl.ca>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:01:25 up 7 days, 13:06,  3 users,  load average: 0.69, 0.64, 0.38
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/14/07, Olaf Hering <olaf@aepfle.de> wrote:
-> On Sat, Jul 14, H. Peter Anvin wrote:
-> > Olaf Hering wrote:
-> > > Declare PAGE_SIZE as getpagesize() for userspace.
-> > > PAGE_SIZE is used in resource.h and shm.h
-> >
-> > I would think it would be better to not define it at all.  Several
-> > architectures already don't have PAGE_SIZE visible to userspace in any way.
->
-> i386 has it, so everyone uses it.
+Should be dropped, following Christoph's advice.
 
-not anymore ... it's broken too many other architectures so anything
-that matters has switched off of it
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> Since the immediate values depend on the same int3 handler as kprobes implements
+> for i386, we have to get architecture specific defines available for the kprobes
+> trap handler (especially restore_interrupts()) wven when CONFIG_KPROBES is not
+> selected.
+> 
+> That kind of ifdef around a whole header does not make sense in the first place
+> anyway.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: prasanna@in.ibm.com
+> CC: ananth@in.ibm.com
+> CC: anil.s.keshavamurthy@intel.com
+> CC: davem@davemloft.net
+> ---
+>  include/linux/kprobes.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6-lttng/include/linux/kprobes.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/linux/kprobes.h	2007-07-13 18:47:57.000000000 -0400
+> +++ linux-2.6-lttng/include/linux/kprobes.h	2007-07-13 18:48:45.000000000 -0400
+> @@ -36,9 +36,9 @@
+>  #include <linux/spinlock.h>
+>  #include <linux/rcupdate.h>
+>  
+> -#ifdef CONFIG_KPROBES
+>  #include <asm/kprobes.h>
+>  
+> +#ifdef CONFIG_KPROBES
+>  /* kprobe_status settings */
+>  #define KPROBE_HIT_ACTIVE	0x00000001
+>  #define KPROBE_HIT_SS		0x00000002
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-> asm/user.h uses it for NBPG, which appears in gdb configure scripts.
-> Maybe it doesnt trigger there because the sysconf SC_* macros match.
-
-the sourceware tree (binutils/gdb/etc...) bend over backwards to get a
-usable definition so not having NBPG available is fine ... there's one
-thing left which needs fixing and i have a patch that i need to commit
-for that
-
-> other places where asm/page.h is used:
-> util-linux configure scripts, strace, xorg-11, and alot more.
-> Have to check if they really need it.
-
-those three packages you quote here i know have been fixed in the
-latest versions
--mike
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
