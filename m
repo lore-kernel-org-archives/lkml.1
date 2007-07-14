@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762603AbXGNAqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763814AbXGNAst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762603AbXGNAqH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 20:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763668AbXGNApv
+	id S1763814AbXGNAst (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 20:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758459AbXGNAsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 20:45:51 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:53337 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763603AbXGNAps (ORCPT
+	Fri, 13 Jul 2007 20:48:41 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60589 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759264AbXGNAsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 20:45:48 -0400
-Subject: Re: v2.6.22.1-rt3
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1184325752.12353.312.camel@chaos>
-References: <1184325752.12353.312.camel@chaos>
-Content-Type: text/plain
-Date: Fri, 13 Jul 2007 17:33:37 -0700
-Message-Id: <1184373217.19670.3.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Fri, 13 Jul 2007 20:48:40 -0400
+Message-ID: <46981C73.8060402@zytor.com>
+Date: Fri, 13 Jul 2007 17:44:35 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Greg KH <greg@kroah.com>, Bryan Wu <bryan.wu@analog.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org,
+       Nish Aravamudan <nish.aravamudan@gmail.com>
+Subject: Re: Linux 2.6.22.1
+References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com> <1184307380.8943.7.camel@roc-desktop> <20070713061617.GA24317@kroah.com> <20070713064751.GA3492@stusta.de>
+In-Reply-To: <20070713064751.GA3492@stusta.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 13:22 +0200, Thomas Gleixner wrote:
-> we are pleased to announce the v2.6.22.1-rt3 kernel
-[...]
-> This release is bugfix release:
+Adrian Bunk wrote:
 > 
-> - update of the x8664 -hrt queue (resolve boot problems)
-> - gtod vsyscall fix from Gregory Haskins
+> I found the problem and (ab)used my kstable group rights to fix it:
+> 
+> objects/info/alternates of linux-2.6.22.y.git contained
+>   /home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/objects
+> instead of
+>   /pub/scm/linux/kernel/git/torvalds/linux-2.6.git/objects
+> 
+> This seems to exist on git.kernel.org but not on www.kernel.org, 
+> explaining why the http method didn't work.
+> 
 
-I can confirm that this patch fixes booting on an 8-CPU x86-64 box that
--rt2 would not boot on.
+No, it's because the /home/ftp/pub/... path isn't visible to the http
+namespace.
 
-- Josh Triplett
-
-
+	-hpa
