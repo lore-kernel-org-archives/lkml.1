@@ -1,48 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763814AbXGNAst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763814AbXGNAtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763814AbXGNAst (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 20:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758459AbXGNAsl
+	id S1763814AbXGNAtu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 20:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbXGNAto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 20:48:41 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60589 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759264AbXGNAsk (ORCPT
+	Fri, 13 Jul 2007 20:49:44 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:53229 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758459AbXGNAtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 20:48:40 -0400
-Message-ID: <46981C73.8060402@zytor.com>
-Date: Fri, 13 Jul 2007 17:44:35 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 13 Jul 2007 20:49:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eaIDiOe0g4Vi3/F8BYOyTONLaEzK/M+ECs3OTugEZ8m9rMxVNUTHkMbDcxIHSHAR+zGT/vnB23Rg6hvfeLdWxa8B2LY9Nwc8Eeof4tpxNu84eFTu7G4brNBFyYdhNOPfJau9LPEKBZ5HSfwRjPTn2vPanM+c9Z8EalO/d7yLviA=
+Message-ID: <a781481a0707131749l55671ccdyb315072aec1423cb@mail.gmail.com>
+Date: Sat, 14 Jul 2007 06:19:41 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Linas Vepstas" <linas@austin.ibm.com>
+Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+       "David Miller" <davem@davemloft.net>
+In-Reply-To: <20070713200515.GS5549@austin.ibm.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Greg KH <greg@kroah.com>, Bryan Wu <bryan.wu@analog.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-Subject: Re: Linux 2.6.22.1
-References: <29495f1d0707121135u2a07cf04nb8bfe555c5c63679@mail.gmail.com> <1184307380.8943.7.camel@roc-desktop> <20070713061617.GA24317@kroah.com> <20070713064751.GA3492@stusta.de>
-In-Reply-To: <20070713064751.GA3492@stusta.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070713200515.GS5549@austin.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> 
-> I found the problem and (ab)used my kstable group rights to fix it:
-> 
-> objects/info/alternates of linux-2.6.22.y.git contained
->   /home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/objects
-> instead of
->   /pub/scm/linux/kernel/git/torvalds/linux-2.6.git/objects
-> 
-> This seems to exist on git.kernel.org but not on www.kernel.org, 
-> explaining why the http method didn't work.
-> 
+Hi,
 
-No, it's because the /home/ftp/pub/... path isn't visible to the http
-namespace.
+I'm totally confuzed by this patch ...
 
-	-hpa
+On 7/14/07, Linas Vepstas <linas@austin.ibm.com> wrote:
+>
+> This is a patch (& bug report) for a crash in sysctl_set_parent()
+> in 2.6.22-git2.
+
+Are you sure you saw this crash on 22-git2 (Linus' tree) ???
+
+> Problem: 2.6.22-git2 crashes with a stack trace
+> [c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
+> [c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
+> [c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
+> [c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
+> [c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
+> [c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
+> [c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
+
+Please post the full dmesg output, if possible.
+
+> A bit of poking around makes it clear what the problem is:
+> In sysctl_set_parent(), the for loop
+>
+>    for (; table->ctl_name || table->procname; table++) {
+
+Yup, but note that the "table" there is a struct ctl_table * ...
+
+> walks off the end of the table, and into garbage.  Basically,
+> this for-loop iterator expects all table arrays to be
+> "null terminated".  However, net/ipv4/devinet.c statically
+> declares an array that is not null-terminated.
+
+Whereas the "not null-terminated" array you're talking about
+in devinet.c is a struct devinet_sysctl_table, whose *members*
+are ctl_table structs.
+
+Also note that all those members have already been declared
+as arrays: struct ctl_table xxx[2]; *precisely* because the
+second element (which is left un-initialized, hence will get
+zeroed-out being static) is what will protect us from running
+out into garbage in sysctl_set_parent().
+
+> The patch
+> below fixes that; it works for me.
+
+Now I'm even more confuzed ...
+
+> Its somewhat conservative;
+> if one wishes to assume that the compiler will always zero out
+> the empty parts of the structure,
+
+You can always safely assume that.
+
+Off-topic, but note that unintialized static variables being automagically
+initialized to zero / NULL is guaranteed by C (the language) itself, so
+nothing left in the hands of compiler implementations here. [6.7.8:10]
+
+> then this pach can be shrunk
+> to one line: +  ctl_table               devinet_root_dir[3];
+
+But that's pointless. It was already [2] for the reason I mentioned.
+
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> [...]
+>  net/core/neighbour.c |    4 ++++
+>  net/ipv4/devinet.c   |    7 ++++++-
+>  2 files changed, 10 insertions(+), 1 deletion(-)
+
+Weirder. diffstat does not match the patch ...
+
+> Index: linux-2.6.22-git2/net/ipv4/devinet.c
+> ===================================================================
+> --- linux-2.6.22-git2.orig/net/ipv4/devinet.c   2007-07-13 14:23:21.000000000 -0500
+> +++ linux-2.6.22-git2/net/ipv4/devinet.c        2007-07-13 14:24:15.000000000 -0500
+> @@ -1424,7 +1424,7 @@ static struct devinet_sysctl_table {
+>         ctl_table               devinet_dev[2];
+>         ctl_table               devinet_conf_dir[2];
+>         ctl_table               devinet_proto_dir[2];
+> -       ctl_table               devinet_root_dir[2];
+> +       ctl_table               devinet_root_dir[3];
+>  } devinet_sysctl = {
+>         .devinet_vars = {
+>                 DEVINET_SYSCTL_COMPLEX_ENTRY(FORWARDING, "forwarding",
+> @@ -1493,8 +1493,13 @@ static struct devinet_sysctl_table {
+
+And Linus' latest -git doesn't even have this stuff at line 1493.
+
+>                         .data           = &ipv4_devconf.loop,
+>                         .maxlen         = sizeof(int),
+>                         .mode           = 0644,
+> +                       .child  = 0x0,
+>                         .proc_handler   = &proc_dointvec,
+>                 },
+> +               {
+> +                       .ctl_name       = 0,
+> +                       .procname       = 0,
+> +               },
+>         },
+>  };
+
+Well, as I said, I'm totally confuzed ...
+
+Satyam
