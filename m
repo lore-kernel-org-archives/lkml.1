@@ -1,114 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765039AbXGNVEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765638AbXGNVFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765039AbXGNVEq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 17:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763315AbXGNVEi
+	id S1765638AbXGNVFZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 17:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762762AbXGNVFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 17:04:38 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:35642 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761019AbXGNVEi (ORCPT
+	Sat, 14 Jul 2007 17:05:10 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:62814 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763986AbXGNVFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 17:04:38 -0400
+	Sat, 14 Jul 2007 17:05:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=njT3x/3SbBZzFzU2KrtkEkIEbE7xOry0OlWkJ5jUBx1ENqnXvtWoq316g9KLscwWUtNdkpqeT2KVJWAgtNGyxfKuotsxnP/D/BPjHItzBuuKHvHJQ8qk1NIEWlsZSkNr8zU+YGypUaKPwuz7oYlBiHzuSW1k1ktPIVUzrbi3ARQ=
-Message-ID: <8bd0f97a0707141404k16e53945s92b3cd4264ecf0aa@mail.gmail.com>
-Date: Sat, 14 Jul 2007 17:04:36 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Olaf Hering" <olaf@aepfle.de>
-Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070714205709.GA9478@aepfle.de>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=RI76pUt11lAk5vR4xMqz2uBxs9S/XItE961JJIrFg6PDY0Hp3AEUJesIvPs7ObJcWLZOnAPNdc1luHgvgJ3Mm9TYfaUWHGQiw0UkuZHXEXsbJtRkUlrtwpbpPcPaOFs2OEr7ngD/98q32ORJ7A3NfNE3xVUm4ZZe+Vxjov4BN8o=
+Message-ID: <76366b180707141405n7aeb9cf0i6d66ca5b0093bd8f@mail.gmail.com>
+Date: Sat, 14 Jul 2007 17:05:07 -0400
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Geode GX framebuffer driver: Arcom vs. AMD
+Cc: linux-kernel@vger.kernel.org, "Jordan Crouse" <jordan.crouse@amd.com>
+In-Reply-To: <1184445094.4692.2.camel@daplas>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_52579_24404243.1184447076755"
-References: <20070714205709.GA9478@aepfle.de>
-Sender: linux-kernel-owner@vger.kernel.org
-X-Mailing-List: linux-kernel@vger.kernel.org
-
-------=_Part_52579_24404243.1184447076755
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <76366b180707141201u14585c2eyeb58f0b7b279ea1b@mail.gmail.com>
+	 <1184445094.4692.2.camel@daplas>
+X-Google-Sender-Auth: c59bb5879e31e047
+Sender: linux-kernel-owner@vger.kernel.org
+X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/14/07, Olaf Hering <olaf@aepfle.de> wrote:
-> Declare PAGE_SIZE as getpagesize() for userspace.
-> PAGE_SIZE is used in resource.h and shm.h
+Tony,
+
+Do you have the patch working already? I'd love to try this out in the
+meantime on the LX system I am developing with at the moment. I'm
+assuming you worked this into the existing Arcom framework (gxfb) and
+pulled the necessary pieces from the AMD code?
+
+I looked at doing this, but it just seemed easier to use the AMD
+provided driver, as it would be easier to merge any changes in the
+future and might provide more full support for the hardware and all
+its modes.
+
+Also, question for AMD/Jordan.. Is AMD going to provide any
+support/patches for the existing gxfb and this new lxfb? (Maybe
+perhaps an AMD supported DirectFB driver? :))
+
+If anyone else is interested, I'll get around to making a patch of the
+work I just did to bring the original AMD 2.6.11 framebuffer &
+Cimarron fully up to date with the 2.6.22 tree. If AMD is going to
+continue to maintain their own driver, this will allow the use of an
+up-to-date kernel.
+
+Thanks, -Andrew
+
+On 7/14/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> There's a patch for the AMD Geode LX which I'm going to send for the -mm
+> tree soon. Its module name is lxfb.
 >
-> define PAGE_SIZE in asm-generic/page.h
-> guard get_order() with _ARCH_HAS_GET_ORDER for ia64 and xtensa
-> include asm-generic/page.h in asm/page.h
-> make asm/page.h nearly empty by moving the #ifdef guards up
-> remove unneeded page.h export from frv
-
-imo, asm/page.h should just go away for userspace.  the attached patch
-is what i've been using in Gentoo ... but somethings (like an arch or
-two in glibc) still assume asm/page.h is OK.  in general though,
-considering asm/page.h has become so unreliable lately (a large number
-of arches ifdef the whole thing out), most packages out there have
-updated already to use the userspace interface from unistd.h.
--mike
-
-------=_Part_52579_24404243.1184447076755
-Content-Type: application/octet-stream; 
-	name=10_all_remove-page-user-headers.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f44l48f3
-Content-Disposition: attachment; filename="10_all_remove-page-user-headers.patch"
-
-TW9zdCBhcmNoZXMgc3R1YiB0aGVzZSBoZWFkZXJzIGFueXdheXMsIHNvIGxldHMganVzdCBwbGFp
-biBwdW50IHRoZW0KCmRpZmYgLS1naXQgYS9pbmNsdWRlL2FzbS1nZW5lcmljL0tidWlsZC5hc20g
-Yi9pbmNsdWRlL2FzbS1nZW5lcmljL0tidWlsZC5hc20KaW5kZXggYTM3ZTk1Zi4uODczMWFlNCAx
-MDA2NDQKLS0tIGEvaW5jbHVkZS9hc20tZ2VuZXJpYy9LYnVpbGQuYXNtCisrKyBiL2luY2x1ZGUv
-YXNtLWdlbmVyaWMvS2J1aWxkLmFzbQpAQCAtMjcsOSArMjcsNiBAQCB1bmlmZGVmLXkgKz0gdGVy
-bWJpdHMuaAogdW5pZmRlZi15ICs9IHRlcm1pb3MuaAogdW5pZmRlZi15ICs9IHR5cGVzLmgKIHVu
-aWZkZWYteSArPSB1bmlzdGQuaAotdW5pZmRlZi15ICs9IHVzZXIuaAogCiAjIFRoZXNlIHByb2Jh
-Ymx5IHNob3VsZG4ndCBiZSBleHBvcnRlZAogdW5pZmRlZi15ICs9IHNobXBhcmFtLmgKLXVuaWZk
-ZWYteSArPSBlbGYuaAotdW5pZmRlZi15ICs9IHBhZ2UuaApkaWZmIC0tZ2l0IGEvaW5jbHVkZS9s
-aW51eC9LYnVpbGQgYi9pbmNsdWRlL2xpbnV4L0tidWlsZAppbmRleCBlODFlMzAxLi40M2JjODcx
-IDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L0tidWlsZAorKysgYi9pbmNsdWRlL2xpbnV4L0ti
-dWlsZApAQCAtMTUsNyArMTUsNiBAQCBoZWFkZXIteSArPSB1c2IvCiAKIGhlYWRlci15ICs9IGFm
-ZnNfaGFyZGJsb2Nrcy5oCiBoZWFkZXIteSArPSBhaW9fYWJpLmgKLWhlYWRlci15ICs9IGEub3V0
-LmgKIGhlYWRlci15ICs9IGFyY2ZiLmgKIGhlYWRlci15ICs9IGF0bWFwaS5oCiBoZWFkZXIteSAr
-PSBhdG1icjI2ODQuaApAQCAtNTQsOCArNTMsNiBAQCBoZWFkZXIteSArPSBkcWJsa192MS5oCiBo
-ZWFkZXIteSArPSBkcWJsa192Mi5oCiBoZWFkZXIteSArPSBkcWJsa194ZnMuaAogaGVhZGVyLXkg
-Kz0gZWZzX2ZzX3NiLmgKLWhlYWRlci15ICs9IGVsZi1mZHBpYy5oCi1oZWFkZXIteSArPSBlbGYu
-aAogaGVhZGVyLXkgKz0gZWxmLWVtLmgKIGhlYWRlci15ICs9IGZhZHZpc2UuaAogaGVhZGVyLXkg
-Kz0gZmQuaApAQCAtMTYyLDYgKzE1OSw3IEBAIHVuaWZkZWYteSArPSBhY2N0LmgKIHVuaWZkZWYt
-eSArPSBhZGIuaAogdW5pZmRlZi15ICs9IGFkZnNfZnMuaAogdW5pZmRlZi15ICs9IGFncGdhcnQu
-aAordW5pZmRlZi15ICs9IGEub3V0LmgKIHVuaWZkZWYteSArPSBhcG1fYmlvcy5oCiB1bmlmZGVm
-LXkgKz0gYXRhbGsuaAogdW5pZmRlZi15ICs9IGF0bWFycC5oCkBAIC0xODUsNyArMTgzLDYgQEAg
-dW5pZmRlZi15ICs9IGN5Y2xhZGVzLmgKIHVuaWZkZWYteSArPSBkY2NwLmgKIHVuaWZkZWYteSAr
-PSBkaXJlbnQuaAogdW5pZmRlZi15ICs9IGRsbS5oCi11bmlmZGVmLXkgKz0gZWxmY29yZS5oCiB1
-bmlmZGVmLXkgKz0gZXJybm8uaAogdW5pZmRlZi15ICs9IGVycnF1ZXVlLmgKIHVuaWZkZWYteSAr
-PSBldGh0b29sLmgKQEAgLTMyOCw3ICszMjUsNiBAQCB1bmlmZGVmLXkgKz0gdWlucHV0LmgKIHVu
-aWZkZWYteSArPSB1aW8uaAogdW5pZmRlZi15ICs9IHVuaXN0ZC5oCiB1bmlmZGVmLXkgKz0gdXNi
-ZGV2aWNlX2ZzLmgKLXVuaWZkZWYteSArPSB1c2VyLmgKIHVuaWZkZWYteSArPSB1dHNuYW1lLmgK
-IHVuaWZkZWYteSArPSB2aWRlb2RldjIuaAogdW5pZmRlZi15ICs9IHZpZGVvZGV2LmgKZGlmZiAt
-LWdpdCBhL2luY2x1ZGUvbGludXgvYS5vdXQuaCBiL2luY2x1ZGUvbGludXgvYS5vdXQuaAppbmRl
-eCBmOTEzY2MzLi45ODIxMGU2IDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L2Eub3V0LmgKKysr
-IGIvaW5jbHVkZS9saW51eC9hLm91dC5oCkBAIC0xMjgsMTIgKzEyOCwyMCBAQCBlbnVtIG1hY2hp
-bmVfdHlwZSB7CiAjZW5kaWYKIAogI2lmZGVmIGxpbnV4CisjaWZkZWYgX19LRVJORUxfXwogI2lu
-Y2x1ZGUgPGFzbS9wYWdlLmg+CisjZWxzZQorI2luY2x1ZGUgPHVuaXN0ZC5oPgorI2VuZGlmCiAj
-aWYgZGVmaW5lZChfX2kzODZfXykgfHwgZGVmaW5lZChfX21jNjgwMDBfXykKICNkZWZpbmUgU0VH
-TUVOVF9TSVpFCTEwMjQKICNlbHNlCiAjaWZuZGVmIFNFR01FTlRfU0laRQorI2lmZGVmIF9fS0VS
-TkVMX18KICNkZWZpbmUgU0VHTUVOVF9TSVpFCVBBR0VfU0laRQorI2Vsc2UKKyNkZWZpbmUgU0VH
-TUVOVF9TSVpFCWdldHBhZ2VzaXplKCkKKyNlbmRpZgogI2VuZGlmCiAjZW5kaWYKICNlbmRpZgpk
-aWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9zaG0uaCBiL2luY2x1ZGUvbGludXgvc2htLmgKaW5k
-ZXggYWQyZTNhZi4uYjk1Y2U4NyAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9zaG0uaAorKysg
-Yi9pbmNsdWRlL2xpbnV4L3NobS5oCkBAIC0zLDcgKzMsMTEgQEAKIAogI2luY2x1ZGUgPGxpbnV4
-L2lwYy5oPgogI2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+CisjaWZkZWYgX19LRVJORUxfXwogI2lu
-Y2x1ZGUgPGFzbS9wYWdlLmg+CisjZWxzZQorI2luY2x1ZGUgPHVuaXN0ZC5oPgorI2VuZGlmCiAK
-IC8qCiAgKiBTSE1NQVgsIFNITU1OSSBhbmQgU0hNQUxMIGFyZSB1cHBlciBsaW1pdHMgYXJlIGRl
-ZmF1bHRzIHdoaWNoIGNhbgpAQCAtMTMsNyArMTcsMTEgQEAKICNkZWZpbmUgU0hNTUFYIDB4MjAw
-MDAwMAkJIC8qIG1heCBzaGFyZWQgc2VnIHNpemUgKGJ5dGVzKSAqLwogI2RlZmluZSBTSE1NSU4g
-MQkJCSAvKiBtaW4gc2hhcmVkIHNlZyBzaXplIChieXRlcykgKi8KICNkZWZpbmUgU0hNTU5JIDQw
-OTYJCQkgLyogbWF4IG51bSBvZiBzZWdzIHN5c3RlbSB3aWRlICovCisjaWZkZWYgX19LRVJORUxf
-XwogI2RlZmluZSBTSE1BTEwgKFNITU1BWC9QQUdFX1NJWkUqKFNITU1OSS8xNikpIC8qIG1heCBz
-aG0gc3lzdGVtIHdpZGUgKHBhZ2VzKSAqLworI2Vsc2UKKyNkZWZpbmUgU0hNQUxMIChTSE1NQVgv
-Z2V0cGFnZXNpemUoKSooU0hNTU5JLzE2KSkKKyNlbmRpZgogI2RlZmluZSBTSE1TRUcgU0hNTU5J
-CQkJIC8qIG1heCBzaGFyZWQgc2VncyBwZXIgcHJvY2VzcyAqLwogCiAjaW5jbHVkZSA8YXNtL3No
-bXBhcmFtLmg+Cg==
-------=_Part_52579_24404243.1184447076755--
+> Tony
