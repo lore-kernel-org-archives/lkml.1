@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763555AbXGNSxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762916AbXGNTCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763555AbXGNSxq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 14:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759937AbXGNSxj
+	id S1762916AbXGNTCJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 15:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760199AbXGNTB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 14:53:39 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:4425 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759765AbXGNSxi (ORCPT
+	Sat, 14 Jul 2007 15:01:58 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:19239 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759758AbXGNTB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 14:53:38 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 14 Jul 2007 11:53:35 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: signalfd() semantics after execve()
-In-Reply-To: <20070714074145.277260@gmx.net>
-Message-ID: <Pine.LNX.4.64.0707141151500.31255@alien.or.mcafeemobile.com>
-References: <20070714074145.277260@gmx.net>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 14 Jul 2007 15:01:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=IymSNZsKPrvdoD5MdSTEzm5miO6mtMG8Qs3HC1YzqLAftxI1UGDYqVe3Unoj5tvYFUQI7fsxdMtO8TecHk7jooNs/QBliNEpDEmT7XTryv6B3Kpd87RXKEztJvewiW1cwOQ650LTuuHzJ/YhTXpyUUK8yW5VocxXAhKJ75ZQ5cA=
+Message-ID: <76366b180707141201u14585c2eyeb58f0b7b279ea1b@mail.gmail.com>
+Date: Sat, 14 Jul 2007 15:01:56 -0400
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: linux-kernel@vger.kernel.org
+Subject: Geode GX framebuffer driver: Arcom vs. AMD
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 930055c6b1eb7dac
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jul 2007, Michael Kerrisk wrote:
+Is there any reason why the GPL framebuffer driver for the GX/GX1/LX
+directly from AMD is not integrated into the kernel and only a custom
+driver for only the GX/GX1 written by Arcom exists?
+(drivers/video/geode/*)
 
-> Davide, 
-> 
-> I'm working on the signalfd(2) man page, and I've come
-> acorss some puzzling behaviour...  
-> 
-> What are the intended semantics of a signalfd file descriptor
-> after an execve()?
-> 
-> As far as I can work out, after an execve() the file descriptor
-> is still available, but reads from it always return 0, even if:
-> 
-> a) there were signals pending before the execve().
->    However, sigpending() shows the signal as pending,
->    and the signal can be accepted using sigwaitinfo().
-> 
-> b) we generate a signal after the execve().
->  
-> Is this intended behavior (the "orphaned sighand" condition
-> mentioned in the draft man page you sent me?)?  Is it a bug?
+If you have an LX, the Arcom driver won't work and it is difficult to
+use AMD's patch for 2.6.11 with a more recent kernel because the
+drivers/video/geode directory has filename conflicts with files in the
+patch.
 
-It is the intended behaviour. Just like reading from a socket where the 
-remote peer disconnected. A return 0 from a read from a signalfd should be 
-interpreted as the "virtual connection" with the signal source has been 
-dropped.
+If there are no issues preventing its inclusion, would updated patches
+be accepted to switch to AMD's framebuffer driver? The AMD patches
+would need to be combined to support all three platforms in the driver
+dir, all sitting on top of the Cimarron HAL installed in lib/cimarron.
 
+The entire AMD LX patch for 2.6.11 is here:
+http://www.amd.com/files/connectivitysolutions/geode/geode_lx/Patches_Linux2.6.11_Common_02.03.0100.patch
 
+The relevant parts are:
+drivers/video/geode/*
+lib/cimarron/*
 
-- Davide
-
-
+Thanks, -Andrew
