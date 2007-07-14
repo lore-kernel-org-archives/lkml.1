@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbXGNIkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbXGNIlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759563AbXGNIkL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 04:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXGNIj6
+	id S1760575AbXGNIlt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 04:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbXGNIln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 04:39:58 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46777
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708AbXGNIj5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 04:39:57 -0400
-Date: Sat, 14 Jul 2007 01:33:54 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-In-Reply-To: <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
-Message-ID: <Pine.LNX.4.64.0707140128210.25614@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
- <200707131117.38426.rjw@sisk.pl> <Pine.LNX.4.64.0707130211570.25614@asgard.lang.hm>
- <200707131341.35801.rjw@sisk.pl> <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 14 Jul 2007 04:41:43 -0400
+Received: from www.osadl.org ([213.239.205.134]:35277 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751708AbXGNIlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 04:41:42 -0400
+Subject: [PATCH] X86_64: hpet tsc calibration fix broken smi detection logic
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+       Stable Team <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
+Date: Sat, 14 Jul 2007 10:41:39 +0200
+Message-Id: <1184402499.12353.340.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-by the way, a data point on kernel sizes
+The current SMI detection logic in read_hpet_tsc() makes sure,
+that when a SMI happens between the read of the HPET counter and
+the read of the TSC, this wrong value is used for TSC calibration.
 
--rw-r--r-- 1 root root  864648 Jul 14 00:53 vmlinuz.2.6.22.1.hibernate
--rw-r--r-- 1 root root  659496 Jul 14 01:17 vmlinuz.2.6.22.1.hibernate.stripped
--rw-r--r-- 1 root root 3948168 Jul 14 01:10 vmlinuz.2.6.22.1.running
+This is not the intention of the function. The comparison must ensure,
+that we do _NOT_ use such a value.
 
-the running one matches the config I'm running on my home server, the 
-hibernate is a pretty stripped down version, and the stripped is close to 
-a minimum (including turning off printk and BUG()). All three are with all 
-drivers built-in, no module support.
+Fix the check to use calibration values where delta of the two TSC reads
+is smaller than a reasonable threshold.
 
-this is on a amd64 64 bit system
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-configs are available if anyone cares, the point is how much smaller a 
-kernel could be if it doesn't need all the stuff that you put in your main 
-kernel. In my case this includes not enabling the 3-ware card that holds 
-my 12-disk raid array, instead the hibernate image would be stored on one 
-of the scsi drives attached to the adaptec 78xx card.
+--- a/arch/x86_64/kernel/hpet.c
++++ b/arch/x86_64/kernel/hpet.c
+@@ -190,7 +190,7 @@ int hpet_reenable(void)
+  */
+ 
+ #define TICK_COUNT 100000000
+-#define TICK_MIN   5000
++#define SMI_THRESHOLD 50000
+ #define MAX_TRIES  5
+ 
+ /*
+@@ -205,7 +205,7 @@ static void __init read_hpet_tsc(int *hpet, int *tsc)
+ 		tsc1 = get_cycles_sync();
+ 		hpet1 = hpet_readl(HPET_COUNTER);
+ 		tsc2 = get_cycles_sync();
+-		if (tsc2 - tsc1 > TICK_MIN)
++		if ((tsc2 - tsc1) < SMI_TRESHOLD)
+ 			break;
+ 	}
+ 	*hpet = hpet1;
 
-I expect that on a normal desktop/laptop with more features (like sound) 
-the savings could be even more significant
 
-David Lang
