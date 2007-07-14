@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757626AbXGNPhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbXGNPoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757626AbXGNPhN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 11:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXGNPhB
+	id S1756008AbXGNPoT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 11:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbXGNPoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 11:37:01 -0400
-Received: from stinky.trash.net ([213.144.137.162]:35992 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbXGNPhA (ORCPT
+	Sat, 14 Jul 2007 11:44:08 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:33854 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbXGNPoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 11:37:00 -0400
-Message-ID: <4698ED6E.6020502@trash.net>
-Date: Sat, 14 Jul 2007 17:36:14 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, netdev@vger.kernel.org
-Subject: Re: [PATCH] NET_CLS_RSVP6 should depend on IPV6
-References: <4698A7B6.1030302@googlemail.com>
-In-Reply-To: <4698A7B6.1030302@googlemail.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Sat, 14 Jul 2007 11:44:07 -0400
+Date: Sat, 14 Jul 2007 08:37:54 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: bfields@citi.umich.edu, Trond.Myklebust@netapp.com
+Subject: new 2.6.22-git5 warnings
+Message-Id: <20070714083754.2c3f1d0a.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> cls_rsvp6 only works with IPV6 enabled kernels and IMO it should depends
-> on IPV6.
 
 
-I can't see any functional dependency on IPv6, what exactly are you
-refering to? People might want to use it on a bridge for example
-without having IPv6 running locally.
+net/sunrpc/auth_gss/auth_gss.c:1002: warning: implicit declaration of function 'lock_kernel'
+net/sunrpc/auth_gss/auth_gss.c:1004: warning: implicit declaration of function 'unlock_kernel'
 
 
+allmodconfig or allyesconfig on x86_64.
+
+---
+~Randy
+/me goes hiking.
