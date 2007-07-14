@@ -1,121 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765631AbXGNU7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765039AbXGNVEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765631AbXGNU7V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 16:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762707AbXGNU7O
+	id S1765039AbXGNVEq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 17:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763315AbXGNVEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 16:59:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36637 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763438AbXGNU7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 16:59:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Sat, 14 Jul 2007 23:06:32 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707142200.17515.rjw@sisk.pl> <Pine.LNX.4.64.0707141257290.14672@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707141257290.14672@asgard.lang.hm>
+	Sat, 14 Jul 2007 17:04:38 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:35642 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761019AbXGNVEi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 17:04:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=njT3x/3SbBZzFzU2KrtkEkIEbE7xOry0OlWkJ5jUBx1ENqnXvtWoq316g9KLscwWUtNdkpqeT2KVJWAgtNGyxfKuotsxnP/D/BPjHItzBuuKHvHJQ8qk1NIEWlsZSkNr8zU+YGypUaKPwuz7oYlBiHzuSW1k1ktPIVUzrbi3ARQ=
+Message-ID: <8bd0f97a0707141404k16e53945s92b3cd4264ecf0aa@mail.gmail.com>
+Date: Sat, 14 Jul 2007 17:04:36 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Olaf Hering" <olaf@aepfle.de>
+Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070714205709.GA9478@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707142306.33783.rjw@sisk.pl>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_52579_24404243.1184447076755"
+References: <20070714205709.GA9478@aepfle.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 14 July 2007 22:34, david@lang.hm wrote:
-> in the past, Rafael J. Wysocki wrote:
-> 
-> > BTW, please read this message and tell me what you think:
-> >
-> > http://lkml.org/lkml/2007/7/13/265
-> >
-> > Greetings,
-> > Rafael
-> >
-> >
-> >
-> 
-> since I've deleted this message here's the relavent portion of it
-> 
-> >Okay, I have thought it through and I think that, as an initial step, we
-> >can do something like this:
-> >
-> >- preload the image-saving kernel before hibernation
-> >- in the hibernation code path replace device_suspend() with the shutting 
-> >down of all devices without unregistering them (not very nice, but should be 
-> >sufficient for a while)
-> >- when we've called device_power_down() and save_processor_state(), jump 
-> >to the image-saving kernel and let it run
-> >- make the image-saving kernel set up everything, save the image without
-> >  starting any user space (we may use the existing image-saving code for 
-> >this purpose, with some modifications) and power off the system (or make it 
-> >enter S4)
-> >- use the existing restoration code to load the image and jump to the
-> >  hibernated kernel
-> >- in the restore code patch replace device_resume() with the reprobing of 
-> >all devices.
-> >
-> >Comments?
-> 
-> I think this is far more complicated then it needs to be.
-> 
-> it sounds like it should be possible to do the following
-> 
-> 1. figure out what pages should be backed up (creating a data structure to 
-> hold them)
+------=_Part_52579_24404243.1184447076755
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-That should be done after step 2, because the memory contents can change
-in this step.
+On 7/14/07, Olaf Hering <olaf@aepfle.de> wrote:
+> Declare PAGE_SIZE as getpagesize() for userspace.
+> PAGE_SIZE is used in resource.h and shm.h
+>
+> define PAGE_SIZE in asm-generic/page.h
+> guard get_order() with _ARCH_HAS_GET_ORDER for ia64 and xtensa
+> include asm-generic/page.h in asm/page.h
+> make asm/page.h nearly empty by moving the #ifdef guards up
+> remove unneeded page.h export from frv
 
-> 2. kexec into the hibernate kernel (this step handles all device 
-> transitions today)
-> 
-> 3. have the hibernate userspace find the data structures created in step 
-> #1
-> 
-> 4. have the hibernate userspace write the pages somewhere in the suspend 
-> format.
+imo, asm/page.h should just go away for userspace.  the attached patch
+is what i've been using in Gentoo ... but somethings (like an arch or
+two in glibc) still assume asm/page.h is OK.  in general though,
+considering asm/page.h has become so unreliable lately (a large number
+of arches ifdef the whole thing out), most packages out there have
+updated already to use the userspace interface from unistd.h.
+-mike
 
-You don't need to run any hibernate userspace to carry out steps 3 and 4.
- 
-> 5. have the hibernate kernel power down the box.
-> 
-> the only things here that sounds like they're not available in stock 
-> kernels are steps #1 and #3.
+------=_Part_52579_24404243.1184447076755
+Content-Type: application/octet-stream; 
+	name=10_all_remove-page-user-headers.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f44l48f3
+Content-Disposition: attachment; filename="10_all_remove-page-user-headers.patch"
 
-Correct, up to the first remark above.
-
-> now this won't do the fancier suspend-to-ram-and-disk and it won't let you 
-> go back from the hibernate kernel to the main kernel, but it should be 
-> enough to let you do the suspend safely and reliably.
-> 
-> for the restore, as I understand it the process is
-> 
-> 1. boot a kernel, any working kernel.
-> 
-> 2. read the suspend formatted data from wherever it was saved and feed it 
-> to /dev/suspend
-
-Yes, something like this, but you really should pay more attention to devices.
-
-There are things that you shouldn't do to them (like unregistering), because
-some processes may be using them while we're trying to hibernate (for now
-we have the freezer, but I though you'd like to do all that to eliminate it).
-
-Generally, you need to ensure that the devices are handled in consistent ways
-by both the hibernated and image-saving kernels and that's a big piece of the
-jigsaw that's missing now.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+TW9zdCBhcmNoZXMgc3R1YiB0aGVzZSBoZWFkZXJzIGFueXdheXMsIHNvIGxldHMganVzdCBwbGFp
+biBwdW50IHRoZW0KCmRpZmYgLS1naXQgYS9pbmNsdWRlL2FzbS1nZW5lcmljL0tidWlsZC5hc20g
+Yi9pbmNsdWRlL2FzbS1nZW5lcmljL0tidWlsZC5hc20KaW5kZXggYTM3ZTk1Zi4uODczMWFlNCAx
+MDA2NDQKLS0tIGEvaW5jbHVkZS9hc20tZ2VuZXJpYy9LYnVpbGQuYXNtCisrKyBiL2luY2x1ZGUv
+YXNtLWdlbmVyaWMvS2J1aWxkLmFzbQpAQCAtMjcsOSArMjcsNiBAQCB1bmlmZGVmLXkgKz0gdGVy
+bWJpdHMuaAogdW5pZmRlZi15ICs9IHRlcm1pb3MuaAogdW5pZmRlZi15ICs9IHR5cGVzLmgKIHVu
+aWZkZWYteSArPSB1bmlzdGQuaAotdW5pZmRlZi15ICs9IHVzZXIuaAogCiAjIFRoZXNlIHByb2Jh
+Ymx5IHNob3VsZG4ndCBiZSBleHBvcnRlZAogdW5pZmRlZi15ICs9IHNobXBhcmFtLmgKLXVuaWZk
+ZWYteSArPSBlbGYuaAotdW5pZmRlZi15ICs9IHBhZ2UuaApkaWZmIC0tZ2l0IGEvaW5jbHVkZS9s
+aW51eC9LYnVpbGQgYi9pbmNsdWRlL2xpbnV4L0tidWlsZAppbmRleCBlODFlMzAxLi40M2JjODcx
+IDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L0tidWlsZAorKysgYi9pbmNsdWRlL2xpbnV4L0ti
+dWlsZApAQCAtMTUsNyArMTUsNiBAQCBoZWFkZXIteSArPSB1c2IvCiAKIGhlYWRlci15ICs9IGFm
+ZnNfaGFyZGJsb2Nrcy5oCiBoZWFkZXIteSArPSBhaW9fYWJpLmgKLWhlYWRlci15ICs9IGEub3V0
+LmgKIGhlYWRlci15ICs9IGFyY2ZiLmgKIGhlYWRlci15ICs9IGF0bWFwaS5oCiBoZWFkZXIteSAr
+PSBhdG1icjI2ODQuaApAQCAtNTQsOCArNTMsNiBAQCBoZWFkZXIteSArPSBkcWJsa192MS5oCiBo
+ZWFkZXIteSArPSBkcWJsa192Mi5oCiBoZWFkZXIteSArPSBkcWJsa194ZnMuaAogaGVhZGVyLXkg
+Kz0gZWZzX2ZzX3NiLmgKLWhlYWRlci15ICs9IGVsZi1mZHBpYy5oCi1oZWFkZXIteSArPSBlbGYu
+aAogaGVhZGVyLXkgKz0gZWxmLWVtLmgKIGhlYWRlci15ICs9IGZhZHZpc2UuaAogaGVhZGVyLXkg
+Kz0gZmQuaApAQCAtMTYyLDYgKzE1OSw3IEBAIHVuaWZkZWYteSArPSBhY2N0LmgKIHVuaWZkZWYt
+eSArPSBhZGIuaAogdW5pZmRlZi15ICs9IGFkZnNfZnMuaAogdW5pZmRlZi15ICs9IGFncGdhcnQu
+aAordW5pZmRlZi15ICs9IGEub3V0LmgKIHVuaWZkZWYteSArPSBhcG1fYmlvcy5oCiB1bmlmZGVm
+LXkgKz0gYXRhbGsuaAogdW5pZmRlZi15ICs9IGF0bWFycC5oCkBAIC0xODUsNyArMTgzLDYgQEAg
+dW5pZmRlZi15ICs9IGN5Y2xhZGVzLmgKIHVuaWZkZWYteSArPSBkY2NwLmgKIHVuaWZkZWYteSAr
+PSBkaXJlbnQuaAogdW5pZmRlZi15ICs9IGRsbS5oCi11bmlmZGVmLXkgKz0gZWxmY29yZS5oCiB1
+bmlmZGVmLXkgKz0gZXJybm8uaAogdW5pZmRlZi15ICs9IGVycnF1ZXVlLmgKIHVuaWZkZWYteSAr
+PSBldGh0b29sLmgKQEAgLTMyOCw3ICszMjUsNiBAQCB1bmlmZGVmLXkgKz0gdWlucHV0LmgKIHVu
+aWZkZWYteSArPSB1aW8uaAogdW5pZmRlZi15ICs9IHVuaXN0ZC5oCiB1bmlmZGVmLXkgKz0gdXNi
+ZGV2aWNlX2ZzLmgKLXVuaWZkZWYteSArPSB1c2VyLmgKIHVuaWZkZWYteSArPSB1dHNuYW1lLmgK
+IHVuaWZkZWYteSArPSB2aWRlb2RldjIuaAogdW5pZmRlZi15ICs9IHZpZGVvZGV2LmgKZGlmZiAt
+LWdpdCBhL2luY2x1ZGUvbGludXgvYS5vdXQuaCBiL2luY2x1ZGUvbGludXgvYS5vdXQuaAppbmRl
+eCBmOTEzY2MzLi45ODIxMGU2IDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L2Eub3V0LmgKKysr
+IGIvaW5jbHVkZS9saW51eC9hLm91dC5oCkBAIC0xMjgsMTIgKzEyOCwyMCBAQCBlbnVtIG1hY2hp
+bmVfdHlwZSB7CiAjZW5kaWYKIAogI2lmZGVmIGxpbnV4CisjaWZkZWYgX19LRVJORUxfXwogI2lu
+Y2x1ZGUgPGFzbS9wYWdlLmg+CisjZWxzZQorI2luY2x1ZGUgPHVuaXN0ZC5oPgorI2VuZGlmCiAj
+aWYgZGVmaW5lZChfX2kzODZfXykgfHwgZGVmaW5lZChfX21jNjgwMDBfXykKICNkZWZpbmUgU0VH
+TUVOVF9TSVpFCTEwMjQKICNlbHNlCiAjaWZuZGVmIFNFR01FTlRfU0laRQorI2lmZGVmIF9fS0VS
+TkVMX18KICNkZWZpbmUgU0VHTUVOVF9TSVpFCVBBR0VfU0laRQorI2Vsc2UKKyNkZWZpbmUgU0VH
+TUVOVF9TSVpFCWdldHBhZ2VzaXplKCkKKyNlbmRpZgogI2VuZGlmCiAjZW5kaWYKICNlbmRpZgpk
+aWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9zaG0uaCBiL2luY2x1ZGUvbGludXgvc2htLmgKaW5k
+ZXggYWQyZTNhZi4uYjk1Y2U4NyAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9zaG0uaAorKysg
+Yi9pbmNsdWRlL2xpbnV4L3NobS5oCkBAIC0zLDcgKzMsMTEgQEAKIAogI2luY2x1ZGUgPGxpbnV4
+L2lwYy5oPgogI2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+CisjaWZkZWYgX19LRVJORUxfXwogI2lu
+Y2x1ZGUgPGFzbS9wYWdlLmg+CisjZWxzZQorI2luY2x1ZGUgPHVuaXN0ZC5oPgorI2VuZGlmCiAK
+IC8qCiAgKiBTSE1NQVgsIFNITU1OSSBhbmQgU0hNQUxMIGFyZSB1cHBlciBsaW1pdHMgYXJlIGRl
+ZmF1bHRzIHdoaWNoIGNhbgpAQCAtMTMsNyArMTcsMTEgQEAKICNkZWZpbmUgU0hNTUFYIDB4MjAw
+MDAwMAkJIC8qIG1heCBzaGFyZWQgc2VnIHNpemUgKGJ5dGVzKSAqLwogI2RlZmluZSBTSE1NSU4g
+MQkJCSAvKiBtaW4gc2hhcmVkIHNlZyBzaXplIChieXRlcykgKi8KICNkZWZpbmUgU0hNTU5JIDQw
+OTYJCQkgLyogbWF4IG51bSBvZiBzZWdzIHN5c3RlbSB3aWRlICovCisjaWZkZWYgX19LRVJORUxf
+XwogI2RlZmluZSBTSE1BTEwgKFNITU1BWC9QQUdFX1NJWkUqKFNITU1OSS8xNikpIC8qIG1heCBz
+aG0gc3lzdGVtIHdpZGUgKHBhZ2VzKSAqLworI2Vsc2UKKyNkZWZpbmUgU0hNQUxMIChTSE1NQVgv
+Z2V0cGFnZXNpemUoKSooU0hNTU5JLzE2KSkKKyNlbmRpZgogI2RlZmluZSBTSE1TRUcgU0hNTU5J
+CQkJIC8qIG1heCBzaGFyZWQgc2VncyBwZXIgcHJvY2VzcyAqLwogCiAjaW5jbHVkZSA8YXNtL3No
+bXBhcmFtLmg+Cg==
+------=_Part_52579_24404243.1184447076755--
