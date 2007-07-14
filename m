@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbXGNRyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761050AbXGNSB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761329AbXGNRyc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 13:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758412AbXGNRyZ
+	id S1761050AbXGNSB2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 14:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758707AbXGNSBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 13:54:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:15292 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757441AbXGNRyY (ORCPT
+	Sat, 14 Jul 2007 14:01:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46370 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758610AbXGNSBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 13:54:24 -0400
-Date: Sat, 14 Jul 2007 20:54:25 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: Further 2.6.23 merge plans...
-Message-ID: <20070714175425.GA17597@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
-	<20070713054711.GA21709@mellanox.co.il> <adar6nc2mt4.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adar6nc2mt4.fsf@cisco.com>
-User-Agent: Mutt/1.5.11
+	Sat, 14 Jul 2007 14:01:14 -0400
+Subject: Re: [PATCH -rt 1/5] workqueue: queue_work_cpu
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <20070714171406.GA746@tv-sign.ru>
+References: <20070714175733.194012000@chello.nl>
+	 <20070714175839.377905000@chello.nl>  <20070714171406.GA746@tv-sign.ru>
+Content-Type: text/plain
+Date: Sat, 14 Jul 2007 20:00:46 +0200
+Message-Id: <1184436047.5284.60.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Roland Dreier <rdreier@cisco.com>:
-> Subject: Re: Further 2.6.23 merge plans...
+On Sat, 2007-07-14 at 21:14 +0400, Oleg Nesterov wrote:
+> On 07/14, Peter Zijlstra wrote:
+> >
+> > +int fastcall queue_work_cpu(struct workqueue_struct *wq, struct work_struct *work, int cpu)
+> > +{
+> > +	int ret = 0;
+> > +
+> > +	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
+> > +		BUG_ON(!list_empty(&work->entry));
+> > +		__queue_work(wq_per_cpu(wq, cpu), work);
+> > +		ret = 1;
+> > +	}
+> > +	return ret;
+> > +}
 > 
->  > Any plans to do something with multiple EQ support in mthca?
-> 
-> I haven't done any work on it or seen anything from anyone else, so I
-> expect this will have to wait for 2.6.24.
+> Minor nit, we already have queue_delayed_work_on(), perhaps it should be named
+> queue_work_on().
 
-I'm surprised to hear this. How about this:
-http://lists.openfabrics.org/pipermail/general/2007-May/035757.html
+Yes, that makes sense. Shall do.
 
--- 
-MST
