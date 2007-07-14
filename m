@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932652AbXGNXVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932454AbXGNXbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932652AbXGNXVK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 19:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbXGNXU6
+	id S932454AbXGNXbT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 19:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764912AbXGNXbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 19:20:58 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48273 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753838AbXGNXU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 19:20:57 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19DoMhxYutDzNI279/ic8MTJBox+GOPq73DwBNYP5
-	+gaE7JRIUhNzn0
-Date: Sun, 15 Jul 2007 01:21:07 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Trilok Soni <soni.trilok@gmail.com>
-cc: i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Lindgren <tony@atomide.com>, David Brownell <david-b@pacbell.net>,
-       amit.kucheria@gmail.com, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-Subject: Re: [i2c] OMAP: Add TI TWL92330/Menelaus Power Management chip driver
-In-Reply-To: <5d5443650707092353v153fe90clbd1a42d465ed79a4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.60.0707150104050.12464@poirot.grange>
-References: <5d5443650707092353v153fe90clbd1a42d465ed79a4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Sat, 14 Jul 2007 19:31:10 -0400
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:58416 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764706AbXGNXbJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 19:31:09 -0400
+Date: Sat, 14 Jul 2007 19:31:08 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Text Edit Lock - i386 Fix endif CONFIG_DEBUG_RODATA
+Message-ID: <20070714233108.GI18674@Krystal>
+References: <20070714012133.612727310@polymtl.ca> <20070714012412.380213021@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070714012412.380213021@polymtl.ca>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:30:01 up 7 days, 13:35,  2 users,  load average: 0.10, 0.19, 0.24
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007, Trilok Soni wrote:
+Text Edit Lock - i386 fix endif CONFIG_DEBUG_RODATA
 
-> Hi Jean/Andrew,
-> 
-> Attached patch adds Texas Instruments TWL92330/Menelaus Power
-> Management chip driver. Also includes RTC code in the same driver
-> instead of the separate module. Here is the description of
-> driver/commit message :)
+The #endif would also include kernel_text_unmark().
+The replacement empty functions should be static inline.
 
-I think, the plan is to eventually merge the power_supply class currently 
-in -mm, so, it would be nice to interface menelaus to it?
-
-Thanks
-Guennadi
-
-> 
-> =============
->   OMAP: Add TI TWL92330/Menelaus Power Management chip driver
-> 
->   Add Texas Instruments TWL92330/Menelaus Power Management chip driver.
->   This includes voltage regulators, Dual slot memory card tranceivers and
->   real-time clock(RTC).
-> 
->   The support for RTC is integrated with this driver only; it is not separate
->   module. Passes 'rtctest' on OMAP H4 EVM, other than lack of
->   "periodic" (1/N second) IRQs. System wakeup alarms (from suspend-to-RAM)
->   work too.
-> 
->   The battery keeps the RTC active over power off, so once you set clock
->   (rdate/ntpdate/etc, then "hwclock -w") then RTC_HCTOSYS at boot time
->   will behave as expected.
-> 
-> =============
-> 
-> RTC part was reviewed and acked-by RTC maintainer. CCing to lkml and
-> MMC maintainer this time.
-> 
-> -- 
-> --Trilok Soni
-> 
-
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
-Guennadi Liakhovetski
+ arch/i386/mm/init.c           |    2 +-
+ include/asm-i386/cacheflush.h |    6 ++----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+Index: linux-2.6-lttng/arch/i386/mm/init.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/mm/init.c	2007-07-14 19:24:27.000000000 -0400
++++ linux-2.6-lttng/arch/i386/mm/init.c	2007-07-14 19:24:27.000000000 -0400
+@@ -845,7 +845,6 @@ void __kprobes kernel_text_mark_rw(unsig
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(kernel_text_mark_rw);
+-#endif
+ 
+ void __kprobes kernel_text_unmark(unsigned long address, size_t len)
+ {
+@@ -862,6 +861,7 @@ void __kprobes kernel_text_unmark(unsign
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(kernel_text_unmark);
++#endif
+ 
+ void free_init_pages(char *what, unsigned long begin, unsigned long end)
+ {
+Index: linux-2.6-lttng/include/asm-i386/cacheflush.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/cacheflush.h	2007-07-14 19:24:36.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/cacheflush.h	2007-07-14 19:25:04.000000000 -0400
+@@ -34,15 +34,13 @@ void kernel_map_pages(struct page *page,
+ 
+ #ifdef CONFIG_DEBUG_RODATA
+ void mark_rodata_ro(void);
+-#endif
+ 
+-#if defined(CONFIG_DEBUG_RODATA)
+ /* mark kernel text pages writable */
+ extern void kernel_text_mark_rw(unsigned long address, size_t len);
+ extern void kernel_text_unmark(unsigned long address, size_t len);
+ #else
+-void kernel_text_mark_rw(unsigned long address, size_t len) { }
+-void kernel_text_unmark(unsigned long address, size_t len) { }
++static inline void kernel_text_mark_rw(unsigned long address, size_t len) { }
++static inline void kernel_text_unmark(unsigned long address, size_t len) { }
+ #endif
+ 
+ #endif /* _I386_CACHEFLUSH_H */
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
