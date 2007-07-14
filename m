@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761838AbXGNLcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762231AbXGNLez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761838AbXGNLcA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 07:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbXGNLbv
+	id S1762231AbXGNLez (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 07:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbXGNLes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 07:31:51 -0400
-Received: from [80.68.207.27] ([80.68.207.27]:45587 "EHLO smtp.unbit.it"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756455AbXGNLbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 07:31:50 -0400
-Subject: [ANNOUNCE] UidSEC 0.1
-From: Roberto De Ioris <roberto@unbit.it>
-Reply-To: roberto@unbit.it
-To: linux-security-module <linux-security-module@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: UnBit
-Date: Sat, 14 Jul 2007 13:31:51 +0200
-Message-Id: <1184412711.6253.18.camel@hagrid>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.5 
+	Sat, 14 Jul 2007 07:34:48 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:43833 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756455AbXGNLes (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 07:34:48 -0400
+From: Markus <lists4me@web.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v19
+Date: Sat, 14 Jul 2007 13:34:45 +0200
+User-Agent: KMail/1.9.5
+References: <20070706173319.GA2356@elte.hu>
+In-Reply-To: <20070706173319.GA2356@elte.hu>
+Cc: Ingo Molnar <mingo@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707141334.45628.lists4me@web.de>
+X-Provags-ID: V01U2FsdGVkX19ztVKChG09xdPk1BZw2UPnqgGpqRtj5a1jhcR/
+	pvWUgJ9bep7BE5WZkG/DBf1EMgKZOjitdYHzFkg4QaEvZlNQA3
+	/tAaL2Gfw=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-UidSEC LSM
-This module extends the standard UN*X "resource protection" model adding
-some features useful for untrusted multiuser systems 
+> i'm pleased to announce release -v19 of the CFS scheduler patchset.
+> 
+> The rolled-up CFS patch against today's -git kernel, v2.6.22-rc7, 
+> v2.6.22-rc6-mm1, v2.6.21.5 or v2.6.20.14 can be downloaded from the 
+> usual place:
+> 
+>     http://people.redhat.com/mingo/cfs-scheduler/
+Well, I took a 2.6.21 (gentoo-patchset...) and applied your cfs-v19 
+patch for the 2.6.21 kernels. Its a amd64 system and the "normal" 
+(=only gentoo patches) kernel is working fine!
 
-Current features
-  * Deny usage of dmesg to unprivileged users 
-  * Hide processes of "other users" to unprivileged users (example: sam
-    can only see his processes during a 'top' or a 'ps aux') 
-  * Deny access to /sys and /config to unprivileged users 
-  * Protect usage of bind() syscall using UidBIND 
-  * Assign a group that can use dmesg and see all system processes
+> As usual, any sort of feedback, bugreport, fix and suggestion is more 
+> than welcome!
 
+When I start the system, the mouse is jerking like under heavy load. 
+(also its idle!)
+Then some programs just quit. They just disappear, no message in any 
+log. (It were about four apps I realized in a period of about two hours 
+of testing.)
 
-Download url: http://projects.unbit.it/uidsec/
+I'll try a git snapshot next, but is there a way I can get more output?
 
-Patch against 2.6.22 will follow in the next few days
-
-Thanks for testing it
-
--- 
-Roberto De Ioris
-http://unbit.it
-JID: roberto@jabber.unbit.it
-
+Greetz
+Markus
