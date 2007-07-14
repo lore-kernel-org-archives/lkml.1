@@ -1,110 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765692AbXGNWqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765717AbXGNWzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765692AbXGNWqJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 18:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbXGNWp6
+	id S1765717AbXGNWzm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 18:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbXGNWzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 18:45:58 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:65063 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbXGNWp6 (ORCPT
+	Sat, 14 Jul 2007 18:55:33 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:48038 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753819AbXGNWzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 18:45:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:organization:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=nsWRVUczQBTvSQf+YQLjtEO4o/aKWdaemYM5AkdIRZKsrr1YF6BZZ4ULz45GsZgxDwr08Fy/aIidBzVQP0UwhC2OF9iaRPBQ2vSFYsyqWppQSwj7SH9jLzZYyiefpqKfb/64h8rhWcCtl8Eau0PpimgZC2nDFzFPaRUuUhrRQZs=
-Message-ID: <4699521B.7030004@gmail.com>
-Date: Sun, 15 Jul 2007 00:45:47 +0200
-From: Patrizio Bassi <patrizio.bassi@gmail.com>
-Reply-To: patrizio.bassi@gmail.com
-Organization: patrizio.bassi@gmail.com
-User-Agent: Thunderbird 2.0.0.4 (X11/20070619)
-MIME-Version: 1.0
-To: "Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: ACPI cpufreq broken on 2.6.22 for core2 duo
-References: <8GYrv-5D7-19@gated-at.bofh.it>
-In-Reply-To: <8GYrv-5D7-19@gated-at.bofh.it>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
+	Sat, 14 Jul 2007 18:55:32 -0400
+Date: Sat, 14 Jul 2007 18:55:29 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH] Immediate Values - Architecture Independent Code - Fixes following HCH comments
+Message-ID: <20070714225529.GA18674@Krystal>
+References: <20070714012133.612727310@polymtl.ca> <20070714012411.845928928@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070714012411.845928928@polymtl.ca>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:54:29 up 7 days, 12:59,  2 users,  load average: 0.00, 0.12, 0.15
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrizio Bassi ha scritto:
-> With linux 2.6.21 and 22 i cannot get cpufreq working anymore while it
-> worked in previous versions
-> 
-> ACPI Exception (processor_core-0781): AE_NOT_FOUND, Processor Device is
-> not present [20070126]
-> ACPI Exception (processor_core-0781): AE_NOT_FOUND, Processor Device is
-> not present [20070126]
-> 
-> i'm in 64bit profile.
-> Bios updated to latest version.
-> 
-> CC me as i'm not subscribed.
-> 
-> 
-> cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
-> stepping        : 6
-> cpu MHz         : 1866.667
-> cache size      : 2048 KB
-> physical id     : 0
-> siblings        : 2
-> core id         : 0
-> cpu cores       : 2
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm syscall
-> nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-> bogomips        : 3735.47
-> clflush size    : 64
-> cache_alignment : 64
-> address sizes   : 36 bits physical, 48 bits virtual
-> power management:
-> 
-> processor       : 1
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
-> stepping        : 6
-> cpu MHz         : 1866.667
-> cache size      : 2048 KB
-> physical id     : 0
-> siblings        : 2
-> core id         : 1
-> cpu cores       : 2
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm syscall
-> nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-> bogomips        : 3733.31
-> clflush size    : 64
-> cache_alignment : 64
-> address sizes   : 36 bits physical, 48 bits virtual
-> power management:
-> 
+Immediate Values - Architecture Independent Code - Fixes following HCH comments
 
+Various coding style fixes following Christoph's comments
+Put asm-generic/immediate.h content into linux/immediate.h.
+Remove ifdef __KERNEL__ in .h never exported to user space.
+Make immediate_mutex static.
 
-Sorry, i posted it twice by error.
-however i found same issue described here:
+It applies after "Immediate Values - Architecture Independent Code".
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8630
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Christoph Hellwig <hch@infradead.org>
+---
+ include/linux/immediate.h |   18 ++++++++++++++----
+ kernel/immediate.c        |   15 +++++++--------
+ 2 files changed, 21 insertions(+), 12 deletions(-)
 
-Sorry for bothering
+Index: linux-2.6-lttng/include/linux/immediate.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/immediate.h	2007-07-14 18:13:58.000000000 -0400
++++ linux-2.6-lttng/include/linux/immediate.h	2007-07-14 18:16:26.000000000 -0400
+@@ -10,12 +10,23 @@
+  * See the file COPYING for more details.
+  */
+ 
+-#ifdef __KERNEL__
+-
+ #ifdef CONFIG_IMMEDIATE
+ #include <asm/immediate.h>
+ #else
+-#include <asm-generic/immediate.h>
++/*
++ * Generic immediate values: a simple, standard, memory load.
++ */
++
++struct module;
++
++#define immediate_read(var)		_immediate_read(var)
++#define immediate_set(var, i)		((var)->value = (i))
++#define _immediate_set(var, i)		immediate_set(var, i)
++#define immediate_set_early(var, i)	immediate_set(var, i)
++#define immediate_if(var)		if (immediate_read(var))
++
++static inline void module_immediate_setup(struct module *mod) { }
++static inline void immediate_update_early(void) { }
+ #endif
+ 
+ /*
+@@ -49,5 +60,4 @@ DEFINE_IMMEDIATE_TYPE(void*, immediate_v
+  */
+ #define _immediate_if(var)		if (_immediate_read(var))
+ 
+-#endif /* __KERNEL__ */
+ #endif
+Index: linux-2.6-lttng/kernel/immediate.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/immediate.c	2007-07-14 18:13:58.000000000 -0400
++++ linux-2.6-lttng/kernel/immediate.c	2007-07-14 18:27:03.000000000 -0400
+@@ -27,13 +27,13 @@ extern const struct __immediate __stop__
+  * modules_mutex nests inside immediate_mutex. immediate_mutex protects builtin
+  * immediates and module immediates.
+  */
+-DEFINE_MUTEX(immediate_mutex);
++static DEFINE_MUTEX(immediate_mutex);
+ 
+ /*
+  * Sets a range of immediates to a enabled state : set the enable bit.
+  */
+-static void _immediate_update_range(
+-	const struct __immediate *begin, const struct __immediate *end)
++static inline void _immediate_update_range(const struct __immediate *begin,
++		const struct __immediate *end)
+ {
+ 	const struct __immediate *iter;
+ 	int ret;
+@@ -63,11 +63,10 @@ static void _immediate_update_range(
+  */
+ void module_immediate_setup(struct module *mod)
+ {
+-	_immediate_update_range(mod->immediate, mod->immediate+mod->num_immediate);
++	_immediate_update_range(mod->immediate,
++				mod->immediate+mod->num_immediate);
+ }
+-#endif
+ 
+-#ifdef CONFIG_MODULES
+ /*
+  * immediate mutex nests inside the modules mutex.
+  */
+@@ -103,8 +102,8 @@ EXPORT_SYMBOL_GPL(immediate_update);
+  * Update the immediate values to the state of the variables they refer to. It
+  * is done before SMP is active, at the very beginning of start_kernel().
+  */
+-void __init immediate_update_early_range(
+-	const struct __immediate *begin, const struct __immediate *end)
++void __init immediate_update_early_range(const struct __immediate *begin,
++		const struct __immediate *end)
+ {
+ 	const struct __immediate *iter;
+ 
 
-
-Patrizio
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
