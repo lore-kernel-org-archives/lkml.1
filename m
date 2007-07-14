@@ -1,69 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764698AbXGNBxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764366AbXGNBz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764698AbXGNBxK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757644AbXGNBw7
+	id S1764366AbXGNBz4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762026AbXGNBzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:52:59 -0400
-Received: from qsrv03sl.mx.bigpond.com ([144.140.92.183]:45703 "EHLO
-	qsrv03sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758049AbXGNBw6 (ORCPT
+	Fri, 13 Jul 2007 21:55:49 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49989 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761811AbXGNBzs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:52:58 -0400
-Message-ID: <46981855.8040904@bigpond.net.au>
-Date: Sat, 14 Jul 2007 10:27:01 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070613)
-MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
-       jim.houston@ccur.com, joe.korty@ccur.com, rostedt@goodmis.org,
-       tglx@linutronix.de, dwalker@mvista.com, David Bahi <DBahi@novell.com>,
-       Moiz Kohari <MKohari@novell.com>, Sven Dietrich <SDietrich@novell.com>,
-       dsaxena@plexity.net, williams@redhat.com, abogani@texware.it,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: Forward port of latest RT patch (2.6.21.5-rt20) to 2.6.22 available
-References: <4695E5BB0200005A0002763E@mcclure.wal.novell.com> <20070712130958.GB17494@elte.hu> <46971ADC.3030700@bigpond.net.au> <200707130443.11356.gene.heskett@gmail.com>
-In-Reply-To: <200707130443.11356.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 13 Jul 2007 21:55:48 -0400
+Date: Sat, 14 Jul 2007 10:46:59 +0900 (JST)
+Message-Id: <20070714.104659.74729155.tshibata@ab.jp.nec.com>
+To: rob@landley.net
+Cc: LeoLi@freescale.com, gh@us.ibm.com, hpa@zytor.com,
+       kunai@linux-foundation.jp, holzheu@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       lf_kernel_messages@linux-foundation.org, tshibata@ab.jp.nec.com
+Subject: Re: Documentation of kernel messages (Summary)
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+In-Reply-To: <200707131312.28004.rob@landley.net>
+References: <200707121335.55817.rob@landley.net>
+	<20070713.115446.48513196.tshibata@ab.jp.nec.com>
+	<200707131312.28004.rob@landley.net>
+X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
+ =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07sl.mx.bigpond.com from [58.170.68.8] using ID pwil3058@bigpond.net.au at Sat, 14 Jul 2007 00:27:30 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> On Friday 13 July 2007, Peter Williams wrote:
->> Ingo Molnar wrote:
->>> * Gregory Haskins <ghaskins@novell.com> wrote:
->>>> On Thu, 2007-07-12 at 14:07 +0200, Ingo Molnar wrote:
->>>>> * Gregory Haskins <ghaskins@novell.com> wrote:
->>>>>> Hi Ingo, Thomas, and the greater linux-rt community,
->>>>>>
->>>>>> 	I just wanted to let you guys know that our team has a port of
->>>>>> the 21.5-rt20 patch for the 2.6.22 kernel available. [...]
->>>>> great! We had the upstream -rt port to .22 in the works too, it was just
->>>>> held up by the hpet breakage - which Thomas managed to fix earlier
->>>>> today. I've released the 2.6.22.1-rt1 patch to the usual place:
->>>>>
->>>>>     http://redhat.com/~mingo/realtime-preempt/
->>>> Thats awesome, Ingo!  Thanks!  Could you publish a broken out version
->>>> as well?  We found it extremely valuable to be able to bisect this
->>>> beast while working on the 21-22 port.
->>> we are working on something in this area :) Stay tuned ...
->> I've just been reviewing these patches and have spotted an error in the
->> file mm/slob.c at lines 500-501 whereby a non existent variable "c" is
->> referenced.  The attached patch is a proposed fix to the problem.
+On Fri, 13 Jul 2007 13:12:27 -0400, rob wrote:
+> On Thursday 12 July 2007 10:54:46 pm Tsugikazu Shibata wrote:
+> > On Thu, 12 Jul 2007 13:35:54 -0400, rob wrote:
+> > > On Thursday 12 July 2007 9:53:54 am Li Yang-r58472 wrote:
+> > > > > Fielding patches and questions sounds like plenty to me...)
+> > > >
+> > > > I do think the documentation translation is very necessary even when
+> > > > there is a language maintainer, especially for the policy documents as
+> > > > HOWTO, codestyle , and etc.  The contributors should go through these
+> > > > policies and check their code for compliance before going to the
+> > > > language maintainer for help, or there will be too much for the
+> > > > language maintainer to translate.  The language maintainer doesn't need
+> > > > to translate all the documents himself, but he can help to coordinate
+> > > > the translation effort and help to make it update to date.
+> > >
+> > > It would help if all the policy documents got grouped into a single
+> > > Documentation/development directory so we could separate "policy
+> > > documents in each language would be nice" from "that document about the
+> > > amiga zorro bus really needs to be kept up-to-date in Navajo and that
+> > > should be in the kernel tarball please".
+> > >
+> > > Lemme see, which ones are we talking about?  The candidates are:
+> > >   applying-patches.txt
+> > >   BUG-HUNTING
+> > >   Changes
+> > >   CodingStyle
+> > >   debugging-modules.txt
+> >
+> > This file seems mostly technical. may not policy related document.
 > 
-> Could this explain why 2.6.22.1-rt1 seems to use a lot of swap?  I've been as 
-> high as 570 megs into swap, currently at 286megs after doing a 
-> swapoff --a;swapon -a about 8 hours ago.
+> Yeah, I guess so.  My mental filter was actually more like "how to do linux 
+> development", and it seemed both short and easy to translate, and also 
+> generally relevant to the majority of developers no matter what subsystem 
+> they're working on.
+> 
+> But I agree, it's not policy.
+> 
+> > >   feature-removal-schedule.txt
+> > >   HOWTO
+> > >   kernel-docs.txt
+> > >   language-maintainers.txt
+> > >   ManagementStyle
+> > >   oops-tracing.txt
+> > >   SecurityBugs
+> > >   sparse.txt
+> 
+> That one's not policy either, but it is general non-subsystem-specific 
+> development.  Probably "applying-patches.txt" above goes in the same bucket.
+> 
+> Whether or not to include that bucket in the new directory depends on whether 
+> the directory is labeled "development" or "policy" or something else...
 
-No.  This problem would have caused the build to fail if slob was
-configured.
+Agree.
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+> > >   stable_api_nonsense.txt
+> > >   stable_kernel_rules.txt
+> > >   SubmitChecklist
+> > >   SubmittingDrivers
+> > >   SubmittingPatches
+> > >   volatile-considered-harmful.txt
+> >
+> > How about adding;
+> > kernel-doc-nano-HOWTO.txt
+> 
+> The problem is, the generated htmdocs are in english.  This file is about how 
+> to generate (and author) English documentation that won't be translated.  
+> What's the point of translating the instructions if the result won't be 
+> translated?
 
-"Learning, n. The kind of ignorance distinguishing the studious."
- -- Ambrose Bierce
+People (who even in non-native) would better to know and read it such
+htmldocs because there are good and important documents even in English.
+I thought that translation of this file may help.
+
+> On the other hand, if the authors of patches _do_ put javadoc comments into 
+> the source code, the language maintainer should be aware of them and should 
+> have some easy way to translate them for the list...
+
+maybe.
+
+> 
+> > These three slightly include some policy in the documents but purpose
+> > are mostly technical. (So, it's just comment)
+> > devices.txt
+> > kernel-parameters.txt
+> > unicode.txt
+> 
+> Extracting the policy out into separate documents I could see, but I agree 
+> those are primarily technical.
+
+Further comment on this is that we may need to have another 00-INDEX
+file, for this new directory.
+
+> 
+> Rob
+> -- 
+> "One of my most productive days was throwing away 1000 lines of code."
+>   - Ken Thompson.
+> 
