@@ -1,102 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbXGNT4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763384AbXGNT5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764284AbXGNT4h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 15:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760924AbXGNT43
+	id S1763384AbXGNT5A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 15:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760924AbXGNT4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 15:56:29 -0400
-Received: from mail.screens.ru ([213.234.233.54]:46394 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754476AbXGNT43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 15:56:29 -0400
-Date: Sat, 14 Jul 2007 23:56:53 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC] Thread Migration Preemption - v2
-Message-ID: <20070714195653.GB108@tv-sign.ru>
-References: <20070706060257.GA188@tv-sign.ru> <20070706142339.GA32754@Krystal> <20070706145634.GA198@tv-sign.ru> <20070711044915.GA4025@Krystal> <20070711163648.GA232@tv-sign.ru> <20070714182743.GE6975@Krystal>
+	Sat, 14 Jul 2007 15:56:52 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:48408 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762687AbXGNT4v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 15:56:51 -0400
+Date: Sat, 14 Jul 2007 15:56:49 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net, hch@infradead.org
+Subject: [PATCH] Kprobes - no kprobes_mutex needed around arch_remove_kprobe calls
+Message-ID: <20070714195649.GO6975@Krystal>
+References: <20070714012133.612727310@polymtl.ca> <20070714012414.130353244@polymtl.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070714182743.GE6975@Krystal>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070714012414.130353244@polymtl.ca>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:54:21 up 7 days,  9:59,  2 users,  load average: 0.15, 0.21, 0.30
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/14, Mathieu Desnoyers wrote:
->
-> * Oleg Nesterov (oleg@tv-sign.ru) wrote:
-> > >  	/* Affinity changed (again). */
-> > >  	if (!cpu_isset(dest_cpu, p->cpus_allowed))
-> > >  		goto out;
-> > >  
-> > >  	on_rq = p->se.on_rq;
-> > > +#ifdef CONFIG_PREEMPT
-> > > +	if (!on_rq && task_thread_info(p)->migrate_count)
-> > > +		goto out;
-> > > +#endif
-> > 
-> > This means that move_task_off_dead_cpu() will spin until the task will be scheduled
-> > on the dead CPU. Given that we hold tasklist_lock and irqs are disabled, this may
-> > never happen.
-> > 
-> 
-> Yes. My idea to fix this issue is the following:
-> 
-> If a thread has non zero migrate_count, we should still move it to a
-> different CPU upon hotplug cpu removal, even if this thread resists
-> migration. Care should be taken to send _all_ such threads to the _same_
-> CPU so they don't race for the per-cpu ressources. Does it make sense ?
-> 
-> We would have to keep the CPU affinity of the threads running on the
-> wrong CPU until they end their migrate disabled section, so that we can
-> put them back on their original CPU if it goes back online, otherwise we
-> could end up with concurrent per-cpu variables accesses.
+Kprobes - no kprobes_mutex needed around arch_remove_kprobe calls.
 
-Well, this means that migrate_disable() doesn't guarantee a stable
-smp_processor_id(), not good.
+Since we have the new insn pages mutex, there is no need to protect
+arch_remove_kprobe() with the kprobes_mutex anymore. We don't edit the
+kernel text there neither, so don't take the text edit lock.
 
-> > > @@ -4891,10 +4957,22 @@
-> > >  		list_del_init(head->next);
-> > >  
-> > >  		spin_unlock(&rq->lock);
-> > > -		__migrate_task(req->task, cpu, req->dest_cpu);
-> > > +		migrated = __migrate_task(req->task, cpu, req->dest_cpu);
-> > >  		local_irq_enable();
-> > > -
-> > > -		complete(&req->done);
-> > > +		if (!migrated) {
-> > > +			/*
-> > > +			 * If the process has not been migrated, let it run
-> > > +			 * until it reaches a migration_check() so it can
-> > > +			 * wake us up.
-> > > +			 */
-> > > +			spin_lock_irq(&rq->lock);
-> > > +			head = &rq->migration_queue;
-> > > +			list_add(&req->list, head);
-> > > +			set_tsk_thread_flag(req->task, TIF_NEED_MIGRATE);
-> > > +			spin_unlock_irq(&rq->lock);
-> > > +			wake_up_process(req->task);
-> > > +		} else
-> > > +			complete(&req->done);
-> > 
-> > I guess this is migration_thread(). The wake_up_process(req->task) looks strange,
-> > why? It can't help if the task waits for the event/mutex.
-> > 
-> 
-> Hrm, the idea was to wake up the thread that is in the migrate disabled
-> section, which is what I seem to do req->task points to the process we
-> try to migrate. We poke it like this until is ends its critical
-> section.
+This patch applies after
+text-edit-lock-kprobes-architecture-independent.patch
 
-But this can only waste CPU, nothing more, no? Suppose that req->thread
-sleeps waiting for the mutex. You can wake it up, and it will call schedule()
-again.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: hch@infradead.org
+CC: prasanna@in.ibm.com
+CC: ananth@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
+---
+ kernel/kprobes.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-This can help if req->thread does something like schedule_timeout(), but
-I don't think this is a common case.
+Index: linux-2.6-lttng/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-07-14 15:44:57.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-07-14 15:45:49.000000000 -0400
+@@ -663,11 +663,7 @@ valid_p:
+ 			list_del_rcu(&p->list);
+ 			kfree(old_p);
+ 		}
+-		mutex_lock(&kprobe_mutex);
+-		kernel_text_lock();
+ 		arch_remove_kprobe(p);
+-		kernel_text_unlock();
+-		mutex_unlock(&kprobe_mutex);
+ 	} else {
+ 		mutex_lock(&kprobe_mutex);
+ 		if (p->break_handler)
 
-Oleg.
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
