@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbXGNEyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbXGNFAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbXGNEyY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 00:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXGNEyR
+	id S1754142AbXGNFAq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 01:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXGNFAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 00:54:17 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60729 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750827AbXGNEyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 00:54:16 -0400
-Date: Sat, 14 Jul 2007 06:53:50 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: herbert@gondor.apana.org.au, davem@davemloft.net
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] crypto/Kconfig: remove "default m"s
-Message-ID: <20070714045349.GF3565@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sat, 14 Jul 2007 01:00:36 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:52330 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750827AbXGNFAf (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 01:00:35 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Adrian Bunk <bunk@stusta.de>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] cleanup congestion control options
+In-Reply-To: Your message of "Sat, 14 Jul 2007 06:09:54 +0200."
+             <20070714040953.GE3565@stusta.de>
+From: Valdis.Kletnieks@vt.edu
+References: <20070714040953.GE3565@stusta.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1184389170_3376P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 14 Jul 2007 00:59:30 -0400
+Message-ID: <4992.1184389170@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Other options requiring specific block cipher algorithms already have 
-the appropriate select's.
+--==_Exmh_1184389170_3376P
+Content-Type: text/plain; charset=us-ascii
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+On Sat, 14 Jul 2007 06:09:54 +0200, Adrian Bunk said:
+> This patch contains the following cleanups:
+> - note in the prompt if an option depends on EXPERIMENTAL
 
----
+Who decided whether a particular option is 'experimental' or not?
 
- crypto/Kconfig |    3 ---
- 1 file changed, 3 deletions(-)
+Lawrence S. Brakmo and Larry L. Peterson. TCP Vegas: end to end congestion
+avoidance on a global Internet. IEEE Journal on Selected Areas in
+Communications, 13(8), October 1995.
 
---- linux-2.6.22-rc6-mm1/crypto/Kconfig.old	2007-07-14 06:24:23.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/crypto/Kconfig	2007-07-14 06:24:30.000000000 +0200
-@@ -146,7 +146,6 @@
- 	tristate "ECB support"
- 	select CRYPTO_BLKCIPHER
- 	select CRYPTO_MANAGER
--	default m
- 	help
- 	  ECB: Electronic CodeBook mode
- 	  This is the simplest block cipher algorithm.  It simply encrypts
-@@ -156,7 +155,6 @@
- 	tristate "CBC support"
- 	select CRYPTO_BLKCIPHER
- 	select CRYPTO_MANAGER
--	default m
- 	help
- 	  CBC: Cipher Block Chaining mode
- 	  This block cipher algorithm is required for IPSec.
-@@ -165,7 +163,6 @@
- 	tristate "PCBC support"
- 	select CRYPTO_BLKCIPHER
- 	select CRYPTO_MANAGER
--	default m
- 	help
- 	  PCBC: Propagating Cipher Block Chaining mode
- 	  This block cipher algorithm is required for RxRPC.
+>  config TCP_CONG_VEGAS
+> -	tristate "TCP Vegas"
+> +	tristate "TCP Vegas (EXPERIMENTAL)"
+>  	depends on EXPERIMENTAL
 
+I think the *right* fix here is '- depends on EXPERIMENTAL'.  1995. Geez. :)
+
+(Probably *all* of the 'experimental' tags for congestion control need an in-depth
+review - but Vegas struck me as particularly egregious.)
+
+
+--==_Exmh_1184389170_3376P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGmFgycC3lWbTT17ARAtlyAKCLmarBpPMr4y/EMGceX7+xglJcYwCdE9E7
+EAwSSdx8W1Qmvq4IfBeBj38=
+=FDgm
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1184389170_3376P--
