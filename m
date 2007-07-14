@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbXGNPVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbXGNPVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbXGNPVT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 11:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbXGNPVG
+	id S1760859AbXGNPVh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 11:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbXGNPVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 11:21:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:64817 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756643AbXGNPVE (ORCPT
+	Sat, 14 Jul 2007 11:21:17 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:53346 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757833AbXGNPVK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 11:21:04 -0400
-Date: Sat, 14 Jul 2007 17:20:04 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3][try 1] init: enable system-on-initramfs
-In-Reply-To: <469801B7.7010909@zytor.com>
-Message-ID: <Pine.LNX.4.58.0707141629510.5288@be1.lrz>
-References: <Pine.LNX.4.58.0707132039080.3222@be1.lrz> <4697D6EB.5020404@zytor.com>
- <Pine.LNX.4.58.0707132344140.13842@be1.lrz> <469801B7.7010909@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18RNJaw7Ds6PsguGamJJsgWVSwOeWnATkUFrFY
- SM2fQGCcZEB1lXACTem6PkVgcqTBGHzWH+9dDQBT6BWeKk/rLA
- R89NemmEcTAwqBJwP4XGA==
+	Sat, 14 Jul 2007 11:21:10 -0400
+Date: Sat, 14 Jul 2007 11:21:08 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/8] Text Edit Lock
+Message-ID: <20070714152108.GA4737@Krystal>
+References: <20070714012133.612727310@polymtl.ca> <20070714105010.GC7358@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070714105010.GC7358@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:20:41 up 7 days,  5:25,  2 users,  load average: 0.01, 0.19, 0.16
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007, H. Peter Anvin wrote:
-> Bodo Eggert wrote:
-> > On Fri, 13 Jul 2007, H. Peter Anvin wrote:
-> >> Bodo Eggert wrote:
-
-> >>> I toyed with setting up a diskless system in initramfs. In the process, I
-> >>> came across some things:
-> >>>
-> >>> 1)  There is no way to have the kernel not mount a filesystem,
-> >>>     unless you use /init or rdinit=.
-> >> And?  Just use rdinit=/sbin/init and no patch is needed.
+* Christoph Hellwig (hch@infradead.org) wrote:
+> On Fri, Jul 13, 2007 at 09:21:33PM -0400, Mathieu Desnoyers wrote:
+> > Hi Andrew,
 > > 
-> > rdinit is supposed to do a different job from /sbin/init, therefore it
-> > will not do the security callbacks the original code would do.
-> > 
-> > And besides that, it feels like turning the wrong knob for that task.
+> > After refactoring of architecture independant code (mutex to protect text
+> > edition) vs architecture dependant code (marking/unmarking pages RW) and
+> > thorough testing, here is the new version of the text edit lock.
 > 
-> No, it is exactly the right knob for the task.
+> Do you have a tarball of your quilt series for markers and all the patches
+> leading to them?  Trying to hand apply half a dozend patch series is not
+> too nice :)
+> 
 
-Setting the name of the rdinit process to the name of the init process
-in order to select the root device should not be the right knob.
+Sure,
 
-> The fact that the security callbacks don't get invoked when using an
-> initramfs *AT ALL* is the real problem.
+Here is the tarball:
 
-It's one more problem.
+http://ltt.polymtl.ca/markers/markers-patches-for-2.6.22-rc6-mm1-07-14-2007.tar.gz
+
+Mathieu
+
 -- 
-Interchangeable parts aren't. 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
