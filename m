@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760588AbXGNJII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbXGNJRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760588AbXGNJII (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 05:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbXGNJH4
+	id S1760262AbXGNJRe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 05:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbXGNJRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 05:07:56 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45615 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753626AbXGNJHz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 05:07:55 -0400
-Date: Sat, 14 Jul 2007 02:07:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: 2.6.22-rc6-mm1
-Message-Id: <20070714020713.36f604d2.akpm@linux-foundation.org>
-In-Reply-To: <469879A2.1000002@shaw.ca>
-References: <fa.GKNLH/oj9PSCnQCxx9ZAggjc5uA@ifi.uio.no>
-	<469879A2.1000002@shaw.ca>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 14 Jul 2007 05:17:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34978 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752288AbXGNJRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 05:17:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: david@lang.hm
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Sat, 14 Jul 2007 11:24:56 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm> <Pine.LNX.4.64.0707140128210.25614@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707140128210.25614@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707141124.57935.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jul 2007 01:22:10 -0600 Robert Hancock <hancockr@shaw.ca> wrote:
-
-> Andrew Morton wrote:
-> > +x86_64-dynticks-disable-hpet_id_legsup-hpets.patch
-> > 
-> >  pretend to fix it
+On Saturday, 14 July 2007 10:33, david@lang.hm wrote:
+> by the way, a data point on kernel sizes
 > 
-> I'm not sure what this patch does on x86_64, but it seems like it 
-> trashes all HPET support on i386?
+> -rw-r--r-- 1 root root  864648 Jul 14 00:53 vmlinuz.2.6.22.1.hibernate
+> -rw-r--r-- 1 root root  659496 Jul 14 01:17 vmlinuz.2.6.22.1.hibernate.stripped
+> -rw-r--r-- 1 root root 3948168 Jul 14 01:10 vmlinuz.2.6.22.1.running
 > 
+> the running one matches the config I'm running on my home server, the 
+> hibernate is a pretty stripped down version, and the stripped is close to 
+> a minimum (including turning off printk and BUG()). All three are with all 
+> drivers built-in, no module support.
+> 
+> this is on a amd64 64 bit system
+> 
+> configs are available if anyone cares, the point is how much smaller a 
+> kernel could be if it doesn't need all the stuff that you put in your main 
+> kernel. In my case this includes not enabling the 3-ware card that holds 
+> my 12-disk raid array, instead the hibernate image would be stored on one 
+> of the scsi drives attached to the adaptec 78xx card.
+> 
+> I expect that on a normal desktop/laptop with more features (like sound) 
+> the savings could be even more significant
 
-It might do, if your i386 is old and has the HPET_ID_LEGSUP bit set.
+But the kernel needs some data to work too (a 'struct page' for each memory
+page etc.).
 
-The code path which that patch disables:
+Greetings,
+Rafael
 
---- a/arch/i386/kernel/hpet.c~x86_64-dynticks-disable-hpet_id_legsup-hpets
-+++ a/arch/i386/kernel/hpet.c
-@@ -376,7 +376,7 @@ int __init hpet_enable(void)
- 
- 	clocksource_register(&clocksource_hpet);
- 
--	if (id & HPET_ID_LEGSUP) {
-+	if (0 && (id & HPET_ID_LEGSUP)) {
- 		hpet_enable_int();
- 		hpet_reserve_platform_timers(id);
- 		/*
-_
 
-will, if executed (on x86_64, at least), instaoops the machine.  It might
-take down i386 as well, dunno.
-
-I'd forgotten about this problem, and it seems that Thomas & John have too.
-It's a showstopper.
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
