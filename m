@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbXGNA6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764088AbXGNBAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763981AbXGNA6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 20:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759086AbXGNA6P
+	id S1764088AbXGNBAi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759264AbXGNBAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 20:58:15 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:39034 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758459AbXGNA6P (ORCPT
+	Fri, 13 Jul 2007 21:00:32 -0400
+Received: from c-69-242-210-120.hsd1.mi.comcast.net ([69.242.210.120]:46793
+	"EHLO heimdal.trondhjem.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759086AbXGNBAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 20:58:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PL+3IxZZyObsBHZyMuDjiYfWD0GWkXpZQsVzPh1pJ9Mg6S7bt1eMl0zfcgtbIZ6Ld5i0AcdjzfGtffC8yQh0SoXrZAaYIlXdxiifxwa4zsOXEaGunNOAkhR3rdZyXAKH7Z46Q3SlqmSJfRmiuGfjd168wOiwBBdLo/pBJZApzV8=
-Message-ID: <29495f1d0707131758x63b81cc2y44d4f2ac574f3a9b@mail.gmail.com>
-Date: Fri, 13 Jul 2007 17:58:12 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.22-rc6-mm1
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070628034321.38c9f12b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070628034321.38c9f12b.akpm@linux-foundation.org>
+	Fri, 13 Jul 2007 21:00:31 -0400
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [PATCH] SUNRPC: Convert rpc_pipefs to use the generic filesystem notification hooks
+Date: Fri, 13 Jul 2007 21:00:30 -0400
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       nfs@lists.sourceforge.net
+Message-Id: <20070714010030.27468.48291.stgit@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/28/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/
->
-> - NOTE (an uppercase one, indeed): there are a lot of menuconfig changes in
->   here which break `make oldconfig' badly.  If you grab an old .config and run
->   `make oldconfig', your kernel probably won't work.  I lost useful things
->   like CONFIG_BLK_DEV and the whole SCSI system, because they were added after
->   I generated my .config.
->
->   So save yourself some hassle and check your .config carefully before
->   building this kernel.  Make sure that everything you need is still enabled.
->
->   I found that manually adding "CONFIG_BLK_DEV=y" to the .config before
->   running oldconfig saved a large number of config items from getting lost.
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-On the one ppc64 machine I have to test on for memoryless nodes, I
-found I had to add back in CONFIG_BLK_DEV=y and
-CONFIG_SCSI_LOWLEVEL=y. Just for reference as other folks pull out
-their hair.
+This will allow rpc.gssd to use inotify instead of dnotify in order to
+locate new rpc upcall pipes.
 
->   Those menuconfig changes have been a huge pain.
+This also requires the exporting of __audit_inode_child(), which is used by
+fsnotify_create() and fsnotify_mkdir(). Ccing David Woodhouse.
 
-Yes.
+Cc: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-Thanks,
-Nish
+ kernel/auditsc.c      |    1 +
+ net/sunrpc/rpc_pipe.c |    7 ++++---
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+index e36481e..64f229b 100644
+--- a/kernel/auditsc.c
++++ b/kernel/auditsc.c
+@@ -1500,6 +1500,7 @@ add_names:
+ 			context->names[idx].ino = (unsigned long)-1;
+ 	}
+ }
++EXPORT_SYMBOL_GPL(__audit_inode_child);
+ 
+ /**
+  * auditsc_get_stamp - get local copies of audit_context values
+diff --git a/net/sunrpc/rpc_pipe.c b/net/sunrpc/rpc_pipe.c
+index e787b6a..22e25b5 100644
+--- a/net/sunrpc/rpc_pipe.c
++++ b/net/sunrpc/rpc_pipe.c
+@@ -14,7 +14,7 @@
+ #include <linux/pagemap.h>
+ #include <linux/mount.h>
+ #include <linux/namei.h>
+-#include <linux/dnotify.h>
++#include <linux/fsnotify.h>
+ #include <linux/kernel.h>
+ 
+ #include <asm/ioctls.h>
+@@ -588,6 +588,7 @@ rpc_populate(struct dentry *parent,
+ 		if (S_ISDIR(mode))
+ 			inc_nlink(dir);
+ 		d_add(dentry, inode);
++		fsnotify_create(dir, dentry);
+ 	}
+ 	mutex_unlock(&dir->i_mutex);
+ 	return 0;
+@@ -609,7 +610,7 @@ __rpc_mkdir(struct inode *dir, struct dentry *dentry)
+ 	inode->i_ino = iunique(dir->i_sb, 100);
+ 	d_instantiate(dentry, inode);
+ 	inc_nlink(dir);
+-	inode_dir_notify(dir, DN_CREATE);
++	fsnotify_mkdir(dir, dentry);
+ 	return 0;
+ out_err:
+ 	printk(KERN_WARNING "%s: %s failed to allocate inode for dentry %s\n",
+@@ -751,7 +752,7 @@ rpc_mkpipe(struct dentry *parent, const char *name, void *private, struct rpc_pi
+ 	rpci->flags = flags;
+ 	rpci->ops = ops;
+ 	rpci->nkern_readwriters = 1;
+-	inode_dir_notify(dir, DN_CREATE);
++	fsnotify_create(dir, dentry);
+ 	dget(dentry);
+ out:
+ 	mutex_unlock(&dir->i_mutex);
