@@ -1,83 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762478AbXGNNCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbXGNNpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762478AbXGNNCU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 09:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbXGNNCM
+	id S1760857AbXGNNpW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 09:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbXGNNpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 09:02:12 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:37105 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753276AbXGNNCL (ORCPT
+	Sat, 14 Jul 2007 09:45:09 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:40371 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757433AbXGNNpH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 09:02:11 -0400
-Date: Sat, 14 Jul 2007 14:02:08 +0100
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, kenchen@google.com,
-       jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       y-goto@jp.fujitsu.com, clameter@sgi.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add a movablecore= parameter for sizing ZONE_MOVABLE
-Message-ID: <20070714130207.GA15864@skynet.ie>
-References: <20070710102043.GA20303@skynet.ie> <20070712122925.192a6601.akpm@linux-foundation.org> <20070712213241.GA7279@skynet.ie> <20070713155610.GD14125@skynet.ie> <20070714082807.GC1198@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Sat, 14 Jul 2007 09:45:07 -0400
+Date: Sat, 14 Jul 2007 08:44:55 -0500
+From: David Fries <david@fries.net>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: NetDev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6 patch] eepro100 resume patch
+Message-ID: <20070714134454.GA1781@spacedout.fries.net>
+References: <20070714000151.GA31482@spacedout.fries.net> <46984CF0.8080700@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070714082807.GC1198@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+In-Reply-To: <46984CF0.8080700@intel.com>
+User-Agent: Mutt/1.5.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (14/07/07 10:28), Nick Piggin didst pronounce:
-> On Fri, Jul 13, 2007 at 04:56:10PM +0100, Mel Gorman wrote:
-> > On (12/07/07 22:32), Mel Gorman didst pronounce:
-> > 
-> > > > Should we at least go for
-> > > > 
-> > > > add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
-> > > > create-the-zone_movable-zone.patch
-> > > > allow-huge-page-allocations-to-use-gfp_high_movable.patch
-> > > > handle-kernelcore=-generic.patch
-> > > > 
-> > > > in 2.6.23?
-> > > 
-> > > Well, yes please from me obviously :) . There is one additional patch
-> > > I would like to send on tomorrow and that is providing the movablecore=
-> > 
-> > This is the patch. It has been boot-tested on a number of machines and
-> > behaves as expected. Nick, with this in addition, do you have any
-> > objection to the ZONE_MOVABLE patches going through to 2.6.23?
+On Fri, Jul 13, 2007 at 09:11:28PM -0700, Kok, Auke wrote:
+> [adding netdev]
 > 
-> What's the status of making it configurable? I didn't see something
-> in -mm for that yet?
+> David Fries wrote:
+> >When I did a software suspend to disk then resumed the Intel network
+> >card using eepro100 driver would be unable to transmit packets.  I
+> >tracked this down and found a register write after the print message
+> >"DP83840 specific setup" which wasn't being executed when the system
+> >was restored.  This fix moves that write and another write which
+> >forces the link speed and duplex.
+> >
+> >After doing this work and preparing the patch I checked out the
+> >mailing list only to find a patch that removes the eepro100.  I then
+> >updated Kconfig, though I wonder why it didn't have a similar message
+> >in it long time ago.
+> >
+> >I too had tried the e100 driver some time ago and it didn't work,
 > 
+> That argument is pretty useless right now. Please *test* e100 and *report 
+> issues*. I recently did some very intensive suspend/resume testing (and 
+> fixes) on e100 and I have yet to hear of any problems with it since... that 
+> was 2.6.18 or so even.
+> 
+> >eepro100 did and I've been using it so long that I've almost forgotten
+> >about that.  I just gave the e100 driver a try and I've been running
+> >for about an hour now without any problems and it does resume after a
+> >suspend to disk operation.
+> 
+> I don't think I need to NAK this. I doubt that Jeff Garzik will apply this 
+> in the first place. eepro100 is on it's way out, so let's focus on what 
+> matters.
+> 
+> Auke
 
-I have a patch that makes it configurable but Kamezawa-san posted a very
-promising patch about making all zones configurable in a very clever way
-which is more general than what I did. He posted it as an RFC[1] and there
-was feedback from Andy Whitcroft on how it could be made better so it wouldn't
-have been picked up for -mm but something is in the pipeline.
+Sorry for not making the point of my e-mail clear.
 
-I've tested his patch for zone movable and it worked as advertised so I
-intended to see post-merge window what else could be done with it clean-up
-wise. I am curious to see if it can also make ZONE_NORMAL configurable on
-machines that only have ZONE_DMA for example.
+It would be a good idea when a driver is being obsoleted to flag that
+in the Kconfig and give alternatives when they exist.  It will
+increase the chance that people will pick the supported driver.
 
-> But that's not as important as ensuring the concept and user visible
-> stuff is in good shape, which I no longer have any problems with.
+My other point was that e100 didn't use to work with my hardware, I
+now have about 12 hours of using the e100 driver without any issues
+that I've seen.  Consider that a success report.
+0000:00:08.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] (rev 01)
 
-Excellent.
+Signed-off-by: David Fries <David@Fries.net>
 
-> So
-> yeah I think it would be good to get this in and get people up and
-> running with it.
-
-Thanks Nick.
-
-[1] http://marc.info/?l=linux-mm&m=118405871911268&w=2
+Index: drivers/net/Kconfig
+===================================================================
+RCS file: 
+/home/david/kernel/k/spacedout/patches/linux/drivers/net/Attic/Kconfig,v
+retrieving revision 1.1.2.1
+diff -u -r1.1.2.1 Kconfig
+--- drivers/net/Kconfig	13 Jul 2007 23:16:36 -0000	1.1.2.1
++++ drivers/net/Kconfig	13 Jul 2007 23:31:29 -0000
+@@ -1467,6 +1467,11 @@
+ 	depends on NET_PCI && PCI
+ 	select MII
+ 	help
++	  ** Warning ** eepro100 (this driver) has been requested to be
++	  removed from the kernel source tree.  Please use e100 and report
++	  any bugs as that is the driver that will be supported going
++	  forward.
++
+ 	  If you have an Intel EtherExpress PRO/100 PCI network (Ethernet)
+ 	  card, say Y and read the Ethernet-HOWTO, available from
+ 	  <http://www.tldp.org/docs.html#howto>.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
