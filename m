@@ -1,64 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932304AbXGNXCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932242AbXGNXDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932304AbXGNXCS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 19:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbXGNXCB
+	id S932242AbXGNXDS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 19:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbXGNXDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 19:02:01 -0400
-Received: from hu-out-0506.google.com ([72.14.214.228]:43775 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932125AbXGNXB6 (ORCPT
+	Sat, 14 Jul 2007 19:03:11 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:39448 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753102AbXGNXDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 19:01:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=pgcqdTXTXfyg00SJ2Hf4bZ3/kXETTNgPFdB9gly1DI0u3wz3k08ujwiFnKFAtlfE6ggUwALaMxRmdwznYiBfCY48wJvwgWuetCZ2ojnOpYOjUxEdl+fecVD192VqJdQqr0agnKcFxrDjJKjjuUH5MgjJcw41qD1lduDubr02pao=
-Date: Sun, 15 Jul 2007 01:01:54 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Doug Thompson <norsk5@xmission.com>
-Cc: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-Subject: [2.6.22] edac: sleeping function called from invalid context
-Message-ID: <20070714230154.GA22439@dreamland.darkstar.lan>
-MIME-Version: 1.0
+	Sat, 14 Jul 2007 19:03:10 -0400
+Date: Sat, 14 Jul 2007 18:57:58 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>
+Subject: Re: (drop : wrong email thread) [PATCH] Immediate Values - Architecture Independent Code - Fixes following HCH comments
+Message-ID: <20070714225758.GB18674@Krystal>
+References: <20070714012133.612727310@polymtl.ca> <20070714012411.845928928@polymtl.ca> <20070714225529.GA18674@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+In-Reply-To: <20070714225529.GA18674@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:57:10 up 7 days, 13:02,  2 users,  load average: 0.38, 0.28, 0.20
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-as soon as I enable parity check on PCI bus (with polling - EDAC_POLL),
-the following warning is triggered:
+Sorry, this email is sent in the wrong thread. Please drop, I will
+resend in the right thread.
 
-EDAC MC: Ver: 2.0.1 Jul 13 2007
-BUG: sleeping function called from invalid context at /home/kronos/src/linux-2.6.git/kernel/rwsem.c:20
-in_atomic():0, irqs_disabled():1
-INFO: lockdep is turned off.
-irq event stamp: 0
-hardirqs last  enabled at (0): [<00000000>] 0x0
-hardirqs last disabled at (0): [<c0120063>] copy_process+0x363/0x11e8
-softirqs last  enabled at (0): [<c0120063>] copy_process+0x363/0x11e8
-softirqs last disabled at (0): [<00000000>] 0x0
- [<c0134fb2>] down_read+0x15/0x49
- [<c02f4669>] schedule_timeout+0x79/0x8d
- [<c01deef0>] pci_get_subsys+0x68/0xea
- [<c01298a4>] process_timeout+0x0/0x5
- [<c01def88>] pci_get_device+0x16/0x19
- [<fa4b98cd>] edac_kernel_thread+0x94/0x10c [edac_mc]
- [<fa4b9839>] edac_kernel_thread+0x0/0x10c [edac_mc]
- [<c0132264>] kthread+0x38/0x60
- [<c013222c>] kthread+0x0/0x60
- [<c0104ae7>] kernel_thread_helper+0x7/0x10
- =======================
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> Immediate Values - Architecture Independent Code - Fixes following HCH comments
+> 
+> Various coding style fixes following Christoph's comments
+> Put asm-generic/immediate.h content into linux/immediate.h.
+> Remove ifdef __KERNEL__ in .h never exported to user space.
+> Make immediate_mutex static.
+> 
+> It applies after "Immediate Values - Architecture Independent Code".
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: Christoph Hellwig <hch@infradead.org>
+> ---
+>  include/linux/immediate.h |   18 ++++++++++++++----
+>  kernel/immediate.c        |   15 +++++++--------
+>  2 files changed, 21 insertions(+), 12 deletions(-)
+> 
+> Index: linux-2.6-lttng/include/linux/immediate.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/linux/immediate.h	2007-07-14 18:13:58.000000000 -0400
+> +++ linux-2.6-lttng/include/linux/immediate.h	2007-07-14 18:16:26.000000000 -0400
+> @@ -10,12 +10,23 @@
+>   * See the file COPYING for more details.
+>   */
+>  
+> -#ifdef __KERNEL__
+> -
+>  #ifdef CONFIG_IMMEDIATE
+>  #include <asm/immediate.h>
+>  #else
+> -#include <asm-generic/immediate.h>
+> +/*
+> + * Generic immediate values: a simple, standard, memory load.
+> + */
+> +
+> +struct module;
+> +
+> +#define immediate_read(var)		_immediate_read(var)
+> +#define immediate_set(var, i)		((var)->value = (i))
+> +#define _immediate_set(var, i)		immediate_set(var, i)
+> +#define immediate_set_early(var, i)	immediate_set(var, i)
+> +#define immediate_if(var)		if (immediate_read(var))
+> +
+> +static inline void module_immediate_setup(struct module *mod) { }
+> +static inline void immediate_update_early(void) { }
+>  #endif
+>  
+>  /*
+> @@ -49,5 +60,4 @@ DEFINE_IMMEDIATE_TYPE(void*, immediate_v
+>   */
+>  #define _immediate_if(var)		if (_immediate_read(var))
+>  
+> -#endif /* __KERNEL__ */
+>  #endif
+> Index: linux-2.6-lttng/kernel/immediate.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/kernel/immediate.c	2007-07-14 18:13:58.000000000 -0400
+> +++ linux-2.6-lttng/kernel/immediate.c	2007-07-14 18:27:03.000000000 -0400
+> @@ -27,13 +27,13 @@ extern const struct __immediate __stop__
+>   * modules_mutex nests inside immediate_mutex. immediate_mutex protects builtin
+>   * immediates and module immediates.
+>   */
+> -DEFINE_MUTEX(immediate_mutex);
+> +static DEFINE_MUTEX(immediate_mutex);
+>  
+>  /*
+>   * Sets a range of immediates to a enabled state : set the enable bit.
+>   */
+> -static void _immediate_update_range(
+> -	const struct __immediate *begin, const struct __immediate *end)
+> +static inline void _immediate_update_range(const struct __immediate *begin,
+> +		const struct __immediate *end)
+>  {
+>  	const struct __immediate *iter;
+>  	int ret;
+> @@ -63,11 +63,10 @@ static void _immediate_update_range(
+>   */
+>  void module_immediate_setup(struct module *mod)
+>  {
+> -	_immediate_update_range(mod->immediate, mod->immediate+mod->num_immediate);
+> +	_immediate_update_range(mod->immediate,
+> +				mod->immediate+mod->num_immediate);
+>  }
+> -#endif
+>  
+> -#ifdef CONFIG_MODULES
+>  /*
+>   * immediate mutex nests inside the modules mutex.
+>   */
+> @@ -103,8 +102,8 @@ EXPORT_SYMBOL_GPL(immediate_update);
+>   * Update the immediate values to the state of the variables they refer to. It
+>   * is done before SMP is active, at the very beginning of start_kernel().
+>   */
+> -void __init immediate_update_early_range(
+> -	const struct __immediate *begin, const struct __immediate *end)
+> +void __init immediate_update_early_range(const struct __immediate *begin,
+> +		const struct __immediate *end)
+>  {
+>  	const struct __immediate *iter;
+>  
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
-The warning is caused by the fact that do_pci_parity_check() calls
-edac_pci_dev_parity_iterator() with interrupts disabled and
-pci_get_device acquires pci_bus_sem (via pci_get_subsys).
-
-
-Luca
 -- 
-"La mia teoria scientifica preferita e` quella secondo la quale gli 
- anelli di Saturno sarebbero interamente composti dai bagagli andati 
- persi nei viaggi aerei." -- Mark Russel
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
