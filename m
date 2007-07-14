@@ -1,144 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932242AbXGNXDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932400AbXGNXEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932242AbXGNXDS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 19:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbXGNXDL
+	id S932400AbXGNXEU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 19:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764820AbXGNXEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 19:03:11 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:39448 "EHLO
+	Sat, 14 Jul 2007 19:04:12 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:39540 "EHLO
 	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753102AbXGNXDK (ORCPT
+	by vger.kernel.org with ESMTP id S1751365AbXGNXEL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 19:03:10 -0400
-Date: Sat, 14 Jul 2007 18:57:58 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+	Sat, 14 Jul 2007 19:04:11 -0400
+Date: Sat, 14 Jul 2007 19:04:09 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@infradead.org>
-Subject: Re: (drop : wrong email thread) [PATCH] Immediate Values - Architecture Independent Code - Fixes following HCH comments
-Message-ID: <20070714225758.GB18674@Krystal>
-References: <20070714012133.612727310@polymtl.ca> <20070714012411.845928928@polymtl.ca> <20070714225529.GA18674@Krystal>
+Cc: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net, Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH] Immediate Values - Move Kprobes i386 restore_interrupt to kdebug.h
+Message-ID: <20070714230409.GF18674@Krystal>
+References: <20070714012439.285079881@polymtl.ca> <20070714012624.150971859@polymtl.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070714225529.GA18674@Krystal>
+In-Reply-To: <20070714012624.150971859@polymtl.ca>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:57:10 up 7 days, 13:02,  2 users,  load average: 0.38, 0.28, 0.20
+X-Uptime: 19:01:57 up 7 days, 13:07,  3 users,  load average: 0.57, 0.62, 0.38
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, this email is sent in the wrong thread. Please drop, I will
-resend in the right thread.
+Immediate Values - Move Kprobes i386 restore_interrupt to kdebug.h
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> Immediate Values - Architecture Independent Code - Fixes following HCH comments
-> 
-> Various coding style fixes following Christoph's comments
-> Put asm-generic/immediate.h content into linux/immediate.h.
-> Remove ifdef __KERNEL__ in .h never exported to user space.
-> Make immediate_mutex static.
-> 
-> It applies after "Immediate Values - Architecture Independent Code".
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: Christoph Hellwig <hch@infradead.org>
-> ---
->  include/linux/immediate.h |   18 ++++++++++++++----
->  kernel/immediate.c        |   15 +++++++--------
->  2 files changed, 21 insertions(+), 12 deletions(-)
-> 
-> Index: linux-2.6-lttng/include/linux/immediate.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/linux/immediate.h	2007-07-14 18:13:58.000000000 -0400
-> +++ linux-2.6-lttng/include/linux/immediate.h	2007-07-14 18:16:26.000000000 -0400
-> @@ -10,12 +10,23 @@
->   * See the file COPYING for more details.
->   */
->  
-> -#ifdef __KERNEL__
-> -
->  #ifdef CONFIG_IMMEDIATE
->  #include <asm/immediate.h>
->  #else
-> -#include <asm-generic/immediate.h>
-> +/*
-> + * Generic immediate values: a simple, standard, memory load.
-> + */
-> +
-> +struct module;
-> +
-> +#define immediate_read(var)		_immediate_read(var)
-> +#define immediate_set(var, i)		((var)->value = (i))
-> +#define _immediate_set(var, i)		immediate_set(var, i)
-> +#define immediate_set_early(var, i)	immediate_set(var, i)
-> +#define immediate_if(var)		if (immediate_read(var))
-> +
-> +static inline void module_immediate_setup(struct module *mod) { }
-> +static inline void immediate_update_early(void) { }
->  #endif
->  
->  /*
-> @@ -49,5 +60,4 @@ DEFINE_IMMEDIATE_TYPE(void*, immediate_v
->   */
->  #define _immediate_if(var)		if (_immediate_read(var))
->  
-> -#endif /* __KERNEL__ */
->  #endif
-> Index: linux-2.6-lttng/kernel/immediate.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/kernel/immediate.c	2007-07-14 18:13:58.000000000 -0400
-> +++ linux-2.6-lttng/kernel/immediate.c	2007-07-14 18:27:03.000000000 -0400
-> @@ -27,13 +27,13 @@ extern const struct __immediate __stop__
->   * modules_mutex nests inside immediate_mutex. immediate_mutex protects builtin
->   * immediates and module immediates.
->   */
-> -DEFINE_MUTEX(immediate_mutex);
-> +static DEFINE_MUTEX(immediate_mutex);
->  
->  /*
->   * Sets a range of immediates to a enabled state : set the enable bit.
->   */
-> -static void _immediate_update_range(
-> -	const struct __immediate *begin, const struct __immediate *end)
-> +static inline void _immediate_update_range(const struct __immediate *begin,
-> +		const struct __immediate *end)
->  {
->  	const struct __immediate *iter;
->  	int ret;
-> @@ -63,11 +63,10 @@ static void _immediate_update_range(
->   */
->  void module_immediate_setup(struct module *mod)
->  {
-> -	_immediate_update_range(mod->immediate, mod->immediate+mod->num_immediate);
-> +	_immediate_update_range(mod->immediate,
-> +				mod->immediate+mod->num_immediate);
->  }
-> -#endif
->  
-> -#ifdef CONFIG_MODULES
->  /*
->   * immediate mutex nests inside the modules mutex.
->   */
-> @@ -103,8 +102,8 @@ EXPORT_SYMBOL_GPL(immediate_update);
->   * Update the immediate values to the state of the variables they refer to. It
->   * is done before SMP is active, at the very beginning of start_kernel().
->   */
-> -void __init immediate_update_early_range(
-> -	const struct __immediate *begin, const struct __immediate *end)
-> +void __init immediate_update_early_range(const struct __immediate *begin,
-> +		const struct __immediate *end)
->  {
->  	const struct __immediate *iter;
->  
-> 
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Since the breakpoint handler is useful both to kprobes and immediate values, it
+makes sense to make the required restore_interrupt() available through
+asm-i386/kdebug.h.
 
+This patch replaces "immediate-values-kprobes-headers.patch".
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: prasanna@in.ibm.com
+CC: ananth@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
+---
+ include/asm-i386/kdebug.h  |   10 ++++++++++
+ include/asm-i386/kprobes.h |    9 ---------
+ 2 files changed, 10 insertions(+), 9 deletions(-)
+
+Index: linux-2.6-lttng/include/asm-i386/kdebug.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/kdebug.h	2007-07-14 18:32:56.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/kdebug.h	2007-07-14 18:37:32.000000000 -0400
+@@ -6,6 +6,7 @@
+  * from x86_64 architecture.
+  */
+ #include <linux/notifier.h>
++#include <asm/ptrace.h>
+ 
+ struct pt_regs;
+ 
+@@ -31,4 +32,13 @@ enum die_val {
+ 	DIE_PAGE_FAULT_NO_CONTEXT,
+ };
+ 
++/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
++ * if necessary, before executing the original int3/1 (trap) handler.
++ */
++static inline void restore_interrupts(struct pt_regs *regs)
++{
++	if (regs->eflags & IF_MASK)
++		local_irq_enable();
++}
++
+ #endif
+Index: linux-2.6-lttng/include/asm-i386/kprobes.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/kprobes.h	2007-07-14 18:32:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/kprobes.h	2007-07-14 18:33:59.000000000 -0400
+@@ -80,15 +80,6 @@ struct kprobe_ctlblk {
+ 	struct prev_kprobe prev_kprobe;
+ };
+ 
+-/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
+- * if necessary, before executing the original int3/1 (trap) handler.
+- */
+-static inline void restore_interrupts(struct pt_regs *regs)
+-{
+-	if (regs->eflags & IF_MASK)
+-		local_irq_enable();
+-}
+-
+ extern int kprobe_exceptions_notify(struct notifier_block *self,
+ 				    unsigned long val, void *data);
+ extern int kernel_text_is_ro;
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
