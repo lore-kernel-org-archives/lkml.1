@@ -1,162 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764264AbXGNCEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764706AbXGNCI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764264AbXGNCEY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 22:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761484AbXGNCEQ
+	id S1764706AbXGNCI0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 22:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761779AbXGNCIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 22:04:16 -0400
-Received: from draco.mcnabbs.org ([208.78.103.77]:34549 "EHLO mcnabbs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760025AbXGNCEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 22:04:15 -0400
-X-Greylist: delayed 1592 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Jul 2007 22:04:15 EDT
-Date: Fri, 13 Jul 2007 18:57:12 -0600
-From: Andrew McNabb <amcnabb@mcnabbs.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] adbhid: produce all capslock key events
-Message-ID: <20070714005712.GA10266@mcnabbs.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 13 Jul 2007 22:08:19 -0400
+Received: from rwcrmhc11.comcast.net ([216.148.227.151]:38099 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758741AbXGNCIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 22:08:17 -0400
+Subject: Re: [PATCH -rt 6/6] Compile fix for PREEMPT_TIMING on and
+	IRQSOFF_TIMING off
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: Kevin Hilman <khilman@mvista.com>
+Cc: tglx@linutronix.de, mingo@elte.hu, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46980935.3060509@mvista.com>
+References: <20070713175214.336577416@mvista.com>
+	 <20070713175229.239602308@mvista.com>  <46980935.3060509@mvista.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: The Big Corporation
+Date: Fri, 13 Jul 2007 19:08:14 -0700
+Message-Id: <1184378894.16207.14.camel@sx.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-07-13 at 16:22 -0700, Kevin Hilman wrote:
+> [Minor update to avoid a compiler warning in the case of DEBUG_KERNEL=n]
+> 
 
---WIyZ46R2i8wDzkSu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The resent patch (v2) had white space damage - 
 
-The ADB keyboard, which is used for Apple PowerBooks, has strange
-behavior with regard to the capslock key.  It keeps track of capslock
-state internally, and it sends a keycode when capslock is engaged and a
-keycode when capslock is disengaged.
+Here is a reconstituted version that applies for me on 2.6.22-rt3
 
-When the current adbhid driver sees that the capslock key is pressed or
-released, it creates both a keypress event and a keyrelease event
-simultaneously.  This results in normal capslock behavior.
+Acked-by: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
 
-While this works, it makes it impossible to remap the capslock key to be
-a control key.  However, by translating the 0xff keycode into capslock
-keycodes, we can restore the missing capslock events and make it
-possible to remap the capslock key.
+>From linux-rt-users-owner@vger.kernel.org Fri Jul 13 16:22:34 2007
+Return-Path: <linux-rt-users-owner@vger.kernel.org>
+Received: from sx.thebigcorporation.com ([unix socket]) by
+	sx.thebigcorporation.com (Cyrus v2.3.8-Fedora-RPM-2.3.8-3.fc7) with LMTPA;
+	Fri, 13 Jul 2007 16:22:34 -0700
+X-Sieve: CMU Sieve 2.3
+Received: from vger.kernel.org (vger.kernel.org [209.132.176.167]) by
+	sx.thebigcorporation.com (8.14.1/8.13.8) with ESMTP id l6DNMXP6017382 for
+	<sven@thebigcorporation.com>; Fri, 13 Jul 2007 16:22:33 -0700
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id
+	S1759195AbXGMXW1 (ORCPT <rfc822;sven@thebigcorporation.com>); Fri, 13 Jul
+	2007 19:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id
+	S1760623AbXGMXW1 (ORCPT <rfc822;linux-rt-users-outgoing>); Fri, 13 Jul 2007
+	19:22:27 -0400
+Received: from h155.mvista.com ([63.81.120.158]:7301 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with
+	ESMTP id S1759161AbXGMXW1 (ORCPT <rfc822;linux-rt-users@vger.kernel.org>);
+	Fri, 13 Jul 2007 19:22:27 -0400
+Received: from [127.0.0.1] (asshur.mvista.com [10.0.0.11]) by
+	hermes.mvista.com (Postfix) with ESMTP id 69F871DE39; Fri, 13 Jul 2007
+	16:22:25 -0700 (PDT)
+Message-ID: <46980935.3060509@mvista.com>
+Date:	Fri, 13 Jul 2007 16:22:29 -0700
+From: Kevin Hilman <khilman@mvista.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Kevin Hilman <khilman@mvista.com>
+Cc: tglx@linutronix.de, mingo@elte.hu, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -rt 6/6] Compile fix for PREEMPT_TIMING on and
+	IRQSOFF_TIMING off
+References: <20070713175214.336577416@mvista.com>
+	 <20070713175229.239602308@mvista.com>
+In-Reply-To: <20070713175229.239602308@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Sender: linux-rt-users-owner@vger.kernel.org
+Precedence: bulk
+X-Mailing-List:	linux-rt-users@vger.kernel.org
+X-Evolution-Source: imap://sven@sx.thebigcorporation.com/
+Content-Transfer-Encoding: 8bit
 
-With this patch, the adbhid driver will translate these 0xff keycodes
-into capslock keypresses and keyreleases if
-/sys/module/adbhid/parameters/restore_capslock_events is set to 1.
-Otherwise it will retain the current behavior.  This option is off by
-default because occasionally the 0xff keycode is not a capslock event,
-and a mistake may require the user to tap the capslock key.
+[Minor update to avoid a compiler warning in the case of DEBUG_KERNEL=n]
 
-I would appreciate any feedback on the patch.  If it looks good, I would
-like to submit it to be merged.
+Compile fix for PREEMPT_TIMING on and IRQSOFF_TIMING off
 
-Signed-off-by: Andrew McNabb <amcnabb@mcnabbs.org>
+The per-cpu trace_cpu_idle variable is used when timing *either*
+IRQs-off or preempt sections.
+
+Signed-off-by: Kevin Hilman <khilman@mvista.com>
 ---
- drivers/macintosh/adbhid.c |   48 ++++++++++++++++++++++++++++++++++++++--=
----
- 1 files changed, 42 insertions(+), 6 deletions(-)
+ kernel/latency_trace.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
-index b46817f..3fd9b5e 100644
---- a/drivers/macintosh/adbhid.c
-+++ b/drivers/macintosh/adbhid.c
-@@ -52,6 +52,11 @@
-=20
- MODULE_AUTHOR("Franz Sirl <Franz.Sirl-kernel@lauterbach.com>");
-=20
-+static int restore_capslock_events =3D 0;
-+module_param(restore_capslock_events, int, 0644);
-+MODULE_PARM_DESC(restore_capslock_events,
-+	"Produce keypress events for capslock on both keyup and keydown.");
-+
- #define KEYB_KEYREG	0	/* register # for key up/down data */
- #define KEYB_LEDREG	2	/* register # for leds on ADB keyboard */
- #define MOUSE_DATAREG	0	/* reg# for movement/button codes from mouse */
-@@ -217,6 +222,8 @@ struct adbhid {
- #define FLAG_FN_KEY_PRESSED	0x00000001
- #define FLAG_POWER_FROM_FN	0x00000002
- #define FLAG_EMU_FWDEL_DOWN	0x00000004
-+#define FLAG_CAPSLOCK_TRANSLATE	0x00000008
-+#define FLAG_CAPSLOCK_DOWN	0x00000010
-=20
- static struct adbhid *adbhid[16];
-=20
-@@ -272,16 +279,45 @@ adbhid_keyboard_input(unsigned char *data, int nb, in=
-t apoll)
+Index: linux-2.6.22/kernel/latency_trace.c
+===================================================================
+--- linux-2.6.22.orig/kernel/latency_trace.c
++++ linux-2.6.22/kernel/latency_trace.c
+@@ -85,9 +85,13 @@ static inline int DEBUG_WARN_ON(int cond
  }
-=20
- static void
--adbhid_input_keycode(int id, int keycode, int repeat)
-+adbhid_input_keycode(int id, int scancode, int repeat)
- {
- 	struct adbhid *ahid =3D adbhid[id];
--	int up_flag;
--
--	up_flag =3D (keycode & 0x80);
--	keycode &=3D 0x7f;
-+	int keycode, up_flag;
+ #endif
+ 
++#if defined(CONFIG_CRITICAL_IRQSOFF_TIMING) || \
++   (defined(CONFIG_CRITICAL_PREEMPT_TIMING) && defined(CONFIG_TRACE_IRQFLAGS))
++   static DEFINE_PER_CPU(int, trace_cpu_idle);
++#endif
 +
-+	keycode =3D (scancode & 0x7f);
-+	up_flag =3D (scancode & 0x80);
-+
-+	if (restore_capslock_events) {
-+		if ((keycode =3D=3D ADB_KEY_CAPSLOCK) && !up_flag) {
-+			/* Key pressed, turning on the CapsLock LED.
-+			 * The next 0xff will be interpreted as a release. */
-+			ahid->flags |=3D FLAG_CAPSLOCK_TRANSLATE
-+					| FLAG_CAPSLOCK_DOWN;
-+		} else if (scancode =3D=3D 0xff) {
-+			/* Scancode 0xff usually signifies that the capslock
-+			 * key was either pressed or released. */
-+			if (ahid->flags & FLAG_CAPSLOCK_TRANSLATE) {
-+				keycode =3D ADB_KEY_CAPSLOCK;
-+				if (ahid->flags & FLAG_CAPSLOCK_DOWN) {
-+					/* Key released */
-+					up_flag =3D 1;
-+					ahid->flags &=3D ~FLAG_CAPSLOCK_DOWN;
-+				} else {
-+					/* Key pressed */
-+					up_flag =3D 0;
-+					ahid->flags &=3D ~FLAG_CAPSLOCK_TRANSLATE;
-+				}
-+			} else {
-+				printk(KERN_INFO "Spurious caps lock event "
-+						"(scancode 0xff).");
-+			}
-+		}
-+	}
-=20
- 	switch (keycode) {
--	case ADB_KEY_CAPSLOCK: /* Generate down/up events for CapsLock everytime.=
- */
-+	case ADB_KEY_CAPSLOCK:
-+		if (restore_capslock_events) break;
-+		/* Generate down/up events for CapsLock everytime. */
- 		input_report_key(ahid->input, KEY_CAPSLOCK, 1);
- 		input_report_key(ahid->input, KEY_CAPSLOCK, 0);
- 		input_sync(ahid->input);
---=20
-1.5.2.2
+ #ifdef CONFIG_CRITICAL_IRQSOFF_TIMING
+ # ifdef CONFIG_CRITICAL_PREEMPT_TIMING
+-   static DEFINE_PER_CPU(int, trace_cpu_idle);
+ #  define irqs_off_preempt_count() (preempt_count() && !__get_cpu_var(trace_cpu_idle))
+ # else
+ #  define irqs_off_preempt_count() 0
 
-
---=20
-Andrew McNabb
-http://www.mcnabbs.org/andrew/
-PGP Fingerprint: 8A17 B57C 6879 1863 DE55  8012 AB4D 6098 8826 6868
-
---WIyZ46R2i8wDzkSu
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGmB9oq01gmIgmaGgRAsHAAJ0b2NTOfhQuXwC5w9eaCITj/iBvKACfaEt0
-NuKHKAnOineMqD17vmTN+Zs=
-=Dhlv
------END PGP SIGNATURE-----
-
---WIyZ46R2i8wDzkSu--
