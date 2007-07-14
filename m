@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbXGNHoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbXGNHo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759219AbXGNHoT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 03:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbXGNHoK
+	id S1759546AbXGNHo5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 03:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbXGNHor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 03:44:10 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:48206 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752025AbXGNHoI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 03:44:08 -0400
-Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
-	features in larger inode
-From: Peter Zijlstra <peterz@infradead.org>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <20070713214746.GH23255@mami.zabbo.net>
-References: <1183275482.4010.133.camel@localhost.localdomain>
-	 <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
-	 <20070713020529.1486491f.akpm@linux-foundation.org>
-	 <1184333621.20032.85.camel@twins>
-	 <20070713121259.20066d5b.akpm@linux-foundation.org>
-	 <20070713214746.GH23255@mami.zabbo.net>
-Content-Type: text/plain
-Date: Sat, 14 Jul 2007 09:43:35 +0200
-Message-Id: <1184399015.5284.34.camel@lappy>
+	Sat, 14 Jul 2007 03:44:47 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47309 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751920AbXGNHoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 03:44:46 -0400
+Date: Sat, 14 Jul 2007 09:45:58 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alex Riesen <raa.lkml@gmail.com>, Jesper Juhl <jesper.juhl@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: why does git perpetually complain about include/asm-blackfin/macros.h?
+Message-ID: <20070714074558.GA8047@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0707020800010.1972@localhost.localdomain> <4688EF9B.8020405@garzik.org> <9a8748490707020658t5e6542ag6edb435dbc4499ab@mail.gmail.com> <4689073D.1020802@garzik.org> <81b0412b0707020722q25e8eb41t456e7316fe4a7b40@mail.gmail.com> <46890DA8.4070400@garzik.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46890DA8.4070400@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 14:47 -0700, Zach Brown wrote:
-> > I fear the consequences of this change :(
+On Mon, Jul 02, 2007 at 10:37:28AM -0400, Jeff Garzik wrote:
+> Alex Riesen wrote:
+> >Do some of your branches miss the commit by which it was removed?
 > 
-> I love it.  In the past I've lost time by working with patches which
-> didn't quite realize that ext3 holds a transaction open during
-> ->direct_IO.
+> git-clone followed by git-checkout master recreates the problem.
 > 
-> > Oh well, please keep it alive, maybe beat on it a bit, resend it
-> > later on?
+> But to answer your question directly, I rebase, so they absolutely do 
+> not miss any commits.
 > 
-> I can test the patch to make sure that it catches mistakes I've made in
-> the past. 
+> 
+> >It is somewhat unclear what "reappear" means, though: do you mean
+> 
+> Attempts to give you precise output to answer your question yielded a 
+> data point, the kernel's "make distclean" causes this:
+> 
+> [jgarzik@pretzel linux-2.6]$ make distclean && git checkout master && 
+> git diff HEAD
+> D       include/asm-blackfin/macros.h
+> Switched to branch "master"
+> diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
+> deleted file mode 100644
+> index e69de29..0000000
+> 
+> [jgarzik@pretzel linux-2.6]$ git checkout -f
+> 
+> [jgarzik@pretzel linux-2.6]$ make distclean && git checkout master && 
+> git diff HEAD
+> D       include/asm-blackfin/macros.h
+> Switched to branch "master"
+> diff --git a/include/asm-blackfin/macros.h b/include/asm-blackfin/macros.h
+> deleted file mode 100644
+> index e69de29..0000000
+> 
+> [jgarzik@pretzel linux-2.6]$ git checkout -f
+> 
+> [jgarzik@pretzel linux-2.6]$ git checkout master && git diff 
+> HEADSwitched to branch "master"
+> 
+> [jgarzik@pretzel linux-2.6]$ git checkout master && git diff HEAD
+> Switched to branch "master"
+> 
+> [jgarzik@pretzel linux-2.6]$
+> 
+> 
+> So, not a git problem but a kernel Makefile problem.  Sorry for the git 
+> noise.
 
-That would be much appreciated.
+distclean on purpose delete zero size files.
+And the kernel tree shall not contain such files - if it does it is a bug.
 
->  Peter, do you have any interest in seeing how far we can get
-> at tracking lock_page()?  I'm not holding my breath, but any little bit
-> would probably help.
+So I do not see a 'problem' with the kernel makefile but instead a problem
+with the kernel tree wich is about to be fixed.
 
-Yeah I'm going to try that one next.. 
+Agree?
 
+	Sam
