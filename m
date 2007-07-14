@@ -1,158 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbXGNQAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbXGNQCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbXGNQAw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 12:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbXGNQAn
+	id S1757261AbXGNQCR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 12:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbXGNQCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 12:00:43 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:64176 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752483AbXGNQAm (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 12:00:42 -0400
-X-Greylist: delayed 1257 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Jul 2007 12:00:42 EDT
-Subject: [BUG] AS io-scheduler.
-From: Ian Kumlien <pomac@vapor.com>
-Reply-To: pomac@vapor.com
-To: Linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-G0WHQvURRdFe6zSpKDmP"
-Date: Sat, 14 Jul 2007 17:39:42 +0200
-Message-Id: <1184427582.10630.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Sat, 14 Jul 2007 12:02:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45548 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752765AbXGNQCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 12:02:05 -0400
+Message-Id: <20070714175733.194012000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Sat, 14 Jul 2007 19:57:33 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH -rt 0/5] making SLUB -rt friendly
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-G0WHQvURRdFe6zSpKDmP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This is an attempt at converting SLUB to -rt. It seems to work reasonably
+well. But I haven't really pushed it _very_ _very_ hard yet.
 
-Hi,=20
+Enjoy
 
-I had emerge --sync failing several times...=20
 
-So i checked dmesg and found some info, attached further down.
-This is a old VIA C3 machine with one disk, it's been running most
-kernels in the 2.6.x series with no problems until now.
-
-PS. Don't forget to CC me
-DS.
-
-BUG: unable to handle kernel paging request at virtual address ea86ac54
- printing eip:
-c022dfec
-*pde =3D 00000000
-Oops: 0000 [#1]
-Modules linked in: eeprom i2c_viapro vt8231 i2c_isa skge
-CPU:    0
-EIP:    0060:[<c022dfec>]    Not tainted VLI
-EFLAGS: 00010082   (2.6.22.1 #26)
-EIP is at as_can_break_anticipation+0xc/0x190
-eax: dfcdaba0   ebx: dfcdaba0   ecx: 0035ff95   edx: cb296844
-esi: cb296844   edi: dfcdaba0   ebp: 00000000   esp: ceff6a70
-ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-Process rsync (pid: 1667, ti=3Dceff6000 task=3Dd59cf5b0 task.ti=3Dceff6000)
-Stack: cb296844 00000001 cb296844 dfcdaba0 00000000 c022efc8 cb296844
-00000000=20
-       dfcffb9c c0227a76 dfcffb9c 00000000 c016e96e cb296844 00000000
-dfcffb9c=20
-       00000000 c022af64 00000000 dfcffb9c 00000008 00000000 08ff6b30
-c04d1ec0=20
-Call Trace:
- [<c022efc8>] as_add_request+0xa8/0xc0
- [<c0227a76>] elv_insert+0xa6/0x150
- [<c016e96e>] bio_phys_segments+0xe/0x20
- [<c022af64>] __make_request+0x384/0x490
- [<c02add1e>] ide_do_request+0x6ee/0x890
- [<c02294ab>] generic_make_request+0x18b/0x1c0
- [<c022b596>] submit_bio+0xa6/0xb0
- [<c013b7b8>] mempool_alloc+0x28/0xa0
- [<c016bb66>] __find_get_block+0xf6/0x130
- [<c016e0bc>] bio_alloc_bioset+0x8c/0xf0
- [<c016b647>] submit_bh+0xb7/0xe0
- [<c016c1f8>] ll_rw_block+0x78/0x90
- [<c019c85d>] search_by_key+0xdd/0xd20
- [<c016c201>] ll_rw_block+0x81/0x90
- [<c011f190>] irq_exit+0x40/0x60
- [<c01066e4>] do_IRQ+0x94/0xb0
- [<c0104bc3>] common_interrupt+0x23/0x30
- [<c018beca>] reiserfs_read_locked_inode+0x6a/0x490
- [<c018e580>] reiserfs_find_actor+0x0/0x20
- [<c018c33b>] reiserfs_iget+0x4b/0x80
- [<c018e570>] reiserfs_init_locked_inode+0x0/0x10
- [<c0189824>] reiserfs_lookup+0xa4/0xf0
- [<c0157b03>] do_lookup+0xa3/0x140
- [<c0159265>] __link_path_walk+0x615/0xa20
- [<c0168a18>] __mark_inode_dirty+0x28/0x150
- [<c01631c1>] mntput_no_expire+0x11/0x50
- [<c01596b2>] link_path_walk+0x42/0xb0
- [<c0159960>] do_path_lookup+0x130/0x150
- [<c015a190>] __user_walk_fd+0x30/0x50
- [<c0154766>] vfs_lstat_fd+0x16/0x40
- [<c01547df>] sys_lstat64+0xf/0x30
- [<c0103c42>] syscall_call+0x7/0xb
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Code: c0 8b 44 cb 0c 8b 40 08 29 d0 f7 d0 c1 e8 1f 83 f0 01 eb 02 31 c0
-5b c3 8d b4 26 00 00 00 00 55 57 56 53 83 ec 04 89 c3 89 14 24 <8b> 90
-b4 00 00 00 85 d2 75 04 0f 0b eb fe 83 3c 24 00 74 0c 8b=20
-EIP: [<c022dfec>] as_can_break_anticipation+0xc/0x190 SS:ESP
-0068:ceff6a70
-WARNING: at block/as-iosched.c:862 as_remove_queued_request()
- [<c022e560>] as_remove_queued_request+0x40/0xc0
- [<c022e684>] as_move_to_dispatch+0xa4/0x110
- [<c0236626>] __delay+0x6/0x10
- [<c022ee03>] as_dispatch_request+0x2d3/0x310
- [<c02b39b2>] ide_dma_start+0x22/0x30
- [<c02b6be0>] ide_do_rw_disk+0x310/0x3f0
- [<c02279b5>] elv_next_request+0x105/0x120
- [<c02ad876>] ide_do_request+0x246/0x890
- [<c03d5c9d>] schedule+0x45d/0x4c0
- [<c022e7f0>] as_work_handler+0x0/0x20
- [<c022a331>] blk_start_queueing+0x11/0x20
- [<c022e7ff>] as_work_handler+0xf/0x20
- [<c0126bab>] run_workqueue+0x6b/0xe0
- [<c0127200>] worker_thread+0x0/0xc0
- [<c01272b2>] worker_thread+0xb2/0xc0
- [<c01297e0>] autoremove_wake_function+0x0/0x40
- [<c0129658>] kthread+0x38/0x60
- [<c0129620>] kthread+0x0/0x60
- [<c0104d87>] kernel_thread_helper+0x7/0x10
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-WARNING: at block/as-iosched.c:966 as_move_to_dispatch()
- [<c022e6b3>] as_move_to_dispatch+0xd3/0x110
- [<c022ee03>] as_dispatch_request+0x2d3/0x310
- [<c02b39b2>] ide_dma_start+0x22/0x30
- [<c02b6be0>] ide_do_rw_disk+0x310/0x3f0
- [<c02279b5>] elv_next_request+0x105/0x120
- [<c02ad876>] ide_do_request+0x246/0x890
- [<c03d5c9d>] schedule+0x45d/0x4c0
- [<c022e7f0>] as_work_handler+0x0/0x20
- [<c022a331>] blk_start_queueing+0x11/0x20
- [<c022e7ff>] as_work_handler+0xf/0x20
- [<c0126bab>] run_workqueue+0x6b/0xe0
- [<c0127200>] worker_thread+0x0/0xc0
- [<c01272b2>] worker_thread+0xb2/0xc0
- [<c01297e0>] autoremove_wake_function+0x0/0x40
- [<c0129658>] kthread+0x38/0x60
- [<c0129620>] kthread+0x0/0x60
- [<c0104d87>] kernel_thread_helper+0x7/0x10
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
---=20
-Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
-
---=-G0WHQvURRdFe6zSpKDmP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7-ecc0.1.6 (GNU/Linux)
-
-iD8DBQBGmO467F3Euyc51N8RAiZfAJ0Xhd333cicLS9AX/vBtgQoI4UY6ACgnTgH
-8180U+nc7j75wAFMk4sGeJY=
-=V4wc
------END PGP SIGNATURE-----
-
---=-G0WHQvURRdFe6zSpKDmP--
+--
 
