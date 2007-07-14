@@ -1,44 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765221AbXGND64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbXGNEKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765221AbXGND64 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 23:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757680AbXGND6i
+	id S1753004AbXGNEKf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 00:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbXGNEKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 23:58:38 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:58279 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757089AbXGND6h (ORCPT
+	Sat, 14 Jul 2007 00:10:23 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60716 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750832AbXGNEKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 23:58:37 -0400
-Date: Fri, 13 Jul 2007 20:55:14 -0700
-From: Greg KH <greg@kroah.com>
-To: dougthompson@xmission.com
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH 7/8] drivers edac fix edac_mc sysfs completion code
-Message-ID: <20070714035514.GC11633@kroah.com>
-References: <4697ae46.2A5hpktamwpYrgDY%dougthompson@xmission.com>
+	Sat, 14 Jul 2007 00:10:22 -0400
+Date: Sat, 14 Jul 2007 06:09:54 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] cleanup congestion control options
+Message-ID: <20070714040953.GE3565@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4697ae46.2A5hpktamwpYrgDY%dougthompson@xmission.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 10:54:30AM -0600, dougthompson@xmission.com wrote:
-> From:	doug thompson <dougthompson@xmission.com>
-> 
-> This patch refactors the 'releasing' of kobjects for the edac_mc type
-> of device. The correct pattern of kobject release is followed.
-> 
-> As internal kobjs are allocated they bump a ref count on the top
-> level kobj. It in turn has a module ref count on the edac_core module.
-> When internal kobjects are released, they dec the ref count on the
-> top level kobj. When the top level kobj reaches zero, it decrements
-> the ref count on the edac_core object, allow it to be unloaded,
-> as all resources have all now been released.
-> 
-> CC:             Alan Cox alan@lxorguk.ukuu.org.uk
-> Signed-off-by:	doug thompson <dougthompson@xmission.com>
+This patch contains the following cleanups:
+- note in the prompt if an option depends on EXPERIMENTAL
+- remove "default n"s that didn't have any effect
+- remove "default m"s from options under TCP_CONG_ADVANCED:
+  if you manually choose congestion control modules you should
+  know which ones you want
 
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+
+ net/ipv4/Kconfig |   27 ++++++++-------------------
+ 1 file changed, 8 insertions(+), 19 deletions(-)
+
+--- linux-2.6.22-rc6-mm1/net/ipv4/Kconfig.old	2007-07-13 11:00:22.000000000 +0200
++++ linux-2.6.22-rc6-mm1/net/ipv4/Kconfig	2007-07-13 11:07:34.000000000 +0200
+@@ -423,7 +423,6 @@
+ 
+ config TCP_CONG_BIC
+ 	tristate "Binary Increase Congestion (BIC) control"
+-	default m
+ 	---help---
+ 	BIC-TCP is a sender-side only change that ensures a linear RTT
+ 	fairness under large windows while offering both scalability and
+@@ -445,7 +444,6 @@
+ 
+ config TCP_CONG_WESTWOOD
+ 	tristate "TCP Westwood+"
+-	default m
+ 	---help---
+ 	TCP Westwood+ is a sender-side only modification of the TCP Reno
+ 	protocol stack that optimizes the performance of TCP congestion
+@@ -459,7 +457,6 @@
+ 
+ config TCP_CONG_HTCP
+         tristate "H-TCP"
+-        default m
+ 	---help---
+ 	H-TCP is a send-side only modifications of the TCP Reno
+ 	protocol stack that optimizes the performance of TCP
+@@ -469,9 +466,8 @@
+ 	other Reno and H-TCP flows.
+ 
+ config TCP_CONG_HSTCP
+-	tristate "High Speed TCP"
++	tristate "High Speed TCP (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	default n
+ 	---help---
+ 	Sally Floyd's High Speed TCP (RFC 3649) congestion control.
+ 	A modification to TCP's congestion control mechanism for use
+@@ -480,9 +476,8 @@
+  	For more detail	see http://www.icir.org/floyd/hstcp.html
+ 
+ config TCP_CONG_HYBLA
+-	tristate "TCP-Hybla congestion control algorithm"
++	tristate "TCP-Hybla congestion control algorithm (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	default n
+ 	---help---
+ 	TCP-Hybla is a sender-side only change that eliminates penalization of
+ 	long-RTT, large-bandwidth connections, like when satellite legs are
+@@ -490,9 +485,8 @@
+ 	terrestrial connections.
+ 
+ config TCP_CONG_VEGAS
+-	tristate "TCP Vegas"
++	tristate "TCP Vegas (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	default n
+ 	---help---
+ 	TCP Vegas is a sender-side only change to TCP that anticipates
+ 	the onset of congestion by estimating the bandwidth. TCP Vegas
+@@ -501,9 +495,8 @@
+ 	not as aggressive as TCP Reno.
+ 
+ config TCP_CONG_SCALABLE
+-	tristate "Scalable TCP"
++	tristate "Scalable TCP (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	default n
+ 	---help---
+ 	Scalable TCP is a sender-side only change to TCP which uses a
+ 	MIMD congestion control algorithm which has some nice scaling
+@@ -511,9 +504,8 @@
+ 	See http://www.deneholme.net/tom/scalable/
+ 
+ config TCP_CONG_LP
+-	tristate "TCP Low Priority"
++	tristate "TCP Low Priority (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	default n
+ 	---help---
+ 	TCP Low Priority (TCP-LP), a distributed algorithm whose goal is
+ 	to utilize only the excess network bandwidth as compared to the
+@@ -521,9 +513,8 @@
+ 	See http://www-ece.rice.edu/networks/TCP-LP/
+ 
+ config TCP_CONG_VENO
+-	tristate "TCP Veno"
++	tristate "TCP Veno (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	default n
+ 	---help---
+ 	TCP Veno is a sender-side only enhancement of TCP to obtain better
+ 	throughput over wireless networks. TCP Veno makes use of state
+@@ -533,10 +524,9 @@
+ 	See http://www.ntu.edu.sg/home5/ZHOU0022/papers/CPFu03a.pdf
+ 
+ config TCP_CONG_YEAH
+-	tristate "YeAH TCP"
++	tristate "YeAH TCP (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+ 	select TCP_CONG_VEGAS
+-	default n
+ 	---help---
+ 	YeAH-TCP is a sender-side high-speed enabled TCP congestion control
+ 	algorithm, which uses a mixed loss/delay approach to compute the
+@@ -548,9 +538,8 @@
+ 	  http://wil.cs.caltech.edu/pfldnet2007/paper/YeAH_TCP.pdf
+ 
+ config TCP_CONG_ILLINOIS
+-	tristate "TCP Illinois"
++	tristate "TCP Illinois (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	default n
+ 	---help---
+ 	TCP-Illinois is a sender-side modificatio of TCP Reno for
+ 	high speed long delay links. It uses round-trip-time to
+
