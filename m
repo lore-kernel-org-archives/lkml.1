@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbXGNHLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbXGNHUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752042AbXGNHLT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 03:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXGNHLF
+	id S1757305AbXGNHUY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 03:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbXGNHUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 03:11:05 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60762 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751891AbXGNHLD (ORCPT
+	Sat, 14 Jul 2007 03:20:11 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:52505
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbXGNHUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 03:11:03 -0400
-Date: Sat, 14 Jul 2007 09:10:34 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] cleanup congestion control options
-Message-ID: <20070714071034.GG3565@stusta.de>
-References: <20070714040953.GE3565@stusta.de> <20070713.235442.75191469.davem@davemloft.net>
+	Sat, 14 Jul 2007 03:20:10 -0400
+Date: Sat, 14 Jul 2007 00:13:59 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: [linux-pm] Re: [PATCH 0/2] Kexec jump: The first step to kexec
+ base hibernation
+In-Reply-To: <Pine.LNX.4.44L0.0707131035150.4865-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.64.0707140012290.25614@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707131035150.4865-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070713.235442.75191469.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 11:54:42PM -0700, David Miller wrote:
-> From: Adrian Bunk <bunk@stusta.de>
-> Date: Sat, 14 Jul 2007 06:09:54 +0200
-> 
-> > This patch contains the following cleanups:
-> > - note in the prompt if an option depends on EXPERIMENTAL
-> > - remove "default n"s that didn't have any effect
-> > - remove "default m"s from options under TCP_CONG_ADVANCED:
-> >   if you manually choose congestion control modules you should
-> >   know which ones you want
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> I'm not so sure about any of this, sorry Adrian, I'm
-> not applying this.
+On Fri, 13 Jul 2007, Alan Stern wrote:
 
-What exactly are you not sure of?
-- noting the experimental status in the prompt is a common convention
-  in the kernel
-- "default n"s like here are nops serving no purpose
+> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
+>
+>>> I missed this discussion. is this idea to suspend, write to disk, but
+>>> leave things in ram so that if you wakeup soon enough you have everything
+>>> for ram, but if you don't and the battery dies you can restore from disk?
+>>>
+>>> if so I think it's a mistake to mix the two. it would be better to just
+>>> suspend to ram, and wake up once in a while to check the battery state and
+>>> when the battery gets low enough do the suspend to disk.
+>>>
+>>> otherwise you end up mixing the requirements of the two types of suspend,
+>>> which is how things got so ugly in the first place.
+>>
+>> Not necessarily.  If we don't put devices into low power states before creating
+>> the image, that should work just fine (quiesce devices, create the image or
+>> kexec the new kernel, reprobe devices, save the image, suspend to RAM,
+>> resume from RAM, continue - or restore from the image if power failed in the
+>> meantime).  Still, for this purpose, both kernels need to be able to handle the
+>> same set of devices.
+>
+> Why?
+>
+> Suppose the kexec kernel can't handle some device.  The normal kernel
+> has already quiesced the device, so it will remain quiescent while the
+> kexec kernel runs and throughout the suspend.  When the regular kernel
+> regains control the device will be ready for use.  I don't see any
+> problem.
 
-This leaves only the removal of the "default m"s which I thought would 
-be non-controversial since people seeing these options should know best
-what they need.
+remember that during the hibernation the box may be powered off.
 
-cu
-Adrian
+but there's still no reason for the hibernate kernel to know how to access 
+the USB TV Tuner for example.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+David Lang
