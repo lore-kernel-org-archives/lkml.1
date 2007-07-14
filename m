@@ -1,102 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761270AbXGNRQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbXGNRTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761270AbXGNRQx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 13:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757653AbXGNRQr
+	id S1761433AbXGNRTZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 13:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbXGNRTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 13:16:47 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:57862 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757224AbXGNRQq (ORCPT
+	Sat, 14 Jul 2007 13:19:18 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:39153 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757116AbXGNRTR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 13:16:46 -0400
-Date: Sat, 14 Jul 2007 13:16:44 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH -rt 4/5] use migrate_disable for __local_begin
-Message-ID: <20070714171644.GC6975@Krystal>
-References: <20070714175733.194012000@chello.nl> <20070714175840.153584000@chello.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Jul 2007 13:19:17 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v19
+Date: Sat, 14 Jul 2007 13:19:12 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+References: <20070706173319.GA2356@elte.hu>
+In-Reply-To: <20070706173319.GA2356@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070714175840.153584000@chello.nl>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:14:09 up 7 days,  7:19,  2 users,  load average: 0.06, 0.17, 0.17
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707141319.13270.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  include/asm-i386/local.h   |    7 ++++---
->  include/asm-x86_64/local.h |    7 ++++---
->  2 files changed, 8 insertions(+), 6 deletions(-)
+Hi,
+
+I run a java application at nice 15.  Its been a background application here for as long
+as SD and CFS have been around.  If I have a compile running at nice 0, with v19 java 
+gets so little cpu that the the wrapper that runs to monitor it is timing out waiting for 
+it to start.  This is new in v19 - something in v19 is not meshing well with my mix 
+of applications...
+
+Kernel is gentoo 2.6.22-r1 + cfs v19
+
+How can I help to debug this?
+Ed Tomlinson
+
+On Friday 06 July 2007 13:33, Ingo Molnar wrote:
+> i'm pleased to announce release -v19 of the CFS scheduler patchset.
 > 
-> Index: linux-2.6/include/asm-i386/local.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-i386/local.h
-> +++ linux-2.6/include/asm-i386/local.h
-> @@ -197,11 +197,12 @@ static __inline__ long local_sub_return(
->  #define __local_begin(__flags)					\
->  {								\
->  	(__flags) = 0;						\
-> -	preempt_disable();					\
-> +	migrate_disable();					\
-
-Brrrr. That's wrong. Your non atomic __local*() updates only makes sense
-when preempt_disable/enable() protects them from concurrent threads on
-the same CPU, which is not the case of migrate_disable/enable(). This is
-why I suggest that you use local_begin/end() mapped to
-migrate_disable/enable() for normal local variables, and, if you really
-want a __local_begin/end(), then it should be mapped to
-preempt_disable/enable() and should state that it provides no protection
-against interrupts.
-
-Mathieu
-
->  }
->  
-> -static inline void __local_end(unsigned long flags) {
-> -	preempt_enable();
-> +static inline void __local_end(unsigned long flags)
-> +{
-> +	migrate_enable();
->  }
->  
->  /* On x86, these are no better than the atomic variants. */
-> Index: linux-2.6/include/asm-x86_64/local.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-x86_64/local.h
-> +++ linux-2.6/include/asm-x86_64/local.h
-> @@ -186,11 +186,12 @@ static __inline__ long local_sub_return(
->  #define __local_begin(__flags)		\
->  {					\
->  	(__flags) = 0;			\
-> -	preempt_disable();		\
-> +	migrate_disable();		\
->  }
->  
-> -static inline void __local_end(unsigned long flags) {
-> -	preempt_enable();
-> +static inline void __local_end(unsigned long flags)
-> +{
-> +	migrate_enable();
->  }
->  
->  #define __local_inc(l)		local_inc(l)
+> The rolled-up CFS patch against today's -git kernel, v2.6.22-rc7, 
+> v2.6.22-rc6-mm1, v2.6.21.5 or v2.6.20.14 can be downloaded from the 
+> usual place:
 > 
-> --
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>     http://people.redhat.com/mingo/cfs-scheduler/
+>  
+> The biggest user-visible change in -v19 is reworked sleeper fairness: 
+> it's similar in behavior to -v18 but works more consistently across nice 
+> levels. Fork-happy workloads (like kernel builds) should behave better 
+> as well. There are also a handful of speedups: unsigned math, 32-bit 
+> speedups, O(1) task pickup, debloating and other micro-optimizations.
