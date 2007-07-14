@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762564AbXGNOhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759334AbXGNOnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762564AbXGNOhg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 10:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbXGNOha
+	id S1759334AbXGNOnX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 10:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbXGNOnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 10:37:30 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:24063 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756164AbXGNOh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 10:37:29 -0400
-Date: Sat, 14 Jul 2007 17:36:15 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, alsa-user@lists.sourceforge.net
-Subject: Re: Kernel 2.6.22 + ALSA + Intel HDA = hda_codec: Unknown model
-Message-ID: <20070714143615.GA20527@localdomain>
-References: <Pine.LNX.4.64.0707140614410.22713@p34.internal.lan>
+	Sat, 14 Jul 2007 10:43:16 -0400
+Received: from khc.piap.pl ([195.187.100.11]:43980 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752234AbXGNOnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 10:43:15 -0400
+To: William Montgomery <william@opinicus.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: e100 PCI bridge problem
+References: <4697B85B.4040902@opinicus.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 14 Jul 2007 16:43:13 +0200
+In-Reply-To: <4697B85B.4040902@opinicus.com> (William Montgomery's message of "Fri, 13 Jul 2007 13:37:31 -0400")
+Message-ID: <m33azrt5a6.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707140614410.22713@p34.internal.lan>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 14, 2007 at 06:18:40AM -0400, Justin Piszcz wrote:
-> Hi all,
-> 
-> I use an A-BIT AW9D-MAX motherboard and while the audio works fine using 
-> the Intel HDA driver; however, I see this in dmesg:
-> 
-> [   29.188561] Advanced Linux Sound Architecture Driver Version 1.0.14 
-> (Thu May 31 09:03:25 2007 UTC).
-> [   29.188728] ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 16 (level, low) 
-> -> IRQ 17
-> [   29.188822] PCI: Setting latency timer of device 0000:00:1b.0 to 64
-> [   29.240729] hda_codec: Unknown model for ALC882, trying auto-probe from 
-> BIOS...
->                           ^^^^^^^^^^^^^
-> [   29.280743] ALSA device list:
-> [   29.280781]   #0: HDA Intel at 0xfdff8000 irq 17
-> 
-> 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High 
-> Definition Audio Controller (rev 01)
-> 
-> Two lspci (-vx) listings attached.
-> 
-> Can we get the PCI ID added to the kernel source so it does not say 
-> unknown model?
+William Montgomery <william@opinicus.com> writes:
 
-Actually, it is reported as unknown in a deeper probing level than
-PCI. I once made a patch that among other thing identified that 
-A-BIT board exactly. 
+> In an earlier post to the list I described a hard lockup condition
+> that occurs on linux kernels 2.4.22, 2.6.13, and 2.6.17 when using
+> a 4 port 10/100 fast ethernet card.  The lockup is easily repeatable
+> and occurs on 2 out of 3 computers.
+>
+> Further testing has revealed that the lockup can be prevented on all
+> computers by making sure the card is installed on the primary PCI bus.
+> If the card is installed in a slot on the secondary PCI bus (behind a
+> PCI to PCI bridge) the lockup occurs.
 
-    http://mailman.alsa-project.org/pipermail/alsa-devel/2007-April/000441.html
+Does the machine #3 have a PCI slot connected to a "secondary" bus?
+Have you tried with any other machine with a secondary bus?
 
-It is possible to take this patch, drop the other bits and just
-leave out the nice print that just tells it's A-BIT AW9D-MAX.
+> Are there any PCI tuning registers that I can tweak to get around
+> this problem?  Any changes I could make to the e100 driver to fix this?
 
-Though AFAIK, ALSA maintainers have plans to move most of the 
-probing code to userspace somehow so I'm not sure if it is 
-quite relevant.
+Could be a hardware/BIOS problem on machines #1 and #2. Could be
+a Linux bug as well, though similar configurations are known to work
+fine. I don't think it has anything to do with IRQs.
 
+Perhaps it doesn't like a bridge (on the card) behind a bridge
+(on the motherboard). I would test with another multiport card
+such as old DLink DFE-570TX (using a DEC 21150 bridge and four
+21143 Ethernet chips).
+
+I'd probably use some PCI analyzer or, at least, I'd check
+the bus state with a multimeter.
 -- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+Krzysztof Halasa
