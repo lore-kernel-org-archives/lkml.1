@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763415AbXGNDpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763948AbXGNDuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763415AbXGNDpp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 23:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbXGNDpi
+	id S1763948AbXGNDuv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 23:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757275AbXGNDun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 23:45:38 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:61729 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756433AbXGNDph (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 23:45:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Vu7F6ojNva7V6MEm1dFfmAmtzrxgZv5CYCpUvIawkKT7PZ0neZHaXEE99MC5FAjU9ZScvxxsHAgIe0Pjz4NJyz1rgissJh9Xt23jCX2clPt/sVOwl+9ZB9LZiEdkac7g6xKYMeCou/DN7/JLaPqQ2yj8ialxxytzez6Hvx6HFf0=
-Message-ID: <d3dac270707132045n16918eb2s9f61684cbb030267@mail.gmail.com>
-Date: Fri, 13 Jul 2007 20:45:36 -0700
-From: "Max Alekseyev" <maxale@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: 2.6.22 booting hangs after "INIT: version 2.86 booting"
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070714013458.GC3565@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 13 Jul 2007 23:50:43 -0400
+Received: from xenotime.net ([66.160.160.81]:39245 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757088AbXGNDum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 23:50:42 -0400
+Date: Fri, 13 Jul 2007 20:54:41 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Rob Landley <rob@landley.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       leoli@freescale.com, Gerrit Huizenga <gh@us.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, gregkh@suse.de, pavel@ucw.cz,
+       tim.bird@am.sony.com, arjan@infradead.org, sam@ravnborg.org,
+       jengelh@computergmbh.de, joe@perches.com, auke-jan.h.kok@intel.com,
+       hansendc@us.ibm.com, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
+       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       linux-doc@vger.kernel.org
+Subject: Re: Documentation of kernel messages (Summary)
+Message-Id: <20070713205441.28967ac3.rdunlap@xenotime.net>
+In-Reply-To: <200707131405.50143.rob@landley.net>
+References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com>
+	<20070711213234.GE19456@thunk.org>
+	<20070713115321.23e3544f@the-village.bc.nu>
+	<200707131405.50143.rob@landley.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d3dac270707111413j42ac7a0eif032636a9018df66@mail.gmail.com>
-	 <d3dac270707111831v508e7c56w966df5bc2e7f855e@mail.gmail.com>
-	 <20070714013458.GC3565@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/13/07, Adrian Bunk <bunk@stusta.de> wrote:
-> On Wed, Jul 11, 2007 at 06:31:10PM -0700, Max Alekseyev wrote:
-> > It happened that this weird behavior was caused by gcc-4.2 compiler.
-> > After recompiling the kernel with gcc-4.1 all troubles have gone.
->
-> Were you using the known-bad 4.2-20070707-1 package from Debian unstable
-> or a different compiler?
+On Fri, 13 Jul 2007 14:05:49 -0400 Rob Landley wrote:
 
-Your guess is correct. It was Debian 4.2-20070707-1 package.
+> Cleaning up Documentation is on my todo list, but for this month I'm trying to 
+> integrate the existing Documentation files with things like the OLS papers, 
+> linux journal articles, lwn.net kernel articles, man-pages, and so on into 
+> one big index.  (Indexing it requires reading large chunks of it.  My brain 
+> hurts.)
+> 
+> If there's interest, I can push some patches to clean up Documentation by 
+> moving files into subdirectories, but Documentation's not well-suited to link 
+> out to the web.  (You need html for that, and it's text.)
 
-Regards,
-Max
+I think that you should start moving Documentation/ files around
+and adding subdirectories -- if you are pretty sure of where they
+should go (i.e., they won't likely be moved again later on).
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
