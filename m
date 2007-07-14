@@ -1,92 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764088AbXGNBAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764116AbXGNBH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764088AbXGNBAi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759264AbXGNBAc
+	id S1764116AbXGNBH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759264AbXGNBHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:00:32 -0400
-Received: from c-69-242-210-120.hsd1.mi.comcast.net ([69.242.210.120]:46793
-	"EHLO heimdal.trondhjem.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759086AbXGNBAb (ORCPT
+	Fri, 13 Jul 2007 21:07:19 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59608 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759086AbXGNBHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:00:31 -0400
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH] SUNRPC: Convert rpc_pipefs to use the generic filesystem notification hooks
-Date: Fri, 13 Jul 2007 21:00:30 -0400
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net
-Message-Id: <20070714010030.27468.48291.stgit@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.11
+	Fri, 13 Jul 2007 21:07:18 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: linas@austin.ibm.com (Linas Vepstas)
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
+References: <20070713200515.GS5549@austin.ibm.com>
+Date: Fri, 13 Jul 2007 19:06:56 -0600
+In-Reply-To: <20070713200515.GS5549@austin.ibm.com> (Linas Vepstas's message
+	of "Fri, 13 Jul 2007 15:05:15 -0500")
+Message-ID: <m13azreqtr.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+linas@austin.ibm.com (Linas Vepstas) writes:
 
-This will allow rpc.gssd to use inotify instead of dnotify in order to
-locate new rpc upcall pipes.
+> This is a patch (& bug report) for a crash in sysctl_set_parent() 
+> in 2.6.22-git2. 
+>
+> Problem: 2.6.22-git2 crashes with a stack trace 
+> [c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
+> [c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
+> [c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
+> [c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
+> [c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
+> [c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
+> [c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
+>
+> A bit of poking around makes it clear what the problem is:
+> In sysctl_set_parent(), the for loop 
+>
+>    for (; table->ctl_name || table->procname; table++) {
+>
+> walks off the end of the table, and into garbage.  Basically,
+> this for-loop iterator expects all table arrays to be 
+> "null terminated".  However, net/ipv4/devinet.c statically 
+> declares an array that is not null-terminated.  The patch 
+> below fixes that; it works for me.  Its somewhat conservative;
+> if one wishes to assume that the compiler will always zero out
+> the empty parts of the structure, then this pach can be shrunk 
+> to one line: +	ctl_table		devinet_root_dir[3];
+>
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+>
+> ----
+> I tried to audit some of the code to see where else there 
+> might be similar badly-formed static declarations.  This is hard,
+> as there's a lot of code. Most seems fine.
 
-This also requires the exporting of __audit_inode_child(), which is used by
-fsnotify_create() and fsnotify_mkdir(). Ccing David Woodhouse.
+Right.  I believe I performed a similar audit not to long ago
+when everything was converted to C99 initializers and everything
+was fine then.
 
-Cc: David Woodhouse <dwmw2@infradead.org>
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
 
- kernel/auditsc.c      |    1 +
- net/sunrpc/rpc_pipe.c |    7 ++++---
- 2 files changed, 5 insertions(+), 3 deletions(-)
+>  net/core/neighbour.c |    4 ++++
+>  net/ipv4/devinet.c   |    7 ++++++-
+>  2 files changed, 10 insertions(+), 1 deletion(-)
+>
+> Index: linux-2.6.22-git2/net/ipv4/devinet.c
+> ===================================================================
+> --- linux-2.6.22-git2.orig/net/ipv4/devinet.c 2007-07-13 14:23:21.000000000
+> -0500
+> +++ linux-2.6.22-git2/net/ipv4/devinet.c 2007-07-13 14:24:15.000000000 -0500
+> @@ -1424,7 +1424,7 @@ static struct devinet_sysctl_table {
+>  	ctl_table		devinet_dev[2];
+>  	ctl_table		devinet_conf_dir[2];
+>  	ctl_table		devinet_proto_dir[2];
+> -	ctl_table		devinet_root_dir[2];
+> +	ctl_table		devinet_root_dir[3];
+>  } devinet_sysctl = {
+>  	.devinet_vars = {
+>  		DEVINET_SYSCTL_COMPLEX_ENTRY(FORWARDING, "forwarding",
+> @@ -1493,8 +1493,13 @@ static struct devinet_sysctl_table {
+>  			.data		= &ipv4_devconf.loop,
+>  			.maxlen		= sizeof(int),
+>  			.mode		= 0644,
+> +			.child	= 0x0,
+>  			.proc_handler	= &proc_dointvec,
+>  		},
+Where did this entry above in devinet_sysctl come from?
+> +		{
+> +			.ctl_name	= 0,
+> +			.procname	= 0,
+> +		},
+I probably would have just done:
++		{},
+>  	},
+>  };
+>  
 
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index e36481e..64f229b 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -1500,6 +1500,7 @@ add_names:
- 			context->names[idx].ino = (unsigned long)-1;
- 	}
- }
-+EXPORT_SYMBOL_GPL(__audit_inode_child);
- 
- /**
-  * auditsc_get_stamp - get local copies of audit_context values
-diff --git a/net/sunrpc/rpc_pipe.c b/net/sunrpc/rpc_pipe.c
-index e787b6a..22e25b5 100644
---- a/net/sunrpc/rpc_pipe.c
-+++ b/net/sunrpc/rpc_pipe.c
-@@ -14,7 +14,7 @@
- #include <linux/pagemap.h>
- #include <linux/mount.h>
- #include <linux/namei.h>
--#include <linux/dnotify.h>
-+#include <linux/fsnotify.h>
- #include <linux/kernel.h>
- 
- #include <asm/ioctls.h>
-@@ -588,6 +588,7 @@ rpc_populate(struct dentry *parent,
- 		if (S_ISDIR(mode))
- 			inc_nlink(dir);
- 		d_add(dentry, inode);
-+		fsnotify_create(dir, dentry);
- 	}
- 	mutex_unlock(&dir->i_mutex);
- 	return 0;
-@@ -609,7 +610,7 @@ __rpc_mkdir(struct inode *dir, struct dentry *dentry)
- 	inode->i_ino = iunique(dir->i_sb, 100);
- 	d_instantiate(dentry, inode);
- 	inc_nlink(dir);
--	inode_dir_notify(dir, DN_CREATE);
-+	fsnotify_mkdir(dir, dentry);
- 	return 0;
- out_err:
- 	printk(KERN_WARNING "%s: %s failed to allocate inode for dentry %s\n",
-@@ -751,7 +752,7 @@ rpc_mkpipe(struct dentry *parent, const char *name, void *private, struct rpc_pi
- 	rpci->flags = flags;
- 	rpci->ops = ops;
- 	rpci->nkern_readwriters = 1;
--	inode_dir_notify(dir, DN_CREATE);
-+	fsnotify_create(dir, dentry);
- 	dget(dentry);
- out:
- 	mutex_unlock(&dir->i_mutex);
+What added the additional entry to devinet_root_dir?  I don't see that
+in Linus' tree?
+
+The result may be fine but if it isn't named in a per network device
+manner we are adding duplicate entries to the root /proc/sys directory
+which is wrong.
+
+Actually come to think of it I am concerned that someone added a
+settable entry into /proc/sys/ it should at least be in /proc/sys/net/
+where it won't conflict with other uses of that directory.  Especially
+as things like network devices have user controlled names.
+
+Eric
+
