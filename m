@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765638AbXGNVFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765466AbXGNVHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765638AbXGNVFZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 17:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762762AbXGNVFK
+	id S1765466AbXGNVHo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 17:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762472AbXGNVHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 17:05:10 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:62814 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763986AbXGNVFI (ORCPT
+	Sat, 14 Jul 2007 17:07:37 -0400
+Received: from relay5.ptmail.sapo.pt ([212.55.154.25]:36920 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1761019AbXGNVHg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 17:05:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=RI76pUt11lAk5vR4xMqz2uBxs9S/XItE961JJIrFg6PDY0Hp3AEUJesIvPs7ObJcWLZOnAPNdc1luHgvgJ3Mm9TYfaUWHGQiw0UkuZHXEXsbJtRkUlrtwpbpPcPaOFs2OEr7ngD/98q32ORJ7A3NfNE3xVUm4ZZe+Vxjov4BN8o=
-Message-ID: <76366b180707141405n7aeb9cf0i6d66ca5b0093bd8f@mail.gmail.com>
-Date: Sat, 14 Jul 2007 17:05:07 -0400
-From: "Andrew Paprocki" <andrew@ishiboo.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Geode GX framebuffer driver: Arcom vs. AMD
-Cc: linux-kernel@vger.kernel.org, "Jordan Crouse" <jordan.crouse@amd.com>
-In-Reply-To: <1184445094.4692.2.camel@daplas>
+	Sat, 14 Jul 2007 17:07:36 -0400
+X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Jul 2007 17:07:36 EDT
+X-AntiVirus: PTMail-AV 0.3-0.90.3
+Date: Sat, 14 Jul 2007 22:01:17 +0100
+From: =?iso-8859-1?Q?R=FAben?= Fonseca <krani1@0x82.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Linux Kernel Mailling List <linux-kernel@vger.kernel.org>
+Subject: Re: libata [ata_piix] still no resume from S3 ?
+Message-ID: <20070714210117.GA20723@0x82.com>
+References: <20070712162450.GA7132@0x82.com> <469744DB.5070600@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <76366b180707141201u14585c2eyeb58f0b7b279ea1b@mail.gmail.com>
-	 <1184445094.4692.2.camel@daplas>
-X-Google-Sender-Auth: c59bb5879e31e047
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <469744DB.5070600@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony,
+On Fri, 13 Jul 2007, Tejun Heo wrote:
 
-Do you have the patch working already? I'd love to try this out in the
-meantime on the LX system I am developing with at the moment. I'm
-assuming you worked this into the existing Arcom framework (gxfb) and
-pulled the necessary pieces from the AMD code?
+> Rúben Fonseca wrote:
+> > Hi to all!
+> > 
+> > I'm on Debian Sid with kernel 2.6.21 and I still can't resume my laptop
+> > (Sony Vaio SZ2) from S3. Searched on the archive and it seems that SATA 
+> > drives are getting problems when used via the "new" libata. When the
+> > laptop tries to resume, it can't access the hard drive anymore (the LED
+> > never blinks), the filesystem is mounted read-only and of course, the
+> > system hangs. I still can see a "Lost interrupt" apearing on my LCD when
+> > it is resuming. Sometimes it is IRQ 22, other times it is IRQ 23.
+> > 
+> > Is this still a know problem? Does 2.6.22 solve this already? If you
+> > need more information about my environment, please ask :)
+> 
+> Actually, 'lost interrupt' is from the "old" IDE driver.  Care to give a
+> shot at the new one?
 
-I looked at doing this, but it just seemed easier to use the AMD
-provided driver, as it would be easier to merge any changes in the
-future and might provide more full support for the hardware and all
-its modes.
+Sorry, it was my mistake. Here's more info about the problem.
+I had to copy "by hand" the trace, so I remove the hexadecimal parts
+(if you need them, please ask i Will try to copy them too). For now
+I just want to know if you can diagnose this problem, or need more info.
+So here's the interesting (I think) part of the log after resume:
 
-Also, question for AMD/Jordan.. Is AMD going to provide any
-support/patches for the existing gxfb and this new lxfb? (Maybe
-perhaps an AMD supported DirectFB driver? :))
+irq 23: nobody cared (try booting with the "irqpool" option)
+ __report_bad_irq
+ note_interrupt
+ handle_IRQ_event
+ handle_fasteoi_irq
+ do_IRQ
+ do_IRQ
+ irq_exit
+ smp_acpi_timer
+ common_interrupt
+ acpi_pm_read
+ getnstimeofday
+ ktime_get_ts
+ ktime_egt
+ tick_nohz_restart_sched_tick
+ cpu_idle
+ start_kernel
+ unkown_bootoption
+ =====
+handlers:
+ (ata_interrupt [libata])
+ (tifm_7xx1_isr [tifm_7xx1])
+Disabling IRQ #23
+(...)
+ATA: abnormal status 0x7F on port 0x000118cf
 
-If anyone else is interested, I'll get around to making a patch of the
-work I just did to bring the original AMD 2.6.11 framebuffer &
-Cimarron fully up to date with the 2.6.22 tree. If AMD is going to
-continue to maintain their own driver, this will allow the use of an
-up-to-date kernel.
+And hard drive never cames up.. have to hard reboot the machine..
+Does it help?
 
-Thanks, -Andrew
+Ruben
 
-On 7/14/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> There's a patch for the AMD Geode LX which I'm going to send for the -mm
-> tree soon. Its module name is lxfb.
->
-> Tony
+-- 
+Will work for bandwidth
