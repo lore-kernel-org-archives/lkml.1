@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758642AbXGNHlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbXGNHoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758642AbXGNHlz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 03:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXGNHls
+	id S1759219AbXGNHoT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 03:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbXGNHoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 03:41:48 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33681 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751844AbXGNHlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 03:41:47 -0400
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 14 Jul 2007 09:41:45 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-Message-ID: <20070714074145.277260@gmx.net>
-MIME-Version: 1.0
-Subject: signalfd() semantics after execve()
-To: Davide Libenzi <davidel@xmailserver.org>
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX19co5lnLEJcrzZEDo+5kyBhNQTxtssfAoKcwurWmr
- psT1Cw6XUdK8jJz8SQgg4hSpQT1fslBv/BBw== 
+	Sat, 14 Jul 2007 03:44:10 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:48206 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752025AbXGNHoI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 03:44:08 -0400
+Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
+	features in larger inode
+From: Peter Zijlstra <peterz@infradead.org>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <20070713214746.GH23255@mami.zabbo.net>
+References: <1183275482.4010.133.camel@localhost.localdomain>
+	 <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
+	 <20070713020529.1486491f.akpm@linux-foundation.org>
+	 <1184333621.20032.85.camel@twins>
+	 <20070713121259.20066d5b.akpm@linux-foundation.org>
+	 <20070713214746.GH23255@mami.zabbo.net>
+Content-Type: text/plain
+Date: Sat, 14 Jul 2007 09:43:35 +0200
+Message-Id: <1184399015.5284.34.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-GMX-UID: bhvqZioNeSEqRsf8EHUhSWV+IGRvbwA2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide, 
+On Fri, 2007-07-13 at 14:47 -0700, Zach Brown wrote:
+> > I fear the consequences of this change :(
+> 
+> I love it.  In the past I've lost time by working with patches which
+> didn't quite realize that ext3 holds a transaction open during
+> ->direct_IO.
+> 
+> > Oh well, please keep it alive, maybe beat on it a bit, resend it
+> > later on?
+> 
+> I can test the patch to make sure that it catches mistakes I've made in
+> the past. 
 
-I'm working on the signalfd(2) man page, and I've come
-acorss some puzzling behaviour...  
+That would be much appreciated.
 
-What are the intended semantics of a signalfd file descriptor
-after an execve()?
+>  Peter, do you have any interest in seeing how far we can get
+> at tracking lock_page()?  I'm not holding my breath, but any little bit
+> would probably help.
 
-As far as I can work out, after an execve() the file descriptor
-is still available, but reads from it always return 0, even if:
-
-a) there were signals pending before the execve().
-   However, sigpending() shows the signal as pending,
-   and the signal can be accepted using sigwaitinfo().
-
-b) we generate a signal after the execve().
- 
-Is this intended behavior (the "orphaned sighand" condition
-mentioned in the draft man page you sent me?)?  Is it a bug?
-
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
-
-Want to help with man page maintenance?  
-Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages , 
-read the HOWTOHELP file and grep the source 
-files for 'FIXME'.
+Yeah I'm going to try that one next.. 
 
