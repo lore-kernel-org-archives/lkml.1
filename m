@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbXGNI2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbXGNIkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759978AbXGNI2n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 04:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXGNI2f
+	id S1759563AbXGNIkL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 04:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXGNIj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 04:28:35 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41962 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbXGNI2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 04:28:34 -0400
-Date: Sat, 14 Jul 2007 10:28:07 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, kenchen@google.com,
-       jschopp@austin.ibm.com, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, a.p.zijlstra@chello.nl,
-       y-goto@jp.fujitsu.com, clameter@sgi.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add a movablecore= parameter for sizing ZONE_MOVABLE
-Message-ID: <20070714082807.GC1198@wotan.suse.de>
-References: <20070710102043.GA20303@skynet.ie> <20070712122925.192a6601.akpm@linux-foundation.org> <20070712213241.GA7279@skynet.ie> <20070713155610.GD14125@skynet.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713155610.GD14125@skynet.ie>
-User-Agent: Mutt/1.5.9i
+	Sat, 14 Jul 2007 04:39:58 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46777
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751708AbXGNIj5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 04:39:57 -0400
+Date: Sat, 14 Jul 2007 01:33:54 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+In-Reply-To: <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
+Message-ID: <Pine.LNX.4.64.0707140128210.25614@asgard.lang.hm>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+ <200707131117.38426.rjw@sisk.pl> <Pine.LNX.4.64.0707130211570.25614@asgard.lang.hm>
+ <200707131341.35801.rjw@sisk.pl> <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 04:56:10PM +0100, Mel Gorman wrote:
-> On (12/07/07 22:32), Mel Gorman didst pronounce:
-> 
-> > > Should we at least go for
-> > > 
-> > > add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
-> > > create-the-zone_movable-zone.patch
-> > > allow-huge-page-allocations-to-use-gfp_high_movable.patch
-> > > handle-kernelcore=-generic.patch
-> > > 
-> > > in 2.6.23?
-> > 
-> > Well, yes please from me obviously :) . There is one additional patch
-> > I would like to send on tomorrow and that is providing the movablecore=
-> 
-> This is the patch. It has been boot-tested on a number of machines and
-> behaves as expected. Nick, with this in addition, do you have any
-> objection to the ZONE_MOVABLE patches going through to 2.6.23?
+by the way, a data point on kernel sizes
 
-What's the status of making it configurable? I didn't see something
-in -mm for that yet?
+-rw-r--r-- 1 root root  864648 Jul 14 00:53 vmlinuz.2.6.22.1.hibernate
+-rw-r--r-- 1 root root  659496 Jul 14 01:17 vmlinuz.2.6.22.1.hibernate.stripped
+-rw-r--r-- 1 root root 3948168 Jul 14 01:10 vmlinuz.2.6.22.1.running
 
-But that's not as important as ensuring the concept and user visible
-stuff is in good shape, which I no longer have any problems with. So
-yeah I think it would be good to get this in and get people up and
-running with it.
+the running one matches the config I'm running on my home server, the 
+hibernate is a pretty stripped down version, and the stripped is close to 
+a minimum (including turning off printk and BUG()). All three are with all 
+drivers built-in, no module support.
+
+this is on a amd64 64 bit system
+
+configs are available if anyone cares, the point is how much smaller a 
+kernel could be if it doesn't need all the stuff that you put in your main 
+kernel. In my case this includes not enabling the 3-ware card that holds 
+my 12-disk raid array, instead the hibernate image would be stored on one 
+of the scsi drives attached to the adaptec 78xx card.
+
+I expect that on a normal desktop/laptop with more features (like sound) 
+the savings could be even more significant
+
+David Lang
