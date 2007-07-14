@@ -1,63 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbXGNFEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbXGNFuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbXGNFEd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 01:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXGNFE0
+	id S1754504AbXGNFuA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 01:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXGNFtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 01:04:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60000 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750877AbXGNFEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 01:04:25 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/WfE9t+LzWkELTTN2FjSxnq2AXSQmmj9mVRWYTuX
-	THtIb54RWLQVhp
-Subject: Re: x86 status was Re: -mm merge plans for 2.6.23
-From: Mike Galbraith <efault@gmx.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <Pine.LNX.4.64.0707131728070.1817@scrub.home>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
-	 <20070711211638.GE18767@one.firstfloor.org>
-	 <20070711214649.GK14435@v2.random>
-	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>
-	 <1184302024.6709.11.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0707131728070.1817@scrub.home>
+	Sat, 14 Jul 2007 01:49:52 -0400
+Received: from mga09.intel.com ([134.134.136.24]:36935 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751563AbXGNFtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 01:49:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,538,1175497200"; 
+   d="scan'208";a="106167521"
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
+	hibernation
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <m1k5t4dzl4.fsf@ebiederm.dsl.xmission.com>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	 <20070711172243.ab44c4d4.akpm@linux-foundation.org>
+	 <1184251423.9346.55.camel@caritas-dev.intel.com>
+	 <m14pk9fuqa.fsf@ebiederm.dsl.xmission.com>
+	 <1184368525.1069.68.camel@caritas-dev.intel.com>
+	 <m1k5t4dzl4.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain
-Date: Sat, 14 Jul 2007 07:04:16 +0200
-Message-Id: <1184389456.6632.13.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Date: Sat, 14 Jul 2007 13:48:49 +0800
+Message-Id: <1184392129.1898.69.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 14 Jul 2007 05:49:46.0917 (UTC) FILETIME=[C900E550:01C7C5DA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 19:23 +0200, Roman Zippel wrote:
-> Hi,
+On Fri, 2007-07-13 at 10:43 -0600, Eric W. Biederman wrote:
+> > Why a assembly stub is necessary? Is it not sufficient that just
+> > continue to complete a normal boot (hot add the reset of memory) or load
+> > the hibernated kernel (hibernated image) and jump to it?
 > 
-> On Fri, 13 Jul 2007, Mike Galbraith wrote:
+> I was thinking the assembly stub would be the small piece that jumps
+> to loaded hibernated kernel.  Quite possibly we could just get away
+> with providing no memory and just an entry point to kexec but it
+> makes sense to me to plan on running a couple of instructions.
+
+Oh, I got it. In my patch, there is such assembly stub in
+arch/i386/kernel/kexec_jump.S. I think it is needed to restore basic CPU
+state and accommodate some position independent restore code (such as
+memory restore code).
+
+> Actually the way the kexec infrastructure it might be reasonable to
+> just use sys_kexec_load to load the entire hibernated image.  Except
+> for the fact that sys_kexec_load requires the source pages to be
+> in the processes memory image the code shouldn't have the 50% of
+> memory limitation already.
 > 
-> > > The new scheduler does _a_lot_ of heavy 64 bit calculations without any 
-> > > attempt to scale that down a little...
-> > 
-> > See prio_to_weight[], prio_to_wmult[] and sysctl_sched_stat_granularity.
-> > Perhaps more can be done, but "without any attempt..." isn't accurate.
-> 
-> Calculating these values at runtime would have been completely insane, the 
-> alternative would be a crummy approximation, so using a lookup table is 
-> actually a good thing. That's not the problem.
+> If we can get that going we don't even need to restrict the first
+> kernels memory.  So it might just require teaching sys_kexec_load
+> how to steal process pages.  Anyway something to think about.
 
-I meant see usage.
+As for memory backupping and restoring during hibernating and resuming,
+I think a possible picture can be as follow:
 
-	-Mike
+Memory:
+
+  Total memory: 512M
+  Memory used by hibernating/resuming kernel: 0~16M
 
 
+Hibernating process:
 
+  1. Normal kernel running
+  2. Hibernating is triggered, sys_kexec_load is used to load
+     hibernating kernel and initramfs into memory. Then
+     sys_reboot(LINUX_REBOOT_CMD_KSPAWN) is invoked.
+  3. In sys_reboot, kexec_jump is called to save device/CPU state,
+     then relocate_kernel is called. kexec_jump and relocate_kernel
+     reside in individual page in 16M~512M.
+  4. In relocate_kernel, 0~16M is backupped firstly, then the
+     hibernating kernel and initramfs is copied to 0~16M, after that,
+     the hibernating kernel is booted.
+  5. In hibernating kernel, the memory of normal kernel (it is in
+     16M~512M) is saved into a hibernation image through /dev/mem
+     and ELF header.
+
+
+Resume process:
+
+  1. Resuming kernel is booted as a normal kernel, but the memory is
+     restricted to 0~16M.
+  2. Checking whether there is a effective hibernation image. If
+     there isn't, the memory of 16M~512M is hot added, and the normal
+     boot up process continues; If there is, a resuming process is
+     triggered.
+  3. sys_kexec_load is used to restore the memory state of hibernated
+     kernel. The sys_kexec_load works in crashdump way, that is, the
+     hibernation image is copied to destination location in 16M~512M
+     in sys_kexec_load instead of relocate_kernel. There is no half
+     of memory size restriction.
+  4. sys_reboot is called to trigger jumping back, which will jump back
+     to kexec_jump of hibernated kernel.
+  5. In kexec_jump of hibernated kernel, the memory of 0~16M is copied
+     back from the backup area in 16M~512M. The memory state of
+     hibernated kernel is restored totally. The CPU and device state
+     can be restored after that.
+
+
+If there is too much difficulty to hot add memory in step 2. A more
+conservative method can be used as step 1 and step 2.
+
+  1. A normal kernel is booted.
+  2. Checking whether there is a effective hibernation image. If there
+     isn't, continue the normal boot process; otherwise, a resuming
+     kernel is kexeced in memory 0~16M. The resuming process will
+     continue in kexeced resuming kernel.
+
+Best Regards,
+Huang Ying
