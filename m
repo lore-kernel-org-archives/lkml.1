@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937458AbXGNBfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937492AbXGNBfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937458AbXGNBfB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765688AbXGNBaN
+	id S937492AbXGNBfz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765704AbXGNBaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:30:13 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:38844 "EHLO smtp.polymtl.ca"
+	Fri, 13 Jul 2007 21:30:16 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38860 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765565AbXGNBaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:30:07 -0400
-Message-Id: <20070714012904.752123069@polymtl.ca>
+	id S1764834AbXGNBaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 21:30:11 -0400
+Message-Id: <20070714012904.448339795@polymtl.ca>
 References: <20070714012752.912348630@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Jul 2007 21:27:55 -0400
+Date: Fri, 13 Jul 2007 21:27:54 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, chris@zankel.net
-Subject: [patch 3/3] Use DATA_DATA in xtensa
-Content-Disposition: inline; filename=use-data-data-in-xtensa.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:29:05 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, paulus@samba.org,
+       linuxppc-dev@ozlabs.org
+Subject: [patch 2/3] Add missing DATA_DATA in powerpc
+Content-Disposition: inline; filename=use-data-data-in-powerpc.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:29:04 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -28,25 +29,27 @@ content of what is normally referred to by *(.data). It permits adding more
 will be linked in the .data section.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: chris@zankel.net
----
- arch/xtensa/kernel/vmlinux.lds.S |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+CC: paulus@samba.org
+CC: linuxppc-dev@ozlabs.org
+--
+ arch/powerpc/kernel/vmlinux.lds.S |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S
+Index: linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S
 ===================================================================
---- linux-2.6-lttng.orig/arch/xtensa/kernel/vmlinux.lds.S	2007-06-16 22:20:09.000000000 -0400
-+++ linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S	2007-06-16 22:20:41.000000000 -0400
-@@ -118,7 +118,8 @@
-   _fdata = .;
-   .data :
-   {
--    *(.data) CONSTRUCTORS
-+    DATA_DATA
-+    CONSTRUCTORS
-     . = ALIGN(XCHAL_ICACHE_LINESIZE);
-     *(.data.cacheline_aligned)
-   }
+--- linux-2.6-lttng.orig/arch/powerpc/kernel/vmlinux.lds.S	2007-07-11 11:55:48.000000000 -0400
++++ linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S	2007-07-11 15:48:42.000000000 -0400
+@@ -174,7 +174,9 @@
+ 	}
+ #else
+ 	.data : {
+-		*(.data .data.rel* .toc1)
++		DATA_DATA
++		*(.data.rel*)
++		*(.toc1)
+ 		*(.branch_lt)
+ 	}
+ 
 
 -- 
 Mathieu Desnoyers
