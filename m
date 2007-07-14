@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764233AbXGNTmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763968AbXGNTqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764233AbXGNTmV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 15:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759847AbXGNTmO
+	id S1763968AbXGNTqf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 15:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761136AbXGNTq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 15:42:14 -0400
-Received: from waste.org ([66.93.16.53]:36787 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761136AbXGNTmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 15:42:13 -0400
-Date: Sat, 14 Jul 2007 14:42:04 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Message-ID: <20070714194204.GB11166@waste.org>
-References: <200707111916.35036.jesper.juhl@gmail.com> <2c0942db0707112159v3ee2cd83i74759c7138e273f7@mail.gmail.com> <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com> <4696C89E.4010002@goop.org> <9a8748490707121925w5fb22c0o61068f06d66d5845@mail.gmail.com>
+	Sat, 14 Jul 2007 15:46:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:58387 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759847AbXGNTq2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 15:46:28 -0400
+Date: Sat, 14 Jul 2007 21:46:12 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3][try 1] init: enable system-on-initramfs
+In-Reply-To: <469919D5.3070709@zytor.com>
+Message-ID: <Pine.LNX.4.58.0707142141030.2346@be1.lrz>
+References: <Pine.LNX.4.58.0707132039080.3222@be1.lrz> <4697D6EB.5020404@zytor.com>
+ <Pine.LNX.4.58.0707132344140.13842@be1.lrz> <469801B7.7010909@zytor.com>
+ <Pine.LNX.4.58.0707141629510.5288@be1.lrz> <469919D5.3070709@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9a8748490707121925w5fb22c0o61068f06d66d5845@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX18UfTeHkhw66LOCN3W6630ECoP+qXiEekXDnzv
+ zGEJoEi7fdjiLfDHh5ytE6v8MJiFI6tPOACIoSB+tu9Pk+Q0YX
+ EW8sdRjVxT7KGtNuqxgUQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 04:25:56AM +0200, Jesper Juhl wrote:
-> On 13/07/07, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >Jesper Juhl wrote:
-> >> If, on the other hand, we consider 4K stacks to be the superior
-> >> solution, then we should work to get all code fixed to be able to
-> >> handle it so that it's actually something distros will start to enable
-> >> so that we can eventually get rid of the 8K stack option alltogether.
-> >> Making 4K stacks default and no longer a debug option is just the
-> >> first step in that direction.
-> >
-> >First step is to apply wli's patch which makes separate interrupt stacks
-> >orthogonal to the 4K stack option.
-> >
-> Yes and no.  If that will get things moving in the direction of
-> getting rid of the stack size as a config option, then I'm all for it.
-> But on the other hand it is my personal opinion that this is an area
-> where we should just make up our minds as to whether we want 4K or 8K
-> stacks and whether we want interrupt stacks or not, and then not have
-> it configurable at all.  I believe the goal is 4K stacks + interrupt
-> stacks, so let's just aim for that and get rid of the configurability
-> of the damn thing - make a choice, make it work, make it be that
-> that's what we use and rid ourselves of the alternatives...
+On Sat, 14 Jul 2007, H. Peter Anvin wrote:
+> Bodo Eggert wrote:
 
-There are two downsides to interrupt stacks:
+> > Setting the name of the rdinit process to the name of the init process
+> > in order to select the root device should not be the right knob.
+> > 
+> 
+> What's wrong with it?
 
-- an extra 4k/8k used per CPU
-- stack switch time
-
-Both of those are pretty minimal. And I'd be surprised if the latter
-was measurable. 
+rdinit is supposed to be the program that mounts, root is supposed to be 
+whatever is mounted and init is supposed to run the system. Three 
+different things. Now if you want to change the third, just set the first 
+to the second ...
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Whenever you have plenty of ammo, you never miss. Whenever you are low on
+ammo, you can't hit the broad side of a barn.
