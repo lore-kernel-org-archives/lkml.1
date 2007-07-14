@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbXGNJhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760967AbXGNJkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759984AbXGNJhp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 05:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbXGNJhh
+	id S1760967AbXGNJkw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 05:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbXGNJkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 05:37:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:17424 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753464AbXGNJhg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 05:37:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=FOCYSontrGJ4j0/l3zTcM13fV1gzME+EHEQvOi32ldrnG6od13zt+xXg45A8dwU9LdWN6Fu9v9TghOFu9vTRM8vZuVZNll0IBZqRA5/7nAqN1jgGz79KrKshb3+QiQRxe6mpdCv8wkOCbjEYQp7gn4WE+22gQGmpYir0K22UgV8=
-Date: Sat, 14 Jul 2007 17:40:13 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Anand Jahagirdar <anandjigar@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Patch Related with Fork Bombing Attack
-Message-ID: <20070714094013.GB3929@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <25ae38200707130539j3b6689eet91bff4298023aa28@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 14 Jul 2007 05:40:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35033 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751438AbXGNJko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 05:40:44 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Joseph Fannin <jfannin@gmail.com>
+Subject: Re: Hibernating To Swap Considered Harmful
+Date: Sat, 14 Jul 2007 11:48:17 +0200
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707131130.51279.rjw@sisk.pl> <20070714004517.GA18336@nineveh.local>
+In-Reply-To: <20070714004517.GA18336@nineveh.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <25ae38200707130539j3b6689eet91bff4298023aa28@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200707141148.18279.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 06:09:02PM +0530, Anand Jahagirdar wrote:
->Hello All
+On Saturday, 14 July 2007 02:45, Joseph Fannin wrote:
+> On Fri, Jul 13, 2007 at 11:30:50AM +0200, Rafael J. Wysocki wrote:
+> > On Friday, 13 July 2007 07:42, Joseph Fannin wrote:
+> > > On Thu, Jul 12, 2007 at 08:06:43PM -0700, david@lang.hm wrote:
+> > > > On Thu, 12 Jul 2007, Rafael J. Wysocki wrote:
+> > >
+> > > > > Plus we need to figure out how to avoid corrupting filesystems and
+> > > > > swap in use by the "old" kernel and its processes (hint: a separate
+> > > > > "hibernation partition" is a no-go).
+> > > >
+> > > > I thought the existing hibernation wrote to the swap partition as it's
+> > > > dedicated space?
+> > > >
+> > > > I didn't know that anyone was suggesting writing the hibernation image to
+> > > > a filesystem that the kernel was activly accessing.
+> > >
+> > > I'm suggesting a dedicated, preallocated hibernation *file*, right
+> > > now.  There's no way around it, if hibernation is to be reliable --
+> > > otherwise hibernation can fail if the system has used enough of its
+> > > swap space, so that there isn't enough room to write the hibernate
+> > > image.
+> > >
+> > > Even if it's desirable to allow hibernation to fail if the system is
+> > > too deep into swap, it's a moot point.
+> >
+> > If you're afraid of that, use a dedicated swap file.
+> 
+>     I don't understand what you mean.  A dedicated swap file for what?
 
-{snip}
+Sorry, I should have been more precise.
 
->Index: root/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c
->===================================================================
->--- root.orig/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c	2007-06-26 20:40:06.000000000 +0530
->+++ root/Desktop/a1/linux-2.6.17.tar.bz2_FILES/linux-2.6.17/kernel/fork.c	2007-06-26 20:41:41.000000000 +0530
+For hibernation (ie. a swap file that you activate right befor the
+hibernation).
 
-Please make your patch be in `patch -p1' form.
+Also tuxonice (formerly known as suspend2) allows you to use regular files
+hibernation.
 
-See: http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt to learn more.
+Greetings,
+Rafael
 
-Regards!
 
 -- 
-
-If loving computers is wrong, I don't want to be right.
+"Premature optimization is the root of all evil." - Donald Knuth
