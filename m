@@ -1,118 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764116AbXGNBH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764091AbXGNBJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764116AbXGNBH0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759264AbXGNBHT
+	id S1764091AbXGNBJZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761097AbXGNBJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:07:19 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59608 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759086AbXGNBHS (ORCPT
+	Fri, 13 Jul 2007 21:09:18 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60664 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759396AbXGNBJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:07:18 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: linas@austin.ibm.com (Linas Vepstas)
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-References: <20070713200515.GS5549@austin.ibm.com>
-Date: Fri, 13 Jul 2007 19:06:56 -0600
-In-Reply-To: <20070713200515.GS5549@austin.ibm.com> (Linas Vepstas's message
-	of "Fri, 13 Jul 2007 15:05:15 -0500")
-Message-ID: <m13azreqtr.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 13 Jul 2007 21:09:17 -0400
+Date: Sat, 14 Jul 2007 03:08:50 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] Pass -g to assembler under CONFIG_DEBUG_INFO
+Message-ID: <20070714010850.GA3565@stusta.de>
+References: <46955BB1.20200@windriver.com> <20070711224327.9B0ED4D0555@magilla.localdomain> <20070711160335.8705f742.akpm@linux-foundation.org> <alpine.LFD.0.999.0707111640030.20061@woody.linux-foundation.org> <20070711165308.551f0c6c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070711165308.551f0c6c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linas@austin.ibm.com (Linas Vepstas) writes:
+On Wed, Jul 11, 2007 at 04:53:08PM -0700, Andrew Morton wrote:
+> On Wed, 11 Jul 2007 16:40:29 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > 
+> > On Wed, 11 Jul 2007, Andrew Morton wrote:
+> > >
+> > > OK, thanks.  So I ended up with the below as a probably-2.6.23 thing:
+> > > ...
+> > > +AFLAGS		+= $(call as-option, -gdwarf)
+> > 
+> > "-gdwarf2?"
+> > 
+> 
+> yep, that's what the kgdb tree was using - I'll fix it up.
 
-> This is a patch (& bug report) for a crash in sysctl_set_parent() 
-> in 2.6.22-git2. 
->
-> Problem: 2.6.22-git2 crashes with a stack trace 
-> [c000000001d0fb00] c000000000067b4c .sysctl_set_parent+0x48/0x7c
-> [c000000001d0fb90] c000000000069b40 .register_sysctl_table+0x7c/0xf4
-> [c000000001d0fc30] c00000000065e710 .devinet_init+0x88/0xb0
-> [c000000001d0fcc0] c00000000065db74 .ip_rt_init+0x17c/0x32c
-> [c000000001d0fd70] c00000000065deec .ip_init+0x10/0x34
-> [c000000001d0fdf0] c00000000065e898 .inet_init+0x160/0x3dc
-> [c000000001d0fea0] c000000000630bc4 .kernel_init+0x204/0x3c8
->
-> A bit of poking around makes it clear what the problem is:
-> In sysctl_set_parent(), the for loop 
->
->    for (; table->ctl_name || table->procname; table++) {
->
-> walks off the end of the table, and into garbage.  Basically,
-> this for-loop iterator expects all table arrays to be 
-> "null terminated".  However, net/ipv4/devinet.c statically 
-> declares an array that is not null-terminated.  The patch 
-> below fixes that; it works for me.  Its somewhat conservative;
-> if one wishes to assume that the compiler will always zero out
-> the empty parts of the structure, then this pach can be shrunk 
-> to one line: +	ctl_table		devinet_root_dir[3];
->
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
->
-> ----
-> I tried to audit some of the code to see where else there 
-> might be similar badly-formed static declarations.  This is hard,
-> as there's a lot of code. Most seems fine.
+Since even gcc 3.2 already supports -gdwarf-2, you can drop
+the as-option check.
 
-Right.  I believe I performed a similar audit not to long ago
-when everything was converted to C99 initializers and everything
-was fine then.
+cu
+Adrian
 
+-- 
 
->  net/core/neighbour.c |    4 ++++
->  net/ipv4/devinet.c   |    7 ++++++-
->  2 files changed, 10 insertions(+), 1 deletion(-)
->
-> Index: linux-2.6.22-git2/net/ipv4/devinet.c
-> ===================================================================
-> --- linux-2.6.22-git2.orig/net/ipv4/devinet.c 2007-07-13 14:23:21.000000000
-> -0500
-> +++ linux-2.6.22-git2/net/ipv4/devinet.c 2007-07-13 14:24:15.000000000 -0500
-> @@ -1424,7 +1424,7 @@ static struct devinet_sysctl_table {
->  	ctl_table		devinet_dev[2];
->  	ctl_table		devinet_conf_dir[2];
->  	ctl_table		devinet_proto_dir[2];
-> -	ctl_table		devinet_root_dir[2];
-> +	ctl_table		devinet_root_dir[3];
->  } devinet_sysctl = {
->  	.devinet_vars = {
->  		DEVINET_SYSCTL_COMPLEX_ENTRY(FORWARDING, "forwarding",
-> @@ -1493,8 +1493,13 @@ static struct devinet_sysctl_table {
->  			.data		= &ipv4_devconf.loop,
->  			.maxlen		= sizeof(int),
->  			.mode		= 0644,
-> +			.child	= 0x0,
->  			.proc_handler	= &proc_dointvec,
->  		},
-Where did this entry above in devinet_sysctl come from?
-> +		{
-> +			.ctl_name	= 0,
-> +			.procname	= 0,
-> +		},
-I probably would have just done:
-+		{},
->  	},
->  };
->  
-
-What added the additional entry to devinet_root_dir?  I don't see that
-in Linus' tree?
-
-The result may be fine but if it isn't named in a per network device
-manner we are adding duplicate entries to the root /proc/sys directory
-which is wrong.
-
-Actually come to think of it I am concerned that someone added a
-settable entry into /proc/sys/ it should at least be in /proc/sys/net/
-where it won't conflict with other uses of that directory.  Especially
-as things like network devices have user controlled names.
-
-Eric
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
