@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbXGNHKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbXGNHLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbXGNHKi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 03:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXGNHKN
+	id S1752042AbXGNHLT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 03:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXGNHLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 03:10:13 -0400
-Received: from main.gmane.org ([80.91.229.2]:58211 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751885AbXGNHKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 03:10:06 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Daniel Mantione <daniel.mantione@freepascal.org>
-Subject: Keyboard programming needs root
-Date: Sat, 14 Jul 2007 08:32:32 +0200
-Message-ID: <f79qnt$rn3$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: mantione.demon.nl
-User-Agent: KNode/0.8.0
+	Sat, 14 Jul 2007 03:11:05 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60762 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751891AbXGNHLD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 03:11:03 -0400
+Date: Sat, 14 Jul 2007 09:10:34 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] cleanup congestion control options
+Message-ID: <20070714071034.GG3565@stusta.de>
+References: <20070714040953.GE3565@stusta.de> <20070713.235442.75191469.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070713.235442.75191469.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Jul 13, 2007 at 11:54:42PM -0700, David Miller wrote:
+> From: Adrian Bunk <bunk@stusta.de>
+> Date: Sat, 14 Jul 2007 06:09:54 +0200
+> 
+> > This patch contains the following cleanups:
+> > - note in the prompt if an option depends on EXPERIMENTAL
+> > - remove "default n"s that didn't have any effect
+> > - remove "default m"s from options under TCP_CONG_ADVANCED:
+> >   if you manually choose congestion control modules you should
+> >   know which ones you want
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> I'm not so sure about any of this, sorry Adrian, I'm
+> not applying this.
 
-A while back a patch was merged to make that only root can program the
-keyboard:
+What exactly are you not sure of?
+- noting the experimental status in the prompt is a common convention
+  in the kernel
+- "default n"s like here are nops serving no purpose
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0b360adbdb54d5b98b78d57ba0916bc4b8871968
+This leaves only the removal of the "default m"s which I thought would 
+be non-controversial since people seeing these options should know best
+what they need.
 
-Is this patch discussable? I think this patch isn't proper because of the
-following reasons:
+cu
+Adrian
 
-* Users can play games in many ways. They can configure the terminal
-  settings, (remove the automatic line feed, disable the echo etc). They can
-  load console fonts. They can still put the keyboard in raw mode, etc.
-* All of these games can be prevented by making mingetty (or whatever getty
-  is used) or PAM can put the console into a known state after logout.
-* All of these games are annoyances, system security is not compromised.
-* I do not see a problem with for example a French user doing a "loadkeys
-  fr" if that allows hims to use the computer easier.
+-- 
 
-Worst issue for me though, is that KDSBENT is needed to be able to catch
-keys like shift+tab, alt+fx, escape without delay. My application suddenly
-needs root permissions to work properly. The alternative, semi raw mode,
-has the disadvantage that you need to implement your own keymaps (like X).
-In short, this change breaks applications.
-
-Daniël Mantione
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
