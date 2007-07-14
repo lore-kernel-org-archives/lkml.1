@@ -1,30 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765244AbXGNBc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937392AbXGNBcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765244AbXGNBc1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 21:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765230AbXGNB2l
+	id S937392AbXGNBcw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 21:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933973AbXGNB2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 21:28:41 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:38655 "EHLO smtp.polymtl.ca"
+	Fri, 13 Jul 2007 21:28:43 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38661 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765514AbXGNB2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 21:28:39 -0400
-Message-Id: <20070714012642.499375439@polymtl.ca>
+	id S1764687AbXGNB2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 21:28:42 -0400
+Message-Id: <20070714012743.511046887@polymtl.ca>
+References: <20070714012642.499375439@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Jul 2007 21:26:42 -0400
+Date: Fri, 13 Jul 2007 21:26:43 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 0/2] Immediate Values - in kernel users
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 1/2] F00F bug fixup for i386 - use immediate values
+Content-Disposition: inline; filename=f00f-bug-use-immediate-values.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat, 14 Jul 2007 01:27:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are the first users of the immediate values : f00f bug handler and
-profiling.
+Use the faster immediate values for F00F bug handling in do_page_fault.
 
-It applies to 2.6.22-rc6-mm1 and depends on the Immediate Values.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/i386/kernel/traps.c     |    4 ++++
+ arch/i386/mm/fault.c         |    3 ++-
+ include/asm-i386/processor.h |    3 +++
+ 3 files changed, 9 insertions(+), 1 deletion(-)
 
-Mathieu
+Index: linux-2.6-lttng/arch/i386/kernel/traps.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/kernel/traps.c	2007-07-13 19:30:53.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/traps.c	2007-07-13 19:31:21.000000000 -0400
+@@ -31,6 +31,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/nmi.h>
+ #include <linux/bug.h>
++#include <linux/immediate.h>
+ 
+ #ifdef CONFIG_EISA
+ #include <linux/ioport.h>
+@@ -1158,6 +1159,8 @@
+ #endif /* CONFIG_MATH_EMULATION */
+ 
+ #ifdef CONFIG_X86_F00F_BUG
++immediate_char_t f00f_bug_fix __read_mostly;
++
+ void __init trap_init_f00f_bug(void)
+ {
+ 	__set_fixmap(FIX_F00F_IDT, __pa(&idt_table), PAGE_KERNEL_RO);
+@@ -1168,6 +1171,7 @@
+ 	 */
+ 	idt_descr.address = fix_to_virt(FIX_F00F_IDT);
+ 	load_idt(&idt_descr);
++	immediate_set_early(&f00f_bug_fix, 1);
+ }
+ #endif
+ 
+Index: linux-2.6-lttng/arch/i386/mm/fault.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/mm/fault.c	2007-07-13 19:25:38.000000000 -0400
++++ linux-2.6-lttng/arch/i386/mm/fault.c	2007-07-13 19:30:55.000000000 -0400
+@@ -25,6 +25,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/kdebug.h>
++#include <linux/immediate.h>
+ 
+ #include <asm/system.h>
+ #include <asm/desc.h>
+@@ -492,7 +493,7 @@
+ 	/*
+ 	 * Pentium F0 0F C7 C8 bug workaround.
+ 	 */
+-	if (boot_cpu_data.f00f_bug) {
++	immediate_if (&f00f_bug_fix) {
+ 		unsigned long nr;
+ 		
+ 		nr = (address - idt_descr.address) >> 3;
+Index: linux-2.6-lttng/include/asm-i386/processor.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/processor.h	2007-07-13 19:25:38.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/processor.h	2007-07-13 19:30:55.000000000 -0400
+@@ -21,6 +21,7 @@
+ #include <asm/percpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/init.h>
++#include <linux/immediate.h>
+ #include <asm/processor-flags.h>
+ 
+ /* flag for disabling the tsc */
+@@ -102,6 +103,8 @@
+ extern struct tss_struct doublefault_tss;
+ DECLARE_PER_CPU(struct tss_struct, init_tss);
+ 
++extern immediate_char_t f00f_bug_fix;
++
+ #ifdef CONFIG_SMP
+ extern struct cpuinfo_x86 cpu_data[];
+ #define current_cpu_data cpu_data[smp_processor_id()]
 
 -- 
 Mathieu Desnoyers
