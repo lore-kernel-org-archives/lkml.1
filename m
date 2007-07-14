@@ -1,143 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764031AbXGNDBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764262AbXGNDTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764031AbXGNDBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jul 2007 23:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762920AbXGNDBR
+	id S1764262AbXGNDTH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jul 2007 23:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762920AbXGNDS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jul 2007 23:01:17 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:26197 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756507AbXGNDBR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jul 2007 23:01:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=LXmYiG27h7pmdA77dcgQumta33q0lJu1pKXvznyCGbv4uivr91SdNM+NUm0jjU0nCC2wC76CqrSVTq7EXQtYbAy+Rermg1lSmAffjzIQ8ztB3klSQj3dq7E1wsXkoPisjtt7Z2LN2bEcIRuKw8uISjqmE7xULAsLlO0dcnl2CjQ=
-Message-ID: <46983C76.1040406@gmail.com>
-Date: Sat, 14 Jul 2007 12:01:10 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Fri, 13 Jul 2007 23:18:57 -0400
+Received: from [212.12.190.58] ([212.12.190.58]:33029 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760587AbXGNDS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jul 2007 23:18:56 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3][try 1] init: enable system-on-initramfs: root-on-tmpfs
+Date: Sat, 14 Jul 2007 06:18:57 +0300
+User-Agent: KMail/1.5
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 24/61] sysfs: make sysfs_put() ignore NULL sd
-References: <11841968512510-git-send-email-gregkh@suse.de>	 <20070712.085047.37780825.yoshfuji@linux-ipv6.org>	 <20070711235529.GA7485@suse.de>	 <20070712.100617.14203407.yoshfuji@linux-ipv6.org>	 <46959958.6080005@gmail.com>	 <a781481a0707121246tc1b62d1qe80db8422e6e26a3@mail.gmail.com>	 <4696FDDC.7050503@gmail.com> <4697078D.4050601@gmail.com> <a781481a0707131028m36bf9e1eka20b783b5f350ae3@mail.gmail.com>
-In-Reply-To: <a781481a0707131028m36bf9e1eka20b783b5f350ae3@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707140618.57354.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Bodo Eggert wrote:
+> Change the root filesystem to tmpfs. Doing this makes having a system on
+> tmpfs much easier, while allowing to discard the now unnecessary ramfs.
 
-Satyam Sharma wrote:
->> Because mixed situation is undisputably worse than one way or the other
->> && making sysfs_put() to conform to its surroundings is the shortest
->> path to achieve uniformity.  Gees, what's so important about allowing or
->> not allowing NULL?
-> 
-> The whole _purpose_ of get()/put() functions (i.e. refcounting in general)
-> is to ensure that the (shared) objects don't go away from under us while
-> we're holding them. The proposed change _weakens_ the API itself by
-> allowing a buggy driver (that somehow called into _put() codepath without
-> a _get() before it) to not get flagged immediately (through an oops). This
-> inevitably leads to some difficult-to-debug problems -- I have suffered
-> debugging issues created by such weak/loose APIs myself.
+Thanks a lot!
 
-Yeah, that's the advantage of not allowing NULL, well, or disadvantage
-of allowing.  I get that.  If I were to reimplement all these functions,
-I probably wouldn't allow NULL argument myself either.  As much as I
-understand your POV, I just don't think it's as critical as maintaining
-uniformity.  There are million and one ways to get refcounting wrong and
-allowing or not allowing NULL seems like a very small factor to me.  On
-the other hand, if you make things confusing by allowing on some but not
-allowing on others, it's much more likely to trigger programmer error.
+> Having the rootfs on tmpfs allows to safely run e.g. a rescue system
+> without using tricks. You might even include the rescue system into the
+> kernel.
+>
+> This is a rework of Al Boldi's "[PATCH] initramfs: Allow rootfs to use
+> tmpfs instead of ramfs". All the fame belongs to him, the bugs belong to
+> me.
 
->> >> but we're leaning toward accepting NULL argument in this
->> >> type of functions.  Think about kfree(NULL) and its usefulness.
->> >
->> > Don't {mis}quote the kfree() mistake here, please.
->>
->> Like it or not, kfree(NULL) is used the same way.
-> 
-> But we pay a heavy price for the "programmer convenience" (just
-> avoiding some conditionals / multiple goto labels in error cleanup
-> paths) that we get in return. I do believe the kernel would've been
-> much less buggy, if only kfree(NULL) wasn't legal.
+Actually, my patch was a rework of John Zielinski's 
+http://marc.info/?l=linux-kernel&m=107013630212011&w=4 patch, so the credit 
+really goes to him.
 
-I'm not sure whether it has contributed a lot to bugs, maybe.  But
-still, on cases like this, I think staying with what people are used to
-is the best way.  The advantages or disadvantages are really small
-compared to the confusion overhead.
+> Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
+>
+>
+> diff -Xdontdiff -pruN linux-2.6.22.base/fs/Kconfig
+> linux-2.6.22.tmpfsroot/fs/Kconfig --- linux-2.6.22.base/fs/Kconfig       
+> 2007-07-12 14:05:16.000000000 +0200 +++ linux-2.6.22.tmpfsroot/fs/Kconfig 
+>  2007-07-12 15:10:09.000000000 +0200 @@ -989,6 +989,22 @@ config
+> TMPFS_POSIX_ACL
 
-> But even if you do want to allow NULL arguments to such functions,
-> for certain situations, you could always write a little wrapper over
-> the lower function that'll include the "if (not NULL)" kind of check.
+Setting this in fs/Kconfig is way to deep, and too far away from the 
+initramfs Kconfig, which makes it obscure.
 
-Yeap, sure.
+>
+>           If you don't know what Access Control Lists are, say N.
+>
+> +config TMPFS_ROOT
+> +       bool "Use tmpfs instrad of ramfs for initramfs"
 
->> I don't really see how you can jump there from allowing NULL argument.
->> Your conclusion is really far from the origin.
->> [...]
->> NULL put is usually used to simplify error handling / cleanup codes.
-> 
-> I'd be gladder if you could point me to code where this change really
-> helps.
-> I'd definitely like to send patches, why not.
+Check typo.                    
 
-It's added by later patches.  The patch itself is created because I was
-hit by the confusion.  sysfs_get() allowed NULL argument but sysfs_put()
-didn't.  Where's sense in that?  I thought about converting sysfs_get()
-to not accepting NULL but then the whole kobject and friends would act
-differently.
+> +       depends on TMPFS
 
-For sysfs, changing behavior is okay.  It's mostly self-contained
-subsystem and sysfs_get/put() aren't even exported to outside world, but
-kobject and driver model are different story.  Changing such subtle
-behavior of such widely used interface is bound to create a lot of
-confusion.
+Should probably depend on SHMEM too.
 
-Think about what would happen if NULL is suddenly disallowed on kfree().
- Even if all the current in-kernel users are converted at once (I'm sure
-we're gonna miss some tho), all the out of tree (including devel) codes
-and future codes will suffer and some of the bugs would be really hard
-to catch as kfree(NULL) is buried in error handling path which generally
-isn't triggered too often.
+> +       default n
+> +       help
+> +         This replaces the ramfs used for unpacking the cpio images
+> +         with tmpfs, thereby allowing swapping these contents to disk and
+> +         adding size limit support.
+> +
+> +         Side effect:
+> +         This is useful only if you don't plan on mounting a different
+> +         root filesystem. Therefore it will change the default of the
+> +         root= parameter to "rootfs".
+> +
+> +         If unsure, say N
+> +
+>  config HUGETLBFS
+>         bool "HugeTLB file system support"
+>         depends on X86 || IA64 || PPC64 || SPARC64 || SUPERH || BROKEN
+> @@ -1003,7 +1019,7 @@ config HUGETLB_PAGE
+>         def_bool HUGETLBFS
+>
+>  config RAMFS
+> -       bool
+> +       bool "Ramfs file system support" if TMPFS_ROOT
 
-The same thing holds for kobject/driver model interface.  The confusion
-which will be caused by such change outweighs any benefit which can come
-from it.  So, I can't change kobject/driver model behavior.  If I then
-come back to sysfs, the only option I have is to make sysfs follow the
-rule in its neighborhood.
+What's wrong with the original Kconfig of making this tristate?
 
-It's almost similar in get() too, but I think we have better chance
-there because NULL get() is much more useless than NULL put() which
-means it's used less.  Also, another plus is that get() errors are easy
-to catch.  It usually lives in hot paths, but still I can't tell whether
-the cost of conversion would worth the gained benefit.
+>         default y
+>         ---help---
+>           Ramfs is a file system which keeps all files in RAM. It allows
 
->> I agree with you about get().  Allowing NULL argument doesn't really
->> help anything.  It only increases the chance of getting things wrong.
->> I'm all for not allowing NULL argument to get().  For put(), as I wrote
->> before, I think allowing NULL has some advantages and I don't care
->> either way as long as it's not confusing.  The 'not confusing' part is
->> way more important to me than advantages of either way.
-> 
-> As I said, changing generic refcounting API functions (which is what
-> xxx_put() is) to simplify open-coding of a conditional in the caller's
-> error cleanup paths does not sound advantageous to me at all. On the
-> contrary, it weakens the refcounting API, and I can only imagine the
-> kernel getting buggier with such changes.
+:
+:
 
-I hope my 'confusion' argument explained my logic a bit better.  Again,
-if you wanna change it, I'm not necessarily against it but that should
-be a completely separate step && till that happens, making sysfs_put()
-to follow its surrounding world _is_ a good idea.
+> diff -Xdontdiff -pruN linux-2.6.22.base/mm/shmem.c
+> linux-2.6.22.tmpfsroot/mm/shmem.c --- linux-2.6.22.base/mm/shmem.c       
+> 2007-07-12 14:05:25.000000000 +0200 +++ linux-2.6.22.tmpfsroot/mm/shmem.c 
+>  2007-07-12 15:01:32.000000000 +0200 @@ -2369,6 +2369,8 @@ static void
+> init_once(void *foo, struct
+>
+>  static int init_inodecache(void)
+>  {
+> +       if (shmem_inode_cachep)
+> +               return 0;
+>         shmem_inode_cachep = kmem_cache_create("shmem_inode_cache",
+>                                 sizeof(struct shmem_inode_info),
+>                                 0, 0, init_once, NULL);
+> @@ -2582,6 +2584,34 @@ put_memory:
+>         return ERR_PTR(error);
+>  }
+>
+> +#ifdef CONFIG_TMPFS_ROOT
+> +static int rootfs_get_sb(struct file_system_type *fs_type,
+> +       int flags, const char *dev_name, void *data, struct vfsmount *mnt)
+> +{
+> +       return get_sb_nodev(fs_type, flags|MS_NOUSER, data,
+> shmem_fill_super, +                           mnt);
 
-Thanks.
+Setting the MS_NOUSER flag will make this invisible to df (diskfree).
 
--- 
-tejun
+> +}
+> +
+> +/*static struct super_block *rootfs_get_sb(struct file_system_type
+> *fs_type, +       int flags, const char *dev_name, void *data)
+> +{
+> +       return get_sb_single(fs_type, flags, data, shmem_fill_super);
+> +}*/
+
+You commented this out, probably asking for clarification:  IIRC, it's 
+get_sb_single instead of get_sb_nodev, because tmpfs can be mounted more 
+than once and thus needs to be reference counted.
+
+> +
+> +static struct file_system_type rootfs_fs_type = {
+> +       .name           = "rootfs",
+> +       .get_sb         = rootfs_get_sb,
+> +       .kill_sb        = kill_litter_super,
+> +};
+> +
+> +int __init init_rootfs(void)
+> +{
+> +       if (init_inodecache())
+> +               panic("Can't initialize shm inode cache");
+> +       return register_filesystem(&rootfs_fs_type);
+> +}
+> +#endif
+> +
+>  /*
+>   * shmem_zero_setup - setup a shared anonymous mapping
+>   *
+
+
+Thanks!
+
+--
+Al
+
