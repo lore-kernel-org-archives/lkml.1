@@ -1,157 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXGOWtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbXGOWvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbXGOWtB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 18:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbXGOWsw
+	id S1759479AbXGOWvi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 18:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXGOWvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 18:48:52 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:51783
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753668AbXGOWsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 18:48:51 -0400
-Date: Sun, 15 Jul 2007 15:42:10 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <200707160047.28420.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0707151538130.25614@asgard.lang.hm>
-References: <200707151433.34625.rjw@sisk.pl> <Pine.LNX.4.64.0707151253141.25614@asgard.lang.hm>
- <200707160047.28420.rjw@sisk.pl>
+	Sun, 15 Jul 2007 18:51:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40234 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754544AbXGOWva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 18:51:30 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: david@lang.hm
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Mon, 16 Jul 2007 00:59:07 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707151231.27410.rjw@sisk.pl> <Pine.LNX.4.64.0707151218320.25614@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707151218320.25614@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707160059.08277.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+On Sunday, 15 July 2007 21:23, david@lang.hm wrote:
+> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
+> 
+> >>>> I think this is far more complicated then it needs to be.
+> >>>>
+> >>>> it sounds like it should be possible to do the following
+> >>>>
+> >>>> 1. figure out what pages should be backed up (creating a data structure to
+> >>>> hold them)
+> >>>
+> >>> That should be done after step 2, because the memory contents can change
+> >>> in this step.
+> >>
+> >> no, this needs to be done by the main kernel, becouse only it knows how to
+> >> find this info. the kernel that you kexec into could be very different
+> >> (including different versions) and the ways to identify this data is not
+> >> part of any existing API
+> >
+> > If the memory contents changes in step 2, then the information collected by
+> > the main kernel will be inaccurate.
+> 
+> why would the memory use change when the new kernel is run? is it becouse 
+> of whatever it does to the devices for the hand-off?
 
-> On Sunday, 15 July 2007 22:13, david@lang.hm wrote:
->> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
->>
->>> Hi,
->>>
->>> Since many alternative approaches to hibernation are now being considered and
->>> discussed, I thought it might be a good idea to list some things that in my not
->>> so humble opinion should be taken care of by any hibernation framework.  They
->>> are listed below, not in any particular order, because I think they all are
->>> important.  Still, I might have forgotten something, so everyone with
->>> experience in implementing hibernation, especially Pavel and Nigel, please
->>> check if the list is complete.
->>>
->>> (1) Filesystems mounted before the hibernation are untouchable
->>>
->>>    When there's a memory snapshot, either in the form of a hibernation image,
->>>    or in the form of the "old" kernel and processes available to the "new"
->>>    kexeced kernel responsible for saving their memory, the filesystems mounted
->>>    before the hibernation should not be accessed, even for reading, because
->>>    that would cause their on-disk state to be inconsistent with the snapshot
->>>    and might lead to a filesystem corruption.
->>
->> AFAIK this is only the case with ext3, all other filesystems could be
->> accessed read-only safely
->>
->> this is arguably a bug with ext3 (and has been discussed as such), but
->> right now the ext3 team has decided not to change this bahavior so
->> hibernate needs to work around it. but don't mistake a work-around for a
->> single (admittedly very popular) filesystem with a hard and fast
->> directive.
->>
->>> (2) Swap space in use before the hibernation must be handled with care
->>>
->>>    If swap space is used for saving the memory snapshot, the snapshot-saving
->>>    application (or kernel) must be careful enough not to overwrite swap pages
->>>    that contain valid memory contents stored in there before the hibernation.
->>
->> true, in fact, given that many distros and live-CD's autodetect swap
->> partitions and consider them fair game, I would argue that the best thing
->> to do would be to have the main system free up it's swap partitions before
->> going into hibernation.
->>
->> however, this could be a decision of the particular hibernate routines.
->>
->> for the kexec approach the mapping of what swap pages are in use is one
->> more chunk of data that needs to be assembled and made available through a
->> defined interface.
->>
->>> (4) The user should be able to limit the size of a hibernation image
->>>
->>>    There are a couple of reasons of that.  For example, the storage space
->>>    used for saving the image may be smaller than the entire RAM or the user
->>>    may want the image to be saved quickier.
->>
->> it may make sense for this to be split into hard and soft limits.
->>
->> if you try to save more then the storage space can hold you cannot
->> continue, but if you are just a little over the arbatrary size limit that
->> was set to make things fast you are better off saving things as-is then
->> punting, going back to the system, trying to free more ram, and trying a
->> hibernate again.
->>
->> with the kexec approach the enforcment of these limits is also split into
->> two sections.
->>
->> when the hibernate command is given in the main kernel, it's userspace
->> needs to follow some policy to decide how much (if any) memory to free.
->
-> How are you going to achieve this without (a) having hibernation-aware
-> user space or (b) the freezer?
+Yes, I think so, although I'm not sure, because I don't know what happens to
+devices during a "normal" kexec.
 
-the hibernate command is a userspace command, but the fact that other 
-things in userspace are running at the same time is exactly why this is 
-only an estimate and best-effort as I said in the paragraph below.
+> >>>> 2. kexec into the hibernate kernel (this step handles all device
+> >>>> transitions today)
+> >>>>
+> >>>> 3. have the hibernate userspace find the data structures created in step
+> >>>> #1
+> >>>>
+> >>>> 4. have the hibernate userspace write the pages somewhere in the suspend
+> >>>> format.
+> >>>
+> >>> You don't need to run any hibernate userspace to carry out steps 3 and 4.
+> >>
+> >> you should though.
+> >>
+> >> by doing this write in usespace you can add in all the eye-candy (aka
+> >> progress bars), network I/O, etc that you want since it doesn't affect
+> >> things
+> >>
+> >> trying to do this in the kernel makes the kernel have to know/decide too
+> >> much policy (and many things that people want to do are things that do not
+> >> belong in the kernel in the first place)
+> >
+> > Please don't tell me.  I've written uswsusp on the basis of these arguments,
+> > but I don't cosider it as an overwhelming success ...
+> 
+> uswsusp has the problem that you are trying to run some userspace, but not 
+> other userspace as you are doing the hibernate. with this approach you 
+> don't have that problem since you are running a completely seperate 
+> userspace.
 
->> but since the kexec command and the preporation of the devices can change
->> the memory, the estimates done by the first kernel's userspace are just
->> that, estimates.
->>
->>> (7) On ACPI systems special platform-related actions have to be carried out at
->>>    the right points, so that the platform works correctly after the restore
->>>
->>>    The ACPI specification requires us to invoke some global ACPI methods
->>>    during the hibernation and during the restore.  Moreover, the ordering of
->>>    code related to these ACPI methods may not be arbitrary (eg. some of
->>>    them have to be executed after devices are put into low power states etc.).
->>
->> for a pure hibernate mode, you will be powering off the box after saving
->> the suspend image. why are there any special ACPI modes involved?
->
-> Because, for example, on my machine the status of power supply (present
-> vs not present) is not updated correctly after the restore if ACPI callbacks
-> aren't used during the hibernation.  That's just experience and it's in line
-> with the ACPI spec.
+You're running it from a RAM disk, because you can't touch filesystems.  You
+can do the same with uswsusp, just fine.
 
-so if a machine is actually powered off the /dev/suspend process won't 
-work?
+> >>>> 5. have the hibernate kernel power down the box.
+> >>>>
+> >>>> the only things here that sounds like they're not available in stock
+> >>>> kernels are steps #1 and #3.
+> >>>
+> >>> Correct, up to the first remark above.
+> >>>
+> >>>> now this won't do the fancier suspend-to-ram-and-disk and it won't let you
+> >>>> go back from the hibernate kernel to the main kernel, but it should be
+> >>>> enough to let you do the suspend safely and reliably.
+> >>>>
+> >>>> for the restore, as I understand it the process is
+> >>>>
+> >>>> 1. boot a kernel, any working kernel.
+> >>>>
+> >>>> 2. read the suspend formatted data from wherever it was saved and feed it
+> >>>> to /dev/suspend
+> >>>
+> >>> Yes, something like this, but you really should pay more attention to devices.
+> >>>
+> >>> There are things that you shouldn't do to them (like unregistering), because
+> >>> some processes may be using them while we're trying to hibernate (for now
+> >>> we have the freezer, but I though you'd like to do all that to eliminate it).
+> >>>
+> >>> Generally, you need to ensure that the devices are handled in consistent ways
+> >>> by both the hibernated and image-saving kernels and that's a big piece of the
+> >>> jigsaw that's missing now.
+> >>
+> >> the kexec process should handle the device state for the transition from
+> >> one kernel to another (it has to do this now, this isn't a new
+> >> requirement), so this should solve the problem during the hibernate stage.
+> >
+> > Well, I don't think so.
+> 
+> Ok, I could easily be misunderstanding something here (and the comments 
+> with the latest 'kexec back and forth' patch indicate there may still be 
+> work to do here after all)
+> 
+> >> during the wakeup stage, I thought you said that al that was needed was to
+> >> feed the suspend image to /dev/suspend and the kernel in the suspend image
+> >> would re-probe, or otherwise re-initialize all the devices it needs. am I
+> >> misunderstanding this?
+> >
+> > Perhaps.  Currently, the hibernated kernel will run device_resume() after
+> > the restore, which is not exactly compatible with what kexec does.
+> 
+> but kexec isn't needed during the restore process, is it?
 
-remember that the system may run a different OS between the hibernate and 
-the resume, makeing any assumptions about what state the hardware is in 
-when you start the resume is a problem.
+Generally, it's not needed.  _However_, the current handling of devices is
+such that:
+(a) hibernated kernel uses device_suspend() to put them into low power states
+    and creates the image
+(b) hibernated kernel uses device_resume() to get devices back to work and
+    saves the image
+(c) during the restore the boot kernel loads the image and uses
+    device_suspend() to prepare devices for the "old" kernel
+(d) hibernated kernel gets control and uses device_resume() to get devices back
+    to work.
+Now, if you use kexec instead of (a) and (b), then whatever it does to devices
+is generally incompatible with the device_resume() in (d) (because, for
+instance, some device driver's .resume() routine may expect some data to be
+saved by the corresponding .suspend() at specific locations).
 
-David Lang
+Greetings,
+Rafael
 
->> now, for suspend-to-ram you need to be aware of every possible power
->> saving option you have and the cost of each of them, and here the ACPI
->> modes are heavily used.
->>
->> I think this is mixing suspend and hibernate still.
->
-> Yes, it is, but that's not we who's mixing.  We just need to handle some
-> systems built with ACPI in mind.
->
-> Greetings,
-> Rafael
->
->
->
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
