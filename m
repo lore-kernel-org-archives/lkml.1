@@ -1,98 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760706AbXGOOmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760957AbXGOPFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760706AbXGOOmU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 10:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757512AbXGOOmK
+	id S1760957AbXGOPFm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 11:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758451AbXGOPFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 10:42:10 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:18020 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757708AbXGOOmI (ORCPT
+	Sun, 15 Jul 2007 11:05:34 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:51170 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758315AbXGOPFd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 10:42:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iJmAz+cNIqSTSMSc6PhDZEkrD4AXv7OKc4oDgvy6oIWSvrpgQR0iywQ9tHqK/unwjTgc4QxmpPmczBdVE/VR0FuFZ5l0599rasj6gZBl3GKs/X5JmyOByA2LiA6QdQp3k1hcftcKRYW5hnme8hjc0ctB/CPGgYYM+DyRAYCU2U4=
-Message-ID: <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com>
-Date: Sun, 15 Jul 2007 22:42:07 +0800
-From: "Li Yang" <leo@zh-kernel.org>
-To: "Rob Landley" <rob@landley.net>
-Subject: Re: [PATCH] Chinese Language Maintainer
-Cc: "Gerrit Huizenga" <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
-       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
-       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
-       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
-In-Reply-To: <200707131352.12952.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
-	 <200707121205.20959.rob@landley.net>
-	 <1184330583.23373.65.camel@Gundam>
-	 <200707131352.12952.rob@landley.net>
-X-Google-Sender-Auth: faa2d1b6a27b9904
+	Sun, 15 Jul 2007 11:05:33 -0400
+Date: Sun, 15 Jul 2007 17:05:23 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: sunrpc-related Oops in latest git
+Message-ID: <20070715170523.2bed7110@dhcp-255-175.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/14/07, Rob Landley <rob@landley.net> wrote:
-> On Friday 13 July 2007 8:43:03 am Li Yang wrote:
-> > On Thu, 2007-07-12 at 12:05 -0400, Rob Landley wrote:
-> > > +A language maintainer accepts patches to the Linux kernel, written in C,
-> > > from +authors who do not also speak English.  The language maintainer
-> > > translates the +description of each patch into English, forwards the
-> > > patches to linux-kernel +and to the appropriate maintainers for inclusion
-> > > in the Linux kernel, and +translates questions and replies about such
-> > > patches as part of the +patch review process.
-> >
-> > In addiction to this responsibility, I would like to add two more which,
-> > in my opinion, are more important.  And these are what I'm trying to
-> > do.  :)
-> > First, promoting contribution to Linux kernel in local language.
-> > Second, coordinate the translation effort of key kernel documents.
->
-> Cool.  It's good to do that, but not the problem I'm worried about solving.
->
-> I was trying to describe the minimum requirements for being a language
-> maintainer, I.E. what non-english users need in order to be able to merge
-> their patches.  Because without someone to contribute patches to (I.E a
-> language maintainer), documentation in non-english languages promotes the
-> creation of patches that can't be merged.  That's the problem I'm trying to
-> solve.
->
-> To me, finding language maintainers is the flip side of the coin of
-> translating documentation.
+Hi Trond,
 
-I think you worried too much about this problem.  :)  Let me explain
-the situation here in China more clearly.  Actually, English is
-mandatory in most schools and universities.  Only very few people
-learn other language as a second language.  Therefore software
-developers who are almost educated should have the basic English
-skill.  However, that doesn't mean that they can read English or
-communicate with native English speaker very easily.  Consider your
-second language learn in school for analogy.  Read in English will be
-much slower and more likely to cause misunderstanding.  This will
-reduce the likelihood greatly of English documentation being read.  If
-we are promoting contribution to the Linux community, we should
-maximum the possibility that these key documents being read.
-Translation will serve this purpose very well.
+While testing my avr32 updates on the latest git tree, I got this:
 
-So the possibility is very little that a translator is needed between
-the Linux maintainer and a Chinese developer.  Although sometimes help
-is needed when there is misunderstanding.
+VFS: Mounted root (nfs filesystem).
+Freeing init memory: 56K (90000000 - 9000e000)
+Unable to handle kernel NULL pointer dereference at virtual address 00000000
+ptbr = 90161f44 pgd = 00000000
+Oops: Kernel access of bad area, sig: 11 [#1]
+FRAME_POINTER chip: 0x01f:0x1e82 rev 2
+Modules linked in:
+PC is at queue_work+0x2a/0x34
+LR is at __init_begin+0x70000000/0x1c
+pc : [<900215f2>]    lr : [<00000000>]    Not tainted
+sp : 9014fcf0  r12: 00000000  r11: 90009074
+r10: 00100100  r9 : 90009078  r8 : 90009078
+r7 : 9014fcf0  r6 : 9025652c  r5 : 90009004  r4 : 0000106c
+r3 : 00001064  r2 : 00001064  r1 : 90263000  r0 : 901b1320
+Flags: qvnZc
+Mode bits: hrje....g
+CPU Mode: Interrupt level 0
+Process: swapper [0] (task: 90153afc thread: 9014e000)
+Stack: (0x9014fcf0 to 0x90150000)
+fce0:                                     900f983a 9014fd08 9025652c 90009004
+fd00: 0000106c 00000000 900f98a2 9014fd1c 9000906c 90009004 0000106c 900f6edc
+fd20: 9014fd30 9024c000 90009004 0000106c 900f8d08 9014fd5c 00001064 90009004
+fd40: 0000106c 901b1320 00001064 90263000 901b1320 900cd15a 9014fd8c 900bc7f6
+fd60: 9014fd80 00000000 00000000 0000106c 90263000 0000106c 0abfffaf 901b1320
+fd80: 900e6010 9014fda4 90263000 90263000 0000106c 901b1320 9025d834 0abfffaf
+fda0: 901b1320 900e6406 9014fdf4 90263000 901b1344 0000106c 9016e110 9025d834
+fdc0: 0abfffaf 901b1320 900d0286 0abfffad 00000011 0000106c 10775008 90268540
+fde0: 00001080 00000024 0000106c 0abfffad 0abfffaf 900e65bc 9014fe18 901b1320
+fe00: 00000011 10775008 00000000 9016caa0 00000800 00000500 900cf3f6 9014fe2c
+fe20: 901b1320 00000011 10775008 900cf76e 9014fe50 9000a820 901b1140 10775008
+fe40: 901b1164 9016caa0 00000800 00000500 900c112a 9014fe74 9016ca88 901b1140
+fe60: 10775008 901af800 9016caa0 00000800 00000500 900b1f44 9014feac 901b1140
+fe80: 0000003b 10775008 000004fe 901afb80 0000003b 00000500 901af800 00000040
+fea0: 00000003 900b1dbc 0000003d 900c2808 9014fed4 901af918 901af800 10775008
+fec0: 9016c710 9016c700 fffedde1 007f0000 0000012c 9001ae96 9014fef8 00000000
+fee0: 90168174 10775008 0000000a 90161904 00000000 007f0000 9001aefa 9014ff1c
+ff00: 00810022 00000000 10775008 00000000 90161904 00000000 007f0000 9001b0a0
+ff20: 9014ff30 9016aa0c 00000000 10775008 9000f074 9014ff44 9016aa0c 00000000
+ff40: 10775008 9000e4fe 9014ffb0 90169058 90161930 10775008 9000be70 90161904
+ff60: 00000000 007f0000 00400024 9000e4da 900112ba 90268000 90153978 00000000
+ff80: 90153d74 00000200 9014e000 9014ffb0 90169058 90161930 10775008 9000be70
+ffa0: 90161904 00000000 007f0000 007f0000 90102df6 9014ffc4 90169058 90161930
+ffc0: 10775008 9000072c 9014ffdc 90169058 90161930 10775008 9000be70 00000000
+ffe0: 00000000 107cb030 10770fa0 10775008 901729c8 901729c8 00000000 007f0000
+Call trace:
+ [<900f983a>] __rpc_do_wake_up_task+0x18a/0x1c4
+ [<900f98a2>] rpc_wake_up_task+0x2e/0x40
+ [<900f6edc>] xprt_complete_rqst+0x64/0x74
+ [<900f8d08>] xs_udp_data_ready+0xd0/0xf0
+ [<900bc7f6>] sock_queue_rcv_skb+0xa2/0xd0
+ [<900e6010>] udp_queue_rcv_skb+0x9c/0x114
+ [<900e6406>] __udp4_lib_rcv+0x37e/0x528
+ [<900e65bc>] udp_rcv+0xc/0x14
+ [<900cf3f6>] ip_local_deliver+0x7e/0xcc
+ [<900cf76e>] ip_rcv+0x32a/0x35c
+ [<900c112a>] netif_receive_skb+0x136/0x188
+ [<900b1f44>] macb_poll+0x27c/0x318
+ [<900c2808>] net_rx_action+0x48/0xc4
+ [<9001ae96>] __do_softirq+0x32/0x74
+ [<9001aefa>] do_softirq+0x22/0x3c
+ [<9001b0a0>] irq_exit+0x24/0x30
+ [<9000f074>] do_IRQ+0x3c/0x50
+ [<9000e4fe>] irq_level0+0x18/0x5e
+ [<90102df6>] rest_init+0x3a/0x48
+ [<9000072c>] start_kernel+0x1f0/0x220
+ [<00000000>] __init_begin+0x70000000/0x1c
 
-After a brief talk with the Japanese translator, I think the case is
-similar for Japanese too.
+Kernel panic - not syncing: Fatal exception in interrupt
 
-Therefore, in my opinion, language maintainer should be more a helper
-and promoter rather than a gatekeeper.  I will give a proposed process
-later about how this helper mechanism works.
+As you can see, I'm using nfsroot. git-bisect blames this commit:
 
-- Leo
+4ada539ed77c7a2bbcb75cafbbd7bd8d2b9bef7b is first bad commit
+commit 4ada539ed77c7a2bbcb75cafbbd7bd8d2b9bef7b
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Thu Jun 14 17:26:17 2007 -0400
+
+    SUNRPC: Make create_client() take a reference to the rpciod workqueue
+
+    Ensures that an rpc_client always has the possibility to send asynchronous
+    RPC calls.
+
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+:040000 040000 d09b2ebe7a650d9be8a0b0606652f9768779cf18 7ec13589a51d237ecdfd32a46806b43c28a55ed8 M      net
+
+Please let me know if there's anything I can do to help debug this.
+
+Håvard
