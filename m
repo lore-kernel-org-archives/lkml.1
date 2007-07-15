@@ -1,193 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761295AbXGONDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761649AbXGONFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761295AbXGONDQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 09:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbXGONC7
+	id S1761649AbXGONFQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 09:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbXGONFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 09:02:59 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:60510 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753003AbXGONC5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 09:02:57 -0400
-Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
-	features in larger inode
-From: Peter Zijlstra <peterz@infradead.org>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20070713214746.GH23255@mami.zabbo.net>
-References: <1183275482.4010.133.camel@localhost.localdomain>
-	 <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
-	 <20070713020529.1486491f.akpm@linux-foundation.org>
-	 <1184333621.20032.85.camel@twins>
-	 <20070713121259.20066d5b.akpm@linux-foundation.org>
-	 <20070713214746.GH23255@mami.zabbo.net>
+	Sun, 15 Jul 2007 09:05:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38752 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757337AbXGONE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 09:04:59 -0400
+Subject: Re: [PATCH 1/3] Blackfin ethernet driver: on chip ethernet MAC
+	controller driver
+From: Dan Williams <dcbw@redhat.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Michael Buesch <mb@bu3sch.de>, bryan.wu@analog.com,
+       Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <8bd0f97a0707141338q996f246p6abdc2f65efa5e7@mail.gmail.com>
+References: <1184438993.3140.23.camel@roc-laptop>
+	 <200707142138.36619.mb@bu3sch.de>
+	 <8bd0f97a0707141249y2c90a59cs356aa3cef357f721@mail.gmail.com>
+	 <200707142217.36361.mb@bu3sch.de>
+	 <8bd0f97a0707141338q996f246p6abdc2f65efa5e7@mail.gmail.com>
 Content-Type: text/plain
-Date: Sun, 15 Jul 2007 15:02:23 +0200
-Message-Id: <1184504543.5284.96.camel@lappy>
+Date: Sun, 15 Jul 2007 09:04:21 -0400
+Message-Id: <1184504661.5871.25.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 14:47 -0700, Zach Brown wrote:
+On Sat, 2007-07-14 at 16:38 -0400, Mike Frysinger wrote:
+> On 7/14/07, Michael Buesch <mb@bu3sch.de> wrote:
+> > On Saturday 14 July 2007 21:49:21 Mike Frysinger wrote:
+> > > On 7/14/07, Michael Buesch <mb@bu3sch.de> wrote:
+> > > > On Saturday 14 July 2007 20:49:53 Bryan Wu wrote:
+> > > > > +static int __init bf537mac_probe(struct net_device *dev)
+> > > > > +{
+> > > > > +     struct bf537mac_local *lp = netdev_priv(dev);
+> > > > > +     int retval;
+> > > > > +
+> > > > > +     /* Grab the MAC address in the MAC */
+> > > > > +     *(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
+> > > > > +     *(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
+> > > >
+> > > > Endianess broken.
+> > > >
+> > > > > +struct dma_config_reg {
+> > > > > +     unsigned short b_DMA_EN:1;  /* Bit 0 : DMA Enable */
+> > > > > +     unsigned short b_WNR:1;     /* Bit 1 : DMA Direction */
+> > > > > +     unsigned short b_WDSIZE:2;  /* Bit 2 & 3 : DMA Tranfer Word size */
+> > > > > +     unsigned short b_DMA2D:1;   /* Bit 4 : DMA Mode 2D or 1D */
+> > > > > +     unsigned short b_RESTART:1; /* Bit 5 : Retain the FIFO */
+> > > > > +     unsigned short b_DI_SEL:1;  /* Bit 6 : Data Interrupt Timing Select */
+> > > > > +     unsigned short b_DI_EN:1;   /* Bit 7 : Data Interrupt Enable */
+> > > > > +     unsigned short b_NDSIZE:4;  /* Bit 8 to 11 : Flex descriptor Size */
+> > > > > +     unsigned short b_FLOW:3;    /* Bit 12 to 14 : FLOW */
+> > > > > +};
+> > > >
+> > > > This is most likely not endianess safe.
+> > >
+> > > do we really need to care about this ?  this is a driver for a MAC
+> > > which can only be found on Blackfin processors and Blackfin itself is
+> > > only little endian.
+> >
+> > Well, this bitfield _might_ be OK (although I don't like bitfields
+> > at all), but the above pointer casting stuff should really use
+> > leXX_to_cpu. It's so easy to use and it is easier to read and
+> > maintain the code afterwards.
+> 
+> i think that's arguable ... i dont see how:
+> a = foo(b);
+> is easier to read than:
+> a = b;
+> but it is easy to use ... i guess my point was more along the lines of
+> wasting further time auditing a driver for endianness issues that will
+> never actually be an issue.
 
-> Peter, do you have any interest in seeing how far we can get
-> at tracking lock_page()?  I'm not holding my breath, but any little bit
-> would probably help.
+Sometimes by doing this you catch bugs you didn't see before.  It's a
+good thing to do generally.  Does sparse with endianness check show
+errors?  You may want to fix those.
 
-Would this be a valid report? 
+Dan
 
-( /me goes hunt a x86_64 unwinder patch that will apply to this tree.
-  These stacktraces are pain )
-
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-[ 2.6.22-rt3-dirty #34
--------------------------------------------------------
-mount/1296 is trying to acquire lock:
- (&ei->truncate_mutex){--..}, at: [<ffffffff802f75e5>] ext3_get_blocks_handle+0x1a4/0x8f7
-
-but task is already holding lock:
- (lock_page_0){--..}, at: [<ffffffff80267107>] generic_file_buffered_write+0x1ee/0x646
-
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (lock_page_0){--..}:
-       [<ffffffff80251b26>] __lock_acquire+0xa72/0xc35
-       [<ffffffff802520c9>] lock_acquire+0x48/0x61
-       [<ffffffff80265e22>] add_to_page_cache_lru+0xe/0x23
-       [<ffffffff80265d31>] add_to_page_cache+0x1de/0x2c1
-       [<ffffffff80265e22>] add_to_page_cache_lru+0xe/0x23
-       [<ffffffff80266985>] find_or_create_page+0x4c/0x73
-       [<ffffffff802ae716>] __getblk+0x118/0x23c
-       [<ffffffff802afa91>] __bread+0x6/0x9c
-       [<ffffffff802f382d>] read_block_bitmap+0x34/0x65
-       [<ffffffff802f3e1b>] ext3_free_blocks_sb+0xec/0x3d4
-       [<ffffffff802f4131>] ext3_free_blocks+0x2e/0x61
-       [<ffffffff802f82bc>] ext3_free_data+0xaa/0xda
-       [<ffffffff802f8976>] ext3_truncate+0x4d2/0x84e
-       [<ffffffff8026df5a>] pagevec_lookup+0x17/0x1e
-       [<ffffffff8026e7b1>] truncate_inode_pages_range+0x1f4/0x323
-       [<ffffffff802614b4>] add_preempt_count+0x14/0xe4
-       [<ffffffff80304d13>] journal_stop+0x1fe/0x21d
-       [<ffffffff8027661a>] vmtruncate+0xa2/0xc0
-       [<ffffffff802a292b>] inode_setattr+0x22/0x10a
-       [<ffffffff802f9b51>] ext3_setattr+0x136/0x18f
-       [<ffffffff802a2b1d>] notify_change+0x10a/0x241
-       [<ffffffff802a2b3b>] notify_change+0x128/0x241
-       [<ffffffff8028e35e>] do_truncate+0x56/0x7f
-       [<ffffffff8028e369>] do_truncate+0x61/0x7f
-       [<ffffffff80296278>] get_write_access+0x3f/0x45
-       [<ffffffff802973c7>] may_open+0x193/0x1af
-       [<ffffffff80299869>] open_namei+0x2cb/0x63e
-       [<ffffffff8025718b>] rt_up_read+0x53/0x5c
-       [<ffffffff8056da59>] do_page_fault+0x479/0x7cc
-       [<ffffffff8028dce1>] do_filp_open+0x1c/0x38
-       [<ffffffff8056a4f9>] rt_spin_unlock+0x17/0x47
-       [<ffffffff8028da05>] get_unused_fd+0xf9/0x107
-       [<ffffffff8028dd45>] do_sys_open+0x48/0xd5
-       [<ffffffff8020950e>] system_call+0x7e/0x83
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
--> #0 (&ei->truncate_mutex){--..}:
-       [<ffffffff802503b9>] print_circular_bug_header+0xcc/0xd3
-       [<ffffffff80251a22>] __lock_acquire+0x96e/0xc35
-       [<ffffffff802520c9>] lock_acquire+0x48/0x61
-       [<ffffffff802f75e5>] ext3_get_blocks_handle+0x1a4/0x8f7
-       [<ffffffff8056a6d4>] _mutex_lock+0x26/0x52
-       [<ffffffff802f75e5>] ext3_get_blocks_handle+0x1a4/0x8f7
-       [<ffffffff802504b2>] find_usage_backwards+0xb0/0xd9
-       [<ffffffff802504b2>] find_usage_backwards+0xb0/0xd9
-       [<ffffffff80250d7c>] debug_check_no_locks_freed+0x11d/0x129
-       [<ffffffff80250c33>] trace_hardirqs_on_caller+0x115/0x138
-       [<ffffffff8024efdc>] lockdep_init_map+0xac/0x41f
-       [<ffffffff802614b4>] add_preempt_count+0x14/0xe4
-       [<ffffffff802f8035>] ext3_get_block+0xc2/0xe4
-       [<ffffffff802aeed3>] __block_prepare_write+0x195/0x442
-       [<ffffffff802f7f73>] ext3_get_block+0x0/0xe4
-       [<ffffffff802af19a>] block_prepare_write+0x1a/0x25
-       [<ffffffff802f93e9>] ext3_prepare_write+0xb2/0x17b
-       [<ffffffff802671b1>] generic_file_buffered_write+0x298/0x646
-       [<ffffffff8023944e>] current_fs_time+0x3b/0x40
-       [<ffffffff802614b4>] add_preempt_count+0x14/0xe4
-       [<ffffffff802678ae>] __generic_file_aio_write_nolock+0x34f/0x3b9
-       [<ffffffff8024ed3d>] put_lock_stats+0xe/0x2a
-       [<ffffffff80267964>] generic_file_aio_write+0x4c/0xc4
-       [<ffffffff80267979>] generic_file_aio_write+0x61/0xc4
-       [<ffffffff802fcf18>] ext3_orphan_del+0x53/0x19f
-       [<ffffffff802f5768>] ext3_file_write+0x1c/0x9d
-       [<ffffffff8028ef31>] do_sync_write+0xcc/0x10f
-       [<ffffffff80246f9c>] autoremove_wake_function+0x0/0x2e
-       [<ffffffff8024ecfe>] get_lock_stats+0xe/0x3f
-       [<ffffffff8024ed9a>] lock_release_holdtime+0x41/0x4f
-       [<ffffffff8024ed3d>] put_lock_stats+0xe/0x2a
-       [<ffffffff8028dfb1>] sys_fchmod+0xa3/0xbd
-       [<ffffffff8056a717>] _mutex_unlock+0x17/0x20
-       [<ffffffff8028f6cd>] vfs_write+0xb6/0x148
-       [<ffffffff8028fc61>] sys_write+0x48/0x74
-       [<ffffffff8020950e>] system_call+0x7e/0x83
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
-other info that might help us debug this:
-
-2 locks held by mount/1296:
- #0:  (&inode->i_mutex){--..}, at: [<ffffffff80267964>] generic_file_aio_write+0x4c/0xc4
- #1:  (lock_page_0){--..}, at: [<ffffffff80267107>] generic_file_buffered_write+0x1ee/0x646
-
-stack backtrace:
-
-Call Trace:
- [<ffffffff8024ffbd>] print_circular_bug_tail+0x69/0x72
- [<ffffffff802503b9>] print_circular_bug_header+0xcc/0xd3
- [<ffffffff80251a22>] __lock_acquire+0x96e/0xc35
- [<ffffffff802520c9>] lock_acquire+0x48/0x61
- [<ffffffff802f75e5>] ext3_get_blocks_handle+0x1a4/0x8f7
- [<ffffffff8056a6d4>] _mutex_lock+0x26/0x52
- [<ffffffff802f75e5>] ext3_get_blocks_handle+0x1a4/0x8f7
- [<ffffffff802504b2>] find_usage_backwards+0xb0/0xd9
- [<ffffffff802504b2>] find_usage_backwards+0xb0/0xd9
- [<ffffffff80250d7c>] debug_check_no_locks_freed+0x11d/0x129
- [<ffffffff80250c33>] trace_hardirqs_on_caller+0x115/0x138
- [<ffffffff8024efdc>] lockdep_init_map+0xac/0x41f
- [<ffffffff802614b4>] add_preempt_count+0x14/0xe4
- [<ffffffff802f8035>] ext3_get_block+0xc2/0xe4
- [<ffffffff802aeed3>] __block_prepare_write+0x195/0x442
- [<ffffffff802f7f73>] ext3_get_block+0x0/0xe4
- [<ffffffff802af19a>] block_prepare_write+0x1a/0x25
- [<ffffffff802f93e9>] ext3_prepare_write+0xb2/0x17b
- [<ffffffff802671b1>] generic_file_buffered_write+0x298/0x646
- [<ffffffff8023944e>] current_fs_time+0x3b/0x40
- [<ffffffff802614b4>] add_preempt_count+0x14/0xe4
- [<ffffffff802678ae>] __generic_file_aio_write_nolock+0x34f/0x3b9
- [<ffffffff8024ed3d>] put_lock_stats+0xe/0x2a
- [<ffffffff80267964>] generic_file_aio_write+0x4c/0xc4
- [<ffffffff80267979>] generic_file_aio_write+0x61/0xc4
- [<ffffffff802fcf18>] ext3_orphan_del+0x53/0x19f
- [<ffffffff802f5768>] ext3_file_write+0x1c/0x9d
- [<ffffffff8028ef31>] do_sync_write+0xcc/0x10f
- [<ffffffff80246f9c>] autoremove_wake_function+0x0/0x2e
- [<ffffffff8024ecfe>] get_lock_stats+0xe/0x3f
- [<ffffffff8024ed9a>] lock_release_holdtime+0x41/0x4f
- [<ffffffff8024ed3d>] put_lock_stats+0xe/0x2a
- [<ffffffff8028dfb1>] sys_fchmod+0xa3/0xbd
- [<ffffffff8056a717>] _mutex_unlock+0x17/0x20
- [<ffffffff8028f6cd>] vfs_write+0xb6/0x148
- [<ffffffff8028fc61>] sys_write+0x48/0x74
- [<ffffffff8020950e>] system_call+0x7e/0x83
-
-INFO: lockdep is turned off.
----------------------------
-| preempt count: 00000000 ]
-| 0-level deep critical section nesting:
-----------------------------------------
-
-
+> -mike
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
