@@ -1,87 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbXGOQK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762451AbXGOQLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764074AbXGOQK5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 12:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762270AbXGOQFM
+	id S1762451AbXGOQLW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 12:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762508AbXGOQFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 12:05:12 -0400
-Received: from www.osadl.org ([213.239.205.134]:42567 "EHLO mail.tglx.de"
+	Sun, 15 Jul 2007 12:05:14 -0400
+Received: from www.osadl.org ([213.239.205.134]:42570 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760706AbXGOQFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 12:05:03 -0400
-Message-Id: <20070715155540.773083183@inhelltoy.tec.linutronix.de>
+	id S1762060AbXGOQFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 12:05:04 -0400
+Message-Id: <20070715155541.282543247@inhelltoy.tec.linutronix.de>
 References: <20070715155510.341941668@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Jul 2007 16:10:44 -0000
+Date: Sun, 15 Jul 2007 16:10:55 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch-mm 03/33] i386: remove pit_interrupt_hook
-Content-Disposition: inline; filename=i386-remove-pit-interrupt-hook.patch
+Subject: [patch-mm 14/33] x86_64: Consolidate tsc calibration
+Content-Disposition: inline; filename=x86_64-consolidate-tsc-calibration.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Wright <chrisw@sous-sol.org>
+Move the TSC calibration code to tsc.c. Reimplement it so the
+pm timer can be used as a reference as well.
 
-Remove pit_interrupt_hook as it adds just an extra layer.
-
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
 ---
+ arch/x86_64/kernel/hpet.c |   49 -------------------------
+ arch/x86_64/kernel/time.c |   33 +---------------
+ arch/x86_64/kernel/tsc.c  |   90 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/tsc.h    |    4 ++
+ 4 files changed, 96 insertions(+), 80 deletions(-)
 
- include/asm-i386/i8253.h                 |   11 -----------
- include/asm-i386/mach-default/do_timer.h |    2 +-
- include/asm-i386/mach-voyager/do_timer.h |    2 +-
- 3 files changed, 2 insertions(+), 13 deletions(-)
-
-Index: linux-2.6.22-rc6-mm/include/asm-i386/i8253.h
+Index: linux-2.6.22-rc6-mm/arch/x86_64/kernel/hpet.c
 ===================================================================
---- linux-2.6.22-rc6-mm.orig/include/asm-i386/i8253.h	2007-07-15 09:37:52.000000000 +0200
-+++ linux-2.6.22-rc6-mm/include/asm-i386/i8253.h	2007-07-15 17:49:01.000000000 +0200
-@@ -12,17 +12,6 @@ extern spinlock_t i8253_lock;
+--- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/hpet.c	2007-07-15 17:33:08.000000000 +0200
++++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/hpet.c	2007-07-15 17:48:53.000000000 +0200
+@@ -184,55 +184,6 @@ int hpet_reenable(void)
+ 	return hpet_timer_stop_set_go(hpet_tick);
+ }
  
- extern struct clock_event_device *global_clock_event;
- 
--/**
-- * pit_interrupt_hook - hook into timer tick
-- * @regs:	standard registers from interrupt
-- *
-- * Call the global clock event handler.
-- **/
--static inline void pit_interrupt_hook(void)
+-/*
+- * calibrate_tsc() calibrates the processor TSC in a very simple way, comparing
+- * it to the HPET timer of known frequency.
+- */
+-
+-#define TICK_COUNT 100000000
+-#define SMI_THRESHOLD 50000
+-#define MAX_TRIES  5
+-
+-/*
+- * Some platforms take periodic SMI interrupts with 5ms duration. Make sure none
+- * occurs between the reads of the hpet & TSC.
+- */
+-static void __init read_hpet_tsc(int *hpet, int *tsc)
 -{
--	global_clock_event->event_handler(global_clock_event);
+-	int tsc1, tsc2, hpet1, i;
+-
+-	for (i = 0; i < MAX_TRIES; i++) {
+-		tsc1 = get_cycles_sync();
+-		hpet1 = hpet_readl(HPET_COUNTER);
+-		tsc2 = get_cycles_sync();
+-		if ((tsc2 - tsc1) < SMI_THRESHOLD)
+-			break;
+-	}
+-	*hpet = hpet1;
+-	*tsc = tsc2;
 -}
 -
- extern void setup_pit_timer(void);
- 
- #endif	/* __ASM_I8253_H__ */
-Index: linux-2.6.22-rc6-mm/include/asm-i386/mach-default/do_timer.h
+-unsigned int __init hpet_calibrate_tsc(void)
+-{
+-	int tsc_start, hpet_start;
+-	int tsc_now, hpet_now;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-
+-	read_hpet_tsc(&hpet_start, &tsc_start);
+-
+-	do {
+-		local_irq_disable();
+-		read_hpet_tsc(&hpet_now, &tsc_now);
+-		local_irq_restore(flags);
+-	} while ((tsc_now - tsc_start) < TICK_COUNT &&
+-		(hpet_now - hpet_start) < TICK_COUNT);
+-
+-	return (tsc_now - tsc_start) * 1000000000L
+-		/ ((hpet_now - hpet_start) * hpet_period / 1000);
+-}
+-
+ #ifdef CONFIG_HPET_EMULATE_RTC
+ /* HPET in LegacyReplacement Mode eats up RTC interrupt line. When, HPET
+  * is enabled, we support RTC interrupt functionality in software.
+Index: linux-2.6.22-rc6-mm/arch/x86_64/kernel/time.c
 ===================================================================
---- linux-2.6.22-rc6-mm.orig/include/asm-i386/mach-default/do_timer.h	2007-04-26 05:08:32.000000000 +0200
-+++ linux-2.6.22-rc6-mm/include/asm-i386/mach-default/do_timer.h	2007-07-15 09:44:10.000000000 +0200
-@@ -12,5 +12,5 @@
- 
- static inline void do_timer_interrupt_hook(void)
- {
--	pit_interrupt_hook();
-+	global_clock_event->event_handler(global_clock_event);
+--- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/time.c	2007-07-15 17:34:06.000000000 +0200
++++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/time.c	2007-07-15 17:49:00.000000000 +0200
+@@ -292,35 +292,6 @@ static unsigned int __init tsc_calibrate
+ 	return pmc_now * tsc_khz / (tsc_now - tsc_start);
  }
-Index: linux-2.6.22-rc6-mm/include/asm-i386/mach-voyager/do_timer.h
+ 
+-/*
+- * pit_calibrate_tsc() uses the speaker output (channel 2) of
+- * the PIT. This is better than using the timer interrupt output,
+- * because we can read the value of the speaker with just one inb(),
+- * where we need three i/o operations for the interrupt channel.
+- * We count how many ticks the TSC does in 50 ms.
+- */
+-
+-static unsigned int __init pit_calibrate_tsc(void)
+-{
+-	unsigned long start, end;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&i8253_lock, flags);
+-
+-	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
+-
+-	outb(0xb0, 0x43);
+-	outb((PIT_TICK_RATE / (1000 / 50)) & 0xff, 0x42);
+-	outb((PIT_TICK_RATE / (1000 / 50)) >> 8, 0x42);
+-	start = get_cycles_sync();
+-	while ((inb(0x61) & 0x20) == 0);
+-	end = get_cycles_sync();
+-
+-	spin_unlock_irqrestore(&i8253_lock, flags);
+-
+-	return (end - start) / 50;
+-}
+-
+ #define PIT_MODE 0x43
+ #define PIT_CH0  0x40
+ 
+@@ -376,14 +347,14 @@ void __init time_init(void)
+ 	if (hpet_use_timer) {
+ 		/* set tick_nsec to use the proper rate for HPET */
+ 		tick_nsec = TICK_NSEC_HPET;
+-		tsc_khz = hpet_calibrate_tsc();
+ 		timename = "HPET";
+ 	} else {
+ 		pit_init();
+-		tsc_khz = pit_calibrate_tsc();
+ 		timename = "PIT";
+ 	}
+ 
++	tsc_calibrate();
++
+ 	cpu_khz = tsc_khz;
+ 	if (cpu_has(&boot_cpu_data, X86_FEATURE_CONSTANT_TSC) &&
+ 		boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+Index: linux-2.6.22-rc6-mm/arch/x86_64/kernel/tsc.c
 ===================================================================
---- linux-2.6.22-rc6-mm.orig/include/asm-i386/mach-voyager/do_timer.h	2007-04-26 05:08:32.000000000 +0200
-+++ linux-2.6.22-rc6-mm/include/asm-i386/mach-voyager/do_timer.h	2007-07-15 09:44:10.000000000 +0200
-@@ -12,7 +12,7 @@
-  **/
- static inline void do_timer_interrupt_hook(void)
- {
--	pit_interrupt_hook();
-+	global_clock_event->event_handler(global_clock_event);
- 	voyager_timer_interrupt();
- }
+--- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/tsc.c	2007-07-15 17:31:15.000000000 +0200
++++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/tsc.c	2007-07-15 17:34:42.000000000 +0200
+@@ -6,7 +6,9 @@
+ #include <linux/time.h>
+ #include <linux/acpi.h>
+ #include <linux/cpufreq.h>
++#include <linux/acpi_pmtmr.h>
  
++#include <asm/hpet.h>
+ #include <asm/timex.h>
+ 
+ static int notsc __initdata = 0;
+@@ -90,6 +92,94 @@ core_initcall(cpufreq_tsc);
+ 
+ #endif
+ 
++#define MAX_RETRIES	5
++#define SMI_TRESHOLD	50000
++
++/*
++ * Read TSC and the reference counters. Take care of SMI disturbance
++ */
++static unsigned long __init tsc_read_refs(unsigned long *pm,
++					  unsigned long *hpet)
++{
++	unsigned long t1, t2;
++	int i;
++
++	for (i = 0; i < MAX_RETRIES; i++) {
++		t1 = get_cycles_sync();
++		if (hpet)
++			*hpet = hpet_readl(HPET_COUNTER) & 0xFFFFFFFF;
++		else
++			*pm = acpi_pm_read_early();
++		t2 = get_cycles_sync();
++		if ((t2 - t1) < SMI_TRESHOLD)
++			return t2;
++	}
++	return ULONG_MAX;
++}
++
++/**
++ * tsc_calibrate - calibrate the tsc on boot
++ */
++void __init tsc_calibrate(void)
++{
++	unsigned long flags, tsc1, tsc2, tr1, tr2, pm1, pm2, hpet1, hpet2;
++	int hpet = is_hpet_enabled();
++
++	local_irq_save(flags);
++
++	tsc1 = tsc_read_refs(&pm1, hpet ? &hpet1 : NULL);
++
++	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
++
++	outb(0xb0, 0x43);
++	outb((CLOCK_TICK_RATE / (1000 / 50)) & 0xff, 0x42);
++	outb((CLOCK_TICK_RATE / (1000 / 50)) >> 8, 0x42);
++	tr1 = get_cycles_sync();
++	while ((inb(0x61) & 0x20) == 0);
++	tr2 = get_cycles_sync();
++
++	tsc2 = tsc_read_refs(&pm2, hpet ? &hpet2 : NULL);
++
++	local_irq_restore(flags);
++
++	/*
++	 * Preset the result with the raw and inaccurate PIT
++	 * calibration value
++	 */
++	tsc_khz = (tr2 - tr1) / 50;
++
++	/* hpet or pmtimer available ? */
++	if (!hpet && !pm1 && !pm2) {
++		printk(KERN_INFO "TSC calibrated against PIT\n");
++		return;
++	}
++
++	/* Check, whether the sampling was disturbed by an SMI */
++	if (tsc1 == ULONG_MAX || tsc2 == ULONG_MAX) {
++		printk(KERN_WARNING "TSC calibration disturbed by SMI, "
++		       "using PIT calibration result\n");
++		return;
++	}
++
++	tsc2 = (tsc2 - tsc1) * 1000000L;
++
++	if (hpet) {
++		printk(KERN_INFO "TSC calibrated against HPET\n");
++		if (hpet2 < hpet1)
++			hpet2 += 0x100000000;
++		hpet2 -= hpet1;
++		tsc1 = (hpet2 * hpet_readl(HPET_PERIOD)) / 1000000;
++	} else {
++		printk(KERN_INFO "TSC calibrated against PM_TIMER\n");
++		if (pm2 < pm1)
++			pm2 += ACPI_PM_OVRRUN;
++		pm2 -= pm1;
++		tsc1 = (pm2 * 1000000000) / PMTMR_TICKS_PER_SEC;
++	}
++
++	tsc_khz = tsc2 / tsc1;
++}
++
+ /*
+  * Make an educated guess if the TSC is trustworthy and synchronized
+  * over all CPUs.
+Index: linux-2.6.22-rc6-mm/include/asm-i386/tsc.h
+===================================================================
+--- linux-2.6.22-rc6-mm.orig/include/asm-i386/tsc.h	2007-07-15 17:26:45.000000000 +0200
++++ linux-2.6.22-rc6-mm/include/asm-i386/tsc.h	2007-07-15 17:34:42.000000000 +0200
+@@ -71,4 +71,8 @@ extern void init_tsc_clocksource(void);
+ extern void check_tsc_sync_source(int cpu);
+ extern void check_tsc_sync_target(void);
+ 
++#ifdef CONFIG_X86_64
++extern void tsc_calibrate(void);
++#endif
++
+ #endif
 
 -- 
 
