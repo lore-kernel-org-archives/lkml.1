@@ -1,83 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbXGOIym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbXGOJFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbXGOIym (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 04:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757450AbXGOIyV
+	id S1758553AbXGOJFF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 05:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbXGOJEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 04:54:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:25446 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754352AbXGOIyM (ORCPT
+	Sun, 15 Jul 2007 05:04:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59686 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754120AbXGOJEy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 04:54:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ZHWZK+afBlJtHoNWWIEVxiE6AdqjP5KkMCMM7NVCwz9W89rT4Sbc3XQ4mUbgsQBU6X95X+oyZOh5L62KnNrJstFKezt9qCPPKkSEfzQtliDna9u0rxLj/mulZWokdf8gBwlpwCuAV6S2Erl+1dU8OIVBwM4seYb7g9VYWFwFhYs=
-From: Denis Cheng <crquan@gmail.com>
-To: kernel-janitors@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Denis Cheng <crquan@gmail.com>
-Subject: [PATCH 2/2] add static delaration and init_module fixes
-Date: Sun, 15 Jul 2007 16:52:51 +0800
-Message-Id: <11844896163299-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <1184489571313-git-send-email-crquan@gmail.com>
-References: <1184489571313-git-send-email-crquan@gmail.com>
+	Sun, 15 Jul 2007 05:04:54 -0400
+Date: Sun, 15 Jul 2007 10:04:49 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH] Text Edit Lock - Architecture Independent Code - kerneldoc
+Message-ID: <20070715090449.GA15682@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070714012133.612727310@polymtl.ca> <20070714012411.845928928@polymtl.ca> <20070715012807.GA23209@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070715012807.GA23209@Krystal>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As stated by kernel janitors TODO list:
+On Sat, Jul 14, 2007 at 09:28:07PM -0400, Mathieu Desnoyers wrote:
+> Text Edit Lock - Architecture Independent Code - kerneldoc
+> 
+> Add kerneldoc to text edit lock API.
 
-	Remove unneeded historic code / New API conversions.
-	- get rid of init_module / cleanup_module
-
-and with the __init / __exit code section declarations,
-the #ifdef MODULE #endif is not needed any more.
-
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- drivers/net/wireless/wavelan.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/wireless/wavelan.c b/drivers/net/wireless/wavelan.c
-index 796011b..392c54c 100644
---- a/drivers/net/wireless/wavelan.c
-+++ b/drivers/net/wireless/wavelan.c
-@@ -4235,13 +4235,12 @@ struct net_device *__init wavelan_probe(int unit)
-  * Module entry point: insertion and removal
-  */
- 
--#ifdef	MODULE
- /*------------------------------------------------------------------*/
- /*
-  * Insertion of the module
-  * I'm now quite proud of the multi-device support.
-  */
--int __init init_module(void)
-+static int __init wavelan_init(void)
- {
- 	int ret = -EIO;		/* Return error if no cards found */
- 	int i;
-@@ -4303,7 +4302,7 @@ int __init init_module(void)
- /*
-  * Removal of the module
-  */
--void cleanup_module(void)
-+static void __exit wavelan_exit(void)
- {
- #ifdef DEBUG_MODULE_TRACE
- 	printk(KERN_DEBUG "-> cleanup_module()\n");
-@@ -4330,7 +4329,9 @@ void cleanup_module(void)
- 	printk(KERN_DEBUG "<- cleanup_module()\n");
- #endif
- }
--#endif				/* MODULE */
-+
-+module_init(wavelan_init);
-+module_exit(wavelan_exit);
- MODULE_LICENSE("GPL");
- 
- /*
--- 
-1.5.2.2
+kerneldoc is placed in the implementation file, not the header.
 
