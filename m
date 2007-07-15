@@ -1,86 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXGOQ0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762917AbXGOQ3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762650AbXGOQ0i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 12:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759419AbXGOQ0a
+	id S1762917AbXGOQ3c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 12:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759243AbXGOQ3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 12:26:30 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:24895 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759186AbXGOQ03 (ORCPT
+	Sun, 15 Jul 2007 12:29:24 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:3623 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757397AbXGOQ3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 12:26:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=i81NkqWzAXAMCiIOwVrVTJ+MTmNnhjjMRSzC67Zh+koWVQcp3x0+VNOTe64MJUP1SEpZeS53uU9k7KB0WivHjPY7nVYqisJHQI5HaTKiKqOhV7PDOmS9w4UWEhCOKktis5cneB/4t53fy/EzoeQ2GfHj44l4sW0e8kmSQj00M8I=
-Message-ID: <9c4865a10707150926t48281f35w7a9593da20dd9781@mail.gmail.com>
-Date: Sun, 15 Jul 2007 12:26:27 -0400
-From: "Russell Harmon" <eatnumber1@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Oops... not sure why.
+	Sun, 15 Jul 2007 12:29:23 -0400
+Date: Sun, 15 Jul 2007 12:29:20 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Al Boldi <a1426z@gawab.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>, <david@lang.hm>
+Subject: Re: Hibernation considerations
+In-Reply-To: <200707151810.33554.a1426z@gawab.com>
+Message-ID: <Pine.LNX.4.44L0.0707151220570.24011-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey all, just updated to 2.6.22.1, and have been getting the following
-oops rather often in my dmesg. It eventually makes it so no programs
-will start, and I lose internet connectivity and so have to reboot. I
-have a centrino duo system running SMP.
+On Sun, 15 Jul 2007, Al Boldi wrote:
 
-I'm using SLAB.
+> >     If possible, during a restore devices should be brought back to the
+> > same state in which they were before the corresponding hibernation.  Of
+> > course in some situations it might be impossible to do that (eg. the user
+> > connected the hibernated system to a different IP subnet and then
+> > restored), but as a general rule, we should do our best to restore the
+> > state of devices, which is directly related to point (5) above.
+> 
+> This part could easily be handled by the normal kernel before and after 
+> resume.
 
-Thanks
-~Russ
+I agree with you except for the word "easily".  And there are some 
+things the kernel simply punts on (I'm thinking of the current VGA 
+font).
 
-BUG: unable to handle kernel NULL pointer dereference at virtual
-address 00000000
- printing eip:
-00000000
-*pde = 00000000
-Oops: 0000 [#2]
-SMP
-Modules linked in: snd_seq snd_seq_device snd_hda_intel snd_pcm
-snd_timer snd snd_page_alloc rlocate tp_smapi thinkpad_ec iwl3945
-e1000 firewire_ohci firewire_core
-CPU:    0
-EIP:    0060:[<00000000>]    Not tainted VLI
-EFLAGS: 00010246   (2.6.22-kamikaze1-r1 #12)
-EIP is at run_init_process+0x4fefff50/0x20
-eax: e6299800   ebx: 00000000   ecx: b190d460   edx: b157cd40
-esi: b157cd40   edi: f6af0ee4   ebp: 00000000   esp: e4cb1c5c
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process gnome-pty-helpe (pid: 9708, ti=e4cb0000 task=f75b3a30 task.ti=e4cb0000)
-Stack: b014b22e 000000d0 00000000 e6299800 e6299800 f6af0e40 e6299140 b014d370
-       e6299800 b142d680 b01eeb24 e6299800 b142d680 e6299800 b142d680 00000000
-       b17a4a00 00000000 b0151c70 000000d0 e4cb1d0c f607cebc f607ceb0 e6299140
-Call Trace:
- [<b014b22e>] read_cache_page_async+0x8e/0x160
- [<b014d370>] read_cache_page+0x10/0x50
- [<b01eeb24>] unionfs_readpage+0x84/0x1d0
- [<b0151c70>] __do_page_cache_readahead+0x1f0/0x2a0
- [<b011c0ae>] dequeue_entity+0x7e/0xb0
- [<b0119f77>] dequeue_task+0x27/0x40
- [<b011b1cb>] update_stats_wait_end+0x9b/0xc0
- [<b0151df0>] ra_submit+0xd0/0xe0
- [<b0152798>] page_cache_readahead_adaptive+0x108/0x5e0
- [<b01eecd4>] unionfs_commit_write+0x64/0x1e0
- [<b014ba61>] do_generic_mapping_read+0x3a1/0x600
- [<b014db13>] generic_file_aio_read+0xd3/0x1d0
- [<b014abe0>] file_read_actor+0x0/0x120
- [<b01e52c1>] unionfs_aio_read+0x51/0xc0
- [<b016ad07>] do_sync_read+0xc7/0x110
- [<b01366a0>] autoremove_wake_function+0x0/0x50
- [<b0139452>] enqueue_hrtimer+0x72/0x100
- [<b0139b67>] hrtimer_start+0xc7/0x140
- [<b01e53f2>] unionfs_read+0x42/0xa0
- [<b016b5fc>] vfs_read+0xbc/0x160
- [<b01e53b0>] unionfs_read+0x0/0xa0
- [<b016bb31>] sys_read+0x41/0x70
- [<b0102a1a>] sysenter_past_esp+0x5f/0x85
- =======================
-Code:  Bad EIP value.
-EIP: [<00000000>] run_init_process+0x4fefff50/0x20 SS:ESP 0068:e4cb1c5c
+> > (7) On ACPI systems special platform-related actions have to be carried
+> > out at the right points, so that the platform works correctly after the
+> > restore
+> >
+> >     The ACPI specification requires us to invoke some global ACPI methods
+> >     during the hibernation and during the restore.  Moreover, the ordering
+> > of code related to these ACPI methods may not be arbitrary (eg. some of
+> > them have to be executed after devices are put into low power states
+> > etc.).
+> 
+> This should be the responsibility of the kexec'd hibernating kernel.  Note 
+> though in (6), the normal kernel takes care of preparing devices, then the 
+> hibernating kernel dumps the image and either calls S4 or S3.  On resume 
+> from S3 it can immediately switch over to the normal kernel, and from S4 the 
+> known bootup would occur.
+
+Is it really that simple?  Somehow I doubt it.  In order for some 
+devices to remain available for the kexec'd kernel to use, they cannot 
+be suspended at the ACPI level.  So the kexec'd kernel will have to 
+handle the ACPI requirements for those devices.  Likewise, it would 
+have to handle the ACPI interactions which need to be done after all 
+devices are prepared for the transition to S3 or S4.
+
+> > (8) Hibernation and restore should not be too slow
+> >
+> >     In my opinion, if more than one minute is needed to hibernate the
+> > system with the help of certain hibernation framework, then this framework
+> > is not very useful in practice.  It might be useful to perform some
+> > special tasks (eg. moving a server to another place without taking it
+> > down), but it is not very useful, for example, to notebook users.
+> 
+> The latest hibernating kexec patches boot a kexec'd modular kernel with 
+> initramfs into crashkernel=16M@16M in less than one second.  Switch-back is 
+> almost instant.  Add to this the time required to either store or restore 
+> the image, and it may be obvious that this approach isn't slower, but maybe 
+> even faster than the current swsusp.
+
+Does that include the time required for probing PCI buses?  On my
+desktop system, PCI probing incurs a five-second timeout delay because
+of a bug in the BIOS's USB firmware.  Don't be so sure that kexec will
+always be lightning fast; it is always better to avoid unnecessary
+boots.
+
+Alan Stern
+
