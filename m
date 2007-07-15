@@ -1,66 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761352AbXGOSWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbXGOSZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761352AbXGOSWT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 14:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbXGOSWH
+	id S1760132AbXGOSZm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 14:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbXGOSZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 14:22:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55810 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755938AbXGOSWG (ORCPT
+	Sun, 15 Jul 2007 14:25:33 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:59413 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752157AbXGOSZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 14:22:06 -0400
-Message-ID: <469A6370.4020404@zytor.com>
-Date: Sun, 15 Jul 2007 11:12:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Li Yang <leo@zh-kernel.org>
-CC: Rob Landley <rob@landley.net>, Gerrit Huizenga <gh@us.ibm.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
-       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
-       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
-       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
-       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
-Subject: Re: [PATCH] Chinese Language Maintainer
-References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>	 <200707121205.20959.rob@landley.net>	 <1184330583.23373.65.camel@Gundam>	 <200707131352.12952.rob@landley.net> <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com>
-In-Reply-To: <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Jul 2007 14:25:32 -0400
+Date: Sun, 15 Jul 2007 12:27:26 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH try#2] Blackfin ethernet driver: on chip ethernet MAC
+ controller driver
+In-reply-to: <fa.d13aWxWKs5IcQxfZHLSYGoam7rQ@ifi.uio.no>
+To: bryan.wu@analog.com
+Cc: Michael Buesch <mb@bu3sch.de>, Mike Frysinger <vapier.adi@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Message-id: <469A670E.3010503@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.5lu+DP35wuS4CFlDsNA/BKJaNLI@ifi.uio.no>
+ <fa.IGI2ikYsGUxtIMQBx6oB1nxippo@ifi.uio.no>
+ <fa.FVZq5uXBDDioKCwtChqo2Evai8U@ifi.uio.no>
+ <fa.4ke11capcBR0kfkUX3qhQonKSzQ@ifi.uio.no>
+ <fa.d13aWxWKs5IcQxfZHLSYGoam7rQ@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Yang wrote:
+Bryan Wu wrote:
+> On Sun, 2007-07-15 at 14:17 +0200, Michael Buesch wrote:
+>> On Sunday 15 July 2007 14:07:44 Bryan Wu wrote:
+>>> @@ -483,9 +487,12 @@
+>>>  
+>>>  void setup_mac_addr(u8 * mac_addr)
+>>>  {
+>>> +	u32 addr_low = le32_to_cpu(*(u32 *) & mac_addr[0]);
+>>> +	u16 addr_hi = le16_to_cpu(*(u16 *) & mac_addr[4]);
+>>> +
+>>>  	/* this depends on a little-endian machine */
+>>> -	bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
+>>> -	bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
+>>> +	bfin_write_EMAC_ADDRLO(addr_low);
+>>> +	bfin_write_EMAC_ADDRHI(addr_hi);
+>>>  }
+>>>  
+>>>  static void adjust_tx_list(void)
+>>> @@ -866,10 +873,10 @@
+>>>  	int retval;
+>>>  
+>>>  	/* Grab the MAC address in the MAC */
+>>> -	*(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
+>>> -	*(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
+>>> +	*(u32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
+>>> +	*(u16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
+>> Try something like this:
+>>
+>> @@ -483,9 +487,12 @@
+>>  
+>>  void setup_mac_addr(u8 * mac_addr)
+>>  {
+>> +       u32 addr_low = le32_to_cpu(*(__le32 *) & mac_addr[0]);
+>> +       u16 addr_hi = le16_to_cpu(*(__le16 *) & mac_addr[4]);
+>> +
+>> -       /* this depends on a little-endian machine */
+>> -       bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
+>> -       bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
+>> +       bfin_write_EMAC_ADDRLO(addr_low);
+>> +       bfin_write_EMAC_ADDRHI(addr_hi);
+>>  }
+>>  
+>>  static void adjust_tx_list(void)
+>> @@ -866,10 +873,10 @@
+>>         int retval;
+>>  
+>>         /* Grab the MAC address in the MAC */
+>> -       *(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
+>> -       *(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
+>> +       *(__le32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
+>> +       *(__le16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
+>>
 > 
-> I think you worried too much about this problem.  :)  Let me explain
-> the situation here in China more clearly.  Actually, English is
-> mandatory in most schools and universities.  Only very few people
-> learn other language as a second language.  Therefore software
-> developers who are almost educated should have the basic English
-> skill.  However, that doesn't mean that they can read English or
-> communicate with native English speaker very easily.  Consider your
-> second language learn in school for analogy.
+> Thanks a lot, Michael. 
+> 
+> I got a generic question about this endianess check. When should use it
+> in a driver or something else? I grep it in the driver/net/
+> 
+> ---
+> drivers/net/e100.c:             ns->tx_window_errors += le32_to_cpu(s->tx_late_collisions);
+> drivers/net/e100.c:             ns->tx_carrier_errors += le32_to_cpu(s->tx_lost_crs);
+> drivers/net/e100.c:             ns->tx_fifo_errors += le32_to_cpu(s->tx_underruns);
+> drivers/net/e100.c:             ns->tx_errors += le32_to_cpu(s->tx_max_collisions) +
+> drivers/net/e100.c:                     le32_to_cpu(s->tx_lost_crs);
+> drivers/net/e100.c:             ns->rx_length_errors += le32_to_cpu(s->rx_short_frame_errors) +
+> drivers/net/e100.c:             ns->rx_crc_errors += le32_to_cpu(s->rx_crc_errors);
+> drivers/net/e100.c:             ns->rx_frame_errors += le32_to_cpu(s->rx_alignment_errors);
+> drivers/net/e100.c:             ns->rx_over_errors += le32_to_cpu(s->rx_overrun_errors);
+> drivers/net/e100.c:             ns->rx_fifo_errors += le32_to_cpu(s->rx_overrun_errors);
+> drivers/net/e100.c:             ns->rx_missed_errors += le32_to_cpu(s->rx_resource_errors);
+> drivers/net/e100.c:             ns->rx_errors += le32_to_cpu(s->rx_crc_errors) +
+> drivers/net/e100.c:                     le32_to_cpu(s->rx_alignment_errors) +
+> drivers/net/e100.c:                     le32_to_cpu(s->rx_short_frame_errors) +
+> drivers/net/e100.c:                     le32_to_cpu(s->rx_cdt_errors);
+> drivers/net/e100.c:             nic->tx_deferred += le32_to_cpu(s->tx_deferred);
+> drivers/net/e100.c:                     le32_to_cpu(s->tx_single_collisions);
+> drivers/net/e100.c:                     le32_to_cpu(s->tx_multiple_collisions);
+> drivers/net/e100.c:                     nic->tx_fc_pause += le32_to_cpu(s->fc_xmt_pause);
+> drivers/net/e100.c:                     nic->rx_fc_pause += le32_to_cpu(s->fc_rcv_pause);
+> drivers/net/e100.c:                             le32_to_cpu(s->fc_rcv_unsupported);
+> drivers/net/e100.c:                             le32_to_cpu(cb->u.tcb.tbd.buf_addr),
+> drivers/net/e100.c:                                     le32_to_cpu(cb->u.tcb.tbd.buf_addr),
+> ---
+> 
+> Normally, it is used to protect some rx/tx status flags or dma buf addr.
+> 
+> Any guide line for this leXX_to_cpu usage?
 
-Actually, I disagree.  English *is* the second language learned in
-school for most European developers (except, obviously, the ones from
-the British isles), and we don't have that problem.
+It has to be used when accessing any data structure stored in RAM that 
+the device will access and where byte order is significant. cpu_to_le32 
+when writing to the RAM, le32_to_cpu when reading it. (or le16, etc. if 
+needed).
 
-> Read in English will be much slower and more likely to cause
-> misunderstanding.  This will
-> reduce the likelihood greatly of English documentation being read.  If
-> we are promoting contribution to the Linux community, we should
-> maximum the possibility that these key documents being read.
-> Translation will serve this purpose very well.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-What we have found in Europe, is that that it has limited value, and
-that the closer to the core you are, the less value it is, because at
-that stage you should be communicating more with other developers.
-Putting yourself behind a wall of translation is unfortunately a
-detriment in that way.
-
-	-hpa
