@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759381AbXGOJwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbXGOJx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759381AbXGOJwv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 05:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbXGOJwk
+	id S1760057AbXGOJx5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 05:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXGOJxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 05:52:40 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:22773 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756367AbXGOJwj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 05:52:39 -0400
-X-IronPort-AV: i="4.16,540,1175486400"; 
-   d="scan'208"; a="34916341:sNHT25052671"
-Subject: Re: [PATCH 1/3] Blackfin ethernet driver: on chip ethernet MAC
-	controller driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Michael Buesch <mb@bu3sch.de>
-Cc: bryan.wu@analog.com, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200707151136.05223.mb@bu3sch.de>
-References: <1184438993.3140.23.camel@roc-laptop>
-	 <200707142138.36619.mb@bu3sch.de> <1184491016.3140.52.camel@roc-laptop>
-	 <200707151136.05223.mb@bu3sch.de>
-Content-Type: text/plain
+	Sun, 15 Jul 2007 05:53:49 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:55332 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756864AbXGOJxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 05:53:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
+	b=RtXzipudLJPfapnKg8u+l2NPU5THDMqCsfHIhMrhTGXu8Qmf7aQ0XJN82vbSkOPunCUmfhGhCSqdpl/BVN27XU6SC/8ru/fshT8KYNX7qrs0XrLK/2TTqT8Af0B7730r;
+Message-ID: <4699EEA9.6070709@simon.arlott.org.uk>
+Date: Sun, 15 Jul 2007 10:53:45 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Denis Cheng <crquan@gmail.com>
+CC: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] run scripts/Lindent on it to match Documentation/CodingStyle
+References: <1184489571313-git-send-email-crquan@gmail.com>
+In-Reply-To: <1184489571313-git-send-email-crquan@gmail.com>
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Sun, 15 Jul 2007 17:52:30 +0800
-Message-Id: <1184493150.3140.65.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 15 Jul 2007 09:52:36.0582 (UTC) FILETIME=[DF9D1860:01C7C6C5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-15 at 11:36 +0200, Michael Buesch wrote:
-> On Sunday 15 July 2007 11:16:56 Bryan Wu wrote:
-> > In current Blackfin DMA allocation/free, the return value from 
-> > bfin_mac_alloc() is used as the dma_handle, here it is the
-> > tx_desc/rx_desc. 
-> > The "dma_handle" is useless in the following code.
-> 
-> I think a comment has to be added, at least, as it's very confusing.
+On 15/07/07 09:52, Denis Cheng wrote:
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+>  drivers/net/wireless/wavelan.c |  806 ++++++++++++++++++----------------------
+>  1 files changed, 369 insertions(+), 437 deletions(-)
 
-No problem, it should be.
-> 
-> > This is some magic code for PHY ID. In the future, we will rewrite some
-> > code based on kernel phy abstraction layer to support more phy device.
-> 
-> Ok, nice idea.
-> 
-> > > Unwind the allocations above, if registering fails.
-> > > 
-> > 
-> > In fact, it is safe. Because if registering fails, bf537mac_probe will
-> > return none zero to bfin_mac_probe which will do free_netdev.
-> 
-> Hm, weren't there some DMA allocations, too? Are they free'd properly?
-> 
+Do people ever check what Lindent does?
 
-Oh, the DMA allocation happens in bf537mac_open not in bf537mac_probe.
-so when registering fails, only free_netdev should be ok.
+> -	} else if (base_addr > 0x100) { /* Check a single specified location. */
+> +	} else if (base_addr > 0x100) {	/* Check a single specified location. */
 
-I sent out a new driver patch for #2 try, please give us some comments
+What is Lit doing here?! It's changed "{<space>/*" to "{<tab>/*"...
 
-Thanks
-- Bryan Wu
+
+> -	} else { /* Scan all possible addresses of the WaveLAN hardware. */
+> +	} else {		/* Scan all possible addresses of the WaveLAN hardware. */
+
+And again... with two tabs for maximum unreadability. That line is now
+90 characters long instead of 75.
+
+
+> -				       "%s: <-wavelan_probe()\n",
+> -				       dev->name);
+> +				       "%s: <-wavelan_probe()\n", dev->name);
+
+There are spaces in that line after the tabs...
+
+
+> -out1:
+> +      out1:
+
+NAK: A perfectly valid non-indented label is now indented by 6 spaces.
+
+
+> -out:
+> +      out:
+
+And again.
+
+
+> -		       dev->name, (unsigned int) dev);
+> +		       dev->name, (unsigned int)dev);
+
+Those spaces after the tabs have been ignored...
+
+-- 
+Simon Arlott
