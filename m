@@ -1,69 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762680AbXGORgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762722AbXGORlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762680AbXGORgR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 13:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760109AbXGORgE
+	id S1762722AbXGORlg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 13:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760050AbXGORl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 13:36:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41408 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760050AbXGORgD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 13:36:03 -0400
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-From: Arjan van de Ven <arjan@infradead.org>
-To: 7eggert@gmx.de
-Cc: Matt Mackall <mpm@selenic.com>, Rene Herman <rene.herman@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
-In-Reply-To: <E1IA7j1-0000j9-I3@be1.lrz>
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8FYWD-2eS-7@gated-at.bofh.it>
-	 <8GdsH-8dc-13@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it>
-	 <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it>
-	 <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
-	 <E1IA7j1-0000j9-I3@be1.lrz>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 15 Jul 2007 10:35:17 -0700
-Message-Id: <1184520917.3153.4.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Sun, 15 Jul 2007 13:41:28 -0400
+Received: from [212.12.190.206] ([212.12.190.206]:32863 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752076AbXGORl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 13:41:27 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Hibernation considerations
+Date: Sun, 15 Jul 2007 20:40:33 +0300
+User-Agent: KMail/1.5
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>, <david@lang.hm>
+References: <Pine.LNX.4.44L0.0707151220570.24011-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707151220570.24011-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200707152040.33836.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-15 at 19:17 +0200, Bodo Eggert wrote:
-> Matt Mackall <mpm@selenic.com> wrote:
-> > On Fri, Jul 13, 2007 at 03:20:54PM +0200, Rene Herman wrote:
-> 
-> >> As far as I'm aware, the actual reason for 4K stacks is that after the
-> >> system has been up and running for some time getting "1 physically
-> >> contiguous pages" becomes significantly easier than 2 which wouldn't be
-> >> arbitrary.
-> > 
-> > If there are exactly two free pages in the system, the odds of them
-> > being buddies (ie adjacent AND properly aligned) is quite small. The
-> > available page pool has to grow quite a bit before the availability of
-> > order-1 page pairs approaches 100%.
-> 
-> If there are exactly two free pages in a system, the odds of starting any
-> program are not very good. You'll have to swap, and if you do, you can swap
-> two more pages in order to free enough RAM for the stack.
+Alan Stern wrote:
+> On Sun, 15 Jul 2007, Al Boldi wrote:
+> > >     If possible, during a restore devices should be brought back to
+> > > the same state in which they were before the corresponding
+> > > hibernation.  Of course in some situations it might be impossible to
+> > > do that (eg. the user connected the hibernated system to a different
+> > > IP subnet and then restored), but as a general rule, we should do our
+> > > best to restore the state of devices, which is directly related to
+> > > point (5) above.
+> >
+> > This part could easily be handled by the normal kernel before and after
+> > resume.
+>
+> I agree with you except for the word "easily".  And there are some
+> things the kernel simply punts on (I'm thinking of the current VGA
+> font).
+
+Why; can you explain?
+
+> > > (7) On ACPI systems special platform-related actions have to be
+> > > carried out at the right points, so that the platform works correctly
+> > > after the restore
+> > >
+> > >     The ACPI specification requires us to invoke some global ACPI
+> > > methods during the hibernation and during the restore.  Moreover, the
+> > > ordering of code related to these ACPI methods may not be arbitrary
+> > > (eg. some of them have to be executed after devices are put into low
+> > > power states etc.).
+> >
+> > This should be the responsibility of the kexec'd hibernating kernel. 
+> > Note though in (6), the normal kernel takes care of preparing devices,
+> > then the hibernating kernel dumps the image and either calls S4 or S3. 
+> > On resume from S3 it can immediately switch over to the normal kernel,
+> > and from S4 the known bootup would occur.
+>
+> Is it really that simple?  Somehow I doubt it.  In order for some
+> devices to remain available for the kexec'd kernel to use, they cannot
+> be suspended at the ACPI level.  So the kexec'd kernel will have to
+> handle the ACPI requirements for those devices.  Likewise, it would
+> have to handle the ACPI interactions which need to be done after all
+> devices are prepared for the transition to S3 or S4.
+
+Ok, after applying the latest kexec patches, I was able to use the kexec'd 
+kernel to suspend to ram and resume to the normal kernel, while working 
+under a full-blown X session.  It went without a hitch.  All that is needed 
+now are the dump/restore hibernation-image routines.
+
+> > > (8) Hibernation and restore should not be too slow
+> > >
+> > >     In my opinion, if more than one minute is needed to hibernate the
+> > > system with the help of certain hibernation framework, then this
+> > > framework is not very useful in practice.  It might be useful to
+> > > perform some special tasks (eg. moving a server to another place
+> > > without taking it down), but it is not very useful, for example, to
+> > > notebook users.
+> >
+> > The latest hibernating kexec patches boot a kexec'd modular kernel with
+> > initramfs into crashkernel=16M@16M in less than one second.  Switch-back
+> > is almost instant.  Add to this the time required to either store or
+> > restore the image, and it may be obvious that this approach isn't
+> > slower, but maybe even faster than the current swsusp.
+>
+> Does that include the time required for probing PCI buses?  On my
+> desktop system, PCI probing incurs a five-second timeout delay because
+> of a bug in the BIOS's USB firmware.
+
+Using a modular kernel you would only insmod those modules that you need to 
+dump the image, which is mainly the diskdriver.  If you wanted to dump it 
+onto USB flash, then you would insmod that driver, and if that driver is 
+slow due to a bug, then a fix should be in order.
+
+> Don't be so sure that kexec will
+> always be lightning fast; it is always better to avoid unnecessary
+> boots.
+
+Agreed, but what we want to achieve right know is a proof of concept.  Later, 
+I could imagine a specially stub'd device driver to be kexec'd instead of 
+the full kernel.
 
 
-even if you have several thousand pages the odds aren't good; or rather,
-they start out reasonably ok until something starts eating very
-deliberately at the 8k pages pool, for example the new app creating
-about 10 threads....
+Thanks!
 
-The 4K issue is "tricky", only a few selected workload/compiler combos
-seem to hit the dirt, yet distros like Fedora and RHEL use 4K stacks
-since forever, and if it gave massive problems they wouldn't do that.
-On the upside, especially on very-threaded workloads, it helps
-reliability and the VM a lot...
-
+--
+Al
 
