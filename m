@@ -1,159 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbXGOWvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbXGOWwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759479AbXGOWvi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 18:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXGOWvb
+	id S1760061AbXGOWwN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 18:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbXGOWv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 18:51:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40234 "EHLO ogre.sisk.pl"
+	Sun, 15 Jul 2007 18:51:58 -0400
+Received: from no-way.org ([212.55.212.131]:43274 "EHLO no-way.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754544AbXGOWva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 18:51:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Mon, 16 Jul 2007 00:59:07 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707151231.27410.rjw@sisk.pl> <Pine.LNX.4.64.0707151218320.25614@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707151218320.25614@asgard.lang.hm>
+	id S1755545AbXGOWv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 18:51:57 -0400
+Date: Mon, 16 Jul 2007 00:51:55 +0200
+From: Flavio Curti <lists.fcu@no-way.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: panics with 16port Promise Supertrack EX Controller
+Message-ID: <20070715225155.GD21260@no-way.org>
+References: <20070708225246.GD16285@no-way.org> <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com> <46919688.1050005@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="hQiwHBbRI9kgIhsi"
 Content-Disposition: inline
-Message-Id: <200707160059.08277.rjw@sisk.pl>
+In-Reply-To: <46919688.1050005@yahoo.com.au>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 15 July 2007 21:23, david@lang.hm wrote:
-> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
-> 
-> >>>> I think this is far more complicated then it needs to be.
-> >>>>
-> >>>> it sounds like it should be possible to do the following
-> >>>>
-> >>>> 1. figure out what pages should be backed up (creating a data structure to
-> >>>> hold them)
-> >>>
-> >>> That should be done after step 2, because the memory contents can change
-> >>> in this step.
-> >>
-> >> no, this needs to be done by the main kernel, becouse only it knows how to
-> >> find this info. the kernel that you kexec into could be very different
-> >> (including different versions) and the ways to identify this data is not
-> >> part of any existing API
+
+--hQiwHBbRI9kgIhsi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hello
+
+On Mon, Jul 09, 2007 at 11:59:36AM +1000, Nick Piggin wrote:
+> >Jul  8 00:19:13 dorade.cyberlink.ch EFLAGS: 00210046   
+> >(2.6.22-rc7-dorade #1)
+> >>The machine panics
+> >>after some days of running fine, the machine inst heavy loaded.
+> >>The Controller detects as stex device:
+> >kernel BUG at block/as-iosched.c:1084!
 > >
-> > If the memory contents changes in step 2, then the information collected by
-> > the main kernel will be inaccurate.
-> 
-> why would the memory use change when the new kernel is run? is it becouse 
-> of whatever it does to the devices for the hand-off?
+> >BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[REQ_ASYNC]));
+> Could be a bug in the driver that just happens to be caught by AS checks.
+> If you could test another scheduler (boot with elevator=deadline or 
+> elevator=cfq),
+> it might help give us an idea.
 
-Yes, I think so, although I'm not sure, because I don't know what happens to
-devices during a "normal" kexec.
+Ok, I now switched to cfg, and the machine panicd again. Panic attached.
+Any help is appreciated.
 
-> >>>> 2. kexec into the hibernate kernel (this step handles all device
-> >>>> transitions today)
-> >>>>
-> >>>> 3. have the hibernate userspace find the data structures created in step
-> >>>> #1
-> >>>>
-> >>>> 4. have the hibernate userspace write the pages somewhere in the suspend
-> >>>> format.
-> >>>
-> >>> You don't need to run any hibernate userspace to carry out steps 3 and 4.
-> >>
-> >> you should though.
-> >>
-> >> by doing this write in usespace you can add in all the eye-candy (aka
-> >> progress bars), network I/O, etc that you want since it doesn't affect
-> >> things
-> >>
-> >> trying to do this in the kernel makes the kernel have to know/decide too
-> >> much policy (and many things that people want to do are things that do not
-> >> belong in the kernel in the first place)
-> >
-> > Please don't tell me.  I've written uswsusp on the basis of these arguments,
-> > but I don't cosider it as an overwhelming success ...
-> 
-> uswsusp has the problem that you are trying to run some userspace, but not 
-> other userspace as you are doing the hibernate. with this approach you 
-> don't have that problem since you are running a completely seperate 
-> userspace.
+Flavio Curti
+--
+http://no-way.org/~fcu/
 
-You're running it from a RAM disk, because you can't touch filesystems.  You
-can do the same with uswsusp, just fine.
+--hQiwHBbRI9kgIhsi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=dorade-kdump
 
-> >>>> 5. have the hibernate kernel power down the box.
-> >>>>
-> >>>> the only things here that sounds like they're not available in stock
-> >>>> kernels are steps #1 and #3.
-> >>>
-> >>> Correct, up to the first remark above.
-> >>>
-> >>>> now this won't do the fancier suspend-to-ram-and-disk and it won't let you
-> >>>> go back from the hibernate kernel to the main kernel, but it should be
-> >>>> enough to let you do the suspend safely and reliably.
-> >>>>
-> >>>> for the restore, as I understand it the process is
-> >>>>
-> >>>> 1. boot a kernel, any working kernel.
-> >>>>
-> >>>> 2. read the suspend formatted data from wherever it was saved and feed it
-> >>>> to /dev/suspend
-> >>>
-> >>> Yes, something like this, but you really should pay more attention to devices.
-> >>>
-> >>> There are things that you shouldn't do to them (like unregistering), because
-> >>> some processes may be using them while we're trying to hibernate (for now
-> >>> we have the freezer, but I though you'd like to do all that to eliminate it).
-> >>>
-> >>> Generally, you need to ensure that the devices are handled in consistent ways
-> >>> by both the hibernated and image-saving kernels and that's a big piece of the
-> >>> jigsaw that's missing now.
-> >>
-> >> the kexec process should handle the device state for the transition from
-> >> one kernel to another (it has to do this now, this isn't a new
-> >> requirement), so this should solve the problem during the hibernate stage.
-> >
-> > Well, I don't think so.
-> 
-> Ok, I could easily be misunderstanding something here (and the comments 
-> with the latest 'kexec back and forth' patch indicate there may still be 
-> work to do here after all)
-> 
-> >> during the wakeup stage, I thought you said that al that was needed was to
-> >> feed the suspend image to /dev/suspend and the kernel in the suspend image
-> >> would re-probe, or otherwise re-initialize all the devices it needs. am I
-> >> misunderstanding this?
-> >
-> > Perhaps.  Currently, the hibernated kernel will run device_resume() after
-> > the restore, which is not exactly compatible with what kexec does.
-> 
-> but kexec isn't needed during the restore process, is it?
+blk_queue_end_tag: attempt to clear non-busy tag (1) 
+------------[ cut here ]------------ 
+kernel BUG at block/ll_rw_blk.c:2758! 
+invalid opcode: 0000 [#1] 
+SMP 
+ 
+Modules linked in:
+ i2c_i801
+ i2c_core
+ 
+CPU:    0 
+EIP:    0060:[<c02a3164>]    Not tainted VLI 
+EFLAGS: 00010002   (2.6.22.1-dorade #1) 
+EIP is at __blk_put_request+0x74/0x80 
+eax: 00000000   ebx: dae3e578   ecx: c02ac600   edx: 00000000 
+esi: 00030784   edi: f7f28b24   ebp: f7f28b24   esp: c0621e50 
+ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068 
+Process swapper (pid: 0, ti=c0620000 task=c05d8340 task.ti=c0620000)
+ 
+Stack: 
+dae3e578 
+e2b5aac0 
+00000001 
+scsi_end_request+0x94/0xe0 
+ [<c03743c6>] 
+scsi_io_completion+0x86/0x3e0 
+ [<c012b08a>] 
+del_timer+0x5a/0x70 
+ [<c038fc7b>] 
+sd_rw_intr+0x2b/0x200 
+ [<c038bf8e>] 
+stex_mu_intr+0x12e/0x540 
+ [<c036fe85>] 
+scsi_finish_command+0x45/0x60 
+ [<c02a4c88>] 
+blk_done_softirq+0x58/0x70 
+ [<c0126e92>] 
+__do_softirq+0x82/0x100 
+ [<c0126f47>] 
+do_softirq+0x37/0x40 
+ [<c0127185>] 
+irq_exit+0x75/0x80 
+ [<c0106410>] 
+do_IRQ+0x40/0x80 
+ [<c0139796>] 
+getnstimeofday+0x36/0xd0 
+ [<c0104503>] 
+common_interrupt+0x23/0x28 
+ [<c0101d26>] 
+mwait_idle_with_hints+0x46/0x60 
+ [<c0101e85>] 
+cpu_idle+0x65/0x90 
+ [<c0628d1f>] 
+start_kernel+0x2ef/0x370 
+ [<c06284e0>] 
+unknown_bootoption+0x0/0x250 
+ ======================= 
+Code: 
+8b 
+57 
+24 
+89 
+d8 
+83 
+e6 
+01 
+e8 
+ca 
+1b 
+eb 
+ff 
+89 
+f2 
+89 
+f8 
+89 
+e9 
+5b 
+5e 
+5f 
+5d 
+e9 
+3b 
+ff 
+last message repeated 2 times
+89 
+da 
+89 
 
-Generally, it's not needed.  _However_, the current handling of devices is
-such that:
-(a) hibernated kernel uses device_suspend() to put them into low power states
-    and creates the image
-(b) hibernated kernel uses device_resume() to get devices back to work and
-    saves the image
-(c) during the restore the boot kernel loads the image and uses
-    device_suspend() to prepare devices for the "old" kernel
-(d) hibernated kernel gets control and uses device_resume() to get devices back
-    to work.
-Now, if you use kexec instead of (a) and (b), then whatever it does to devices
-is generally incompatible with the device_resume() in (d) (because, for
-instance, some device driver's .resume() routine may expect some data to be
-saved by the corresponding .suspend() at specific locations).
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+--hQiwHBbRI9kgIhsi--
