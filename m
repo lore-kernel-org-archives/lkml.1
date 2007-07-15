@@ -1,204 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbXGOE7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbXGOE7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757286AbXGOE7Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 00:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXGOE7E
+	id S1757662AbXGOE7o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 00:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbXGOE7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 00:59:04 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:47252 "EHLO e1.ny.us.ibm.com"
+	Sun, 15 Jul 2007 00:59:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48422 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751044AbXGOE7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 00:59:01 -0400
-Date: Sat, 14 Jul 2007 21:58:59 -0700
-From: sukadev@us.ibm.com
-To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Cc: Pavel Emelianov <xemul@openvz.org>, serue@us.ibm.com, clg@fr.ibm.com,
-       haveblue@us.ibm.com, Containers <containers@lists.osdl.org>
-Subject: [PATCH 5/5] Move alloc_pid() to copy_process()
-Message-ID: <20070715045859.GF25053@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+	id S1752069AbXGOE7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 00:59:35 -0400
+Message-ID: <4699A9AD.2050206@garzik.org>
+Date: Sun, 15 Jul 2007 00:59:25 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: surya.prabhakar@wipro.com
+CC: caglar@pardus.org.tr, linux-kernel@vger.kernel.org, kkeil@suse.de,
+       kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 1/12] drivers/isdn/hisax/avm_pci.c: replace pci_find_device
+ with pci_get_device
+References: <200707140144.20855.caglar@pardus.org.tr> <46996D12.40501@garzik.org> <A94AD757879CE142B7CEBC3E6FF5D3EC015DAC49@BLR-EC-MBX02.wipro.com>
+In-Reply-To: <A94AD757879CE142B7CEBC3E6FF5D3EC015DAC49@BLR-EC-MBX02.wipro.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -3.7 (---)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-3.7 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel 
+surya.prabhakar@wipro.com wrote:
+> 
+> 
+> S.Çaglar Onur wrote:
+>  > @@ -858,5 +858,10 @@ ready:
+>  >       cs->irq_func = &avm_pcipnp_interrupt;
+>  >       cs->writeisac(cs, ISAC_MASK, 0xFF);
+>  >       ISACVersion(cs, (cs->subtyp == AVM_FRITZ_PCI) ? "AVM PCI:" : 
+> "AVM PnP:");
+>  > +     pci_dev_put(dev_avm);
+>  >       return (1);
+>  > +
+>  > +dev_avm_cleanup:
+>  > +     pci_dev_put(dev_avm);
+>  > +     return (0);
+>  >  }
+> 
+> 
+>  >NAK -- every single one of these patches is wrong.  All you did was make
+>  >the warning go away, while INTRODUCING new lifetime problems.
+> 
+>  >The ISDN PCI driver obviously continues execution after the setup
+>  >function ends, yet you pci_dev_put() the device at the end of setup.  As
+>  >a result, no reference is held even though we continue using the device.
+> 
+> This series of patches were initially released by me and were also 
+> accepted by kkeil.
+> It was ack'ed by keil and is now in -mm tree list of andrew morton.
+> http://marc.info/?l=linux-kernel&m=118436681515269&w=2 
+> <http://marc.info/?l=linux-kernel&m=118436681515269&w=2>
+> 
+> There are many other drivers with similar implementation. Please have a 
+> look at
+> linux2.6/drivers/char/sonypi.c , ide/pci/cs5530.c etc..
+> 
+> Moreover my earlier patch for sound/oss/trident.c was ack'ed by Alan cox 
+> and is now in the
+> current kernel with similar implementation.
 
-Like we discussed, I am sending this out. Pls ack.
+Simple question:  where is a reference -held-, when the PCI device is in 
+use?
 
-Suka
----
+If you cannot show this, your patch is provably wrong.  And I did not 
+see a reference kept in any of your patches.
 
-Subject: [PATCH 5/5] Move alloc_pid call to copy_process
+If you can show me where a reference is stored, I rescind my NAK. 
+Otherwise, the patches are demonstrably, provably incorrect.
 
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+ACKs cannot get around the -facts-.
 
-Move alloc_pid() into copy_process(). This will keep all pid and pid
-namespace code together and simplify error handling when we support
-multiple pid namespaces.
+	Jeff
 
-Changelog: 
-	- [Eric Biederman] Move the check of copy_process_type to alloc_pid()/
-	  free_pid() and to avoid clutter in copy_process().
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 
-Cc: Pavel Emelianov <xemul@openvz.org>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>
-Cc: Serge Hallyn <serue@us.ibm.com>
-Cc: Herbert Poetzel <herbert@13thfloor.at>
----
- include/linux/pid.h |    7 ++++++-
- kernel/fork.c       |   21 +++++++++++++--------
- kernel/pid.c        |   10 +++++++++-
- 3 files changed, 28 insertions(+), 10 deletions(-)
-
-Index: lx26-22-rc6-mm1/include/linux/pid.h
-===================================================================
---- lx26-22-rc6-mm1.orig/include/linux/pid.h	2007-07-13 18:13:38.000000000 -0700
-+++ lx26-22-rc6-mm1/include/linux/pid.h	2007-07-13 18:23:55.000000000 -0700
-@@ -3,6 +3,11 @@
- 
- #include <linux/rcupdate.h>
- 
-+enum copy_process_type {
-+	COPY_NON_IDLE_PROCESS,
-+	COPY_IDLE_PROCESS,
-+};
-+
- enum pid_type
- {
- 	PIDTYPE_PID,
-@@ -95,7 +100,7 @@ extern struct pid *FASTCALL(find_pid(int
- extern struct pid *find_get_pid(int nr);
- extern struct pid *find_ge_pid(int nr);
- 
--extern struct pid *alloc_pid(void);
-+extern struct pid *alloc_pid(enum copy_process_type);
- extern void FASTCALL(free_pid(struct pid *pid));
- 
- static inline pid_t pid_nr(struct pid *pid)
-Index: lx26-22-rc6-mm1/kernel/fork.c
-===================================================================
---- lx26-22-rc6-mm1.orig/kernel/fork.c	2007-07-13 18:13:38.000000000 -0700
-+++ lx26-22-rc6-mm1/kernel/fork.c	2007-07-13 18:23:55.000000000 -0700
-@@ -964,11 +964,12 @@ static struct task_struct *copy_process(
- 					unsigned long stack_size,
- 					int __user *parent_tidptr,
- 					int __user *child_tidptr,
--					struct pid *pid)
-+					enum copy_process_type copy_src)
- {
- 	int retval;
- 	struct task_struct *p = NULL;
- 	int container_callbacks_done = 0;
-+	struct pid *pid;
- 
- 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
- 		return ERR_PTR(-EINVAL);
-@@ -1029,6 +1030,10 @@ static struct task_struct *copy_process(
- 	if (p->binfmt && !try_module_get(p->binfmt->module))
- 		goto bad_fork_cleanup_put_domain;
- 
-+	pid = alloc_pid(copy_src);
-+	if (!pid)
-+		goto bad_fork_put_binfmt_module;
-+
- 	p->did_exec = 0;
- 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
- 	copy_flags(clone_flags, p);
-@@ -1316,6 +1321,8 @@ bad_fork_cleanup_container:
- #endif
- 	container_exit(p, container_callbacks_done);
- 	delayacct_tsk_free(p);
-+	free_pid(pid);
-+bad_fork_put_binfmt_module:
- 	if (p->binfmt)
- 		module_put(p->binfmt->module);
- bad_fork_cleanup_put_domain:
-@@ -1342,7 +1349,7 @@ struct task_struct * __cpuinit fork_idle
- 	struct pt_regs regs;
- 
- 	task = copy_process(CLONE_VM, 0, idle_regs(&regs), 0, NULL, NULL,
--				&init_struct_pid);
-+				COPY_IDLE_PROCESS);
- 	if (!IS_ERR(task))
- 		init_idle(task, cpu);
- 
-@@ -1380,19 +1387,16 @@ long do_fork(unsigned long clone_flags,
- {
- 	struct task_struct *p;
- 	int trace = 0;
--	struct pid *pid = alloc_pid();
- 	long nr;
- 
--	if (!pid)
--		return -EAGAIN;
--	nr = pid->nr;
- 	if (unlikely(current->ptrace)) {
- 		trace = fork_traceflag (clone_flags);
- 		if (trace)
- 			clone_flags |= CLONE_PTRACE;
- 	}
- 
--	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, pid);
-+	p = copy_process(clone_flags, stack_start, regs, stack_size,
-+			parent_tidptr, child_tidptr, COPY_NON_IDLE_PROCESS);
- 	/*
- 	 * Do this prior waking up the new thread - the thread pointer
- 	 * might get invalid after that point, if the thread exits quickly.
-@@ -1400,6 +1404,8 @@ long do_fork(unsigned long clone_flags,
- 	if (!IS_ERR(p)) {
- 		struct completion vfork;
- 
-+		nr = pid_nr(task_pid(p));
-+
- 		if (clone_flags & CLONE_VFORK) {
- 			p->vfork_done = &vfork;
- 			init_completion(&vfork);
-@@ -1433,7 +1439,6 @@ long do_fork(unsigned long clone_flags,
- 			}
- 		}
- 	} else {
--		free_pid(pid);
- 		nr = PTR_ERR(p);
- 	}
- 	return nr;
-Index: lx26-22-rc6-mm1/kernel/pid.c
-===================================================================
---- lx26-22-rc6-mm1.orig/kernel/pid.c	2007-07-13 18:23:55.000000000 -0700
-+++ lx26-22-rc6-mm1/kernel/pid.c	2007-07-13 18:23:55.000000000 -0700
-@@ -206,6 +206,10 @@ fastcall void free_pid(struct pid *pid)
- 	/* We can be called with write_lock_irq(&tasklist_lock) held */
- 	unsigned long flags;
- 
-+	/* check this here to keep copy_process() cleaner */
-+	if (unlikely(pid == &init_struct_pid))
-+		return;
-+
- 	spin_lock_irqsave(&pidmap_lock, flags);
- 	hlist_del_rcu(&pid->pid_chain);
- 	spin_unlock_irqrestore(&pidmap_lock, flags);
-@@ -214,13 +218,17 @@ fastcall void free_pid(struct pid *pid)
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
- 
--struct pid *alloc_pid(void)
-+struct pid *alloc_pid(enum copy_process_type copy_src)
- {
- 	struct pid *pid;
- 	enum pid_type type;
- 	int nr = -1;
- 	struct pid_namespace *ns;
- 
-+	/* check this here to keep copy_process() cleaner */
-+	if (unlikely(copy_src == COPY_IDLE_PROCESS))
-+		return &init_struct_pid;
-+
- 	ns = task_active_pid_ns(current);
- 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
- 	if (!pid)
