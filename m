@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbXGOVLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbXGOVNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754212AbXGOVLT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 17:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXGOVLJ
+	id S1755236AbXGOVNg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 17:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbXGOVN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 17:11:09 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:43537 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbXGOVLI (ORCPT
+	Sun, 15 Jul 2007 17:13:29 -0400
+Received: from sccrmhc15.comcast.net ([204.127.200.85]:41916 "EHLO
+	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbXGOVN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 17:11:08 -0400
-From: Markus <lists4me@web.de>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: [patch] CFS scheduler, -v19
-Date: Sun, 15 Jul 2007 23:11:04 +0200
-User-Agent: KMail/1.9.5
-Cc: Ed Tomlinson <edt@aei.ca>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-References: <20070706173319.GA2356@elte.hu> <200707151453.57725.lists4me@web.de> <1184528791.6324.41.camel@Homer.simpson.net>
-In-Reply-To: <1184528791.6324.41.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Sun, 15 Jul 2007 17:13:29 -0400
+Subject: Re: *at syscalls for xattrs?
+From: Nicholas Miell <nmiell@comcast.net>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, linux-fsdevel@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070715205313.GE21668@ftp.linux.org.uk>
+References: <Pine.LNX.4.64.0707132228460.25352@fbirervta.pbzchgretzou.qr>
+	 <20070715205313.GE21668@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Sun, 15 Jul 2007 14:13:21 -0700
+Message-Id: <1184534001.2765.5.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7.0.njm.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707152311.05286.lists4me@web.de>
-X-Provags-ID: V01U2FsdGVkX1+U57KCBOTF7hVJp2MefvncX6vsGfSnvVao8Uua
-	vvB1mE5y3va55IdDuXc2YRNxsnIXfO4wk9eC2A5f//t0HLJj9v
-	NlqwQZxdw=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > [1] http://lkml.org/lkml/2007/07/14/60
+On Sun, 2007-07-15 at 21:53 +0100, Al Viro wrote:
+> On Sun, Jul 15, 2007 at 09:46:27PM +0200, Jan Engelhardt wrote:
+> > Hi,
+> > 
+> > 
+> > recently, the family of *at() syscalls and functions (openat, fstatat, 
+> > etc.) have been added to Linux and Glibc, respectively.
+> > In short: I am missing xattr at functions :)
 > 
-> Hm.  Tasks disappearing isn't you're typical process scheduler problem
-> by any means, nor is an idle box exhibiting mouse "lurchiness".  Is
-> there anything unusual in your logs?
+> No.  They are not fscking forks.  They are almost as revolting, but
+> not quite on the same level.
 
-I know that its not typical, but when my current kernel is stable and 
-shows the same problem with the cfs-patch applied like the 
-git-snapshot, I would say its a cfs issue.
-There is nothing in the logs when a program dies, thats why asked for a 
-way to make the kernel more verbose.
-But I can build a plain 2.6.22 without cfs and one with it and compare 
-dmesgs output, if that helps.
+I suspect he was asking for 
 
-   Markus
+int getxattrat(int fd, const char *path, const char *name, void *value, 
+		size_t size, int flags)
+int setxattrat(int fd, const char *path, const char *name, void *value,
+		size_t size, int xattrflags, int atflags)
+
+rather than the ability to access xattrs as files.
+
+> > BTW, why is fstatat called fstatat and not statat? (Same goes for 
+> > futimesat.) It does not take a file descriptor for the file argument. 
+> > Otherwise we'd also need fopenat/funlinkat, etc. Any reasons?
+> 
+> Ulrich having an odd taste?
+
+Solaris compatibility.
+
+-- 
+Nicholas Miell <nmiell@comcast.net>
+
