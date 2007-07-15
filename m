@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932530AbXGOAJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932678AbXGOALT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932530AbXGOAJr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 20:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760706AbXGOAJk
+	id S932678AbXGOALT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 20:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759844AbXGOALI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 20:09:40 -0400
-Received: from lixom.net ([66.141.50.11]:42462 "EHLO mail.lixom.net"
+	Sat, 14 Jul 2007 20:11:08 -0400
+Received: from lucidpixels.com ([75.144.35.66]:60595 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759844AbXGOAJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 20:09:39 -0400
-Date: Sat, 14 Jul 2007 19:21:49 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dougthompson@xmission.com, greg@kroah.com, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, Egor Martovetsky <egor@pasemi.com>
-Subject: Re: [PATCH 3/8] drivers edac new pasemi driver
-Message-ID: <20070715002149.GA21539@lixom.net>
-References: <4697adf6.ml1pGGjvWEkYBXbh%dougthompson@xmission.com> <20070713113641.52157b67.akpm@linux-foundation.org>
+	id S1759411AbXGOALG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 20:11:06 -0400
+Date: Sat, 14 Jul 2007 20:11:04 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+cc: linux-raid maillist <linux-raid@vger.kernel.org>,
+       Linux Kernel Maillist <linux-kernel@vger.kernel.org>
+Subject: Re: raid5:md3: read error corrected ,  followed by ,  Machine Check
+ Exception: .
+In-Reply-To: <Pine.LNX.4.64.0707141658210.16611@filesrv1.baby-dragons.com>
+Message-ID: <Pine.LNX.4.64.0707142010250.20845@p34.internal.lan>
+References: <Pine.LNX.4.64.0707141658210.16611@filesrv1.baby-dragons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713113641.52157b67.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 11:36:41AM -0700, Andrew Morton wrote:
-> On Fri, 13 Jul 2007 10:53:10 -0600
-> dougthompson@xmission.com wrote:
-> 
-> > +			edac_mc_printk(mci, KERN_ERR,
-> > +				       "Unrecognized Rank Config\n");
-> 
-> If this message ever comes out, you're gonna say "argh, I wish I'd printed
-> rankcfg".
-> 
-> Do you want to do this??
 
-Yes. Thanks.
 
-Acked-by: Olof Johansson <olof@lixom.net>
+On Sat, 14 Jul 2007, Mr. James W. Laferriere wrote:
+
+> 	Hello All ,  I was under the impression that a 'machine check' would 
+> be caused by some near to the CPU hardware failure ,  Not a bad disk ?
+> 	I was also under the impression that software raid s/b a little more 
+> resilient than this .
+> 	But then maybe one or the other of the subsystems walked all over the 
+> other one trying to correct itself .  Who knows .
+> 	The below is ALL I'll be able to get .  A log of a previous boot is 
+> available at ...
+>
+> http://www.baby-dragons.com/test-2.6.21.5-mptscsi-4.00.10.00-2007006161326.log
+
+Looks like /dev/sdd is on its way out, repace the drive?  I'm not sure
+however why you'd get those MCEs at the end unless you really have bad
+CPUs or memory in the system?
+
+Justin.
+
 
