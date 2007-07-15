@@ -1,211 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762607AbXGOXbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbXGOXfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762607AbXGOXbv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 19:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbXGOXbn
+	id S1760965AbXGOXfv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 19:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbXGOXfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 19:31:43 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:54454 "EHLO
+	Sun, 15 Jul 2007 19:35:43 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:55001 "EHLO
 	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755249AbXGOXbm (ORCPT
+	with ESMTP id S1755973AbXGOXfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 19:31:42 -0400
-Date: Sun, 15 Jul 2007 19:31:41 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+	Sun, 15 Jul 2007 19:35:42 -0400
+Date: Sun, 15 Jul 2007 19:35:41 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] Linux Kernel Markers -  Architecture Independent Code - kerneldoc
-Message-ID: <20070715233141.GD22428@Krystal>
-References: <20070714012914.508504384@polymtl.ca> <20070714013050.289300592@polymtl.ca> <20070715013431.GE23209@Krystal> <20070715014056.GI23209@Krystal>
+Cc: hch@infradead.org
+Subject: [PATCH] Text Edit Lock - Architecture Independent Code for Implementation
+Message-ID: <20070715233541.GE22428@Krystal>
+References: <20070714012133.612727310@polymtl.ca> <20070714012411.845928928@polymtl.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070715014056.GI23209@Krystal>
+In-Reply-To: <20070714012411.845928928@polymtl.ca>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:31:22 up 8 days, 13:36,  3 users,  load average: 0.49, 0.56, 0.31
+X-Uptime: 19:34:45 up 8 days, 13:40,  3 users,  load average: 0.73, 0.81, 0.45
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please drop, will be replaced by
-linux-kernel-markers-architecture-independent-code-kerneldoc-implementation.patch
+Text Edit Lock - Architecture Independent Code - kerneldoc implementation
 
-* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> Linux Kernel Markers - Architecture Independent Code - kerneldoc
-> 
-> Add kerneldoc to Linux Kernel Markers API.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: hch@infradead.org
-> ---
->  include/linux/marker.h |  108 ++++++++++++++++++++++++++++++++++++++++++++-----
->  1 file changed, 99 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6-lttng/include/linux/marker.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/linux/marker.h	2007-07-14 20:58:16.000000000 -0400
-> +++ linux-2.6-lttng/include/linux/marker.h	2007-07-14 21:16:01.000000000 -0400
-> @@ -20,6 +20,15 @@
->  struct module;
->  struct __mark_marker;
->  
-> +/**
-> + * marker_probe_func - Type of a marker probe function
-> + * @mdata: pointer of type struct __mark_marker
-> + * @fmt: format string
-> + * @...: variable argument list
-> + *
-> + * Type of marker probe functions. They receive the mdata and need to parse the
-> + * format string to recover the variable argument list.
-> + */
->  typedef void marker_probe_func(const struct __mark_marker *mdata,
->  	const char *fmt, ...);
->  
-> @@ -88,18 +97,36 @@ extern void module_marker_update(struct 
->  static inline void module_marker_update(struct module *mod) { }
->  #endif /* CONFIG_MARKERS */
->  
-> -/* Marker with default behavior */
-> +/**
-> + * trace_mark - Marker using code patching
-> + * @name: marker name, not quoted.
-> + * @format: format string
-> + * @args...: variable argument list
-> + *
-> + * Places a marker using optimized code patching technique (immediate_if ())
-> + * to be enabled.
-> + */
->  #define trace_mark(name, format, args...) \
->  	__trace_mark(0, name, format, ## args)
-> -/*
-> - * Map to the generic marker. Should be used for markers in __init and __exit
-> - * functions and in lockdep code.
-> +
-> +/**
-> + * _trace_mark - Marker using variable read
-> + * @name: marker name, not quoted.
-> + * @format: format string
-> + * @args...: variable argument list
-> + *
-> + * Places a marker using a standard memory read (_immediate_if ()) to be
-> + * enabled. Should be used for markers in __init and __exit functions and in
-> + * lockdep code.
->   */
->  #define _trace_mark(name, format, args...) \
->  	__trace_mark(1, name, format, ## args)
->  
->  #define MARK_MAX_FORMAT_LEN	1024
-> -/* Pass this as a format string for a marker with no argument */
-> +
-> +/**
-> + * MARK_NOARGS - Format string for a marker with no argument.
-> + */
->  #define MARK_NOARGS " "
->  
->  /* To be used for string format validity checking with gcc */
-> @@ -109,27 +136,90 @@ static inline void __mark_check_format(c
->  
->  extern marker_probe_func __mark_empty_function;
->  
-> -/*
-> - * Connect a probe to a markers.
-> +/**
-> + * marker_probe_register -  Connect a probe to a marker
-> + * @name: marker name
-> + * @format: format string
-> + * @probe: probe handler
-> + * @pdata: probe private data
-> + *
->   * pdata must be a valid allocated memory address, or NULL.
-> + * Returns 0 if ok, error value on error.
->   */
->  extern int marker_probe_register(const char *name, const char *format,
->  				marker_probe_func *probe, void *pdata);
->  
-> -/*
-> +/**
-> + * marker_probe_unregister -  Disconnect a probe from a marker
-> + * @name: marker name
-> + *
->   * Returns the pdata given to marker_probe_register.
->   */
->  extern void *marker_probe_unregister(const char *name);
-> -/*
-> +
-> +/**
-> + * marker_probe_unregister -  Disconnect a probe from a marker
-> + * @pdata: probe private data
-> + *
->   * Unregister a marker by providing the registered pdata.
-> + * Returns the pdata given to marker_probe_register.
->   */
->  extern void *marker_probe_unregister_pdata(void *pdata);
->  
-> +/**
-> + * marker_arm - Arm a marker
-> + * @name: marker name
-> + *
-> + * Activate a marker. It keeps a reference count of the number of
-> + * arming/disarming done.
-> + * Returns 0 if ok, error value on error.
-> + */
->  extern int marker_arm(const char *name);
-> +
-> +/**
-> + * marker_disarm - Disarm a marker
-> + * @name: marker name
-> + *
-> + * Disarm a marker. It keeps a reference count of the number of arming/disarming
-> + * done.
-> + * Returns 0 if ok, error value on error.
-> + */
->  extern int marker_disarm(const char *name);
-> +
-> +/**
-> + * marker_get_first - Get first marker to start iteration
-> + *
-> + * Get the first marker found in the kernel. It should have a matching
-> + * marker_release.
-> + */
->  extern struct __mark_marker *marker_get_first(void);
-> +
-> +/**
-> + * marker_get_next - Get next marker of an iteration
-> + * @iter: previous marker
-> + *
-> + * Get the next marker found in the kernel. It should get its previous marker
-> + * from either marker_get_first() or marker_get_next().
-> + */
->  extern struct __mark_marker *marker_get_next(struct __mark_marker *iter);
-> +
-> +/**
-> + * marker_release - Release the marker iterator
-> + * @iter: previous marker
-> + *
-> + * Release the ressources held to insure iterator validity.
-> + */
->  extern void marker_release(struct __mark_marker *iter);
-> +
-> +/**
-> + * marker_get_pdata - Get a marker's probe private data
-> + * @name: marker name
-> + *
-> + * Returns the pdata pointer, or an ERR_PTR.
-> + * The pdata pointer should _only_ be dereferenced if the caller is the owner of
-> + * the data, or its content could vanish. This is mostly used to confirm that a
-> + * caller is the owner of a registered probe.
-> + */
->  extern void *marker_get_pdata(const char *name);
->  
->  #endif /* __KERNEL__ */
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Add kerneldoc to text edit lock API.
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: hch@infradead.org
+---
+ mm/memory.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+Index: linux-2.6-lttng/mm/memory.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/memory.c	2007-07-15 18:56:32.000000000 -0400
++++ linux-2.6-lttng/mm/memory.c	2007-07-15 18:57:18.000000000 -0400
+@@ -2820,9 +2820,12 @@ int access_process_vm(struct task_struct
+ }
+ EXPORT_SYMBOL_GPL(access_process_vm);
+ 
+-/*
+- * Lock the kernel text for mutual write exclusion. Used for dynamic code
+- * patching.
++/**
++ * kernel_text_lock     -   Take the kernel text modification lock
++ *
++ * Insures mutual write exclusion of kernel and modules text live text
++ * modification. Should be used for code patching.
++ * Users of this lock can sleep.
+  */
+ void __kprobes kernel_text_lock(void)
+ {
+@@ -2830,6 +2833,13 @@ void __kprobes kernel_text_lock(void)
+ }
+ EXPORT_SYMBOL_GPL(kernel_text_lock);
+ 
++/**
++ * kernel_text_unlock   -   Release the kernel text modification lock
++ *
++ * Insures mutual write exclusion of kernel and modules text live text
++ * modification. Should be used for code patching.
++ * Users of this lock can sleep.
++ */
+ void __kprobes kernel_text_unlock(void)
+ {
+ 	mutex_unlock(&text_mutex);
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
