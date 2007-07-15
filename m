@@ -1,51 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761352AbXGOXUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbXGOXV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761352AbXGOXUn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 19:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXGOXUg
+	id S1761650AbXGOXV3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 19:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbXGOXVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 19:20:36 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:58825 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbXGOXUf (ORCPT
+	Sun, 15 Jul 2007 19:21:22 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34150 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754371AbXGOXVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 19:20:35 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: Patches for REALLY TINY 386 kernels
-Date: Mon, 16 Jul 2007 01:13:55 +0200
-User-Agent: KMail/1.9.6
-Cc: "Nigel Cunningham" <nigel@nigel.suspend2.net>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Jonathan Campbell" <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org,
-       torvalds@transmeta.com
-References: <469A8AED.7070207@nerdgrounds.com> <200707160912.55701.nigel@nigel.suspend2.net> <a781481a0707151614k57165061l464943233e9b32e8@mail.gmail.com>
-In-Reply-To: <a781481a0707151614k57165061l464943233e9b32e8@mail.gmail.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sun, 15 Jul 2007 19:21:21 -0400
+Date: Mon, 16 Jul 2007 01:20:40 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Russell Harmon <eatnumber1@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Oops... not sure why.
+Message-ID: <20070715232039.GM3565@stusta.de>
+References: <9c4865a10707150926t48281f35w7a9593da20dd9781@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200707160113.56110.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19YPhvyANCgJToOLlRUVhmECfvc9hMOrITikUd
- eyU1c+pksnHK6h/ecwP9uxHQ+eF5s1sEL7YvITqLncVkYjQvVy
- BT6ZtaHwa6AO01X4H5OCQ==
+In-Reply-To: <9c4865a10707150926t48281f35w7a9593da20dd9781@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 July 2007, Satyam Sharma wrote:
-> > Yeah. I was going for the general principle :)
-> 
-> Even simpler to add --exclude-from=.gitignore to diff
-> 
-Or build in a separate object directory, using the O=$my_objdir
-Kbuild option. That has a number of addition advantages, e.g.
-you can easily clean your object files using 'rm -rf $my_objdir'
-and if you grep -r the source, you don't find your search string
-in generated files.
+On Sun, Jul 15, 2007 at 12:26:27PM -0400, Russell Harmon wrote:
+> Hey all, just updated to 2.6.22.1, and have been getting the following
+> oops rather often in my dmesg. It eventually makes it so no programs
+> will start, and I lose internet connectivity and so have to reboot. I
+> have a centrino duo system running SMP.
+>
+> I'm using SLAB.
 
-	Arnd <><
+You told much but missed the most important point:
+
+Whatever you call "2.6.22.1" isn't the vanilla 2.6.22.1 kernel from 
+ftp.kernel.org but the 2.6.22.1 kernel with a huge pile of external 
+drivers and/or patches, and therefore off-topic on this list.
+
+Since your Oops involves unionfs that is not part of the 2.6.22.1 kernel 
+contacting the unionfs developers might be a good starting point for you 
+for looking for help.
+
+> Thanks
+> ~Russ
+>
+> BUG: unable to handle kernel NULL pointer dereference at virtual
+> address 00000000
+> printing eip:
+> 00000000
+> *pde = 00000000
+> Oops: 0000 [#2]
+> SMP
+> Modules linked in: snd_seq snd_seq_device snd_hda_intel snd_pcm
+> snd_timer snd snd_page_alloc rlocate tp_smapi thinkpad_ec iwl3945
+> e1000 firewire_ohci firewire_core
+> CPU:    0
+> EIP:    0060:[<00000000>]    Not tainted VLI
+> EFLAGS: 00010246   (2.6.22-kamikaze1-r1 #12)
+> EIP is at run_init_process+0x4fefff50/0x20
+> eax: e6299800   ebx: 00000000   ecx: b190d460   edx: b157cd40
+> esi: b157cd40   edi: f6af0ee4   ebp: 00000000   esp: e4cb1c5c
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process gnome-pty-helpe (pid: 9708, ti=e4cb0000 task=f75b3a30 
+> task.ti=e4cb0000)
+> Stack: b014b22e 000000d0 00000000 e6299800 e6299800 f6af0e40 e6299140 
+> b014d370
+>       e6299800 b142d680 b01eeb24 e6299800 b142d680 e6299800 b142d680 
+> 00000000
+>       b17a4a00 00000000 b0151c70 000000d0 e4cb1d0c f607cebc f607ceb0 
+> e6299140
+> Call Trace:
+> [<b014b22e>] read_cache_page_async+0x8e/0x160
+> [<b014d370>] read_cache_page+0x10/0x50
+> [<b01eeb24>] unionfs_readpage+0x84/0x1d0
+> [<b0151c70>] __do_page_cache_readahead+0x1f0/0x2a0
+> [<b011c0ae>] dequeue_entity+0x7e/0xb0
+> [<b0119f77>] dequeue_task+0x27/0x40
+> [<b011b1cb>] update_stats_wait_end+0x9b/0xc0
+> [<b0151df0>] ra_submit+0xd0/0xe0
+> [<b0152798>] page_cache_readahead_adaptive+0x108/0x5e0
+> [<b01eecd4>] unionfs_commit_write+0x64/0x1e0
+> [<b014ba61>] do_generic_mapping_read+0x3a1/0x600
+> [<b014db13>] generic_file_aio_read+0xd3/0x1d0
+> [<b014abe0>] file_read_actor+0x0/0x120
+> [<b01e52c1>] unionfs_aio_read+0x51/0xc0
+> [<b016ad07>] do_sync_read+0xc7/0x110
+> [<b01366a0>] autoremove_wake_function+0x0/0x50
+> [<b0139452>] enqueue_hrtimer+0x72/0x100
+> [<b0139b67>] hrtimer_start+0xc7/0x140
+> [<b01e53f2>] unionfs_read+0x42/0xa0
+> [<b016b5fc>] vfs_read+0xbc/0x160
+> [<b01e53b0>] unionfs_read+0x0/0xa0
+> [<b016bb31>] sys_read+0x41/0x70
+> [<b0102a1a>] sysenter_past_esp+0x5f/0x85
+> =======================
+> Code:  Bad EIP value.
+> EIP: [<00000000>] run_init_process+0x4fefff50/0x20 SS:ESP 0068:e4cb1c5c
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
