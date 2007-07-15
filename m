@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbXGOT77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbXGOUAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756411AbXGOT77 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 15:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXGOT7d
+	id S1755291AbXGOUAa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 16:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbXGOT7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 15:59:33 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39906 "EHLO
+	Sun, 15 Jul 2007 15:59:43 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39909 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754729AbXGOT7c (ORCPT
+	with ESMTP id S1755545AbXGOT7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 15:59:32 -0400
+	Sun, 15 Jul 2007 15:59:42 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] wrong order of arguments of ->readdir()
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1IAAFf-00053N-TV@ZenIV.linux.org.uk>
+Subject: [PATCH] the wrong variable checked after request_irq()
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Message-Id: <E1IAAFp-00053g-Ti@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sun, 15 Jul 2007 20:59:31 +0100
+Date: Sun, 15 Jul 2007 20:59:41 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Shows how many people are testing coda - the bug had been there for 5 years
-and results of stepping on it are not subtle.
-
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/coda/dir.c |    2 +-
+ arch/powerpc/platforms/pseries/setup.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/coda/dir.c b/fs/coda/dir.c
-index 9ddf5ed..898a86d 100644
---- a/fs/coda/dir.c
-+++ b/fs/coda/dir.c
-@@ -470,7 +470,7 @@ int coda_readdir(struct file *coda_file, void *dirent, filldir_t filldir)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 470db6e..a031d99 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -176,7 +176,7 @@ static void __init pseries_mpic_init_IRQ(void)
+ 		return;
  
- 		ret = -ENOENT;
- 		if (!IS_DEADDIR(host_inode)) {
--			ret = host_file->f_op->readdir(host_file, filldir, dirent);
-+			ret = host_file->f_op->readdir(host_file, dirent, filldir);
- 			file_accessed(host_file);
- 		}
+ 	cascade_irq = irq_of_parse_and_map(cascade, 0);
+-	if (cascade == NO_IRQ) {
++	if (cascade_irq == NO_IRQ) {
+ 		printk(KERN_ERR "mpic: failed to map cascade interrupt");
+ 		return;
  	}
 -- 
 1.5.3.GIT
