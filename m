@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbXGOJhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759799AbXGOJk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759728AbXGOJhd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 05:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757247AbXGOJhX
+	id S1759799AbXGOJk2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 05:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757191AbXGOJkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 05:37:23 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:42538
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756672AbXGOJhW (ORCPT
+	Sun, 15 Jul 2007 05:40:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40021
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756722AbXGOJkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 05:37:22 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH 1/3] Blackfin ethernet driver: on chip ethernet MAC controller driver
-Date: Sun, 15 Jul 2007 11:36:04 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <1184438993.3140.23.camel@roc-laptop> <200707142138.36619.mb@bu3sch.de> <1184491016.3140.52.camel@roc-laptop>
-In-Reply-To: <1184491016.3140.52.camel@roc-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Sun, 15 Jul 2007 05:40:12 -0400
+Date: Sun, 15 Jul 2007 02:40:15 -0700 (PDT)
+Message-Id: <20070715.024015.126137834.davem@davemloft.net>
+To: hch@infradead.org
+Cc: ossthema@de.ibm.com, netdev@vger.kernel.org, raisch@de.ibm.com,
+       themann@de.ibm.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
+       stefan.roscher@de.ibm.com
+Subject: Re: [RFC 0/3] lro: Generic Large Receive Offload for TCP traffic
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070715091253.GA15790@infradead.org>
+References: <200707111621.24852.ossthema@de.ibm.com>
+	<20070714.235748.02297780.davem@davemloft.net>
+	<20070715091253.GA15790@infradead.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707151136.05223.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 July 2007 11:16:56 Bryan Wu wrote:
-> In current Blackfin DMA allocation/free, the return value from 
-> bfin_mac_alloc() is used as the dma_handle, here it is the
-> tx_desc/rx_desc. 
-> The "dma_handle" is useless in the following code.
+From: Christoph Hellwig <hch@infradead.org>
+Date: Sun, 15 Jul 2007 10:12:53 +0100
 
-I think a comment has to be added, at least, as it's very confusing.
+> I'm not sure that's a good idea.  If current chips can't handle ipv6
+> lro there is no way to actually test it and the code will surely bitrot.
 
-> This is some magic code for PHY ID. In the future, we will rewrite some
-> code based on kernel phy abstraction layer to support more phy device.
+Christoph, you can do LRO pretty much completely in software.
 
-Ok, nice idea.
-
-> > Unwind the allocations above, if registering fails.
-> > 
-> 
-> In fact, it is safe. Because if registering fails, bf537mac_probe will
-> return none zero to bfin_mac_probe which will do free_netdev.
-
-Hm, weren't there some DMA allocations, too? Are they free'd properly?
-
--- 
-Greetings Michael.
