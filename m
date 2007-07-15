@@ -1,135 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbXGOUUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbXGOU1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755783AbXGOUUq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 16:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXGOUUi
+	id S1755054AbXGOU1k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 16:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXGOU13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 16:20:38 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34331
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbXGOUUh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 16:20:37 -0400
-Date: Sun, 15 Jul 2007 13:13:39 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <200707151433.34625.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0707151253141.25614@asgard.lang.hm>
-References: <200707151433.34625.rjw@sisk.pl>
+	Sun, 15 Jul 2007 16:27:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39754 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751414AbXGOU12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 16:27:28 -0400
+Message-ID: <469A82C0.5040806@redhat.com>
+Date: Sun, 15 Jul 2007 16:25:36 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Li Yang <leo@zh-kernel.org>,
+       Rob Landley <rob@landley.net>, Gerrit Huizenga <gh@us.ibm.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
+       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
+       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
+Subject: Re: [PATCH] Chinese Language Maintainer
+References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>	<200707121205.20959.rob@landley.net>	<1184330583.23373.65.camel@Gundam>	<200707131352.12952.rob@landley.net>	<a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com>	<469A6370.4020404@zytor.com> <20070715195008.6bdf48c7@the-village.bc.nu> <469A717D.1020805@zytor.com>
+In-Reply-To: <469A717D.1020805@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
+H. Peter Anvin wrote:
+> Alan Cox wrote:
 
-> Hi,
->
-> Since many alternative approaches to hibernation are now being considered and
-> discussed, I thought it might be a good idea to list some things that in my not
-> so humble opinion should be taken care of by any hibernation framework.  They
-> are listed below, not in any particular order, because I think they all are
-> important.  Still, I might have forgotten something, so everyone with
-> experience in implementing hibernation, especially Pavel and Nigel, please
-> check if the list is complete.
->
-> (1) Filesystems mounted before the hibernation are untouchable
->
->    When there's a memory snapshot, either in the form of a hibernation image,
->    or in the form of the "old" kernel and processes available to the "new"
->    kexeced kernel responsible for saving their memory, the filesystems mounted
->    before the hibernation should not be accessed, even for reading, because
->    that would cause their on-disk state to be inconsistent with the snapshot
->    and might lead to a filesystem corruption.
+>> Key documents in other languages is a big help, especially those about
+>> values, culture and standards because they are things that are not easy
+>> to understand if your use of English is technically oriented.
 
-AFAIK this is only the case with ext3, all other filesystems could be 
-accessed read-only safely
+> In that sense, a translation of "Linux Kernel Internals" and the other
+> books written on the Linux kernel is more useful. 
 
-this is arguably a bug with ext3 (and has been discussed as such), but 
-right now the ext3 team has decided not to change this bahavior so 
-hibernate needs to work around it. but don't mistake a work-around for a 
-single (admittedly very popular) filesystem with a hard and fast 
-directive.
+Several groups of people are translating the "important bits"
+(a different selection for each culture) of the kernelnewbies
+documentation to different languages already:
 
-> (2) Swap space in use before the hibernation must be handled with care
->
->    If swap space is used for saving the memory snapshot, the snapshot-saving
->    application (or kernel) must be careful enough not to overwrite swap pages
->    that contain valid memory contents stored in there before the hibernation.
+http://kernelnewbies.org/RegionalNewbies
 
-true, in fact, given that many distros and live-CD's autodetect swap 
-partitions and consider them fair game, I would argue that the best thing 
-to do would be to have the main system free up it's swap partitions before 
-going into hibernation.
+I can easily set up additional wikis for anybody who wants
+to set up such a kernel documentation site in their language.
 
-however, this could be a decision of the particular hibernate routines.
-
-for the kexec approach the mapping of what swap pages are in use is one 
-more chunk of data that needs to be assembled and made available through a 
-defined interface.
-
-> (4) The user should be able to limit the size of a hibernation image
->
->    There are a couple of reasons of that.  For example, the storage space
->    used for saving the image may be smaller than the entire RAM or the user
->    may want the image to be saved quickier.
-
-it may make sense for this to be split into hard and soft limits.
-
-if you try to save more then the storage space can hold you cannot 
-continue, but if you are just a little over the arbatrary size limit that 
-was set to make things fast you are better off saving things as-is then 
-punting, going back to the system, trying to free more ram, and trying a 
-hibernate again.
-
-with the kexec approach the enforcment of these limits is also split into 
-two sections.
-
-when the hibernate command is given in the main kernel, it's userspace 
-needs to follow some policy to decide how much (if any) memory to free.
-
-this could be anything from 'none, try and save all caches' to 'anything 
-you can to minimize the amount of data to be saved, trash all caches' to 
-something in between like 'try and free up enough memory to get the saved 
-data below 1G, but save caches beyond that point'
-
-then when the second kernel runs, it's userspace tools get the list of 
-what memory should be saved that the main kernel handed to it, and then 
-decides if this is acceptable (probably mostly the hard limits of 'can 
-this work') and proceeds to save it somewhere.
-
-but since the kexec command and the preporation of the devices can change 
-the memory, the estimates done by the first kernel's userspace are just 
-that, estimates.
-
-> (7) On ACPI systems special platform-related actions have to be carried out at
->    the right points, so that the platform works correctly after the restore
->
->    The ACPI specification requires us to invoke some global ACPI methods
->    during the hibernation and during the restore.  Moreover, the ordering of
->    code related to these ACPI methods may not be arbitrary (eg. some of
->    them have to be executed after devices are put into low power states etc.).
-
-for a pure hibernate mode, you will be powering off the box after saving 
-the suspend image. why are there any special ACPI modes involved?
-
-now, for suspend-to-ram you need to be aware of every possible power 
-saving option you have and the cost of each of them, and here the ACPI 
-modes are heavily used.
-
-I think this is mixing suspend and hibernate still.
-
-David Lang
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
