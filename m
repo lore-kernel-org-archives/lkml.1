@@ -1,92 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761649AbXGONFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbXGONHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761649AbXGONFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 09:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbXGONFA
+	id S1757673AbXGONHy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 09:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXGONHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 09:05:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38752 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757337AbXGONE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 09:04:59 -0400
-Subject: Re: [PATCH 1/3] Blackfin ethernet driver: on chip ethernet MAC
-	controller driver
-From: Dan Williams <dcbw@redhat.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Michael Buesch <mb@bu3sch.de>, bryan.wu@analog.com,
-       Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <8bd0f97a0707141338q996f246p6abdc2f65efa5e7@mail.gmail.com>
-References: <1184438993.3140.23.camel@roc-laptop>
-	 <200707142138.36619.mb@bu3sch.de>
-	 <8bd0f97a0707141249y2c90a59cs356aa3cef357f721@mail.gmail.com>
-	 <200707142217.36361.mb@bu3sch.de>
-	 <8bd0f97a0707141338q996f246p6abdc2f65efa5e7@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 15 Jul 2007 09:04:21 -0400
-Message-Id: <1184504661.5871.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Jul 2007 09:07:47 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:58380 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbXGONHq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 09:07:46 -0400
+To: oleg@tv-sign.ru
+CC: rjw@sisk.pl, pavel@ucw.cz, linux-kernel@vger.kernel.org
+In-reply-to: <20070714212102.GA214@tv-sign.ru> (message from Oleg Nesterov on
+	Sun, 15 Jul 2007 01:21:02 +0400)
+Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM
+References: <20070714212102.GA214@tv-sign.ru>
+Message-Id: <E1IA3oR-0002wg-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 15 Jul 2007 15:06:59 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-14 at 16:38 -0400, Mike Frysinger wrote:
-> On 7/14/07, Michael Buesch <mb@bu3sch.de> wrote:
-> > On Saturday 14 July 2007 21:49:21 Mike Frysinger wrote:
-> > > On 7/14/07, Michael Buesch <mb@bu3sch.de> wrote:
-> > > > On Saturday 14 July 2007 20:49:53 Bryan Wu wrote:
-> > > > > +static int __init bf537mac_probe(struct net_device *dev)
-> > > > > +{
-> > > > > +     struct bf537mac_local *lp = netdev_priv(dev);
-> > > > > +     int retval;
-> > > > > +
-> > > > > +     /* Grab the MAC address in the MAC */
-> > > > > +     *(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
-> > > > > +     *(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
-> > > >
-> > > > Endianess broken.
-> > > >
-> > > > > +struct dma_config_reg {
-> > > > > +     unsigned short b_DMA_EN:1;  /* Bit 0 : DMA Enable */
-> > > > > +     unsigned short b_WNR:1;     /* Bit 1 : DMA Direction */
-> > > > > +     unsigned short b_WDSIZE:2;  /* Bit 2 & 3 : DMA Tranfer Word size */
-> > > > > +     unsigned short b_DMA2D:1;   /* Bit 4 : DMA Mode 2D or 1D */
-> > > > > +     unsigned short b_RESTART:1; /* Bit 5 : Retain the FIFO */
-> > > > > +     unsigned short b_DI_SEL:1;  /* Bit 6 : Data Interrupt Timing Select */
-> > > > > +     unsigned short b_DI_EN:1;   /* Bit 7 : Data Interrupt Enable */
-> > > > > +     unsigned short b_NDSIZE:4;  /* Bit 8 to 11 : Flex descriptor Size */
-> > > > > +     unsigned short b_FLOW:3;    /* Bit 12 to 14 : FLOW */
-> > > > > +};
-> > > >
-> > > > This is most likely not endianess safe.
-> > >
-> > > do we really need to care about this ?  this is a driver for a MAC
-> > > which can only be found on Blackfin processors and Blackfin itself is
-> > > only little endian.
-> >
-> > Well, this bitfield _might_ be OK (although I don't like bitfields
-> > at all), but the above pointer casting stuff should really use
-> > leXX_to_cpu. It's so easy to use and it is easier to read and
-> > maintain the code afterwards.
+> > SIGKILL won't work on a stopped task.  Neither on a traced task.
 > 
-> i think that's arguable ... i dont see how:
-> a = foo(b);
-> is easier to read than:
-> a = b;
-> but it is easy to use ... i guess my point was more along the lines of
-> wasting further time auditing a driver for endianness issues that will
-> never actually be an issue.
+> Why do you think so? It works in both cases (ptracer can use
+> PT_TRACE_EXIT, but the task is killed anyway).
 
-Sometimes by doing this you catch bugs you didn't see before.  It's a
-good thing to do generally.  Does sparse with endianness check show
-errors?  You may want to fix those.
+Just from experience with tasks stuck in "T" state.  After for example
+an UML dies, some of the processes only react to SIGCONT, but not to
+SIGKILL.
 
-Dan
+I have no idea why this happens.
 
-> -mike
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Miklos
