@@ -1,90 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759182AbXGOJRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbXGOJUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759182AbXGOJRw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 05:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbXGOJRl
+	id S1759110AbXGOJUR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 05:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbXGOJUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 05:17:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33051 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756133AbXGOJRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 05:17:39 -0400
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 15 Jul 2007 11:17:38 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-In-Reply-To: <Pine.LNX.4.64.0707141151500.31255@alien.or.mcafeemobile.com>
-Message-ID: <20070715091738.193100@gmx.net>
-MIME-Version: 1.0
-References: <20070714074145.277260@gmx.net>
- <Pine.LNX.4.64.0707141151500.31255@alien.or.mcafeemobile.com>
-Subject: Re: signalfd() semantics after execve()
-To: Davide Libenzi <davidel@xmailserver.org>
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX19KZWQFOaFK/UTCPHFUgVjZiO7g3yKxf5wFh1adxR
- d7OhaqURmhcDfwGuSsA+7XqquW7rOyXdV/GQ== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: CtSqcgQCX1V6GJLyF2ByzN5/SDc4NEyD
+	Sun, 15 Jul 2007 05:20:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49013 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753516AbXGOJUC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 05:20:02 -0400
+Date: Sun, 15 Jul 2007 10:20:01 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Denis Cheng <crquan@gmail.com>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] run scripts/Lindent on it to match Documentation/CodingStyle
+Message-ID: <20070715092001.GB15790@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Denis Cheng <crquan@gmail.com>, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <1184489571313-git-send-email-crquan@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184489571313-git-send-email-crquan@gmail.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide,
+On Sun, Jul 15, 2007 at 04:52:50PM +0800, Denis Cheng wrote:
+> -	return ((char *) NULL);
+> +	return ((char *)NULL);
 
-> > I'm working on the signalfd(2) man page, and I've come
-> > acorss some puzzling behaviour...  
-> > 
-> > What are the intended semantics of a signalfd file descriptor
-> > after an execve()?
-> > 
-> > As far as I can work out, after an execve() the file descriptor
-> > is still available, but reads from it always return 0, even if:
-> > 
-> > a) there were signals pending before the execve().
-> >    However, sigpending() shows the signal as pending,
-> >    and the signal can be accepted using sigwaitinfo().
-> > 
-> > b) we generate a signal after the execve().
-> >  
-> > Is this intended behavior (the "orphaned sighand" condition
-> > mentioned in the draft man page you sent me?)?  Is it a bug?
-> 
-> It is the intended behaviour. Just like reading from a socket where the 
-> remote peer disconnected. 
+casting NULL to another pointer type is dumb to start with.  Please replace
+this line with
 
-I don't think this analogy is good; what is the "peer" in this 
-situation?
-
-IMO, A better analogy is: signalfd() should provide 
-similar semantics to sigwaitinfo()/sigtimedwait() (and/or
-handling signals with a signal handler).
-
-> A return 0 from a read from a signalfd should be
-> interpreted as the "virtual connection" with the signal source has been 
-> dropped.
-
-Yes, but in this case why has the '"virtual connection" with the 
-signal source' been dropped?  
-
-Why shouldn't one be allowed to continue reading signals from
-the signalfd file descriptor after the execve()?  
-
-After all, I can still fetch those signals with sigwaitinfo() 
-after the execve().  Not being able to also dothat with signalfd 
-just isn't consistent.
-
-Cheers,
-
-Michael
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
-
-Want to help with man page maintenance?  
-Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages , 
-read the HOWTOHELP file and grep the source 
-files for 'FIXME'.
+	return NULL;
 
