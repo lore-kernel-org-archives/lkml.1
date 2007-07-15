@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762245AbXGORSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762455AbXGORdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762245AbXGORSW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 13:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbXGORSN
+	id S1762455AbXGORdB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 13:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758792AbXGORcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 13:18:13 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:65253 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758792AbXGORSM (ORCPT
+	Sun, 15 Jul 2007 13:32:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40843 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758624AbXGORcv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 13:18:12 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-To: Matt Mackall <mpm@selenic.com>, Rene Herman <rene.herman@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
-Reply-To: 7eggert@gmx.de
-Date: Sun, 15 Jul 2007 19:17:39 +0200
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8FYWD-2eS-7@gated-at.bofh.it> <8GdsH-8dc-13@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it> <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IA7j1-0000j9-I3@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19MI/xwdaS38M6Us6jBs6jSskEyp7JoP6xp9uZ
- Ml01509iZVlb7E+hkscAqoDNBsRq/p6VMRUlEK+iQwB1tBuUR1
- FsMc9vX4xv2VUN61OUMEQ==
+	Sun, 15 Jul 2007 13:32:51 -0400
+Date: Sun, 15 Jul 2007 18:39:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: TAKADA Yoshihito <takada@mbf.nifty.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: i386: pata_cs5520 does not work
+Message-ID: <20070715183924.0a6c992b@the-village.bc.nu>
+In-Reply-To: <20070716.014115.193701589.takada@mbf.nifty.com>
+References: <20070716.014115.193701589.takada@mbf.nifty.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall <mpm@selenic.com> wrote:
-> On Fri, Jul 13, 2007 at 03:20:54PM +0200, Rene Herman wrote:
+On Mon, 16 Jul 2007 01:41:15 +0900 (JST)
+TAKADA Yoshihito <takada@mbf.nifty.com> wrote:
 
->> As far as I'm aware, the actual reason for 4K stacks is that after the
->> system has been up and running for some time getting "1 physically
->> contiguous pages" becomes significantly easier than 2 which wouldn't be
->> arbitrary.
-> 
-> If there are exactly two free pages in the system, the odds of them
-> being buddies (ie adjacent AND properly aligned) is quite small. The
-> available page pool has to grow quite a bit before the availability of
-> order-1 page pairs approaches 100%.
+> Hi.
+> I update to 2.6.22.1 from 2.6.21.5. And PC cannot mount /.
+> It seems pata_cs5520 does not find IDE controller.
+> (I don't have serial cable for CS5520 board now. I cannt read
+> boot messages.)
+> 2.6.21 is OK.
+> In 2.6.22, IDE driver is OK.
+> Is any information necessary?
 
-If there are exactly two free pages in a system, the odds of starting any
-program are not very good. You'll have to swap, and if you do, you can swap
-two more pages in order to free enough RAM for the stack.
--- 
-The secret of the universe is #@*%! NO CARRIER 
+I'll take a look at this next week. Can you send me a dmesg of the
+working case and an lspci -vvxxx
 
-Friﬂ, Spammer: TqB@mxlqnP.7eggert.dyndns.org -kplBVgN@7eggert.dyndns.org
- BpRVhx@1Q.7eggert.dyndns.org ozy0XBmkB@m1Sh.7eggert.dyndns.org
+Thanks
+Alan
