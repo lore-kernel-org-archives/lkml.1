@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761582AbXGOMRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbXGOMUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761582AbXGOMRU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 08:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759201AbXGOMRN
+	id S1760032AbXGOMUl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 08:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbXGOMUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 08:17:13 -0400
-Received: from mail.screens.ru ([213.234.233.54]:56573 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759106AbXGOMRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 08:17:12 -0400
-Date: Sun, 15 Jul 2007 16:17:50 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, Herbert Poetzel <herbert@13thfloor.at>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] Use task_pid() to find leader's pid
-Message-ID: <20070715121750.GA173@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 15 Jul 2007 08:20:31 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:41246
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754451AbXGOMUa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 08:20:30 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: bryan.wu@analog.com
+Subject: Re: [PATCH try#2] Blackfin ethernet driver: on chip ethernet MAC controller driver
+Date: Sun, 15 Jul 2007 14:17:10 +0200
+User-Agent: KMail/1.9.6
+Cc: Mike Frysinger <vapier.adi@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+References: <1184491629.3140.59.camel@roc-laptop> <200707151236.51779.mb@bu3sch.de> <1184501264.3140.71.camel@roc-laptop>
+In-Reply-To: <1184501264.3140.71.camel@roc-laptop>
+MIME-Version: 1.0
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200707151417.10964.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sukadev Bhattiprolu wrote:
->
-> Use task_pid() to get leader's pid since find_pid() cannot be used
-> after detach_pid(). See comments in the code below for more details.
->
-> ...
->
-> +		 * Note: With multiple pid namespaces, active pid namespace of
-> +		 * 	 a process is stored in its struct pid. The detach_pid
-> +		 * 	 below frees the struct pid, so we will have no notion
-> +		 * 	 of an active pid namespace until we complete the
-> +		 * 	 subsequent attach_pid(). Which means - calls like
-> +		 * 	 find_pid()/pid_to_nr() return NULL and cannot be used
-> +		 * 	 between the detach_pid() and attach_pid() calls.
+On Sunday 15 July 2007 14:07:44 Bryan Wu wrote:
+> @@ -483,9 +487,12 @@
+>  
+>  void setup_mac_addr(u8 * mac_addr)
+>  {
+> +	u32 addr_low = le32_to_cpu(*(u32 *) & mac_addr[0]);
+> +	u16 addr_hi = le16_to_cpu(*(u16 *) & mac_addr[4]);
+> +
+>  	/* this depends on a little-endian machine */
+> -	bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
+> -	bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
+> +	bfin_write_EMAC_ADDRLO(addr_low);
+> +	bfin_write_EMAC_ADDRHI(addr_hi);
+>  }
+>  
+>  static void adjust_tx_list(void)
+> @@ -866,10 +873,10 @@
+>  	int retval;
+>  
+>  	/* Grab the MAC address in the MAC */
+> -	*(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
+> -	*(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
+> +	*(u32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
+> +	*(u16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
 
-I think both the changelog and the comment are confusing,
+Try something like this:
 
->  		detach_pid(tsk, PIDTYPE_PID);
->  		tsk->pid = leader->pid;
-> -		attach_pid(tsk, PIDTYPE_PID,  find_pid(tsk->pid));
-> +		attach_pid(tsk, PIDTYPE_PID,  task_pid(leader));
+@@ -483,9 +487,12 @@
+ 
+ void setup_mac_addr(u8 * mac_addr)
+ {
++       u32 addr_low = le32_to_cpu(*(__le32 *) & mac_addr[0]);
++       u16 addr_hi = le16_to_cpu(*(__le16 *) & mac_addr[4]);
++
+-       /* this depends on a little-endian machine */
+-       bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
+-       bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
++       bfin_write_EMAC_ADDRLO(addr_low);
++       bfin_write_EMAC_ADDRHI(addr_hi);
+ }
+ 
+ static void adjust_tx_list(void)
+@@ -866,10 +873,10 @@
+        int retval;
+ 
+        /* Grab the MAC address in the MAC */
+-       *(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
+-       *(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
++       *(__le32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
++       *(__le16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
 
-because the change itself looks like an obvious performance fix, even
-we don't use multiple pid namespaces. I don't think it is good idea to
-add a fat comment which doesn't match the current reality, and find_pid()
-should be avoided anyway.
-
-Stupid question: why do we need to put the pid namespace into the struct
-pid? Isn't it better if the user of the struct pid should know its ns?
-For example, if /proc does put_pid(), that pid should be from the active
-namespace.
-
-Sukadev, could you cc me if you do that kind of changes?
-
-Oleg.
-
+-- 
+Greetings Michael.
