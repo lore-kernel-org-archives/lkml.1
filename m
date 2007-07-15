@@ -1,75 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763336AbXGOQN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765238AbXGOQNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763336AbXGOQN3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 12:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762710AbXGOQFX
+	id S1765238AbXGOQNo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 12:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762108AbXGOQFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 12:05:23 -0400
-Received: from www.osadl.org ([213.239.205.134]:42591 "EHLO mail.tglx.de"
+	Sun, 15 Jul 2007 12:05:24 -0400
+Received: from www.osadl.org ([213.239.205.134]:42600 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762464AbXGOQFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 12:05:10 -0400
-Message-Id: <20070715155541.561244482@inhelltoy.tec.linutronix.de>
+	id S1762496AbXGOQFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 12:05:11 -0400
+Message-Id: <20070715155541.651124309@inhelltoy.tec.linutronix.de>
 References: <20070715155510.341941668@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Jul 2007 16:11:01 -0000
+Date: Sun, 15 Jul 2007 16:11:04 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch-mm 20/33] x86_64: remove pit synchronization
+Subject: [patch-mm 22/33] x86_64: Remove APIC_DIVISOR
 Content-Disposition: inline;
-	filename=x86_64-apic-remove-bogus-pit-synchronization.patch
+	filename=x86_64-apic-calibration-remove-divisor.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The APIC timer setup code synchronizes the local APIC timer to the
-PIT/HPET. This is pointless as the PIT and the local APIC timer
-frequency are not correlated and the APIC timer calibration can never
-be accurate enough to avoid that the local APIC timer and the PIT/HPET
-drift apart.
-
-Simply remove it.
+APIC_DIVISOR is rather useless. It makes the calibration result more
+accurate in the first place, but we discard this later when we write
+the value to the APIC timer by dividing the calibration value by
+APIC_DIVISOR.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 ---
- arch/x86_64/kernel/apic.c |   20 --------------------
- 1 file changed, 20 deletions(-)
+ arch/x86_64/kernel/apic.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
 Index: linux-2.6.22-rc6-mm/arch/x86_64/kernel/apic.c
 ===================================================================
---- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/apic.c	2007-07-15 17:39:44.000000000 +0200
-+++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/apic.c	2007-07-15 17:48:58.000000000 +0200
-@@ -791,26 +791,6 @@ static void setup_APIC_timer(unsigned in
+--- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/apic.c	2007-07-15 17:40:59.000000000 +0200
++++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/apic.c	2007-07-15 17:48:57.000000000 +0200
+@@ -760,8 +760,6 @@ void __init init_apic_mappings(void)
+  * P5 APIC double write bug.
+  */
  
- 	local_irq_save(flags);
- 
--	/* wait for irq slice */
--	if (hpet_address && hpet_use_timer) {
--		int trigger = hpet_readl(HPET_T0_CMP);
--		while (hpet_readl(HPET_COUNTER) >= trigger)
--			/* do nothing */ ;
--		while (hpet_readl(HPET_COUNTER) <  trigger)
--			/* do nothing */ ;
--	} else {
--		int c1, c2;
--		outb_p(0x00, 0x43);
--		c2 = inb_p(0x40);
--		c2 |= inb_p(0x40) << 8;
--		do {
--			c1 = c2;
--			outb_p(0x00, 0x43);
--			c2 = inb_p(0x40);
--			c2 |= inb_p(0x40) << 8;
--		} while (c2 - c1 < 300);
--	}
+-#define APIC_DIVISOR 16
 -
- 	irqen = ! cpu_isset(smp_processor_id(),
- 			    timer_interrupt_broadcast_ipi_mask);
- 	__setup_APIC_LVTT(clocks, 0, irqen);
+ static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
+ {
+ 	unsigned int lvtt_value, tmp_value;
+@@ -783,7 +781,7 @@ static void __setup_APIC_LVTT(unsigned i
+ 				| APIC_TDR_DIV_16);
+ 
+ 	if (!oneshot)
+-		apic_write(APIC_TMICT, clocks/APIC_DIVISOR);
++		apic_write(APIC_TMICT, clocks);
+ }
+ 
+ static void setup_APIC_timer(unsigned int clocks)
+@@ -836,7 +834,7 @@ static void __init calibrate_APIC_clock(
+ 	 *
+ 	 * No interrupt enable !
+ 	 */
+-	__setup_APIC_LVTT(4000000000, 0, 0);
++	__setup_APIC_LVTT(250000000, 0, 0);
+ 
+ 	apic_start = apic_read(APIC_TMCCT);
+ #ifdef CONFIG_X86_PM_TIMER
+@@ -863,7 +861,7 @@ static void __init calibrate_APIC_clock(
+ 	printk(KERN_INFO "Detected %d.%03d MHz APIC timer.\n",
+ 		result / 1000 / 1000, result / 1000 % 1000);
+ 
+-	calibration_result = result * APIC_DIVISOR / HZ;
++	calibration_result = result / HZ;
+ }
+ 
+ void __init setup_boot_APIC_clock (void)
 
 -- 
 
