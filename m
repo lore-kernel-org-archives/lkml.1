@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932614AbXGOASy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXGOAUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932614AbXGOASy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 20:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760962AbXGOASp
+	id S932819AbXGOAUm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 20:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765751AbXGOAUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 20:18:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:9179 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760763AbXGOASo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 20:18:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=J0Sf1dMA6O8uFMgm0ef7TTuogUhQnXtJhE2y1Pb3Dou8E4rNSyVZlbUMaaMNhH8lNLwcLd0yqdfOm81toUYtk4ysFYdXYV8mzanr3W390Uh/ydLW6gb52+D173+ZRMCEULzKqPa6W5bwY6Rlc4NodtPZYjq+k0XnZBvO9ME6yJ4=
-Message-ID: <9c21eeae0707141718r16de38a7rac80458c168b5f05@mail.gmail.com>
-Date: Sat, 14 Jul 2007 17:18:39 -0700
-From: "David Brown" <dmlb2000@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: dm-crypt aes sha512 and I/O performance
+	Sat, 14 Jul 2007 20:20:35 -0400
+Received: from mx28.mail.ru ([194.67.23.67]:26697 "EHLO mx28.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760763AbXGOAUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jul 2007 20:20:35 -0400
+Date: Sun, 15 Jul 2007 04:15:15 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] pda_power: clean up irq, timer, return usage
+Message-ID: <20070715001515.GA3641@zarina>
+Reply-To: cbou@mail.ru
+References: <20070714231204.GA23582@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
+In-Reply-To: <20070714231204.GA23582@havoc.gtf.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was forced to put full (almost) hard drive encryption on my laptop
-so that all the Open Source Work I get paid to do will be protected in
-case someone tries to steal it and so they won't find any personal
-information about me if they get a hold of my laptop (because every
-idiot keeps their entire life history on their computers).
+On Sat, Jul 14, 2007 at 07:12:04PM -0400, Jeff Garzik wrote:
+> 
+> Clean up pda_power interrupt handling:
 
-Besides the futility of the above statement I've been noticing some
-oddities with how linux and dm-crypt handles I/O on the system.
+Nice, thanks! Just few cosmetic comments.
 
-Now normally I get about 30Mb/s write speed I would expect some sort
-of drop in performance due to the encryption but currently I'm getting
-about 9Mb/s write speed and I'm kinda confused as to what the choke
-point is and how to improve the write speed, if it can be.
+> Prior to this patch, the driver would pass information it needed
+> to the interrupt handler dev_id pointer, and then prompt forget it
+> ever did so, recreating that same information after a couple passes
+> through the timer-based state machine.
+> 
+> This patch removes the redundant checks by passing the
+> pda_power_supply[] pointer through the state machine.  The current
+> code passed 'irq' through the state machine, as an index to recreate
+> the pointer, when we could more simply pass around the pointer itself.
+> 
+> Additionally, bogus "return;" statements were removed.
 
-Currently both my swap and root are encrypted with the default debian
-installer encryption and there's two kcryptd processes running. Now
-from what I've noticed when I'm dumping data to disk they both seem to
-be working, yet I'm not swapping or anything. So am I right to assume
-that the two kcryptd processes are running in parallel encrypting the
-data to the one root device? Also they only seem to be using 20% of
-the processors they are running on, why isn't it 100%? I'm guessing
-that the data isn't being either compressed or blown up when
-encrypting using this encryption style (but I'm not an expert). Would
-making more kcryptd threads increase the I/O speed (more processes
-doing encrypting)? Is there a way to specify more threads of kcryptd?
+My preference is to use "return;" statements in functions returning
+void, even if functions is very small. It's just sugar for my eyes,
+to really see exit points. . Without returns I've feeling that
+something is missing there. Yes, my oddity.
 
-I'm kinda at a loss, so any help would be appreciated.
-- David Brown
+Plus, so far CodingStyle does not say anything about non obligatory
+return statements.
+
+These should be "fixed" too, though:
+~/linux-2.6$ grep -h "return;" -A1 -r drivers/ arch/ | grep "^}$" | \
+wc -l
+1354
+
+Obviously, drivers/ata is almost pure (3). ;-)
+
+Either way, I prefer to leave alone these "return;"s, until CodingStyle
+permits them.
+
+> This patch makes it easier to remove the 'irq' argument in the future,
+> in addition to cleaning up the driver today.
+> 
+> P.S.  Where are the MAINTAINERS entries for this driver, and
+> drivers/power in general?
+
+I'll send patch shortly.
+
+> +	void *power_supply = (void *) power_supply_ptr;
+                                     ^
+I guess common practice is not to put space here.
+
+> +	charger_timer.data = (unsigned long) power_supply;
+
+And here.
+
+
+I'll correct this, and will apply to battery2-2.6.git.
+
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
