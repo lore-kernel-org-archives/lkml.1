@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbXGOS6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbXGOTA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbXGOS6X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 14:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbXGOS6Q
+	id S1755718AbXGOTA3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 15:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXGOTAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 14:58:16 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:41651
+	Sun, 15 Jul 2007 15:00:20 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:41656
 	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751483AbXGOS6Q (ORCPT
+	by vger.kernel.org with ESMTP id S1751590AbXGOTAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 14:58:16 -0400
-Date: Sun, 15 Jul 2007 20:59:44 +0200
+	Sun, 15 Jul 2007 15:00:19 -0400
+Date: Sun, 15 Jul 2007 21:01:47 +0200
 From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 To: viro@zeniv.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: PATCH [1/5] fs/file_table.c: use list_for_each_entry() instead of list_for_each()
-Message-ID: <20070715185944.GF4034@traven>
+Subject: PATCH [2/5] fs/eventpoll.c: use list_for_each_entry() instead of list_for_each()
+Message-ID: <20070715190147.GG4034@traven>
 Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
 	viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
 	akpm@linux-foundation.org
@@ -28,40 +28,45 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/file_table.c: use list_for_each_entry() instead of list_for_each()
-in fs_may_remount_ro()
+fs/eventpoll.c: use list_for_each_entry() instead of list_for_each()
+in ep_poll_safewake()
 
 Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
 --
 
-diff --git a/fs/file_table.c b/fs/file_table.c
-index d17fd69..3ddd993 100644
---- a/fs/file_table.c
-+++ b/fs/file_table.c
-@@ -264,12 +264,11 @@ void file_kill(struct file *file)
+diff --git a/fs/eventpoll.c b/fs/eventpoll.c
+index 0b73cd4..fada1f9 100644
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -325,15 +325,14 @@ static void ep_poll_safewake(struct poll_safewake *psw, wait_queue_head_t *wq)
+ 	int wake_nests = 0;
+ 	unsigned long flags;
+ 	struct task_struct *this_task = current;
+-	struct list_head *lsthead = &psw->wake_task_list, *lnk;
++	struct list_head *lsthead = &psw->wake_task_list;
+ 	struct wake_task_node *tncur;
+ 	struct wake_task_node tnode;
  
- int fs_may_remount_ro(struct super_block *sb)
- {
--	struct list_head *p;
-+	struct file *file;
+ 	spin_lock_irqsave(&psw->lock, flags);
  
- 	/* Check that no files are currently opened for writing. */
- 	file_list_lock();
--	list_for_each(p, &sb->s_files) {
--		struct file *file = list_entry(p, struct file, f_u.fu_list);
-+	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
- 		struct inode *inode = file->f_path.dentry->d_inode;
+ 	/* Try to see if the current task is already inside this wakeup call */
+-	list_for_each(lnk, lsthead) {
+-		tncur = list_entry(lnk, struct wake_task_node, llink);
++	list_for_each_entry(tncur, lsthead, llink) {
  
- 		/* File with pending delete? */
+ 		if (tncur->wq == wq ||
+ 		    (tncur->task == this_task && ++wake_nests > EP_MAX_POLLWAKE_NESTS)) {
 
 -- 
 Matthias Kaehlcke
 Linux Application Developer
 Barcelona
 
-      The assumption that what currently exists must necessarily
-        exist is the acid that corrodes all visionary thinking
+
+   Usually when people are sad, they don't do anything. They just cry over
+     their condition. But when they get angry, they bring about a change
+                              (Malcolm X)
                                                                  .''`.
     using free software / Debian GNU/Linux | http://debian.org  : :'  :
                                                                 `. `'`
