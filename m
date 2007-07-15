@@ -1,107 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbXGOXkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762772AbXGOXke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762261AbXGOXkI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 19:40:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbXGOXj5
+	id S1762772AbXGOXke (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 19:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbXGOXkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 19:39:57 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:41570
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755637AbXGOXj4 (ORCPT
+	Sun, 15 Jul 2007 19:40:23 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:56347 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758196AbXGOXkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 19:39:56 -0400
-Date: Sun, 15 Jul 2007 16:33:02 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-In-Reply-To: <200707160111.16805.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0707151627270.25614@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
- <200707151239.28400.rjw@sisk.pl> <Pine.LNX.4.64.0707151224160.25614@asgard.lang.hm>
- <200707160111.16805.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sun, 15 Jul 2007 19:40:21 -0400
+Date: Sun, 15 Jul 2007 19:40:19 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH] Immediate Values - Architecture Independent Code - kerneldoc for implementation
+Message-ID: <20070715234019.GH22428@Krystal>
+References: <20070714012439.285079881@polymtl.ca> <20070714012623.231272637@polymtl.ca> <20070714225925.GC18674@Krystal> <20070715013611.GF23209@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070715013611.GF23209@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:39:17 up 8 days, 13:44,  3 users,  load average: 0.43, 0.84, 0.56
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+Immediate Values - Architecture Independent Code - kerneldoc for implementation
 
-> On Sunday, 15 July 2007 21:33, david@lang.hm wrote:
->> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
->>
->>> On Saturday, 14 July 2007 23:34, david@lang.hm wrote:
->>>> On Sat, 14 Jul 2007, Rafael J. Wysocki wrote:
->>>>
->>>>> On Saturday, 14 July 2007 09:51, david@lang.hm wrote:
->>>>>> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
->>>>>>
->>>>>>>> since people are complaining about the amount of ram that a kexec kernel
->>>>>>>> would take up I'm assuiming it's somethingmore complex then just a bitmap
->>>>>>>> of all possible pages.
->>>>>>>
->>>>>>> No, it's just bitmaps, AFAICS, and the complaints are a bit overstated, IMO. ;-)
->>>>>>
->>>>>> 1 bit for each 4k means 1m bits for 4g of ram, or 128k of bitmaps, growing
->>>>>> up to 1m of ram used for 32G of ram in the system. I guess this isn't bad
->>>>>> as long as it doesn't need to be contiguous for the new kernel to access
->>>>>> it.
->>>>>>
->>>>>> ok, that makes it a pretty trivial thing to work with. I just need to
->>>>>> learn how to find the bitmaps.
->>>>>
->>>>> They are created on the fly before the hibernation.  The format is described in
->>>>> kernel/power/snapshot.c .
->>>>
->>>> I'll look through this file, but the format of this is an abi/api to the
->>>> userspace and should be documented outside of the code.
->>>
->>> Nope.  The user space need not know anything about the image contents.
->>>
->>> The current implementation of the user space tools use the knowledge of the
->>> image header format, which is given by 'struct swsusp_info', defined in
->>> kernel/power/power.h .
->>
->> there are a couple factors here.
->>
->> 1. this needs to remain the same across different kernel versions.
->
-> Not exactly.  Whatever is after the image header may change at any time and
-> the user space should not rely on that not changing.  The header itself is a
-> (slightly) different matter.
+Add kerneldoc to Immediate Values API.
+It applies after
+"Immediate Values - Architecture Independent Code - kerneldoc"
 
-ok, more precisely
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: hch@infradead.org
+---
+ kernel/immediate.c |   24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-an image of one kernel version should be able to be fed into /dev/snapshot 
-of another kernel version and work.
-
-that's what I was meaning about it needing to be the same across different 
-kernel versions
-
->> 2. this may or may not be created by userspace tools
->
-> Well, the image header is not created by userspace tools and only read the
-> image size from it.
-
-it's not today, but maby it should be.
-
-in the kexec approach there's nothing happening here that a perl script 
-couldn't do perfectly well. it's reading a bitmap from somewhere, and 
-based on that bitmap it creates a header and then reads chunks from 
-/dev/oldmem or /dev/mem and writes the results somewhere (to a device, or 
-a network or a userspace compress program, or ...)
-
->> both of these tend to imply that this is an interface to the world and
->> needs to be documented and stable.
->
-> Well, it should be documented, but currently there's only one implementation
-> of the userland tools and the authors of these know the format. ;-)
-
-true today, but as the pieces get simplified and documented other 
-implementations could exist.
-
-David Lang
+Index: linux-2.6-lttng/kernel/immediate.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/immediate.c	2007-07-15 19:04:08.000000000 -0400
++++ linux-2.6-lttng/kernel/immediate.c	2007-07-15 19:07:14.000000000 -0400
+@@ -54,7 +54,10 @@ static inline void _immediate_update_ran
+ }
+ 
+ #ifdef CONFIG_MODULES
+-/*
++/**
++ * module_immediate_setup - Update immediate values in a module
++ * @mod: pointer to the struct module
++ *
+  * Setup the immediate according to the variable upon which it depends.  Called
+  * by load_module with module_mutex held. This mutex protects against concurrent
+  * modifications to modules'immediates. Therefore, since
+@@ -89,6 +92,12 @@ static inline void immediate_update_modu
+ static inline void immediate_update_modules(int lock) { }
+ #endif
+ 
++/**
++ * immediate_update - update all immediate values in the kernel
++ * @lock: should a module_mutex be taken ?
++ *
++ * Iterate on the kernel core and modules to update the immediate values.
++ */
+ void immediate_update(int lock)
+ {
+ 	/* Core kernel immediates */
+@@ -98,11 +107,7 @@ void immediate_update(int lock)
+ }
+ EXPORT_SYMBOL_GPL(immediate_update);
+ 
+-/*
+- * Update the immediate values to the state of the variables they refer to. It
+- * is done before SMP is active, at the very beginning of start_kernel().
+- */
+-void __init immediate_update_early_range(const struct __immediate *begin,
++static void __init immediate_update_early_range(const struct __immediate *begin,
+ 		const struct __immediate *end)
+ {
+ 	const struct __immediate *iter;
+@@ -111,7 +116,12 @@ void __init immediate_update_early_range
+ 		arch_immediate_update_early(iter);
+ }
+ 
+-
++/**
++ * immediate_update_early - Update immediate values at boot time
++ *
++ * Update the immediate values to the state of the variables they refer to. It
++ * is done before SMP is active, at the very beginning of start_kernel().
++ */
+ void __init immediate_update_early(void)
+ {
+ 	immediate_update_early_range(__start___immediate, __stop___immediate);
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
