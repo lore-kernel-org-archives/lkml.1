@@ -1,44 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXGOPhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbXGOQD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762041AbXGOPhs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 11:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbXGOPhl
+	id S1761971AbXGOQD4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 12:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbXGOQDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 11:37:41 -0400
-Received: from mail.screens.ru ([213.234.233.54]:36635 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758711AbXGOPhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 11:37:41 -0400
-Date: Sun, 15 Jul 2007 19:39:14 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Q: a bogus task_running() check in try_to_wake_up() ?
-Message-ID: <20070715153914.GA441@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Sun, 15 Jul 2007 12:03:32 -0400
+Received: from imf18aec.mail.bellsouth.net ([205.152.59.66]:33954 "EHLO
+	imf18aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759050AbXGOQDb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 12:03:31 -0400
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: jeff@garzik.org
+Cc: jacliburn@bellsouth.net, csnook@redhat.com,
+       atl1-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/5] atl1: miscellaneous cleanup and code reorganization
+Date: Sun, 15 Jul 2007 11:03:24 -0500
+Message-Id: <11845154092908-git-send-email-jacliburn@bellsouth.net>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-try_to_wake_up:
-	
-	if (p->se.on_rq)
-		goto out_running;
+Please accept the following patches for the atl1 driver.
 
-	...
+atl1: remove irq_sem
+atl1: header file cleanup
+atl1: cleanup atl1_main
+atl1: fix excessively indented code
+atl1: reorder atl1_main functions
 
-	if (unlikely(task_running(rq, p)))
-		goto out_activate;
-
-How it possible that rq->curr has on_rq == 0 ?
-
-AFAICS, this can only happen if this task is rq->idle. But idle threads
-should not sleep, we have a special "scheduling from the idle thread!"
-check in schedule().
-
-Thanks in advance,
-
-Oleg.
+ drivers/net/atl1/atl1.h      |  156 ++--
+ drivers/net/atl1/atl1_main.c | 2176 +++++++++++++++++++++---------------------
+ 2 files changed, 1172 insertions(+), 1160 deletions(-)
 
