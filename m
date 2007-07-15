@@ -1,120 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764095AbXGOQLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764513AbXGOQL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764095AbXGOQLk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 12:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762568AbXGOQFQ
+	id S1764513AbXGOQL5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 12:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762277AbXGOQFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 12:05:16 -0400
-Received: from www.osadl.org ([213.239.205.134]:42563 "EHLO mail.tglx.de"
+	Sun, 15 Jul 2007 12:05:17 -0400
+Received: from www.osadl.org ([213.239.205.134]:42532 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762245AbXGOQFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 12:05:04 -0400
-Message-Id: <20070715155541.330638388@inhelltoy.tec.linutronix.de>
+	id S1762284AbXGOQFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 12:05:05 -0400
+Message-Id: <20070715155541.378002848@inhelltoy.tec.linutronix.de>
 References: <20070715155510.341941668@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Jul 2007 16:10:56 -0000
+Date: Sun, 15 Jul 2007 16:10:57 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch-mm 15/33] i386: prepare sharing the hpet code with x86_64
-Content-Disposition: inline; filename=i386-prepare-sharing-hpet-code.patch
+       Andi Kleen <ak@suse.de>
+Subject: [patch-mm 16/33] i386: hpet add x8664 bits
+Content-Disposition: inline; filename=i386-hpet-add-x8664-hpet-bits.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The hpet implementations of i386 and x8664 has been mostly the same
-before the clock events conversion of i386. The clock events
-conversion of i386 hpet is already done. So it makes sense to share
-the code for the x86_64 clock events conversion.
+Add the x8664 specific bits (mapping) to share the hpet code later.
 
-Abstract out the mapping functions.
+Move the reserve_platform_timer call to late init. This is necessary
+for x86_64, as hpet enable() is called before memory is setup. i386
+calls it in late_time_init, but it does not hurt to do it later for
+both.
+
+Pull in the x8664 hpet disable command line option as well.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 ---
- arch/i386/kernel/hpet.c |   25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
+ arch/i386/kernel/hpet.c |   58 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
 
 Index: linux-2.6.22-rc6-mm/arch/i386/kernel/hpet.c
 ===================================================================
---- linux-2.6.22-rc6-mm.orig/arch/i386/kernel/hpet.c	2007-07-15 17:26:45.000000000 +0200
-+++ linux-2.6.22-rc6-mm/arch/i386/kernel/hpet.c	2007-07-15 17:49:01.000000000 +0200
-@@ -3,14 +3,14 @@
- #include <linux/errno.h>
- #include <linux/hpet.h>
- #include <linux/init.h>
-+#include <linux/ioport.h>
+--- linux-2.6.22-rc6-mm.orig/arch/i386/kernel/hpet.c	2007-07-15 17:39:01.000000000 +0200
++++ linux-2.6.22-rc6-mm/arch/i386/kernel/hpet.c	2007-07-15 17:48:49.000000000 +0200
+@@ -7,6 +7,7 @@
  #include <linux/sysdev.h>
  #include <linux/pm.h>
  
++#include <asm/fixmap.h>
  #include <asm/hpet.h>
-+#include <asm/i8253.h>
+ #include <asm/i8253.h>
  #include <asm/io.h>
- 
--extern struct clock_event_device *global_clock_event;
--
- #define HPET_MASK	CLOCKSOURCE_MASK(32)
- #define HPET_SHIFT	22
- 
-@@ -21,7 +21,7 @@ extern struct clock_event_device *global
-  * HPET address is set in acpi/boot.c, when an ACPI entry exists
-  */
+@@ -23,6 +24,10 @@
  unsigned long hpet_address;
--static void __iomem * hpet_virt_address;
-+static void __iomem *hpet_virt_address;
+ static void __iomem *hpet_virt_address;
  
++/* Temporary hack. Cleanup after x86_64 clock events conversion */
++#undef hpet_readl
++#undef hpet_writel
++
  static inline unsigned long hpet_readl(unsigned long a)
  {
-@@ -33,6 +33,17 @@ static inline void hpet_writel(unsigned 
+ 	return readl(hpet_virt_address + a);
+@@ -33,6 +38,24 @@ static inline void hpet_writel(unsigned 
  	writel(d, hpet_virt_address + a);
  }
  
++#ifdef CONFIG_X86_64
++
++#include <asm/pgtable.h>
++
 +static inline void hpet_set_mapping(void)
 +{
-+	hpet_virt_address = ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
++	set_fixmap_nocache(FIX_HPET_BASE, hpet_address);
++	__set_fixmap(VSYSCALL_HPET, hpet_address, PAGE_KERNEL_VSYSCALL_NOCACHE);
++	hpet_virt_address = (void __iomem *)fix_to_virt(FIX_HPET_BASE);
 +}
 +
 +static inline void hpet_clear_mapping(void)
 +{
-+	iounmap(hpet_virt_address);
 +	hpet_virt_address = NULL;
 +}
 +
++#else
++
+ static inline void hpet_set_mapping(void)
+ {
+ 	hpet_virt_address = ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
+@@ -43,6 +66,7 @@ static inline void hpet_clear_mapping(vo
+ 	iounmap(hpet_virt_address);
+ 	hpet_virt_address = NULL;
+ }
++#endif
+ 
  /*
   * HPET command line enable / disable
-  */
-@@ -82,7 +93,7 @@ static void hpet_reserve_platform_timers
+@@ -59,6 +83,13 @@ static int __init hpet_setup(char* str)
+ }
+ __setup("hpet=", hpet_setup);
  
- 	memset(&hd, 0, sizeof (hd));
- 	hd.hd_phys_address = hpet_address;
--	hd.hd_address = hpet_virt_address;
-+	hd.hd_address = hpet;
- 	hd.hd_nirqs = nrtimers;
- 	hd.hd_flags = HPET_DATA_PLATFORM;
- 	hpet_reserve_timer(&hd, 0);
-@@ -237,7 +248,7 @@ int __init hpet_enable(void)
- 	if (!is_hpet_capable())
- 		return 0;
++static int __init disable_hpet(char *str)
++{
++	boot_hpet_disable = 1;
++	return 1;
++}
++__setup("nohpet", disable_hpet);
++
+ static inline int is_hpet_capable(void)
+ {
+ 	return (!boot_hpet_disable && hpet_address);
+@@ -225,6 +256,13 @@ static cycle_t read_hpet(void)
+ 	return (cycle_t)hpet_readl(HPET_COUNTER);
+ }
  
--	hpet_virt_address = ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
-+	hpet_set_mapping();
++#ifdef CONFIG_X86_64
++static cycle_t __vsyscall_fn vread_hpet(void)
++{
++	return readl((const void __iomem *)fix_to_virt(VSYSCALL_HPET) + 0xf0);
++}
++#endif
++
+ static struct clocksource clocksource_hpet = {
+ 	.name		= "hpet",
+ 	.rating		= 250,
+@@ -233,6 +271,9 @@ static struct clocksource clocksource_hp
+ 	.shift		= HPET_SHIFT,
+ 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
+ 	.resume		= hpet_start_counter,
++#ifdef CONFIG_X86_64
++	.vread		= vread_hpet,
++#endif
+ };
  
- 	/*
- 	 * Read the period and check for a sane value:
-@@ -333,13 +344,11 @@ int __init hpet_enable(void)
- 	return 0;
+ /*
+@@ -331,7 +372,6 @@ int __init hpet_enable(void)
  
- out_nohpet:
--	iounmap(hpet_virt_address);
--	hpet_virt_address = NULL;
-+	hpet_clear_mapping();
- 	boot_hpet_disable = 1;
+ 	if (id & HPET_ID_LEGSUP) {
+ 		hpet_enable_int();
+-		hpet_reserve_platform_timers(id);
+ 		/*
+ 		 * Start hpet with the boot cpu mask and make it
+ 		 * global after the IO_APIC has been initialized.
+@@ -349,6 +389,22 @@ out_nohpet:
  	return 0;
  }
  
--
++/*
++ * Needs to be late, as the reserve_timer code calls kalloc !
++ *
++ * Not a problem on i386 as hpet_enable is called from late_time_init,
++ * but on x86_64 it is necessary !
++ */
++static __init int hpet_late_init(void)
++{
++	if (!is_hpet_capable())
++		return -ENODEV;
++
++	hpet_reserve_platform_timers(hpet_readl(HPET_ID));
++	return 0;
++}
++fs_initcall(hpet_late_init);
++
  #ifdef CONFIG_HPET_EMULATE_RTC
  
  /* HPET in LegacyReplacement Mode eats up RTC interrupt line. When, HPET
