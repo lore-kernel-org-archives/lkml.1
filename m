@@ -1,143 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbXGOGoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbXGOGsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbXGOGoP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 02:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbXGOGnv
+	id S1757078AbXGOGsp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 02:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXGOGsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 02:43:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:2944 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753234AbXGOGnt (ORCPT
+	Sun, 15 Jul 2007 02:48:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53343
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751875AbXGOGsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 02:43:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=MngozzJLTGm3AEZdWTAEZA0lZJ0lW3M6ET5kDWvQQGILBY61Oy8xNicIeQNN6hkdUcJ4mToErTnwbbuLKtBhcKU3CqyDwk3lI6MzCbGtFWMCLIHZThA+p2lzMVuHojZbcDQC5EJFCsADQ5pYvJWT8T2AxK53neosI0M0ZguYigk=
-Date: Sun, 15 Jul 2007 16:43:45 +1000
-From: Andrew Hendry <andrew.hendry@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, jejb@steeleye.com,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] MCA: setup ifdefs
-Message-ID: <20070715164345.41f9beea@jed>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Sun, 15 Jul 2007 02:48:37 -0400
+Date: Sat, 14 Jul 2007 23:48:39 -0700 (PDT)
+Message-Id: <20070714.234839.34761809.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: torvalds@linux-foundation.org, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Crypto Update for 2.6.23
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070711130849.GA10494@gondor.apana.org.au>
+References: <20070711130849.GA10494@gondor.apana.org.au>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The MCA setup performed is only needed when CONFIG_MCA=y.
-This wraps the setup with CONFIG_MCA and removes
-EXPORT_SYMBOL(machine_id) as no modules use it. Moved MCA setup
-variables from processor.h to mca.h because nothing else uses them.
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Wed, 11 Jul 2007 21:08:49 +0800
 
-Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
+> Here is the crypto update for 2.6.23:
+> 
+> Please pull from
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+> 
+> or
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
+I merged this into my net-2.6 tree, there was a tiny conflict
+in crypto/Kconfig I had to resolve because of the async_tx
+stuff that went in upstream.
 
-diff -uprN -X dontdiff a/arch/i386/boot/main.c b/arch/i386/boot/main.c
---- a/arch/i386/boot/main.c	2007-07-15 12:10:12.000000000 +1000
-+++ b/arch/i386/boot/main.c	2007-07-15 13:24:26.000000000 +1000
-@@ -137,7 +137,9 @@ void main(void)
- 	set_video();
- 
- 	/* Query MCA information */
-+#ifdef CONFIG_MCA
- 	query_mca();
-+#endif
- 
- 	/* Voyager */
- #ifdef CONFIG_X86_VOYAGER
-diff -uprN -X dontdiff a/arch/i386/boot/mca.c b/arch/i386/boot/mca.c
---- a/arch/i386/boot/mca.c	2007-07-15 12:10:02.000000000 +1000
-+++ b/arch/i386/boot/mca.c	2007-07-15 13:25:19.000000000 +1000
-@@ -16,6 +16,8 @@
- 
- #include "boot.h"
- 
-+#ifdef CONFIG_MCA
-+
- int query_mca(void)
- {
- 	u8 err;
-@@ -41,3 +43,5 @@ int query_mca(void)
- 	copy_from_fs(&boot_params.sys_desc_table, bx, len);
- 	return 0;
- }
-+
-+#endif
-diff -uprN -X dontdiff a/arch/i386/kernel/setup.c
-b/arch/i386/kernel/setup.c --- a/arch/i386/kernel/setup.c
-2007-07-15 12:23:45.000000000 +1000 +++
-b/arch/i386/kernel/setup.c	2007-07-15 13:29:06.000000000 +1000
-@@ -84,13 +84,11 @@ EXPORT_SYMBOL(boot_cpu_data); 
- unsigned long mmu_cr4_features;
- 
--/* for MCA, but anyone else can use it if they want */
--unsigned int machine_id;
- #ifdef CONFIG_MCA
--EXPORT_SYMBOL(machine_id);
--#endif
-+unsigned int machine_id;
- unsigned int machine_submodel_id;
- unsigned int BIOS_revision;
-+#endif
- 
- /* Boot loader ID as an integer, for the benefit of proc_dointvec */
- int bootloader_type;
-@@ -480,8 +478,6 @@ static void set_mca_bus(int x)
- {
- 	MCA_bus = x;
- }
--#else
--static void set_mca_bus(int x) { }
- #endif
- 
- /* Overridden in paravirt.c if CONFIG_PARAVIRT */
-@@ -523,12 +519,15 @@ void __init setup_arch(char **cmdline_p)
- 	apm_info.bios = APM_BIOS_INFO;
- 	ist_info = IST_INFO;
- 	saved_videomode = VIDEO_MODE;
-+
-+#ifdef CONFIG_MCA
- 	if( SYS_DESC_TABLE.length != 0 ) {
- 		set_mca_bus(SYS_DESC_TABLE.table[3] & 0x2);
- 		machine_id = SYS_DESC_TABLE.table[0];
- 		machine_submodel_id = SYS_DESC_TABLE.table[1];
- 		BIOS_revision = SYS_DESC_TABLE.table[2];
- 	}
-+#endif
- 	bootloader_type = LOADER_TYPE;
- 
- #ifdef CONFIG_BLK_DEV_RAM
-diff -uprN -X dontdiff a/include/asm-i386/processor.h
-b/include/asm-i386/processor.h ---
-a/include/asm-i386/processor.h	2007-07-15 12:23:45.000000000
-+1000 +++ b/include/asm-i386/processor.h	2007-07-15
-13:31:54.000000000 +1000 @@ -206,12 +206,6 @@ static inline void
-__mwait(unsigned long extern void mwait_idle_with_hints(unsigned long
-eax, unsigned long ecx); 
--/* from system description table in BIOS.  Mostly for MCA use, but
--others may find it useful. */
--extern unsigned int machine_id;
--extern unsigned int machine_submodel_id;
--extern unsigned int BIOS_revision;
--
- /* Boot loader type from the setup header */
- extern int bootloader_type;
- 
-diff -uprN -X dontdiff a/include/linux/mca.h b/include/linux/mca.h
---- a/include/linux/mca.h	2007-07-15 12:06:06.000000000 +1000
-+++ b/include/linux/mca.h	2007-07-15 13:32:40.000000000 +1000
-@@ -34,6 +34,11 @@ typedef int (*MCA_ProcFn)(char* buf, int
-  */
- extern void mca_handle_nmi(void);
- 
-+/* From system description table in BIOS */
-+extern unsigned int machine_id;
-+extern unsigned int machine_submodel_id;
-+extern unsigned int BIOS_revision;
-+
- enum MCA_AdapterStatus {
- 	MCA_ADAPTER_NORMAL = 0,
- 	MCA_ADAPTER_NONE = 1,
+Herbert can you contact the async_tx author to make sure that
+his crypto/ bits go through you in the future so that conflicts
+like this can be avoided?
+
+Thanks.
