@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759753AbXGOXIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759837AbXGOXNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759753AbXGOXIg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 19:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbXGOXI3
+	id S1759837AbXGOXNL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 19:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbXGOXM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 19:08:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54844 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754562AbXGOXI2 (ORCPT
+	Sun, 15 Jul 2007 19:12:58 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:53540 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754812AbXGOXM5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 19:08:28 -0400
-Message-ID: <469AA8D4.2070206@zytor.com>
-Date: Sun, 15 Jul 2007 16:08:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jonathan Campbell <jon@nerdgrounds.com>
-CC: linux-kernel@vger.kernel.org, torvalds@transmeta.com
+	Sun, 15 Jul 2007 19:12:57 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: Patches for REALLY TINY 386 kernels
-References: <469A8AED.7070207@nerdgrounds.com>
-In-Reply-To: <469A8AED.7070207@nerdgrounds.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Mon, 16 Jul 2007 09:12:55 +1000
+User-Agent: KMail/1.9.6
+Cc: Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org,
+       torvalds@transmeta.com
+References: <469A8AED.7070207@nerdgrounds.com> <200707160742.25232.nigel@nigel.suspend2.net> <20070715234526.13813f8f@the-village.bc.nu>
+In-Reply-To: <20070715234526.13813f8f@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1336762.3sP1gjSYDE";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707160912.55701.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Campbell wrote:
-> I wrote a set of patches out of concern that even if you compile a 386
-> kernel a lot of code irrelevent to legacy machines still remains. Things
-> like the Pentium TSC register, DMI information, ESCD parsing, and the
-> use of CPUID do not apply to these machines, but looking at System.map
-> you can see they're still there.
-> 
-> Already with these patches I can compile a zImage kernel that is 450kb
-> large (890kb decompressed) with a small initramfs payload, floppy and
-> kernel module support, FPU emulation, that can successfully boot on an
-> ancient 386 laptop with only 1MB of extended memory. Eventually what I'd
-> like to have is the ability to compile a pure 386 kernel with all
-> non-386 functions removed (and perhaps the same for 486 machines).
-> 
-> These patches were written against the vanilla 2.6.21.1 kernel. They
-> will have no effect UNLESS you make menuconfig and explicitly enable
-> them there.
+--nextPart1336762.3sP1gjSYDE
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-These should all probably depend on EMBEDDED (which is the "allow
-features to be disabled which would be dangerous for most people".)
+On Monday 16 July 2007 08:45:26 Alan Cox wrote:
+> > > These patches were written against the vanilla 2.6.21.1 kernel. They=
+=20
+> > > will have no effect UNLESS you make menuconfig and explicitly enable=
+=20
+> > > them there.
+> >=20
+> > Would you please make mrproper before preparing the patch? It's harder =
+to=20
+read=20
+> > with all the "Only in..." lines.
+>=20
+> A lot simpler is to feed the patch through "grep -v"
 
-CONFIG_X86_TSC, however, would be cleaner implemented by something like:
+Yeah. I was going for the general principle :)
 
-#ifdef CONFIG_X86_TSC
-int disable_tsc;
-#else
-#define disable_tsc 1
-#endif
+Nigel
+=2D-=20
+Nigel Cunningham
+Christian Reformed Church of Cobden
+103 Curdie Street, Cobden 3266, Victoria, Australia
+Ph. +61 3 5595 1185 / +61 417 100 574
+Communal Worship: 11 am Sunday.
 
-... then gcc will optimize out the rest of the code.
+--nextPart1336762.3sP1gjSYDE
+Content-Type: application/pgp-signature
 
-The CPUID stuff hacks up the code quite a bt which makes it hard to
-read.  Can you abstract any of that code so it doesn't get so ugly?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Stuff like:
+iD8DBQBGmqn3N0y+n1M3mo0RAmkNAKDsTawRh2S+CEcxudxRM1zQGl7XhACgv7qk
+bUIYpZefalIzq88heLZnRFo=
+=dK3g
+-----END PGP SIGNATURE-----
 
-+#ifndef CONFIG_X86_DONT_CPUID
- 	if (cpu_has_fxsr) {
- 		/*
- 		 * Verify that the FXSAVE/FXRSTOR data will be 16-byte aligned.
-@@ -1177,6 +1178,7 @@
- 		set_in_cr4(X86_CR4_OSXMMEXCPT);
- 		printk("done.\n");
- 	}
-+#endif
-
-... is much better handled by forcing the value of the cpu_has_* macros
-to zero, in which case gcc optimizes out the if clause.  The current git
-HEAD has handling of constant cpu_* going the other way, but it should
-be easy enough to extend.
-
-	-hpa
+--nextPart1336762.3sP1gjSYDE--
