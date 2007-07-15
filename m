@@ -1,129 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760189AbXGOOBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760706AbXGOOmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760189AbXGOOBk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 10:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbXGOOBa
+	id S1760706AbXGOOmU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 10:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757512AbXGOOmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 10:01:30 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:39176 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbXGOOB3 (ORCPT
+	Sun, 15 Jul 2007 10:42:10 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:18020 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757708AbXGOOmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 10:01:29 -0400
-X-IronPort-AV: i="4.16,540,1175486400"; 
-   d="scan'208"; a="34924305:sNHT27896281"
-Subject: Re: [PATCH try#2] Blackfin ethernet driver: on chip ethernet MAC
-	controller driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Michael Buesch <mb@bu3sch.de>
-Cc: bryan.wu@analog.com, Mike Frysinger <vapier.adi@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-In-Reply-To: <200707151417.10964.mb@bu3sch.de>
-References: <1184491629.3140.59.camel@roc-laptop>
-	 <200707151236.51779.mb@bu3sch.de> <1184501264.3140.71.camel@roc-laptop>
-	 <200707151417.10964.mb@bu3sch.de>
-Content-Type: text/plain
+	Sun, 15 Jul 2007 10:42:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=iJmAz+cNIqSTSMSc6PhDZEkrD4AXv7OKc4oDgvy6oIWSvrpgQR0iywQ9tHqK/unwjTgc4QxmpPmczBdVE/VR0FuFZ5l0599rasj6gZBl3GKs/X5JmyOByA2LiA6QdQp3k1hcftcKRYW5hnme8hjc0ctB/CPGgYYM+DyRAYCU2U4=
+Message-ID: <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com>
+Date: Sun, 15 Jul 2007 22:42:07 +0800
+From: "Li Yang" <leo@zh-kernel.org>
+To: "Rob Landley" <rob@landley.net>
+Subject: Re: [PATCH] Chinese Language Maintainer
+Cc: "Gerrit Huizenga" <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
+       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
+       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
+In-Reply-To: <200707131352.12952.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Sun, 15 Jul 2007 22:01:04 +0800
-Message-Id: <1184508064.6030.6.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 15 Jul 2007 14:01:27.0903 (UTC) FILETIME=[A35FDEF0:01C7C6E8]
+Content-Disposition: inline
+References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
+	 <200707121205.20959.rob@landley.net>
+	 <1184330583.23373.65.camel@Gundam>
+	 <200707131352.12952.rob@landley.net>
+X-Google-Sender-Auth: faa2d1b6a27b9904
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-15 at 14:17 +0200, Michael Buesch wrote:
-> On Sunday 15 July 2007 14:07:44 Bryan Wu wrote:
-> > @@ -483,9 +487,12 @@
-> >  
-> >  void setup_mac_addr(u8 * mac_addr)
-> >  {
-> > +	u32 addr_low = le32_to_cpu(*(u32 *) & mac_addr[0]);
-> > +	u16 addr_hi = le16_to_cpu(*(u16 *) & mac_addr[4]);
-> > +
-> >  	/* this depends on a little-endian machine */
-> > -	bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
-> > -	bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
-> > +	bfin_write_EMAC_ADDRLO(addr_low);
-> > +	bfin_write_EMAC_ADDRHI(addr_hi);
-> >  }
-> >  
-> >  static void adjust_tx_list(void)
-> > @@ -866,10 +873,10 @@
-> >  	int retval;
-> >  
-> >  	/* Grab the MAC address in the MAC */
-> > -	*(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
-> > -	*(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
-> > +	*(u32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
-> > +	*(u16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
-> 
-> Try something like this:
-> 
-> @@ -483,9 +487,12 @@
->  
->  void setup_mac_addr(u8 * mac_addr)
->  {
-> +       u32 addr_low = le32_to_cpu(*(__le32 *) & mac_addr[0]);
-> +       u16 addr_hi = le16_to_cpu(*(__le16 *) & mac_addr[4]);
-> +
-> -       /* this depends on a little-endian machine */
-> -       bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
-> -       bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
-> +       bfin_write_EMAC_ADDRLO(addr_low);
-> +       bfin_write_EMAC_ADDRHI(addr_hi);
->  }
->  
->  static void adjust_tx_list(void)
-> @@ -866,10 +873,10 @@
->         int retval;
->  
->         /* Grab the MAC address in the MAC */
-> -       *(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
-> -       *(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
-> +       *(__le32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
-> +       *(__le16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
-> 
+On 7/14/07, Rob Landley <rob@landley.net> wrote:
+> On Friday 13 July 2007 8:43:03 am Li Yang wrote:
+> > On Thu, 2007-07-12 at 12:05 -0400, Rob Landley wrote:
+> > > +A language maintainer accepts patches to the Linux kernel, written in C,
+> > > from +authors who do not also speak English.  The language maintainer
+> > > translates the +description of each patch into English, forwards the
+> > > patches to linux-kernel +and to the appropriate maintainers for inclusion
+> > > in the Linux kernel, and +translates questions and replies about such
+> > > patches as part of the +patch review process.
+> >
+> > In addiction to this responsibility, I would like to add two more which,
+> > in my opinion, are more important.  And these are what I'm trying to
+> > do.  :)
+> > First, promoting contribution to Linux kernel in local language.
+> > Second, coordinate the translation effort of key kernel documents.
+>
+> Cool.  It's good to do that, but not the problem I'm worried about solving.
+>
+> I was trying to describe the minimum requirements for being a language
+> maintainer, I.E. what non-english users need in order to be able to merge
+> their patches.  Because without someone to contribute patches to (I.E a
+> language maintainer), documentation in non-english languages promotes the
+> creation of patches that can't be merged.  That's the problem I'm trying to
+> solve.
+>
+> To me, finding language maintainers is the flip side of the coin of
+> translating documentation.
 
-Thanks a lot, Michael. 
+I think you worried too much about this problem.  :)  Let me explain
+the situation here in China more clearly.  Actually, English is
+mandatory in most schools and universities.  Only very few people
+learn other language as a second language.  Therefore software
+developers who are almost educated should have the basic English
+skill.  However, that doesn't mean that they can read English or
+communicate with native English speaker very easily.  Consider your
+second language learn in school for analogy.  Read in English will be
+much slower and more likely to cause misunderstanding.  This will
+reduce the likelihood greatly of English documentation being read.  If
+we are promoting contribution to the Linux community, we should
+maximum the possibility that these key documents being read.
+Translation will serve this purpose very well.
 
-I got a generic question about this endianess check. When should use it
-in a driver or something else? I grep it in the driver/net/
+So the possibility is very little that a translator is needed between
+the Linux maintainer and a Chinese developer.  Although sometimes help
+is needed when there is misunderstanding.
 
----
-drivers/net/e100.c:             ns->tx_window_errors += le32_to_cpu(s->tx_late_collisions);
-drivers/net/e100.c:             ns->tx_carrier_errors += le32_to_cpu(s->tx_lost_crs);
-drivers/net/e100.c:             ns->tx_fifo_errors += le32_to_cpu(s->tx_underruns);
-drivers/net/e100.c:             ns->tx_errors += le32_to_cpu(s->tx_max_collisions) +
-drivers/net/e100.c:                     le32_to_cpu(s->tx_lost_crs);
-drivers/net/e100.c:             ns->rx_length_errors += le32_to_cpu(s->rx_short_frame_errors) +
-drivers/net/e100.c:             ns->rx_crc_errors += le32_to_cpu(s->rx_crc_errors);
-drivers/net/e100.c:             ns->rx_frame_errors += le32_to_cpu(s->rx_alignment_errors);
-drivers/net/e100.c:             ns->rx_over_errors += le32_to_cpu(s->rx_overrun_errors);
-drivers/net/e100.c:             ns->rx_fifo_errors += le32_to_cpu(s->rx_overrun_errors);
-drivers/net/e100.c:             ns->rx_missed_errors += le32_to_cpu(s->rx_resource_errors);
-drivers/net/e100.c:             ns->rx_errors += le32_to_cpu(s->rx_crc_errors) +
-drivers/net/e100.c:                     le32_to_cpu(s->rx_alignment_errors) +
-drivers/net/e100.c:                     le32_to_cpu(s->rx_short_frame_errors) +
-drivers/net/e100.c:                     le32_to_cpu(s->rx_cdt_errors);
-drivers/net/e100.c:             nic->tx_deferred += le32_to_cpu(s->tx_deferred);
-drivers/net/e100.c:                     le32_to_cpu(s->tx_single_collisions);
-drivers/net/e100.c:                     le32_to_cpu(s->tx_multiple_collisions);
-drivers/net/e100.c:                     nic->tx_fc_pause += le32_to_cpu(s->fc_xmt_pause);
-drivers/net/e100.c:                     nic->rx_fc_pause += le32_to_cpu(s->fc_rcv_pause);
-drivers/net/e100.c:                             le32_to_cpu(s->fc_rcv_unsupported);
-drivers/net/e100.c:                             le32_to_cpu(cb->u.tcb.tbd.buf_addr),
-drivers/net/e100.c:                                     le32_to_cpu(cb->u.tcb.tbd.buf_addr),
----
+After a brief talk with the Japanese translator, I think the case is
+similar for Japanese too.
 
-Normally, it is used to protect some rx/tx status flags or dma buf addr.
+Therefore, in my opinion, language maintainer should be more a helper
+and promoter rather than a gatekeeper.  I will give a proposed process
+later about how this helper mechanism works.
 
-Any guide line for this leXX_to_cpu usage?
-
-Thanks again
-
-- Bryan Wu
+- Leo
