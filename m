@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763486AbXGOXt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXGOX4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763486AbXGOXt5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 19:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbXGOXtt
+	id S1760766AbXGOX4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 19:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbXGOX4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 19:49:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60107 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758196AbXGOXts (ORCPT
+	Sun, 15 Jul 2007 19:56:04 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:40284
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755637AbXGOX4D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 19:49:48 -0400
-Date: Sun, 15 Jul 2007 16:49:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-cc: V9FS Developers <v9fs-developer@lists.sourceforge.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] 9p Patches for 2.6.23 merge window
-In-Reply-To: <a4e6962a0707141320p376e51fcp4b1ceb681960e303@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0707151645561.20061@woody.linux-foundation.org>
-References: <a4e6962a0707141320p376e51fcp4b1ceb681960e303@mail.gmail.com>
+	Sun, 15 Jul 2007 19:56:03 -0400
+Date: Sun, 15 Jul 2007 16:49:55 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+In-Reply-To: <200707160122.09840.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.64.0707151644270.25614@asgard.lang.hm>
+References: <200707151433.34625.rjw@sisk.pl> <200707160047.28420.rjw@sisk.pl>
+ <Pine.LNX.4.64.0707151538130.25614@asgard.lang.hm> <200707160122.09840.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
 
+> On Monday, 16 July 2007 00:42, david@lang.hm wrote:
+>> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+>>
+>>> On Sunday, 15 July 2007 22:13, david@lang.hm wrote:
+>>>> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
+>>>>
+>>>>>    The ACPI specification requires us to invoke some global ACPI methods
+>>>>>    during the hibernation and during the restore.  Moreover, the ordering of
+>>>>>    code related to these ACPI methods may not be arbitrary (eg. some of
+>>>>>    them have to be executed after devices are put into low power states etc.).
+>>>>
+>>>> for a pure hibernate mode, you will be powering off the box after saving
+>>>> the suspend image. why are there any special ACPI modes involved?
+>>>
+>>> Because, for example, on my machine the status of power supply (present
+>>> vs not present) is not updated correctly after the restore if ACPI callbacks
+>>> aren't used during the hibernation.  That's just experience and it's in line
+>>> with the ACPI spec.
+>>
+>> so if a machine is actually powered off the /dev/suspend process won't
+>> work?
+>
+> No, it sort of works as usual, but after the restore the platform is not in the
+> correct state.
 
-On Sat, 14 Jul 2007, Eric Van Hensbergen wrote:
-> 
-> The bulk of the changes were in the reorganization patch which mostly
-> moved files and interfaces around in preparation for work on an
-> in-kernel 9p server.
+this is not hibernate as I and many others are thinking of it.
 
-Please use "git diff -C --stat --summary" to generate the diffstat 
-summary.
+hibernate as we are thinking would work on basicly any hardware, including 
+things with no ACPI or power savings support. and the system could be in 
+hibernate mode for any time period.
 
-In particular, because you didn't use -C (or -M), git have you an 
-old-style diffstat without renames, so the diffstat doesn't show that a 
-lot of it was moving code around.
+for that matter, after a system is put into hibernate mode the system 
+could be completely disassembled and any components replaced and the 
+system would work after a resume (assuming you still have access to the 
+suspend image)
 
-(That said, you seem to have changed names a lot too, so it's not pure 
-code movement).
+>> remember that the system may run a different OS between the hibernate and
+>> the resume, makeing any assumptions about what state the hardware is in
+>> when you start the resume is a problem.
+>
+> True, that's problematic.
 
-> 49 files changed, 5400 insertions(+), 5092 deletions(-)
+putting it mildly.
 
-With rename detection enabled, I get
-
- 36 files changed, 3444 insertions(+), 3130 deletions(-)
-
-due to finding some (partially dubious) renames:
-
- rename fs/9p/mux.h => include/net/9p/conn.h (53%)
- rename {fs => include/net}/9p/transport.h (59%)
- rename {fs => net}/9p/conv.c (55%)
- rename {fs => net}/9p/fcprint.c (64%)
- rename {fs => net}/9p/mux.c (55%)
-
-even though is misses a lot of others (due to all the "v9fs" -> "p9" 
-changes in the source code too - was that really worth it?).
-
-			Linus
+David Lang
