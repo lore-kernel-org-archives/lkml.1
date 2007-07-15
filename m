@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbXGOTyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbXGOT7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbXGOTyd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 15:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXGOTyZ
+	id S1754562AbXGOT7a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 15:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXGOT7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 15:54:25 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:56623
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbXGOTyY (ORCPT
+	Sun, 15 Jul 2007 15:59:23 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39902 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751414AbXGOT7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 15:54:24 -0400
-Date: Sun, 15 Jul 2007 12:46:53 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Cornelius Riemenschneider <c.r1@gmx.de>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <469A8515.3080109@gmx.de>
-Message-ID: <Pine.LNX.4.64.0707151240380.25614@asgard.lang.hm>
-References: <200707151433.34625.rjw@sisk.pl> <469A8515.3080109@gmx.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sun, 15 Jul 2007 15:59:23 -0400
+To: torvalds@linux-foundation.org
+Subject: [PATCH] minimal fixes for drivers/usb/gadget/m66592-udc.c
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Message-Id: <E1IAAFW-00053E-0T@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Sun, 15 Jul 2007 20:59:22 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Jul 2007, Cornelius Riemenschneider wrote:
 
-> Hi,
-> I think a (10) is needed to be clear:
->
-> (10) This depends directly on (9)
-> Easy Userinterface for the average user, no one wants to edit several
-> files and use a long commandline for a suspend (not all know about
-> alias(P)), so keeping the effort to suspend your system low, please.(eg
-> for my TuxOnIce i just type hibernate as root/ sudo hibernate as normal
-> user and the suspend begin, the rest is automatically done by the
-> configuration(for me this is shutting down my wireless interface)
->
-> Cornelius Riemenschneider
+still looks racy (and definitely leaks)
 
-for both #9 and #10, if there are complex command lines that need to be 
-used, they can be put into scripts (including things like 'sudo 
-hibernate')
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ drivers/usb/gadget/m66592-udc.c |   27 ++++-----------------------
+ 1 files changed, 4 insertions(+), 23 deletions(-)
 
-this doesn't prevent people from useing kernel.org kernels, in fact the 
-seperate between the main system and what's used for hibernation may make 
-it easier to change the main kernel (all that you would need is to enable 
-kexec in your main kernel and 'everything else would just work')
+diff --git a/drivers/usb/gadget/m66592-udc.c b/drivers/usb/gadget/m66592-udc.c
+index c0a962b..0174a32 100644
+--- a/drivers/usb/gadget/m66592-udc.c
++++ b/drivers/usb/gadget/m66592-udc.c
+@@ -937,6 +937,7 @@ static void get_status(struct m66592 *m66592, struct usb_ctrlrequest *ctrl)
+ 	*m66592->ep0_buf = status;
+ 	m66592->ep0_req->buf = m66592->ep0_buf;
+ 	m66592->ep0_req->length = 2;
++	/* AV: what happens if we get called again before that gets through? */
+ 	m66592_queue(m66592->gadget.ep0, m66592->ep0_req, GFP_KERNEL);
+ }
+ 
+@@ -1254,24 +1255,6 @@ static void m66592_free_request(struct usb_ep *_ep, struct usb_request *_req)
+ 	kfree(req);
+ }
+ 
+-static void *m66592_alloc_buffer(struct usb_ep *_ep, unsigned bytes,
+-				 dma_addr_t *dma, gfp_t gfp_flags)
+-{
+-	void *buf;
+-
+-	buf = kzalloc(bytes, gfp_flags);
+-	if (dma)
+-		*dma = virt_to_bus(buf);
+-
+-	return buf;
+-}
+-
+-static void m66592_free_buffer(struct usb_ep *_ep, void *buf,
+-			       dma_addr_t dma, unsigned bytes)
+-{
+-	kfree(buf);
+-}
+-
+ static int m66592_queue(struct usb_ep *_ep, struct usb_request *_req,
+ 			gfp_t gfp_flags)
+ {
+@@ -1378,9 +1361,6 @@ static struct usb_ep_ops m66592_ep_ops = {
+ 	.alloc_request	= m66592_alloc_request,
+ 	.free_request	= m66592_free_request,
+ 
+-	.alloc_buffer	= m66592_alloc_buffer,
+-	.free_buffer	= m66592_free_buffer,
+-
+ 	.queue		= m66592_queue,
+ 	.dequeue	= m66592_dequeue,
+ 
+@@ -1603,11 +1583,12 @@ static int __init m66592_probe(struct platform_device *pdev)
+ 
+ 	the_controller = m66592;
+ 
++	/* AV: leaks */
+ 	m66592->ep0_req = m66592_alloc_request(&m66592->ep[0].ep, GFP_KERNEL);
+ 	if (m66592->ep0_req == NULL)
+ 		goto clean_up;
+-	m66592->ep0_buf = m66592_alloc_buffer(&m66592->ep[0].ep, 2, NULL,
+-					      GFP_KERNEL);
++	/* AV: leaks, and do we really need it separately allocated? */
++	m66592->ep0_buf = kzalloc(2, GFP_KERNEL);
+ 	if (m66592->ep0_buf == NULL)
+ 		goto clean_up;
+ 
+-- 
+1.5.3.GIT
 
-now if you need/want to change out your hibernate kernel you will have to 
-change the hibernate scripts to tell them to use the new kernel. yes this 
-is an extra step, but it can still be simple. for that matter, it may be 
-possible for the distros to agree enough to add 'make install_hibernate' 
-to the kernel makefiles like they have 'make install' that will just 'do 
-the right thing' for each particular distro.
 
-makeing things explicit and flexible may require complex command lines to 
-implement, but nothing says that the user (even a moderatly advanced user) 
-needs to deal with those command lines directly.
-
-David Lang
