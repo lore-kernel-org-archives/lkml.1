@@ -1,50 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbXGOQJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764141AbXGOQJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763995AbXGOQJa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 12:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762290AbXGOQFE
+	id S1764141AbXGOQJr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 12:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762628AbXGOQFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 12:05:04 -0400
-Received: from www.osadl.org ([213.239.205.134]:42532 "EHLO mail.tglx.de"
+	Sun, 15 Jul 2007 12:05:06 -0400
+Received: from www.osadl.org ([213.239.205.134]:42556 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761373AbXGOQE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 12:04:59 -0400
-Message-Id: <20070715155541.097810632@inhelltoy.tec.linutronix.de>
+	id S1761496AbXGOQFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 12:05:01 -0400
+Message-Id: <20070715155541.146257096@inhelltoy.tec.linutronix.de>
 References: <20070715155510.341941668@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Jul 2007 16:10:51 -0000
+Date: Sun, 15 Jul 2007 16:10:52 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch-mm 10/33] x86_64: fiuxp pt_reqs leftovers
-Content-Disposition: inline; filename=x86_64-fix-irq-regs-leftovers.patch
+Subject: [patch-mm 11/33] x86_64: share hpet.h with i386
+Content-Disposition: inline; filename=x86_64-share-hpet-h.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The hpet_rtc_interrupt handler still uses pt_regs. Fix it.
+hpet.h in asm-i386 and asm-x86_64 contain tons of duplicated stuff.
+Consolidate into one shared header file.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 ---
- arch/x86_64/kernel/hpet.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/asm-i386/hpet.h   |  124 +++++++++++++++++-----------------------------
+ include/asm-x86_64/hpet.h |   61 ----------------------
+ 2 files changed, 48 insertions(+), 137 deletions(-)
 
-Index: linux-2.6.22-rc6-mm/arch/x86_64/kernel/hpet.c
+Index: linux-2.6.22-rc6-mm/include/asm-i386/hpet.h
 ===================================================================
---- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/hpet.c	2007-07-15 17:27:01.000000000 +0200
-+++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/hpet.c	2007-07-15 17:49:03.000000000 +0200
-@@ -439,7 +439,7 @@ int hpet_rtc_dropped_irq(void)
- 	return 1;
- }
+--- linux-2.6.22-rc6-mm.orig/include/asm-i386/hpet.h	2007-07-15 17:26:45.000000000 +0200
++++ linux-2.6.22-rc6-mm/include/asm-i386/hpet.h	2007-07-15 17:48:49.000000000 +0200
+@@ -4,112 +4,82 @@
  
--irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
-+irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
- {
- 	struct rtc_time curr_time;
- 	unsigned long rtc_int_flag = 0;
+ #ifdef CONFIG_HPET_TIMER
+ 
+-#include <linux/errno.h>
+-#include <linux/module.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/param.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/interrupt.h>
+-#include <linux/time.h>
+-#include <linux/delay.h>
+-#include <linux/init.h>
+-#include <linux/smp.h>
+-
+-#include <asm/io.h>
+-#include <asm/smp.h>
+-#include <asm/irq.h>
+-#include <asm/msr.h>
+-#include <asm/delay.h>
+-#include <asm/mpspec.h>
+-#include <asm/uaccess.h>
+-#include <asm/processor.h>
+-
+-#include <linux/timex.h>
+-
+ /*
+  * Documentation on HPET can be found at:
+  *      http://www.intel.com/ial/home/sp/pcmmspec.htm
+  *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+  */
+ 
+-#define HPET_MMAP_SIZE	1024
++#define HPET_MMAP_SIZE		1024
+ 
+-#define HPET_ID		0x000
+-#define HPET_PERIOD	0x004
+-#define HPET_CFG	0x010
+-#define HPET_STATUS	0x020
+-#define HPET_COUNTER	0x0f0
+-#define HPET_T0_CFG	0x100
+-#define HPET_T0_CMP	0x108
+-#define HPET_T0_ROUTE	0x110
+-#define HPET_T1_CFG	0x120
+-#define HPET_T1_CMP	0x128
+-#define HPET_T1_ROUTE	0x130
+-#define HPET_T2_CFG	0x140
+-#define HPET_T2_CMP	0x148
+-#define HPET_T2_ROUTE	0x150
+-
+-#define HPET_ID_LEGSUP	0x00008000
+-#define HPET_ID_NUMBER	0x00001f00
+-#define HPET_ID_REV	0x000000ff
++#define HPET_ID			0x000
++#define HPET_PERIOD		0x004
++#define HPET_CFG		0x010
++#define HPET_STATUS		0x020
++#define HPET_COUNTER		0x0f0
++#define HPET_T0_CFG		0x100
++#define HPET_T0_CMP		0x108
++#define HPET_T0_ROUTE		0x110
++#define HPET_T1_CFG		0x120
++#define HPET_T1_CMP		0x128
++#define HPET_T1_ROUTE		0x130
++#define HPET_T2_CFG		0x140
++#define HPET_T2_CMP		0x148
++#define HPET_T2_ROUTE		0x150
++
++#define HPET_ID_REV		0x000000ff
++#define HPET_ID_NUMBER		0x00001f00
++#define HPET_ID_64BIT		0x00002000
++#define HPET_ID_LEGSUP		0x00008000
++#define HPET_ID_VENDOR		0xffff0000
+ #define	HPET_ID_NUMBER_SHIFT	8
++#define HPET_ID_VENDOR_SHIFT	16
+ 
+-#define HPET_CFG_ENABLE	0x001
+-#define HPET_CFG_LEGACY	0x002
++#define HPET_ID_VENDOR_8086	0x8086
++
++#define HPET_CFG_ENABLE		0x001
++#define HPET_CFG_LEGACY		0x002
+ #define	HPET_LEGACY_8254	2
+ #define	HPET_LEGACY_RTC		8
+ 
+-#define HPET_TN_ENABLE		0x004
+-#define HPET_TN_PERIODIC	0x008
+-#define HPET_TN_PERIODIC_CAP	0x010
+-#define HPET_TN_SETVAL		0x040
+-#define HPET_TN_32BIT		0x100
+-
+-/* Use our own asm for 64 bit multiply/divide */
+-#define ASM_MUL64_REG(eax_out,edx_out,reg_in,eax_in) 			\
+-		__asm__ __volatile__("mull %2" 				\
+-				:"=a" (eax_out), "=d" (edx_out) 	\
+-				:"r" (reg_in), "0" (eax_in))
+-
+-#define ASM_DIV64_REG(eax_out,edx_out,reg_in,eax_in,edx_in) 		\
+-		__asm__ __volatile__("divl %2" 				\
+-				:"=a" (eax_out), "=d" (edx_out) 	\
+-				:"r" (reg_in), "0" (eax_in), "1" (edx_in))
++#define HPET_TN_LEVEL		0x0002
++#define HPET_TN_ENABLE		0x0004
++#define HPET_TN_PERIODIC	0x0008
++#define HPET_TN_PERIODIC_CAP	0x0010
++#define HPET_TN_64BIT_CAP	0x0020
++#define HPET_TN_SETVAL		0x0040
++#define HPET_TN_32BIT		0x0100
++#define HPET_TN_ROUTE		0x3e00
++#define HPET_TN_FSB		0x4000
++#define HPET_TN_FSB_CAP		0x8000
++#define HPET_TN_ROUTE_SHIFT	9
+ 
+-#define KERNEL_TICK_USEC 	(1000000UL/HZ)	/* tick value in microsec */
+ /* Max HPET Period is 10^8 femto sec as in HPET spec */
+-#define HPET_MAX_PERIOD (100000000UL)
++#define HPET_MAX_PERIOD		100000000UL
+ /*
+  * Min HPET period is 10^5 femto sec just for safety. If it is less than this,
+  * then 32 bit HPET counter wrapsaround in less than 0.5 sec.
+  */
+-#define HPET_MIN_PERIOD (100000UL)
+-#define HPET_TICK_RATE  (HZ * 100000UL)
++#define HPET_MIN_PERIOD		100000UL
+ 
+-extern unsigned long hpet_address;	/* hpet memory map physical address */
++/* hpet memory map physical address */
++extern unsigned long hpet_address;
+ extern int is_hpet_enabled(void);
+-
+-#ifdef CONFIG_X86_64
+-extern unsigned long hpet_tick;	/* hpet clks count per tick */
+-extern int hpet_use_timer;
+-extern int hpet_rtc_timer_init(void);
+ extern int hpet_enable(void);
+-extern int is_hpet_capable(void);
+-extern int hpet_readl(unsigned long a);
+-#else
+-extern int hpet_enable(void);
+-#endif
+ 
+ #ifdef CONFIG_HPET_EMULATE_RTC
++
++#include <linux/interrupt.h>
++
+ extern int hpet_mask_rtc_irq_bit(unsigned long bit_mask);
+ extern int hpet_set_rtc_irq_bit(unsigned long bit_mask);
+-extern int hpet_set_alarm_time(unsigned char hrs, unsigned char min, unsigned char sec);
++extern int hpet_set_alarm_time(unsigned char hrs, unsigned char min,
++			       unsigned char sec);
+ extern int hpet_set_periodic_freq(unsigned long freq);
+ extern int hpet_rtc_dropped_irq(void);
+ extern int hpet_rtc_timer_init(void);
+ extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
++
+ #endif /* CONFIG_HPET_EMULATE_RTC */
+ 
+ #else
+Index: linux-2.6.22-rc6-mm/include/asm-x86_64/hpet.h
+===================================================================
+--- linux-2.6.22-rc6-mm.orig/include/asm-x86_64/hpet.h	2007-07-15 17:29:06.000000000 +0200
++++ linux-2.6.22-rc6-mm/include/asm-x86_64/hpet.h	2007-07-15 17:48:54.000000000 +0200
+@@ -1,59 +1,10 @@
+ #ifndef _ASM_X8664_HPET_H
+ #define _ASM_X8664_HPET_H 1
+ 
+-/*
+- * Documentation on HPET can be found at:
+- *      http://www.intel.com/ial/home/sp/pcmmspec.htm
+- *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+- */
+-
+-#define HPET_MMAP_SIZE	1024
+-
+-#define HPET_ID		0x000
+-#define HPET_PERIOD	0x004
+-#define HPET_CFG	0x010
+-#define HPET_STATUS	0x020
+-#define HPET_COUNTER	0x0f0
+-#define HPET_Tn_OFFSET	0x20
+-#define HPET_Tn_CFG(n)	 (0x100 + (n) * HPET_Tn_OFFSET)
+-#define HPET_Tn_ROUTE(n) (0x104 + (n) * HPET_Tn_OFFSET)
+-#define HPET_Tn_CMP(n)	 (0x108 + (n) * HPET_Tn_OFFSET)
+-#define HPET_T0_CFG	HPET_Tn_CFG(0)
+-#define HPET_T0_CMP	HPET_Tn_CMP(0)
+-#define HPET_T1_CFG	HPET_Tn_CFG(1)
+-#define HPET_T1_CMP	HPET_Tn_CMP(1)
+-
+-#define HPET_ID_VENDOR	0xffff0000
+-#define HPET_ID_LEGSUP	0x00008000
+-#define HPET_ID_64BIT	0x00002000
+-#define HPET_ID_NUMBER	0x00001f00
+-#define HPET_ID_REV	0x000000ff
+-#define	HPET_ID_NUMBER_SHIFT	8
+-
+-#define HPET_ID_VENDOR_SHIFT	16
+-#define HPET_ID_VENDOR_8086	0x8086
+-
+-#define HPET_CFG_ENABLE	0x001
+-#define HPET_CFG_LEGACY	0x002
+-#define	HPET_LEGACY_8254	2
+-#define	HPET_LEGACY_RTC		8
+-
+-#define HPET_TN_LEVEL		0x0002
+-#define HPET_TN_ENABLE		0x0004
+-#define HPET_TN_PERIODIC	0x0008
+-#define HPET_TN_PERIODIC_CAP	0x0010
+-#define HPET_TN_64BIT_CAP	0x0020
+-#define HPET_TN_SETVAL		0x0040
+-#define HPET_TN_32BIT		0x0100
+-#define HPET_TN_ROUTE		0x3e00
+-#define HPET_TN_FSB		0x4000
+-#define HPET_TN_FSB_CAP		0x8000
+-
+-#define HPET_TN_ROUTE_SHIFT	9
++#include <asm-i386/hpet.h>
+ 
+ #define HPET_TICK_RATE (HZ * 100000UL)
+ 
+-extern int is_hpet_enabled(void);
+ extern int hpet_rtc_timer_init(void);
+ extern int hpet_arch_init(void);
+ extern int hpet_timer_stop_set_go(unsigned long tick);
+@@ -61,17 +12,7 @@ extern int hpet_reenable(void);
+ extern unsigned int hpet_calibrate_tsc(void);
+ 
+ extern int hpet_use_timer;
+-extern unsigned long hpet_address;
+ extern unsigned long hpet_period;
+ extern unsigned long hpet_tick;
+ 
+-#ifdef CONFIG_HPET_EMULATE_RTC
+-extern int hpet_mask_rtc_irq_bit(unsigned long bit_mask);
+-extern int hpet_set_rtc_irq_bit(unsigned long bit_mask);
+-extern int hpet_set_alarm_time(unsigned char hrs, unsigned char min, unsigned char sec);
+-extern int hpet_set_periodic_freq(unsigned long freq);
+-extern int hpet_rtc_dropped_irq(void);
+-extern int hpet_rtc_timer_init(void);
+-#endif /* CONFIG_HPET_EMULATE_RTC */
+-
+ #endif
 
 -- 
 
