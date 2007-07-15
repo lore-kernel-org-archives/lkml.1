@@ -1,46 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbXGOIB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbXGOIC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758566AbXGOIB3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 04:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755358AbXGOIBU
+	id S1758697AbXGOIC3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 04:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbXGOICQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 04:01:20 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:53263 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755271AbXGOIBT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 04:01:19 -0400
-Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
-From: David Woodhouse <dwmw2@infradead.org>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070714213412.GA10196@aepfle.de>
-References: <20070714205709.GA9478@aepfle.de> <46993C59.1030902@zytor.com>
-	 <20070714213412.GA10196@aepfle.de>
-Content-Type: text/plain
-Date: Sun, 15 Jul 2007 09:01:11 +0100
-Message-Id: <1184486471.2860.4.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 15 Jul 2007 04:02:16 -0400
+Received: from no-way.org ([212.55.212.131]:41896 "EHLO no-way.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755271AbXGOICN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 04:02:13 -0400
+Date: Sun, 15 Jul 2007 10:02:09 +0200
+From: Flavio Curti <fcu@no-way.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Flavio Curti <lists.fcu@no-way.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: panics with 16port Promise Supertrack EX Controller
+Message-ID: <20070715080209.GC21260@no-way.org>
+References: <20070708225246.GD16285@no-way.org> <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com> <46919688.1050005@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="rwEMma7ioTxnRzrJ"
+Content-Disposition: inline
+In-Reply-To: <46919688.1050005@yahoo.com.au>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-14 at 23:34 +0200, Olaf Hering wrote:
-> > I would think it would be better to not define it at all.  Several
-> > architectures already don't have PAGE_SIZE visible to userspace in 
-> > any way.
-> 
-> i386 has it, so everyone uses it.
 
-PowerPC lacks it, so nothing we ship in Fedora relies upon it.
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Just kill it. Probably by leaving <asm/page.h> empty for now; we can
-remove it completely later.
+Hello
 
--- 
-dwmw2
+On Mon, Jul 09, 2007 at 11:59:36AM +1000, Nick Piggin wrote:
+> >Jul  8 00:19:13 dorade.cyberlink.ch EFLAGS: 00210046   
+> >(2.6.22-rc7-dorade #1)
+> >>The machine panics
+> >>after some days of running fine, the machine inst heavy loaded.
+> >>The Controller detects as stex device:
+> >kernel BUG at block/as-iosched.c:1084!
+> >
+> >BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[REQ_ASYNC]));
+> Could be a bug in the driver that just happens to be caught by AS checks.
+> If you could test another scheduler (boot with elevator=deadline or 
+> elevator=cfq),
+> it might help give us an idea.
 
+Ok, I now switched to cfg, and the machine panicd again. Panic attached.
+Any help is appreciated.
+
+Flavio Curti
+--
+http://no-way.org/~fcu/
+
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=dorade-kdump
+
+blk_queue_end_tag: attempt to clear non-busy tag (1) 
+------------[ cut here ]------------ 
+kernel BUG at block/ll_rw_blk.c:2758! 
+invalid opcode: 0000 [#1] 
+SMP 
+ 
+Modules linked in:
+ i2c_i801
+ i2c_core
+ 
+CPU:    0 
+EIP:    0060:[<c02a3164>]    Not tainted VLI 
+EFLAGS: 00010002   (2.6.22.1-dorade #1) 
+EIP is at __blk_put_request+0x74/0x80 
+eax: 00000000   ebx: dae3e578   ecx: c02ac600   edx: 00000000 
+esi: 00030784   edi: f7f28b24   ebp: f7f28b24   esp: c0621e50 
+ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068 
+Process swapper (pid: 0, ti=c0620000 task=c05d8340 task.ti=c0620000)
+ 
+Stack: 
+dae3e578 
+e2b5aac0 
+00000001 
+scsi_end_request+0x94/0xe0 
+ [<c03743c6>] 
+scsi_io_completion+0x86/0x3e0 
+ [<c012b08a>] 
+del_timer+0x5a/0x70 
+ [<c038fc7b>] 
+sd_rw_intr+0x2b/0x200 
+ [<c038bf8e>] 
+stex_mu_intr+0x12e/0x540 
+ [<c036fe85>] 
+scsi_finish_command+0x45/0x60 
+ [<c02a4c88>] 
+blk_done_softirq+0x58/0x70 
+ [<c0126e92>] 
+__do_softirq+0x82/0x100 
+ [<c0126f47>] 
+do_softirq+0x37/0x40 
+ [<c0127185>] 
+irq_exit+0x75/0x80 
+ [<c0106410>] 
+do_IRQ+0x40/0x80 
+ [<c0139796>] 
+getnstimeofday+0x36/0xd0 
+ [<c0104503>] 
+common_interrupt+0x23/0x28 
+ [<c0101d26>] 
+mwait_idle_with_hints+0x46/0x60 
+ [<c0101e85>] 
+cpu_idle+0x65/0x90 
+ [<c0628d1f>] 
+start_kernel+0x2ef/0x370 
+ [<c06284e0>] 
+unknown_bootoption+0x0/0x250 
+ ======================= 
+Code: 
+8b 
+57 
+24 
+89 
+d8 
+83 
+e6 
+01 
+e8 
+ca 
+1b 
+eb 
+ff 
+89 
+f2 
+89 
+f8 
+89 
+e9 
+5b 
+5e 
+5f 
+5d 
+e9 
+3b 
+ff 
+last message repeated 2 times
+89 
+da 
+89 
+
+--rwEMma7ioTxnRzrJ--
