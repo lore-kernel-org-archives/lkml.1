@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbXGOCtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbXGOCto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbXGOCtJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 22:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbXGOCs6
+	id S1755847AbXGOCto (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 22:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXGOCtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 22:48:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:11862 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbXGOCs5 (ORCPT
+	Sat, 14 Jul 2007 22:49:35 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:60874 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752198AbXGOCte (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 22:48:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=HaHbxQdPSL1cgZDs9kpRF/Uc5GbI7DOyv3oZVpF11YarcIwA8Yx+PKOMi3XhPbPQhSaej7egQj7ujFO+pa2K/lFS/vbkBU+fNVDFcQJAK9mUH7znXQVeVw4oCKDorSupLoT5wS4cLfAtODX1D/4mx5coIXqkWn/me9rWZJRjFCk=
-Message-ID: <787b0d920707141948t71b4059s7ae68610f9f81eac@mail.gmail.com>
-Date: Sat, 14 Jul 2007 22:48:57 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: olaf@aepfle.de, hpa@zytor.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 14 Jul 2007 22:49:34 -0400
+Date: Sat, 14 Jul 2007 22:49:31 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] F00F bug fixup for i386 - use immediate values
+Message-ID: <20070715024931.GA25152@Krystal>
+References: <20070714012642.499375439@polymtl.ca> <20070714012743.511046887@polymtl.ca> <20070714072239.GA5822@martell.zuzino.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+In-Reply-To: <20070714072239.GA5822@martell.zuzino.mipt.ru>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:29:56 up 7 days, 16:35,  2 users,  load average: 0.04, 0.20, 0.25
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olaf Hering writes:
-> On Sat, Jul 14, H. Peter Anvin wrote:
->> Olaf Hering wrote:
+* Alexey Dobriyan (adobriyan@gmail.com) wrote:
+> On Fri, Jul 13, 2007 at 09:26:43PM -0400, Mathieu Desnoyers wrote:
+> > Use the faster immediate values for F00F bug handling in do_page_fault.
+> 
+> > --- linux-2.6-lttng.orig/arch/i386/mm/fault.c
+> > +++ linux-2.6-lttng/arch/i386/mm/fault.c
+> > @@ -492,7 +493,7 @@
+> >  	/*
+> >  	 * Pentium F0 0F C7 C8 bug workaround.
+> >  	 */
+> > -	if (boot_cpu_data.f00f_bug) {
+> > +	immediate_if (&f00f_bug_fix) {
+> 
+> This code is not called during normal pagefaults and even during invalid
+> userspace accesses.
+> 
+> Out of curiosity, I inserted printk() at this place to see where I was
+> wrong. I got only two hits:
+> 
+> 	Checking if this processor honours the WP bit even in supervisor mode... do_page_fault:
+> 	Freeing unused kernel memory: 116k freed
+> 	do_page_fault:
+> 
+> Resume: nobody gives a fuck about performance of this particular if,
+> 	so conversion it totally pointless.
+> 
 
->>> Declare PAGE_SIZE as getpagesize() for userspace.
->>> PAGE_SIZE is used in resource.h and shm.h
->>
->> I would think it would be better to not define it at all.
->> Several architectures already don't have PAGE_SIZE visible
->> to userspace in any way.
->
-> i386 has it, so everyone uses it.
+Interesting investigation, let's push it further:
 
-Since i386 was the first architecture and is still probably the
-most common architecture (x86_64 being 30% AFAIK), i386 sets the
-standard for the Linux API. Several architectures are broken and
-thus suffering from incompatibility.
+instrumenting the f00f test site with a printk, I get:
 
-A real constant-value PAGE_SIZE is useful and doable.
+[    0.000000] Checking if this processor honours the WP bit even in
+supervisor mode... TEST: would test f00f bug at vadd ffecc000, eip c011928e
+[    0.000000] Ok.
+... and (whenever xdm restarts) :
+[   64.768165] TEST: would test f00f bug at vadd 00000000, eip c0237596
+[   64.787136] TEST: would test f00f bug at vadd 0000004c, eip c02375a2
 
-It's useful because a getpagesize() can't be used for numerous
-things, such as setting the size of an array.
+Those EIPs are:
 
-It's doable, even on architectures that support multiple page
-sizes, because ABIs specify alignment requirements. There are
-two alignments of interest here:
+0xc011928e <do_test_wp_bit+20>: mov    %cl,0xffecd000(%edx)
+-> Will trigger fixup_exception.
 
-a. the smallest that mmap() will ever naturally return on any
-   correct implementation of the architecture's ABI ("naturally"
-   meaning that MAP_FIXED was not used)
+0xc0237596 <__copy_from_user_ll+53>:    rep movsl %ds:(%esi),%es:(%edi)
+0xc02375a2 <__copy_from_user_ll+65>:    mov    0x20(%esi),%eax
+-> Those look like user-space programs that gave NULL pointers to kernel
+system calls.
 
-b. the smallest that mprotect() will tolerate on all
-   correct implementations of the architecture
+I agree with you that this is not a "hot path". It was mostly a
+straightforward test conversion.
 
-Pick either to be the Linux definition of PAGE_SIZE.
+Mathieu
 
-For example, if an architecture is specified to have a page size
-of at least 4 K but no more than 64 K, then mprotect() will only
-tolerate 64 K on all correct implementations of the architecture.
-The ABI might allow mmap() to naturally return 4 K aligned data,
-but might instead require 64 K alignment. Assuming 4 K, then the
-mmap() value doesn't match the mprotect() value. Either one will
-do as the value of PAGE_SIZE, as long as this is standardized in
-the way that breaks the least code.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
