@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbXGOKi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760830AbXGOKl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760288AbXGOKi0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 06:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbXGOKiP
+	id S1760830AbXGOKl1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 06:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbXGOKlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 06:38:15 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:54421
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756864AbXGOKiP (ORCPT
+	Sun, 15 Jul 2007 06:41:20 -0400
+Received: from mail-in-09.arcor-online.net ([151.189.21.49]:53164 "EHLO
+	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755611AbXGOKlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 06:38:15 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH try#2] Blackfin ethernet driver: on chip ethernet MAC controller driver
-Date: Sun, 15 Jul 2007 12:36:51 +0200
-User-Agent: KMail/1.9.6
-Cc: Mike Frysinger <vapier.adi@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-References: <1184491629.3140.59.camel@roc-laptop>
-In-Reply-To: <1184491629.3140.59.camel@roc-laptop>
+	Sun, 15 Jul 2007 06:41:19 -0400
+Message-ID: <4699F9CB.5010407@arcor.de>
+Date: Sun, 15 Jul 2007 12:41:15 +0200
+From: Timo Lindemann <tlindemann@arcor.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070616)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: David Brownell <david-b@pacbell.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: kernel hang in ohci init
+References: <4695EC25.6050003@arcor.de> <a781481a0707122015q48fd8a06m5d0e54b109708757@mail.gmail.com> <200707122040.36800.david-b@pacbell.net>
+In-Reply-To: <200707122040.36800.david-b@pacbell.net>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707151236.51779.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 July 2007 11:27:09 Bryan Wu wrote:
-> +#if defined(CONFIG_BFIN_MAC_USE_L1)
-> +# define bfin_mac_alloc(dma_handle, size)  l1_data_sram_zalloc(size)
-> +# define bfin_mac_free(dma_handle, ptr)    l1_data_sram_free(ptr)
-> +#else
-> +# define bfin_mac_alloc(dma_handle, size) \
-> +	 dma_alloc_coherent(NULL, size, dma_handle, GFP_NORMAL)
+David Brownell wrote:
+> On Thursday 12 July 2007, Satyam Sharma wrote:
+> 
+> Note that hangs in that file almost always mean "your BIOS is goofy".
+> Hunt for BIOS settings related to USB, and change them. 
+This laptop's BIOS only offers "legacy support" enabled or disabled,
+both of which lead to frozen kernel. I will investigate whether the GIT
+tree freezes at the same point.
 
-What is GFP_NORMAL? It's not defined in latest linus' tree.
-I think you should use GFP_KERNEL, if you can sleep, or GFP_ATOMIC,
-if you can't.
+>>> after this, kernel apparently goes into busy waiting (fans gradually
+>>> turn louder) and hangs indefinitely. I have also made sure that writel
+>>> (in linux/include/asm/io.h) really is entered, but never returns.
+> 
+> Does the current kernel.org GIT tree do the same thing?  A bunch
+> of USB patches were recently merged, including ISTR one in that
+> area ...
+It does the same thing, git5, that is. Sorry I took so long, but I didnt
+get to testing this earlier.
 
-The rest looks OK. Except the endianess issues. It might be no
-issue on the hardware this runs on, but in favour of "clean code"
-you might use leXX_to_cpu and friends anyway. :)
-This kind of bugs is done so often, even in places where it _does_
-matter. So, at least for the human reader, the leXX_to_cpu stuff
-says that you really understood what you were doing when writing
-the code. The current code says (to me), that it works by
-accident, somehow, although it seems you knew what you were doing. :)
+It is just odd that up to (not including) the 2.6.21-series every kernel
+boots, and after that, they just freeze.
 
+I am kinda stumped here.
+
+Regards
+TL
 -- 
-Greetings Michael.
