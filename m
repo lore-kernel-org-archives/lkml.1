@@ -1,95 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbXGOT7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbXGOT7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbXGOT7a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 15:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXGOT7X
+	id S1755611AbXGOT7o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 15:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbXGOT7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 15:59:23 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39902 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbXGOT7X (ORCPT
+	Sun, 15 Jul 2007 15:59:32 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34533
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673AbXGOT7b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 15:59:23 -0400
-To: torvalds@linux-foundation.org
-Subject: [PATCH] minimal fixes for drivers/usb/gadget/m66592-udc.c
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Message-Id: <E1IAAFW-00053E-0T@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sun, 15 Jul 2007 20:59:22 +0100
+	Sun, 15 Jul 2007 15:59:31 -0400
+Date: Sun, 15 Jul 2007 12:52:38 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Al Boldi <a1426z@gawab.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Hibernation considerations
+In-Reply-To: <Pine.LNX.4.44L0.0707151220570.24011-100000@netrider.rowland.org>
+Message-ID: <Pine.LNX.4.64.0707151247140.25614@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707151220570.24011-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 15 Jul 2007, Alan Stern wrote:
 
-still looks racy (and definitely leaks)
+>>> (7) On ACPI systems special platform-related actions have to be carried
+>>> out at the right points, so that the platform works correctly after the
+>>> restore
+>>>
+>>>     The ACPI specification requires us to invoke some global ACPI methods
+>>>     during the hibernation and during the restore.  Moreover, the ordering
+>>> of code related to these ACPI methods may not be arbitrary (eg. some of
+>>> them have to be executed after devices are put into low power states
+>>> etc.).
+>>
+>> This should be the responsibility of the kexec'd hibernating kernel.  Note
+>> though in (6), the normal kernel takes care of preparing devices, then the
+>> hibernating kernel dumps the image and either calls S4 or S3.  On resume
+>> from S3 it can immediately switch over to the normal kernel, and from S4 the
+>> known bootup would occur.
+>
+> Is it really that simple?  Somehow I doubt it.  In order for some
+> devices to remain available for the kexec'd kernel to use, they cannot
+> be suspended at the ACPI level.  So the kexec'd kernel will have to
+> handle the ACPI requirements for those devices.  Likewise, it would
+> have to handle the ACPI interactions which need to be done after all
+> devices are prepared for the transition to S3 or S4.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- drivers/usb/gadget/m66592-udc.c |   27 ++++-----------------------
- 1 files changed, 4 insertions(+), 23 deletions(-)
+so if there are two states for hardware
 
-diff --git a/drivers/usb/gadget/m66592-udc.c b/drivers/usb/gadget/m66592-udc.c
-index c0a962b..0174a32 100644
---- a/drivers/usb/gadget/m66592-udc.c
-+++ b/drivers/usb/gadget/m66592-udc.c
-@@ -937,6 +937,7 @@ static void get_status(struct m66592 *m66592, struct usb_ctrlrequest *ctrl)
- 	*m66592->ep0_buf = status;
- 	m66592->ep0_req->buf = m66592->ep0_buf;
- 	m66592->ep0_req->length = 2;
-+	/* AV: what happens if we get called again before that gets through? */
- 	m66592_queue(m66592->gadget.ep0, m66592->ep0_req, GFP_KERNEL);
- }
- 
-@@ -1254,24 +1255,6 @@ static void m66592_free_request(struct usb_ep *_ep, struct usb_request *_req)
- 	kfree(req);
- }
- 
--static void *m66592_alloc_buffer(struct usb_ep *_ep, unsigned bytes,
--				 dma_addr_t *dma, gfp_t gfp_flags)
--{
--	void *buf;
--
--	buf = kzalloc(bytes, gfp_flags);
--	if (dma)
--		*dma = virt_to_bus(buf);
--
--	return buf;
--}
--
--static void m66592_free_buffer(struct usb_ep *_ep, void *buf,
--			       dma_addr_t dma, unsigned bytes)
--{
--	kfree(buf);
--}
--
- static int m66592_queue(struct usb_ep *_ep, struct usb_request *_req,
- 			gfp_t gfp_flags)
- {
-@@ -1378,9 +1361,6 @@ static struct usb_ep_ops m66592_ep_ops = {
- 	.alloc_request	= m66592_alloc_request,
- 	.free_request	= m66592_free_request,
- 
--	.alloc_buffer	= m66592_alloc_buffer,
--	.free_buffer	= m66592_free_buffer,
--
- 	.queue		= m66592_queue,
- 	.dequeue	= m66592_dequeue,
- 
-@@ -1603,11 +1583,12 @@ static int __init m66592_probe(struct platform_device *pdev)
- 
- 	the_controller = m66592;
- 
-+	/* AV: leaks */
- 	m66592->ep0_req = m66592_alloc_request(&m66592->ep[0].ep, GFP_KERNEL);
- 	if (m66592->ep0_req == NULL)
- 		goto clean_up;
--	m66592->ep0_buf = m66592_alloc_buffer(&m66592->ep[0].ep, 2, NULL,
--					      GFP_KERNEL);
-+	/* AV: leaks, and do we really need it separately allocated? */
-+	m66592->ep0_buf = kzalloc(2, GFP_KERNEL);
- 	if (m66592->ep0_buf == NULL)
- 		goto clean_up;
- 
--- 
-1.5.3.GIT
+1. able to be detected and initialized with the standard boot routines
 
+2. ACPI suspend mode, requireing ACPI specifics to wake up
 
+is it possible to detect which is needed? cna you try the ACPI wakeup and 
+if it doesn't work go to the standard boot routine (or vice-versa)?
+
+>>> (8) Hibernation and restore should not be too slow
+>>>
+>>>     In my opinion, if more than one minute is needed to hibernate the
+>>> system with the help of certain hibernation framework, then this framework
+>>> is not very useful in practice.  It might be useful to perform some
+>>> special tasks (eg. moving a server to another place without taking it
+>>> down), but it is not very useful, for example, to notebook users.
+>>
+>> The latest hibernating kexec patches boot a kexec'd modular kernel with
+>> initramfs into crashkernel=16M@16M in less than one second.  Switch-back is
+>> almost instant.  Add to this the time required to either store or restore
+>> the image, and it may be obvious that this approach isn't slower, but maybe
+>> even faster than the current swsusp.
+>
+> Does that include the time required for probing PCI buses?  On my
+> desktop system, PCI probing incurs a five-second timeout delay because
+> of a bug in the BIOS's USB firmware.  Don't be so sure that kexec will
+> always be lightning fast; it is always better to avoid unnecessary
+> boots.
+
+some drivers will have delays on some machines (especially when you 
+consider hardware bugs that have to be worked around), but at the moment 
+nothing is remotely close to the 'limit' of 60 seconds being talked about 
+here.
+
+although with some machines the mear trasnfer times for the data could 
+cause noticable delays (if you have a server with 128G of ram it may take 
+a while to get it to a drive)
+
+David Lang
