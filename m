@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbXGOEUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbXGOEuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbXGOEUB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 00:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbXGOETw
+	id S1753234AbXGOEuH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 00:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXGOEt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 00:19:52 -0400
-Received: from main.gmane.org ([80.91.229.2]:45487 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750902AbXGOETv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 00:19:51 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Subject: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for  2.6.22
-Date: Sun, 15 Jul 2007 06:19:46 +0200
-Message-ID: <f7c78t$lqe$1@sea.gmane.org>
-References: <200707120117.20405.a1426z@gawab.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: host-62-10-76-119.cust-adsl.tiscali.it
-User-Agent: KNode/0.10.5
-X-Face: ::w9}R^l{WGM\{y)C0QF@4^U,',W3Mk^X0HP)=:bKM^Z]A9+6bY6fe3}O*]fH{l<j1/9RTp  `KR0idy]Im#9^%}P5Dga'>AViT_'?&>&ufo2_X5Vs3C^tPO@drZRuu&6iK}x}~9`F\-dNZ>(p|V7`4
+	Sun, 15 Jul 2007 00:49:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:16074 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbXGOEtz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 00:49:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LtSIUtY2kvKLfCFn/u+2qt4aJmTD6gSWhOOvAcrySwJg46si46qutjk7yBGxdw8ZxqgCbL0+11/QrVkiI6sBvI0MsxnjyJcamKXVraQnDYIR0WEqr2YEGQLAblrsXGmDBTogCNad87a+kmEHrI+Led98SiR7ClkTMzsh1uQyITA=
+Message-ID: <787b0d920707142149p3899ddbcy75358392e8ab4563@mail.gmail.com>
+Date: Sun, 15 Jul 2007 00:49:54 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
+Cc: olaf@aepfle.de, hpa@zytor.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070714.204314.70218766.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <787b0d920707141948t71b4059s7ae68610f9f81eac@mail.gmail.com>
+	 <20070714.204314.70218766.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 July 2007 00:17, Al Boldi wrote:
+On 7/14/07, David Miller <davem@davemloft.net> wrote:
+> From: "Albert Cahalan" <acahalan@gmail.com>
+> Date: Sat, 14 Jul 2007 22:48:57 -0400
+>
+> > A real constant-value PAGE_SIZE is useful and doable.
+>
+> It's bogus to use it.  The kernel can get recompiled
+> to arbitrary page sizes on some architectures, so a constat
+> page size assumption cannot work.
 
-> Peter Williams wrote:
->>
->> Probably the last one now that CFS is in the main line :-(.
-> 
-> What do you mean?  A pluggable scheduler framework is indispensible even in 
-> the presence of CFS or SD.
+Sure it can work. The ABI specifies limits on such things.
+Probably the most appropriate size is the one specified
+for alignment of ELF sections.
 
-Indeed, and I hope it gets merged, giving people the chance to test out
-different schedulers easily, without having to do patching, de-patching,
-re-patching and blah blah blah.
-
-But somehow I doubt it'll get merged now. My bet is that it won't even be
-taken into consideration, for the same reasons that ultimately drove Con
-Kolivas to giving up on development of SD. And if it's so, chances are
-people will get tired of trying to get it merged. :/
-
->> A patch for 2.6.22 is available at:
->>
->> <http://downloads.sourceforge.net/cpuse/plugsched-6.5.1-for-2.6.22.patch>
->>
->> Very Brief Documentation:
->>
->> You can select a default scheduler at kernel build time.  If you wish to
->> boot with a scheduler other than the default it can be selected at boot
->> time by adding:
->>
->> cpusched=<scheduler>
->>
->> to the boot command line where <scheduler> is one of: ingosched,
->> ingo_ll, nicksched, staircase, spa_no_frills, spa_ws, spa_svr, spa_ebs
->> or zaphod.  If you don't change the default when you build the kernel
->> the default scheduler will be ingosched (which is the normal scheduler).
-> 
-> Can't PlugSched include CFS and SD?
-
-If I read the announcement correctly, those are the ones referred to as
-'ingosched' and 'staircase' :)
-
--- 
-Giuseppe "Oblomov" Bilotta
-
+If I remember right, it's 64 K for the PowerPC ABI. This allows
+for 64 K pages, even though many chips offer 4 K pages.
