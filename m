@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbXGOXP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbXGOXR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761011AbXGOXP7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 19:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbXGOXPv
+	id S1760931AbXGOXR7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 19:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbXGOXRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 19:15:51 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2283 "HELO
+	Sun, 15 Jul 2007 19:17:52 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2375 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756185AbXGOXPu (ORCPT
+	with SMTP id S1757682AbXGOXRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 19:15:50 -0400
-Date: Sun, 15 Jul 2007 19:15:47 -0400 (EDT)
+	Sun, 15 Jul 2007 19:17:51 -0400
+Date: Sun, 15 Jul 2007 19:17:50 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@netrider.rowland.org
 To: david@lang.hm
@@ -25,8 +25,8 @@ cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
        pm list <linux-pm@lists.linux-foundation.org>,
        Al Boldi <a1426z@gawab.com>
 Subject: Re: Hibernation considerations
-In-Reply-To: <Pine.LNX.4.64.0707151538130.25614@asgard.lang.hm>
-Message-ID: <Pine.LNX.4.44L0.0707151914450.28934-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.64.0707151253141.25614@asgard.lang.hm>
+Message-ID: <Pine.LNX.4.44L0.0707151915570.28934-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,23 +34,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sun, 15 Jul 2007 david@lang.hm wrote:
 
-> >> for a pure hibernate mode, you will be powering off the box after saving
-> >> the suspend image. why are there any special ACPI modes involved?
+> > (1) Filesystems mounted before the hibernation are untouchable
 > >
-> > Because, for example, on my machine the status of power supply (present
-> > vs not present) is not updated correctly after the restore if ACPI callbacks
-> > aren't used during the hibernation.  That's just experience and it's in line
-> > with the ACPI spec.
+> >    When there's a memory snapshot, either in the form of a hibernation image,
+> >    or in the form of the "old" kernel and processes available to the "new"
+> >    kexeced kernel responsible for saving their memory, the filesystems mounted
+> >    before the hibernation should not be accessed, even for reading, because
+> >    that would cause their on-disk state to be inconsistent with the snapshot
+> >    and might lead to a filesystem corruption.
 > 
-> so if a machine is actually powered off the /dev/suspend process won't 
-> work?
+> AFAIK this is only the case with ext3, all other filesystems could be 
+> accessed read-only safely
 > 
-> remember that the system may run a different OS between the hibernate and 
-> the resume, makeing any assumptions about what state the hardware is in 
-> when you start the resume is a problem.
+> this is arguably a bug with ext3 (and has been discussed as such), but 
+> right now the ext3 team has decided not to change this bahavior so 
+> hibernate needs to work around it. but don't mistake a work-around for a 
+> single (admittedly very popular) filesystem with a hard and fast 
+> directive.
 
-As I understand it, running a different OS between the hibernate and 
-the resume would violate the ACPI spec.
+Isn't is possible to avoid this problem by mounting an ext3 filesystem 
+as readonly ext2?  Provided the filesystem isn't dirty it should be 
+doable.  (And provided the filesystem doesn't use any ext3 extensions 
+that are incompatible with ext2.)
 
 Alan Stern
 
