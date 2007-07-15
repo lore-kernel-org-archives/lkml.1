@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbXGODUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbXGODnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755828AbXGODUK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 23:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbXGODT6
+	id S1755683AbXGODnU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 23:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbXGODnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 23:19:58 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55880 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbXGODT5 (ORCPT
+	Sat, 14 Jul 2007 23:43:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34644
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752248AbXGODnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 23:19:57 -0400
-Message-ID: <46999253.6020004@zytor.com>
-Date: Sat, 14 Jul 2007 20:19:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Albert Cahalan <acahalan@gmail.com>
-CC: olaf@aepfle.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+	Sat, 14 Jul 2007 23:43:12 -0400
+Date: Sat, 14 Jul 2007 20:43:14 -0700 (PDT)
+Message-Id: <20070714.204314.70218766.davem@davemloft.net>
+To: acahalan@gmail.com
+Cc: olaf@aepfle.de, hpa@zytor.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
-References: <787b0d920707141948t71b4059s7ae68610f9f81eac@mail.gmail.com>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <787b0d920707141948t71b4059s7ae68610f9f81eac@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+References: <787b0d920707141948t71b4059s7ae68610f9f81eac@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Albert Cahalan wrote:
-> 
+From: "Albert Cahalan" <acahalan@gmail.com>
+Date: Sat, 14 Jul 2007 22:48:57 -0400
+
 > A real constant-value PAGE_SIZE is useful and doable.
-> 
+
+It's bogus to use it.  The kernel can get recompiled
+to arbitrary page sizes on some architectures, so a constat
+page size assumption cannot work.
+
 > It's useful because a getpagesize() can't be used for numerous
 > things, such as setting the size of an array.
-> 
-> It's doable, even on architectures that support multiple page
-> sizes, because ABIs specify alignment requirements. There are
-> two alignments of interest here:
-> 
-> a. the smallest that mmap() will ever naturally return on any
->   correct implementation of the architecture's ABI ("naturally"
->   meaning that MAP_FIXED was not used)
-> 
-> b. the smallest that mprotect() will tolerate on all
->   correct implementations of the architecture
-> 
-> Pick either to be the Linux definition of PAGE_SIZE.
-> 
 
-If you specify it to be one of these, people will mis-use it for the
-other.  This is a bad idea.
+Use dynamically allocated memory for the array then.
 
-	-hpa
+This isn't programming 101.
