@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbXGOHzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbXGOIB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758463AbXGOHzS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 03:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXGOHzH
+	id S1758566AbXGOIB3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 04:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755358AbXGOIBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 03:55:07 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:48562 "EHLO
+	Sun, 15 Jul 2007 04:01:20 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:53263 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755011AbXGOHzF (ORCPT
+	with ESMTP id S1755271AbXGOIBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 03:55:05 -0400
-Subject: Re: [PATCH] MAINTAINERS: Add maintainers for power supply
-	subsystem and drivers (was [PATCH] pda_power: clean up irq, timer, return
-	usage)
+	Sun, 15 Jul 2007 04:01:19 -0400
+Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
 From: David Woodhouse <dwmw2@infradead.org>
-To: cbou@mail.ru
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <20070715010256.GA6167@zarina>
-References: <20070714231204.GA23582@havoc.gtf.org>
-	 <20070715010256.GA6167@zarina>
+To: Olaf Hering <olaf@aepfle.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070714213412.GA10196@aepfle.de>
+References: <20070714205709.GA9478@aepfle.de> <46993C59.1030902@zytor.com>
+	 <20070714213412.GA10196@aepfle.de>
 Content-Type: text/plain
-Date: Sun, 15 Jul 2007 08:54:56 +0100
-Message-Id: <1184486096.2860.1.camel@shinybook.infradead.org>
+Date: Sun, 15 Jul 2007 09:01:11 +0100
+Message-Id: <1184486471.2860.4.camel@shinybook.infradead.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
@@ -31,26 +29,17 @@ X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-15 at 05:02 +0400, Anton Vorontsov wrote:
-> On Sat, Jul 14, 2007 at 07:12:04PM -0400, Jeff Garzik wrote:
-> > P.S.  Where are the MAINTAINERS entries for this driver, and
-> > drivers/power in general?
+On Sat, 2007-07-14 at 23:34 +0200, Olaf Hering wrote:
+> > I would think it would be better to not define it at all.  Several
+> > architectures already don't have PAGE_SIZE visible to userspace in 
+> > any way.
 > 
-> Collecting acks. David?
-> 
-> From: Anton Vorontsov <cbou@mail.ru>
-> Subject: [PATCH] MAINTAINERS: Add maintainers for power supply subsystem and drivers
-> 
-> Signed-off-by: Anton Vorontsov <cbou@mail.ru>
+> i386 has it, so everyone uses it.
 
-Looks good to me; except...
+PowerPC lacks it, so nothing we ship in Fedora relies upon it.
 
-> +T:	git git.infradead.org/~cbou/battery2-2.6.git
-> +T:	git git.infradead.org/~dwmw2/battery-2.6.git
-
-Let's just use a single tree. I created
-git://git.infradead.org/battery-2.6.git which is group-writable.
-(it's in /srv/git on bombadil)
+Just kill it. Probably by leaving <asm/page.h> empty for now; we can
+remove it completely later.
 
 -- 
 dwmw2
