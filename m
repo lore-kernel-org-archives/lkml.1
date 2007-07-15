@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765060AbXGOQOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765395AbXGOQO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765060AbXGOQOE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 12:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762468AbXGOQF0
+	id S1765395AbXGOQO0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 12:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762471AbXGOQF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 12:05:26 -0400
-Received: from www.osadl.org ([213.239.205.134]:42602 "EHLO mail.tglx.de"
+	Sun, 15 Jul 2007 12:05:28 -0400
+Received: from www.osadl.org ([213.239.205.134]:42604 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762485AbXGOQFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 12:05:12 -0400
-Message-Id: <20070715155541.606056872@inhelltoy.tec.linutronix.de>
+	id S1762505AbXGOQFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 12:05:13 -0400
+Message-Id: <20070715155541.696217058@inhelltoy.tec.linutronix.de>
 References: <20070715155510.341941668@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Jul 2007 16:11:02 -0000
+Date: Sun, 15 Jul 2007 16:11:05 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch-mm 21/33] x86_64: Move apic calibration code around
+Subject: [patch-mm 23/33] x86_64: apic change setup_APIC_timer calling
+	convention
 Content-Disposition: inline;
-	filename=x86_64-apic-shuffle-calibration-around.patch
+	filename=x86_64-apic-change-setup-calling-convention.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let the calibration code fill in calibration_result directly and
-move the variable on top of the file.
-
-Fixup a printk w/o log level while at it.
+setup_APIC_timer takes the file global calibration result as an argument.
+Remove it.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 ---
- arch/x86_64/kernel/apic.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+ arch/x86_64/kernel/apic.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 Index: linux-2.6.22-rc6-mm/arch/x86_64/kernel/apic.c
 ===================================================================
---- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/apic.c	2007-07-15 17:40:05.000000000 +0200
-+++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/apic.c	2007-07-15 17:48:57.000000000 +0200
-@@ -56,6 +56,8 @@ static struct resource lapic_resource = 
- 	.flags = IORESOURCE_MEM | IORESOURCE_BUSY,
- };
- 
-+static unsigned int calibration_result;
-+
- /*
-  * cpu_mask that denotes the CPUs that needs timer interrupt coming in as
-  * IPIs in place of local APIC timers
-@@ -822,7 +824,7 @@ static void setup_APIC_timer(unsigned in
- 
- #define TICK_COUNT 100000000
- 
--static int __init calibrate_APIC_clock(void)
-+static void __init calibrate_APIC_clock(void)
- {
- 	unsigned apic, apic_start;
- 	unsigned long tsc, tsc_start;
-@@ -856,17 +858,14 @@ static int __init calibrate_APIC_clock(v
- 		result = (apic_start - apic) * 1000L * tsc_khz /
- 					(tsc - tsc_start);
- 	}
--	printk("result %d\n", result);
--
-+	printk(KERN_DEBUG "APIC timer calibration result %d\n", result);
- 
- 	printk(KERN_INFO "Detected %d.%03d MHz APIC timer.\n",
- 		result / 1000 / 1000, result / 1000 % 1000);
- 
--	return result * APIC_DIVISOR / HZ;
-+	calibration_result = result * APIC_DIVISOR / HZ;
+--- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/apic.c	2007-07-15 17:41:16.000000000 +0200
++++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/apic.c	2007-07-15 17:48:56.000000000 +0200
+@@ -784,7 +784,7 @@ static void __setup_APIC_LVTT(unsigned i
+ 		apic_write(APIC_TMICT, clocks);
  }
  
--static unsigned int calibration_result;
--
- void __init setup_boot_APIC_clock (void)
+-static void setup_APIC_timer(unsigned int clocks)
++static void setup_APIC_timer(void)
  {
- 	if (disable_apic_timer) {
-@@ -879,7 +878,7 @@ void __init setup_boot_APIC_clock (void)
+ 	unsigned long flags;
+ 	int irqen;
+@@ -793,7 +793,7 @@ static void setup_APIC_timer(unsigned in
  
- 	local_irq_disable();
- 
--	calibration_result = calibrate_APIC_clock();
-+	calibrate_APIC_clock();
+ 	irqen = ! cpu_isset(smp_processor_id(),
+ 			    timer_interrupt_broadcast_ipi_mask);
+-	__setup_APIC_LVTT(clocks, 0, irqen);
++	__setup_APIC_LVTT(calibration_result, 0, irqen);
+ 	/* Turn off PIT interrupt if we use APIC timer as main timer.
+ 	   Only works with the PM timer right now
+ 	   TBD fix it for HPET too. */
+@@ -880,7 +880,7 @@ void __init setup_boot_APIC_clock (void)
  	/*
  	 * Now set up the timer for real.
  	 */
-@@ -986,8 +985,6 @@ void setup_APIC_extended_lvt(unsigned ch
- 	apic_write(reg, v);
+-	setup_APIC_timer(calibration_result);
++	setup_APIC_timer();
+ 
+ 	local_irq_enable();
+ }
+@@ -888,7 +888,7 @@ void __init setup_boot_APIC_clock (void)
+ void __cpuinit setup_secondary_APIC_clock(void)
+ {
+ 	local_irq_disable(); /* FIXME: Do we need this? --RR */
+-	setup_APIC_timer(calibration_result);
++	setup_APIC_timer();
+ 	local_irq_enable();
  }
  
--#undef APIC_DIVISOR
--
- /*
-  * Local timer interrupt handler. It does both profiling and
-  * process statistics/rescheduling.
 
 -- 
 
