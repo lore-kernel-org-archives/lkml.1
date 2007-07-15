@@ -1,174 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764222AbXGOQKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbXGOQK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764222AbXGOQKk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 12:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762650AbXGOQFK
+	id S1764074AbXGOQK5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 12:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762270AbXGOQFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 12:05:10 -0400
-Received: from www.osadl.org ([213.239.205.134]:42532 "EHLO mail.tglx.de"
+	Sun, 15 Jul 2007 12:05:12 -0400
+Received: from www.osadl.org ([213.239.205.134]:42567 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762275AbXGOQFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 12:05:02 -0400
-Message-Id: <20070715155541.235704807@inhelltoy.tec.linutronix.de>
+	id S1760706AbXGOQFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 12:05:03 -0400
+Message-Id: <20070715155540.773083183@inhelltoy.tec.linutronix.de>
 References: <20070715155510.341941668@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Jul 2007 16:10:54 -0000
+Date: Sun, 15 Jul 2007 16:10:44 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch-mm 13/33] x86_64: time.c white space wreckage cleanup
-Content-Disposition: inline;
-	filename=x86_64-timec-fix-whitespace-wreckage.patch
+Subject: [patch-mm 03/33] i386: remove pit_interrupt_hook
+Content-Disposition: inline; filename=i386-remove-pit-interrupt-hook.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+From: Chris Wright <chrisw@sous-sol.org>
+
+Remove pit_interrupt_hook as it adds just an extra layer.
+
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
 ---
- arch/x86_64/kernel/time.c |   88 +++++++++++++++++++++++-----------------------
- 1 file changed, 44 insertions(+), 44 deletions(-)
 
-Index: linux-2.6.22-rc6-mm/arch/x86_64/kernel/time.c
+ include/asm-i386/i8253.h                 |   11 -----------
+ include/asm-i386/mach-default/do_timer.h |    2 +-
+ include/asm-i386/mach-voyager/do_timer.h |    2 +-
+ 3 files changed, 2 insertions(+), 13 deletions(-)
+
+Index: linux-2.6.22-rc6-mm/include/asm-i386/i8253.h
 ===================================================================
---- linux-2.6.22-rc6-mm.orig/arch/x86_64/kernel/time.c	2007-07-15 17:30:59.000000000 +0200
-+++ linux-2.6.22-rc6-mm/arch/x86_64/kernel/time.c	2007-07-15 17:49:03.000000000 +0200
-@@ -222,7 +222,7 @@ unsigned long read_persistent_clock(void
- 	/*
- 	 * We know that x86-64 always uses BCD format, no need to check the
- 	 * config register.
-- 	 */
-+	 */
+--- linux-2.6.22-rc6-mm.orig/include/asm-i386/i8253.h	2007-07-15 09:37:52.000000000 +0200
++++ linux-2.6.22-rc6-mm/include/asm-i386/i8253.h	2007-07-15 17:49:01.000000000 +0200
+@@ -12,17 +12,6 @@ extern spinlock_t i8253_lock;
  
- 	BCD_TO_BIN(sec);
- 	BCD_TO_BIN(min);
-@@ -235,11 +235,11 @@ unsigned long read_persistent_clock(void
- 		BCD_TO_BIN(century);
- 		year += century * 100;
- 		printk(KERN_INFO "Extended CMOS year: %d\n", century * 100);
--	} else { 
-+	} else {
- 		/*
- 		 * x86-64 systems only exists since 2002.
- 		 * This will work up to Dec 31, 2100
--	 	 */
-+		 */
- 		year += 2000;
- 	}
+ extern struct clock_event_device *global_clock_event;
  
-@@ -251,45 +251,45 @@ unsigned long read_persistent_clock(void
- #define TICK_COUNT 100000000
- static unsigned int __init tsc_calibrate_cpu_khz(void)
+-/**
+- * pit_interrupt_hook - hook into timer tick
+- * @regs:	standard registers from interrupt
+- *
+- * Call the global clock event handler.
+- **/
+-static inline void pit_interrupt_hook(void)
+-{
+-	global_clock_event->event_handler(global_clock_event);
+-}
+-
+ extern void setup_pit_timer(void);
+ 
+ #endif	/* __ASM_I8253_H__ */
+Index: linux-2.6.22-rc6-mm/include/asm-i386/mach-default/do_timer.h
+===================================================================
+--- linux-2.6.22-rc6-mm.orig/include/asm-i386/mach-default/do_timer.h	2007-04-26 05:08:32.000000000 +0200
++++ linux-2.6.22-rc6-mm/include/asm-i386/mach-default/do_timer.h	2007-07-15 09:44:10.000000000 +0200
+@@ -12,5 +12,5 @@
+ 
+ static inline void do_timer_interrupt_hook(void)
  {
--       int tsc_start, tsc_now;
--       int i, no_ctr_free;
--       unsigned long evntsel3 = 0, pmc3 = 0, pmc_now = 0;
--       unsigned long flags;
--
--       for (i = 0; i < 4; i++)
--               if (avail_to_resrv_perfctr_nmi_bit(i))
--                       break;
--       no_ctr_free = (i == 4);
--       if (no_ctr_free) {
--               i = 3;
--               rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
--               wrmsrl(MSR_K7_EVNTSEL3, 0);
--               rdmsrl(MSR_K7_PERFCTR3, pmc3);
--       } else {
--               reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i);
--               reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
--       }
--       local_irq_save(flags);
--       /* start meauring cycles, incrementing from 0 */
--       wrmsrl(MSR_K7_PERFCTR0 + i, 0);
--       wrmsrl(MSR_K7_EVNTSEL0 + i, 1 << 22 | 3 << 16 | 0x76);
--       rdtscl(tsc_start);
--       do {
--               rdmsrl(MSR_K7_PERFCTR0 + i, pmc_now);
--               tsc_now = get_cycles_sync();
--       } while ((tsc_now - tsc_start) < TICK_COUNT);
--
--       local_irq_restore(flags);
--       if (no_ctr_free) {
--               wrmsrl(MSR_K7_EVNTSEL3, 0);
--               wrmsrl(MSR_K7_PERFCTR3, pmc3);
--               wrmsrl(MSR_K7_EVNTSEL3, evntsel3);
--       } else {
--               release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
--               release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
--       }
-+	int tsc_start, tsc_now;
-+	int i, no_ctr_free;
-+	unsigned long evntsel3 = 0, pmc3 = 0, pmc_now = 0;
-+	unsigned long flags;
-+
-+	for (i = 0; i < 4; i++)
-+		if (avail_to_resrv_perfctr_nmi_bit(i))
-+			break;
-+	no_ctr_free = (i == 4);
-+	if (no_ctr_free) {
-+		i = 3;
-+		rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
-+		wrmsrl(MSR_K7_EVNTSEL3, 0);
-+		rdmsrl(MSR_K7_PERFCTR3, pmc3);
-+	} else {
-+		reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i);
-+		reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
-+	}
-+	local_irq_save(flags);
-+	/* start meauring cycles, incrementing from 0 */
-+	wrmsrl(MSR_K7_PERFCTR0 + i, 0);
-+	wrmsrl(MSR_K7_EVNTSEL0 + i, 1 << 22 | 3 << 16 | 0x76);
-+	rdtscl(tsc_start);
-+	do {
-+		rdmsrl(MSR_K7_PERFCTR0 + i, pmc_now);
-+		tsc_now = get_cycles_sync();
-+	} while ((tsc_now - tsc_start) < TICK_COUNT);
-+
-+	local_irq_restore(flags);
-+	if (no_ctr_free) {
-+		wrmsrl(MSR_K7_EVNTSEL3, 0);
-+		wrmsrl(MSR_K7_PERFCTR3, pmc3);
-+		wrmsrl(MSR_K7_EVNTSEL3, evntsel3);
-+	} else {
-+		release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
-+		release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
-+	}
- 
--       return pmc_now * tsc_khz / (tsc_now - tsc_start);
-+	return pmc_now * tsc_khz / (tsc_now - tsc_start);
+-	pit_interrupt_hook();
++	global_clock_event->event_handler(global_clock_event);
+ }
+Index: linux-2.6.22-rc6-mm/include/asm-i386/mach-voyager/do_timer.h
+===================================================================
+--- linux-2.6.22-rc6-mm.orig/include/asm-i386/mach-voyager/do_timer.h	2007-04-26 05:08:32.000000000 +0200
++++ linux-2.6.22-rc6-mm/include/asm-i386/mach-voyager/do_timer.h	2007-07-15 09:44:10.000000000 +0200
+@@ -12,7 +12,7 @@
+  **/
+ static inline void do_timer_interrupt_hook(void)
+ {
+-	pit_interrupt_hook();
++	global_clock_event->event_handler(global_clock_event);
+ 	voyager_timer_interrupt();
  }
  
- /*
-@@ -317,7 +317,7 @@ static unsigned int __init pit_calibrate
- 	end = get_cycles_sync();
- 
- 	spin_unlock_irqrestore(&i8253_lock, flags);
--	
-+
- 	return (end - start) / 50;
- }
- 
-@@ -362,7 +362,7 @@ static struct irqaction irq0 = {
- 	.handler	= timer_interrupt,
- 	.flags		= IRQF_DISABLED | IRQF_IRQPOLL,
- 	.mask		= CPU_MASK_NONE,
--	.name 		= "timer"
-+	.name		= "timer"
- };
- 
- void __init time_init(void)
-@@ -375,7 +375,7 @@ void __init time_init(void)
- 
- 	if (hpet_use_timer) {
- 		/* set tick_nsec to use the proper rate for HPET */
--	  	tick_nsec = TICK_NSEC_HPET;
-+		tick_nsec = TICK_NSEC_HPET;
- 		tsc_khz = hpet_calibrate_tsc();
- 		timename = "HPET";
- 	} else {
 
 -- 
 
