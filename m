@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbXGOJx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760138AbXGOJ53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760057AbXGOJx5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 05:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXGOJxt
+	id S1760138AbXGOJ53 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 05:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757173AbXGOJ5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 05:53:49 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:55332 "EHLO proxima.lp0.eu"
+	Sun, 15 Jul 2007 05:57:22 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:57824 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756864AbXGOJxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 05:53:48 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=RtXzipudLJPfapnKg8u+l2NPU5THDMqCsfHIhMrhTGXu8Qmf7aQ0XJN82vbSkOPunCUmfhGhCSqdpl/BVN27XU6SC/8ru/fshT8KYNX7qrs0XrLK/2TTqT8Af0B7730r;
-Message-ID: <4699EEA9.6070709@simon.arlott.org.uk>
-Date: Sun, 15 Jul 2007 10:53:45 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Denis Cheng <crquan@gmail.com>
-CC: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] run scripts/Lindent on it to match Documentation/CodingStyle
-References: <1184489571313-git-send-email-crquan@gmail.com>
-In-Reply-To: <1184489571313-git-send-email-crquan@gmail.com>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1756812AbXGOJ5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 05:57:21 -0400
+Date: Sun, 15 Jul 2007 05:57:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: kkeil@suse.de, linux-kernel@vger.kernel.org,
+       isdn4linux@listserv.isdn4linux.de
+Cc: Andrew Morton <akpm@linux-foundation.org>, surya.prabhakar@wipro.com
+Subject: [PATCH 0/5] Convert a HiSax driver to the PCI hotplug API
+Message-ID: <20070715095716.GA20949@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15/07/07 09:52, Denis Cheng wrote:
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
-> ---
->  drivers/net/wireless/wavelan.c |  806 ++++++++++++++++++----------------------
->  1 files changed, 369 insertions(+), 437 deletions(-)
 
-Do people ever check what Lindent does?
+This patch series presents a series of five patches, the end result
+being a HiSax driver modularized and converted to use the standard PCI
+hotplug API (and not pci_find_device).
 
-> -	} else if (base_addr > 0x100) { /* Check a single specified location. */
-> +	} else if (base_addr > 0x100) {	/* Check a single specified location. */
+1) HiSax: move card setup into separate function
+2) HiSax: move card state alloc/setup code into separate functions
+3) HiSax: modularize card setup; introduce simple hotplug API
+4) HiSax netjet_s: code movement, prep for hotplug
+5) HiSax netjet_s: convert to PCI hotplug API
 
-What is Lit doing here?! It's changed "{<space>/*" to "{<tab>/*"...
+As discussed a month or two ago when I submitted my first ISDN PCI
+cleanup patch...  kkeil suggested that I do a sample PCI API conversion,
+from which others could model HiSax driver conversion work.
 
+DO NOT APPLY.  It is 98% upstream ready, and ready for testing/debug,
+but some changes in patch #5 need to be moved to patches 1-3.
+And most importantly, I do not have access to ISDN hardware, so kkeil
+or somebody will need to be able to test and debug this stuff :/
 
-> -	} else { /* Scan all possible addresses of the WaveLAN hardware. */
-> +	} else {		/* Scan all possible addresses of the WaveLAN hardware. */
+This work can be found on the 'isdn-pci' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
-And again... with two tabs for maximum unreadability. That line is now
-90 characters long instead of 75.
-
-
-> -				       "%s: <-wavelan_probe()\n",
-> -				       dev->name);
-> +				       "%s: <-wavelan_probe()\n", dev->name);
-
-There are spaces in that line after the tabs...
+	Jeff
 
 
-> -out1:
-> +      out1:
 
-NAK: A perfectly valid non-indented label is now indented by 6 spaces.
+P.S. "DO NOT APPLY" is only for upstream.  It would be great for this to
+appear in -mm.
 
-
-> -out:
-> +      out:
-
-And again.
-
-
-> -		       dev->name, (unsigned int) dev);
-> +		       dev->name, (unsigned int)dev);
-
-Those spaces after the tabs have been ignored...
-
--- 
-Simon Arlott
