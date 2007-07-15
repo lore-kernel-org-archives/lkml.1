@@ -1,150 +1,429 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbXGOIC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758451AbXGOIVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758697AbXGOIC3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 04:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbXGOICQ
+	id S1758451AbXGOIVy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 04:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbXGOIVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 04:02:16 -0400
-Received: from no-way.org ([212.55.212.131]:41896 "EHLO no-way.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755271AbXGOICN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 04:02:13 -0400
-Date: Sun, 15 Jul 2007 10:02:09 +0200
-From: Flavio Curti <fcu@no-way.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Flavio Curti <lists.fcu@no-way.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: panics with 16port Promise Supertrack EX Controller
-Message-ID: <20070715080209.GC21260@no-way.org>
-References: <20070708225246.GD16285@no-way.org> <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com> <46919688.1050005@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="rwEMma7ioTxnRzrJ"
-Content-Disposition: inline
-In-Reply-To: <46919688.1050005@yahoo.com.au>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Sun, 15 Jul 2007 04:21:44 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4339 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754806AbXGOIVm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 04:21:42 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] update checkpatch.pl to version 0.08
+Message-ID: <740c90243aaa6f6d4640d71230c4fa27@pinky>
+Date: Sun, 15 Jul 2007 09:25:13 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This version brings a number of new checks, and a number of bug
+fixes.  Of note:
 
-Hello
+  - warnings for multiple assignments per line
+  - warnings for multiple declarations per line
+  - checks for single statement blocks with braces
 
-On Mon, Jul 09, 2007 at 11:59:36AM +1000, Nick Piggin wrote:
-> >Jul  8 00:19:13 dorade.cyberlink.ch EFLAGS: 00210046   
-> >(2.6.22-rc7-dorade #1)
-> >>The machine panics
-> >>after some days of running fine, the machine inst heavy loaded.
-> >>The Controller detects as stex device:
-> >kernel BUG at block/as-iosched.c:1084!
-> >
-> >BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[REQ_ASYNC]));
-> Could be a bug in the driver that just happens to be caught by AS checks.
-> If you could test another scheduler (boot with elevator=deadline or 
-> elevator=cfq),
-> it might help give us an idea.
+This patch includes an update for feature-removal-schedule.txt to
+better target checks.
 
-Ok, I now switched to cfg, and the machine panicd again. Panic attached.
-Any help is appreciated.
+Andy Whitcroft (12):
+      Version: 0.08
+      only apply printk checks where there is a string literal
+      allow suppression of errors for when no patch is found
+      warn about multiple assignments
+      warn on declaration of multiple variables
+      check for kfree() with needless null check
+      check for single statement braced blocks
+      check for aggregate initialisation on the next line
+      handle the => operator
+      check for spaces between function name and open parenthesis
+      move to explicit Check: entries in feature-removal-schedule.txt
+      handle pointer attributes
 
-Flavio Curti
---
-http://no-way.org/~fcu/
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=dorade-kdump
+	This has been tested, but not had quite its usual soak on
+	the lkml flow.	It is being pushed out a little sooner than
+	normal as I am going to be off the 'net for a week and wanted
+	to get it out before.
 
-blk_queue_end_tag: attempt to clear non-busy tag (1) 
-------------[ cut here ]------------ 
-kernel BUG at block/ll_rw_blk.c:2758! 
-invalid opcode: 0000 [#1] 
-SMP 
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 1e8dba0..85d736e 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -63,6 +63,7 @@ Who:	David Miller <davem@davemloft.net>
+ What:	Video4Linux API 1 ioctls and video_decoder.h from Video devices.
+ When:	December 2006
+ Files:	include/linux/video_decoder.h
++Check:	include/linux/video_decoder.h
+ Why:	V4L1 AP1 was replaced by V4L2 API. during migration from 2.4 to 2.6
+ 	series. The old API have lots of drawbacks and don't provide enough
+ 	means to work with all video and audio standards. The newer API is
+@@ -79,7 +80,7 @@ Who:	Mauro Carvalho Chehab <mchehab@brturbo.com.br>
+ What:	remove EXPORT_SYMBOL(kernel_thread)
+ When:	August 2006
+ Files:	arch/*/kernel/*_ksyms.c
+-Funcs:	kernel_thread
++Check:	kernel_thread
+ Why:	kernel_thread is a low-level implementation detail.  Drivers should
+         use the <linux/kthread.h> API instead which shields them from
+ 	implementation details and provides a higherlevel interface that
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 25e20a2..73751ab 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -9,7 +9,7 @@ use strict;
+ my $P = $0;
+ $P =~ s@.*/@@g;
  
-Modules linked in:
- i2c_i801
- i2c_core
+-my $V = '0.07';
++my $V = '0.08';
  
-CPU:    0 
-EIP:    0060:[<c02a3164>]    Not tainted VLI 
-EFLAGS: 00010002   (2.6.22.1-dorade #1) 
-EIP is at __blk_put_request+0x74/0x80 
-eax: 00000000   ebx: dae3e578   ecx: c02ac600   edx: 00000000 
-esi: 00030784   edi: f7f28b24   ebp: f7f28b24   esp: c0621e50 
-ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068 
-Process swapper (pid: 0, ti=c0620000 task=c05d8340 task.ti=c0620000)
+ use Getopt::Long qw(:config no_auto_abbrev);
  
-Stack: 
-dae3e578 
-e2b5aac0 
-00000001 
-scsi_end_request+0x94/0xe0 
- [<c03743c6>] 
-scsi_io_completion+0x86/0x3e0 
- [<c012b08a>] 
-del_timer+0x5a/0x70 
- [<c038fc7b>] 
-sd_rw_intr+0x2b/0x200 
- [<c038bf8e>] 
-stex_mu_intr+0x12e/0x540 
- [<c036fe85>] 
-scsi_finish_command+0x45/0x60 
- [<c02a4c88>] 
-blk_done_softirq+0x58/0x70 
- [<c0126e92>] 
-__do_softirq+0x82/0x100 
- [<c0126f47>] 
-do_softirq+0x37/0x40 
- [<c0127185>] 
-irq_exit+0x75/0x80 
- [<c0106410>] 
-do_IRQ+0x40/0x80 
- [<c0139796>] 
-getnstimeofday+0x36/0xd0 
- [<c0104503>] 
-common_interrupt+0x23/0x28 
- [<c0101d26>] 
-mwait_idle_with_hints+0x46/0x60 
- [<c0101e85>] 
-cpu_idle+0x65/0x90 
- [<c0628d1f>] 
-start_kernel+0x2ef/0x370 
- [<c06284e0>] 
-unknown_bootoption+0x0/0x250 
- ======================= 
-Code: 
-8b 
-57 
-24 
-89 
-d8 
-83 
-e6 
-01 
-e8 
-ca 
-1b 
-eb 
-ff 
-89 
-f2 
-89 
-f8 
-89 
-e9 
-5b 
-5e 
-5f 
-5d 
-e9 
-3b 
-ff 
-last message repeated 2 times
-89 
-da 
-89 
-
---rwEMma7ioTxnRzrJ--
+@@ -47,16 +47,14 @@ my $removal = 'Documentation/feature-removal-schedule.txt';
+ if ($tree && -f $removal) {
+ 	open(REMOVE, "<$removal") || die "$P: $removal: open failed - $!\n";
+ 	while (<REMOVE>) {
+-		if (/^Files:\s+(.*\S)/) {
+-			for my $file (split(/[, ]+/, $1)) {
+-				if ($file =~ m@include/(.*)@) {
++		if (/^Check:\s+(.*\S)/) {
++			for my $entry (split(/[, ]+/, $1)) {
++				if ($entry =~ m@include/(.*)@) {
+ 					push(@dep_includes, $1);
+-				}
+-			}
+ 
+-		} elsif (/^Funcs:\s+(.*\S)/) {
+-			for my $func (split(/[, ]+/, $1)) {
+-				push(@dep_functions, $func);
++				} elsif ($entry !~ m@/@) {
++					push(@dep_functions, $entry);
++				}
+ 			}
+ 		}
+ 	}
+@@ -153,7 +151,7 @@ sub sanitise_line {
+ }
+ 
+ sub ctx_block_get {
+-	my ($linenr, $remain, $outer, $open, $close) = @_;
++	my ($linenr, $remain, $outer, $open, $close, $off) = @_;
+ 	my $line;
+ 	my $start = $linenr - 1;
+ 	my $blk = '';
+@@ -161,38 +159,58 @@ sub ctx_block_get {
+ 	my @c;
+ 	my @res = ();
+ 
++	my $level = 0;
+ 	for ($line = $start; $remain > 0; $line++) {
+ 		next if ($rawlines[$line] =~ /^-/);
+ 		$remain--;
+ 
+ 		$blk .= $rawlines[$line];
++		foreach my $c (split(//, $rawlines[$line])) {
++			##print "C<$c>L<$level><$open$close>O<$off>\n";
++			if ($off > 0) {
++				$off--;
++				next;
++			}
+ 
+-		@o = ($blk =~ /$open/g);
+-		@c = ($blk =~ /$close/g);
++			if ($c eq $close && $level > 0) {
++				$level--;
++				last if ($level == 0);
++			} elsif ($c eq $open) {
++				$level++;
++			}
++		}
+ 
+-		if (!$outer || (scalar(@o) - scalar(@c)) == 1) {
++		if (!$outer || $level <= 1) {
+ 			push(@res, $rawlines[$line]);
+ 		}
+ 
+-		last if (scalar(@o) == scalar(@c));
++		last if ($level == 0);
+ 	}
+ 
+-	return @res;
++	return ($level, @res);
+ }
+ sub ctx_block_outer {
+ 	my ($linenr, $remain) = @_;
+ 
+-	return ctx_block_get($linenr, $remain, 1, '\{', '\}');
++	my ($level, @r) = ctx_block_get($linenr, $remain, 1, '{', '}', 0);
++	return @r;
+ }
+ sub ctx_block {
+ 	my ($linenr, $remain) = @_;
+ 
+-	return ctx_block_get($linenr, $remain, 0, '\{', '\}');
++	my ($level, @r) = ctx_block_get($linenr, $remain, 0, '{', '}', 0);
++	return @r;
+ }
+ sub ctx_statement {
++	my ($linenr, $remain, $off) = @_;
++
++	my ($level, @r) = ctx_block_get($linenr, $remain, 0, '(', ')', $off);
++	return @r;
++}
++sub ctx_block_level {
+ 	my ($linenr, $remain) = @_;
+ 
+-	return ctx_block_get($linenr, $remain, 0, '\(', '\)');
++	return ctx_block_get($linenr, $remain, 0, '{', '}', 0);
+ }
+ 
+ sub ctx_locate_comment {
+@@ -246,16 +264,23 @@ sub cat_vet {
+ 	return $vet;
+ }
+ 
++my @report = ();
++sub report {
++	push(@report, $_[0]);
++}
++sub report_dump {
++	@report;
++}
+ sub ERROR {
+-	print "ERROR: $_[0]\n";
++	report("ERROR: $_[0]\n");
+ 	our $clean = 0;
+ }
+ sub WARN {
+-	print "WARNING: $_[0]\n";
++	report("WARNING: $_[0]\n");
+ 	our $clean = 0;
+ }
+ sub CHK {
+-	print "CHECK: $_[0]\n";
++	report("CHECK: $_[0]\n");
+ 	our $clean = 0;
+ }
+ 
+@@ -318,7 +343,10 @@ sub process {
+ 				(?:\s*\*+\s*const|\s*\*+)?
+ 			  }x;
+ 	my $Declare	= qr{(?:$Storage\s+)?$Type};
+-	my $Attribute	= qr{__read_mostly|__init|__initdata};
++	my $Attribute	= qr{const|__read_mostly|__init|__initdata|__meminit};
++
++	my $Member	= qr{->$Ident|\.$Ident|\[[^]]*\]};
++	my $Lval	= qr{$Ident(?:$Member)*};
+ 
+ 	# Pre-scan the patch looking for any __setup documentation.
+ 	my @setup_docs = ();
+@@ -509,7 +537,7 @@ sub process {
+ # if/while/etc brace do not go on next line, unless defining a do while loop,
+ # or if that brace on the next line is for something else
+ 		if ($line =~ /\b(?:(if|while|for|switch)\s*\(|do\b|else\b)/ && $line !~ /^.#/) {
+-			my @ctx = ctx_statement($linenr, $realcnt);
++			my @ctx = ctx_statement($linenr, $realcnt, 0);
+ 			my $ctx_ln = $linenr + $#ctx + 1;
+ 			my $ctx_cnt = $realcnt - $#ctx - 1;
+ 			my $ctx = join("\n", @ctx);
+@@ -521,7 +549,7 @@ sub process {
+ 			##warn "line<$line>\nctx<$ctx>\nnext<$lines[$ctx_ln - 1]>";
+ 
+ 			if ($ctx !~ /{\s*/ && $ctx_cnt > 0 && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
+-				ERROR("That { should be on the previous line\n" .
++				ERROR("That open brace { should be on the previous line\n" .
+ 					"$here\n$ctx\n$lines[$ctx_ln - 1]");
+ 			}
+ 		}
+@@ -535,6 +563,12 @@ sub process {
+ 			next;
+ 		}
+ 
++# check for initialisation to aggregates open brace on the next line
++		if ($prevline =~ /$Declare\s*$Ident\s*=\s*$/ &&
++		    $line =~ /^.\s*{/) {
++			ERROR("That open brace { should be on the previous line\n" . $hereprev);
++		}
++
+ #
+ # Checks which are anchored on the added line.
+ #
+@@ -570,8 +604,13 @@ sub process {
+ 			}
+ 		}
+ 
++# check for external initialisers.
++		if ($line =~ /^.$Type\s*$Ident\s*=\s*(0|NULL);/) {
++			ERROR("do not initialise externals to 0 or NULL\n" .
++				$herecurr);
++		}
+ # check for static initialisers.
+-		if ($line=~/\s*static\s.*=\s+(0|NULL);/) {
++		if ($line =~ /\s*static\s.*=\s*(0|NULL);/) {
+ 			ERROR("do not initialise statics to 0 or NULL\n" .
+ 				$herecurr);
+ 		}
+@@ -593,11 +632,11 @@ sub process {
+ 			ERROR("\"(foo $1 )\" should be \"(foo $1)\"\n" .
+ 				$herecurr);
+ 
+-		} elsif ($line =~ m{$NonptrType(\*+)(?:\s+const)?\s+[A-Za-z\d_]+}) {
++		} elsif ($line =~ m{$NonptrType(\*+)(?:\s+$Attribute)?\s+[A-Za-z\d_]+}) {
+ 			ERROR("\"foo$1 bar\" should be \"foo $1bar\"\n" .
+ 				$herecurr);
+ 
+-		} elsif ($line =~ m{$NonptrType\s+(\*+)(?!\s+const)\s+[A-Za-z\d_]+}) {
++		} elsif ($line =~ m{$NonptrType\s+(\*+)(?!\s+$Attribute)\s+[A-Za-z\d_]+}) {
+ 			ERROR("\"foo $1 bar\" should be \"foo $1bar\"\n" .
+ 				$herecurr);
+ 		}
+@@ -614,7 +653,7 @@ sub process {
+ # to try and find and validate the current printk.  In summary the current
+ # printk includes all preceeding printk's which have no newline on the end.
+ # we assume the first bad printk is the one to report.
+-		if ($line =~ /\bprintk\((?!KERN_)/) {
++		if ($line =~ /\bprintk\((?!KERN_)\s*"/) {
+ 			my $ok = 0;
+ 			for (my $ln = $linenr - 1; $ln >= $first_line; $ln--) {
+ 				#print "CHECK<$lines[$ln - 1]\n";
+@@ -639,6 +678,12 @@ sub process {
+ 			ERROR("open brace '{' following function declarations go on the next line\n" . $herecurr);
+ 		}
+ 
++# check for spaces between functions and their parentheses.
++		if ($line =~ /($Ident)\s+\(/ &&
++		    $1 !~ /^(?:if|for|while|switch|return|volatile)$/ &&
++		    $line !~ /$Type\s+\(/ && $line !~ /^.\#\s*define\b/) {
++			ERROR("no space between function name and open parenthesis '('\n" . $herecurr);
++		}
+ # Check operator spacing.
+ 		# Note we expand the line with the leading + as the real
+ 		# line will be displayed with the leading + and the tabs
+@@ -647,7 +692,7 @@ sub process {
+ 		$opline = expand_tabs($opline);
+ 		$opline =~ s/^./ /;
+ 		if (!($line=~/\#\s*include/)) {
+-			my @elements = split(/(<<=|>>=|<=|>=|==|!=|\+=|-=|\*=|\/=|%=|\^=|\|=|&=|->|<<|>>|<|>|=|!|~|&&|\|\||,|\^|\+\+|--|;|&|\||\+|-|\*|\/\/|\/)/, $opline);
++			my @elements = split(/(<<=|>>=|<=|>=|==|!=|\+=|-=|\*=|\/=|%=|\^=|\|=|&=|=>|->|<<|>>|<|>|=|!|~|&&|\|\||,|\^|\+\+|--|;|&|\||\+|-|\*|\/\/|\/)/, $opline);
+ 			my $off = 0;
+ 			for (my $n = 0; $n < $#elements; $n += 2) {
+ 				$off += length($elements[$n]);
+@@ -773,6 +818,18 @@ sub process {
+ 			}
+ 		}
+ 
++# check for multiple assignments
++		if ($line =~ /^.\s*$Lval\s*=\s*$Lval\s*=(?!=)/) {
++			WARN("multiple assignments should be avoided\n" . $herecurr);
++		}
++
++# check for multiple declarations, allowing for a function declaration
++# continuation.
++		if ($line =~ /^.\s*$Type\s+$Ident(?:\s*=[^,{]*)?\s*,\s*$Ident.*/ &&
++		    $line !~ /^.\s*$Type\s+$Ident(?:\s*=[^,{]*)?\s*,\s*$Type\s*$Ident.*/) {
++			WARN("declaring multiple variables together should be avoided\n" . $herecurr);
++		}
++
+ #need space before brace following if, while, etc
+ 		if ($line =~ /\(.*\){/ || $line =~ /do{/) {
+ 			ERROR("need a space before the open brace '{'\n" . $herecurr);
+@@ -847,13 +904,18 @@ sub process {
+ 			# or the one below.
+ 			my $ln = $linenr;
+ 			my $cnt = $realcnt;
++			my $off = 0;
+ 
+-			# If the macro starts on the define line start there.
+-			if ($prevline !~ m{^.#\s*define\s*$Ident(?:\([^\)]*\))?\s*\\\s*$}) {
++			# If the macro starts on the define line start
++			# grabbing the statement after the identifier
++			$prevline =~ m{^(.#\s*define\s*$Ident(?:\([^\)]*\))?\s*)(.*)\\\s*$};
++			##print "1<$1> 2<$2>\n";
++			if ($2 ne '') {
++				$off = length($1);
+ 				$ln--;
+ 				$cnt++;
+ 			}
+-			my @ctx = ctx_statement($ln, $cnt);
++			my @ctx = ctx_statement($ln, $cnt, $off);
+ 			my $ctx_ln = $ln + $#ctx + 1;
+ 			my $ctx = join("\n", @ctx);
+ 
+@@ -873,6 +935,44 @@ sub process {
+ 			}
+ 		}
+ 
++# check for redundant bracing round if etc
++		if ($line =~ /\b(if|while|for|else)\b/) {
++			# Locate the end of the opening statement.
++			my @control = ctx_statement($linenr, $realcnt, 0);
++			my $nr = $linenr + (scalar(@control) - 1);
++			my $cnt = $realcnt - (scalar(@control) - 1);
++
++			my $off = $realcnt - $cnt;
++			#print "$off: line<$line>end<" . $lines[$nr - 1] . ">\n";
++
++			# If this is is a braced statement group check it
++			if ($lines[$nr - 1] =~ /{\s*$/) {
++				my ($lvl, @block) = ctx_block_level($nr, $cnt);
++
++				my $stmt = join(' ', @block);
++				$stmt =~ s/^[^{]*{//;
++				$stmt =~ s/}[^}]*$//;
++
++				#print "block<" . join(' ', @block) . "><" . scalar(@block) . ">\n";
++				#print "stmt<$stmt>\n\n";
++
++				# Count the ;'s if there is fewer than two
++				# then there can only be one statement,
++				# if there is a brace inside we cannot
++				# trivially detect if its one statement.
++				# Also nested if's often require braces to
++				# disambiguate the else binding so shhh there.
++				my @semi = ($stmt =~ /;/g);
++				##print "semi<" . scalar(@semi) . ">\n";
++				if ($lvl == 0 && scalar(@semi) < 2 &&
++				    $stmt !~ /{/ && $stmt !~ /\bif\b/) {
++				    	my $herectx = "$here\n" . join("\n", @control, @block[1 .. $#block]) . "\n";
++				    	shift(@block);
++					ERROR("braces {} are not necessary for single statement blocks\n" . $herectx);
++				}
++			}
++		}
++
+ # don't include deprecated include files (uses RAW line)
+ 		for my $inc (@dep_includes) {
+ 			if ($rawline =~ m@\#\s*include\s*\<$inc>@) {
+@@ -898,6 +998,14 @@ sub process {
+ 				$herecurr);
+ 		}
+ 
++# check for needless kfree() checks
++		if ($prevline =~ /\bif\s*\(([^\)]*)\)/) {
++			my $expr = $1;
++			if ($line =~ /\bkfree\(\Q$expr\E\);/) {
++				WARN("kfree(NULL) is safe this check is probabally not required\n" . $hereprev);
++			}
++		}
++
+ # warn about #ifdefs in C files
+ #		if ($line =~ /^.#\s*if(|n)def/ && ($realfile =~ /\.c$/)) {
+ #			print "#ifdef in C files should be avoided\n";
+@@ -952,6 +1060,9 @@ sub process {
+ 		ERROR("Missing Signed-off-by: line(s)\n");
+ 	}
+ 
++	if ($clean == 0 && ($chk_patch || $is_patch)) {
++		print report_dump();
++	}
+ 	if ($clean == 1 && $quiet == 0) {
+ 		print "Your patch has no obvious style problems and is ready for submission.\n"
+ 	}
