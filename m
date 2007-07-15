@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbXGOKy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbXGOLSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759885AbXGOKy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 06:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbXGOKyP
+	id S1760271AbXGOLSt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 07:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758068AbXGOLSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 06:54:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60665 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754588AbXGOKyO (ORCPT
+	Sun, 15 Jul 2007 07:18:39 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:50848 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757660AbXGOLSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 06:54:14 -0400
-Date: Sun, 15 Jul 2007 11:53:58 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: bryan.wu@analog.com, Mike Frysinger <vapier.adi@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH try#2] Blackfin ethernet driver: on chip ethernet MAC controller driver
-Message-ID: <20070715105358.GA18177@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Michael Buesch <mb@bu3sch.de>, bryan.wu@analog.com,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Jeff Garzik <jeff@garzik.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-References: <1184491629.3140.59.camel@roc-laptop> <200707151236.51779.mb@bu3sch.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 15 Jul 2007 07:18:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=twwob4EUBU3HDitjh8YSQ/wVn5ePZQmCbNuDaYxhUlMyy3AQ8u0kwvzm97y9+y3LPP4BYCYKc5nGtCxjK43ZZRAvYPNaqfvZVPvZuHyQDTkYErnyjdYXK5GfvbMmVVd4wWqnhFNTqW47tvksI1Ti5gk7Mc3GRDaN09cBcYz5OGI=
+Message-ID: <a781481a0707150418o35e4d60fs59cba3f835ebef67@mail.gmail.com>
+Date: Sun, 15 Jul 2007 16:48:37 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Timo Lindemann" <tlindemann@arcor.de>
+Subject: Re: PROBLEM: kernel hang in ohci init
+Cc: "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <4699F9CB.5010407@arcor.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707151236.51779.mb@bu3sch.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <4695EC25.6050003@arcor.de>
+	 <a781481a0707122015q48fd8a06m5d0e54b109708757@mail.gmail.com>
+	 <200707122040.36800.david-b@pacbell.net> <4699F9CB.5010407@arcor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 15, 2007 at 12:36:51PM +0200, Michael Buesch wrote:
-> On Sunday 15 July 2007 11:27:09 Bryan Wu wrote:
-> > +#if defined(CONFIG_BFIN_MAC_USE_L1)
-> > +# define bfin_mac_alloc(dma_handle, size)  l1_data_sram_zalloc(size)
-> > +# define bfin_mac_free(dma_handle, ptr)    l1_data_sram_free(ptr)
-> > +#else
-> > +# define bfin_mac_alloc(dma_handle, size) \
-> > +	 dma_alloc_coherent(NULL, size, dma_handle, GFP_NORMAL)
-> 
-> What is GFP_NORMAL? It's not defined in latest linus' tree.
-> I think you should use GFP_KERNEL, if you can sleep, or GFP_ATOMIC,
-> if you can't.
+On 7/15/07, Timo Lindemann <tlindemann@arcor.de> wrote:
+> David Brownell wrote:
+> > On Thursday 12 July 2007, Satyam Sharma wrote:
+> >
+> > Note that hangs in that file almost always mean "your BIOS is goofy".
+> > Hunt for BIOS settings related to USB, and change them.
+> This laptop's BIOS only offers "legacy support" enabled or disabled,
+> both of which lead to frozen kernel. I will investigate whether the GIT
+> tree freezes at the same point.
 
-Actually this whole thing looks fishy.  There should be a struct device
-for the dma allocation, through a platform_device.  And the
-CONFIG_BFIN_MAC_USE_L1 should go away, the l1 sram should have a dma
-provider so this can be handled through the dma api.
+Perhaps you could try updating your BIOS, if possible / applicable (?)
+
+> >>> after this, kernel apparently goes into busy waiting (fans gradually
+> >>> turn louder) and hangs indefinitely. I have also made sure that writel
+> >>> (in linux/include/asm/io.h) really is entered, but never returns.
+> >
+> > Does the current kernel.org GIT tree do the same thing?  A bunch
+> > of USB patches were recently merged, including ISTR one in that
+> > area ...
+> It does the same thing, git5, that is. Sorry I took so long, but I didnt
+> get to testing this earlier.
+>
+> It is just odd that up to (not including) the 2.6.21-series every kernel
+> boots, and after that, they just freeze.
+>
+> I am kinda stumped here.
+
+Hey, just try git-bisect already :-)
+
+In fact, you can first try by just reverting / un-applying that patch that
+you initially had a suspicion on. Or, because you've already spent
+some time tracking down the issue, you could simply go through the
+git history of that file / subsystem in question and play around reverting
+individual patches that you find suspicious -- but really, there's no need
+to try and be cute with this: you could simply do a git-bisect (say
+between 2.6.20 and 2.6.21) and find the offending patch (or at least the
+one that un-hides the bug) that makes the boot fail ...
+
+[ BTW you haven't sent your dmesg / boot-time output ... if it isn't
+getting saved to disk, you could try serial / netconsole, copy it by
+hand, or simply take a photo and post it here. ]
+
+Cheers,
+Satyam
