@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXGOHU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbXGOHk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbXGOHU3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 03:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbXGOHUV
+	id S1757872AbXGOHk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 03:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbXGOHkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 03:20:21 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:57922 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753048AbXGOHUU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 03:20:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LuLNpKkNsYhYDZZ7i3EkroR5ycHP8OxgEbebP+xjXk709aAV5pG476VqR+E4StNduuQ4Ao2Mj18yB4i5ipjEDLJ3v/ByCUqoot6PEhISy3FVAeXJ95JK1RIx9QebFVeNJpxD7iAdZrU6sZmvFe9b+aj12mk9eqy9bi+YWO/jylg=
-Message-ID: <8bd0f97a0707150020s33e698d4q702018e08aeb59bc@mail.gmail.com>
-Date: Sun, 15 Jul 2007 02:20:19 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Olaf Hering" <olaf@aepfle.de>
-Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070715062708.GA11909@aepfle.de>
+	Sun, 15 Jul 2007 03:40:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48832 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753246AbXGOHkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 03:40:15 -0400
+Message-ID: <4699CF56.7010304@garzik.org>
+Date: Sun, 15 Jul 2007 03:40:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
+To: surya.prabhakar@wipro.com
+CC: caglar@pardus.org.tr, linux-kernel@vger.kernel.org, kkeil@suse.de,
+       kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 1/12] drivers/isdn/hisax/avm_pci.c: replace pci_find_device
+ with pci_get_device
+References: <200707140144.20855.caglar@pardus.org.tr> <46996D12.40501@garzik.org> <A94AD757879CE142B7CEBC3E6FF5D3EC015DAC49@BLR-EC-MBX02.wipro.com> <4699A9AD.2050206@garzik.org>
+In-Reply-To: <4699A9AD.2050206@garzik.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070714205709.GA9478@aepfle.de>
-	 <8bd0f97a0707141404k16e53945s92b3cd4264ecf0aa@mail.gmail.com>
-	 <20070715062708.GA11909@aepfle.de>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/15/07, Olaf Hering <olaf@aepfle.de> wrote:
-> On Sat, Jul 14, Mike Frysinger wrote:
-> > imo, asm/page.h should just go away for userspace.  the attached patch
-> > is what i've been using in Gentoo ... but somethings (like an arch or
-> > two in glibc) still assume asm/page.h is OK.  in general though,
-> > considering asm/page.h has become so unreliable lately (a large number
-> > of arches ifdef the whole thing out), most packages out there have
-> > updated already to use the userspace interface from unistd.h.
->
-> You need that signed-off thing, and dont forget to send it to
-> stable@kernel.org
+To be more clear, your solution is incorrect unless the pci_dev_put() 
+occurs after the last reference to hw.{elsa,diva,hfc,njet,...}.dev, 
+which is where the HiSax ISDN drivers store their reference to struct 
+pci_dev during the runtime life of the PCI device.
 
-i honestly didnt think people would consider it for inclusion as it
-was since i ripped out a lot more headers than just asm/page.h ;)
+Am I missing where your patch does this?
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
--mike
+By way of further interest, a few hours _before_ (yes, really) I saw 
+your patches, I resumed converting the ISDN HiSax PCI drivers to use the 
+PCI driver API.  You can find this work in 
+git://git.kernel.org/.../jgarzik/misc-2.6.git#isdn-pci.
+
+If you fix your patches' lifetime problems, I will ACK them myself, 
+since my effort is a spare time effort.  But just wanted you to be aware 
+that I am deep into the code you are fixing, and can at least speak 
+somewhat knowledgeably on the specific lines of code you are changing.
+
+	Jeff
+
+
+
