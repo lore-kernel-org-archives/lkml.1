@@ -1,84 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbXGOMUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbXGOMZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbXGOMUl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 08:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbXGOMUb
+	id S1760964AbXGOMZZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 08:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbXGOMZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 08:20:31 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:41246
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754451AbXGOMUa (ORCPT
+	Sun, 15 Jul 2007 08:25:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:4468 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756011AbXGOMZO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 08:20:30 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH try#2] Blackfin ethernet driver: on chip ethernet MAC controller driver
-Date: Sun, 15 Jul 2007 14:17:10 +0200
-User-Agent: KMail/1.9.6
-Cc: Mike Frysinger <vapier.adi@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-References: <1184491629.3140.59.camel@roc-laptop> <200707151236.51779.mb@bu3sch.de> <1184501264.3140.71.camel@roc-laptop>
-In-Reply-To: <1184501264.3140.71.camel@roc-laptop>
+	Sun, 15 Jul 2007 08:25:14 -0400
+Message-ID: <469A1293.6020902@mellanox.co.il>
+Date: Sun, 15 Jul 2007 15:26:59 +0300
+Reply-To: tziporet@dev.mellanox.co.il
+Organization: Mellanox Technologies
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707151417.10964.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Roland Dreier <rdreier@cisco.com>
+CC: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Further 2.6.23 merge plans...
+References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
+In-Reply-To: <adahco943ip.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+From: Tziporet Koren <tziporet@dev.mellanox.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 July 2007 14:07:44 Bryan Wu wrote:
-> @@ -483,9 +487,12 @@
->  
->  void setup_mac_addr(u8 * mac_addr)
->  {
-> +	u32 addr_low = le32_to_cpu(*(u32 *) & mac_addr[0]);
-> +	u16 addr_hi = le16_to_cpu(*(u16 *) & mac_addr[4]);
-> +
->  	/* this depends on a little-endian machine */
-> -	bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
-> -	bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
-> +	bfin_write_EMAC_ADDRLO(addr_low);
-> +	bfin_write_EMAC_ADDRHI(addr_hi);
->  }
->  
->  static void adjust_tx_list(void)
-> @@ -866,10 +873,10 @@
->  	int retval;
->  
->  	/* Grab the MAC address in the MAC */
-> -	*(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
-> -	*(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
-> +	*(u32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
-> +	*(u16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
+Roland Dreier wrote:
+> As you can see, I just sent my first 2.6.23 pull request for Linus.
+> There are still a few more things I plan to do in before the merge
+> window closes (in ~10 days):
+>
+>   
+Till when can we insert mlx4 with FMRs?
 
-Try something like this:
+Tziporet
 
-@@ -483,9 +487,12 @@
- 
- void setup_mac_addr(u8 * mac_addr)
- {
-+       u32 addr_low = le32_to_cpu(*(__le32 *) & mac_addr[0]);
-+       u16 addr_hi = le16_to_cpu(*(__le16 *) & mac_addr[4]);
-+
--       /* this depends on a little-endian machine */
--       bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
--       bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
-+       bfin_write_EMAC_ADDRLO(addr_low);
-+       bfin_write_EMAC_ADDRHI(addr_hi);
- }
- 
- static void adjust_tx_list(void)
-@@ -866,10 +873,10 @@
-        int retval;
- 
-        /* Grab the MAC address in the MAC */
--       *(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
--       *(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
-+       *(__le32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
-+       *(__le16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
-
--- 
-Greetings Michael.
