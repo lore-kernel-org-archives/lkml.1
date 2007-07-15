@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbXGOEuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbXGOEuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbXGOEuH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 00:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXGOEt4
+	id S1754204AbXGOEuq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 00:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXGOEuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 00:49:56 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:16074 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbXGOEtz (ORCPT
+	Sun, 15 Jul 2007 00:50:39 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36984 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751187AbXGOEui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 00:49:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LtSIUtY2kvKLfCFn/u+2qt4aJmTD6gSWhOOvAcrySwJg46si46qutjk7yBGxdw8ZxqgCbL0+11/QrVkiI6sBvI0MsxnjyJcamKXVraQnDYIR0WEqr2YEGQLAblrsXGmDBTogCNad87a+kmEHrI+Led98SiR7ClkTMzsh1uQyITA=
-Message-ID: <787b0d920707142149p3899ddbcy75358392e8ab4563@mail.gmail.com>
-Date: Sun, 15 Jul 2007 00:49:54 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
-Cc: olaf@aepfle.de, hpa@zytor.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070714.204314.70218766.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 15 Jul 2007 00:50:38 -0400
+Date: Sat, 14 Jul 2007 21:50:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: cbou@mail.ru, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] pda_power: clean up irq, timer, return usage
+Message-Id: <20070714215026.22ee39da.akpm@linux-foundation.org>
+In-Reply-To: <46996A53.6000807@garzik.org>
+References: <20070714231204.GA23582@havoc.gtf.org>
+	<20070715001515.GA3641@zarina>
+	<46996A53.6000807@garzik.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <787b0d920707141948t71b4059s7ae68610f9f81eac@mail.gmail.com>
-	 <20070714.204314.70218766.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/14/07, David Miller <davem@davemloft.net> wrote:
-> From: "Albert Cahalan" <acahalan@gmail.com>
-> Date: Sat, 14 Jul 2007 22:48:57 -0400
->
-> > A real constant-value PAGE_SIZE is useful and doable.
->
-> It's bogus to use it.  The kernel can get recompiled
-> to arbitrary page sizes on some architectures, so a constat
-> page size assumption cannot work.
+On Sat, 14 Jul 2007 20:29:07 -0400 Jeff Garzik <jeff@garzik.org> wrote:
 
-Sure it can work. The ABI specifies limits on such things.
-Probably the most appropriate size is the one specified
-for alignment of ELF sections.
+> Anton Vorontsov wrote:
+> > On Sat, Jul 14, 2007 at 07:12:04PM -0400, Jeff Garzik wrote:
+> >> Clean up pda_power interrupt handling:
+> > 
+> > Nice, thanks! Just few cosmetic comments.
+> > 
+> >> Prior to this patch, the driver would pass information it needed
+> >> to the interrupt handler dev_id pointer, and then prompt forget it
+> >> ever did so, recreating that same information after a couple passes
+> >> through the timer-based state machine.
+> >>
+> >> This patch removes the redundant checks by passing the
+> >> pda_power_supply[] pointer through the state machine.  The current
+> >> code passed 'irq' through the state machine, as an index to recreate
+> >> the pointer, when we could more simply pass around the pointer itself.
+> >>
+> >> Additionally, bogus "return;" statements were removed.
+> > 
+> > My preference is to use "return;" statements in functions returning
+> > void, even if functions is very small. It's just sugar for my eyes,
+> > to really see exit points. . Without returns I've feeling that
+> > something is missing there. Yes, my oddity.
+> > 
+> > Plus, so far CodingStyle does not say anything about non obligatory
+> > return statements.
+> > 
+> > These should be "fixed" too, though:
+> > ~/linux-2.6$ grep -h "return;" -A1 -r drivers/ arch/ | grep "^}$" | \
+> > wc -l
+> > 1354
+> > 
+> > Obviously, drivers/ata is almost pure (3). ;-)
+> > 
+> > Either way, I prefer to leave alone these "return;"s, until CodingStyle
+> > permits them.
+> 
+> CodingStyle is not the end-all of rulebooks.  See repeated messages by 
+> Linus, me, and others on the subject.  CodingStyle intentionally does 
+> not list a rule for every possible C code incarnation.
 
-If I remember right, it's 64 K for the PowerPC ABI. This allows
-for 64 K pages, even though many chips offer 4 K pages.
+Yup, the `return' is a waste of space.
+
+> > I'll send patch shortly.
+> > 
+> >> +	void *power_supply = (void *) power_supply_ptr;
+> >                                      ^
+> > I guess common practice is not to put space here.
+> 
+> incorrect.  a space goes there, as I put it.
+> 
+
+Nope, the space is a waste of space.
