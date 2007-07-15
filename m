@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762142AbXGOXiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbXGOXig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762142AbXGOXiW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 19:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbXGOXiP
+	id S1762720AbXGOXig (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 19:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759823AbXGOXiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 19:38:15 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:53561 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755103AbXGOXiO (ORCPT
+	Sun, 15 Jul 2007 19:38:19 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:38268 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759387AbXGOXiS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 19:38:14 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Hibernation considerations
-Date: Mon, 16 Jul 2007 09:38:13 +1000
-User-Agent: KMail/1.9.6
-Cc: david@lang.hm, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-References: <Pine.LNX.4.44L0.0707151914450.28934-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707151914450.28934-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1875635.pehxPaokTr";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Sun, 15 Jul 2007 19:38:18 -0400
+Date: Sun, 15 Jul 2007 19:38:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Andi Kleen <andi@firstfloor.org>, hch@infradead.org
+Subject: [PATCH] Text Edit Lock - x86_64 kerneldoc implementation
+Message-ID: <20070715233816.GG22428@Krystal>
+References: <20070714012133.612727310@polymtl.ca> <20070714012412.960272115@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707160938.16037.nigel@nigel.suspend2.net>
+Content-Disposition: inline
+In-Reply-To: <20070714012412.960272115@polymtl.ca>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:37:11 up 8 days, 13:42,  3 users,  load average: 2.06, 1.10, 0.60
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1875635.pehxPaokTr
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Text Edit Lock - x86_64 kerneldoc implementation
 
-Hi.
+Add kerneldoc to text edit lock x86_64 API.
 
-On Monday 16 July 2007 09:15:47 Alan Stern wrote:
-> On Sun, 15 Jul 2007 david@lang.hm wrote:
->=20
-> > >> for a pure hibernate mode, you will be powering off the box after=20
-saving
-> > >> the suspend image. why are there any special ACPI modes involved?
-> > >
-> > > Because, for example, on my machine the status of power supply (prese=
-nt
-> > > vs not present) is not updated correctly after the restore if ACPI=20
-callbacks
-> > > aren't used during the hibernation.  That's just experience and it's =
-in=20
-line
-> > > with the ACPI spec.
-> >=20
-> > so if a machine is actually powered off the /dev/suspend process won't=
-=20
-> > work?
-> >=20
-> > remember that the system may run a different OS between the hibernate a=
-nd=20
-> > the resume, makeing any assumptions about what state the hardware is in=
-=20
-> > when you start the resume is a problem.
->=20
-> As I understand it, running a different OS between the hibernate and=20
-> the resume would violate the ACPI spec.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: hch@infradead.org
+CC: Andi Kleen <andi@firstfloor.org>
+---
+ arch/x86_64/mm/init.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-Well then, I know one or two people who would argue that the ACPI spec is=20
-faulty. :\
-
-Regards,
-
-Nigel
-=2D-=20
-Nigel Cunningham
-Christian Reformed Church of Cobden
-103 Curdie Street, Cobden 3266, Victoria, Australia
-Ph. +61 3 5595 1185 / +61 417 100 574
-Communal Worship: 11 am Sunday.
-
---nextPart1875635.pehxPaokTr
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGmq/oN0y+n1M3mo0RAgmVAJ9jz67HS+WaZ2TxiNeDbSVbmcsxawCfSOip
-zSF7Cboect+TZCUIRWDPHnE=
-=H0PZ
------END PGP SIGNATURE-----
-
---nextPart1875635.pehxPaokTr--
+Index: linux-2.6-lttng/arch/x86_64/mm/init.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86_64/mm/init.c	2007-07-15 19:01:50.000000000 -0400
++++ linux-2.6-lttng/arch/x86_64/mm/init.c	2007-07-15 19:02:18.000000000 -0400
+@@ -617,8 +617,13 @@ void mark_rodata_ro(void)
+ 	global_flush_tlb();
+ }
+ 
+-/*
+- * Mark kernel text pages writable.
++/**
++ * kernel_text_mark_rw  -   Mark kernel text RW
++ * @address:                location of the code
++ * @len:                    size of code to mark
++ *
++ * Mark the kernel text pages writable so they can safely written to. This is
++ * useful for code patching.
+  */
+ void kernel_text_mark_rw(unsigned long address, size_t len)
+ {
+@@ -636,6 +641,13 @@ void kernel_text_mark_rw(unsigned long a
+ }
+ EXPORT_SYMBOL_GPL(kernel_text_mark_rw);
+ 
++/**
++ * kernel_text_unmark  -    Mark kernel text back to its original flags
++ * @address:                location of the code
++ * @len:                    size of code to mark
++ *
++ * Mark the kernel text back to its original flags.
++ */
+ void kernel_text_unmark(unsigned long address, size_t len)
+ {
+ 	if (kernel_text_is_ro && address >= PFN_ALIGN(_text)
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
