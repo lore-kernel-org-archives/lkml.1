@@ -1,164 +1,482 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbXGOPUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761973AbXGOPYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761752AbXGOPUe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 11:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758345AbXGOPUZ
+	id S1761973AbXGOPYf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 11:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbXGOPY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 11:20:25 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:63646 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756819AbXGOPUY (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 11:20:24 -0400
-Subject: Re: [BUG] AS io-scheduler.
-From: Ian Kumlien <pomac@vapor.com>
-Reply-To: pomac@vapor.com
-To: Linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-tAHYth/tgaQ/C/CMqBGV"
-Date: Sun, 15 Jul 2007 17:20:21 +0200
-Message-Id: <1184512821.10630.26.camel@localhost>
+	Sun, 15 Jul 2007 11:24:26 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:52326 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758345AbXGOPYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 11:24:24 -0400
+Subject: [GIT PATCH] first SCSI merge for 2.6.22
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 15 Jul 2007 10:24:17 -0500
+Message-Id: <1184513059.3400.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This represents the accumulated SCSI patches for the 2.6.22 merge window
+(2.5MB of them, I'm afraid).  The major infrastructure change is
+switching over to data buffer accessors in preparation for merging Jens
+bsg tree and adding bidirectional command support.  Depending how the
+other merges go, we may or may not get all of the bidirectional and SAS
+command tap stuff in before the merge window closes.  Apart from this,
+there are the usual assorted driver updates and bug fixes.
 
---=-tAHYth/tgaQ/C/CMqBGV
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The patch is available from
 
-Sorry, due to mental fatigue i actually forgot to repor that this was
-with 2.6.22.1
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-Since this is mailed from outside the ml, i'm attaching the original
-message:
+The short changelog is:
 
----
-Hi,=20
+Adrian Bunk (4):
+      remove the dead CYBERSTORMIII_SCSI option
+      advansys: cleanups
+      ips: remove kernel 2.4 code
+      nsp32: remove kernel 2.4 code
 
-I had emerge --sync failing several times...=20
+Akinobu Mita (1):
+      sr: fix error handling in module_init
 
-So i checked dmesg and found some info, attached further down.
-This is a old VIA C3 machine with one disk, it's been running most
-kernels in the 2.6.x series with no problems until now.
+Alan Cox (3):
+      ppa: coding police and printk levels
+      a100u2w: Convert into Linux style
+      initio: Convert into a real Linux driver and update to modern style
 
-PS. Don't forget to CC me
-DS.
+Amol Lad (1):
+      NCR5380: Replace yield() with a better alternative
 
-BUG: unable to handle kernel paging request at virtual address ea86ac54
- printing eip:
-c022dfec
-*pde =3D 00000000
-Oops: 0000 [#1]
-Modules linked in: eeprom i2c_viapro vt8231 i2c_isa skge
-CPU:    0
-EIP:    0060:[<c022dfec>]    Not tainted VLI
-EFLAGS: 00010082   (2.6.22.1 #26)
-EIP is at as_can_break_anticipation+0xc/0x190
-eax: dfcdaba0   ebx: dfcdaba0   ecx: 0035ff95   edx: cb296844
-esi: cb296844   edi: dfcdaba0   ebp: 00000000   esp: ceff6a70
-ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-Process rsync (pid: 1667, ti=3Dceff6000 task=3Dd59cf5b0 task.ti=3Dceff6000)
-Stack: cb296844 00000001 cb296844 dfcdaba0 00000000 c022efc8 cb296844
-00000000=20
-       dfcffb9c c0227a76 dfcffb9c 00000000 c016e96e cb296844 00000000
-dfcffb9c=20
-       00000000 c022af64 00000000 dfcffb9c 00000008 00000000 08ff6b30
-c04d1ec0=20
-Call Trace:
- [<c022efc8>] as_add_request+0xa8/0xc0
- [<c0227a76>] elv_insert+0xa6/0x150
- [<c016e96e>] bio_phys_segments+0xe/0x20
- [<c022af64>] __make_request+0x384/0x490
- [<c02add1e>] ide_do_request+0x6ee/0x890
- [<c02294ab>] generic_make_request+0x18b/0x1c0
- [<c022b596>] submit_bio+0xa6/0xb0
- [<c013b7b8>] mempool_alloc+0x28/0xa0
- [<c016bb66>] __find_get_block+0xf6/0x130
- [<c016e0bc>] bio_alloc_bioset+0x8c/0xf0
- [<c016b647>] submit_bh+0xb7/0xe0
- [<c016c1f8>] ll_rw_block+0x78/0x90
- [<c019c85d>] search_by_key+0xdd/0xd20
- [<c016c201>] ll_rw_block+0x81/0x90
- [<c011f190>] irq_exit+0x40/0x60
- [<c01066e4>] do_IRQ+0x94/0xb0
- [<c0104bc3>] common_interrupt+0x23/0x30
- [<c018beca>] reiserfs_read_locked_inode+0x6a/0x490
- [<c018e580>] reiserfs_find_actor+0x0/0x20
- [<c018c33b>] reiserfs_iget+0x4b/0x80
- [<c018e570>] reiserfs_init_locked_inode+0x0/0x10
- [<c0189824>] reiserfs_lookup+0xa4/0xf0
- [<c0157b03>] do_lookup+0xa3/0x140
- [<c0159265>] __link_path_walk+0x615/0xa20
- [<c0168a18>] __mark_inode_dirty+0x28/0x150
- [<c01631c1>] mntput_no_expire+0x11/0x50
- [<c01596b2>] link_path_walk+0x42/0xb0
- [<c0159960>] do_path_lookup+0x130/0x150
- [<c015a190>] __user_walk_fd+0x30/0x50
- [<c0154766>] vfs_lstat_fd+0x16/0x40
- [<c01547df>] sys_lstat64+0xf/0x30
- [<c0103c42>] syscall_call+0x7/0xb
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Code: c0 8b 44 cb 0c 8b 40 08 29 d0 f7 d0 c1 e8 1f 83 f0 01 eb 02 31 c0
-5b c3 8d b4 26 00 00 00 00 55 57 56 53 83 ec 04 89 c3 89 14 24 <8b> 90
-b4 00 00 00 85 d2 75 04 0f 0b eb fe 83 3c 24 00 74 0c 8b=20
-EIP: [<c022dfec>] as_can_break_anticipation+0xc/0x190 SS:ESP
-0068:ceff6a70
-WARNING: at block/as-iosched.c:862 as_remove_queued_request()
- [<c022e560>] as_remove_queued_request+0x40/0xc0
- [<c022e684>] as_move_to_dispatch+0xa4/0x110
- [<c0236626>] __delay+0x6/0x10
- [<c022ee03>] as_dispatch_request+0x2d3/0x310
- [<c02b39b2>] ide_dma_start+0x22/0x30
- [<c02b6be0>] ide_do_rw_disk+0x310/0x3f0
- [<c02279b5>] elv_next_request+0x105/0x120
- [<c02ad876>] ide_do_request+0x246/0x890
- [<c03d5c9d>] schedule+0x45d/0x4c0
- [<c022e7f0>] as_work_handler+0x0/0x20
- [<c022a331>] blk_start_queueing+0x11/0x20
- [<c022e7ff>] as_work_handler+0xf/0x20
- [<c0126bab>] run_workqueue+0x6b/0xe0
- [<c0127200>] worker_thread+0x0/0xc0
- [<c01272b2>] worker_thread+0xb2/0xc0
- [<c01297e0>] autoremove_wake_function+0x0/0x40
- [<c0129658>] kthread+0x38/0x60
- [<c0129620>] kthread+0x0/0x60
- [<c0104d87>] kernel_thread_helper+0x7/0x10
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-WARNING: at block/as-iosched.c:966 as_move_to_dispatch()
- [<c022e6b3>] as_move_to_dispatch+0xd3/0x110
- [<c022ee03>] as_dispatch_request+0x2d3/0x310
- [<c02b39b2>] ide_dma_start+0x22/0x30
- [<c02b6be0>] ide_do_rw_disk+0x310/0x3f0
- [<c02279b5>] elv_next_request+0x105/0x120
- [<c02ad876>] ide_do_request+0x246/0x890
- [<c03d5c9d>] schedule+0x45d/0x4c0
- [<c022e7f0>] as_work_handler+0x0/0x20
- [<c022a331>] blk_start_queueing+0x11/0x20
- [<c022e7ff>] as_work_handler+0xf/0x20
- [<c0126bab>] run_workqueue+0x6b/0xe0
- [<c0127200>] worker_thread+0x0/0xc0
- [<c01272b2>] worker_thread+0xb2/0xc0
- [<c01297e0>] autoremove_wake_function+0x0/0x40
- [<c0129658>] kthread+0x38/0x60
- [<c0129620>] kthread+0x0/0x60
- [<c0104d87>] kernel_thread_helper+0x7/0x10
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=20
---=20
-Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
+Andrew Morton (1):
+      ncr5380 warning fixes
 
---=-tAHYth/tgaQ/C/CMqBGV
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Bernhard Walle (1):
+      sd: remove __GFP_DMA
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7-ecc0.1.6 (GNU/Linux)
+Boaz Harrosh (3):
+      scsi.c: convert to use the data buffer accessors
+      tmscsim: Further clean-up of the driver
+      lpfc: add missed data buffer accessor
 
-iD8DBQBGmjs17F3Euyc51N8RApubAJ0TWTipjscXU4X+3HRr12Zds6KWOwCgjjaK
-oZ7DY3l/RB2sV7M+Imxh/fo=
-=QdxN
------END PGP SIGNATURE-----
+Brian King (6):
+      ibmvscsi: Abort path fix
+      ibmvscsi: Misc. locking fixes
+      ibmvscsi: Add eh_host_reset_handler
+      ibmvscsi: Enhanced error logging
+      ibmvscsi: Remove unnecessary map_sg check
+      ibmvscsi: Changeable queue depth
 
---=-tAHYth/tgaQ/C/CMqBGV--
+Christof Schmitt (1):
+      zfcp: Report FCP LUN to SCSI midlayer
+
+Christoph Hellwig (4):
+      esp: use shost_priv
+      introduce shost_priv helper
+      53c7xx: kill driver
+      aha152x: use wait_for_completion_timeout
+
+Cornelia Huck (1):
+      don't build scsi_dma_{map,unmap} for !HAS_DMA
+
+David C Somayajulu (10):
+      qla4xxx: Fix underrun/overrun conditions
+      qla4xxx: allow hba to be online when initiator ip address is uninitialized
+      qla4xxx: ql4_os.c bugfixes
+      qla4xxx: ql4_mbx.c remove dead code bugfixes
+      qla4xxx: ql4_isr.c support for new mbx cmds
+      qla4xxx: update rev num and misc cleanup
+      qla4xxx: ql4_init.c bugfixes
+      qla4xxx: ql4_fw.h add support for qla4032
+      qla4xxx: ql4_def.h log all AENs and cleanup
+      qla4xxx: ql4_dbg.c remove dead code
+
+David Rientjes (1):
+      gdth: fix ambiguous gdthtable definition
+
+Ed Lin (1):
+      stex: use resid for xfer len information
+
+Eric Moore (8):
+      mpt fusion: fix for mounted raid volume filesytem that goes read-only
+      mpt fusion: cleanup eh handlers
+      mpt fusion: bump version
+      mpt fusion: fc loginfo using defines from the header
+      mpt fusion: remove unused header - linux_compat.h
+      mpt fusion: remove unused header - mpi_inb.h
+      mpt fusion: new mpi headers version 1.5.16
+      mpt fusion: update MAINTAINERS (fusion part)
+
+Eric Sesterhenn (1):
+      sg: remove unnecessary check
+
+FUJITA Tomonori (54):
+      ibmvscsi: convert to use the data buffer accessors
+      dc395x: convert to use the data buffer accessors
+      ncr53c8xx: convert to use the data buffer accessors
+      sym53c8xx: convert to use the data buffer accessors
+      lpfc: fix NPIV mapping problems
+      ibmvscsi: fix timeout bugs
+      iscsi_iser: convert to use the data buffer accessors
+      lpfc: convert to use the data buffer accessors
+      esp_scsi: convert to use the data buffer accessors
+      hptiop: convert to use the data buffer accessors
+      iscsi_tcp: convert to use the data buffer accessors
+      i2o: convert to use the data buffer accessors
+      aacraid: convert to use the data buffer accessors
+      ips: convert to use the data buffer accessors
+      ib_srp: convert to use the data buffer accessors
+      mesh: convert to use the data buffer accessors
+      megaraid: convert to use the data buffer accessors
+      megaraid_sas: convert to use the data buffer accessors
+      megaraid_old: convert to use the data buffer accessors
+      dpt_i2o: convert to use the data buffer accessors
+      qla2xxx: convert to use the data buffer accessors
+      3w-9xxx: eliminate missed map_single path
+      3w-xxxx: convert to use the data buffer accessors
+      3w-9xxx: convert to use the data buffer accessors
+      nsp32: convert to use the data buffer accessors
+      stex: convert to use the data buffer accessors
+      qla4xxx: convert to use the data buffer accessors
+      fusion: convert to use the data buffer accessors
+      ipr: convert to use the data buffer accessors
+      libsas: convert to use the data buffer accessors
+      cciss: convert to use the data buffer accessors
+      arcmsr: convert to use the data buffer accessors
+      aic7xxx_old: convert to use the data buffer accessors
+      tmscsim: convert to use the data buffer accessors
+      sbp2: convert to use the data buffer accessors
+      BusLogic: convert to use the data buffer accessors
+      qlogicfas408: convert to use the data buffer accessors
+      u14-34f: convert to use the data buffer accessors
+      ultrastor: convert to use the data buffer accessors
+      wd7000: convert to use the data buffer accessors
+      eata: convert to use the data buffer accessors
+      initio: convert to use the data buffer accessors
+      aha1740: convert to use the data buffer accessors
+      a100u2w: convert to use the data buffer accessors
+      fdomain: convert to use the data buffer accessors
+      sym53c500_cs: convert to use the data buffer accessors
+      sym53c416: convert to use the data buffer accessors
+      NCR53c406a: convert to use the data buffer accessors
+      mac53c94: convert to use the data buffer accessors
+      ibmmca: convert to use the data buffer accessors
+      aic79xx: convert to use the data buffer accessors
+      aic7xxx: convert to use the data buffer accessors
+      53c700: convert to use the data buffer accessors
+      scsi_lib: add scatter/gather data buffer accessors
+
+Geert Uytterhoeven (2):
+      CONFIG_SCSI_FD_8xx no longer exists
+      53c700: Fixup m68k drivers:
+
+Guennadi Liakhovetski (1):
+      tmscsim: clean-up status codes
+
+Hannes Reinecke (1):
+      fc_transport: Check portstates before invoking target scan
+
+James Bottomley (3):
+      lpfc: Fix NPIV compile problem
+      scsi_error: send the sense buffer down without copying
+      ibmmca: convert to new probing API and fix oopses
+
+James Smart (7):
+      lpfc: update to version 8.2.1
+      lpfc: bug fixes
+      lpfc: NPIV: add NPIV support on top of SLI-3
+      lpfc: NPIV: add SLI-3 interface
+      lpfc: NPIV: split ports
+      fc_transport: fix sysfs deadlock on vport delete
+      FC Transport support for vports based on NPIV
+
+Jeff Garzik (2):
+      fdomain: fix PCMCIA-related warnings
+      aacraid,qla2xxx: use irq_handler_t where appropriate
+
+Kars de Jong (5):
+      53c700: Amiga Zorro NCR53c710 SCSI
+      53c700: Amiga 4000T NCR53c710 SCSI
+      53c700: m68k MVME16x NCR53C710 SCSI
+      53c700: m68k BVME6000 NCR53C710 SCSI
+      53c700: m68k support for the 53c700 SCSI core
+
+Martin Bligh (1):
+      megaraid: fix compiler warnings
+
+Matthew Wilcox (2):
+      Clean up scsi_add_lun a bit
+      Add Brownie 1200U3P to blacklist
+
+Matthias Kaehlcke (1):
+      megaraid_mbox: use mutex instead of semaphore
+
+Mike Christie (19):
+      iscsi class, iscsi_tcp, iser, qla4xxx: add netdevname sysfs attr
+      iscsi class, qla4xxx, iscsi_tcp: export local address
+      iscsi_tcp: fix fd leak
+      qla4xxx: add iscsi_transport capps for fw capacilities
+      iscsi_tcp: remove DMA alignment restriction
+      iscsi_tcp: fix handling of data buffer padding
+      libiscsi: make can_queue configurable
+      libiscsi: fix iscsi cmdsn allocation
+      iscsi tcp: fix iscsi xmit state machine
+      iscsi class, iscsi_tcp, ib_iser: add sysfs chap file
+      iscsi: Some fixes in preparation for bidirectional support - total_length
+      iscsi: Some fixes in preparation for bidirectional support - exp_datasn
+      iscsi class, qla4xxx, iscsi_tcp, ib_iser: export/set initiator name
+      libiscsi, iscsi_tcp, ib_iser : add sw iscsi host get/set params helpers
+      iscsi class: add iscsi host set param event
+      iscsi_transport, qla4xxx: have class lookup host for drivers
+      qla4xxx: export mac as hw address
+      iscsi_transport: export hw address
+      iscsi_transport: Check iscsi interface skb allocation return value
+
+Priyanka Gupta (1):
+      Remove unused method scsi_device_cancel
+
+Randy Dunlap (1):
+      scsi_debug: correct parameter default text
+
+Robert P. J. Day (1):
+      gdth: Fix obvious typo "spin_lock_irqrestore()"
+
+Salyzyn, Mark (8):
+      aacraid: add 51245, 51645 and 52245 adapters to documentation.
+      aacraid: add support for long serial number information
+      aacraid: correct PERC2/QC and family match quirk list
+      aacraid: change srb status busy return
+      aacraid: add user initiated reset
+      aacraid: probe related code cleanup
+      aacraid: Changeable queue depth
+      aacraid: add support for FUA
+
+Satyam Sharma (2):
+      aic7xxx_old: remove redundant GFP_ATOMIC from kmalloc
+      i2o: remove redundant GFP_ATOMIC from kmalloc from device.c
+
+Seokmann Ju (2):
+      qla2xxx: update version to 8.02.00-k1.
+      qla2xxx: add support for NPIV
+
+Tejun Heo (1):
+      kill scsi host template suspend/resume
+
+Thomas Bogendoerfer (3):
+      53c700: Remove printk, which triggers because of low scsi clock on SNI RMs
+      sni_53c710: Cleanup
+      jazz_esp: converted to use esp_core
+
+Volker Sameske (1):
+      zfcp: clear adapter status flags during adapter shutdown
+
+nickcheng(鄭守謙 (1):
+      areca: improve driver stability and compatibility
+
+
+and the diffstat
+
+ b/Documentation/scsi/aacraid.txt               |    3 
+ b/Documentation/scsi/scsi_fc_transport.txt     |  450 +
+ b/drivers/block/cciss_scsi.c                   |   75 
+ b/drivers/ieee1394/sbp2.c                      |   75 
+ b/drivers/infiniband/ulp/iser/iscsi_iser.c     |   40 
+ b/drivers/infiniband/ulp/iser/iscsi_iser.h     |    4 
+ b/drivers/infiniband/ulp/iser/iser_initiator.c |   14 
+ b/drivers/infiniband/ulp/iser/iser_verbs.c     |    4 
+ b/drivers/infiniband/ulp/srp/ib_srp.c          |   63 
+ b/drivers/infiniband/ulp/srp/ib_srp.h          |    5 
+ b/drivers/message/fusion/lsi/mpi.h             |    7 
+ b/drivers/message/fusion/lsi/mpi_cnfg.h        |   61 
+ b/drivers/message/fusion/lsi/mpi_history.txt   |   66 
+ b/drivers/message/fusion/lsi/mpi_init.h        |   10 
+ b/drivers/message/fusion/lsi/mpi_ioc.h         |   40 
+ b/drivers/message/fusion/lsi/mpi_raid.h        |   11 
+ b/drivers/message/fusion/mptbase.c             |   40 
+ b/drivers/message/fusion/mptbase.h             |    6 
+ b/drivers/message/fusion/mptctl.c              |    2 
+ b/drivers/message/fusion/mptctl.h              |    2 
+ b/drivers/message/fusion/mptfc.c               |    3 
+ b/drivers/message/fusion/mptlan.c              |    2 
+ b/drivers/message/fusion/mptlan.h              |    2 
+ b/drivers/message/fusion/mptsas.c              |    2 
+ b/drivers/message/fusion/mptscsih.c            |  264 -
+ b/drivers/message/fusion/mptscsih.h            |    2 
+ b/drivers/message/fusion/mptspi.c              |    3 
+ b/drivers/message/i2o/device.c                 |    2 
+ b/drivers/message/i2o/i2o_scsi.c               |   24 
+ b/drivers/s390/scsi/zfcp_aux.c                 |   20 
+ b/drivers/s390/scsi/zfcp_erp.c                 |    7 
+ b/drivers/scsi/3w-9xxx.c                       |  135 
+ b/drivers/scsi/3w-xxxx.c                       |  104 
+ b/drivers/scsi/53c700.c                        |   77 
+ b/drivers/scsi/53c700.h                        |    5 
+ b/drivers/scsi/BusLogic.c                      |   51 
+ b/drivers/scsi/Kconfig                         |   56 
+ b/drivers/scsi/Makefile                        |   23 
+ b/drivers/scsi/NCR5380.c                       |   14 
+ b/drivers/scsi/NCR5380.h                       |    6 
+ b/drivers/scsi/NCR53c406a.c                    |   45 
+ b/drivers/scsi/a100u2w.c                       | 1239 ++---
+ b/drivers/scsi/a100u2w.h                       |  297 -
+ b/drivers/scsi/a4000t.c                        |  143 
+ b/drivers/scsi/aacraid/aachba.c                |  322 -
+ b/drivers/scsi/aacraid/aacraid.h               |   40 
+ b/drivers/scsi/aacraid/commsup.c               |  210 
+ b/drivers/scsi/aacraid/linit.c                 |  104 
+ b/drivers/scsi/aacraid/rx.c                    |   33 
+ b/drivers/scsi/advansys.c                      |  101 
+ b/drivers/scsi/aha152x.c                       |   50 
+ b/drivers/scsi/aha1740.c                       |   48 
+ b/drivers/scsi/aic7xxx/aic79xx_osm.c           |   51 
+ b/drivers/scsi/aic7xxx/aic79xx_osm.h           |    4 
+ b/drivers/scsi/aic7xxx/aic7xxx_osm.c           |   59 
+ b/drivers/scsi/aic7xxx/aic7xxx_osm.h           |    4 
+ b/drivers/scsi/aic7xxx_old.c                   |   57 
+ b/drivers/scsi/arcmsr/arcmsr.h                 |    4 
+ b/drivers/scsi/arcmsr/arcmsr_hba.c             |  559 +-
+ b/drivers/scsi/bvme6000_scsi.c                 |  135 
+ b/drivers/scsi/dc395x.c                        |  163 
+ b/drivers/scsi/dpt_i2o.c                       |   33 
+ b/drivers/scsi/eata.c                          |   48 
+ b/drivers/scsi/esp_scsi.c                      |   30 
+ b/drivers/scsi/esp_scsi.h                      |    2 
+ b/drivers/scsi/fdomain.c                       |   70 
+ b/drivers/scsi/gdth.c                          |    4 
+ b/drivers/scsi/hptiop.c                        |   76 
+ b/drivers/scsi/ibmmca.c                        | 1267 ++---
+ b/drivers/scsi/ibmvscsi/ibmvscsi.c             |  463 +
+ b/drivers/scsi/ibmvscsi/ibmvscsi.h             |    2 
+ b/drivers/scsi/ibmvscsi/rpa_vscsi.c            |   20 
+ b/drivers/scsi/initio.c                        | 3819 +++++++--------
+ b/drivers/scsi/initio.h                        |  313 -
+ b/drivers/scsi/ipr.c                           |  144 
+ b/drivers/scsi/ips.c                           |  401 -
+ b/drivers/scsi/ips.h                           |   44 
+ b/drivers/scsi/iscsi_tcp.c                     |  606 +-
+ b/drivers/scsi/iscsi_tcp.h                     |    9 
+ b/drivers/scsi/jazz_esp.c                      |    4 
+ b/drivers/scsi/libiscsi.c                      |  650 +-
+ b/drivers/scsi/libsas/sas_scsi_host.c          |   10 
+ b/drivers/scsi/lpfc/Makefile                   |    5 
+ b/drivers/scsi/lpfc/lpfc.h                     |  358 +
+ b/drivers/scsi/lpfc/lpfc_attr.c                |  760 ++-
+ b/drivers/scsi/lpfc/lpfc_crtn.h                |  182 
+ b/drivers/scsi/lpfc/lpfc_ct.c                  |  971 ++-
+ b/drivers/scsi/lpfc/lpfc_debugfs.c             |  508 ++
+ b/drivers/scsi/lpfc/lpfc_debugfs.h             |   50 
+ b/drivers/scsi/lpfc/lpfc_disc.h                |   15 
+ b/drivers/scsi/lpfc/lpfc_els.c                 | 3377 +++++++++----
+ b/drivers/scsi/lpfc/lpfc_hbadisc.c             | 2262 +++++----
+ b/drivers/scsi/lpfc/lpfc_hw.h                  |  558 ++
+ b/drivers/scsi/lpfc/lpfc_init.c                |  948 ++-
+ b/drivers/scsi/lpfc/lpfc_logmsg.h              |    1 
+ b/drivers/scsi/lpfc/lpfc_mbox.c                |  306 +
+ b/drivers/scsi/lpfc/lpfc_mem.c                 |  101 
+ b/drivers/scsi/lpfc/lpfc_nportdisc.c           | 1325 ++---
+ b/drivers/scsi/lpfc/lpfc_scsi.c                |  557 +-
+ b/drivers/scsi/lpfc/lpfc_scsi.h                |    3 
+ b/drivers/scsi/lpfc/lpfc_sli.c                 | 2047 +++++---
+ b/drivers/scsi/lpfc/lpfc_sli.h                 |   47 
+ b/drivers/scsi/lpfc/lpfc_version.h             |    2 
+ b/drivers/scsi/lpfc/lpfc_vport.c               |  523 ++
+ b/drivers/scsi/lpfc/lpfc_vport.h               |  113 
+ b/drivers/scsi/mac53c94.c                      |   62 
+ b/drivers/scsi/megaraid.c                      |  141 
+ b/drivers/scsi/megaraid/mega_common.h          |    1 
+ b/drivers/scsi/megaraid/megaraid_mbox.c        |  171 
+ b/drivers/scsi/megaraid/megaraid_mbox.h        |    4 
+ b/drivers/scsi/megaraid/megaraid_sas.c         |  112 
+ b/drivers/scsi/mesh.c                          |   46 
+ b/drivers/scsi/mvme16x_scsi.c                  |  158 
+ b/drivers/scsi/ncr53c8xx.c                     |   70 
+ b/drivers/scsi/nsp32.c                         |  194 
+ b/drivers/scsi/pcmcia/sym53c500_cs.c           |   42 
+ b/drivers/scsi/ppa.c                           |   57 
+ b/drivers/scsi/qla2xxx/Makefile                |    2 
+ b/drivers/scsi/qla2xxx/qla_attr.c              |  164 
+ b/drivers/scsi/qla2xxx/qla_dbg.c               |    4 
+ b/drivers/scsi/qla2xxx/qla_dbg.h               |   10 
+ b/drivers/scsi/qla2xxx/qla_def.h               |   83 
+ b/drivers/scsi/qla2xxx/qla_fw.h                |   91 
+ b/drivers/scsi/qla2xxx/qla_gbl.h               |   39 
+ b/drivers/scsi/qla2xxx/qla_gs.c                |    3 
+ b/drivers/scsi/qla2xxx/qla_init.c              |  166 
+ b/drivers/scsi/qla2xxx/qla_iocb.c              |  242 
+ b/drivers/scsi/qla2xxx/qla_isr.c               |   85 
+ b/drivers/scsi/qla2xxx/qla_mbx.c               |  396 +
+ b/drivers/scsi/qla2xxx/qla_mid.c               |  497 ++
+ b/drivers/scsi/qla2xxx/qla_os.c                |  237 
+ b/drivers/scsi/qla2xxx/qla_version.h           |    6 
+ b/drivers/scsi/qla4xxx/ql4_dbg.c               |  174 
+ b/drivers/scsi/qla4xxx/ql4_def.h               |   78 
+ b/drivers/scsi/qla4xxx/ql4_fw.h                |  426 -
+ b/drivers/scsi/qla4xxx/ql4_glbl.h              |    7 
+ b/drivers/scsi/qla4xxx/ql4_init.c              |  105 
+ b/drivers/scsi/qla4xxx/ql4_iocb.c              |  101 
+ b/drivers/scsi/qla4xxx/ql4_isr.c               |  114 
+ b/drivers/scsi/qla4xxx/ql4_mbx.c               |  274 -
+ b/drivers/scsi/qla4xxx/ql4_nvram.c             |    3 
+ b/drivers/scsi/qla4xxx/ql4_os.c                |   96 
+ b/drivers/scsi/qla4xxx/ql4_version.h           |    3 
+ b/drivers/scsi/qlogicfas408.c                  |   30 
+ b/drivers/scsi/scsi.c                          |   48 
+ b/drivers/scsi/scsi_debug.c                    |    2 
+ b/drivers/scsi/scsi_devinfo.c                  |    1 
+ b/drivers/scsi/scsi_error.c                    |   26 
+ b/drivers/scsi/scsi_lib_dma.c                  |   50 
+ b/drivers/scsi/scsi_scan.c                     |   67 
+ b/drivers/scsi/scsi_sysfs.c                    |   25 
+ b/drivers/scsi/scsi_transport_fc.c             |  831 +++
+ b/drivers/scsi/scsi_transport_iscsi.c          |  138 
+ b/drivers/scsi/sd.c                            |    2 
+ b/drivers/scsi/sg.c                            |    2 
+ b/drivers/scsi/sni_53c710.c                    |   10 
+ b/drivers/scsi/sr.c                            |    6 
+ b/drivers/scsi/stex.c                          |  111 
+ b/drivers/scsi/sun_esp.c                       |    2 
+ b/drivers/scsi/sym53c416.c                     |   44 
+ b/drivers/scsi/sym53c8xx_2/sym_glue.c          |   83 
+ b/drivers/scsi/sym53c8xx_2/sym_glue.h          |    2 
+ b/drivers/scsi/tmscsim.c                       |   85 
+ b/drivers/scsi/tmscsim.h                       |   10 
+ b/drivers/scsi/u14-34f.c                       |   60 
+ b/drivers/scsi/ultrastor.c                     |   19 
+ b/drivers/scsi/wd7000.c                        |   20 
+ b/drivers/scsi/zorro7xx.c                      |  180 
+ b/include/scsi/iscsi_if.h                      |   34 
+ b/include/scsi/libiscsi.h                      |   67 
+ b/include/scsi/scsi_cmnd.h                     |   20 
+ b/include/scsi/scsi_device.h                   |    2 
+ b/include/scsi/scsi_host.h                     |   10 
+ b/include/scsi/scsi_transport_fc.h             |  186 
+ b/include/scsi/scsi_transport_iscsi.h          |   16 
+ drivers/message/fusion/linux_compat.h          |    9 
+ drivers/message/fusion/lsi/mpi_inb.h           |  221 
+ drivers/scsi/53c7xx.c                          | 6102 -------------------------
+ drivers/scsi/53c7xx.h                          | 1608 ------
+ drivers/scsi/53c7xx.scr                        | 1591 ------
+ drivers/scsi/53c7xx_d.h_shipped                | 2874 -----------
+ drivers/scsi/53c7xx_u.h_shipped                |  102 
+ drivers/scsi/advansys.h                        |   36 
+ drivers/scsi/amiga7xx.c                        |  138 
+ drivers/scsi/amiga7xx.h                        |   23 
+ drivers/scsi/bvme6000.c                        |   76 
+ drivers/scsi/bvme6000.h                        |   24 
+ drivers/scsi/ibmmca.h                          |   21 
+ drivers/scsi/mvme16x.c                         |   78 
+ drivers/scsi/mvme16x.h                         |   24 
+ 190 files changed, 21725 insertions(+), 26337 deletions(-)
+
+James
+
+
 
