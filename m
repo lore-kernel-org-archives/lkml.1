@@ -1,43 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbXGOMFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbXGOMIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbXGOMFA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 08:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758834AbXGOMEx
+	id S1761258AbXGOMIG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 08:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759053AbXGOMHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 08:04:53 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33810 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757072AbXGOMEw (ORCPT
+	Sun, 15 Jul 2007 08:07:53 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:42296 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757453AbXGOMHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 08:04:52 -0400
-Date: Sun, 15 Jul 2007 14:04:16 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: starvik@axis.com
-Cc: dev-etrax@axis.com, linux-kernel@vger.kernel.org
-Subject: cris port lacks a merge?
-Message-ID: <20070715120415.GJ3565@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 15 Jul 2007 08:07:51 -0400
+X-IronPort-AV: i="4.16,540,1175486400"; 
+   d="scan'208"; a="34919707:sNHT29951810"
+Subject: Re: [PATCH try#2] Blackfin ethernet driver: on chip ethernet MAC
+	controller driver
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Michael Buesch <mb@bu3sch.de>
+Cc: bryan.wu@analog.com, Mike Frysinger <vapier.adi@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+In-Reply-To: <200707151236.51779.mb@bu3sch.de>
+References: <1184491629.3140.59.camel@roc-laptop>
+	 <200707151236.51779.mb@bu3sch.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Sun, 15 Jul 2007 20:07:44 +0800
+Message-Id: <1184501264.3140.71.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 15 Jul 2007 12:07:50.0281 (UTC) FILETIME=[C3C14F90:01C7C6D8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mikael,
+On Sun, 2007-07-15 at 12:36 +0200, Michael Buesch wrote:
+> On Sunday 15 July 2007 11:27:09 Bryan Wu wrote:
+> > +#if defined(CONFIG_BFIN_MAC_USE_L1)
+> > +# define bfin_mac_alloc(dma_handle, size)  l1_data_sram_zalloc(size)
+> > +# define bfin_mac_free(dma_handle, ptr)    l1_data_sram_free(ptr)
+> > +#else
+> > +# define bfin_mac_alloc(dma_handle, size) \
+> > +	 dma_alloc_coherent(NULL, size, dma_handle, GFP_NORMAL)
+> 
+> What is GFP_NORMAL? It's not defined in latest linus' tree.
+> I think you should use GFP_KERNEL, if you can sleep, or GFP_ATOMIC,
+> if you can't.
+> 
 
-the last maintainer update to arch/cris/ was two years ago and it seems 
-code like e.g. the config variable ETRAX_ARCH_V32 is missing.
+Yes, it should be GFP_KERNEL, i missed up with ZONE_NORMAL and ZONE_DMA.
 
-I assume there is there some external tree you use that contains updates?
-If yes, can you submit the changes for inclusion into the upstream kernel?
+> The rest looks OK. Except the endianess issues. It might be no
+> issue on the hardware this runs on, but in favour of "clean code"
+> you might use leXX_to_cpu and friends anyway. :)
+> This kind of bugs is done so often, even in places where it _does_
+> matter. So, at least for the human reader, the leXX_to_cpu stuff
+> says that you really understood what you were doing when writing
+> the code. The current code says (to me), that it works by
+> accident, somehow, although it seems you knew what you were doing. :)
+> 
 
-TIA
-Adrian
+As you know, this driver is original developed by Luke Yang. Now I am
+maintaining it.
+I just don't understand in this driver where should use leXX_to_cpu()
+and where should
+use cpu_to_leXX(). please give me some comments about the following
+change:
 
--- 
+---
+@@ -483,9 +487,12 @@
+ 
+ void setup_mac_addr(u8 * mac_addr)
+ {
++	u32 addr_low = le32_to_cpu(*(u32 *) & mac_addr[0]);
++	u16 addr_hi = le16_to_cpu(*(u16 *) & mac_addr[4]);
++
+ 	/* this depends on a little-endian machine */
+-	bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
+-	bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
++	bfin_write_EMAC_ADDRLO(addr_low);
++	bfin_write_EMAC_ADDRHI(addr_hi);
+ }
+ 
+ static void adjust_tx_list(void)
+@@ -866,10 +873,10 @@
+ 	int retval;
+ 
+ 	/* Grab the MAC address in the MAC */
+-	*(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
+-	*(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
++	*(u32 *) (&(dev->dev_addr[0])) = cpu_to_le32(bfin_read_EMAC_ADDRLO());
++	*(u16 *) (&(dev->dev_addr[4])) = cpu_to_le16((u16) bfin_read_EMAC_ADDRHI());
+---
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks
+- Bryan Wu
