@@ -1,112 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762044AbXGOX3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762046AbXGOX3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762044AbXGOX3B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 19:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761275AbXGOX2w
+	id S1762046AbXGOX3h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 19:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbXGOX33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 19:28:52 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2629 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761409AbXGOX2v (ORCPT
+	Sun, 15 Jul 2007 19:29:29 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:58835
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753811AbXGOX31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 19:28:51 -0400
-Date: Sun, 15 Jul 2007 19:28:50 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Al Boldi <a1426z@gawab.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>, <david@lang.hm>
-Subject: Re: Hibernation considerations
-In-Reply-To: <200707152040.33836.a1426z@gawab.com>
-Message-ID: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+	Sun, 15 Jul 2007 19:29:27 -0400
+Date: Sun, 15 Jul 2007 16:22:54 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+In-Reply-To: <200707160059.08277.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.64.0707151549200.25614@asgard.lang.hm>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+ <200707151231.27410.rjw@sisk.pl> <Pine.LNX.4.64.0707151218320.25614@asgard.lang.hm>
+ <200707160059.08277.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Jul 2007, Al Boldi wrote:
+On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
 
-> Alan Stern wrote:
-> > On Sun, 15 Jul 2007, Al Boldi wrote:
-> > > >     If possible, during a restore devices should be brought back to
-> > > > the same state in which they were before the corresponding
-> > > > hibernation.  Of course in some situations it might be impossible to
-> > > > do that (eg. the user connected the hibernated system to a different
-> > > > IP subnet and then restored), but as a general rule, we should do our
-> > > > best to restore the state of devices, which is directly related to
-> > > > point (5) above.
-> > >
-> > > This part could easily be handled by the normal kernel before and after
-> > > resume.
-> >
-> > I agree with you except for the word "easily".  And there are some
-> > things the kernel simply punts on (I'm thinking of the current VGA
-> > font).
-> 
-> Why; can you explain?
+> On Sunday, 15 July 2007 21:23, david@lang.hm wrote:
+>> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
+>>
+>>>>>> I think this is far more complicated then it needs to be.
+>>>>>>
+>>>>>> it sounds like it should be possible to do the following
+>>>>>>
+>>>>>> 1. figure out what pages should be backed up (creating a data structure to
+>>>>>> hold them)
+>>>>>
+>>>>> That should be done after step 2, because the memory contents can change
+>>>>> in this step.
+>>>>
+>>>> no, this needs to be done by the main kernel, becouse only it knows how to
+>>>> find this info. the kernel that you kexec into could be very different
+>>>> (including different versions) and the ways to identify this data is not
+>>>> part of any existing API
+>>>
+>>> If the memory contents changes in step 2, then the information collected by
+>>> the main kernel will be inaccurate.
+>>
+>> why would the memory use change when the new kernel is run? is it becouse
+>> of whatever it does to the devices for the hand-off?
+>
+> Yes, I think so, although I'm not sure, because I don't know what happens to
+> devices during a "normal" kexec.
 
->From personal experience I can assure you that it hasn't been easy
-getting the USB subsystem to restore devices following a hibernate.  
-(In fact the current implementation goes against the spirit, if not the
-letter, of the USB spec.)  And making it work requires user
-intervention.
+is this  a matter of running some test to find out, or is this a question 
+for the kexec implemantors?
 
-As for the VGA font, the effect is easy to see: Run setfont before 
-hibernating; when you resume the original font will be back.  The 
-kernel simply does not bother to save the VGA font information across a 
-hibernate.
+>>>> during the wakeup stage, I thought you said that al that was needed was to
+>>>> feed the suspend image to /dev/suspend and the kernel in the suspend image
+>>>> would re-probe, or otherwise re-initialize all the devices it needs. am I
+>>>> misunderstanding this?
+>>>
+>>> Perhaps.  Currently, the hibernated kernel will run device_resume() after
+>>> the restore, which is not exactly compatible with what kexec does.
+>>
+>> but kexec isn't needed during the restore process, is it?
+>
+> Generally, it's not needed.  _However_, the current handling of devices is
+> such that:
+> (a) hibernated kernel uses device_suspend() to put them into low power states
+>    and creates the image
+> (b) hibernated kernel uses device_resume() to get devices back to work and
+>    saves the image
+> (c) during the restore the boot kernel loads the image and uses
+>    device_suspend() to prepare devices for the "old" kernel
+> (d) hibernated kernel gets control and uses device_resume() to get devices back
+>    to work.
+> Now, if you use kexec instead of (a) and (b), then whatever it does to devices
+> is generally incompatible with the device_resume() in (d) (because, for
+> instance, some device driver's .resume() routine may expect some data to be
+> saved by the corresponding .suspend() at specific locations).
 
-> > > This should be the responsibility of the kexec'd hibernating kernel. 
-> > > Note though in (6), the normal kernel takes care of preparing devices,
-> > > then the hibernating kernel dumps the image and either calls S4 or S3. 
-> > > On resume from S3 it can immediately switch over to the normal kernel,
-> > > and from S4 the known bootup would occur.
-> >
-> > Is it really that simple?  Somehow I doubt it.  In order for some
-> > devices to remain available for the kexec'd kernel to use, they cannot
-> > be suspended at the ACPI level.  So the kexec'd kernel will have to
-> > handle the ACPI requirements for those devices.  Likewise, it would
-> > have to handle the ACPI interactions which need to be done after all
-> > devices are prepared for the transition to S3 or S4.
-> 
-> Ok, after applying the latest kexec patches, I was able to use the kexec'd 
-> kernel to suspend to ram and resume to the normal kernel, while working 
-> under a full-blown X session.  It went without a hitch.  All that is needed 
-> now are the dump/restore hibernation-image routines.
+ok, this means that the resume operation is not a solved problem (at least 
+for the kexec process)
 
-That's exactly my point.  While doing suspend-to-RAM from a kexec'd 
-kernel may be simple, saving the hibernation image will add 
-complications.
+now, one possible approach to this (and this may be what Ying Huang it 
+thinking of) would be to have the restore process be
 
-> > > The latest hibernating kexec patches boot a kexec'd modular kernel with
-> > > initramfs into crashkernel=16M@16M in less than one second.  Switch-back
-> > > is almost instant.  Add to this the time required to either store or
-> > > restore the image, and it may be obvious that this approach isn't
-> > > slower, but maybe even faster than the current swsusp.
-> >
-> > Does that include the time required for probing PCI buses?  On my
-> > desktop system, PCI probing incurs a five-second timeout delay because
-> > of a bug in the BIOS's USB firmware.
-> 
-> Using a modular kernel you would only insmod those modules that you need to 
-> dump the image, which is mainly the diskdriver.  If you wanted to dump it 
-> onto USB flash, then you would insmod that driver, and if that driver is 
-> slow due to a bug, then a fix should be in order.
+1. boot the normal kernel with a dummy userspace, initializeing all 
+devices
 
-I said nothing about dumping onto USB flash.  I was referring to PCI 
-probing; presumably any reasonable kernel for desktop/laptop systems 
-will include PCI support.
+2. kexec to the hibernate kernel
 
-And the bug isn't in Linux; it is in the firmware.  There's no way to 
-fix it short of a BIOS upgrade (and this particular BIOS is no longer 
-supported).
+3. the hibernate kernel's userspace overwrites all memory from the 
+origional system that was saved
 
-Alan Stern
+4. kexec from the hibernate kernel back to the origional kernel
 
+the ugly part here is the need for the dummy userspace in step #1 so that 
+it doesn't try to access the wrong things.
+
+now, it may be that the kernel boot in step 1 doesn't need to be able to 
+initialize all drivers for things to work in step 4, in which case things 
+are much simpler (but you still may need the three kernel hop so that the 
+final kernel is running in the same addresses that it started in.
+
+David Lang
