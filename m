@@ -1,138 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbXGOBjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933038AbXGOBlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933074AbXGOBjB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 21:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762559AbXGOBiy
+	id S933038AbXGOBlO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 21:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762098AbXGOBk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 21:38:54 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:48887 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760534AbXGOBiy (ORCPT
+	Sat, 14 Jul 2007 21:40:59 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:54904 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760534AbXGOBk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 21:38:54 -0400
-Date: Sat, 14 Jul 2007 21:38:52 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Sat, 14 Jul 2007 21:40:58 -0400
+Date: Sat, 14 Jul 2007 21:40:56 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: hch@infradead.org
-Subject: [PATCH] Immediate Values - PowerPC Optimization - kerneldoc
-Message-ID: <20070715013852.GH23209@Krystal>
-References: <20070714012439.285079881@polymtl.ca> <20070714012624.842959793@polymtl.ca>
+Cc: Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH] Linux Kernel Markers -  Architecture Independent Code - kerneldoc
+Message-ID: <20070715014056.GI23209@Krystal>
+References: <20070714012914.508504384@polymtl.ca> <20070714013050.289300592@polymtl.ca> <20070715013431.GE23209@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070714012624.842959793@polymtl.ca>
+In-Reply-To: <20070715013431.GE23209@Krystal>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:38:03 up 7 days, 15:43,  2 users,  load average: 0.17, 0.23, 0.17
+X-Uptime: 21:40:11 up 7 days, 15:45,  2 users,  load average: 0.47, 0.25, 0.18
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Immediate Values - PowerPC Optimization - kerneldoc
+Linux Kernel Markers - Architecture Independent Code - kerneldoc
 
-Add kerneldoc to Immediate Values (PowerPC Optimization) API.
+Add kerneldoc to Linux Kernel Markers API.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: hch@infradead.org
 ---
- include/asm-powerpc/immediate.h |   51 ++++++++++++++++++++++++++++------------
- 1 file changed, 36 insertions(+), 15 deletions(-)
+ include/linux/marker.h |  108 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 99 insertions(+), 9 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+Index: linux-2.6-lttng/include/linux/marker.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-powerpc/immediate.h	2007-07-14 20:54:47.000000000 -0400
-+++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2007-07-14 20:56:50.000000000 -0400
-@@ -24,14 +24,18 @@ struct __immediate {
- 	long size;		/* Type size. */
- };
+--- linux-2.6-lttng.orig/include/linux/marker.h	2007-07-14 20:58:16.000000000 -0400
++++ linux-2.6-lttng/include/linux/marker.h	2007-07-14 21:16:01.000000000 -0400
+@@ -20,6 +20,15 @@
+ struct module;
+ struct __mark_marker;
+ 
++/**
++ * marker_probe_func - Type of a marker probe function
++ * @mdata: pointer of type struct __mark_marker
++ * @fmt: format string
++ * @...: variable argument list
++ *
++ * Type of marker probe functions. They receive the mdata and need to parse the
++ * format string to recover the variable argument list.
++ */
+ typedef void marker_probe_func(const struct __mark_marker *mdata,
+ 	const char *fmt, ...);
+ 
+@@ -88,18 +97,36 @@ extern void module_marker_update(struct 
+ static inline void module_marker_update(struct module *mod) { }
+ #endif /* CONFIG_MARKERS */
+ 
+-/* Marker with default behavior */
++/**
++ * trace_mark - Marker using code patching
++ * @name: marker name, not quoted.
++ * @format: format string
++ * @args...: variable argument list
++ *
++ * Places a marker using optimized code patching technique (immediate_if ())
++ * to be enabled.
++ */
+ #define trace_mark(name, format, args...) \
+ 	__trace_mark(0, name, format, ## args)
+-/*
+- * Map to the generic marker. Should be used for markers in __init and __exit
+- * functions and in lockdep code.
++
++/**
++ * _trace_mark - Marker using variable read
++ * @name: marker name, not quoted.
++ * @format: format string
++ * @args...: variable argument list
++ *
++ * Places a marker using a standard memory read (_immediate_if ()) to be
++ * enabled. Should be used for markers in __init and __exit functions and in
++ * lockdep code.
+  */
+ #define _trace_mark(name, format, args...) \
+ 	__trace_mark(1, name, format, ## args)
+ 
+ #define MARK_MAX_FORMAT_LEN	1024
+-/* Pass this as a format string for a marker with no argument */
++
++/**
++ * MARK_NOARGS - Format string for a marker with no argument.
++ */
+ #define MARK_NOARGS " "
+ 
+ /* To be used for string format validity checking with gcc */
+@@ -109,27 +136,90 @@ static inline void __mark_check_format(c
+ 
+ extern marker_probe_func __mark_empty_function;
+ 
+-/*
+- * Connect a probe to a markers.
++/**
++ * marker_probe_register -  Connect a probe to a marker
++ * @name: marker name
++ * @format: format string
++ * @probe: probe handler
++ * @pdata: probe private data
++ *
+  * pdata must be a valid allocated memory address, or NULL.
++ * Returns 0 if ok, error value on error.
+  */
+ extern int marker_probe_register(const char *name, const char *format,
+ 				marker_probe_func *probe, void *pdata);
  
 -/*
 +/**
-+ * immediate_read - read immediate variable
-+ * @var: pointer of type immediate_*_t
++ * marker_probe_unregister -  Disconnect a probe from a marker
++ * @name: marker name
 + *
-+ * Reads the value of @var.
-  * Optimized version of the immediate.
-- * Make sure the 2 bytes update will be atomic by aligning the immediate
-- * value.
-- * Use a normal memory read for the 4 bytes immediate because there is no way to
-- * atomically update it without using a seqlock read side, which would cost more
-- * in term of total i-cache and d-cache space than a simple memory read.
-  * Do not use in __init and __exit functions. Use _immediate_read() instead.
-+ * Makes sure the 2 bytes update will be atomic by aligning the immediate
-+ * value. Use a normal memory read for the 4 bytes immediate because there is no
-+ * way to atomically update it without using a seqlock read side, which would
-+ * cost more in term of total i-cache and d-cache space than a simple memory
-+ * read.
+  * Returns the pdata given to marker_probe_register.
   */
- #define immediate_read(var)						\
- 	({								\
-@@ -65,37 +69,54 @@ struct __immediate {
- 		value;							\
- 	})
- 
+ extern void *marker_probe_unregister(const char *name);
 -/*
-- * Update immediate value, can take module mutex.
++
 +/**
-+ * immediate_set - set immediate variable (with locking)
-+ * @var: pointer of type immediate_*_t
-+ * @i: required value
++ * marker_probe_unregister -  Disconnect a probe from a marker
++ * @pdata: probe private data
 + *
-+ * Sets the value of @var, taking the module_mutex if required by
-+ * the architecture.
+  * Unregister a marker by providing the registered pdata.
++ * Returns the pdata given to marker_probe_register.
   */
- #define immediate_set(var, i) \
- 	(var)->value = (i); \
- 	immediate_update(1);
+ extern void *marker_probe_unregister_pdata(void *pdata);
  
--/*
-- * Update immediate value. Module mutex must already be taken.
 +/**
-+ * _immediate_set - set immediate variable (without locking)
-+ * @var: pointer of type immediate_*_t
-+ * @i: required value
++ * marker_arm - Arm a marker
++ * @name: marker name
 + *
-+ * Sets the value of @var. Must be called with module_mutex held.
-  */
- #define _immediate_set(var, i) \
- 	(var)->value = (i); \
- 	immediate_update(0);
- 
--/*
-- * Update immediate value at early boot.
++ * Activate a marker. It keeps a reference count of the number of
++ * arming/disarming done.
++ * Returns 0 if ok, error value on error.
++ */
+ extern int marker_arm(const char *name);
++
 +/**
-+ * immediate_set_early - set immediate variable at early boot
-+ * @var: pointer of type immediate_*_t
-+ * @i: required value
++ * marker_disarm - Disarm a marker
++ * @name: marker name
 + *
-+ * Sets the value of @var. Should be used for early boot updates.
-  */
- #define immediate_set_early(var, i) \
- 	(var)->value = (i); \
- 	immediate_update_early();
- 
--/*
++ * Disarm a marker. It keeps a reference count of the number of arming/disarming
++ * done.
++ * Returns 0 if ok, error value on error.
++ */
+ extern int marker_disarm(const char *name);
++
 +/**
-+ * immediate_if - if () statement depending on an immediate value
-+ * @var: pointer of type immediate_*_t
++ * marker_get_first - Get first marker to start iteration
 + *
-+ * Use as an if () statement depending on an immediate value.
-+ * Do not use in __init and __exit functions. Use _immediate_if() instead.
-  * Branch depending on an immediate value. Could eventually be optimized further
-  * by improving gcc to give the ability to patch a jump instruction instead of
-  * the value it depends on.
-- * Do not use in __init and __exit functions. Use _immediate_if() instead.
-  */
- #define immediate_if(var)	if (unlikely(immediate_read(var)))
++ * Get the first marker found in the kernel. It should have a matching
++ * marker_release.
++ */
+ extern struct __mark_marker *marker_get_first(void);
++
++/**
++ * marker_get_next - Get next marker of an iteration
++ * @iter: previous marker
++ *
++ * Get the next marker found in the kernel. It should get its previous marker
++ * from either marker_get_first() or marker_get_next().
++ */
+ extern struct __mark_marker *marker_get_next(struct __mark_marker *iter);
++
++/**
++ * marker_release - Release the marker iterator
++ * @iter: previous marker
++ *
++ * Release the ressources held to insure iterator validity.
++ */
+ extern void marker_release(struct __mark_marker *iter);
++
++/**
++ * marker_get_pdata - Get a marker's probe private data
++ * @name: marker name
++ *
++ * Returns the pdata pointer, or an ERR_PTR.
++ * The pdata pointer should _only_ be dereferenced if the caller is the owner of
++ * the data, or its content could vanish. This is mostly used to confirm that a
++ * caller is the owner of a registered probe.
++ */
+ extern void *marker_get_pdata(const char *name);
  
- /*
-- * Used internally.
-+ * Internal update functions.
-  */
- extern void immediate_update(int lock);
- extern void module_immediate_setup(struct module *mod);
+ #endif /* __KERNEL__ */
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
