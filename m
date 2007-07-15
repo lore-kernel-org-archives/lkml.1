@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbXGOVmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbXGOVmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758667AbXGOVmZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 17:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbXGOVmE
+	id S1759250AbXGOVmj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 17:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758725AbXGOVmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 17:42:04 -0400
-Received: from adelie.ubuntu.com ([82.211.81.139]:47484 "EHLO
-	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757982AbXGOVmB (ORCPT
+	Sun, 15 Jul 2007 17:42:24 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:36609 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758667AbXGOVmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 17:42:01 -0400
-X-Greylist: delayed 2175 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Jul 2007 17:42:01 EDT
-Subject: Re: [PATCH] ieee1394: forgotten dereference...
-From: Ben Collins <ben.collins@ubuntu.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <E1IAAFz-00053t-Tt@ZenIV.linux.org.uk>
-References: <E1IAAFz-00053t-Tt@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Organization: Canonical
-Date: Sun, 15 Jul 2007 22:05:39 +0100
-Message-Id: <1184533539.6454.101.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.5 
+	Sun, 15 Jul 2007 17:42:23 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Jonathan Campbell <jon@nerdgrounds.com>
+Subject: Re: Patches for REALLY TINY 386 kernels
+Date: Mon, 16 Jul 2007 07:42:24 +1000
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, torvalds@transmeta.com
+References: <469A8AED.7070207@nerdgrounds.com>
+In-Reply-To: <469A8AED.7070207@nerdgrounds.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2943614.sK4JJzgS6a";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707160742.25232.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart2943614.sK4JJzgS6a
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Sun, 2007-07-15 at 20:59 +0100, Al Viro wrote:
-> Going through the string and waiting for _pointer_ to become '\0'
-> is not what the authors meant...
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  drivers/ieee1394/nodemgr.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/ieee1394/nodemgr.c b/drivers/ieee1394/nodemgr.c
-> index c4d3d41..51a1206 100644
-> --- a/drivers/ieee1394/nodemgr.c
-> +++ b/drivers/ieee1394/nodemgr.c
-> @@ -283,7 +283,7 @@ static ssize_t fw_show_##class##_##td_kv (struct device *dev, struct device_attr
->  	memcpy(buf,							\
->  	       CSR1212_TEXTUAL_DESCRIPTOR_LEAF_DATA(class->td_kv),	\
->  	       len);							\
-> -	while ((buf + len - 1) == '\0')					\
-> +	while (buf[len - 1] == '\0')					\
->  		len--;							\
->  	buf[len++] = '\n';						\
->  	buf[len] = '\0';						\
+Hi Jonathan.
 
-ACK
+On Monday 16 July 2007 07:00:29 Jonathan Campbell wrote:
+> I wrote a set of patches out of concern that even if you compile a 386=20
+> kernel a lot of code irrelevent to legacy machines still remains. Things=
+=20
+> like the Pentium TSC register, DMI information, ESCD parsing, and the=20
+> use of CPUID do not apply to these machines, but looking at System.map=20
+> you can see they're still there.
+>=20
+> Already with these patches I can compile a zImage kernel that is 450kb=20
+> large (890kb decompressed) with a small initramfs payload, floppy and=20
+> kernel module support, FPU emulation, that can successfully boot on an=20
+> ancient 386 laptop with only 1MB of extended memory. Eventually what I'd=
+=20
+> like to have is the ability to compile a pure 386 kernel with all=20
+> non-386 functions removed (and perhaps the same for 486 machines).
+>=20
+> These patches were written against the vanilla 2.6.21.1 kernel. They=20
+> will have no effect UNLESS you make menuconfig and explicitly enable=20
+> them there.
 
-Definitely looks right with your patch. Thanks.
+Would you please make mrproper before preparing the patch? It's harder to r=
+ead=20
+with all the "Only in..." lines.
 
--- 
-Ubuntu   : http://www.ubuntu.com/
-Linux1394: http://wiki.linux1394.org/
+Regards,
 
+Nigel
+
+--nextPart2943614.sK4JJzgS6a
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGmpTBN0y+n1M3mo0RAhbZAJ4rfhMwfP2R9EGYt4P4JHmpko5fugCg6yJ3
+4k48YgMJxuEetnjrgBjIB7o=
+=FXRC
+-----END PGP SIGNATURE-----
+
+--nextPart2943614.sK4JJzgS6a--
