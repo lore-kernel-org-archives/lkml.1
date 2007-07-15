@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755AbXGODDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbXGODUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755755AbXGODDF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 23:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbXGODCy
+	id S1755828AbXGODUK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 23:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbXGODT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 23:02:54 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:53229 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbXGODCy (ORCPT
+	Sat, 14 Jul 2007 23:19:58 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55880 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbXGODT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 23:02:54 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Include serial_reg.h with userspace headers
-Date: Sun, 15 Jul 2007 00:02:39 -0300
-User-Agent: KMail/1.9.6
-Cc: Gustavo de Nardin <gustavodn@mandriva.com.br>
+	Sat, 14 Jul 2007 23:19:57 -0400
+Message-ID: <46999253.6020004@zytor.com>
+Date: Sat, 14 Jul 2007 20:19:47 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Albert Cahalan <acahalan@gmail.com>
+CC: olaf@aepfle.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
+References: <787b0d920707141948t71b4059s7ae68610f9f81eac@mail.gmail.com>
+In-Reply-To: <787b0d920707141948t71b4059s7ae68610f9f81eac@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707150002.39321.herton@mandriva.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Albert Cahalan wrote:
+> 
+> A real constant-value PAGE_SIZE is useful and doable.
+> 
+> It's useful because a getpagesize() can't be used for numerous
+> things, such as setting the size of an array.
+> 
+> It's doable, even on architectures that support multiple page
+> sizes, because ABIs specify alignment requirements. There are
+> two alignments of interest here:
+> 
+> a. the smallest that mmap() will ever naturally return on any
+>   correct implementation of the architecture's ABI ("naturally"
+>   meaning that MAP_FIXED was not used)
+> 
+> b. the smallest that mprotect() will tolerate on all
+>   correct implementations of the architecture
+> 
+> Pick either to be the Linux definition of PAGE_SIZE.
+> 
 
-As reported by Gustavo de Nardin <gustavodn@mandriva.com.br>, while trying to 
-compile xosview (http://xosview.sourceforge.net/) with upstream kernel 
-headers being used you get the following errors:
-serialmeter.cc:48:30: error: linux/serial_reg.h: No such file or directory
-serialmeter.cc: In member function 'virtual void 
-SerialMeter::checkResources()':
-serialmeter.cc:71: error: 'UART_LSR' was not declared in this scope
-serialmeter.cc:71: error: 'UART_MSR' was not declared in this scope
-...
+If you specify it to be one of these, people will mis-use it for the
+other.  This is a bad idea.
 
-I don't know if it's right to provide serial_reg.h with userspace headers, may 
-be serial_reg.h isn't included for some reason. But if it's ok, the following 
-patch adds serial_reg.h to be installed with user space kernel headers:
-
-=================================================
-
-  Add serial_reg.h to userspace kernel headers
-
-  Include serial_reg.h in kernel headers for user space, it is at least
-  needed for one program, xosview.
-
-  Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 127d2d1..eba0ccb 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -137,6 +137,7 @@ header-y += radeonfb.h
- header-y += raw.h
- header-y += resource.h
- header-y += rose.h
-+header-y += serial_reg.h
- header-y += smbno.h
- header-y += snmp.h
- header-y += sockios.h
-
---
-[]'s
-Herton.
+	-hpa
