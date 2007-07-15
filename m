@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbXGOSwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbXGOSx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbXGOSwt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 14:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGOSwm
+	id S1758352AbXGOSx4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 14:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGOSxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 14:52:42 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:42981
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751430AbXGOSwm (ORCPT
+	Sun, 15 Jul 2007 14:53:48 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:22708 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751430AbXGOSxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 14:52:42 -0400
-Date: Sun, 15 Jul 2007 20:54:09 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: viro@zeniv.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: PATCH [0/5] file system core: use list_for_each_entry() instead of list_for_each()
-Message-ID: <20070715185409.GE4034@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
+	Sun, 15 Jul 2007 14:53:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Mv/fCoEFyeug3PH7RAYnzSt6dJmOfvzHz3l6n9HPtZJZPrp0cqJ4hVjx0pNYzpQ3HyzIOsxzNQD6QF/XBcJPsGODI8MTjd2cNf7qrxOJDYl5W1BQdzwys7tF13FQDLp5wmfBpPDqjBIbDtpBZ773Z6yRJOKLST6bkX84BnH6GAo=
+Message-ID: <a0bc9bf80707151153mb3d5670tee2bd9d448b5395e@mail.gmail.com>
+Date: Mon, 16 Jul 2007 02:53:46 +0800
+From: "Li Yang" <leo@zh-kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Chinese Language Maintainer
+Cc: "Rob Landley" <rob@landley.net>, "Gerrit Huizenga" <gh@us.ibm.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, tim.bird@am.sony.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
+       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
+       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
+In-Reply-To: <469A6370.4020404@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>
+	 <200707121205.20959.rob@landley.net>
+	 <1184330583.23373.65.camel@Gundam>
+	 <200707131352.12952.rob@landley.net>
+	 <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com>
+	 <469A6370.4020404@zytor.com>
+X-Google-Sender-Auth: f67225fee320cf49
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset replaces some list_for_each() loops by
-list_for_each_entry() loops in the following file system functions:
+On 7/16/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Li Yang wrote:
+> >
+> > I think you worried too much about this problem.  :)  Let me explain
+> > the situation here in China more clearly.  Actually, English is
+> > mandatory in most schools and universities.  Only very few people
+> > learn other language as a second language.  Therefore software
+> > developers who are almost educated should have the basic English
+> > skill.  However, that doesn't mean that they can read English or
+> > communicate with native English speaker very easily.  Consider your
+> > second language learn in school for analogy.
+>
+> Actually, I disagree.  English *is* the second language learned in
+> school for most European developers (except, obviously, the ones from
+> the British isles), and we don't have that problem.
 
-fs_may_remount_ro()
-ep_poll_safewake(()
-sget()
-posix_locks_deadlock()
-get_locks_status()
-nr_blockdev_pages()
+Then this could be the main reason for the disagreement we have on
+this topic.  Many people here don't grasp English very well even after
+the English classes.
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-                Don't walk behind me, I may not lead
-             Don't walk in front of me, I may not follow
-                Just walk beside me and be my friend
-                          (Albert Camus)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+- Leo
