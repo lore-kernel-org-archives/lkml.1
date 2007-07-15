@@ -1,116 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbXGNXwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932248AbXGOAIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382AbXGNXwx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jul 2007 19:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbXGNXwp
+	id S932248AbXGOAIj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jul 2007 20:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760233AbXGOAI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jul 2007 19:52:45 -0400
-Received: from bc.sympatico.ca ([209.226.175.184]:44693 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759411AbXGNXwp (ORCPT
+	Sat, 14 Jul 2007 20:08:29 -0400
+Received: from ns3.baby-dragons.com ([204.91.156.41]:56687 "EHLO
+	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759844AbXGOAI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jul 2007 19:52:45 -0400
-Date: Sat, 14 Jul 2007 19:52:43 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@infradead.org>
-Subject: [PATCH] Immediate Value - Architecture Independent Code Deferred Sync
-Message-ID: <20070714235243.GA20571@Krystal>
-References: <20070714012439.285079881@polymtl.ca> <20070714012623.231272637@polymtl.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070714012623.231272637@polymtl.ca>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:50:18 up 7 days, 13:55,  2 users,  load average: 0.75, 0.32, 0.24
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 14 Jul 2007 20:08:28 -0400
+Date: Sat, 14 Jul 2007 17:08:27 -0700 (PDT)
+From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+To: linux-raid maillist <linux-raid@vger.kernel.org>,
+       Linux Kernel Maillist <linux-kernel@vger.kernel.org>
+Subject: raid5:md3: read error corrected ,  followed by ,  Machine Check
+ Exception: .
+Message-ID: <Pine.LNX.4.64.0707141658210.16611@filesrv1.baby-dragons.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.8 (ns3.baby-dragons.com [204.91.156.41]); Sun, 15 Jul 2007 00:08:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Kernel Markers - Architecture Independent Code Deferred Sync
+ 	Hello All ,  I was under the impression that a 'machine check' would be 
+caused by some near to the CPU hardware failure ,  Not a bad disk ?
+ 	I was also under the impression that software raid s/b a little more 
+resilient than this .
+ 	But then maybe one or the other of the subsystems walked all over the 
+other one trying to correct itself .  Who knows .
+ 	The below is ALL I'll be able to get .  A log of a previous boot is 
+available at ...
 
-Upon marker probe_unregister, we delay call to synchronize_sched() to
-accelerate mass unregistration (only when there is no more reference to a
-give module do we call synchronize_sched()). However, we need to make sure
-every critical region have ended before we re-arm a marker that has been
-unregistered and then registered back with a different probe data.
+http://www.baby-dragons.com/test-2.6.21.5-mptscsi-4.00.10.00-2007006161326.log
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Christoph Hellwig <hch@infradead.org>
----
- kernel/marker.c |   22 ++++++++++++++++++++--
- 1 file changed, 20 insertions(+), 2 deletions(-)
+ 		Tia ,  JimL
 
-Index: linux-2.6-lttng/kernel/marker.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/marker.c	2007-07-14 19:38:11.000000000 -0400
-+++ linux-2.6-lttng/kernel/marker.c	2007-07-14 19:46:25.000000000 -0400
-@@ -30,11 +30,21 @@ extern struct __mark_marker __stop___mar
- 
- /*
-  * module_mutex nests inside markers_mutex. Markers mutex protects the builtin
-- * and module markers, and the hash table.
-+ * and module markers, the hash table and deferred_sync.
-  */
- DEFINE_MUTEX(markers_mutex);
- 
- /*
-+ * Marker deferred synchronization.
-+ * Upon marker probe_unregister, we delay call to synchronize_sched() to
-+ * accelerate mass unregistration (only when there is no more reference to a
-+ * give module do we call synchronize_sched()). However, we need to make sure
-+ * every critical region have ended before we re-arm a marker that has been
-+ * unregistered and then registered back with a different probe data.
-+ */
-+static int deferred_sync;
-+
-+/*
-  * Marker hash table, containing the active markers.
-  * Protected by module_mutex.
-  */
-@@ -303,8 +313,10 @@ static inline void __marker_update_probe
- 			__stop___markers, probe_module, &refcount);
- 	/* Markers in modules. */
- 	__marker_update_probes_modules(probe_module, &refcount);
--	if (probe_module && refcount == 0)
-+	if (probe_module && refcount == 0) {
- 		synchronize_sched();
-+		deferred_sync = 0;
-+	}
- }
- 
- #ifdef CONFIG_MODULES
-@@ -353,6 +365,10 @@ int marker_probe_register(const char *na
- 		ret = -EBUSY;
- 		goto end;
- 	}
-+	if (deferred_sync) {
-+		synchronize_sched();
-+		deferred_sync = 0;
-+	}
- 	ret = _add_marker(name, format, probe, pdata);
- 	if (ret)
- 		goto end;
-@@ -384,6 +400,7 @@ void *marker_probe_unregister(const char
- 	/* In what module is the probe handler ? */
- 	probe_module = __module_text_address((unsigned long)entry->probe);
- 	pdata = _remove_marker(name);
-+	deferred_sync = 1;
- 	_marker_update_probes(probe_module);
- end:
- 	mutex_unlock(&markers_mutex);
-@@ -425,6 +442,7 @@ iter_end:
- 	/* In what module is the probe handler ? */
- 	probe_module = __module_text_address((unsigned long)entry->probe);
- 	pdata = _remove_marker(entry->name);
-+	deferred_sync = 1;
- 	_marker_update_probes(probe_module);
- end:
- 	mutex_unlock(&markers_mutex);
+filesrv2 login: Jul 14 22:58:48 filesrv2 -- MARK --
+Jul 14 23:00:26 filesrv2 kernel: sd 2:0:1:0: SCSI error: return code = 0x08000002
+Jul 14 23:00:26 filesrv2 kernel: sdd: Current: sense key: Medium Error
+Jul 14 23:00:26 filesrv2 kernel:     Additional sense: Read retries exhausted
+Jul 14 23:00:26 filesrv2 kernel: Info fld=0x2f9c0f8
+Jul 14 23:00:26 filesrv2 kernel: end_request: I/O error, dev sdd, sector 49922296
+Jul 14 23:00:27 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 49922296 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: sd 2:0:1:0: SCSI error: return code = 0x08000002
+Jul 14 23:17:06 filesrv2 kernel: sdd: Current: sense key: Medium Error
+Jul 14 23:17:06 filesrv2 kernel:     Additional sense: Read retries exhausted
+Jul 14 23:17:06 filesrv2 kernel: Info fld=0x44ebd82
+Jul 14 23:17:06 filesrv2 kernel: end_request: I/O error, dev sdd, sector 72269186
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269184 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269192 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269200 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269208 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269216 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269224 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269232 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269240 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269248 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269256 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269264 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269272 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269280 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269288 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269296 on sdd)
+Jul 14 23:17:06 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 72269304 on sdd)
+Jul 14 23:20:11 filesrv2 kernel: sd 2:0:1:0: SCSI error: return code = 0x08000002
+Jul 14 23:20:11 filesrv2 kernel: sdd: Current: sense key: Medium Error
+Jul 14 23:20:11 filesrv2 kernel:     Additional sense: Read retries exhausted
+Jul 14 23:20:11 filesrv2 kernel: Info fld=0x4895ac1
+Jul 14 23:20:11 filesrv2 kernel: end_request: I/O error, dev sdd, sector 76110529
+Jul 14 23:20:12 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76110528 on sdd)
+Jul 14 23:20:12 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76110536 on sdd)
+Jul 14 23:20:12 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76110544 on sdd)
+Jul 14 23:20:12 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76110552 on sdd)
+Jul 14 23:20:12 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76110560 on sdd)
+Jul 14 23:20:12 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76110568 on sdd)
+Jul 14 23:20:12 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76110576 on sdd)
+Jul 14 23:20:12 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76110584 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: sd 2:0:1:0: SCSI error: return code = 0x08000002
+Jul 14 23:20:28 filesrv2 kernel: sdd: Current: sense key: Medium Error
+Jul 14 23:20:28 filesrv2 kernel:     Additional sense: Read retries exhausted
+Jul 14 23:20:28 filesrv2 kernel: Info fld=0x48d97ac
+Jul 14 23:20:28 filesrv2 kernel: end_request: I/O error, dev sdd, sector 76388268
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388264 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388272 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388280 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388288 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388296 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388304 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388312 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388320 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388328 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388336 on sdd)
+Jul 14 23:20:28 filesrv2 kernel: raid5:md3: read error corrected (8 sectors at 76388344 on sdd)
+Jul 14 23:38:48 filesrv2 -- MARK --
+CPU 5: Machine Check Exception: 0000000000000004
+CPU 4: Machine Check Exception: 0000000000000004
+Kernel panic - not syncing: Unable to continue
+
+
+
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
++-----------------------------------------------------------------+
+| James   W.   Laferriere | System   Techniques | Give me VMS     |
+| Network        Engineer | 663  Beaumont  Blvd |  Give me Linux  |
+| babydr@baby-dragons.com | Pacifica, CA. 94044 |   only  on  AXP |
++-----------------------------------------------------------------+
