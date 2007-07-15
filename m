@@ -1,42 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbXGOWj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759407AbXGOWmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545AbXGOWj6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 18:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759338AbXGOWjs
+	id S1759407AbXGOWmw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 18:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbXGOWmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 18:39:48 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48180 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759250AbXGOWjp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 18:39:45 -0400
-Date: Sun, 15 Jul 2007 23:45:26 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org,
-       torvalds@transmeta.com
-Subject: Re: Patches for REALLY TINY 386 kernels
-Message-ID: <20070715234526.13813f8f@the-village.bc.nu>
-In-Reply-To: <200707160742.25232.nigel@nigel.suspend2.net>
-References: <469A8AED.7070207@nerdgrounds.com>
-	<200707160742.25232.nigel@nigel.suspend2.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Jul 2007 18:42:45 -0400
+Received: from vena.lwn.net ([206.168.112.25]:38861 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753712AbXGOWmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 18:42:45 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH/RFC] msleep() with hrtimers
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Sun, 15 Jul 2007 16:42:44 -0600
+Message-ID: <19044.1184539364@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > These patches were written against the vanilla 2.6.21.1 kernel. They 
-> > will have no effect UNLESS you make menuconfig and explicitly enable 
-> > them there.
-> 
-> Would you please make mrproper before preparing the patch? It's harder to read 
-> with all the "Only in..." lines.
+The OLPC folks and I recently discovered something interesting: on a
+HZ=100 system, a call to msleep(1) will delay for about 20ms.  The
+combination of jiffies timekeeping and rounding up means that the
+minimum delay from msleep will be two jiffies, never less.  That led to
+multi-second delays in a driver which does a bunch of short msleep()
+calls and, in response, a change to mdelay(), which will come back in
+something closer to the requested time.
 
-A lot simpler is to feed the patch through "grep -v"
+Here's another approach: a reimplementation of msleep() and
+msleep_interruptible() using hrtimers.  On a system without real
+hrtimers this code will at least drop down to single-jiffy delays much
+of the time (though not deterministically so).  On my x86_64 system with
+Thomas's hrtimer/dyntick patch applied, msleep(1) gives almost exactly
+what was asked for.
 
-Alan
+jon
+
+Use hrtimers for msleep() and msleep_interruptible()
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+--- 2.6.22-vanilla/kernel/timer.c	2007-07-15 13:08:36.000000000 -0600
++++ 2.6.22-timer/kernel/timer.c	2007-07-15 16:13:34.000000000 -0600
+@@ -1522,18 +1522,43 @@ unregister_time_interpolator(struct time
+ }
+ #endif /* CONFIG_TIME_INTERPOLATION */
+ 
++
++
++
++static void do_msleep(unsigned int msecs, struct hrtimer_sleeper *sleeper,
++	int sigs)
++{
++	enum hrtimer_mode mode = HRTIMER_MODE_REL;
++	int state = sigs ? TASK_INTERRUPTIBLE : TASK_UNINTERRUPTIBLE;
++	
++	/*
++	 * This is really just a reworked and simplified version
++	 * of do_nanosleep().
++	 */
++	hrtimer_init(&sleeper->timer, CLOCK_MONOTONIC, mode);
++	sleeper->timer.expires = ktime_set(0, msecs*NSEC_PER_MSEC);
++	hrtimer_init_sleeper(sleeper, current);
++	
++	do {
++		set_current_state(state);
++		hrtimer_start(&sleeper->timer, sleeper->timer.expires, mode);
++		if (sleeper->task)
++			schedule();
++		hrtimer_cancel(&sleeper->timer);
++		mode = HRTIMER_MODE_ABS;
++	} while (sleeper->task && !(sigs && signal_pending(current)));
++}
++
+ /**
+  * msleep - sleep safely even with waitqueue interruptions
+  * @msecs: Time in milliseconds to sleep for
+  */
+ void msleep(unsigned int msecs)
+ {
+-	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
++	struct hrtimer_sleeper sleeper;
+ 
+-	while (timeout)
+-		timeout = schedule_timeout_uninterruptible(timeout);
++	do_msleep(msecs, &sleeper, 0);
+ }
+-
+ EXPORT_SYMBOL(msleep);
+ 
+ /**
+@@ -1542,11 +1567,15 @@ EXPORT_SYMBOL(msleep);
+  */
+ unsigned long msleep_interruptible(unsigned int msecs)
+ {
+-	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
++	struct hrtimer_sleeper sleeper;
++	ktime_t left;
+ 
+-	while (timeout && !signal_pending(current))
+-		timeout = schedule_timeout_interruptible(timeout);
+-	return jiffies_to_msecs(timeout);
+-}
++	do_msleep(msecs, &sleeper, 1);
+ 
++	if (! sleeper.task)
++		return 0;
++	left = ktime_sub(sleeper.timer.expires,
++			 sleeper.timer.base->get_time());
++	return max(((long) ktime_to_ns(left))/NSEC_PER_MSEC, 1L);
++}
+ EXPORT_SYMBOL(msleep_interruptible);
