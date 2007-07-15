@@ -1,116 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761483AbXGOPOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbXGOPUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761483AbXGOPOQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 11:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758345AbXGOPOE
+	id S1761752AbXGOPUe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 11:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758345AbXGOPUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 11:14:04 -0400
-Received: from [212.12.190.163] ([212.12.190.163]:32828 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756819AbXGOPOC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 11:14:02 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Hibernation considerations
-Date: Sun, 15 Jul 2007 18:10:33 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       "Jeremy Maitin-Shepard" <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>, david@lang.hm
-References: <200707151433.34625.rjw@sisk.pl>
-In-Reply-To: <200707151433.34625.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707151810.33554.a1426z@gawab.com>
+	Sun, 15 Jul 2007 11:20:25 -0400
+Received: from proxy3.bredband.net ([195.54.101.73]:63646 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756819AbXGOPUY (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 11:20:24 -0400
+Subject: Re: [BUG] AS io-scheduler.
+From: Ian Kumlien <pomac@vapor.com>
+Reply-To: pomac@vapor.com
+To: Linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-tAHYth/tgaQ/C/CMqBGV"
+Date: Sun, 15 Jul 2007 17:20:21 +0200
+Message-Id: <1184512821.10630.26.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> (3) There are memory regions that must not be saved or restored
->
->     Some memory regions contain data that shouldn't be overwritten during
-> the restore, because that might lead to the system not working correctly
-> afterwards.  Also, on some systems there are valid 'struct pages'
-> structures that in fact corresond to memory holes and we should not
-> attempt to save those pages.
 
-That's only true if we use the current swsusp code to restore the image.  If 
-this becomes an issue, we can always use the kexec approach to restore the 
-image, even if that required a double kexec boot to slot in the hibernation 
-kernel, as kexec boot overhead is low.
+--=-tAHYth/tgaQ/C/CMqBGV
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> (5) Hibernation should be transparent from the applications' point of view
->
->     Generally, applications should not notice that hibernation took place.
->     [Note that I don't regard all processes as applications and I think
-> that there may be processes which need to handle the hibernation in a
-> special way.]  Ideally, for example, if some audio is being played when a
-> hibernation starts, the audio player should be able to continue playing
-> the same audio after the restore from the point in which it has been
-> interrupted by the hibernation.  Also, the CPU affinities and similar
-> settings requested by the applications before a hibernation should be
-> binding after the restore.
+Sorry, due to mental fatigue i actually forgot to repor that this was
+with 2.6.22.1
 
-Using kexec may be as transparent as it gets.  What's critical here, is to 
-never try memory dependent operations from within the normal kernel, not 
-even backup, as that would get you into an inter-dependency mess we dearly 
-want to avoid.
+Since this is mailed from outside the ml, i'm attaching the original
+message:
 
-> (6) State of devices from before hibernation should be restored, if
-> possible
->
->     If possible, during a restore devices should be brought back to the
-> same state in which they were before the corresponding hibernation.  Of
-> course in some situations it might be impossible to do that (eg. the user
-> connected the hibernated system to a different IP subnet and then
-> restored), but as a general rule, we should do our best to restore the
-> state of devices, which is directly related to point (5) above.
+---
+Hi,=20
 
-This part could easily be handled by the normal kernel before and after 
-resume.
+I had emerge --sync failing several times...=20
 
-> (7) On ACPI systems special platform-related actions have to be carried
-> out at the right points, so that the platform works correctly after the
-> restore
->
->     The ACPI specification requires us to invoke some global ACPI methods
->     during the hibernation and during the restore.  Moreover, the ordering
-> of code related to these ACPI methods may not be arbitrary (eg. some of
-> them have to be executed after devices are put into low power states
-> etc.).
+So i checked dmesg and found some info, attached further down.
+This is a old VIA C3 machine with one disk, it's been running most
+kernels in the 2.6.x series with no problems until now.
 
-This should be the responsibility of the kexec'd hibernating kernel.  Note 
-though in (6), the normal kernel takes care of preparing devices, then the 
-hibernating kernel dumps the image and either calls S4 or S3.  On resume 
-from S3 it can immediately switch over to the normal kernel, and from S4 the 
-known bootup would occur.
+PS. Don't forget to CC me
+DS.
 
-> (8) Hibernation and restore should not be too slow
->
->     In my opinion, if more than one minute is needed to hibernate the
-> system with the help of certain hibernation framework, then this framework
-> is not very useful in practice.  It might be useful to perform some
-> special tasks (eg. moving a server to another place without taking it
-> down), but it is not very useful, for example, to notebook users.
+BUG: unable to handle kernel paging request at virtual address ea86ac54
+ printing eip:
+c022dfec
+*pde =3D 00000000
+Oops: 0000 [#1]
+Modules linked in: eeprom i2c_viapro vt8231 i2c_isa skge
+CPU:    0
+EIP:    0060:[<c022dfec>]    Not tainted VLI
+EFLAGS: 00010082   (2.6.22.1 #26)
+EIP is at as_can_break_anticipation+0xc/0x190
+eax: dfcdaba0   ebx: dfcdaba0   ecx: 0035ff95   edx: cb296844
+esi: cb296844   edi: dfcdaba0   ebp: 00000000   esp: ceff6a70
+ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Process rsync (pid: 1667, ti=3Dceff6000 task=3Dd59cf5b0 task.ti=3Dceff6000)
+Stack: cb296844 00000001 cb296844 dfcdaba0 00000000 c022efc8 cb296844
+00000000=20
+       dfcffb9c c0227a76 dfcffb9c 00000000 c016e96e cb296844 00000000
+dfcffb9c=20
+       00000000 c022af64 00000000 dfcffb9c 00000008 00000000 08ff6b30
+c04d1ec0=20
+Call Trace:
+ [<c022efc8>] as_add_request+0xa8/0xc0
+ [<c0227a76>] elv_insert+0xa6/0x150
+ [<c016e96e>] bio_phys_segments+0xe/0x20
+ [<c022af64>] __make_request+0x384/0x490
+ [<c02add1e>] ide_do_request+0x6ee/0x890
+ [<c02294ab>] generic_make_request+0x18b/0x1c0
+ [<c022b596>] submit_bio+0xa6/0xb0
+ [<c013b7b8>] mempool_alloc+0x28/0xa0
+ [<c016bb66>] __find_get_block+0xf6/0x130
+ [<c016e0bc>] bio_alloc_bioset+0x8c/0xf0
+ [<c016b647>] submit_bh+0xb7/0xe0
+ [<c016c1f8>] ll_rw_block+0x78/0x90
+ [<c019c85d>] search_by_key+0xdd/0xd20
+ [<c016c201>] ll_rw_block+0x81/0x90
+ [<c011f190>] irq_exit+0x40/0x60
+ [<c01066e4>] do_IRQ+0x94/0xb0
+ [<c0104bc3>] common_interrupt+0x23/0x30
+ [<c018beca>] reiserfs_read_locked_inode+0x6a/0x490
+ [<c018e580>] reiserfs_find_actor+0x0/0x20
+ [<c018c33b>] reiserfs_iget+0x4b/0x80
+ [<c018e570>] reiserfs_init_locked_inode+0x0/0x10
+ [<c0189824>] reiserfs_lookup+0xa4/0xf0
+ [<c0157b03>] do_lookup+0xa3/0x140
+ [<c0159265>] __link_path_walk+0x615/0xa20
+ [<c0168a18>] __mark_inode_dirty+0x28/0x150
+ [<c01631c1>] mntput_no_expire+0x11/0x50
+ [<c01596b2>] link_path_walk+0x42/0xb0
+ [<c0159960>] do_path_lookup+0x130/0x150
+ [<c015a190>] __user_walk_fd+0x30/0x50
+ [<c0154766>] vfs_lstat_fd+0x16/0x40
+ [<c01547df>] sys_lstat64+0xf/0x30
+ [<c0103c42>] syscall_call+0x7/0xb
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Code: c0 8b 44 cb 0c 8b 40 08 29 d0 f7 d0 c1 e8 1f 83 f0 01 eb 02 31 c0
+5b c3 8d b4 26 00 00 00 00 55 57 56 53 83 ec 04 89 c3 89 14 24 <8b> 90
+b4 00 00 00 85 d2 75 04 0f 0b eb fe 83 3c 24 00 74 0c 8b=20
+EIP: [<c022dfec>] as_can_break_anticipation+0xc/0x190 SS:ESP
+0068:ceff6a70
+WARNING: at block/as-iosched.c:862 as_remove_queued_request()
+ [<c022e560>] as_remove_queued_request+0x40/0xc0
+ [<c022e684>] as_move_to_dispatch+0xa4/0x110
+ [<c0236626>] __delay+0x6/0x10
+ [<c022ee03>] as_dispatch_request+0x2d3/0x310
+ [<c02b39b2>] ide_dma_start+0x22/0x30
+ [<c02b6be0>] ide_do_rw_disk+0x310/0x3f0
+ [<c02279b5>] elv_next_request+0x105/0x120
+ [<c02ad876>] ide_do_request+0x246/0x890
+ [<c03d5c9d>] schedule+0x45d/0x4c0
+ [<c022e7f0>] as_work_handler+0x0/0x20
+ [<c022a331>] blk_start_queueing+0x11/0x20
+ [<c022e7ff>] as_work_handler+0xf/0x20
+ [<c0126bab>] run_workqueue+0x6b/0xe0
+ [<c0127200>] worker_thread+0x0/0xc0
+ [<c01272b2>] worker_thread+0xb2/0xc0
+ [<c01297e0>] autoremove_wake_function+0x0/0x40
+ [<c0129658>] kthread+0x38/0x60
+ [<c0129620>] kthread+0x0/0x60
+ [<c0104d87>] kernel_thread_helper+0x7/0x10
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+WARNING: at block/as-iosched.c:966 as_move_to_dispatch()
+ [<c022e6b3>] as_move_to_dispatch+0xd3/0x110
+ [<c022ee03>] as_dispatch_request+0x2d3/0x310
+ [<c02b39b2>] ide_dma_start+0x22/0x30
+ [<c02b6be0>] ide_do_rw_disk+0x310/0x3f0
+ [<c02279b5>] elv_next_request+0x105/0x120
+ [<c02ad876>] ide_do_request+0x246/0x890
+ [<c03d5c9d>] schedule+0x45d/0x4c0
+ [<c022e7f0>] as_work_handler+0x0/0x20
+ [<c022a331>] blk_start_queueing+0x11/0x20
+ [<c022e7ff>] as_work_handler+0xf/0x20
+ [<c0126bab>] run_workqueue+0x6b/0xe0
+ [<c0127200>] worker_thread+0x0/0xc0
+ [<c01272b2>] worker_thread+0xb2/0xc0
+ [<c01297e0>] autoremove_wake_function+0x0/0x40
+ [<c0129658>] kthread+0x38/0x60
+ [<c0129620>] kthread+0x0/0x60
+ [<c0104d87>] kernel_thread_helper+0x7/0x10
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+--=20
+Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
 
-The latest hibernating kexec patches boot a kexec'd modular kernel with 
-initramfs into crashkernel=16M@16M in less than one second.  Switch-back is 
-almost instant.  Add to this the time required to either store or restore 
-the image, and it may be obvious that this approach isn't slower, but maybe 
-even faster than the current swsusp.
+--=-tAHYth/tgaQ/C/CMqBGV
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7-ecc0.1.6 (GNU/Linux)
 
-Thanks!
+iD8DBQBGmjs17F3Euyc51N8RApubAJ0TWTipjscXU4X+3HRr12Zds6KWOwCgjjaK
+oZ7DY3l/RB2sV7M+Imxh/fo=
+=QdxN
+-----END PGP SIGNATURE-----
 
---
-Al
+--=-tAHYth/tgaQ/C/CMqBGV--
 
