@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761403AbXGPXkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbXGPXlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761403AbXGPXkO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGPXj7
+	id S1763454AbXGPXlI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGPXk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:39:59 -0400
-Received: from main.gmane.org ([80.91.229.2]:51823 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbXGPXj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:39:58 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+	Mon, 16 Jul 2007 19:40:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:54140 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbXGPXky (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 19:40:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=DpF9gGI94CdIhVvU+RXC2VmRor+1Z1ctIrg68nK0o4AcQkoi8RQ32eqlAS8wRQ3NXOltFQqnwEqRST2oRiI7VEGgT9bLQzqLlrMjTybQnEmEJ4WxJsj3zi2ZIdyvhP3JBf71wPCLBdx9AebCHOkGxDK+NxXf1ZMbU5MwwTq2tl0=
+Message-ID: <2c0942db0707161640h3c3afd7avecd7b3c61c4e7df1@mail.gmail.com>
+Date: Mon, 16 Jul 2007 16:40:53 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Rene Herman" <rene.herman@gmail.com>
 Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Date: Tue, 17 Jul 2007 00:39:48 +0100
-Message-ID: <yw1xr6n76hq3.fsf@thrashbarg.mansr.com>
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8FYWD-2eS-7@gated-at.bofh.it> <8GdsH-8dc-13@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it> <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it> <E1  <469BF104.1040703@gmail.com> <1184628395.8707.15.camel@segv.aura.of.mankind>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: agrajag.inprovide.com
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (Double Solitaire, linux)
-Cancel-Lock: sha1:Ux66Lg73z71SBWrLc4NKsPkA/PM=
+Cc: "Bodo Eggert" <7eggert@gmx.de>, "Matt Mackall" <mpm@selenic.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <469BFDA7.1040204@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8FO1e-2jW-35@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
+	 <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>
+	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
+	 <469BF104.1040703@gmail.com>
+	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
+	 <469BF768.6040200@gmail.com>
+	 <2c0942db0707161613lff9c07bpcf002b9139163a86@mail.gmail.com>
+	 <469BFDA7.1040204@gmail.com>
+X-Google-Sender-Auth: f304c82a5fef8434
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-utz lehmann <lkml123@s2y4n2c.de> writes:
-
-> On Tue, 2007-07-17 at 00:28 +0200, Rene Herman wrote:
->> Given that as Arjan stated Fedora and even RHEL have been using 4K
->> stacks for some time now, and certainly the latter being a
->> distribution which I would expect to both host a relatively large
->> number of lvm/md/xfs and what stackeaters have you users and to be
->> fairly conservative with respect to the chances of scribbling over
->> kernel memory (I'm a trusting person...) it seems there might at
->> this stage only be very few offenders left.
+On 7/16/07, Rene Herman <rene.herman@gmail.com> wrote:
+> On 07/17/2007 01:13 AM, Ray Lee wrote:
+> > Given that there's actual, y'know, reports of people who can easily
+> > crash a 4k+interrupt stacks kernel, and not an 8k one, I think the
+> > current evidence speaks for itself.
 >
-> I have to recompile the fedora kernel rpms (fc6, f7) with 8k stacks on
-> my i686 server. It's using NFS -> XFS -> DM -> MD (raid1) -> IDE disks.
-> With 4k stacks it crash (hang) within minutes after using NFS.
-> With 8k stacks it's rock solid. No crashes within months.
+> Where?
 
-Running either vanilla or Gentoo kernels, I've had no luck at all with
-4k stacks.  On SATA+MD(raid1)+LVM+XFS I've had numerous crashes when
-doing even light I/O.  One particularly crash-prone scenario is
-writing to random locations in sparse files, thus forcing new blocks
-to be allocated.
+The second message in this thread, according to my reader, from Zan
+Lynx. Another from Utz Lehmann a few minutes ago.
 
-I don't have dedicated testing machines, so I can't afford the time
-and potential data loss of testing this regularly.  I have no shortage
-on RAM with 8k stacks, so for me the choice is quite simple.
+> > The point remains that the burden of proof of the safety of the 4k only
+> > option is upon those people who want to remove the 8k option.
+>
+> Removing any such option was not the objective of this thread, just lifting
+> 4K stacks from debug and making it the default.
 
--- 
-Måns Rullgård
-mans@mansr.com
+True, but your messages are reading as advocacy for removing the 8k
+option. I'm saying that's a bad idea. If I misunderstood your
+position, then my bad.
 
+> People fortunate enough to
+> use workloads where some piece of crap code by accident works more often
+> with the current shared 8K stacks then it does with the unshared 4K stacks
+> can then still nicely not select it (or fix the code if possible).
+
+If they even realize that it's the cause of the problem. In the
+meantime, we're generating more bug reports to lkml. As the general
+opinion is that the ones getting received now aren't getting enough
+attention (see regression tracking threads), setting a default that is
+known to break setups in hard to debug ways seems counterproductive.
