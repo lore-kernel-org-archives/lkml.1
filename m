@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762318AbXGPLSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762830AbXGPLVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762318AbXGPLSk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 07:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbXGPLSd
+	id S1762830AbXGPLVR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 07:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756658AbXGPLVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 07:18:33 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:28808 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 07:21:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52047 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755318AbXGPLSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 07:18:32 -0400
-Date: Mon, 16 Jul 2007 13:17:49 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Flavio Curti <fcu@no-way.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Flavio Curti <lists.fcu@no-way.org>, linux-kernel@vger.kernel.org,
-       promise_linux@promise.com
-Subject: Re: panics with 16port Promise Supertrack EX Controller
-Message-ID: <20070716111749.GE5195@kernel.dk>
-References: <20070708225246.GD16285@no-way.org> <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com> <46919688.1050005@yahoo.com.au> <20070715080209.GC21260@no-way.org>
+	id S1756287AbXGPLVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 07:21:05 -0400
+Date: Mon, 16 Jul 2007 13:20:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: James Bruce <bruce@andrew.cmu.edu>, Thomas Gleixner <tglx@linutronix.de>,
+       Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+Message-ID: <20070716112037.GA6895@elte.hu>
+References: <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random> <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org> <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net> <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184355835.12353.321.camel@chaos> <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu> <Pine.LNX.4.64.0707161213500.1817@scrub.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070715080209.GC21260@no-way.org>
+In-Reply-To: <Pine.LNX.4.64.0707161213500.1817@scrub.home>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 15 2007, Flavio Curti wrote:
-> Hello
+
+* Roman Zippel <zippel@linux-m68k.org> wrote:
+
+> > yes, the weight multiplier 1.25, but the actual difference in CPU 
+> > utilization, when running two CPU intense tasks, is ~10%:
+> > 
+> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> >  8246 mingo     20   0  1576  244  196 R   55  0.0   0:11.96 loop
+> >  8247 mingo     21   1  1576  244  196 R   45  0.0   0:10.52 loop
+> > 
+> > so the first task 'wins' +10% CPU utilization (relative to the 50% 
+> > it had before), the second task 'loses' -10% CPU utilization 
+> > (relative to the 50% it had before).
 > 
-> On Mon, Jul 09, 2007 at 11:59:36AM +1000, Nick Piggin wrote:
-> > >Jul  8 00:19:13 dorade.cyberlink.ch EFLAGS: 00210046   
-> > >(2.6.22-rc7-dorade #1)
-> > >>The machine panics
-> > >>after some days of running fine, the machine inst heavy loaded.
-> > >>The Controller detects as stex device:
-> > >kernel BUG at block/as-iosched.c:1084!
-> > >
-> > >BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[REQ_ASYNC]));
-> > Could be a bug in the driver that just happens to be caught by AS checks.
-> > If you could test another scheduler (boot with elevator=deadline or 
-> > elevator=cfq),
-> > it might help give us an idea.
-> 
-> Ok, I now switched to cfg, and the machine panicd again. Panic attached.
-> Any help is appreciated.
+> As soon as you add another loop the difference changes again, while 
+> it's always correct to say it gets 25% more cpu time [...]
 
-It really looks like a stex bug - perhaps it's doing double completions
-of a request?
+yep, and i'll add the relative effect to the comment too.
 
--- 
-Jens Axboe
-
+	Ingo
