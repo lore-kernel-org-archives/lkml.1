@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764030AbXGPVzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762665AbXGPVzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764030AbXGPVzZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 17:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760133AbXGPVzL
+	id S1762665AbXGPVzn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 17:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764478AbXGPVz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 17:55:11 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:6544 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759777AbXGPVzJ (ORCPT
+	Mon, 16 Jul 2007 17:55:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52810
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1764288AbXGPVz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 17:55:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=uj1bZahRFXs8P6KkRMX5e3d4wWu54vjK4aPO2ATQKFs656ZyJzDvzo5iRcHcnH99nTEeIZBxA4NUoCyX/oVZWK+HCl4PmMVe7ma9pHAfs/njmSxnapRGYktlHHPLPc6xkl7/EqpHrK/FT3hl4CWu++t0rhLpqRXuzlSFIbyfQGQ=
-Date: Mon, 16 Jul 2007 23:55:05 +0200
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: linux-kernel@vger.kernel.org, greg@kroah.com
-Cc: michal.k.k.piotrowski@gmail.com
-Subject: [PATCH] Add the knwon_regression URI to the documentation
-Message-ID: <20070716235505.51ebe812@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+	Mon, 16 Jul 2007 17:55:27 -0400
+Date: Mon, 16 Jul 2007 14:55:30 -0700 (PDT)
+Message-Id: <20070716.145530.51840998.davem@davemloft.net>
+To: linas@austin.ibm.com
+Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070716172535.GB5771@austin.ibm.com>
+References: <20070713200515.GS5549@austin.ibm.com>
+	<20070713.154702.17863636.davem@davemloft.net>
+	<20070716172535.GB5771@austin.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We should let everybody know about where the regression
-list is hosted. The more is known the more it is used.
+From: linas@austin.ibm.com (Linas Vepstas)
+Date: Mon, 16 Jul 2007 12:25:35 -0500
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- Documentation/HOWTO |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+> On Fri, Jul 13, 2007 at 03:47:02PM -0700, David Miller wrote:
+> > From: linas@austin.ibm.com (Linas Vepstas)
+> > Date: Fri, 13 Jul 2007 15:05:15 -0500
+> > 
+> > > 
+> > > This is a patch (& bug report) for a crash in sysctl_set_parent() 
+> > > in 2.6.22-git2. 
+> > > 
+> > > Problem: 2.6.22-git2 crashes with a stack trace 
+> > > 
+> > > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> > 
+> > Thanks for tracking this down, I'll apply your patch.
+> 
+> NAK. As I just explained in another email, this bug
+> was introduced by the "send-to-self" patch I habitually
+> apply -- so habitually, that I forgot I was not working 
+> with a "clean" tree. So it goes ... 
 
-diff --git a/Documentation/HOWTO b/Documentation/HOWTO
-index 98e2701..08f4eb4 100644
---- a/Documentation/HOWTO
-+++ b/Documentation/HOWTO
-@@ -249,6 +249,9 @@ process is as follows:
-     release a new -rc kernel every week.
-   - Process continues until the kernel is considered "ready", the
-     process should last around 6 weeks.
-+  - A list of known regressions present in each -rc release is 
-+    tracked at the following URI:
-+    http://kernelnewbies.org/known_regressions 
- 
- It is worth mentioning what Andrew Morton wrote on the linux-kernel
- mailing list about kernel releases:
--- 
-1.5.3.rc2
-
+I saw all of this, thanks.
