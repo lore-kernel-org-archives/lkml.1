@@ -1,83 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763681AbXGPOVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765457AbXGPOXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763681AbXGPOVx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759782AbXGPOVn
+	id S1765457AbXGPOXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760185AbXGPOXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:21:43 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:50760 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758126AbXGPOVl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:21:41 -0400
-Date: Mon, 16 Jul 2007 10:21:40 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: david@lang.hm
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <Pine.LNX.4.64.0707151633240.25614@asgard.lang.hm>
-Message-ID: <Pine.LNX.4.44L0.0707161015490.3410-100000@iolanthe.rowland.org>
+	Mon, 16 Jul 2007 10:23:07 -0400
+Received: from [212.12.190.75] ([212.12.190.75]:32937 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759782AbXGPOXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 10:23:06 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-fsdevel@vger.kernel.org
+Subject: Hardlink Pitfalls (was: Patches for REALLY TINY 386 kernels)
+Date: Mon, 16 Jul 2007 17:22:53 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707161722.53203.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Jul 2007 david@lang.hm wrote:
+Satyam Sharma wrote:
+> Or just "cp -al" to create multiple trees at (almost) no disk cost
+> that won't interfere with each other in any way, and makes the
+> development process / generating patchsets trifle easier as well ...
 
-> then we need a third mode of operation.
-> 
-> mode 1: Suspend-to-ram
-> 
->    the system is paused and put into a low-power mode but data remains in 
-> memory and the system stays awake enough to keep the memory refreshed.
-> 
-> mode 2: new
-> 
->    the system is paused, data is stored to permanent media, and the system 
-> is put into a ultra-low power mode.
-> 
-> mode 3: hibernate
-> 
->    the system is paused, data is stored to permanent media, and the system 
-> is powered off
-> 
-> with mode 3 there are no requirements or limitations about what can be 
-> done with the hardware before a resume (the resume could even take place 
-> on a different piece of identical hardware)
-> 
-> mode 2 could be what you are talking about doing, although I don't see any 
-> advantage of creating it in additon to mode 3, it doesn't use any less 
-> power and it locks the system so that it can't be used for anything else 
-> in the meantime. I guess if it was significantly faster to do then mode 3 
-> there may be _some_ reason to consider it, but I don't see the speed 
-> difference.
+That would be correct if hardlinks would actually do a CoW on modify, instead 
+of misleading the user into thinking he is modifying an independent file.
 
-Part of the problem here is that ACPI already has its own terminology, 
-and you're trying to invent a new one instead of using the existing 
-one.
+Moral of the story:  try to avoid hardlinks as much as possible!
 
-I agree, it would be good to have a non-ACPI-specific hibernation mode,
-something which would look to ACPI like a normal shutdown.  But I'm not 
-so sure this is possible.
 
-You have to understand that the ACPI spec is weird and complex.  The
-mere fact that you have written a system image to disk changes the way
-ACPI regards the shutdown procedure.  Even though you may treat all the
-devices and the rest of the hardware exactly the same, it's a different
-operation as far as ACPI is concerned, with different requirements.
+Thanks!
 
-Yes, it's bizarre.  Why do you think so many people have complained so 
-vehemently about ACPI for all these years?
-
-Alan Stern
+--
+Al
 
