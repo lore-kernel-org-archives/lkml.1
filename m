@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763815AbXGPVjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764067AbXGPVlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763815AbXGPVjp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 17:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759514AbXGPVjg
+	id S1764067AbXGPVlP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 17:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbXGPVk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 17:39:36 -0400
-Received: from gate.crashing.org ([63.228.1.57]:50358 "EHLO gate.crashing.org"
+	Mon, 16 Jul 2007 17:40:58 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56380 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755999AbXGPVjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 17:39:35 -0400
+	id S1759514AbXGPVk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 17:40:57 -0400
 Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Arnd Bergmann <arnd@arndb.de>,
+       linux-scsi@vger.kernel.org,
        Linux Kernel Development <linux-kernel@vger.kernel.org>,
        Alessandro Rubini <rubini@vision.unipv.it>,
        Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <Pine.LNX.4.62.0707161515460.1072@pademelon.sonytel.be>
+       Paul Mackerras <paulus@samba.org>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1184593643.3447.9.camel@localhost.localdomain>
 References: <20070704132212.726923000@pademelon.sonytel.be>
 	 <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
 	 <1184335333.3402.20.camel@localhost.localdomain>
@@ -29,37 +29,32 @@ References: <20070704132212.726923000@pademelon.sonytel.be>
 	 <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
 	 <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
 	 <20070716121649.GI5195@kernel.dk>
-	 <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
-	 <Pine.LNX.4.62.0707161515460.1072@pademelon.sonytel.be>
+	 <1184593643.3447.9.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 17 Jul 2007 07:38:48 +1000
-Message-Id: <1184621929.25235.79.camel@localhost.localdomain>
+Date: Tue, 17 Jul 2007 07:40:19 +1000
+Message-Id: <1184622019.25235.81.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Upon closer look, while flush_kernel_dcache_page() is a no-op on ppc64,
-> flush_dcache_page() isn't. So I'd prefer to not call it if not really needed.
+On Mon, 2007-07-16 at 08:47 -0500, James Bottomley wrote:
 > 
-> And according to James, flush_kernel_dcache_page() should be sufficient...
-> 
-> So I'm getting puzzled again...
+> No ... that was the point of flush_kernel_dcache_page().  The page in
+> question is page cache backed and contains user mappings.  However,
+> the
+> block layer has already done a flush_dcache_page() in get_user_pages()
+> and the user shouldn't be touching memory under I/O (unless they want
+> self induced aliasing problems) so we're free to assume all the user
+> cachelines are purged, hence all we have to do is flush the kernel
+> alias
+> to bring the page up to date and make the users see it correctly. 
 
-flush_dcache_page() handles icache vs. dcache coherency by clearing the
-PG_arch_1 bit in the struct page that indicates that the page is cache
-clean.
+Ok. In our case the problem is not aliases though, it's the coherency
+between instruction and data caches for pages that may be executed from
+(such as swapped out text pages).
 
-You -must- call it if you're going to use any form of CPU access to
-write to the page (basically dirtying the data cache) and that page can
-be ever mapped into user space and executed from.
-
-I don't know what flush_kernel_dcache_page() does and if it needs a
-similar treatement, it's a new interface, so maybe Jens and or James can
-tell me more about it..
-
-Cheers,
 Ben.
+
 
