@@ -1,101 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765824AbXGPRMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932447AbXGPROV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765824AbXGPRMm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 13:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbXGPRMe
+	id S932447AbXGPROV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 13:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbXGPROJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 13:12:34 -0400
-Received: from oxford.dsc.net ([213.161.73.145]:57675 "EHLO oxford.dsc.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752433AbXGPRMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 13:12:33 -0400
-X-Greylist: delayed 3718 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 13:12:33 EDT
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Transfer-Encoding: 7bit
-Message-Id: <DB77ED1B-5539-4600-B79A-AFF08978D4D5@dsc.net>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linux-kernel@vger.kernel.org
-From: Philip McCarthy <webquestions@dsc.net>
-Subject: kernel multipath messages
-Date: Mon, 16 Jul 2007 17:10:31 +0100
-X-Mailer: Apple Mail (2.752.2)
+	Mon, 16 Jul 2007 13:14:09 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:60879 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbXGPROF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 13:14:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAMNDm0arR7O6/2dsb2JhbAA
+X-IronPort-AV: i="4.16,542,1175497200"; 
+   d="scan'208"; a="182931743:sNHT23563035"
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 04/10] IB/ehca: use common error code mapping instead of specific ones
+X-Message-Flag: Warning: May contain useful information
+References: <200707121745.27592.fenkes@de.ibm.com>
+	<200707121749.03556.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 16 Jul 2007 10:14:03 -0700
+In-Reply-To: <200707121749.03556.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 12 Jul 2007 17:49:02 +0200")
+Message-ID: <adaejj8w9t0.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Jul 2007 17:14:04.0194 (UTC) FILETIME=[B5DFB020:01C7C7CC]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+ > @@ -161,8 +161,11 @@ static inline int ehca2ib_return_code(u64 ehca_rc)
 
-We are running an Intel server with Linux Centos 4.2 and kernel  
-2.6.9-22.ELsmp. The server has recently started to produce multipath  
-related error messages a regular intervals every couple of days. From  
-looking at the messages it appears that the fault corrects itself  
-after about 30 seconds.
-
-Can anyone tell me what might causing these multipath error messages  
-and what the messages actually mean?
-
-The server is part of a simple SAN using Qlogic fibre controllers.  
-The Qlogic controller is not showing any errors an neither is the  
-RAID disk enclosure.
-
-
-# Log Extract - /var/log/messages
-Jun 13 07:56:21 servername kernel: SCSI error : <4 0 0 1> return code  
-= 0x20000
-Jun 13 07:56:21 servername kernel: end_request: I/O error, dev sde,  
-sector 2336731952
-Jun 13 07:56:21 servername kernel: multipath: IO failure on sde,  
-disabling IO path.
-Jun 13 07:56:21 servername kernel: 	Operation continuing on 1 IO paths.
-...
-Jun 13 07:56:21 servername kernel: multipath: sde: rescheduling  
-sector 2336731960
-Jun 13 07:56:21 servername kernel: multipath: sde: redirecting sector  
-2336731952 to another IO path
-Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
-sector 2336749632
-Jun 13 07:56:26 servername kernel: end_request: I/O error, dev sde,  
-sector 2336749632
-Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
-sector 2336749640
-Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
-sector 2336749648
-Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
-sector 2336749656
-Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
-sector 2336749664
-Jun 13 07:56:43 servername kernel: md: cannot remove active disk sde  
-from md1 ...
-Jun 13 07:56:46 servername kernel: md: cannot remove active disk sde  
-from md1 ...
-...
-Jun 13 07:56:51 servername kernel: MULTIPATH conf printout:
-Jun 13 07:56:51 servername kernel:  --- wd:1 rd:2
-Jun 13 07:56:51 servername kernel:  disk0, o:0, dev:sde
-Jun 13 07:56:51 servername kernel:  disk1, o:1, dev:sdc
-Jun 13 07:56:51 servername kernel: MULTIPATH conf printout:
-Jun 13 07:56:51 servername kernel:  --- wd:1 rd:2
-Jun 13 07:56:51 servername kernel:  disk1, o:1, dev:sdc
-Jun 13 07:56:51 servername kernel: md: unbind<sde>
-Jun 13 07:56:51 servername kernel: md: export_rdev(sde)
-Jun 13 07:56:55 servername kernel: md: bind<sde>
-Jun 13 07:56:56 servername kernel: MULTIPATH conf printout:
-Jun 13 07:56:56 servername kernel:  --- wd:1 rd:2
-Jun 13 07:56:56 servername kernel:  disk1, o:1, dev:sdc
-Jun 13 07:56:56 servername kernel: MULTIPATH conf printout:
-Jun 13 07:56:56 servername kernel:  --- wd:2 rd:2
-Jun 13 07:56:56 servername kernel:  disk0, o:1, dev:sde
-Jun 13 07:56:56 servername kernel:  disk1, o:1, dev:sdc
-
-# mdadm.conf
-DEVICE /dev/sd[b-e]*
-ARRAY /dev/md0 level=multipath num-devices=2  
-UUID=7698cb38:857d32ab:ba6453aa:f003a129 devices=/dev/sdd,/dev/sdb
-ARRAY /dev/md1 level=multipath num-devices=2  
-UUID=332d4ae0:8d98bb52:952dbf27:2d0ecf6b devices=/dev/sde,/dev/sdc
-
-Please cc any replies to webquestions@dsc.net
-
-Any help much appreciated.
-
-Philip
-
+applied, but as a further cleanup it seems that ehca2ib_return_code()
+should be moved into a .c file and moved out of line -- I think it
+would probably shrink the compiled code quite a bit, and as far as I
+can see it is never used in the data path where the function call
+overhead would matter at all.
