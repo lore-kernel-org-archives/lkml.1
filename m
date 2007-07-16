@@ -1,75 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765497AbXGPWbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbXGPWb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765497AbXGPWbk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXGPWaZ
+	id S932288AbXGPWb4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761957AbXGPWal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:30:25 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54391 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762966AbXGPWaV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:30:21 -0400
-Date: Mon, 16 Jul 2007 15:29:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, geert@linux-m68k.org,
-       zippel@linux-m68k.org, jdike@karaya.com, alan@lxorguk.ukuu.org.uk,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: uninline check_signature()
-Message-Id: <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
-In-Reply-To: <20070716221257.GA12230@osiris.ibm.com>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org>
-	<20070716221257.GA12230@osiris.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 16 Jul 2007 18:30:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37316 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755291AbXGPWai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 18:30:38 -0400
+Message-ID: <469BF18B.9000908@garzik.org>
+Date: Mon, 16 Jul 2007 18:30:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: csnook@redhat.com, atl1-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] atl1: remove irq_sem
+References: <11845154092908-git-send-email-jacliburn@bellsouth.net> <1184515409355-git-send-email-jacliburn@bellsouth.net>
+In-Reply-To: <1184515409355-git-send-email-jacliburn@bellsouth.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007 00:12:57 +0200
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-
-> On Mon, Jul 16, 2007 at 06:02:55PM +0000, Linux Kernel Mailing List wrote:
-> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cc2ea416b2aa04d0c34ff2281a23dae5b76b7b3b
-> > Commit:     cc2ea416b2aa04d0c34ff2281a23dae5b76b7b3b
-> > Parent:     4e7bd66318b3ae60fbba7d886d9a98b71ffbf74e
-> > Author:     Andrew Morton <akpm@linux-foundation.org>
-> > AuthorDate: Sun Jul 15 23:41:38 2007 -0700
-> > Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
-> > CommitDate: Mon Jul 16 09:05:50 2007 -0700
-> > 
-> >     uninline check_signature()
-> >     
-> >     This is a rather bizarre thing to have inlined in io.h.  Stick it in lib/
-> >     instead.
-> >     
-> >     While we're there, despaghetti it a bit, and fix its off-by-one behaviour when
-> >     passed a zero length.
-> >     
-> >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > ---
-> >  include/linux/io.h    |   29 ++---------------------------
-> >  lib/Makefile          |    2 +-
-> >  lib/check_signature.c |   26 ++++++++++++++++++++++++++
-> >  3 files changed, 29 insertions(+), 28 deletions(-)
+Jay Cliburn wrote:
+> Remove unnecessary irq_sem code.
 > 
-> Hmm.. this breaks s390 and probably m68k and UML as well:
-> 
->   CC      lib/check_signature.o
-> lib/check_signature.c: In function 'check_signature':
-> lib/check_signature.c:19: error: implicit declaration of function 'readb'
+> Signed-off-by: Chris Snook <csnook@redhat.com>
+> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 
-Yep.  They were already broken, only less so.
+applied 1-5
 
-> Actually we tried to fix this, but it looks like there was no final
-> conclusion: http://lkml.org/lkml/2007/6/28/98
-> 
-> Now what? Revert until things have been sorted out?
-
-No, no revert, please.  If the architecture doesn't support readb() then we
-need some reliable way of working that out within Kconfig.
 
