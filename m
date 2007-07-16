@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764082AbXGPAFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764139AbXGPAGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764082AbXGPAFq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 20:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbXGPAFc
+	id S1764139AbXGPAGi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 20:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762190AbXGPAG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 20:05:32 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:39153
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756022AbXGPAFa (ORCPT
+	Sun, 15 Jul 2007 20:06:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50270 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757887AbXGPAG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 20:05:30 -0400
-Date: Sun, 15 Jul 2007 16:58:54 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: Al Boldi <a1426z@gawab.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Hibernation considerations
-In-Reply-To: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
-Message-ID: <Pine.LNX.4.64.0707151654420.25614@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+	Sun, 15 Jul 2007 20:06:26 -0400
+Date: Sun, 15 Jul 2007 17:05:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Airlie <airlied@linux.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [git pull] DRM tree for 2.6.23-rc1
+In-Reply-To: <Pine.LNX.4.64.0707160059330.25885@skynet.skynet.ie>
+Message-ID: <alpine.LFD.0.999.0707151704300.20061@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0707160059330.25885@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=iso-2022-jp
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Jul 2007, Alan Stern wrote:
 
-> On Sun, 15 Jul 2007, Al Boldi wrote:
->
->> Alan Stern wrote:
->>> On Sun, 15 Jul 2007, Al Boldi wrote:
->
->>>> This should be the responsibility of the kexec'd hibernating kernel.
->>>> Note though in (6), the normal kernel takes care of preparing devices,
->>>> then the hibernating kernel dumps the image and either calls S4 or S3.
->>>> On resume from S3 it can immediately switch over to the normal kernel,
->>>> and from S4 the known bootup would occur.
->>>
->>> Is it really that simple?  Somehow I doubt it.  In order for some
->>> devices to remain available for the kexec'd kernel to use, they cannot
->>> be suspended at the ACPI level.  So the kexec'd kernel will have to
->>> handle the ACPI requirements for those devices.  Likewise, it would
->>> have to handle the ACPI interactions which need to be done after all
->>> devices are prepared for the transition to S3 or S4.
->>
->> Ok, after applying the latest kexec patches, I was able to use the kexec'd
->> kernel to suspend to ram and resume to the normal kernel, while working
->> under a full-blown X session.  It went without a hitch.  All that is needed
->> now are the dump/restore hibernation-image routines.
->
-> That's exactly my point.  While doing suspend-to-RAM from a kexec'd
-> kernel may be simple, saving the hibernation image will add
-> complications.
 
-suspend-to-RAM should not involve kexec, the only reason for doing the 
-kexec to to get a seperate userspace to use for suspend-to-disk operations 
-instead of trying to partially freeze the sustem and keep useing it.
+On Mon, 16 Jul 2007, Dave Airlie wrote:
+> 
+> Please pull the 'drm-patches' branch from the drm git tree.
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+> drm-patches
 
-David Lang
+This totally breaks for me.
+
+	  CC      drivers/char/drm/drm_ioc32.o
+	drivers/char/drm/drm_ioc32.c: In function ‘compat_drm_version’:
+	drivers/char/drm/drm_ioc32.c:85: error: ‘drm_version_t’ undeclared (first use in this function)
+	drivers/char/drm/drm_ioc32.c:85: error: (Each undeclared identifier is reported only once
+	..
+
+followed by hundreds of lines of warnings.
+
+		Linus
