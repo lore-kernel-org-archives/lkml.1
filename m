@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbXGPPtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXGPPuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbXGPPtI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbXGPPs5
+	id S932461AbXGPPuS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759987AbXGPPuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:48:57 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:58119 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754331AbXGPPs4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:48:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d3GiOldetl9d/R8I8+aN19IjgPfosniz6lO+iP4O0ICgXzNvEfAE/evr+0t1/ctPi3CslNNPDCdZVsa8uLi3QBzREd4BrBtAvIhjoIZsLIOxULuatXnnzXfMeEG0AEdXsgjzaMwkourijFAcE8Y0wXVZmDmcBDEwjZA/hP5avP8=
-Message-ID: <a0a62dfc0707160848m5e3c3f47k3ea60ab3dec253c2@mail.gmail.com>
-Date: Mon, 16 Jul 2007 10:48:52 -0500
-From: "Adam Litke" <aglitke@gmail.com>
-To: "Akinobu Mita" <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       "William Irwin" <wli@holomorphy.com>
-Subject: Re: [PATCH] hugetlb: use set_compound_page_dtor
-In-Reply-To: <20070714014638.GA5601@APFDCB5C>
+	Mon, 16 Jul 2007 11:50:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45466 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757064AbXGPPuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:50:01 -0400
+Date: Mon, 16 Jul 2007 11:49:39 -0400
+From: Dave Jones <davej@redhat.com>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Meelis Roos <mroos@linux.ee>
+Subject: Re: [PATCH] 9p: fix debug compilation error
+Message-ID: <20070716154939.GA30789@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Eric Van Hensbergen <ericvh@gmail.com>,
+	linux-kernel@vger.kernel.org, Meelis Roos <mroos@linux.ee>
+References: <Pine.SOC.4.64.0707161432480.1471@math.ut.ee> <11845972692586-git-send-email-ericvh@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070714014638.GA5601@APFDCB5C>
+In-Reply-To: <11845972692586-git-send-email-ericvh@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/13/07, Akinobu Mita <akinobu.mita@gmail.com> wrote:
-> Use appropriate accessor function to set compound page destructor
-> function.
->
-> Cc:  William Irwin <wli@holomorphy.com>
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+On Mon, Jul 16, 2007 at 09:47:49AM -0500, Eric Van Hensbergen wrote:
+ > From: Meelis Roos <mroos@linux.ee>
+ > 
+ > With 9P but no 9P debug options, this error occurs:
+ >   CC [M]  fs/9p/v9fs.o
+ > fs/9p/v9fs.c: In function 'v9fs_parse_options':
+ > fs/9p/v9fs.c:134: error: 'p9_debug_level' undeclared (first use in this function)
+ > 
+ > The following patch moves the definition of p9_debug_level out of #ifdef
+ > and seems to fix the problem.
+ > 
+ > (Original patch took care of the extern definition in the includes, but
+ > not the actual definition in mod.c - ericvh)
 
-Acked-by: Adam Litke <agl@us.ibm.com>
+Seems somewhat wasteful to include the debug options when the config
+option has been disabled though.
+Wouldn't something like this (untested) make more sense ?
 
---
-Adam Litke ( agl at us.ibm.com )
-IBM Linux Technology Center
+	Dave
+
+---  
+
+fs/9p/v9fs.c: In function 'v9fs_parse_options':
+fs/9p/v9fs.c:134: error: 'p9_debug_level' undeclared (first use in this function)
+
+Signed-off-by: Dave Jones <davej@redhat.com>
+
+--- linux-2.6.22.noarch/fs/9p/v9fs.c~	2007-07-16 11:45:56.000000000 -0400
++++ linux-2.6.22.noarch/fs/9p/v9fs.c	2007-07-16 11:46:12.000000000 -0400
+@@ -131,7 +131,9 @@ static void v9fs_parse_options(char *opt
+ 		switch (token) {
+ 		case Opt_debug:
+ 			v9ses->debug = option;
++#ifdef CONFIG_NET_9P_DEBUG
+ 			p9_debug_level = option;
++#endif
+ 			break;
+ 		case Opt_port:
+ 			v9ses->port = option;
+
+-- 
+http://www.codemonkey.org.uk
