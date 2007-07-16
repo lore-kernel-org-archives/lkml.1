@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbXGPRfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764106AbXGPRhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762311AbXGPRfs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 13:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXGPRfl
+	id S1764106AbXGPRhZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 13:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXGPRhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 13:35:41 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57426 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbXGPRfk (ORCPT
+	Mon, 16 Jul 2007 13:37:14 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:62045 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbXGPRhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 13:35:40 -0400
-Message-ID: <469BAC68.50409@zytor.com>
-Date: Mon, 16 Jul 2007 10:35:36 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 16 Jul 2007 13:37:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAD9Jm0arR7PD/2dsb2JhbAA
+X-IronPort-AV: i="4.16,542,1175497200"; 
+   d="scan'208"; a="385958889:sNHT29474410"
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 10/10] IB/ehca: Support large page MRs
+X-Message-Flag: Warning: May contain useful information
+References: <200707121745.27592.fenkes@de.ibm.com>
+	<200707121754.20293.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 16 Jul 2007 10:37:09 -0700
+In-Reply-To: <200707121754.20293.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 12 Jul 2007 17:54:19 +0200")
+Message-ID: <adaabtww8qi.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: x86 setup code rewrite in C - revised
-References: <739046.56993.qm@web26915.mail.ukl.yahoo.com>
-In-Reply-To: <739046.56993.qm@web26915.mail.ukl.yahoo.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Jul 2007 17:37:10.0178 (UTC) FILETIME=[EFFC1020:01C7C7CF]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Etienne Lorrain wrote:
-> 
->   The only time I ever needed this "end line recalculation" was when the heigh in
->  graphic lines was not a multiple of the character heigh - i.e. 640x350 with 8x16
->  or 8x8 chars - some VGA adapters do not hide the bottom graphic lines.
->   The function vga_set_480_scanlines() is not called, and the protect bit is never
->  cleared - the video BIOS leaving those low index register protected.
->   The function vga_recalc_vertical() (or its assembler equivalent) is probably
->  perfectly called but because the protect bit is never cleared, the few graphic
->  line are displayed during the whole Linux text session...
->   I have myself never seen any other problems when the graphic heigh is a multiple
->  of the character heigh - tested on ~40 video boards.
-> 
+ > Add support for MR pages larger than 4K on eHCA2. This reduces firmware
+ > memory consumption. If enabled via the mr_largepage module parameter, the MR
+ > page size will be determined based on the MR length and the hardware
+ > capabilities - if the MR is >= 16M, 16M pages are used, for example.
 
-OK, I see what you mean.  This would be a problem if:
+Why the module parameter?  Is there any reason a user would want to
+turn this off?  Or conversely, why is it off by default?
 
-- the VGA BIOS leaves the protected bit set
-- the user enables vertical recalculation
-- the size crosses a multiple of 256
+Also this patch seems to depend heavily on the multiple EQ patch,
+which I am holding off on now.  So you may want to rebase to my
+current tree, which has all the ehca patches except the EQ one.
 
-It is a bug (ported from the assembly) and fortunately quite easy to
-fix.  I don't know why I missed this when I looked before.
+ >  static ssize_t ehca_show_nr_eqs(struct device *dev,
+ >  				struct device_attribute *attr,
+ >  				char *buf)
+ >  {
+ >  	return sprintf(buf, "%d\n", ehca_nr_eqs);
+ >  }
+ > -
+ >  static DEVICE_ATTR(nr_eqs, S_IRUGO, ehca_show_nr_eqs, NULL);
 
-	-hpa
+Although trivial, this chunk doesn't really belong in this patch --
+just fix it up in the multiple EQ patch (which I haven't merged yet).
+
+ - R.
