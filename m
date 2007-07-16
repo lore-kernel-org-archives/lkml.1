@@ -1,113 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764748AbXGPJuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbXGPJvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764748AbXGPJuv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762443AbXGPJsk
+	id S1758803AbXGPJvO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762882AbXGPJsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:48:40 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9298 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 05:48:47 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9352 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759402AbXGPJsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:48:36 -0400
+	id S1760032AbXGPJsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:48:42 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>, ak@suse.de
-Subject: [PATCH 08/33] swiotlb: sg chaining support
-Date: Mon, 16 Jul 2007 11:47:22 +0200
-Message-Id: <11845792683072-git-send-email-jens.axboe@oracle.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, achim_leubner@adaptec.com
+Subject: [PATCH 25/33] gdth: sg chaining support
+Date: Mon, 16 Jul 2007 11:47:39 +0200
+Message-Id: <11845792684097-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.3.rc2
 In-Reply-To: <11845792671245-git-send-email-jens.axboe@oracle.com>
 References: <11845792671245-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: ak@suse.de
+Cc: achim_leubner@adaptec.com
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- lib/swiotlb.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
+ drivers/scsi/gdth.c |   45 +++++++++++++++++++++++----------------------
+ 1 files changed, 23 insertions(+), 22 deletions(-)
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 10c13ad..1f658e4 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -673,16 +673,17 @@ swiotlb_sync_single_range_for_device(struct device *hwdev, dma_addr_t dev_addr,
-  * same here.
-  */
- int
--swiotlb_map_sg(struct device *hwdev, struct scatterlist *sg, int nelems,
-+swiotlb_map_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
- 	       int dir)
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index d0b95ce..7225c95 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -2656,7 +2656,7 @@ static void gdth_copy_internal_data(int hanum,Scsi_Cmnd *scp,
  {
-+	struct scatterlist *sg;
- 	void *addr;
- 	dma_addr_t dev_addr;
- 	int i;
+     ushort cpcount,i;
+     ushort cpsum,cpnow;
+-    struct scatterlist *sl;
++    struct scatterlist *sl, *sg;
+     gdth_ha_str *ha;
+     char *address;
  
- 	BUG_ON(dir == DMA_NONE);
+@@ -2665,29 +2665,30 @@ static void gdth_copy_internal_data(int hanum,Scsi_Cmnd *scp,
  
--	for (i = 0; i < nelems; i++, sg++) {
-+	for_each_sg(sgl, sg, nelems, i) {
- 		addr = SG_ENT_VIRT_ADDRESS(sg);
- 		dev_addr = virt_to_bus(addr);
- 		if (swiotlb_force || address_needs_mapping(hwdev, dev_addr)) {
-@@ -692,7 +693,7 @@ swiotlb_map_sg(struct device *hwdev, struct scatterlist *sg, int nelems,
- 				   to do proper error handling. */
- 				swiotlb_full(hwdev, sg->length, dir, 0);
- 				swiotlb_unmap_sg(hwdev, sg - i, i, dir);
--				sg[0].dma_length = 0;
-+				sgl[0].dma_length = 0;
- 				return 0;
- 			}
- 			sg->dma_address = virt_to_bus(map);
-@@ -708,19 +709,21 @@ swiotlb_map_sg(struct device *hwdev, struct scatterlist *sg, int nelems,
-  * concerning calls here are the same as for swiotlb_unmap_single() above.
-  */
- void
--swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sg, int nelems,
-+swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
- 		 int dir)
+     if (scp->use_sg) {
+         sl = (struct scatterlist *)scp->request_buffer;
+-        for (i=0,cpsum=0; i<scp->use_sg; ++i,++sl) {
++	cpsum = 0;
++	for_each_sg(sl, sg, scp->use_sg, i) {
+             unsigned long flags;
+-            cpnow = (ushort)sl->length;
++            cpnow = (ushort)sg->length;
+             TRACE(("copy_internal() now %d sum %d count %d %d\n",
+                           cpnow,cpsum,cpcount,(ushort)scp->bufflen));
+             if (cpsum+cpnow > cpcount) 
+                 cpnow = cpcount - cpsum;
+             cpsum += cpnow;
+-            if (!sl->page) {
++            if (!sg->page) {
+                 printk("GDT-HA %d: invalid sc/gt element in gdth_copy_internal_data()\n",
+                        hanum);
+                 return;
+             }
+             local_irq_save(flags);
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+-            address = kmap_atomic(sl->page, KM_BIO_SRC_IRQ) + sl->offset;
++            address = kmap_atomic(sg->page, KM_BIO_SRC_IRQ) + sg->offset;
+             memcpy(address,buffer,cpnow);
+-            flush_dcache_page(sl->page);
++            flush_dcache_page(sg->page);
+             kunmap_atomic(address, KM_BIO_SRC_IRQ);
+ #else
+-            address = kmap_atomic(sl->page, KM_BH_IRQ) + sl->offset;
++            address = kmap_atomic(sg->page, KM_BH_IRQ) + sg->offset;
+             memcpy(address,buffer,cpnow);
+-            flush_dcache_page(sl->page);
++            flush_dcache_page(sg->page);
+             kunmap_atomic(address, KM_BH_IRQ);
+ #endif
+             local_irq_restore(flags);
+@@ -2807,7 +2808,7 @@ static int gdth_fill_cache_cmd(int hanum,Scsi_Cmnd *scp,ushort hdrive)
  {
-+	struct scatterlist *sg;
- 	int i;
+     register gdth_ha_str *ha;
+     register gdth_cmd_str *cmdp;
+-    struct scatterlist *sl;
++    struct scatterlist *sl, *sg;
+     ulong32 cnt, blockcnt;
+     ulong64 no, blockno;
+     dma_addr_t phys_addr;
+@@ -2913,25 +2914,25 @@ static int gdth_fill_cache_cmd(int hanum,Scsi_Cmnd *scp,ushort hdrive)
+             if (mode64) {
+                 cmdp->u.cache64.DestAddr= (ulong64)-1;
+                 cmdp->u.cache64.sg_canz = sgcnt;
+-                for (i=0; i<sgcnt; ++i,++sl) {
+-                    cmdp->u.cache64.sg_lst[i].sg_ptr = sg_dma_address(sl);
++		for_each_sg(sl, sg, sgcnt, i) {
++                    cmdp->u.cache64.sg_lst[i].sg_ptr = sg_dma_address(sg);
+ #ifdef GDTH_DMA_STATISTICS
+                     if (cmdp->u.cache64.sg_lst[i].sg_ptr > (ulong64)0xffffffff)
+                         ha->dma64_cnt++;
+                     else
+                         ha->dma32_cnt++;
+ #endif
+-                    cmdp->u.cache64.sg_lst[i].sg_len = sg_dma_len(sl);
++                    cmdp->u.cache64.sg_lst[i].sg_len = sg_dma_len(sg);
+                 }
+             } else {
+                 cmdp->u.cache.DestAddr= 0xffffffff;
+                 cmdp->u.cache.sg_canz = sgcnt;
+-                for (i=0; i<sgcnt; ++i,++sl) {
+-                    cmdp->u.cache.sg_lst[i].sg_ptr = sg_dma_address(sl);
++		for_each_sg(sl, sg, sgcnt, i) {
++                    cmdp->u.cache.sg_lst[i].sg_ptr = sg_dma_address(sg);
+ #ifdef GDTH_DMA_STATISTICS
+                     ha->dma32_cnt++;
+ #endif
+-                    cmdp->u.cache.sg_lst[i].sg_len = sg_dma_len(sl);
++                    cmdp->u.cache.sg_lst[i].sg_len = sg_dma_len(sg);
+                 }
+             }
  
- 	BUG_ON(dir == DMA_NONE);
- 
--	for (i = 0; i < nelems; i++, sg++)
-+	for_each_sg(sgl, sg, nelems, i) {
- 		if (sg->dma_address != SG_ENT_PHYS_ADDRESS(sg))
- 			unmap_single(hwdev, bus_to_virt(sg->dma_address),
- 				     sg->dma_length, dir);
- 		else if (dir == DMA_FROM_DEVICE)
- 			dma_mark_clean(SG_ENT_VIRT_ADDRESS(sg), sg->dma_length);
-+	}
- }
- 
- /*
-@@ -731,19 +734,21 @@ swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sg, int nelems,
-  * and usage.
-  */
- static void
--swiotlb_sync_sg(struct device *hwdev, struct scatterlist *sg,
-+swiotlb_sync_sg(struct device *hwdev, struct scatterlist *sgl,
- 		int nelems, int dir, int target)
+@@ -3017,7 +3018,7 @@ static int gdth_fill_raw_cmd(int hanum,Scsi_Cmnd *scp,unchar b)
  {
-+	struct scatterlist *sg;
- 	int i;
+     register gdth_ha_str *ha;
+     register gdth_cmd_str *cmdp;
+-    struct scatterlist *sl;
++    struct scatterlist *sl, *sg;
+     ushort i;
+     dma_addr_t phys_addr, sense_paddr;
+     int cmd_index, sgcnt, mode64;
+@@ -3120,25 +3121,25 @@ static int gdth_fill_raw_cmd(int hanum,Scsi_Cmnd *scp,unchar b)
+             if (mode64) {
+                 cmdp->u.raw64.sdata = (ulong64)-1;
+                 cmdp->u.raw64.sg_ranz = sgcnt;
+-                for (i=0; i<sgcnt; ++i,++sl) {
+-                    cmdp->u.raw64.sg_lst[i].sg_ptr = sg_dma_address(sl);
++		for_each_sg(sl, sg, sgcnt, i) {
++                    cmdp->u.raw64.sg_lst[i].sg_ptr = sg_dma_address(sg);
+ #ifdef GDTH_DMA_STATISTICS
+                     if (cmdp->u.raw64.sg_lst[i].sg_ptr > (ulong64)0xffffffff)
+                         ha->dma64_cnt++;
+                     else
+                         ha->dma32_cnt++;
+ #endif
+-                    cmdp->u.raw64.sg_lst[i].sg_len = sg_dma_len(sl);
++                    cmdp->u.raw64.sg_lst[i].sg_len = sg_dma_len(sg);
+                 }
+             } else {
+                 cmdp->u.raw.sdata = 0xffffffff;
+                 cmdp->u.raw.sg_ranz = sgcnt;
+-                for (i=0; i<sgcnt; ++i,++sl) {
+-                    cmdp->u.raw.sg_lst[i].sg_ptr = sg_dma_address(sl);
++		for_each_sg(sl, sg, sgcnt, i) {
++                    cmdp->u.raw.sg_lst[i].sg_ptr = sg_dma_address(sg);
+ #ifdef GDTH_DMA_STATISTICS
+                     ha->dma32_cnt++;
+ #endif
+-                    cmdp->u.raw.sg_lst[i].sg_len = sg_dma_len(sl);
++                    cmdp->u.raw.sg_lst[i].sg_len = sg_dma_len(sg);
+                 }
+             }
  
- 	BUG_ON(dir == DMA_NONE);
- 
--	for (i = 0; i < nelems; i++, sg++)
-+	for_each_sg(sgl, sg, nelems, i) {
- 		if (sg->dma_address != SG_ENT_PHYS_ADDRESS(sg))
- 			sync_single(hwdev, bus_to_virt(sg->dma_address),
- 				    sg->dma_length, dir, target);
- 		else if (dir == DMA_FROM_DEVICE)
- 			dma_mark_clean(SG_ENT_VIRT_ADDRESS(sg), sg->dma_length);
-+	}
- }
- 
- void
 -- 
 1.5.3.rc0.90.gbaa79
 
