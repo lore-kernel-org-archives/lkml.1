@@ -1,74 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765469AbXGPJyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932148AbXGPJzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765469AbXGPJyl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763739AbXGPJtQ
+	id S932148AbXGPJzA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764145AbXGPJtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:49:16 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9331 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 05:49:25 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9340 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761371AbXGPJsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:48:39 -0400
+	id S1759932AbXGPJsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:48:38 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>, davem@davemloft.net
-Subject: [PATCH 23/33] qlogicpti: sg chaining support
-Date: Mon, 16 Jul 2007 11:47:37 +0200
-Message-Id: <1184579268290-git-send-email-jens.axboe@oracle.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, bzolnier@gmail.com
+Subject: [PATCH 24/33] ide-scsi: sg chaining support
+Date: Mon, 16 Jul 2007 11:47:38 +0200
+Message-Id: <11845792681555-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.3.rc2
 In-Reply-To: <11845792671245-git-send-email-jens.axboe@oracle.com>
 References: <11845792671245-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: davem@davemloft.net
+Cc: bzolnier@gmail.com
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- drivers/scsi/qlogicpti.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+ drivers/scsi/ide-scsi.c |   31 +++++++++++++++++++------------
+ 1 files changed, 19 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
-index c4195ea..e36e6cd 100644
---- a/drivers/scsi/qlogicpti.c
-+++ b/drivers/scsi/qlogicpti.c
-@@ -868,7 +868,7 @@ static inline int load_cmd(struct scsi_cmnd *Cmnd, struct Command_Entry *cmd,
- 			   struct qlogicpti *qpti, u_int in_ptr, u_int out_ptr)
- {
- 	struct dataseg *ds;
--	struct scatterlist *sg;
-+	struct scatterlist *sg, *s;
- 	int i, n;
+diff --git a/drivers/scsi/ide-scsi.c b/drivers/scsi/ide-scsi.c
+index bb90df8..61bcc31 100644
+--- a/drivers/scsi/ide-scsi.c
++++ b/drivers/scsi/ide-scsi.c
+@@ -70,6 +70,7 @@ typedef struct idescsi_pc_s {
+ 	u8 *buffer;				/* Data buffer */
+ 	u8 *current_position;			/* Pointer into the above buffer */
+ 	struct scatterlist *sg;			/* Scatter gather table */
++	struct scatterlist *last_sg;		/* Last sg element */
+ 	int b_count;				/* Bytes transferred from current entry */
+ 	struct scsi_cmnd *scsi_cmd;		/* SCSI command */
+ 	void (*done)(struct scsi_cmnd *);	/* Scsi completion routine */
+@@ -175,11 +176,6 @@ static void idescsi_input_buffers (ide_drive_t *drive, idescsi_pc_t *pc, unsigne
+ 	char *buf;
  
- 	if (Cmnd->use_sg) {
-@@ -884,11 +884,12 @@ static inline int load_cmd(struct scsi_cmnd *Cmnd, struct Command_Entry *cmd,
- 		n = sg_count;
- 		if (n > 4)
- 			n = 4;
--		for (i = 0; i < n; i++, sg++) {
--			ds[i].d_base = sg_dma_address(sg);
--			ds[i].d_count = sg_dma_len(sg);
-+		for_each_sg(sg, s, n, i) {
-+			ds[i].d_base = sg_dma_address(s);
-+			ds[i].d_count = sg_dma_len(g);
+ 	while (bcount) {
+-		if (pc->sg - (struct scatterlist *) pc->scsi_cmd->request_buffer > pc->scsi_cmd->use_sg) {
+-			printk (KERN_ERR "ide-scsi: scatter gather table too small, discarding data\n");
+-			idescsi_discard_data (drive, bcount);
+-			return;
+-		}
+ 		count = min(pc->sg->length - pc->b_count, bcount);
+ 		if (PageHighMem(pc->sg->page)) {
+ 			unsigned long flags;
+@@ -198,10 +194,17 @@ static void idescsi_input_buffers (ide_drive_t *drive, idescsi_pc_t *pc, unsigne
  		}
- 		sg_count -= 4;
-+		sg = s;
- 		while (sg_count > 0) {
- 			struct Continuation_Entry *cont;
+ 		bcount -= count; pc->b_count += count;
+ 		if (pc->b_count == pc->sg->length) {
+-			pc->sg++;
++			if (pc->sg == pc->last_sg)
++				break;
++			pc->sg = sg_next(pc->sg);
+ 			pc->b_count = 0;
+ 		}
+ 	}
++
++	if (bcount) {
++		printk (KERN_ERR "ide-scsi: scatter gather table too small, discarding data\n");
++		idescsi_discard_data (drive, bcount);
++	}
+ }
  
-@@ -907,9 +908,9 @@ static inline int load_cmd(struct scsi_cmnd *Cmnd, struct Command_Entry *cmd,
- 			n = sg_count;
- 			if (n > 7)
- 				n = 7;
--			for (i = 0; i < n; i++, sg++) {
--				ds[i].d_base = sg_dma_address(sg);
--				ds[i].d_count = sg_dma_len(sg);
-+			for_each_sg(sg, s, n, i) {
-+				ds[i].d_base = sg_dma_address(s);
-+				ds[i].d_count = sg_dma_len(s);
- 			}
- 			sg_count -= n;
+ static void idescsi_output_buffers (ide_drive_t *drive, idescsi_pc_t *pc, unsigned int bcount)
+@@ -210,11 +213,6 @@ static void idescsi_output_buffers (ide_drive_t *drive, idescsi_pc_t *pc, unsign
+ 	char *buf;
+ 
+ 	while (bcount) {
+-		if (pc->sg - (struct scatterlist *) pc->scsi_cmd->request_buffer > pc->scsi_cmd->use_sg) {
+-			printk (KERN_ERR "ide-scsi: scatter gather table too small, padding with zeros\n");
+-			idescsi_output_zeros (drive, bcount);
+-			return;
+-		}
+ 		count = min(pc->sg->length - pc->b_count, bcount);
+ 		if (PageHighMem(pc->sg->page)) {
+ 			unsigned long flags;
+@@ -233,10 +231,17 @@ static void idescsi_output_buffers (ide_drive_t *drive, idescsi_pc_t *pc, unsign
  		}
+ 		bcount -= count; pc->b_count += count;
+ 		if (pc->b_count == pc->sg->length) {
+-			pc->sg++;
++			if (pc->sg == pc->last_sg)
++				break;
++			pc->sg = sg_next(pc->sg);
+ 			pc->b_count = 0;
+ 		}
+ 	}
++
++	if (bcount) {
++		printk (KERN_ERR "ide-scsi: scatter gather table too small, padding with zeros\n");
++		idescsi_output_zeros (drive, bcount);
++	}
+ }
+ 
+ /*
+@@ -910,9 +915,11 @@ static int idescsi_queue (struct scsi_cmnd *cmd,
+ 	if (cmd->use_sg) {
+ 		pc->buffer = NULL;
+ 		pc->sg = cmd->request_buffer;
++		pc->last_sg = sg_last(pc->sg, cmd->use_sg);
+ 	} else {
+ 		pc->buffer = cmd->request_buffer;
+ 		pc->sg = NULL;
++		pc->last_sg = NULL;
+ 	}
+ 	pc->b_count = 0;
+ 	pc->request_transfer = pc->buffer_size = cmd->request_bufflen;
 -- 
 1.5.3.rc0.90.gbaa79
 
