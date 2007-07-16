@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbXGPTyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762052AbXGPTzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758526AbXGPTyE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 15:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758020AbXGPTxw
+	id S1762052AbXGPTzr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 15:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbXGPTzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 15:53:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56999 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757982AbXGPTxv (ORCPT
+	Mon, 16 Jul 2007 15:55:39 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51690 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614AbXGPTzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 15:53:51 -0400
-Date: Mon, 16 Jul 2007 12:52:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Len Brown <lenb@kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch 6/7] Add common orderly_poweroff()
-Message-Id: <20070716125223.249a6914.akpm@linux-foundation.org>
-In-Reply-To: <20070511000028.446470000@goop.org>
-References: <20070510235708.155502000@goop.org>
-	<20070511000028.446470000@goop.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 16 Jul 2007 15:55:38 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <469BCD11.4070803@s5r6.in-berlin.de>
+Date: Mon, 16 Jul 2007 21:54:57 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@brturbo.com.br>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: how about bringing Documentation/feature-removal-schedule.txt
+ up to date?
+References: <Pine.LNX.4.64.0707160759080.17044@localhost.localdomain> <469BCAB2.5060909@s5r6.in-berlin.de>
+In-Reply-To: <469BCAB2.5060909@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 16:57:14 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+I wrote:
+> Robert P. J. Day wrote:
+>>   as time goes by, the informational value of the feature removal file
+>> is rapidly approaching zero, as alleged deadlines for removal are
+>> continually dismissed, while some removal dates as far back as 2005
+>> are still in that file.
+>>
+>>   if those features aren't going to be removed, then will someone at
+>> least recalibrate their removal dates and update that file?
 
-> Various pieces of code around the kernel want to be able to trigger an
-> orderly poweroff.  This pulls them together into a single
-> implementation.
-> 
-> By default the poweroff command is /sbin/poweroff, but it can be set
-> via sysctl: kernel/poweroff_cmd.  This is split at whitespace, so it
-> can include command-line arguments.
-> 
-> This patch replaces four other instances of invoking either "poweroff"
-> or "shutdown -h now": one sparc64, two sbus drivers, and acpi thermal
-> management.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Acked-by: Len Brown <lenb@kernel.org>
-> Cc: Chris Wright <chrisw@sous-sol.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: David S. Miller <davem@davemloft.net>
-> 
-> ---
->  arch/sparc64/kernel/power.c     |   40 +-------------------------
->  drivers/acpi/thermal.c          |   24 +---------------
->  drivers/sbus/char/bbc_envctrl.c |    5 +--
->  drivers/sbus/char/envctrl.c     |    7 +---
->  include/linux/reboot.h          |    5 +++
->  include/linux/sysctl.h          |    1 
->  kernel/sys.c                    |   58 +++++++++++++++++++++++++++++++++++++++
->  kernel/sysctl.c                 |   10 ++++++
+Also remember to update contact addresses.
 
-I'm not sure how this ended up in the x86 tree
-(ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/add-common-orderly_poweroff),
-but recent changes in arch/sparc64/kernel/power.c have broken it.
+> What:	Video4Linux API 1 ioctls and video_decoder.h from Video devices.
+> When:	December 2006
 
-Dave, those changes hit mainline without ever having appeared in the
-sparc-2.6.git tree, afaict.  If they _had_ appeared there I'd have been
-able to tell you that there wasn't any point in changing code which we're
-planning on deleting.  Otoh,
-
-    [SPARC64]: Export powerd facilities for external entities.
-    
-    Besides the existing usage for power-button interrupts, we'll
-    want to make use of this code for domain-services where the
-    LDOM manager can send reboot requests to the guest node.
-
-make me think that this code isn't deleteable any more.
-
-Ho hum, I will delete the sparc64 hunk and shall hope for the best.  Mainly
-to avoid downstream rejects - I suspect this patch needs revisting now.
-
-Andi, your tree is looking pretty stale - I hope it will be updated soon?
+-Who:	Mauro Carvalho Chehab <mchehab@brturbo.com.br>
++Who:	Mauro Carvalho Chehab <mchehab@infradead.org>
+-- 
+Stefan Richter
+-=====-=-=== -=== =----
+http://arcgraph.de/sr/
