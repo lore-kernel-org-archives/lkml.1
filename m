@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762267AbXGPGFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbXGPGSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762267AbXGPGFM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 02:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbXGPGFB
+	id S1759751AbXGPGSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 02:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXGPGSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 02:05:01 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:44551 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752071AbXGPGFA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 02:05:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=U1y7nfsZGeSqWcdUAF51GATRgeUISda6Aw7WtXagwcZBZ7CpYwA/UJlOjwHEEvldaRtzxhQGAkGN5KiQdJioJyAaGbk8/wPjEXeFGDqgdQFBNC/MO6k2B6rgpGtxMp59jS5dE4Lp5OmzhkfUi5djPBFps0Tbwm4wyPhAz4Qqgxc=  ;
-X-YMail-OSG: R7rEWEYVM1l1anthD6hy3yqkiCG9LodKs_lqpqWSDmMl5s4S
-Message-ID: <469B0A85.3000907@yahoo.com.au>
-Date: Mon, 16 Jul 2007 16:04:53 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Al Boldi <a1426z@gawab.com>, Mark Lord <lkml@rtr.ca>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Miklos Szeredi <miklos@szeredi.hu>, jeremy@goop.org, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Hibernation Redesign
-References: <200707081737.21932.a1426z@gawab.com> <200707120034.14201.rjw@sisk.pl> <200707120212.24072.a1426z@gawab.com> <200707121520.51250.rjw@sisk.pl>
-In-Reply-To: <200707121520.51250.rjw@sisk.pl>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 16 Jul 2007 02:18:24 -0400
+Received: from main.gmane.org ([80.91.229.2]:36879 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751459AbXGPGSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 02:18:24 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: James Bruce <bruce@andrew.cmu.edu>
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+Date: Mon, 16 Jul 2007 02:18:06 -0400
+Message-ID: <469B0D9E.3030402@andrew.cmu.edu>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>	 <20070711211638.GE18767@one.firstfloor.org>	 <20070711214649.GK14435@v2.random>	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>	 <1184302024.6709.11.camel@Homer.simpson.net>	 <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184355835.12353.321.camel@chaos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+Cc: Roman Zippel <zippel@linux-m68k.org>, Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+X-Gmane-NNTP-Posting-Host: dhcp-7-156.dsl.telerama.com
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+In-Reply-To: <1184355835.12353.321.camel@chaos>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
+Thomas Gleixner wrote:
+> Roman Zippel noticed inconsistency of the wmult table.
+> wmult[16] has a missing digit.
+[snip]
 
-> The only direct relationship between the freezer and drivers is that some of
-> them use kernel threads that call try_to_freeze() (and other freezer-related
-> functions).
+While we're at it, isn't the comment above the wmult table incorrect?
+The multiplier is 1.25, meaning a 25% change per nice level, not 10%.
 
-If removing thoset was the only benefit of getting rid of the freezer
-with kexec, it would almost be worth it, IMO :)
+  - Jim
 
--- 
-SUSE Labs, Novell Inc.
