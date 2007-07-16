@@ -1,74 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764479AbXGPXgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbXGPXjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764479AbXGPXgJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbXGPXf4
+	id S1758460AbXGPXjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbXGPXjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:35:56 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:18654 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751452AbXGPXfz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:35:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iAGpjlgqVhxrayc3kBDXS5uD0icwJAlKolpwy+IRC0cPIpb3ygo9qD929A7y4hRLV+and7bDTn6YQ2bJEzbwe+AeqasbgwFsyhkViBhBGwA6r8d8Bg7xsVV7tCiZs+Tx93oCUU5k17otClCpkR1jK/9bOLa93a7sw2gtn0IGlPE=
-Message-ID: <9a8748490707161635l317aa778t6af2b8e68cc08f84@mail.gmail.com>
-Date: Tue, 17 Jul 2007 01:35:54 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Rene Herman" <rene.herman@gmail.com>
+	Mon, 16 Jul 2007 19:39:09 -0400
+Received: from waste.org ([66.93.16.53]:48445 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751452AbXGPXjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 19:39:07 -0400
+Date: Mon, 16 Jul 2007 18:38:50 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Ray Lee <ray-lk@madrabbit.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
 Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Bodo Eggert" <7eggert@gmx.de>,
-       "Matt Mackall" <mpm@selenic.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <469BFDA7.1040204@gmail.com>
+Message-ID: <20070716233849.GE11115@waste.org>
+References: <200707111916.35036.jesper.juhl@gmail.com> <2c0942db0707112159v3ee2cd83i74759c7138e273f7@mail.gmail.com> <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com> <4696C89E.4010002@goop.org> <9a8748490707121925w5fb22c0o61068f06d66d5845@mail.gmail.com> <4696FC43.3000201@goop.org> <46977C36.8010403@gmail.com> <20070714191737.GA11166@waste.org> <46994BE3.7010608@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
-	 <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>
-	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
-	 <469BF104.1040703@gmail.com>
-	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
-	 <469BF768.6040200@gmail.com>
-	 <2c0942db0707161613lff9c07bpcf002b9139163a86@mail.gmail.com>
-	 <469BFDA7.1040204@gmail.com>
+In-Reply-To: <46994BE3.7010608@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/07/07, Rene Herman <rene.herman@gmail.com> wrote:
-> On 07/17/2007 01:13 AM, Ray Lee wrote:
->
-> > Given that there's actual, y'know, reports of people who can easily
-> > crash a 4k+interrupt stacks kernel, and not an 8k one, I think the
-> > current evidence speaks for itself.
->
-> Where?
->
-> > The point remains that the burden of proof of the safety of the 4k only
-> > option is upon those people who want to remove the 8k option.
->
-> Removing any such option was not the objective of this thread, just lifting
-> 4K stacks from debug and making it the default. People fortunate enough to
-> use workloads where some piece of crap code by accident works more often
-> with the current shared 8K stacks then it does with the unshared 4K stacks
-> can then still nicely not select it (or fix the code if possible).
->
-I may have worded the initial email a bit too heavily towards 8K
-removal, but that was mainly to provoke some discussion.  Nothing
-should get removed without a fair (and long) warning in
-feature-removal-schedule.txt and ofcourse not before we know that the
-new option is at least as safe as what we intend to remove, so the
-patch really was just intended as a fairly harmless nudge towards
-getting 4K stacks into a shape where we can eventually start
-considering 8K removal.
+On Sun, Jul 15, 2007 at 12:19:15AM +0200, Rene Herman wrote:
+> On 07/14/2007 09:17 PM, Matt Mackall wrote:
+> 
+> >On Fri, Jul 13, 2007 at 03:20:54PM +0200, Rene Herman wrote:
+> 
+> >>As far as I'm aware, the actual reason for 4K stacks is that after the 
+> >>system has been up and running for some time getting "1 physically 
+> >>contiguous pages" becomes significantly easier than 2 which wouldn't be 
+> >>arbitrary.
+> >
+> >If there are exactly two free pages in the system, the odds of them
+> >being buddies (ie adjacent AND properly aligned) is quite small. The
+> >available page pool has to grow quite a bit before the availability of
+> >order-1 page pairs approaches 100%. 
+> >
+> >So if we fail to allocate an 8k stack when we could have allocated a
+> >4k stack, we're almost certainly failing significantly prematurely.
+> 
+> Quite. Ofcourse, saying "our stacks are 1 page" would be the by far easiest 
+> solution to that. Personally, I've been running with 4K stacks exclusively 
+> on a variety of machines for quite some time now, but I can't say I'm all 
+> too adventurous with respect to filesystems (especially) so I'm not sure 
+> how many problems remain with 4K stacks. I did recently see Andrew Morton 
+> say that problems _do_ still exist. If it's just XFS -- well, heck...
+
+One long-standing problem is DM/LVM. That -may- be fixed now, but I
+suspect issues remain.
+ 
+> >As I've pointed out before, it's fairly easy to make our stack
+> >growable with a trampoline in the troublesome paths. Something like:
+> >
+> >int growstack(int headroom, int func, void *data)
+> >{
+> >	void *new_stack;
+> >	int ret;
+> >
+> >	if (likely(available_stack() > headroom))
+> >		return func(data);
+> >
+> >#ifdef CONFIG_GROWSTACK_STATS
+> >	/* gather statistics about stack-heavy paths */
+> >#endif
+> >	/* warn/abort if we're recursing too deeply */
+> >
+> >	new_stack = get_free_page();
+> >	switch_to_new_stack(new_stack);
+> >	ret = func(data);
+> >	cleanup_stack(new_stack);
+> >	return ret;
+> >}
+> 
+> This would also need something to tell func() where its current_thread_info 
+>  is now at.
+
+That'd be handled in the usual way by switch_to_new_stack. That is,
+we'd store the location of the old stack at the top of the new stack
+and then literally change everything to point to the new stack.
+
+> Which might not be much of a problem. Can't think of much else 
+> either but it's the kind of thing you'd _like_ to be a problem just to have 
+> an excuse to shoot down an icky notion like that...
+
+It's not any ickier than explicitly calling schedule().
+
+> Would you intend this just as a "make this path work until we fix it 
+> properly" kind of thing?
+
+Maybe.
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Mathematics is the supreme nostalgia of our time.
