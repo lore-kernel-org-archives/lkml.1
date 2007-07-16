@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbXGPXPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765736AbXGPXSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbXGPXPv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbXGPXPb
+	id S1765736AbXGPXSF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXGPXRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:15:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:26922 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756153AbXGPXPa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:15:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ibCWok3W4x4KxkX2I1EKaw5OowMtM4p9KcJ8+Fq/aG8jRUSo/wRd5MnEYM2NqN776vjAyYvPaYO/9cQYxpovaUwQ87AOcM/NYpc+9lPcbDbKOVfQWccwEcYEkflKbp1N8oqKo1Juoqc+d9xUhPS0kpzwz8tV4z73EaUE8oF5Eyk=
-Message-ID: <2c0942db0707161615g4bdf825ar51464ba564a823e2@mail.gmail.com>
-Date: Mon, 16 Jul 2007 16:15:28 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Bodo Eggert" <7eggert@gmx.de>,
-       "Matt Mackall" <mpm@selenic.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <469BF9A8.20306@gmail.com>
+	Mon, 16 Jul 2007 19:17:55 -0400
+Received: from waste.org ([66.93.16.53]:38171 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753990AbXGPXRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 19:17:55 -0400
+Date: Mon, 16 Jul 2007 18:17:20 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, olaf.kirch@oracle.com
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Message-ID: <20070716231720.GD11166@waste.org>
+References: <20070716091236.GA10718@elte.hu> <20070716.042640.18306462.davem@davemloft.net> <alpine.LFD.0.999.0707161425361.20061@woody.linux-foundation.org> <20070716.150825.66176632.davem@davemloft.net> <alpine.LFD.0.999.0707161525250.20061@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
-	 <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>
-	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
-	 <469BF104.1040703@gmail.com>
-	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
-	 <20070716235438.1bdd0722@the-village.bc.nu>
-	 <2c0942db0707161553u5d55724u82424b3ffbbd79f7@mail.gmail.com>
-	 <469BF9A8.20306@gmail.com>
-X-Google-Sender-Auth: 91338d03aa772aeb
+In-Reply-To: <alpine.LFD.0.999.0707161525250.20061@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/16/07, Rene Herman <rene.herman@gmail.com> wrote:
-> Yes but it's also an argument that the 4K stacks don't make the _current_
-> situation without CONFIG_4KSTACKS selected worse and given that you trust
-> that current situation, that leaves you without your argument :-)
+On Mon, Jul 16, 2007 at 03:29:15PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 16 Jul 2007, David Miller wrote:
+> > 
+> > Ingo is the only person hitting and reporting this and last time I
+> > checked he is competent enough to revert the thing locally in his own
+> > trees, right? :-)
+> 
+> Umm. And your suggestion is what? Wait until -rc1, when non-developers 
+> (the kinds of people who are supposed to *not* be competent enough) come 
+> along, and report the problem?
+> 
+> That's explicitly what I do *not* want to happen.
+> 
+> If we knew something was wrong before the -rc1 release, all the better: we 
+> can avoid havign that bug in -rc1, and the people who test it will tell us 
+> about the problems we did *not* know about.
 
-Heh :-). No, it's not a question of trust. First and foremost, it's
-that there are still users who say that they can crash a current
-4k+interrupt stacks kernel, while the 8k without interrupt stacks is
-fine.
+Unfortunately the particular patch from Olaf is presumably covering up
+another bug that other people (including Olaf) had hit. So reverting
+it is going to introduce a different regression.
+
+I think this particular problem has _already_ bounced back and forth
+once. But I haven't been keeping count as most of the relevant patches
+weren't cc:ed to me.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
