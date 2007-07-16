@@ -1,139 +1,339 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759785AbXGPTOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbXGPTPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759785AbXGPTOR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 15:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbXGPTOF
+	id S1758839AbXGPTPI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 15:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbXGPTOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 15:14:05 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:6069 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbXGPTOC (ORCPT
+	Mon, 16 Jul 2007 15:14:49 -0400
+Received: from mailgw.informatik.uni-stuttgart.de ([129.69.211.41]:51020 "EHLO
+	mx1.informatik.uni-stuttgart.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751094AbXGPTOs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 15:14:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=LxznKGckGvdDuv+KNTSTfizT8Q0j1ZZiQrv41/+H5OYR1oPwAsgtylIvtJm4M3IaTIcORBzwCMUPfUlUAtwbC51nwn1X/H7IDWJN0CJYWiSK0VieyfHkW88Mncy36doh4uF5BEW3XMjRUytNbKEWRvetlzvBfpOJ1S3S5Ch61o0=
-Message-ID: <469BC34C.4080107@googlemail.com>
-Date: Mon, 16 Jul 2007 21:13:16 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Mon, 16 Jul 2007 15:14:48 -0400
+X-Greylist: delayed 1588 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 15:14:47 EDT
+Date: Mon, 16 Jul 2007 20:48:17 +0200 (CEST)
+From: Steffen Maier <smaier@users.sourceforge.net>
+X-X-Sender: maiersn@nettc.informatik.uni-stuttgart.de
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+cc: Steffen Maier <smaier@users.sourceforge.net>
+Subject: kernel module to list sockets with their multicast group joins and
+ respective processes
+Message-ID: <Pine.LNX.4.64.0707162029430.952@nettc.informatik.uni-stuttgart.de>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Satyam Sharma <satyam.sharma@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, gregkh@suse.de
-Subject: Re: Oops while modprobing phy fixed module
-References: <4698BF14.10807@googlemail.com>	 <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>	 <469A5C94.7030201@googlemail.com>	 <a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>	 <469A9D5D.10509@googlemail.com> <469B61C8.8010902@googlemail.com> <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com> <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com> <469BC2D6.5090008@googlemail.com>
-In-Reply-To: <469BC2D6.5090008@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Gabriel C wrote:
->   
->> Tejun Heo wrote:
->>   
->>     
->>> Satyam Sharma wrote:
->>>   
->>>     
->>>       
->>>> On 7/16/07, Gabriel C <nix.or.die@googlemail.com> wrote:
->>>>     
->>>>       
->>>>         
->>>>> Here the bisect result:
->>>>>
->>>>> 3007e997de91ec59af39a3f9c91595b31ae6e08b is first bad commit
->>>>> commit 3007e997de91ec59af39a3f9c91595b31ae6e08b
->>>>> Author: Tejun Heo <htejun@gmail.com>
->>>>> Date:   Thu Jun 14 04:27:23 2007 +0900
->>>>>
->>>>>     sysfs: use sysfs_mutex to protect the sysfs_dirent tree
->>>>>       
->>>>>         
->>>>>           
->>> Hmmm... Weird.  The patch is supposed to make synchronization more
->>> strict not less unless I've forgotten locking at some place.  Gabriel,
->>> can you please choose SLAB and enable CONFIG_DEBUG_SLAB and
->>> DEBUG_SLAB_LEAK and see whether kernel complains about something?
->>>   
->>>     
->>>       
->> Sure , give me some minutes.
->>   
->>     
->
-> With DEBUG_SLAB_LEAK set ( and a lot other DEBUG options ) I get on
-> current HEAD
-> ( abce891a10559343d8ac9f79b46d78afdba63a40 ) an Oops too now , just the
-> box isn't died.
->
-> Config and dmesg can be found there :
->
-> http://194.231.229.228/2.6.22-gabce891a/
->
-> Here it is :
->
-> [  199.766878] Fixed PHY: Registered new driver
-> [  199.768069] BUG: unable to handle kernel paging request at virtual address 6b6b6b87
-> [  199.768081]  printing eip:
-> [  199.768085] c01a0796
-> [  199.768089] *pde = 00000000
-> [  199.768098] Oops: 0000 [#1]
-> [  199.768102] PREEMPT SMP DEBUG_PAGEALLOC
-> [  199.768111] Modules linked in: fixed pc87360 hwmon_vid i2c_isa eeprom adm1021 uhci_hcd sr_mod shpchp pci_hotplug ohci_hcd iTCO_wdt iTCO_vendor_support intel_agp i82860_edac i2c_i801 ehci_hcd usbcore edac_mc cdrom agpgart 3c59x mii ext4dev jbd2 capability commoncap loop lp parport_pc parport
-> [  199.768182] CPU:    1
-> [  199.768184] EIP:    0060:[<c01a0796>]    Not tainted VLI
-> [  199.768188] EFLAGS: 00210202   (2.6.22-gabce891a #27)
-> [  199.768205] EIP is at __sysfs_remove_dir+0x20/0x64
-> [  199.768213] eax: 00000000   ebx: de583e04   ecx: e5113728   edx: 6b6b6b6b
-> [  199.768222] esi: e5113738   edi: e5113728   ebp: de583e20   esp: de583e04
-> [  199.768230] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> [  199.768238] Process modprobe (pid: 2067, ti=de582000 task=d79174c0 task.ti=de582000)
-> [  199.768246] Stack: e5113728 00000000 00000000 00000000 d96bcce0 e5113728 00000000 de583e30 
-> [  199.768271]        c01a0810 d96bcce0 d96bcbf8 de583e3c c01db3eb d96bcce0 de583e50 c023e338 
-> [  199.768298]        d96bcbf8 d96bcbf8 e0b3eef0 de583e5c c023e365 d96bcbf0 de583e9c e8c472e8 
-> [  199.768327] Call Trace:
-> [  199.768333]  [<c0104f86>] show_trace_log_lvl+0x1a/0x2f
-> [  199.768348]  [<c0105036>] show_stack_log_lvl+0x9b/0xa3
-> [  199.768359]  [<c010520c>] show_registers+0x1ce/0x2de
-> [  199.768370]  [<c010543b>] die+0x11f/0x1f8
-> [  199.768380]  [<c01137a9>] do_page_fault+0x438/0x507
-> [  199.768392]  [<c031893a>] error_code+0x72/0x78
-> [  199.768405]  [<c01a0810>] sysfs_remove_dir+0x2c/0x30
-> [  199.768415]  [<c01db3eb>] kobject_del+0xf/0x19
-> [  199.768429]  [<c023e338>] device_del+0x228/0x24a
-> [  199.768442]  [<c023e365>] device_unregister+0xb/0x15
-> [  199.768452]  [<e8c472e8>] fixed_mdio_register_device+0x1dc/0x208 [fixed]
-> [  199.768467]  [<e8c4a01e>] fixed_init+0x1e/0x33 [fixed]
-> [  199.768479]  [<c013d290>] sys_init_module+0x1589/0x1677
-> [  199.768493]  [<c0103f16>] sysenter_past_esp+0x5f/0x99
-> [  199.768503]  =======================
-> [  199.768508] Code: e7 fd ff ff 83 c4 10 5b 5e 5d c3 55 89 e5 57 56 53 83 ec 10 89 c7 85 c0 74 4d 8d 5d e4 89 c2 89 d8 e8 1f fb ff ff 8d 77 10 eb 27 <8b> 42 1c 25 ff 00 00 00 74 1a 83 f8 02 74 15 8b 42 0c 89 06 c7 
-> [  199.768675] EIP: [<c01a0796>] __sysfs_remove_dir+0x20/0x64 SS:ESP 0068:de583e04
->
->
->
->   
+Hello,
 
-Damn I forgot to paste the gdb output =)
+below in the text you find a small kernel module as a proof of concept, 
+that allows a listing of all current multicast group joins for (UDP/IPv4) 
+sockets (NOTE: sockets, neither IP-level nor netdevice-level) along with 
+the corresponding process(es) and filedescriptors.
 
+Why did I do this?
 
-(gdb) l *__sysfs_remove_dir+0x20
-0xc01a0796 is in __sysfs_remove_dir (fs/sysfs/dir.c:855).
-850             sysfs_addrm_start(&acxt, dir_sd);
-851             pos = &dir_sd->s_children;
-852             while (*pos) {
-853                     struct sysfs_dirent *sd = *pos;
-854
-855                     if (sysfs_type(sd) && sysfs_type(sd) != SYSFS_DIR) {
-856                             *pos = sd->s_sibling;
-857                             sd->s_sibling = NULL;
-858                             sysfs_remove_one(&acxt, sd);
-859                     } else
+Recently two different people asked me about Linux' behavior with respect 
+to UDP/IPv4 multicast sockets. The first question was, why two different 
+sockets that join different groups receive messages from the respective 
+other group (if they are only bound to the wildcard address). Obviously 
+this is handled differently in Linux for IPv4, where the socket matching 
+for incoming message is done solely on the 4-tuple of addresses and ports, 
+and IPv6, where the explicit socket joins are taken into account [1,2]. 
+The second question was, if there is a possibility to get a list of all 
+processes and the multicast groups they joined. Apparently the usual 
+approach involving "netstat -g" (aka /proc/net/igmp[6]) only reports 
+aggregates on the level of the host or IP respectively. 
+/proc/net/dev_mcast is similar just one level below for the MAC group 
+addresses on data link layer. Funny is the fact, that the IGMP code does 
+track all group joins for each socket separately. Since I could not find 
+any existing method to read that useful information (in user space), I 
+wrote the module.
 
+[1] http://www.uwsg.iu.edu/hypermail/linux/net/0211.1/0003.html
+[2] http://www.ussg.iu.edu/hypermail/linux/kernel/0110.2/1511.html
 
+Maybe this is useful for somebody, so I share it here.
+
+Regards,
+Steffen.
+
+-- sockjoin.c --:
+
+/* sockjoin: Prints UDP/IPv4 sockets and their joined multicast groups.
+  *
+  * This is more information than the usual "netstat -g" aka
+  * /proc/net/igmp (on network layer) and /proc/net/dev_mcast (on data
+  * link layer) can provide. Specifically, such data lacks the
+  * information which sockets issued explicit group joins, since IP
+  * just keeps track of the aggregated union of all group joins of the
+  * host. Thankfully the kernel tracks more information internally with
+  * a list of current group joins for each socket. This Linux kernel
+  * module fits the pieces together and prints it nicely formatted
+  * (including the processes accessing multicast sockets) on module load in
+  * the kernel log. Future versions should enhance user friendlyness by
+  * introduction of a procfs interface.
+  *
+  * Linux kernel module for Linux version 2.6.
+  *
+  * (c) 2007 Steffen Maier <smaier@users.sourceforge.net>
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+  */
+
+#include <linux/kernel.h> /* printk, KERN_*, NIPQUAD */
+#include <linux/module.h> /* MODULE_AUTHOR, MODULE_LICENSE,
+                              MODULE_DESCRIPTION */
+#include <linux/init.h> /* __init, __exit, module_init(x), module_exit(x) */
+#include <linux/stddef.h> /* NULL */
+#include <net/udp.h> /* udp_hash, udp_hash_lock, UDP_HTABLE_SIZE */
+#include <linux/byteorder/generic.h> /* ntohs */
+#include <net/sock.h> /* struct sock */
+#include <linux/socket.h> /* PF_INET */
+#include <linux/igmp.h> /* struct ip_mc_socklist */
+#include <linux/in.h> /* struct ip_mreqn */
+#include <linux/ip.h> /* struct inet_sock, inet_sk */
+#include <linux/file.h> /* fcheck_files */
+#include <linux/fs.h> /* struct file */
+#include <linux/spinlock.h> /* read_lock, read_unlock */
+#include <linux/sched.h> /* struct task_struct, tasklist_lock, task_lock,
+                             task_unlock, for_each_process */
+#include <linux/netdevice.h> /* struct net_device, dev_get_by_index */
+#include <linux/version.h> /* LINUX_VERSION_CODE, KERNEL_VERSION */
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0))
+# error SockJoin is not designed to work with kernel version earlier than 2.6.0
+#endif
+
+/* prototypes (forward declarations) */
+/*  internal helper functions */
+static inline void search_pids(struct sock *sk, struct ip_mc_socklist *jl);
+static void iterate_main(void);
+/*  module support */
+static int __init sockjoin_init(void);
+static void __exit sockjoin_exit(void);
+
+/* beginning of debugging stuff ... */
+
+/* supplement to NIPQUAD */
+#define NIPFMT "%u.%u.%u.%u"
+
+#define SOCKJOIN_DEBUG KERN_DEBUG
+#if 1  /* don't or do print file name in debug statements */
+# define SJDBGFMT "%s:%d:%c: "
+# define SJDBGARG __PRETTY_FUNCTION__,__LINE__,(in_interrupt()?'I':'-')
+#else
+# define SJDBGFMT __FILE__":%d:"__PRETTY_FUNCTION__":%c: "
+# define SJDBGARG __LINE__,(in_interrupt()?'I':'-')
+#endif
+
+#ifdef SJDEBUG
+/* Caution: The preceding space in " ,##arg" is important to not
+    affect previous arguments when arg is not present! */
+# define DBG(fmt,arg...) \
+         printk(SOCKJOIN_DEBUG SJDBGFMT fmt, SJDBGARG ,##arg)
+# define SDBG(fmt,arg...) \
+         printk(SOCKJOIN_DEBUG SJDBGFMT ">> " fmt, SJDBGARG ,##arg)
+# define EDBG(fmt,arg...) \
+         printk(SOCKJOIN_DEBUG SJDBGFMT "<< " fmt, SJDBGARG ,##arg)
+# define DBGEXP(exp) exp
+# define INF(fmt,arg...) \
+         printk(KERN_INFO SJDBGFMT fmt, SJDBGARG ,##arg)
+# define WARN(fmt,arg...) \
+         printk(KERN_WARNING SJDBGFMT fmt, SJDBGARG ,##arg)
+# define ERR(fmt,arg...) \
+         printk(KERN_ERR SJDBGFMT fmt, SJDBGARG ,##arg)
+/* convenience macros to split output and continue one of the above
+    without getting implicit info like file name or line number. */
+# define DBG_(fmt,arg...) printk(fmt ,##arg)
+# define SDBG_(fmt,arg...) printk(fmt ,##arg)
+# define EDBG_(fmt,arg...) printk(fmt ,##arg)
+#else /* SJDEBUG */
+# define DBG(fmt,arg...) do { } while (0)
+# define SDBG(fmt,arg...) do { } while (0)
+# define EDBG(fmt,arg...) do { } while (0)
+# define DBGEXP(exp) /* nothing */
+# define INF(fmt,arg...) printk(KERN_INFO "sockjoin: " fmt ,##arg)
+# define WARN(fmt,arg...) printk(KERN_WARNING "sockjoin: " fmt ,##arg)
+# define ERR(fmt,arg...) printk(KERN_ERR "sockjoin: " fmt ,##arg)
+# define DBG_(fmt,arg...) do { } while (0)
+# define SDBG_(fmt,arg...) do { } while (0)
+# define EDBG_(fmt,arg...) do { } while (0)
+#endif /* SJDEBUG */
+#define INF_(fmt,arg...) printk(fmt ,##arg)
+#define WARN_(fmt,arg...) printk(fmt ,##arg)
+#define ERR_(fmt,arg...) printk(fmt ,##arg)
+
+/* prepend an underscore to deactivate certain debug macros */
+#define _DBG(fmt,arg...) do { } while (0)
+#define _SDBG(fmt,arg...) do { } while (0)
+#define _EDBG(fmt,arg...) do { } while (0)
+#define _DBGEXP(exp) /* nothing */
+
+/* ... end of debugging stuff */
+
+#define SOCKJOIN_BANNER "SockJoin ("__DATE__" "__TIME__") for Linux Kernel 2.6: Prints UDP/IPv4 multicast sockets with their currently joined groups (an association IMHO not possible with netstat or current procfs entries).\n"
+
+/**
+  * search_pids: Print group join for each process referencing given socket.
+  * @sk: Socket whose information such as IP/port 4-tuple should be used.
+  * @jl: Group join entry of socket @sk to be used for information printing.
+  */
+static inline void search_pids(struct sock *sk, struct ip_mc_socklist *jl)
+{
+         struct task_struct *p;
+         struct file *sockfil;
+         struct inet_sock *si;
+         struct ip_mreqn *m;
+
+         if ((sk == NULL) || (sk->sk_socket == NULL) || (jl == NULL)) return;
+         sockfil = sk->sk_socket->file;
+         si = inet_sk(sk);
+         m = &(jl->multi);
+
+         /* iterate list of all processes */
+         read_lock(&tasklist_lock);
+         for_each_process(p) {
+                 int i;
+
+                 task_lock(p);
+                 /* skip processes with no opened files */
+                 if (p->files == NULL) {
+                         task_unlock(p);
+                         continue;
+                 }
+                 /* iterate all open files of the process */
+                 read_lock(&p->files->file_lock);
+                 for (i = 0; i < p->files->max_fds; i++) {
+                         struct file *filp = fcheck_files(p->files, i);
+                         struct net_device *dev;
+
+                         if ((filp == NULL) || (filp != sockfil))
+                                 continue;
+                         dev = dev_get_by_index(m->imr_ifindex);
+                         INF(NIPFMT":%hu<-"NIPFMT":%hu "
+                             "%i:%s,"NIPFMT"<-"NIPFMT" "
+                             "%d %d:%s %d\n",
+                             NIPQUAD(si->rcv_saddr), htons(si->sport),
+                             NIPQUAD(si->daddr), htons(si->dport),
+                             m->imr_ifindex,
+                             (dev != NULL) ? dev->name : "dev?",
+                             NIPQUAD(m->imr_address.s_addr),
+                             NIPQUAD(m->imr_multiaddr.s_addr),
+                             i, p->pid, p->comm, sock_i_uid(sk));
+                         dev_put(dev);
+                 }
+                 read_unlock(&p->files->file_lock);
+                 task_unlock(p);
+         }
+         read_unlock(&tasklist_lock);
+}
+
+/**
+  * iterate_main: Iterate group joins for each UDP/IPv4 socket.
+  */
+static void iterate_main(void)
+{
+         int i;
+
+         /* first print line format */
+         INF("locIP:locPort<-remIP:remPort devID:devName,locGrp<-remGrp FD PID:procname UID\n");
+         /* iterate all hash bins */
+         read_lock(&udp_hash_lock);
+ 	for (i = 0; i < UDP_HTABLE_SIZE; i++) {
+ 		struct sock *sk;
+                 struct hlist_node *node;
+
+                 /* iterate external collision list of current hash bin */
+                 sk_for_each(sk, node, udp_hash + i) {
+                         struct inet_sock *si = inet_sk(sk);
+                         struct ip_mc_socklist *l;
+
+                         /* only process UDP/IPv4 sockets with group joins */
+                         rtnl_lock();
+ 			if ((sk->sk_family != PF_INET) ||
+                             (si->mc_list == NULL)) {
+                                 rtnl_unlock();
+                                 continue;
+                         }
+                         /* iterate the group joins of the socket */
+                         for (l = si->mc_list; l != NULL; l = l->next) {
+                                 search_pids(sk, l);
+                         }
+                         rtnl_unlock();
+ 		}
+ 	}
+ 	read_unlock(&udp_hash_lock);
+}
+
+/**
+  * sockjoin_init: Module init function.
+  */
+static int __init sockjoin_init(void)
+{
+ 	int ret = 0;
+ 	SDBG("()\n");
+ 	INF(SOCKJOIN_BANNER);
+         iterate_main();
+ 	EDBG("%i\n", ret);
+ 	return ret;
+}
+
+/**
+  * sockjoin_exit: Module exit function.
+  */
+static void __exit sockjoin_exit(void)
+{
+ 	SDBG("()\n");
+ 	INF("Sockjoin removed.\n");
+ 	EDBG("\n");
+}
+
+MODULE_AUTHOR("Steffen Maier <smaier@users.sourceforge.net>");
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION(SOCKJOIN_BANNER);
+module_init(sockjoin_init);
+module_exit(sockjoin_exit);
+
+-- Kbuild --:
+
+obj-m    := sockjoin.o sockjoin.debug.o
+
+CFLAGS_sockjoin.debug.o := -DSJDEBUG
+
+$(obj)/sockjoin.debug.c: $(src)/sockjoin.c
+ 	ln -s $^ $@
+
+clean-files := $(obj)/sockjoin.debug.c
+
+-- Makefile --:
+
+ifneq ($(KERNELRELEASE),)
+include Kbuild
+else
+# Makefile for SockJoin
+
+KDIR    := /lib/modules/$(shell uname -r)/build
+PWD    := $(shell pwd)
+
+default:
+ 	$(MAKE) -C $(KDIR) M=$(PWD) modules
+
+.PHONY: clean
+
+clean:
+ 	$(MAKE) -C $(KDIR) M=$(PWD) clean
+
+endif
