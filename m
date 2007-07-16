@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbXGPUDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbXGPUHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762635AbXGPUDt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 16:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbXGPUDl
+	id S1761959AbXGPUHK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 16:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXGPUG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 16:03:41 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35968 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751614AbXGPUDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 16:03:40 -0400
-Message-ID: <469BCF0C.6070109@garzik.org>
-Date: Mon, 16 Jul 2007 16:03:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Miklos Szeredi <miklos@szeredi.hu>, jeremy@goop.org,
-       jengelh@computergmbh.de, viro@ftp.linux.org.uk, nmiell@comcast.net,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: *at syscalls for xattrs?
-References: <Pine.LNX.4.64.0707132228460.25352@fbirervta.pbzchgretzou.qr> <20070715205313.GE21668@ftp.linux.org.uk> <1184534001.2765.5.camel@entropy> <20070715222323.GG21668@ftp.linux.org.uk> <Pine.LNX.4.64.0707160954160.25352@fbirervta.pbzchgretzou.qr> <469B2CAE.9010101@goop.org> <E1IAMWA-0004fM-00@dorka.pomaz.szeredi.hu> <469B3B73.9010400@zytor.com> <469B3EC2.8080702@garzik.org> <469BB190.1080300@zytor.com>
-In-Reply-To: <469BB190.1080300@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 16 Jul 2007 16:06:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60939 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753187AbXGPUGz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 16:06:55 -0400
+Date: Mon, 16 Jul 2007 13:06:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, ak@suse.de
+Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg
+ helpers
+Message-Id: <20070716130608.4d096e29.akpm@linux-foundation.org>
+In-Reply-To: <11845792681830-git-send-email-jens.axboe@oracle.com>
+References: <11845792671245-git-send-email-jens.axboe@oracle.com>
+	<11845792681830-git-send-email-jens.axboe@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeff Garzik wrote:
->>> What the *at() interfaces really do is fix/paper over a longstanding
->>> wart in Unix: the cwd really should have been a standard file descriptor
->>> (like stdin/stdout/stderr) instead of a magic piece of state maintained
->>> in kernel space.
->> It's more than a wart, IMO.  *at() allows one to close races (with
->> potential security implications) that are otherwise impossible to close,
->> in directory traversal.
->>
->> *at() permits a userspace program to hold proper references to all
->> objects during a directory traversal, with all that implies.
->>
+On Mon, 16 Jul 2007 11:47:23 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> This prepares x86-64 for sg chaining support.
 > 
-> Well, as Jeremy pointed out, in the absence of threads you can do the
-> same thing with fchdir(), however, that's much more of a hack.
+> Additional improvements/fixups for pci-gart from
+> Benny Halevy <bhalevy@panasas.com>
+> 
+> Cc: ak@suse.de
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  arch/x86_64/kernel/pci-calgary.c |   25 ++++++++------
+>  arch/x86_64/kernel/pci-gart.c    |   63 ++++++++++++++++++++-----------------
+>  arch/x86_64/kernel/pci-nommu.c   |    5 ++-
+>  3 files changed, 51 insertions(+), 42 deletions(-)
 
-My posixutils project (coreutils replacement) used fchdir(2), but that 
-still doesn't get you 100% race-free.  It gets you close, yes.
+This causes fairly extensive destruction of 2.6.23 changes which are
+pending in Andi's tree.
 
-	Jeff
+I shall drop the block tree until a) Andi has merged the pending Calgary
+changes and b) the block tree has been fixed up to account for those (and
+other) changes.
 
-
+Really, this was the perfectly worst time possible to go tromping all over
+everyone else's trees.
 
