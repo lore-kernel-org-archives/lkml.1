@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763006AbXGPV0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763564AbXGPV2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763006AbXGPV0k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 17:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759751AbXGPV0b
+	id S1763564AbXGPV2V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 17:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761325AbXGPV2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 17:26:31 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2981 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758610AbXGPV0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 17:26:30 -0400
-Date: Mon, 16 Jul 2007 23:25:59 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Matt Mackall <mpm@selenic.com>
-cc: Ingo Molnar <mingo@elte.hu>, James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-In-Reply-To: <20070716203117.GC11166@waste.org>
-Message-ID: <Pine.LNX.4.64.0707162304330.1817@scrub.home>
-References: <1184355835.12353.321.camel@chaos> <469B0D9E.3030402@andrew.cmu.edu>
- <20070716070610.GA10907@elte.hu> <Pine.LNX.4.64.0707161213500.1817@scrub.home>
- <20070716112037.GA6895@elte.hu> <Pine.LNX.4.64.0707161331570.1817@scrub.home>
- <20070716121246.GA17880@elte.hu> <Pine.LNX.4.64.0707161427100.1817@scrub.home>
- <20070716134036.GA1533@elte.hu> <Pine.LNX.4.64.0707161548000.1817@scrub.home>
- <20070716203117.GC11166@waste.org>
+	Mon, 16 Jul 2007 17:28:11 -0400
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:33296 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758177AbXGPV2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 17:28:10 -0400
+Date: Mon, 16 Jul 2007 16:27:38 -0500 (CDT)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: Tejun Heo <htejun@gmail.com>, petr@vandrovec.name,
+       Kai Makisara <Kai.Makisara@kolumbus.fi>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Jeff Garzik <jeff@garzik.org>
+cc: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
+       Douglas Gilbert <dougg@torque.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>, Bruce Allen <bruce.allen@aei.mpg.de>,
+       Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SMART problems in 2.6.22
+In-Reply-To: <469B6EB1.1060201@arcor.de>
+Message-ID: <Pine.LNX.4.63.0707161620520.6454@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
+ <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local>
+ <Pine.LNX.4.64.0707161327470.4941@kai.makisara.local> <469B54DE.5090703@gmail.com>
+ <Pine.LNX.4.64.0707161453230.5065@kai.makisara.local> <469B6EB1.1060201@arcor.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tejun: thanks for pointing out this patch.
 
-On Mon, 16 Jul 2007, Matt Mackall wrote:
+Kai, Klaus: thanks for testing the patch!
 
-> > It's nice that these artifacts are gone, but that still doesn't explain 
-> > why this ratio had to be increase that much from around 1:10 to 1:69.
-> 
-> More dynamic range is better? If you actually want a task to get 20x
-> the CPU time of another, the older scheduler doesn't really allow it.
+Petr: thanks for fixing the SMART 2.6.22 problems!
 
-You can already have that, the complete range level from 19 to -20 was 
-about 1:80.
-There is also something like too much range, I tried it with top at 19 and 
-as soon as something runs at -20 it's practically dead, because it gets 
-now only 1/5900 of cpu time.
+Jeff: two user (Kai, Klaus) both saw the SMART STATUS problem disappear 
+when they tested this libata patch.  I hope you stick it into your own 
+source tree.
 
-bye, Roman
+thread_exit(:-);
+
+Cheers,
+ 	Bruce
+
+
+
+On Mon, 16 Jul 2007, Klaus Fuerstberger wrote:
+
+> Kai Makisara said the following on 16.07.2007 13:58:
+>
+>>> Please try the patch in the following message.
+>>> http://article.gmane.org/gmane.linux.ide/20799/raw
+>
+>> This solves the 'smartctl -H' problem both of my systems (one with Nvidia
+>> CK804 and one with MCP51).
+>
+> This patch also solved the problem I reported here:
+> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=428975
+>
+> Thanks!
+>
+> Bye Klaus
+>
