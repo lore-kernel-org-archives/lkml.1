@@ -1,107 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbXGPW1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbXGPW3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757991AbXGPW1H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbXGPW0z
+	id S1760227AbXGPW3c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXGPW3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:26:55 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:40755 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbXGPW0y (ORCPT
+	Mon, 16 Jul 2007 18:29:24 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:44197 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753071AbXGPW3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:26:54 -0400
-Date: Mon, 16 Jul 2007 15:26:50 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, shai@scalex86.org
-Subject: [patch] Change softlockup trigger limit using a kernel parameter
-Message-ID: <20070716222650.GA5947@localdomain>
+	Mon, 16 Jul 2007 18:29:23 -0400
+Message-ID: <469BF104.1040703@gmail.com>
+Date: Tue, 17 Jul 2007 00:28:20 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Bodo Eggert <7eggert@gmx.de>
+CC: Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+References: <8FO1e-2jW-35@gated-at.bofh.it> <8FYWD-2eS-7@gated-at.bofh.it> <8GdsH-8dc-13@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it> <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com> <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
+In-Reply-To: <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel warns of softlockups if the softlockup thread is not able to run
-on a CPU for 10s.  It is useful to lower the softlockup warning
-threshold in testing environments to catch potential lockups early.
-Following patch adds a kernel parameter 'softlockup_lim' to control
-the softlockup threshold.
+On 07/16/2007 03:43 PM, Bodo Eggert wrote:
 
-Thanks,
-Kiran
+> So we are in a desperate situation, we can almost make no progress,
+> adding another task is going to push the system into an unrecoverable
+> situation, and we make sure this task can be started.-)
 
+Hnng. He was just saying that odds of two pages being buddies is quite 
+small, not talking about literally two pages.
 
-Control the trigger limit for softlockup warnings.  This is useful for
-debugging softlockups, by lowering the softlockup_lim to identify
-possible softlockups earlier.
+>> Moreoveover -- literally two pages free was hardly his point. The point is 
+>> just that (with a page being the allocation unit) single page allocations 
+>> are guaranteed to succeed if _any_ memory is free, while two adjacent (yes, 
+>> and stacksize aligned) pages will be pretty hard to get by once the system 
+>> has been up and running for some time.
+> 
+> That never happened on my servers, therefore I'd opt for the little extra 
+> security of having spare 4k on the stack. (I made a patch which would 
+> printk a message if allocating a stack would ever fail).
+> 
+> I'm not at all opposed to letting the guys with zillions of threads 
+> benefit from having less unused kernel stack, but unless it's secure for
+> all users, it should not be default=y.
 
-Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-Signed-off-by: Shai Fultheim <shai@scalex86.org>
+Given that as Arjan stated Fedora and even RHEL have been using 4K stacks 
+for some time now, and certainly the latter being a distribution which I 
+would expect to both host a relatively large number of lvm/md/xfs and what 
+stackeaters have you users and to be fairly conservative with respect to the 
+chances of scribbling over kernel memory (I'm a trusting person...) it seems 
+  there might at this stage only be very few offenders left.
 
-Index: linux-2.6.22/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.22.orig/Documentation/kernel-parameters.txt	2007-07-08 16:32:17.000000000 -0700
-+++ linux-2.6.22/Documentation/kernel-parameters.txt	2007-07-16 14:07:34.907116001 -0700
-@@ -1781,6 +1781,10 @@ and is between 256 and 4096 characters. 
- 
- 	snd-ymfpci=	[HW,ALSA]
- 
-+	softlockup_lim=
-+			[KNL] Soft lock up tolerance limit in seconds
-+			{ 1 - 10 }
-+
- 	sonycd535=	[HW,CD]
- 			Format: <io>[,<irq>]
- 
-Index: linux-2.6.22/kernel/softlockup.c
-===================================================================
---- linux-2.6.22.orig/kernel/softlockup.c	2007-07-08 16:32:17.000000000 -0700
-+++ linux-2.6.22/kernel/softlockup.c	2007-07-11 12:50:05.280460591 -0700
-@@ -21,6 +21,7 @@ static DEFINE_PER_CPU(unsigned long, pri
- static DEFINE_PER_CPU(struct task_struct *, watchdog_task);
- 
- static int did_panic = 0;
-+static int softlockup_lim = 10;
- 
- static int
- softlock_panic(struct notifier_block *this, unsigned long event, void *ptr)
-@@ -34,6 +35,20 @@ static struct notifier_block panic_block
- 	.notifier_call = softlock_panic,
- };
- 
-+static int __init softlockup_lim_setup(char *str)
-+{
-+	int lim = simple_strtol(str, NULL, 0);
-+	if(lim > 0 && lim <= 10) {
-+		softlockup_lim = lim;
-+	} else {
-+		printk("%s: Invalid softlockup_lim parameter.  ", __func__);
-+		printk("Using defaults.\n");
-+	}
-+	return 1;
-+}
-+
-+__setup("softlockup_lim=", softlockup_lim_setup);
-+
- /*
-  * Returns seconds, approximately.  We don't need nanosecond
-  * resolution, and we don't need to waste time with a big divide when
-@@ -97,7 +112,7 @@ void softlockup_tick(void)
- 		wake_up_process(per_cpu(watchdog_task, this_cpu));
- 
- 	/* Warn about unreasonable 10+ seconds delays: */
--	if (now > (touch_timestamp + 10)) {
-+	if (now > (touch_timestamp + softlockup_lim)) {
- 		per_cpu(print_timestamp, this_cpu) = touch_timestamp;
- 
- 		spin_lock(&print_lock);
+Seeing as how single-page stacks are much easier on the VM so that creating 
+those zillion threads should also be faster, at _some_ percentage we get to 
+say "and now to hell with the rest".
+
+Do also note that with interrupts of the process stack, available stack is 
+definitely not halved. I don't have data (if anyone reading does, please 
+say) but I expect that on the kinds of busy networked systems that want 
+many-thread creation to be fastest, their many concurrent interrupt sources 
+might mean they are not actually experiencing less stack at all. That is, 
+that "little extra security" you speak of might very well be none at all in 
+practice and perhaps even negative.
+
+Getting interrupts onto their own stack(s) certainly made for better (more 
+deterministic that is) behaviour as well -- you're then independent on how 
+deep into the stack you already are when the interrupt comes in which is 
+otherwise anyone's guess. Now I must say I'm not particularly sure why you 
+couldn't still also have those even if you don't pick 4K stacks, but as far 
+as I'm aware they're a package deal at least today.
+
+Single page stacks are much nicer on anyone. For all I care, that single 
+page migth be a larger soft-page. No idea how the hell you'd investigate the 
+optimum page-size for any given system, but I quite fully expect it's larger 
+than 4K these days _anyway_ even on x86 and for modern loads.
+
+Since Linux doesn't yet have those that's also not very important currently 
+though. 4K is 1024 32-bit datums which isn't all that little if recursion is 
+limited and programmers somewhat competent. With the interrupt stacks 
+meaning available stack might not be worse or even _better_ for some 
+systems, well, I's argue to just go with 4K if at all possible.
+
+Rene.
+
