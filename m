@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932075AbXGPWNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXGPWOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932075AbXGPWNa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXGPWNW
+	id S932282AbXGPWOK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762197AbXGPWN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:13:22 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:17249 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753516AbXGPWNV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:13:21 -0400
-Date: Tue, 17 Jul 2007 00:12:57 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, geert@linux-m68k.org,
-       zippel@linux-m68k.org, jdike@karaya.com, alan@lxorguk.ukuu.org.uk,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: uninline check_signature()
-Message-ID: <20070716221257.GA12230@osiris.ibm.com>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org>
+	Mon, 16 Jul 2007 18:13:57 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:2889 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761573AbXGPWN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 18:13:56 -0400
+Date: Tue, 17 Jul 2007 00:13:08 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matt Mackall <mpm@selenic.com>, James Bruce <bruce@andrew.cmu.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+In-Reply-To: <20070716211851.GB18661@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707162351030.1817@scrub.home>
+References: <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu>
+ <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
+ <Pine.LNX.4.64.0707161331570.1817@scrub.home> <20070716121246.GA17880@elte.hu>
+ <Pine.LNX.4.64.0707161427100.1817@scrub.home> <20070716134036.GA1533@elte.hu>
+ <Pine.LNX.4.64.0707161548000.1817@scrub.home> <20070716203117.GC11166@waste.org>
+ <20070716211851.GB18661@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707161802.l6GI2tNp007390@hera.kernel.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 06:02:55PM +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cc2ea416b2aa04d0c34ff2281a23dae5b76b7b3b
-> Commit:     cc2ea416b2aa04d0c34ff2281a23dae5b76b7b3b
-> Parent:     4e7bd66318b3ae60fbba7d886d9a98b71ffbf74e
-> Author:     Andrew Morton <akpm@linux-foundation.org>
-> AuthorDate: Sun Jul 15 23:41:38 2007 -0700
-> Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
-> CommitDate: Mon Jul 16 09:05:50 2007 -0700
-> 
->     uninline check_signature()
->     
->     This is a rather bizarre thing to have inlined in io.h.  Stick it in lib/
->     instead.
->     
->     While we're there, despaghetti it a bit, and fix its off-by-one behaviour when
->     passed a zero length.
->     
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  include/linux/io.h    |   29 ++---------------------------
->  lib/Makefile          |    2 +-
->  lib/check_signature.c |   26 ++++++++++++++++++++++++++
->  3 files changed, 29 insertions(+), 28 deletions(-)
+Hi,
 
-Hmm.. this breaks s390 and probably m68k and UML as well:
+On Mon, 16 Jul 2007, Ingo Molnar wrote:
 
-  CC      lib/check_signature.o
-lib/check_signature.c: In function 'check_signature':
-lib/check_signature.c:19: error: implicit declaration of function 'readb'
+> and note that even on the old scheduler, nice-0 was "3200% more 
+> powerful" than nice +19 (with CONFIG_HZ=300),
 
-Actually we tried to fix this, but it looks like there was no final
-conclusion: http://lkml.org/lkml/2007/6/28/98
+How did you get that value? At any HZ the ratio should be around 1:10
+(+- rounding error).
 
-Now what? Revert until things have been sorted out?
+> in fact i like it that nice -20 has a slightly bigger punch than it used 
+> to have before:
+
+"Slightly bigger"??? You're joking, right?
+Especially the user levels are doing something completely different now, 
+which may break user expectation. While the user couldn't expect anything 
+precise, it's still a big difference whether a process at nice 5 gets 75% 
+of the time or only 30%.
+
+bye, Roman
