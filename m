@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764768AbXGPNrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762374AbXGPN7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764768AbXGPNrk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbXGPNrb
+	id S1762374AbXGPN7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759226AbXGPN7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:47:31 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:47924 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756854AbXGPNra (ORCPT
+	Mon, 16 Jul 2007 09:59:03 -0400
+Received: from qb-out-0506.google.com ([72.14.204.230]:12010 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759132AbXGPN7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:47:30 -0400
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20070716121649.GI5195@kernel.dk>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	 <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	 <1184335333.3402.20.camel@localhost.localdomain>
-	 <200707131619.54898.arnd@arndb.de>
-	 <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	 <1184340528.3402.32.camel@localhost.localdomain>
-	 <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	 <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	 <20070716121649.GI5195@kernel.dk>
-Content-Type: text/plain
-Date: Mon, 16 Jul 2007 08:47:23 -0500
-Message-Id: <1184593643.3447.9.camel@localhost.localdomain>
+	Mon, 16 Jul 2007 09:59:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=WQ9NYQ1SOWoxxAF2GlqIK7Zq+8eYexkFo9kBBC/NQwqVg9G9BrXBg1fHY93+7hDWsVNs3Soy+iHhJR0E1pdJaA1l5754AERS+biAYvKI+7s8X1AUaxPcXoJ4GwBDnygHAxuPhViisYpiJ1IHwakeiSneLciWLesPqDaiGkMWIlg=
+Date: Mon, 16 Jul 2007 22:48:55 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Dmitriy Zavin <dmitriyz@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>, Ashok Raj <ashok.raj@intel.com>
+Subject: [PATCH 0/10] CPU hotplug error handling fixes
+Message-ID: <20070716134855.GA1858@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Dmitriy Zavin <dmitriyz@google.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+	Ashok Raj <ashok.raj@intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-16 at 14:16 +0200, Jens Axboe wrote:
-> On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
-> > > Ah, that explains it. flush_dcache_page() is used in some drivers.
-> > > I'll update my patches. Thanks for the comments!
-> > 
-> > Does this look OK?
-> >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
-> >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
-> >     (ps3rom))
-> 
-> That looks good.
-> 
-> >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
-> 
-> Hmm, I would have thought a flush_dcache_page() would be more
-> appropriate, the backing could be page cache pages.
+This series of patches fixes the error handling for cpu hotplug.
+The problem is revealed by CPU hotplug/unplug test with fault-injection.
 
-No ... that was the point of flush_kernel_dcache_page().  The page in
-question is page cache backed and contains user mappings.  However, the
-block layer has already done a flush_dcache_page() in get_user_pages()
-and the user shouldn't be touching memory under I/O (unless they want
-self induced aliasing problems) so we're free to assume all the user
-cachelines are purged, hence all we have to do is flush the kernel alias
-to bring the page up to date and make the users see it correctly.
+The patch 1-3 are sysfs or driver core related error handling fixes.
+These are not directly related to cpu hotplug. But these are needed to
+pass the stress test.
 
-James
+The patch 4 changes the behavior when one of the callbacks in notifier
+chain returns NOTIFY_BAD with CPU_UP_PREPARE event. This change makes
+cpu hotplug error handling simple.
 
+The patch 5 simplifies the cpu hotplug event handling in topology.c
+by the patch 4.
+
+The patch 6-10 are error handling fixes in cpu hotplug event callbacks.
+These fixes also depend on the change by the patch 4.
+
+Here is the test script I have confirmed with these patches.
+I guess we still have the similar bugs that I could not test due to no
+hardware. So it may be worth someone trying this script.
+
+----------[ cut here ]----------
+
+#!/bin/bash
+
+FAILTYPE=failslab
+CPU=1
+CPU_ONLINE=/sys/devices/system/cpu/cpu${CPU}/online
+
+faulty_system()
+{
+        bash -c "echo 1 > /proc/self/make-it-fail && exec $*"
+}
+
+[ "$UID" == 0 ] || exit 1
+[ -n "$FAILTYPE" -a -f /debug/$FAILTYPE/probability ] || exit 1
+[ -f $CPU_ONLINE ] || exit 1
+
+echo N > /debug/$FAILTYPE/ignore-gfp-wait
+echo Y > /debug/$FAILTYPE/task-filter
+echo 1 > /debug/$FAILTYPE/probability
+echo -1 > /debug/$FAILTYPE/times
+
+while true
+do
+	faulty_system "echo 0 > $CPU_ONLINE"
+	faulty_system "echo 1 > $CPU_ONLINE"
+done
 
