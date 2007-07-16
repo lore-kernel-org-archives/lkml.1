@@ -1,116 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbXGPSBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbXGPSCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbXGPSBr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 14:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758193AbXGPSBL
+	id S1759715AbXGPSCU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 14:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbXGPSB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 14:01:11 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:56680 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758056AbXGPSBH (ORCPT
+	Mon, 16 Jul 2007 14:01:27 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54108 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754455AbXGPSBY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 14:01:07 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:user-agent;
-	b=KEgpJuVwW9iRngJQRWD8AwfQVYIgRD1DEQ4EURJrqCe4mF2mTuyzd6zCb1d+wVAu8
-	/nHCh8hc/SBiSis1rEt/g==
-Date: Mon, 16 Jul 2007 11:00:19 -0700
-From: Aaron Durbin <adurbin@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, len.brown@intel.com, ak@suse.de, akpm@osdl.org
-Subject: [PATCH] ACPI: Add reboot mechanism
-Message-ID: <20070716180019.GA5112@google.com>
+	Mon, 16 Jul 2007 14:01:24 -0400
+Message-ID: <469BB190.1080300@zytor.com>
+Date: Mon, 16 Jul 2007 10:57:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+To: Jeff Garzik <jeff@garzik.org>
+CC: Miklos Szeredi <miklos@szeredi.hu>, jeremy@goop.org,
+       jengelh@computergmbh.de, viro@ftp.linux.org.uk, nmiell@comcast.net,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: *at syscalls for xattrs?
+References: <Pine.LNX.4.64.0707132228460.25352@fbirervta.pbzchgretzou.qr> <20070715205313.GE21668@ftp.linux.org.uk> <1184534001.2765.5.camel@entropy> <20070715222323.GG21668@ftp.linux.org.uk> <Pine.LNX.4.64.0707160954160.25352@fbirervta.pbzchgretzou.qr> <469B2CAE.9010101@goop.org> <E1IAMWA-0004fM-00@dorka.pomaz.szeredi.hu> <469B3B73.9010400@zytor.com> <469B3EC2.8080702@garzik.org>
+In-Reply-To: <469B3EC2.8080702@garzik.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+>>
+>> What the *at() interfaces really do is fix/paper over a longstanding
+>> wart in Unix: the cwd really should have been a standard file descriptor
+>> (like stdin/stdout/stderr) instead of a magic piece of state maintained
+>> in kernel space.
+> 
+> It's more than a wart, IMO.  *at() allows one to close races (with
+> potential security implications) that are otherwise impossible to close,
+> in directory traversal.
+> 
+> *at() permits a userspace program to hold proper references to all
+> objects during a directory traversal, with all that implies.
+> 
 
-Add the ability to reset the machine using the RESET_REG in ACPI's FADT table.
+Well, as Jeremy pointed out, in the absence of threads you can do the
+same thing with fchdir(), however, that's much more of a hack.
 
-Signed-off-by: Aaron Durbin <adurbin@google.com>
----
-
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index d4336f1..c9906a5 100644
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -21,7 +21,7 @@ obj-$(CONFIG_X86)		+= blacklist.o
- #
- # ACPI Core Subsystem (Interpreter)
- #
--obj-y				+= osl.o utils.o \
-+obj-y				+= osl.o utils.o reboot.o \
- 				   dispatcher/ events/ executer/ hardware/ \
- 				   namespace/ parser/ resources/ tables/ \
- 				   utilities/
-diff --git a/drivers/acpi/reboot.c b/drivers/acpi/reboot.c
-new file mode 100644
-index 0000000..4bb4d3e
---- /dev/null
-+++ b/drivers/acpi/reboot.c
-@@ -0,0 +1,45 @@
-+
-+#include <linux/pci.h>
-+#include <acpi/acpi.h>
-+
-+void acpi_reboot(void)
-+{
-+	struct acpi_generic_address *rr;
-+	struct pci_bus *bus0;
-+	u8 reset_value;
-+	unsigned int devfn;
-+
-+	rr = &acpi_gbl_FADT.reset_register;
-+
-+	/* Is the reset register supported? */
-+	if (!(acpi_gbl_FADT.flags & ACPI_FADT_RESET_REGISTER) ||
-+	    rr->bit_width != 8 || rr->bit_offset != 0)
-+		return;
-+
-+	reset_value = acpi_gbl_FADT.reset_value;
-+
-+	/* The reset register can only exist in I/O, Memory or PCI config space
-+	 * on a device on bus 0. */
-+	switch (rr->space_id) {
-+		case ACPI_ADR_SPACE_PCI_CONFIG:
-+			/* The reset register can only live on bus 0. */
-+			bus0 = pci_find_bus(0, 0);
-+			if (!bus0)
-+				return;
-+			/* Form PCI device/function pair. */
-+			devfn = PCI_DEVFN((rr->address >> 32) & 0xffff,
-+					  (rr->address >> 16) & 0xffff);
-+			printk(KERN_DEBUG "Resetting with ACPI PCI RESET_REG.");
-+			/* Write the value that resets us. */
-+			pci_bus_write_config_byte(bus0, devfn,
-+					(rr->address & 0xffff), reset_value);
-+			break;
-+
-+		case ACPI_ADR_SPACE_SYSTEM_MEMORY:
-+		case ACPI_ADR_SPACE_SYSTEM_IO:
-+			printk(KERN_DEBUG "ACPI MEMORY or I/O RESET_REG.");
-+			acpi_hw_low_level_write(8, reset_value, rr);
-+			break;
-+	}
-+}
-+
-diff --git a/include/acpi/reboot.h b/include/acpi/reboot.h
-new file mode 100644
-index 0000000..1d8da79
---- /dev/null
-+++ b/include/acpi/reboot.h
-@@ -0,0 +1,10 @@
-+#ifndef __ACPI_REBOOT_H
-+#define __ACPI_REBOOT_H
-+
-+#ifdef CONFIG_ACPI
-+extern void acpi_reboot(void);
-+#else
-+#define acpi_reboot()
-+#endif
-+
-+#endif
+	-hpa
