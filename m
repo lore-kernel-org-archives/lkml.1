@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764215AbXGPWbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765497AbXGPWbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764215AbXGPWbI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXGPWaH
+	id S1765497AbXGPWbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXGPWaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:30:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54239 "EHLO
+	Mon, 16 Jul 2007 18:30:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54391 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759629AbXGPWaF (ORCPT
+	by vger.kernel.org with ESMTP id S1762966AbXGPWaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:30:05 -0400
-Date: Mon, 16 Jul 2007 15:29:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org, olaf.kirch@oracle.com
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-In-Reply-To: <20070716.150825.66176632.davem@davemloft.net>
-Message-ID: <alpine.LFD.0.999.0707161525250.20061@woody.linux-foundation.org>
-References: <20070716091236.GA10718@elte.hu> <20070716.042640.18306462.davem@davemloft.net>
- <alpine.LFD.0.999.0707161425361.20061@woody.linux-foundation.org>
- <20070716.150825.66176632.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 16 Jul 2007 18:30:21 -0400
+Date: Mon, 16 Jul 2007 15:29:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, geert@linux-m68k.org,
+       zippel@linux-m68k.org, jdike@karaya.com, alan@lxorguk.ukuu.org.uk,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: uninline check_signature()
+Message-Id: <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
+In-Reply-To: <20070716221257.GA12230@osiris.ibm.com>
+References: <200707161802.l6GI2tNp007390@hera.kernel.org>
+	<20070716221257.GA12230@osiris.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 17 Jul 2007 00:12:57 +0200
+Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-
-On Mon, 16 Jul 2007, David Miller wrote:
+> On Mon, Jul 16, 2007 at 06:02:55PM +0000, Linux Kernel Mailing List wrote:
+> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cc2ea416b2aa04d0c34ff2281a23dae5b76b7b3b
+> > Commit:     cc2ea416b2aa04d0c34ff2281a23dae5b76b7b3b
+> > Parent:     4e7bd66318b3ae60fbba7d886d9a98b71ffbf74e
+> > Author:     Andrew Morton <akpm@linux-foundation.org>
+> > AuthorDate: Sun Jul 15 23:41:38 2007 -0700
+> > Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
+> > CommitDate: Mon Jul 16 09:05:50 2007 -0700
+> > 
+> >     uninline check_signature()
+> >     
+> >     This is a rather bizarre thing to have inlined in io.h.  Stick it in lib/
+> >     instead.
+> >     
+> >     While we're there, despaghetti it a bit, and fix its off-by-one behaviour when
+> >     passed a zero length.
+> >     
+> >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > ---
+> >  include/linux/io.h    |   29 ++---------------------------
+> >  lib/Makefile          |    2 +-
+> >  lib/check_signature.c |   26 ++++++++++++++++++++++++++
+> >  3 files changed, 29 insertions(+), 28 deletions(-)
 > 
-> Ingo is the only person hitting and reporting this and last time I
-> checked he is competent enough to revert the thing locally in his own
-> trees, right? :-)
+> Hmm.. this breaks s390 and probably m68k and UML as well:
+> 
+>   CC      lib/check_signature.o
+> lib/check_signature.c: In function 'check_signature':
+> lib/check_signature.c:19: error: implicit declaration of function 'readb'
 
-Umm. And your suggestion is what? Wait until -rc1, when non-developers 
-(the kinds of people who are supposed to *not* be competent enough) come 
-along, and report the problem?
+Yep.  They were already broken, only less so.
 
-That's explicitly what I do *not* want to happen.
+> Actually we tried to fix this, but it looks like there was no final
+> conclusion: http://lkml.org/lkml/2007/6/28/98
+> 
+> Now what? Revert until things have been sorted out?
 
-If we knew something was wrong before the -rc1 release, all the better: we 
-can avoid havign that bug in -rc1, and the people who test it will tell us 
-about the problems we did *not* know about.
+No, no revert, please.  If the architecture doesn't support readb() then we
+need some reliable way of working that out within Kconfig.
 
-In contrast, if we leave a known bug in, that will just mean that other 
-problems won't be found either, because people get hung up on the known 
-bug.
-
-Regressions should be fixed early and often. Otherwise there's no point in 
-making the code available early and often in the first place.
-
-A regression is basically MUCH WORSE than just about any possible bug that 
-patch could have fixed, and I want people to really think that way.
-
-The rule for *everybody* should be:
-
-	"Regressions get fixed immediately"
-
-with no ifs, buts or maybes. In fact, it would be even better if the kinds 
-of patches that cause regressions wouldn't hit my tree at all, but once 
-they have hit it, and once they've been identified, they get reverted.
-
-		Linus
