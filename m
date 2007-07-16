@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXGPS5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760366AbXGPTDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbXGPS5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 14:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbXGPS5a
+	id S1760366AbXGPTDm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 15:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbXGPTDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 14:57:30 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:49000 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750936AbXGPS53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 14:57:29 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: axboe@suse.de
-Subject: [PATCH] error: too few arguments to function `scsi_cmd_ioctl'
-Date: Mon, 16 Jul 2007 21:56:51 +0300
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
+	Mon, 16 Jul 2007 15:03:34 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:62858 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752246AbXGPTDd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 15:03:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=DtWHA6d+MjcEnqHmQFUdIK7eAGg9UrGAQsoxzbkLud9RVGd5VVoRnB7gYpVy89VKg
+	HwFdJrjz11Hjrx+5qCC2g==
+Message-ID: <6599ad830707161203o7f148c75p52e77d4be3ace487@mail.gmail.com>
+Date: Mon, 16 Jul 2007 12:03:18 -0700
+From: "=?ISO-2022-JP?B?UGF1bCAoGyRCSnVOXBsoQikgTWVuYWdl?=" 
+	<menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Containers: css_put() dilemma
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       "Pavel Emelianov" <xemul@sw.ru>,
+       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Paul Jackson" <pj@sgi.com>
+In-Reply-To: <469BBE00.8000709@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707162156.53424.caglar@pardus.org.tr>
+References: <469BBE00.8000709@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+On 7/16/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> Hi, Paul,
+>
+> I've run into a strange problem with css_put(). After the changes for notify_on_release(), the css_put() routine can now block and it blocks on
+> the container_mutex. This implies that css_put() cannot be called if
+>
+> 1. We cannot block
+> 2. We already hold the container_mutex
+>
+> The problem I have is that of preventing the destruction of my container
+> (when the user does rmdir). If the user migrates away all tasks and does
+> an rmdir, the only way to prevent the container from going away is through
+> css_get() references. In my case, some pages have been allocated from the
+> container and hence I do not want it to go away, until all the pages
+> charged to it are freed. When I use css_get/put() to prevent destruction
+> I am blocked by the limitations of css_put() listed above.
+>
+> Do you have any recommendations for a cleaner solution? I suspect we'll
+> need can_destroy() callbacks (similar to can_attach()).
 
-Following patch corrects following compile error introduced by commit 
-e245befce7af0a1e1347079ed62695b059594bd4
+I think moving the release_list synchronization inside a separate
+spinlock, and thus not requiring container_mutex to be held for
+check_for_release(), is the simplest solution. I'll do that. I'm
+hoping to get a new set of patches to Andrew today or tomorrow.
 
-caglar@zangetsu linux-2.6 $ make
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  LD      drivers/block/built-in.o
-  CC [M]  drivers/block/cciss.o
-drivers/block/cciss.c: In function `cciss_ioctl':
-drivers/block/cciss.c:1173: warning: passing arg 2 of `scsi_cmd_ioctl' from 
-incompatible pointer type
-drivers/block/cciss.c:1173: warning: passing arg 3 of `scsi_cmd_ioctl' makes 
-pointer from integer without a cast
-drivers/block/cciss.c:1173: warning: passing arg 4 of `scsi_cmd_ioctl' makes 
-integer from pointer without a cast
-drivers/block/cciss.c:1173: error: too few arguments to function 
-`scsi_cmd_ioctl'
-...
-make[2]: *** [drivers/block/cciss.o] Hata 1
-make[1]: *** [drivers/block] Hata 2
-make: *** [drivers] Hata 2
+Adding a can_destroy() callback is possible, but since I envisage that
+most subsystems that would want to implement it would basically be
+doing reference counting anyway, it seems worth having a generic
+reference counting mechanism in the framework. In particular, since
+once the container does become releasable due to all the
+subsystem-specific refcounts being released, we want to be able to
+invoke the release agent, we'll end up with the same synchronization
+problems that we have now if we just pushed everything into a
+can_destroy() method. (Unless the framework polled all can_destroy()
+methods for potentially-removable containers, which seems a bit
+nasty).
 
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+We can add can_destroy() if we encounter a situation that can't be
+handled by generic reference counting.
 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 0fcad43..a2d6612 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -1170,7 +1170,7 @@ static int cciss_ioctl(struct inode *inode, struct file 
-*filep,
- 	case SG_EMULATED_HOST:
- 	case SG_IO:
- 	case SCSI_IOCTL_SEND_COMMAND:
--		return scsi_cmd_ioctl(filep, disk, cmd, argp);
-+		return scsi_cmd_ioctl(filep, disk->queue, disk, cmd, argp);
- 
- 	/* scsi_cmd_ioctl would normally handle these, below, but */
- 	/* they aren't a good fit for cciss, as CD-ROMs are */
-
-
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+Paul
