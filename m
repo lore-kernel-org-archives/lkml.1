@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763887AbXGPNAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbXGPNB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763887AbXGPNAq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbXGPNAi
+	id S932101AbXGPNB2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbXGPNBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:00:38 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2701 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755995AbXGPNAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:00:37 -0400
-Date: Mon, 16 Jul 2007 15:00:57 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH/RFC] msleep() with hrtimers
-In-Reply-To: <20070716121906.GA18169@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707161444510.1817@scrub.home>
-References: <19044.1184539364@lwn.net> <Pine.LNX.4.64.0707161325040.1818@scrub.home>
- <20070716114734.GA12010@elte.hu> <Pine.LNX.4.64.0707161353350.1818@scrub.home>
- <20070716115744.GA14131@elte.hu> <Pine.LNX.4.64.0707161404240.1817@scrub.home>
- <20070716121906.GA18169@elte.hu>
+	Mon, 16 Jul 2007 09:01:19 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:52384 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757576AbXGPNBS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 09:01:18 -0400
+Date: Mon, 16 Jul 2007 15:01:13 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com, netdev@vger.kernel.org,
+       zippel@linux-m68k.org, linux-m68k@vger.kernel.org
+Subject: Re: [2.6 patch] more ACSI removal
+In-Reply-To: <20070716121541.GH5195@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0707161457300.7535@anakin>
+References: <20070712234553.GR3492@stusta.de> <Pine.LNX.4.64.0707130909170.8296@anakin>
+ <20070716121541.GH5195@kernel.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Mon, 16 Jul 2007, Ingo Molnar wrote:
-
-> > Well, you cut out the major question from my initial mail:
-> > One question here would be, is it really a problem to sleep a little more?
+On Mon, 16 Jul 2007, Jens Axboe wrote:
+> On Fri, Jul 13 2007, Geert Uytterhoeven wrote:
+> > On Fri, 13 Jul 2007, Adrian Bunk wrote:
+> > > This patch removes some code that became dead code after the ATARI_ACSI 
+> > > removal.
+> > 
+> > When was it removed? Nobody seems to have informed the m68k people...
 > 
-> oh, i did not want to embarrass you (and distract the discussion) with 
-> answering a pretty stupid, irrelevant question that has the obvious 
-> answer even for the most casual observer: "yes, of course it really is a 
-> problem to sleep a little more, read the description of the fine patch 
-> you are replying to" ...
+> It hasn't even been compiling for 5 years, so it can't be that big of an
+> issue. I thought you had been cc'ed on the discussion, but I can't seem
+> to find the thread now even.
 
-And your insults continue... :-(
-I ask a simple question and try to explore alternative solutions and this 
-is your contribution to it?
+OK, in that case it doens't make much sense to keep ATARI_SLM, ATARI_BIONET,
+and ATARI_PAMSNET. Those who desperately(?) need it can resurvive ACSI
+if they want to...
 
-To put this into a little more context, this is the complete text you cut 
-off:
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-| One question here would be, is it really a problem to sleep a little more?
-| Another possibility would be to add another sleep function, which uses 
-| hrtimer and could also take ktime argument.
+Gr{oetje,eeting}s,
 
-So instead of considering this suggestion, you just read what you want out 
-of what I wrote and turn everything into an insult. Nicely done, Ingo. :-(
+						Geert
 
-bye, Roman
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
