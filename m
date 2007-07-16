@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765457AbXGPOXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763392AbXGPOXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765457AbXGPOXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760185AbXGPOXH
+	id S1763392AbXGPOXj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765939AbXGPOXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:23:07 -0400
-Received: from [212.12.190.75] ([212.12.190.75]:32937 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759782AbXGPOXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:23:06 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-fsdevel@vger.kernel.org
-Subject: Hardlink Pitfalls (was: Patches for REALLY TINY 386 kernels)
-Date: Mon, 16 Jul 2007 17:22:53 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
+	Mon, 16 Jul 2007 10:23:21 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:12551 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758126AbXGPOXT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 10:23:19 -0400
+To: "John Stoffel" <john@stoffel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 00/33] SG table chaining support
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <11845792671245-git-send-email-jens.axboe@oracle.com>
+	<18075.31515.974905.507754@stoffel.org>
+Date: Mon, 16 Jul 2007 10:23:10 -0400
+In-Reply-To: <18075.31515.974905.507754@stoffel.org> (John Stoffel's message of "Mon, 16 Jul 2007 10:05:15 -0400")
+Message-ID: <yq1d4ysv35d.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707161722.53203.a1426z@gawab.com>
+Content-Type: text/plain; charset=us-ascii
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> Or just "cp -al" to create multiple trees at (almost) no disk cost
-> that won't interfere with each other in any way, and makes the
-> development process / generating patchsets trifle easier as well ...
+>>>>> "John" == John Stoffel <john@stoffel.org> writes:
 
-That would be correct if hardlinks would actually do a CoW on modify, instead 
-of misleading the user into thinking he is modifying an independent file.
+John> Will this help out tape drive performance at all?  I looked
+John> through the patches quickly, esp the AIC7xxx stuff since that's
+John> what I use, but nothing jumped out at me...
 
-Moral of the story:  try to avoid hardlinks as much as possible!
+Yes.  Most modern tape drives want a block size of 1MB or higher.
+With the old stack we'd be stuck at 512KB because the sg limitations
+caused us to come just short of 1MB...
 
-
-Thanks!
-
---
-Al
+-- 
+Martin K. Petersen	Oracle Linux Engineering
 
