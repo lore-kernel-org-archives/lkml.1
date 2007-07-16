@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764771AbXGPWDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765430AbXGPWEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764771AbXGPWDt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760848AbXGPWDi
+	id S1765430AbXGPWEi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbXGPWE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:03:38 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:49923 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756789AbXGPWDh (ORCPT
+	Mon, 16 Jul 2007 18:04:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49682 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754947AbXGPWE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:03:37 -0400
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Arnd Bergmann <arnd@arndb.de>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1184622555.25235.91.camel@localhost.localdomain>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	 <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	 <1184335333.3402.20.camel@localhost.localdomain>
-	 <200707131619.54898.arnd@arndb.de>
-	 <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	 <1184340528.3402.32.camel@localhost.localdomain>
-	 <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	 <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	 <20070716121649.GI5195@kernel.dk>
-	 <1184593643.3447.9.camel@localhost.localdomain>
-	 <1184622555.25235.91.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 16 Jul 2007 17:03:34 -0500
-Message-Id: <1184623415.3447.48.camel@localhost.localdomain>
+	Mon, 16 Jul 2007 18:04:29 -0400
+Date: Mon, 16 Jul 2007 15:04:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yoann Padioleau <padator@wanadoo.fr>
+Cc: linux-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] potential parse error, drivers/serial/dz.h
+Message-Id: <20070716150421.c21d38c5.akpm@linux-foundation.org>
+In-Reply-To: <87k5t05r4a.fsf@wanadoo.fr>
+References: <87k5t05r4a.fsf@wanadoo.fr>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 07:49 +1000, Benjamin Herrenschmidt wrote:
-> > No ... that was the point of flush_kernel_dcache_page().  The page in
-> > question is page cache backed and contains user mappings.  However, the
-> > block layer has already done a flush_dcache_page() in get_user_pages()
-> > and the user shouldn't be touching memory under I/O (unless they want
-> > self induced aliasing problems) so we're free to assume all the user
-> > cachelines are purged, hence all we have to do is flush the kernel alias
-> > to bring the page up to date and make the users see it correctly.
+On Mon, 16 Jul 2007 17:02:13 +0200
+Yoann Padioleau <padator@wanadoo.fr> wrote:
+
 > 
-> The block layer will have done that even in the swap-out path ? (Just
-> asking... I'm not very familiar with the block layer)
+> potential parse error in declaration under a #ifdef.
 
-Er ... not really, this is the I/O path for user initiated I/O.  The
-page out path, by definition, can't have any extant user mappings.  For
-page out, the relevant page is flushed before its mapping is detached,
-and then it can be paged to the backing store (or for anonymous pages to
-the swap device) when no mappings remain.
+A certain parse error, I'd say.  How come nobody is reporting it?
+ 
+> Signed-off-by: Yoann Padioleau <padator@wanadoo.fr> 
+> 
+> 
+> diff --git a/drivers/serial/dz.h b/drivers/serial/dz.h
+> index 9674d4e..9141c37 100644
+> --- a/drivers/serial/dz.h
+> +++ b/drivers/serial/dz.h
+> @@ -125,8 +125,8 @@ #define DZ_XMIT_SIZE   4096             
+>  #define DZ_WAKEUP_CHARS   DZ_XMIT_SIZE/4
+>  
+>  #ifdef MODULE
+> -int init_module (void)
+> -void cleanup_module (void)
+> +int init_module (void);
+> +void cleanup_module (void);
+>  #endif
+>  
+>  #endif /* DZ_SERIAL_H */
 
-James
+I don't think these symbols are actually implemented in anything which
+uses this header.  If they _do_ exist then they are awfully named and
+should be renamed ASAP.  Or they should be made static.
 
-
+However I suspect they just don't exist, and this stuff should be simply
+deleted.
