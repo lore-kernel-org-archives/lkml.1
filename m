@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764323AbXGPL7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764740AbXGPL7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764323AbXGPL7B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 07:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757356AbXGPL6x
+	id S1764740AbXGPL7W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 07:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758013AbXGPL6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 16 Jul 2007 07:58:54 -0400
+Received: from emh06.mail.saunalahti.fi ([62.142.5.116]:40538 "EHLO
+	emh06.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757180AbXGPL6x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Jul 2007 07:58:53 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1440 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756768AbXGPL6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 07:58:52 -0400
-Date: Mon, 16 Jul 2007 13:58:36 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: James Bruce <bruce@andrew.cmu.edu>, Thomas Gleixner <tglx@linutronix.de>,
-       Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-In-Reply-To: <20070716112037.GA6895@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707161331570.1817@scrub.home>
-References: <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random>
- <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184355835.12353.321.camel@chaos>
- <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu>
- <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
+Date: Mon, 16 Jul 2007 14:58:38 +0300 (EEST)
+From: Kai Makisara <Kai.Makisara@kolumbus.fi>
+X-X-Sender: makisara@kai.makisara.local
+To: Tejun Heo <htejun@gmail.com>
+cc: Bruce Allen <ballen@gravity.phys.uwm.edu>, Mark Lord <liml@rtr.ca>,
+       David Greaves <david@dgreaves.com>, Douglas Gilbert <dougg@torque.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Bruce Allen <bruce.allen@aei.mpg.de>, Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SMART problems in 2.6.22
+In-Reply-To: <469B54DE.5090703@gmail.com>
+Message-ID: <Pine.LNX.4.64.0707161453230.5065@kai.makisara.local>
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
+ <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local>
+ <Pine.LNX.4.64.0707161327470.4941@kai.makisara.local> <469B54DE.5090703@gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Antivirus: VAMS
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 16 Jul 2007, Tejun Heo wrote:
 
-On Mon, 16 Jul 2007, Ingo Molnar wrote:
-
-> > As soon as you add another loop the difference changes again, while 
-> > it's always correct to say it gets 25% more cpu time [...]
+> Please try the patch in the following message.
 > 
-> yep, and i'll add the relative effect to the comment too.
+> http://article.gmane.org/gmane.linux.ide/20799/raw
+> 
+This solves the 'smartctl -H' problem both of my systems (one with Nvidia 
+CK804 and one with MCP51).
 
-Why did you cut off the rest of the sentence?
-To illustrate the problem a little different: a task with a nice level -20 
-got around 700% more cpu time (or 8 times more), now it gets 8500% more 
-cpu time (or 86.7 times more).
-You don't think that change to the nice levels is a little drastic?
+Tested-by: Kai Makisara <Kai.Makisara@kolumbus.fi>
 
-bye, Roman
+Thanks for pointing out the patch.
+
+-- 
+Kai
