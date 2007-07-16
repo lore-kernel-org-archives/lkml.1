@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765565AbXGPXI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761292AbXGPXNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765565AbXGPXI1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbXGPXHr
+	id S1761292AbXGPXNd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXGPXNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:07:47 -0400
-Received: from waste.org ([66.93.16.53]:48589 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765399AbXGPXHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:07:46 -0400
-Date: Mon, 16 Jul 2007 18:07:19 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Bodo Eggert <7eggert@gmx.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
+	Mon, 16 Jul 2007 19:13:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:26257 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751281AbXGPXNY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 19:13:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GPdASEEFJLo7BZRaZXuzO/vKkFgWa7fsR7EWvKbH84mJ5DN2AMHjL0cR5rrjw4VH1vtt+Y5CL9ACkGLfi9BDa6m5Hoe58pRyk0+dKegDwwhc9Jp+ht+DjE/PMdi+Xxg3iyf6XEAo2ODyKfDRmekh62b76DOkywFY/YPw8pPMFUo=
+Message-ID: <2c0942db0707161613lff9c07bpcf002b9139163a86@mail.gmail.com>
+Date: Mon, 16 Jul 2007 16:13:22 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Rene Herman" <rene.herman@gmail.com>
 Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Message-ID: <20070716230719.GC11115@waste.org>
-References: <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com> <Pine.LNX.4.58.0707161523500.25779@be1.lrz> <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Cc: "Bodo Eggert" <7eggert@gmx.de>, "Matt Mackall" <mpm@selenic.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
 In-Reply-To: <469BF768.6040200@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8FO1e-2jW-35@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it>
+	 <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
+	 <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>
+	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
+	 <469BF104.1040703@gmail.com>
+	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
+	 <469BF768.6040200@gmail.com>
+X-Google-Sender-Auth: 494fb4044c273761
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 12:55:36AM +0200, Rene Herman wrote:
+On 7/16/07, Rene Herman <rene.herman@gmail.com> wrote:
 > On 07/17/2007 12:37 AM, Ray Lee wrote:
-> 
-> >On 7/16/07, Rene Herman <rene.herman@gmail.com> wrote:
-> 
-> >>Seeing as how single-page stacks are much easier on the VM so that 
-> >>creating those zillion threads should also be faster, at _some_
-> >>percentage we get to say "and now to hell with the rest".
-> >
-> >This is the core dispute here. Stated differently, I hope you never
-> >design a bridge that I have to drive over.
-> >
-> >Correctness first, optimization second. Introducing random and
-> >difficult to trace crashes upon an unsuspecting audience of sysadmins
-> >and users is not a viable option.
-> 
-> Quite. But unfortunately you didn't actually go into the bit on how given 
-> seperate interrupt stacks, available stackspace might not actually _be_ 
-> less after selecting CONFIG_4KSTCKS nor into Fedora and RHEL shipping it 
-> already.
-> 
-> >If at some point one of the pro-4k stacks crowd can prove that all
-> >code paths are safe
-> 
-> I'll do that the minute you prove the current shared 8K stacks are safe. Do 
+> > If at some point one of the pro-4k stacks crowd can prove that all
+> > code paths are safe
+>
+> I'll do that the minute you prove the current shared 8K stacks are safe. Do
 > we have a deal?
-> 
-> >or introduce another viable alternative (such as Matt's idea for
-> >extending the stack dynamically), then removing the 8k stacks option
-> >makes sense.
-> 
-> I'm still waiting for larger soft-pages... does anyone in this thread have 
-> a clue on their status?
 
-Given that most x86 users won't want anything to do with them, it's
-not going to help us at all here.
+Language barrier, I think, or perhaps I was unclear. Please read that
+as "4k stacks introduce no new stack bugs." And if we put wli's
+unconditional interrupt stacks into the kernel, it's pretty obvious
+that 8k stacks are at least as safe in that case as 4k stacks.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Given that there's actual, y'know, reports of people who can easily
+crash a 4k+interrupt stacks kernel, and not an 8k one, I think the
+current evidence speaks for itself.
+
+The point remains that the burden of proof of the safety of the 4k
+only option is upon those people who want to remove the 8k option.
