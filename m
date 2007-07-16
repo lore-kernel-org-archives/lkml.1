@@ -1,55 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763348AbXGPVbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761750AbXGPVbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763348AbXGPVbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 17:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759148AbXGPVbH
+	id S1761750AbXGPVbi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 17:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761314AbXGPVbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 17:31:07 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:35529 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756789AbXGPVbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 17:31:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44629
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758312AbXGPVbG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Jul 2007 17:31:06 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Tue, 17 Jul 2007 03:24:14 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH] utime(s): Honour CAP_FOWNER when times==NULL
-In-Reply-To: <Pine.LNX.4.64.0707170306200.2005@cselinux1.cse.iitk.ac.in>
-Message-ID: <Pine.LNX.4.64.0707170322430.2005@cselinux1.cse.iitk.ac.in>
-References: <20070716185423.1607.78787.sendpatchset@cselinux1.cse.iitk.ac.in>
- <alpine.LFD.0.999.0707161142210.20061@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707170054100.2005@cselinux1.cse.iitk.ac.in>
- <20070716204523.GJ21668@ftp.linux.org.uk> <Pine.LNX.4.64.0707170306200.2005@cselinux1.cse.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 16 Jul 2007 14:31:06 -0700 (PDT)
+Message-Id: <20070716.143106.35661927.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: jeremy@goop.org, ak@suse.de, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, lenb@kernel.org, randy.dunlap@oracle.com,
+       viro@zeniv.linux.org.uk, arnd@arndb.de
+Subject: Re: [patch 6/7] Add common orderly_poweroff()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070716125223.249a6914.akpm@linux-foundation.org>
+References: <20070510235708.155502000@goop.org>
+	<20070511000028.446470000@goop.org>
+	<20070716125223.249a6914.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Satyam Sharma wrote:
-> [...]
-> Anwyay, so I'm thinking of adding:
-> 
-> struct inode;
-> 
-> int is_not_owner(struct inode *)
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 16 Jul 2007 12:52:23 -0700
 
-  ^static inline                 ^inode
+> Dave, those changes hit mainline without ever having appeared in the
+> sparc-2.6.git tree, afaict.
 
-of course.
+It's been in there for more than a week.
 
-> {
-> 	return ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER));
-> }
-> 
-> to linux/capability.h inside the __KERNEL__ #ifdef, asm/current.h is
-> included in there already.
-> 
-> And then do the necessary conversions. Sounds OK?
-> 
-> Satyam
-> 
