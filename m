@@ -1,45 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXGPJpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763143AbXGPJsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761580AbXGPJpT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbXGPJpH
+	id S1763143AbXGPJsu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbXGPJsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:45:07 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57784 "EHLO mx2.suse.de"
+	Mon, 16 Jul 2007 05:48:32 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9285 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755046AbXGPJpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:45:05 -0400
-Date: Mon, 16 Jul 2007 11:45:03 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc][patch 2/2] x86_64: FIFO ticket spinlocks
-Message-ID: <20070716094503.GC21464@wotan.suse.de>
-References: <20070716045932.GA19914@wotan.suse.de> <20070716050134.GB19914@wotan.suse.de> <20070716092646.GA18423@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070716092646.GA18423@elte.hu>
-User-Agent: Mutt/1.5.9i
+	id S1757506AbXGPJsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:48:31 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>, James Morris <jmorris@namei.org>
+Subject: [PATCH 01/33] crypto: don't pollute the global namespace with sg_next()
+Date: Mon, 16 Jul 2007 11:47:15 +0200
+Message-Id: <1184579267914-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.5.3.rc2
+In-Reply-To: <11845792671245-git-send-email-jens.axboe@oracle.com>
+References: <11845792671245-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 11:26:46AM +0200, Ingo Molnar wrote:
-> 
-> * Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > [...] trylock is more significantly slower, but they are relatively 
-> > rare.
-> 
-> trylock is the main thing that the spinlock debugging code uses, and 
-> SPINLOCK_DEBUG is frequently enabled by distro kernels. OTOH, the cost 
-> looks like to be +5 instructions, right? Still ...
+It's a subsystem function, prefix it as such.
 
-Which trylocks do you mean? The lockbreak spinlocks use trylock, but
-those are not used with the ticket version.
+Cc: James Morris <jmorris@namei.org>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ crypto/digest.c      |    2 +-
+ crypto/scatterwalk.c |    2 +-
+ crypto/scatterwalk.h |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-I wouldn't be against adding an option between either of the lock
-types, if there was value in it. But I would like to default ticket
-locks to "y", at least in -rc kernels, in order to see if performance
-goes down anywhere.
+diff --git a/crypto/digest.c b/crypto/digest.c
+index 1bf7414..e56de67 100644
+--- a/crypto/digest.c
++++ b/crypto/digest.c
+@@ -77,7 +77,7 @@ static int update2(struct hash_desc *desc,
+ 
+ 		if (!nbytes)
+ 			break;
+-		sg = sg_next(sg);
++		sg = scatterwalk_sg_next(sg);
+ 	}
+ 
+ 	return 0;
+diff --git a/crypto/scatterwalk.c b/crypto/scatterwalk.c
+index 81afd17..2e51f82 100644
+--- a/crypto/scatterwalk.c
++++ b/crypto/scatterwalk.c
+@@ -70,7 +70,7 @@ static void scatterwalk_pagedone(struct scatter_walk *walk, int out,
+ 		walk->offset += PAGE_SIZE - 1;
+ 		walk->offset &= PAGE_MASK;
+ 		if (walk->offset >= walk->sg->offset + walk->sg->length)
+-			scatterwalk_start(walk, sg_next(walk->sg));
++			scatterwalk_start(walk, scatterwalk_sg_next(walk->sg));
+ 	}
+ }
+ 
+diff --git a/crypto/scatterwalk.h b/crypto/scatterwalk.h
+index f1592cc..e049c62 100644
+--- a/crypto/scatterwalk.h
++++ b/crypto/scatterwalk.h
+@@ -20,7 +20,7 @@
+ 
+ #include "internal.h"
+ 
+-static inline struct scatterlist *sg_next(struct scatterlist *sg)
++static inline struct scatterlist *scatterwalk_sg_next(struct scatterlist *sg)
+ {
+ 	return (++sg)->length ? sg : (void *)sg->page;
+ }
+-- 
+1.5.3.rc0.90.gbaa79
+
