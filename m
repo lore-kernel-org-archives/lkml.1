@@ -1,214 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763923AbXGPXCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764841AbXGPXD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763923AbXGPXCx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbXGPXCo
+	id S1764841AbXGPXD1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXGPXDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:02:44 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:60327 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753990AbXGPXCm (ORCPT
+	Mon, 16 Jul 2007 19:03:17 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:41450 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753266AbXGPXDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:02:42 -0400
-Date: Mon, 16 Jul 2007 16:02:37 -0700
-From: sukadev@us.ibm.com
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Pavel Emelianov <xemul@openvz.org>, clg@fr.ibm.com, haveblue@us.ibm.com,
-       Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 1/5] Define and use task_active_pid_ns() wrapper
-Message-ID: <20070716230237.GA18486@us.ibm.com>
-References: <20070715045510.GB25053@us.ibm.com> <20070716203842.GA20629@sergelap.austin.ibm.com>
+	Mon, 16 Jul 2007 19:03:16 -0400
+Date: Mon, 16 Jul 2007 19:03:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux@bohmer.net, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: LTTng for 2.6.22.1-rt4
+Message-ID: <20070716230313.GA8358@Krystal>
+References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070716203842.GA20629@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+In-Reply-To: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:40:55 up 9 days, 12:46,  2 users,  load average: 0.50, 0.65, 0.53
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn [serue@us.ibm.com] wrote:
-| Quoting sukadev@us.ibm.com (sukadev@us.ibm.com):
-| > 
-| > Subject: [PATCH 1/5] Define and use task_active_pid_ns() wrapper
-| > 
-| > From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-| > 
-| > With multiple pid namespaces, a process is known by some pid_t in
-| > every ancestor pid namespace.  Every time the process forks, the
-| > child process also gets a pid_t in every ancestor pid namespace.
-| > 
-| > While a process is visible in >=1 pid namespaces, it can see pid_t's
-| > in only one pid namespace.  We call this pid namespace it's "active
-| > pid namespace", and it is always the youngest pid namespace in which
-| > the process is known.
-| > 
-| > This patch defines and uses a wrapper to find the active pid namespace
-| > of a process. The implementation of the wrapper will be changed in 
-| > when support for multiple pid namespaces are added.
-| > 
-| > Changelog:
-| > 	2.6.22-rc4-mm2-pidns1:
-| > 	- [Pavel Emelianov, Alexey Dobriyan] Back out the change to use
-| > 	  task_active_pid_ns() in child_reaper() since task->nsproxy
-| > 	  can be NULL during task exit (so child_reaper() continues to
-| > 	  use init_pid_ns).
-| > 
-| > 	  to implement child_reaper() since init_pid_ns.child_reaper to
-| > 	  implement child_reaper() since tsk->nsproxy can be NULL during exit.
-| > 
-| > 	2.6.21-rc6-mm1:
-| > 	- Rename task_pid_ns() to task_active_pid_ns() to reflect that a
-| > 	  process can have multiple pid namespaces.
-| > 
-| > Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-| > Acked-by: Pavel Emelianov <xemul@openvz.org>
-| > 
-| > Cc: Eric W. Biederman <ebiederm@xmission.com>
-| > Cc: Cedric Le Goater <clg@fr.ibm.com>
-| > Cc: Dave Hansen <haveblue@us.ibm.com>
-| > Cc: Serge Hallyn <serue@us.ibm.com>
-| > Cc: Herbert Poetzel <herbert@13thfloor.at>
-| > ---
-| >  fs/exec.c                     |    2 +-
-| >  fs/proc/proc_misc.c           |    3 ++-
-| >  include/linux/pid_namespace.h |    7 ++++++-
-| >  kernel/exit.c                 |    5 +++--
-| >  kernel/nsproxy.c              |    2 +-
-| >  kernel/pid.c                  |    4 ++--
-| >  6 files changed, 15 insertions(+), 8 deletions(-)
-| > 
-| > Index: lx26-22-rc6-mm1/include/linux/pid_namespace.h
-| > ===================================================================
-| > --- lx26-22-rc6-mm1.orig/include/linux/pid_namespace.h	2007-07-13 13:07:01.000000000 -0700
-| > +++ lx26-22-rc6-mm1/include/linux/pid_namespace.h	2007-07-13 18:22:49.000000000 -0700
-| > @@ -20,7 +20,7 @@ struct pid_namespace {
-| >  	struct pidmap pidmap[PIDMAP_ENTRIES];
-| >  	int last_pid;
-| >  	struct task_struct *child_reaper;
-| > -	struct kmem_cache_t *pid_cachep;
-| > +	struct kmem_cache *pid_cachep;
-| 
-| This change is, of course, unrelated to the description.
+* Remy Bohmer (l.pinguin@gmail.com) wrote:
+> Hello,
+> 
+> I am looking for some tool/kernel machanism that enables me to track
+> every schedule change on the CFS scheduler of the RT-kernel for some
+> period of time.
+> Thus a tool that gives me an overview after some time which task got
+> "scheduled in/out" at "which timestamp" and at "which CPU". ( I need
+> the raw data)
+> 
+> In a far past (on Montavista kernels) I used LTT for this to log for
+> some time with only the SCHED_CHANGE filter and text output. But, I
+> cannot find any LTT(ng) support for any RT-kernel, and support for the
+> new CFS (like in 2.6.22.1-rt4) is even harder.
+> 
+> So I was wondering if anybody knows some tool/kernel mechanism which
+> can do this?
+> If not, I will build a kernel extension for it myself (new extension
+> to 'latency_trace' ?)
+> In that case can anybody with in depth CFS scheduler knowledge please
+> point me which hooks are safe to use for this?
 
-Yes. It fixes a warning.
+Hi Remy,
 
-I had sent a mail earlier to this list about the warning, but I guess
-that mail did not make it due to our mail server being down on Fri/Sat.
+Due to popular demand, I just ported LTTng 0.9.10 to 2.6.22.1-rt4. It
+may deserve some more testing, but it runs fine on my x86_32. Please
+note that I ported my last stable LTTng version, so some code is not as
+shiny as the new one (work in progress), but it works. Please refer to
+http://ltt.polymtl.ca, mostly the QUICKSTART GUIDE and the compatibility
+list.
 
-| 
-| >  };
-| > 
-| >  extern struct pid_namespace init_pid_ns;
-| > @@ -39,6 +39,11 @@ static inline void put_pid_ns(struct pid
-| >  	kref_put(&ns->kref, free_pid_ns);
-| >  }
-| > 
-| > +static inline struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-| > +{
-| > +	return tsk->nsproxy->pid_ns;
-| > +}
-| > +
-| 
-| I trust you've tested this for the NFS oops?
+On X86, everything should work fine. Just make sure that your
+architecture has a stable and coherent TSC across CPUs. See
+ltt/ltt-test-tsc.c (it printk a message at boot time) to see if yours is
+ok. See my documentation on my website on how to tweak different
+Intel/AMD if needed.
 
-The NFS problem we got was when exit_task_namespaces() and
-exit_notify() were swapped in do_exit(). That change was in
-a separate patch and Pavel's has a fix for it. 
+For your ARM needs, you may have to tweak include/asm-arm/ltt.h so it
+reads a time base register (or the equivalent). Right now, it defaults
+to use a logical clock, which is clearly not what you need.
 
-And that patch is not in -mm yet I think.
+I guess you'll want to disable the "userspace tracing", since I did not
+port ltt-usertrace, so it's not very userful then, and also disable the
+"locking instrumentation", which generates a _lot_ of output.
 
-This patch is a simple short-cut to what the mainline code is
-already doing.
+I know Thomas and Steven were also interested in this port.
 
-| 
-| Taking the pid_ns out of the nsproxy was the trigger for the original
-| bug, right, to which the solutions were to either take it from struct
-| pid, or, so long as pid namespaces couldn't yet be unshared, use
-| init_pid_ns?
-| 
-| thanks,
-| -serge
-| 
-| >  static inline struct task_struct *child_reaper(struct task_struct *tsk)
-| >  {
-| >  	return init_pid_ns.child_reaper;
-| > Index: lx26-22-rc6-mm1/fs/exec.c
-| > ===================================================================
-| > --- lx26-22-rc6-mm1.orig/fs/exec.c	2007-07-13 13:05:38.000000000 -0700
-| > +++ lx26-22-rc6-mm1/fs/exec.c	2007-07-13 18:13:39.000000000 -0700
-| > @@ -827,7 +827,7 @@ static int de_thread(struct task_struct 
-| >  	 * so it is safe to do it under read_lock.
-| >  	 */
-| >  	if (unlikely(tsk->group_leader == child_reaper(tsk)))
-| > -		tsk->nsproxy->pid_ns->child_reaper = tsk;
-| > +		task_active_pid_ns(tsk)->child_reaper = tsk;
-| > 
-| >  	zap_other_threads(tsk);
-| >  	read_unlock(&tasklist_lock);
-| > Index: lx26-22-rc6-mm1/fs/proc/proc_misc.c
-| > ===================================================================
-| > --- lx26-22-rc6-mm1.orig/fs/proc/proc_misc.c	2007-07-13 13:05:38.000000000 -0700
-| > +++ lx26-22-rc6-mm1/fs/proc/proc_misc.c	2007-07-13 13:07:48.000000000 -0700
-| > @@ -94,7 +94,8 @@ static int loadavg_read_proc(char *page,
-| >  		LOAD_INT(a), LOAD_FRAC(a),
-| >  		LOAD_INT(b), LOAD_FRAC(b),
-| >  		LOAD_INT(c), LOAD_FRAC(c),
-| > -		nr_running(), nr_threads, current->nsproxy->pid_ns->last_pid);
-| > +		nr_running(), nr_threads,
-| > +		task_active_pid_ns(current)->last_pid);
-| >  	return proc_calc_metrics(page, start, off, count, eof, len);
-| >  }
-| > 
-| > Index: lx26-22-rc6-mm1/kernel/exit.c
-| > ===================================================================
-| > --- lx26-22-rc6-mm1.orig/kernel/exit.c	2007-07-13 13:06:52.000000000 -0700
-| > +++ lx26-22-rc6-mm1/kernel/exit.c	2007-07-13 18:13:39.000000000 -0700
-| > @@ -909,8 +909,9 @@ fastcall NORET_TYPE void do_exit(long co
-| >  	if (unlikely(!tsk->pid))
-| >  		panic("Attempted to kill the idle task!");
-| >  	if (unlikely(tsk == child_reaper(tsk))) {
-| > -		if (tsk->nsproxy->pid_ns != &init_pid_ns)
-| > -			tsk->nsproxy->pid_ns->child_reaper = init_pid_ns.child_reaper;
-| > +		if (task_active_pid_ns(tsk) != &init_pid_ns)
-| > +			task_active_pid_ns(tsk)->child_reaper =
-| > +					init_pid_ns.child_reaper;
-| >  		else
-| >  			panic("Attempted to kill init!");
-| >  	}
-| > Index: lx26-22-rc6-mm1/kernel/pid.c
-| > ===================================================================
-| > --- lx26-22-rc6-mm1.orig/kernel/pid.c	2007-07-13 13:07:01.000000000 -0700
-| > +++ lx26-22-rc6-mm1/kernel/pid.c	2007-07-13 18:13:38.000000000 -0700
-| > @@ -214,7 +214,7 @@ struct pid *alloc_pid(void)
-| >  	int nr = -1;
-| >  	struct pid_namespace *ns;
-| > 
-| > -	ns = current->nsproxy->pid_ns;
-| > +	ns = task_active_pid_ns(current);
-| >  	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
-| >  	if (!pid)
-| >  		goto out;
-| > @@ -364,7 +364,7 @@ struct pid *find_ge_pid(int nr)
-| >  		pid = find_pid(nr);
-| >  		if (pid)
-| >  			break;
-| > -		nr = next_pidmap(current->nsproxy->pid_ns, nr);
-| > +		nr = next_pidmap(task_active_pid_ns(current), nr);
-| >  	} while (nr > 0);
-| > 
-| >  	return pid;
-| > Index: lx26-22-rc6-mm1/kernel/nsproxy.c
-| > ===================================================================
-| > --- lx26-22-rc6-mm1.orig/kernel/nsproxy.c	2007-07-13 13:05:38.000000000 -0700
-| > +++ lx26-22-rc6-mm1/kernel/nsproxy.c	2007-07-13 13:07:48.000000000 -0700
-| > @@ -86,7 +86,7 @@ static struct nsproxy *create_new_namesp
-| >  		goto out_ipc;
-| >  	}
-| > 
-| > -	new_nsp->pid_ns = copy_pid_ns(flags, tsk->nsproxy->pid_ns);
-| > +	new_nsp->pid_ns = copy_pid_ns(flags, task_active_pid_ns(tsk));
-| >  	if (IS_ERR(new_nsp->pid_ns)) {
-| >  		err = PTR_ERR(new_nsp->pid_ns);
-| >  		goto out_pid;
+Direct link to the patches:
+http://ltt.polymtl.ca/lttng/patch-2.6.22.1-rt4-lttng-0.9.10.tar.gz
+
+Mathieu
+
+P.S. : To give you an idea of the output: (you know the CPU id with
+processes_1 or processes_0)
+
+./lttv -m textDump -e "event.name=sched_schedule" -t /tmp/trace2
+(System at 250HZ with PREEMPT_RT)
+
+A little legend:
+
+group.event          : time since boot, in s.ns (tracefile name, ending
+with cpu ID), Thread ID ("pid"), Thread group ID (posix pid), process
+name, thread name (need userspace instrumentation), Parent PID,
+Userspace function (need userspace instrumentation), execution mode
+(SYSCALL/USERMODE/TRAP/IRQ...) { event specific data }
+
+The event specific (raw) data for sched_schedule is:
+PID out
+PID in
+previous state : State of the process we are scheduling out : -1
+                 unrunnable, 0 runnable, >0 stopped
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+kernel.sched_schedule: 228.034115347 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.034152186 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 } 
+kernel.sched_schedule: 228.034158271 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 } 
+kernel.sched_schedule: 228.034195970 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.034286860 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.034323741 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.034329641 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.034431602 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.034522657 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.034560416 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.034566830 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.034603585 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.034694824 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.034732186 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.034738403 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.034844221 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.034934946 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.034971955 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.034978030 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.035015261 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.035106149 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.035143190 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.035149302 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.035257005 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.035347665 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.035384087 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.035390224 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.035427396 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.035517226 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.035554700 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+kernel.sched_schedule: 228.035560842 (/tmp/trace2/control/processes_1), 0, 0, swapper, UNBRANDED, 0, 0x0, SYSCALL { 3517, 0, 2 }
+kernel.sched_schedule: 228.035669682 (/tmp/trace2/control/processes_1), 3517, 3517, openbox, UNBRANDED, 3506, 0x0, SYSCALL { 0, 3517, 0 }
+
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
