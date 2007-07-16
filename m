@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbXGPEQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbXGPETY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755623AbXGPEQn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 00:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbXGPEQe
+	id S1757104AbXGPETY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 00:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbXGPETS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 00:16:34 -0400
-Received: from nlpi043.sbcis.sbc.com ([207.115.36.72]:48049 "EHLO
-	nlpi043.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbXGPEQd (ORCPT
+	Mon, 16 Jul 2007 00:19:18 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:58709 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817AbXGPETR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 00:16:33 -0400
-X-Greylist: delayed 448 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 00:16:33 EDT
-X-ORBL: [68.91.195.235]
-Date: Sun, 15 Jul 2007 23:01:00 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, konishi.ryusuke@lab.ntt.co.jp,
-       mhalcrow@us.ibm.com
-Subject: [PATCH] eCryptfs: ecryptfs_setattr() bugfix
-Message-ID: <20070716040059.GA6275@halcrow.us>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+	Mon, 16 Jul 2007 00:19:17 -0400
+Date: Mon, 16 Jul 2007 09:49:19 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
+       Neil Horman <nhorman@redhat.com>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Bernhard Walle <bwalle@suse.de>
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070716041918.GA11390@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070710120243.GA10121@hmsendeavour.rdu.redhat.com> <20070713200533oomichi@mail.jp.nec.com> <20070713131550.GB10985@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070713131550.GB10985@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is another bug recently introduced into the ecryptfs_setattr()
-function in 2.6.22. eCryptfs will attempt to treat special files like
-regular eCryptfs files on chmod, chown, and so forth. This leads to a
-NULL pointer dereference. This patch validates that the file is a
-regular file before proceeding with operations related to the inode's
-crypt_stat.
+On Fri, Jul 13, 2007 at 03:15:50PM +0200, Bernhard Walle wrote:
+> * Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp> [2007-07-13 13:05]:
+> > 
+> > BTW, I'd like to remove PAGESIZE from a mkdfinfo file.
+> > While 2nd-kernel is running, new makedumpfile comes to consider
+> > 2nd-kernel PAGESIZE as 1st-kernel PAGESIZE without getting PAGESIZE
+> > from a mkdfinfo file.
+> 
+> I don't think that's a good idea. IMO the kernel should be modified to
+> export the page size in a variable for that purpose. That would solve
+> all problems and dependencies, doesn't it?
+> 
 
-Thanks to Ryusuke Konishi for finding this bug and suggesting the fix.
+Agreed. We need to export PAGESIZE from kernel instead of assuming that
+second kernel as got same page size as first kernel.
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/ecryptfs/inode.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-index 83e94fe..9c6877c 100644
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -902,8 +902,9 @@ static int ecryptfs_setattr(struct dentry *dentry, struct iattr *ia)
- 	mutex_lock(&crypt_stat->cs_mutex);
- 	if (S_ISDIR(dentry->d_inode->i_mode))
- 		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
--	else if (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED)
--		 || !(crypt_stat->flags & ECRYPTFS_KEY_VALID)) {
-+	else if (S_ISREG(dentry->d_inode->i_mode)
-+		 && (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED)
-+		     || !(crypt_stat->flags & ECRYPTFS_KEY_VALID))) {
- 		struct vfsmount *lower_mnt;
- 		struct file *lower_file = NULL;
- 		struct ecryptfs_mount_crypt_stat *mount_crypt_stat;
--- 
-1.5.2.1
+Thanks
+Vivek
