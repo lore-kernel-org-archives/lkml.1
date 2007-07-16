@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbXGPTqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbXGPTq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760046AbXGPTqN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 15:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbXGPTp6
+	id S1760816AbXGPTq5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 15:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbXGPTqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 15:45:58 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51464 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751614AbXGPTp6 (ORCPT
+	Mon, 16 Jul 2007 15:46:49 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:38845 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbXGPTqs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 15:45:58 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <469BCAB2.5060909@s5r6.in-berlin.de>
-Date: Mon, 16 Jul 2007 21:44:50 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Mon, 16 Jul 2007 15:46:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ncxbTaPPKiyxj4Ktb0Sk0A7XRVGDinuf/wnEaa99bX3TXugP9g9DmpjN2UCTrFJvicuMuZ7IIoPH2Bo9F5eQVp+Pb6ncSyp43r06OP6mgTOMSXP7ROOwF8ydRoTimqL8WitGAUU4Ij8kfouDKHgafU9qh9UrviIMWCCeUFLIPaI=
+Message-ID: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com>
+Date: Mon, 16 Jul 2007 21:46:46 +0200
+From: "Remy Bohmer" <l.pinguin@gmail.com>
+Reply-To: linux@bohmer.net
+To: LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>
+Subject: [Question] Hooks for scheduler tracing (CFS)
+Cc: mathieu.desnoyers@polymtl.ca, "Ingo Molnar" <mingo@elte.hu>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@brturbo.com.br>,
-       Dominik Brodowski <linux@brodo.de>, Christoph Hellwig <hch@lst.de>,
-       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@stusta.de>,
-       Jean Delvare <khali@linux-fr.org>, Len Brown <len.brown@intel.com>
-Subject: Re: how about bringing Documentation/feature-removal-schedule.txt
- up to date?
-References: <Pine.LNX.4.64.0707160759080.17044@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0707160759080.17044@localhost.localdomain>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->   as time goes by, the informational value of the feature removal file
-> is rapidly approaching zero, as alleged deadlines for removal are
-> continually dismissed, while some removal dates as far back as 2005
-> are still in that file.
-> 
->   if those features aren't going to be removed, then will someone at
-> least recalibrate their removal dates and update that file?
+Hello,
 
-I'm adding Ccs of a few people, as LKML is a high volume list.
-Overdue items are:
+I am looking for some tool/kernel machanism that enables me to track
+every schedule change on the CFS scheduler of the RT-kernel for some
+period of time.
+Thus a tool that gives me an overview after some time which task got
+"scheduled in/out" at "which timestamp" and at "which CPU". ( I need
+the raw data)
 
-What:	Video4Linux API 1 ioctls and video_decoder.h from Video devices.
-When:	December 2006
+In a far past (on Montavista kernels) I used LTT for this to log for
+some time with only the SCHED_CHANGE filter and text output. But, I
+cannot find any LTT(ng) support for any RT-kernel, and support for the
+new CFS (like in 2.6.22.1-rt4) is even harder.
 
-What:	PCMCIA control ioctl (needed for pcmcia-cs [cardmgr, cardctl])
-When:	November 2005
+So I was wondering if anybody knows some tool/kernel mechanism which
+can do this?
+If not, I will build a kernel extension for it myself (new extension
+to 'latency_trace' ?)
+In that case can anybody with in depth CFS scheduler knowledge please
+point me which hooks are safe to use for this?
 
-What:	remove EXPORT_SYMBOL(kernel_thread)
-When:	August 2006
+I need it to get a detailed insight in my RT-system with its RT and
+non-RT applications.
+Thus to know when a certain task gets scheduled (and to calculate its
+per thread min/max/avg latencies), which task preempts another task,
+and to get a complete overview of what the RT system (and scheduler)
+is doing during time etc.
 
-What:	CONFIG_FORCED_INLINING
-When:	June 2006
 
-What:   eepro100 network driver
-When:   January 2007
+Kind Regards,
 
-What:	Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL exports
-	(temporary transition config option provided until then)
-When:	before 2.6.19
-
-What:	i2c-isa
-When:	December 2006
-
-What:  drivers depending on OBSOLETE_OSS   [sic]
-When:  options in 2.6.22, code in 2.6.24
-
-	Note 1:	This entry is superseded by
-		What:  drivers depending on OSS_OBSOLETE
-		When:  options in 2.6.23, code in 2.6.25
-
-	Note 2:	Current linux-2.6.22-git* has SOUND_BT878 and
-		SOUND_CS4232 depending on OSS_OBSOLETE.
-
-What:	/sys/firmware/acpi/namespace
-When:	2.6.21
--- 
-Stefan Richter
--=====-=-=== -=== =----
-http://arcgraph.de/sr/
+Remy Böhmer
