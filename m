@@ -1,94 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764806AbXGPRLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765824AbXGPRMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764806AbXGPRLX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 13:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbXGPRLN
+	id S1765824AbXGPRMm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 13:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbXGPRMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 13:11:13 -0400
-Received: from yue.linux-ipv6.org ([203.178.140.15]:48096 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753516AbXGPRLM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 13:11:12 -0400
-Date: Tue, 17 Jul 2007 02:11:53 +0900 (JST)
-Message-Id: <20070717.021153.74661454.yoshfuji@linux-ipv6.org>
-To: bryan.wu@analog.com
-Cc: michael.hennerich@analog.com, mb@bu3sch.de, vapier.adi@gmail.com,
-       jeff@garzik.org, hch@infradead.org, dcbw@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, joe@perches.com, yoshfuji@linux-ipv6.org
-Subject: Re: [PATCH try#5] Blackfin ethernet driver: on chip ethernet MAC
- controller driver
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <1184604542.6107.44.camel@roc-laptop>
-References: <1184604542.6107.44.camel@roc-laptop>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 16 Jul 2007 13:12:34 -0400
+Received: from oxford.dsc.net ([213.161.73.145]:57675 "EHLO oxford.dsc.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752433AbXGPRMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 13:12:33 -0400
+X-Greylist: delayed 3718 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 13:12:33 EDT
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Transfer-Encoding: 7bit
+Message-Id: <DB77ED1B-5539-4600-B79A-AFF08978D4D5@dsc.net>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+To: linux-kernel@vger.kernel.org
+From: Philip McCarthy <webquestions@dsc.net>
+Subject: kernel multipath messages
+Date: Mon, 16 Jul 2007 17:10:31 +0100
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi
 
-In article <1184604542.6107.44.camel@roc-laptop> (at Tue, 17 Jul 2007 00:49:02 +0800), Bryan Wu <bryan.wu@analog.com> says:
+We are running an Intel server with Linux Centos 4.2 and kernel  
+2.6.9-22.ELsmp. The server has recently started to produce multipath  
+related error messages a regular intervals every couple of days. From  
+looking at the messages it appears that the fault corrects itself  
+after about 30 seconds.
 
-> +static void bf537mac_set_multicast_list(struct net_device *dev)
-> +{
-> +	u32 sysctl;
-> +
-> +	if (dev->flags & IFF_PROMISC) {
-> +		printk(KERN_INFO "%s: set to promisc mode\n", dev->name);
-> +		sysctl = bfin_read_EMAC_OPMODE();
-> +		sysctl |= RAF;
-> +		bfin_write_EMAC_OPMODE(sysctl);
-> +	} else if (dev->flags & IFF_ALLMULTI || dev->mc_count > 16) {
-> +		/* accept all multicast */
-> +		sysctl = bfin_read_EMAC_OPMODE();
-> +		sysctl |= PAM;
-> +		bfin_write_EMAC_OPMODE(sysctl);
-> +	} else if (dev->mc_count) {
-> +		/* set multicast */
-> +	} else {
-> +		/* clear promisc or multicast mode */
-> +		sysctl = bfin_read_EMAC_OPMODE();
-> +		sysctl &= ~(RAF | PAM);
-> +		bfin_write_EMAC_OPMODE(sysctl);
-> +	}
-> +}
-> +
+Can anyone tell me what might causing these multipath error messages  
+and what the messages actually mean?
 
-Is this function really correct?
+The server is part of a simple SAN using Qlogic fibre controllers.  
+The Qlogic controller is not showing any errors an neither is the  
+RAID disk enclosure.
 
-Please make sure to set up multicast list on device, or
-set "all multi" on device if you do not know what to do; e.g.
 
-static void bf537mac_set_multicast_list(struct net_device *dev)
-{
-     u32 sysctl;
+# Log Extract - /var/log/messages
+Jun 13 07:56:21 servername kernel: SCSI error : <4 0 0 1> return code  
+= 0x20000
+Jun 13 07:56:21 servername kernel: end_request: I/O error, dev sde,  
+sector 2336731952
+Jun 13 07:56:21 servername kernel: multipath: IO failure on sde,  
+disabling IO path.
+Jun 13 07:56:21 servername kernel: 	Operation continuing on 1 IO paths.
+...
+Jun 13 07:56:21 servername kernel: multipath: sde: rescheduling  
+sector 2336731960
+Jun 13 07:56:21 servername kernel: multipath: sde: redirecting sector  
+2336731952 to another IO path
+Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
+sector 2336749632
+Jun 13 07:56:26 servername kernel: end_request: I/O error, dev sde,  
+sector 2336749632
+Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
+sector 2336749640
+Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
+sector 2336749648
+Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
+sector 2336749656
+Jun 13 07:56:26 servername kernel: multipath: sde: rescheduling  
+sector 2336749664
+Jun 13 07:56:43 servername kernel: md: cannot remove active disk sde  
+from md1 ...
+Jun 13 07:56:46 servername kernel: md: cannot remove active disk sde  
+from md1 ...
+...
+Jun 13 07:56:51 servername kernel: MULTIPATH conf printout:
+Jun 13 07:56:51 servername kernel:  --- wd:1 rd:2
+Jun 13 07:56:51 servername kernel:  disk0, o:0, dev:sde
+Jun 13 07:56:51 servername kernel:  disk1, o:1, dev:sdc
+Jun 13 07:56:51 servername kernel: MULTIPATH conf printout:
+Jun 13 07:56:51 servername kernel:  --- wd:1 rd:2
+Jun 13 07:56:51 servername kernel:  disk1, o:1, dev:sdc
+Jun 13 07:56:51 servername kernel: md: unbind<sde>
+Jun 13 07:56:51 servername kernel: md: export_rdev(sde)
+Jun 13 07:56:55 servername kernel: md: bind<sde>
+Jun 13 07:56:56 servername kernel: MULTIPATH conf printout:
+Jun 13 07:56:56 servername kernel:  --- wd:1 rd:2
+Jun 13 07:56:56 servername kernel:  disk1, o:1, dev:sdc
+Jun 13 07:56:56 servername kernel: MULTIPATH conf printout:
+Jun 13 07:56:56 servername kernel:  --- wd:2 rd:2
+Jun 13 07:56:56 servername kernel:  disk0, o:1, dev:sde
+Jun 13 07:56:56 servername kernel:  disk1, o:1, dev:sdc
 
-     if (dev->flags & IFF_PROMISC) {
-             printk(KERN_INFO "%s: set to promisc mode\n", dev->name);
-             sysctl = bfin_read_EMAC_OPMODE();
-             sysctl |= RAF;
-             bfin_write_EMAC_OPMODE(sysctl);
-     } else if (dev->flags & IFF_ALLMULTI || dev->mc_count) {
-             /* accept all multicast */
-             sysctl = bfin_read_EMAC_OPMODE();
-             sysctl |= PAM;
-             bfin_write_EMAC_OPMODE(sysctl);
-     } else {
-             /* clear promisc or multicast mode */
-             sysctl = bfin_read_EMAC_OPMODE();
-             sysctl &= ~(RAF | PAM);
-             bfin_write_EMAC_OPMODE(sysctl);
-     }
-}
---yoshfuji
+# mdadm.conf
+DEVICE /dev/sd[b-e]*
+ARRAY /dev/md0 level=multipath num-devices=2  
+UUID=7698cb38:857d32ab:ba6453aa:f003a129 devices=/dev/sdd,/dev/sdb
+ARRAY /dev/md1 level=multipath num-devices=2  
+UUID=332d4ae0:8d98bb52:952dbf27:2d0ecf6b devices=/dev/sde,/dev/sdc
+
+Please cc any replies to webquestions@dsc.net
+
+Any help much appreciated.
+
+Philip
+
