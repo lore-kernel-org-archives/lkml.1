@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbXGPSDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbXGPSNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761298AbXGPSDw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 14:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760619AbXGPSDA
+	id S1759649AbXGPSNw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 14:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXGPSNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 14:03:00 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:56855 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759876AbXGPSC5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 14:02:57 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:user-agent;
-	b=m2vsyrg6KBM72UauY+DtmZmqvEgwD9U+CLGrpmEa9GMqWYntbvHo9z6PhSggfFWea
-	zDgKN1V8Lq7Mq7WhcHmpg==
-Date: Mon, 16 Jul 2007 11:02:21 -0700
-From: Aaron Durbin <adurbin@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: ak@suse.de, akpm@osdl.org
-Subject: [PATCH] x86_64: Make ACPI the default reset option
-Message-ID: <20070716180221.GA5370@google.com>
+	Mon, 16 Jul 2007 14:13:44 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:2626 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751706AbXGPSNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 14:13:43 -0400
+Date: Mon, 16 Jul 2007 20:12:53 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, James Bruce <bruce@andrew.cmu.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+In-Reply-To: <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707162000400.1817@scrub.home>
+References: <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random>
+ <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
+ <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184355835.12353.321.camel@chaos>
+ <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu>
+ <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
+ <Pine.LNX.4.64.0707161331570.1817@scrub.home>
+ <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Make ACPI be the default reset method for x86_64. If the reset mechanism fails
-using ACPI, it will default to using the keyboard controller.
+On Mon, 16 Jul 2007, Linus Torvalds wrote:
 
-Signed-off-by: Aaron Durbin <adurbin@google.com>
----
+> How about trying a much less aggressive nice-level (and preferably linear, 
+> not exponential)?
 
-This patch relies on the ACPI reboot mechanism patch.
+I think the exponential increase isn't the problem. The old code did 
+approximate something like this rather crudely with the result that there 
+was a big gap between level 0 and -1.
 
-diff --git a/Documentation/x86_64/boot-options.txt b/Documentation/x86_64/boot-options.txt
-index a9253bc..1a9419c 100644
---- a/Documentation/x86_64/boot-options.txt
-+++ b/Documentation/x86_64/boot-options.txt
-@@ -113,10 +113,10 @@ Rebooting
-    warm   Don't set the cold reboot flag
-    cold   Set the cold reboot flag
-    triple Force a triple fault (init)
--   kbd    Use the keyboard controller. cold reset (default)
-+   kbd    Use the keyboard controller. cold reset
-    acpi   Use the ACPI RESET_REG in the FADT. If ACPI is not configured or the
-           ACPI reset does not work, the reboot path attempts the reset using
--          the keyboard controller.
-+          the keyboard controller. (default)
- 
-    Using warm reset will be much faster especially on big memory
-    systems because the BIOS will not go through the memory check.
-diff --git a/arch/x86_64/kernel/reboot.c b/arch/x86_64/kernel/reboot.c
-index 239b576..6fc1b72 100644
---- a/arch/x86_64/kernel/reboot.c
-+++ b/arch/x86_64/kernel/reboot.c
-@@ -29,7 +29,7 @@ static enum { 
- 	BOOT_TRIPLE = 't',
- 	BOOT_KBD = 'k',
- 	BOOT_ACPI = 'a'
--} reboot_type = BOOT_KBD;
-+} reboot_type = BOOT_ACPI;
- static int reboot_mode = 0;
- int reboot_force;
- 
+Something like this:
+
+echo 'for (i=-20;i<=20;i++) print i, " : ", 1024*e(l(2)*(-i/20*3)), "\n";' | bc -l
+
+would produce a range similiar to the old code. Replacing the factor 3 
+with 4 would be IMO a more reasonable increase and had the advantage for 
+the user that it's easier to understand that every 5 levels the time a 
+process gets is doubled.
+
+bye, Roman
