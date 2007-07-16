@@ -1,96 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763437AbXGPUl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762832AbXGPUoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763437AbXGPUl1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 16:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbXGPUlT
+	id S1762832AbXGPUoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 16:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbXGPUoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 16:41:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:49309 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846AbXGPUlS (ORCPT
+	Mon, 16 Jul 2007 16:44:08 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36150 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbXGPUoG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 16:41:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=UzGT4ucRu7qH8sfsvyWGHzKtLEWGTUZcEx6Qv5DRpOnuyR3QIggPVAJkcf+6nMjAOrdsrFSKPMgfDi2YBOtZMcTIndruOItXyVKrQaCZQFPiylRnS5PLYskjQ0Csz7pX0dG0Iz87xH7XjUm0QxUs5XlsEgxUhO1mf7E3Du+3icA=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Valerie Henson <val@nmt.edu>
-Subject: [PATCH][RFC] Semi-pointless NULL test in uli526x driver
-Date: Mon, 16 Jul 2007 22:40:29 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tulip-users@lists.sourceforge.net, Jesper Juhl <jesper.juhl@gmail.com>
+	Mon, 16 Jul 2007 16:44:06 -0400
+Message-ID: <469BD7B7.30009@zytor.com>
+Date: Mon, 16 Jul 2007 13:40:23 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Jeff Garzik <jeff@garzik.org>
+CC: Miklos Szeredi <miklos@szeredi.hu>, jeremy@goop.org,
+       jengelh@computergmbh.de, viro@ftp.linux.org.uk, nmiell@comcast.net,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: *at syscalls for xattrs?
+References: <Pine.LNX.4.64.0707132228460.25352@fbirervta.pbzchgretzou.qr> <20070715205313.GE21668@ftp.linux.org.uk> <1184534001.2765.5.camel@entropy> <20070715222323.GG21668@ftp.linux.org.uk> <Pine.LNX.4.64.0707160954160.25352@fbirervta.pbzchgretzou.qr> <469B2CAE.9010101@goop.org> <E1IAMWA-0004fM-00@dorka.pomaz.szeredi.hu> <469B3B73.9010400@zytor.com> <469B3EC2.8080702@garzik.org> <469BB190.1080300@zytor.com> <469BCF0C.6070109@garzik.org>
+In-Reply-To: <469BCF0C.6070109@garzik.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707162240.29230.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jeff Garzik wrote:
+>>
+>> Well, as Jeremy pointed out, in the absence of threads you can do the
+>> same thing with fchdir(), however, that's much more of a hack.
+> 
+> My posixutils project (coreutils replacement) used fchdir(2), but that
+> still doesn't get you 100% race-free.  It gets you close, yes.
+> 
 
-In drivers/net/tulip/uli526x.c::uli526x_interrupt() there's a test 
-of the function argument 'void *dev_id' against NULL. But that 
-test is pretty pointless, since if ever 'dev_id' is NULL we'll 
-already have crashed inside "netdev_priv(dev)".
+I guess you're horked in the case where a single system call (e.g.
+rename()) needs more than one pathname.  Yet another reason why a single
+cwd isn't enough.
 
-I don't think dev_id can ever actually be NULL, so the whole block 
-inside "if (!dev) {" could probably just go away. But I guess 
-there's a good reason someone put that ULI526X_DBUG() in there - and
-if 'dev_id' /can/ actually be NULL then it's nice to have and in 
-that case this patch actually fixes a possible crash (hence the 
-version number update). 
-So I guess that in this case we should just move the 
-"db = netdev_priv(dev)" assignment past that NULL test. That's what 
-this patch does.
-
-Found by the Coverity checker.
-Compile tested.
-
-
-PS. Please keep me on Cc when replying.
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/net/tulip/uli526x.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/tulip/uli526x.c b/drivers/net/tulip/uli526x.c
-index ca2548e..3df2376 100644
---- a/drivers/net/tulip/uli526x.c
-+++ b/drivers/net/tulip/uli526x.c
-@@ -13,8 +13,8 @@
- */
- 
- #define DRV_NAME	"uli526x"
--#define DRV_VERSION	"0.9.3"
--#define DRV_RELDATE	"2005-7-29"
-+#define DRV_VERSION	"0.9.4"
-+#define DRV_RELDATE	"2007-7-16"
- 
- #include <linux/module.h>
- 
-@@ -662,7 +662,7 @@ static int uli526x_stop(struct net_device *dev)
- static irqreturn_t uli526x_interrupt(int irq, void *dev_id)
- {
- 	struct net_device *dev = dev_id;
--	struct uli526x_board_info *db = netdev_priv(dev);
-+	struct uli526x_board_info *db;
- 	unsigned long ioaddr = dev->base_addr;
- 	unsigned long flags;
- 
-@@ -670,6 +670,7 @@ static irqreturn_t uli526x_interrupt(int irq, void *dev_id)
- 		ULI526X_DBUG(1, "uli526x_interrupt() without DEVICE arg", 0);
- 		return IRQ_NONE;
- 	}
-+	db = netdev_priv(dev);
- 
- 	spin_lock_irqsave(&db->lock, flags);
- 	outl(0, ioaddr + DCR7);
-
-
+	-hpa
