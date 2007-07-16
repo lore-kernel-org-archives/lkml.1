@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbXGPVCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762070AbXGPVFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbXGPVCo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 17:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbXGPVCf
+	id S1762070AbXGPVFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 17:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbXGPVFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 17:02:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:64760 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753724AbXGPVCe (ORCPT
+	Mon, 16 Jul 2007 17:05:03 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:28488 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755249AbXGPVFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 17:02:34 -0400
+	Mon, 16 Jul 2007 17:05:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KHDnpwL8wY3lDSiGSxG5yalvQ9+J5cHpD29ZZ5lHtwanotgKf/oRQtuVKoStldBkxqEojymakUgdqJ0T+a3uYKWjKqX3+gJLQLpPAxxWBfEWOwspCPJluNzyubIczqmHT1ERwXQSH1g9kLss5RHD0xzl8izLWYD/aJzVWKZv+nM=
-Message-ID: <a4e6962a0707161402o3a1e84d2me4fc161778ae3dc2@mail.gmail.com>
-Date: Mon, 16 Jul 2007 16:02:32 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Dave Jones" <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       "Meelis Roos" <mroos@linux.ee>
-Subject: Re: [PATCH] 9p: fix debug compilation error
-In-Reply-To: <20070716154939.GA30789@redhat.com>
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=GWpi5JL9eWZbmYGxp5sqNk6AUKSgLLmPupoT9YrPnTj/Mwkr7+QUwQUsDVR5TUlGc0hNvaC9peN8P51pAw6GCFcldD1KKQInJW18yC6PADS10OI60KFsZQjV1I8hJhfgPXmijFn9BaKWlNUE3+qLDmmP7g/+RkXmdk8RID57KZI=
+Message-ID: <4d8e3fd30707161404u49108231kae05aa80180a8857@mail.gmail.com>
+Date: Mon, 16 Jul 2007 23:04:58 +0200
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Linux Kernel Development
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.SOC.4.64.0707161432480.1471@math.ut.ee>
-	 <11845972692586-git-send-email-ericvh@gmail.com>
-	 <20070716154939.GA30789@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/16/07, Dave Jones <davej@redhat.com> wrote:
-> On Mon, Jul 16, 2007 at 09:47:49AM -0500, Eric Van Hensbergen wrote:
->  > From: Meelis Roos <mroos@linux.ee>
->  >
->  > With 9P but no 9P debug options, this error occurs:
->  >   CC [M]  fs/9p/v9fs.o
->  > fs/9p/v9fs.c: In function 'v9fs_parse_options':
->  > fs/9p/v9fs.c:134: error: 'p9_debug_level' undeclared (first use in this function)
->  >
->  > The following patch moves the definition of p9_debug_level out of #ifdef
->  > and seems to fix the problem.
->  >
->  > (Original patch took care of the extern definition in the includes, but
->  > not the actual definition in mod.c - ericvh)
->
-> Seems somewhat wasteful to include the debug options when the config
-> option has been disabled though.
-> Wouldn't something like this (untested) make more sense ?
+Hi all,
+I'm the author of the document "Introduction to Linux Kernel
+Development Process" hosted at
+http://linux.tar.bz/articles/2.6-development_process.
+Part of the document has been included in Documentation/HOWTO
 
-Fair enough.  Looks like I introduced this when I put back the
-mount-time debug option.
+I was reading  both the documents while I started, again, to think
+about how to improve the quality of the vanilla kernels.
 
->
->         Dave
->
-> ---
->
-> fs/9p/v9fs.c: In function 'v9fs_parse_options':
-> fs/9p/v9fs.c:134: error: 'p9_debug_level' undeclared (first use in this function)
->
-> Signed-off-by: Dave Jones <davej@redhat.com>
-Acked-by: Eric Van Hensbergen <ericvh@gmail.com>
+Here are a few line of the document I wrote:
 
->
-> --- linux-2.6.22.noarch/fs/9p/v9fs.c~   2007-07-16 11:45:56.000000000 -0400
-> +++ linux-2.6.22.noarch/fs/9p/v9fs.c    2007-07-16 11:46:12.000000000 -0400
-> @@ -131,7 +131,9 @@ static void v9fs_parse_options(char *opt
->                 switch (token) {
->                 case Opt_debug:
->                         v9ses->debug = option;
-> +#ifdef CONFIG_NET_9P_DEBUG
->                         p9_debug_level = option;
-> +#endif
->                         break;
->                 case Opt_port:
->                         v9ses->port = option;
->
-> --
-> http://www.codemonkey.org.uk
->
+---8<------8<------8<------8<------8<------8<------8<------8<------8<---
+ --- 2.6.x kernels ---
+
+2.6.x kernels are maintained by Linus Torvalds,
+it's development is as follow:
+- As soon a new kernel is released a two weeks windows is open, during
+  this period of time maintainers can submit big diffs to Linus, usually
+  the patched sited in -mm kernels for a few weeks.
+  Preferred way to submit big changes is using GIT
+  (more information about GIT at http://git.or.cz/ and
+  http://www.kernel.org/pub/software/scm/git/docs/tutorial.html).
+- After two weeks a -rc1 kernel is released and now is possible to
+  push only patches that do not include new functionalities that could
+  affect the stability of the whole kernel. Please note that a whole
+  new driver (or filesystem) might be accepted
+  after -rc1 because there is no risk of causing regressions with
+  such a change
+- A new -rc is released whenever Linus deems the current git
+ (the kernel's source management) tree to be in a reasonably sane state
+  adequate for testing. The goal is to release a new -rc kernel every week.
+- Process continues until the kernel is considered "ready", the
+  process should last around 6 weeks ( 6 kernels per year should be
+  released) an usually includes 4/5 rc releases.
+---8<------8<------8<------8<------8<------8<------8<------8<------8<---
+
+The sentence "Process continues until the kernel is considered "ready"
+" should probably be changed in order to reflect the usage of the
+"regression list" that Adrian and then Michal were used to maintain.
+
+Is there a "stable" place were users can read/comment/modify the list?
+Wasn't Google interested in employee a person to take care of
+regression/bug report? (Yes, if there is an open position I would be
+interested in applying ;-).
+
+Thanks!
+
+Regards,
+-- 
+Paolo
