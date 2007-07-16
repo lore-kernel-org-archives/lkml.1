@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762713AbXGPMEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764334AbXGPMFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762713AbXGPMEz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 08:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbXGPMEr
+	id S1764334AbXGPMFq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 08:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369AbXGPMFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 08:04:47 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:54833 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755540AbXGPMEq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 08:04:46 -0400
-X-Originating-Ip: 74.102.207.204
-Date: Mon, 16 Jul 2007 08:02:46 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: how about bringing Documentation/feature-removal-schedule.txt up to
- date?
-Message-ID: <Pine.LNX.4.64.0707160759080.17044@localhost.localdomain>
+	Mon, 16 Jul 2007 08:05:39 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4239 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755621AbXGPMFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 08:05:38 -0400
+Date: Mon, 16 Jul 2007 14:05:56 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH/RFC] msleep() with hrtimers
+In-Reply-To: <20070716115744.GA14131@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707161404240.1817@scrub.home>
+References: <19044.1184539364@lwn.net> <Pine.LNX.4.64.0707161325040.1818@scrub.home>
+ <20070716114734.GA12010@elte.hu> <Pine.LNX.4.64.0707161353350.1818@scrub.home>
+ <20070716115744.GA14131@elte.hu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-  as time goes by, the informational value of the feature removal file
-is rapidly approaching zero, as alleged deadlines for removal are
-continually dismissed, while some removal dates as far back as 2005
-are still in that file.
+On Mon, 16 Jul 2007, Ingo Molnar wrote:
 
-  if those features aren't going to be removed, then will someone at
-least recalibrate their removal dates and update that file?
+> i'm not sure how your question relates/connects to what i wrote above, 
+> could you please re-phrase your question into a bit more verbose form so 
+> that i can answer it? Thanks,
 
-rday
+Well, you cut out the major question from my initial mail:
+One question here would be, is it really a problem to sleep a little more?
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+bye, Roman
