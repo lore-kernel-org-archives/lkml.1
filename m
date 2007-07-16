@@ -1,195 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765262AbXGPJxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765492AbXGPJx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765262AbXGPJxK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763158AbXGPJtE
+	id S1765492AbXGPJx2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763534AbXGPJtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:49:04 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9343 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 05:49:07 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9345 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761580AbXGPJsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:48:39 -0400
+	id S1762049AbXGPJsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:48:40 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>, bzolnier@gmail.com
-Subject: [PATCH 33/33] IDE: sg chaining support
-Date: Mon, 16 Jul 2007 11:47:47 +0200
-Message-Id: <11845792694102-git-send-email-jens.axboe@oracle.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 27/33] advansys: convert to use the data buffer accessors
+Date: Mon, 16 Jul 2007 11:47:41 +0200
+Message-Id: <1184579268182-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.3.rc2
 In-Reply-To: <11845792671245-git-send-email-jens.axboe@oracle.com>
 References: <11845792671245-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: bzolnier@gmail.com
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- drivers/ide/cris/ide-cris.c   |    3 ++-
- drivers/ide/ide-dma.c         |    2 +-
- drivers/ide/ide-io.c          |    3 ++-
- drivers/ide/ide-probe.c       |    2 +-
- drivers/ide/ide-taskfile.c    |   17 +++++++++++++----
- drivers/ide/mips/au1xxx-ide.c |    2 +-
- drivers/ide/pci/sgiioc4.c     |    2 +-
- drivers/ide/ppc/pmac.c        |    2 +-
- include/linux/ide.h           |    2 +-
- 9 files changed, 23 insertions(+), 12 deletions(-)
+ drivers/scsi/advansys.c |   21 ++++++++++-----------
+ 1 files changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/ide/cris/ide-cris.c b/drivers/ide/cris/ide-cris.c
-index 886091b..e1b2d01 100644
---- a/drivers/ide/cris/ide-cris.c
-+++ b/drivers/ide/cris/ide-cris.c
-@@ -951,7 +951,8 @@ static int cris_ide_build_dmatable (ide_drive_t *drive)
- 		/* group sequential buffers into one large buffer */
- 		addr = page_to_phys(sg->page) + sg->offset;
- 		size = sg_dma_len(sg);
--		while (sg++, --i) {
-+		while (--i) {
-+			sg = sg_next(sg);
- 			if ((addr + size) != page_to_phys(sg->page) + sg->offset)
- 				break;
- 			size += sg_dma_len(sg);
-diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
-index 5fe1d72..a9a18a1 100644
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -294,7 +294,7 @@ int ide_build_dmatable (ide_drive_t *drive, struct request *rq)
- 			}
- 		}
+diff --git a/drivers/scsi/advansys.c b/drivers/scsi/advansys.c
+index 2b66897..f61a0ee 100644
+--- a/drivers/scsi/advansys.c
++++ b/drivers/scsi/advansys.c
+@@ -6383,7 +6383,7 @@ asc_build_req(asc_board_t *boardp, struct scsi_cmnd *scp)
+          */
+         int                     sgcnt;
+ 	int			use_sg;
+-        struct scatterlist      *slp;
++        struct scatterlist      *slp, *sg;
  
--		sg++;
-+		sg = sg_next(sg);
- 		i--;
- 	}
+ 	slp = (struct scatterlist *)scp->request_buffer;
+ 	use_sg = dma_map_sg(dev, slp, scp->use_sg, scp->sc_data_direction);
+@@ -6417,10 +6417,10 @@ asc_build_req(asc_board_t *boardp, struct scsi_cmnd *scp)
+         /*
+          * Convert scatter-gather list into ASC_SG_HEAD list.
+          */
+-	for (sgcnt = 0; sgcnt < use_sg; sgcnt++, slp++) {
+-	    asc_sg_head.sg_list[sgcnt].addr = cpu_to_le32(sg_dma_address(slp));
+-	    asc_sg_head.sg_list[sgcnt].bytes = cpu_to_le32(sg_dma_len(slp));
+-	    ASC_STATS_ADD(scp->device->host, sg_xfer, ASC_CEILING(sg_dma_len(slp), 512));
++	scsi_for_each_sg(scp, sg, use_sg, sgcnt) {
++	    asc_sg_head.sg_list[sgcnt].addr = cpu_to_le32(sg_dma_address(sg));
++	    asc_sg_head.sg_list[sgcnt].bytes = cpu_to_le32(sg_dma_len(sg));
++	    ASC_STATS_ADD(scp->device->host, sg_xfer, ASC_CEILING(sg_dma_len(sg), 512));
+         }
+     }
  
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index c5b5011..2465c24 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -836,7 +836,8 @@ void ide_init_sg_cmd(ide_drive_t *drive, struct request *rq)
- 	ide_hwif_t *hwif = drive->hwif;
- 
- 	hwif->nsect = hwif->nleft = rq->nr_sectors;
--	hwif->cursg = hwif->cursg_ofs = 0;
-+	hwif->cursg_ofs = 0;
-+	hwif->cursg = NULL;
- }
- 
- EXPORT_SYMBOL_GPL(ide_init_sg_cmd);
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index cc58013..111ec02 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1352,7 +1352,7 @@ static int hwif_init(ide_hwif_t *hwif)
- 	if (!hwif->sg_max_nents)
- 		hwif->sg_max_nents = PRD_ENTRIES;
- 
--	hwif->sg_table = kmalloc(sizeof(struct scatterlist)*hwif->sg_max_nents,
-+	hwif->sg_table = kzalloc(sizeof(struct scatterlist)*hwif->sg_max_nents,
- 				 GFP_KERNEL);
- 	if (!hwif->sg_table) {
- 		printk(KERN_ERR "%s: unable to allocate SG table.\n", hwif->name);
-diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-index aa06daf..3c92790 100644
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -263,6 +263,7 @@ static void ide_pio_sector(ide_drive_t *drive, unsigned int write)
+@@ -6615,7 +6615,7 @@ adv_get_sglist(asc_board_t *boardp, adv_req_t *reqp, struct scsi_cmnd *scp, int
  {
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct scatterlist *sg = hwif->sg_table;
-+	struct scatterlist *cursg = hwif->cursg;
- 	struct page *page;
- #ifdef CONFIG_HIGHMEM
- 	unsigned long flags;
-@@ -270,8 +271,14 @@ static void ide_pio_sector(ide_drive_t *drive, unsigned int write)
- 	unsigned int offset;
- 	u8 *buf;
+     adv_sgblk_t         *sgblkp;
+     ADV_SCSI_REQ_Q      *scsiqp;
+-    struct scatterlist  *slp;
++    struct scatterlist  *slp, *sg;
+     int                 sg_elem_cnt;
+     ADV_SG_BLOCK        *sg_block, *prev_sg_block;
+     ADV_PADDR           sg_block_paddr;
+@@ -6693,11 +6693,11 @@ adv_get_sglist(asc_board_t *boardp, adv_req_t *reqp, struct scsi_cmnd *scp, int
+             }
+         }
  
--	page = sg[hwif->cursg].page;
--	offset = sg[hwif->cursg].offset + hwif->cursg_ofs * SECTOR_SIZE;
-+	cursg = hwif->cursg;
-+	if (!cursg) {
-+		cursg = sg;
-+		hwif->cursg = sg;
-+	}
-+
-+	page = cursg->page;
-+	offset = cursg->offset + hwif->cursg_ofs * SECTOR_SIZE;
+-        for (i = 0; i < NO_OF_SG_PER_BLOCK; i++)
++	scsi_for_each_sg(scp, sg, NO_OF_SG_PER_BLOCK, i)
+         {
+-	    sg_block->sg_list[i].sg_addr = cpu_to_le32(sg_dma_address(slp));
+-	    sg_block->sg_list[i].sg_count = cpu_to_le32(sg_dma_len(slp));
+-	    ASC_STATS_ADD(scp->device->host, sg_xfer, ASC_CEILING(sg_dma_len(slp), 512));
++	    sg_block->sg_list[i].sg_addr = cpu_to_le32(sg_dma_address(sg));
++	    sg_block->sg_list[i].sg_count = cpu_to_le32(sg_dma_len(sg));
++	    ASC_STATS_ADD(scp->device->host, sg_xfer, ASC_CEILING(sg_dma_len(sg), 512));
  
- 	/* get the current page and offset */
- 	page = nth_page(page, (offset >> PAGE_SHIFT));
-@@ -285,8 +292,8 @@ static void ide_pio_sector(ide_drive_t *drive, unsigned int write)
- 	hwif->nleft--;
- 	hwif->cursg_ofs++;
- 
--	if ((hwif->cursg_ofs * SECTOR_SIZE) == sg[hwif->cursg].length) {
--		hwif->cursg++;
-+	if ((hwif->cursg_ofs * SECTOR_SIZE) == cursg->length) {
-+		hwif->cursg = sg_next(hwif->cursg);
- 		hwif->cursg_ofs = 0;
- 	}
- 
-@@ -367,6 +374,8 @@ static ide_startstop_t task_error(ide_drive_t *drive, struct request *rq,
- 
- static void task_end_request(ide_drive_t *drive, struct request *rq, u8 stat)
- {
-+	HWIF(drive)->cursg = NULL;
-+
- 	if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
- 		ide_task_t *task = rq->special;
- 
-diff --git a/drivers/ide/mips/au1xxx-ide.c b/drivers/ide/mips/au1xxx-ide.c
-index 2e7013a..48cfb62 100644
---- a/drivers/ide/mips/au1xxx-ide.c
-+++ b/drivers/ide/mips/au1xxx-ide.c
-@@ -324,7 +324,7 @@ static int auide_build_dmatable(ide_drive_t *drive)
- 			cur_addr += tc;
- 			cur_len -= tc;
- 		}
--		sg++;
-+		sg = sg_next(sg);
- 		i--;
- 	}
- 
-diff --git a/drivers/ide/pci/sgiioc4.c b/drivers/ide/pci/sgiioc4.c
-index d396b29..9e36b29 100644
---- a/drivers/ide/pci/sgiioc4.c
-+++ b/drivers/ide/pci/sgiioc4.c
-@@ -531,7 +531,7 @@ sgiioc4_build_dma_table(ide_drive_t * drive, struct request *rq, int ddir)
- 			}
- 		}
- 
--		sg++;
-+		sg = sg_next(sg);
- 		i--;
- 	}
- 
-diff --git a/drivers/ide/ppc/pmac.c b/drivers/ide/ppc/pmac.c
-index e46f472..9f78c6a 100644
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -1648,7 +1648,7 @@ pmac_ide_build_dmatable(ide_drive_t *drive, struct request *rq)
- 			cur_len -= tc;
- 			++table;
- 		}
--		sg++;
-+		sg = sg_next(sg);
- 		i--;
- 	}
- 
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 19ab258..1e6639e 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -767,7 +767,7 @@ typedef struct hwif_s {
- 
- 	unsigned int nsect;
- 	unsigned int nleft;
--	unsigned int cursg;
-+	struct scatterlist *cursg;
- 	unsigned int cursg_ofs;
- 
- 	int		rqsize;		/* max sectors per request */
+             if (--sg_elem_cnt == 0)
+             {   /* Last ADV_SG_BLOCK and scatter-gather entry. */
+@@ -6705,7 +6705,6 @@ adv_get_sglist(asc_board_t *boardp, adv_req_t *reqp, struct scsi_cmnd *scp, int
+                 sg_block->sg_ptr = 0L;    /* Last ADV_SG_BLOCK in list. */
+                 return ADV_SUCCESS;
+             }
+-            slp++;
+         }
+         sg_block->sg_cnt = NO_OF_SG_PER_BLOCK;
+         prev_sg_block = sg_block;
 -- 
 1.5.3.rc0.90.gbaa79
 
