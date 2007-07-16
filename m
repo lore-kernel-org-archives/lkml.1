@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbXGPHUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbXGPHWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbXGPHUT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 03:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbXGPHUF
+	id S1757434AbXGPHWh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 03:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXGPHWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 03:20:05 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:54776 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752198AbXGPHUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 03:20:02 -0400
-Subject: Re: [EXT4 set 9][PATCH
-	4/5]Morecleanups:ext4_extent_compilation_fixes
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-In-Reply-To: <20070710231837.2848ab83.akpm@linux-foundation.org>
-References: <1183275531.4010.140.camel@localhost.localdomain>
-	 <20070710231837.2848ab83.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 16 Jul 2007 00:19:46 -0700
-Message-Id: <1184570386.4005.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Mon, 16 Jul 2007 03:22:30 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:49003 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752889AbXGPHW3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 03:22:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=NPbQ9X7yImf52ge79QvkK/mLQFyuElDDqqFqYaMgAEzY+9G3qodQC/tSuH9FmJMLcPswKZIkaV1C1yKr4bdzCFc6tUHu5iA3+HCo5HX8BrPKMLIYJFnOluxFBaSb60l9Y3VAzwq0sxdLXbKH0Xvt8GZIYn5/9omGQ3mcrS5qEKk=
+Message-ID: <84144f020707160022p37a2d712g21c3d5c89ed6345d@mail.gmail.com>
+Date: Mon, 16 Jul 2007 10:22:29 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] slob: reduce list scanning
+Cc: "Matt Mackall" <mpm@selenic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <469B09AB.5010309@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070714055434.GQ11115@waste.org> <469B09AB.5010309@yahoo.com.au>
+X-Google-Sender-Auth: 89e18d3e1050de26
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-10 at 23:18 -0700, Andrew Morton wrote:
-> On Sun, 01 Jul 2007 03:38:51 -0400 Mingming Cao <cmm@us.ibm.com> wrote:
-> 
-> > Subject: [EXT4 set 9][PATCH 4/5]Morecleanups:ext4_extent_compilation_fixes
-> > Date: 	Sun, 01 Jul 2007 03:38:51 -0400
-> > Sender: linux-kernel-owner@vger.kernel.org
-> > Organization: IBM Linux Technology Center
-> > X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-> > 
-> > From: Dmitry Monakhov <dmonakhov@sw.ru>
-> > Subject: ext4: extent compilation fixes
-> 
-> I hope this patch series will hit git with nice titles like "ext4: extent
-> compilation fixes" and not funny ones like
-> "Morecleanups:ext4_extent_compilation_fixes".
-> 
-Sure, the changelog keep the nice tile "Subject: ext4: extent
-compilation fixes"
+On 7/16/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> Actually SLOB potentially has some fundamental CPU cache hotness
+> advantages over the other allocators, for the same reasons as
+> its space advantages.
 
-> > Fix compilation with EXT_DEBUG, also fix leXX_to_cpu convertions.
-> 
-> "conversions".
-
-Done.
-
-Thanks,
-Mingming
-
+Because consecutive allocations hit the same cache-hot page regardless
+of requested size where as SLUB by definition distributes allocations
+to different pages (some of which may not be hot)?
