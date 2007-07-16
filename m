@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbXGPPzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbXGPP5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764894AbXGPPzq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758595AbXGPPzj
+	id S932136AbXGPP5c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758092AbXGPP5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:55:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:51378 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758092AbXGPPzi (ORCPT
+	Mon, 16 Jul 2007 11:57:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:5537 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757989AbXGPP5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:55:38 -0400
+	Mon, 16 Jul 2007 11:57:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oQRmu9woo7/zuQHx3s0tXEjD7rMHEG4GEVD4RHTSxfywo8O6EvbRkfqlEQsKV/0mMRVqetGWyCEKMithYHhyi68AbE9HCdkBVfaubZ2+i7301/lrqg+4FdTTXh9YnGXR2KruW5e8vS8uLzigcoBDrJtbtQV1TxMSAxquJhesKBs=
-Message-ID: <9c21eeae0707160855g7f8ca115g272ba9d99a21ab6e@mail.gmail.com>
-Date: Mon, 16 Jul 2007 08:55:38 -0700
-From: "David Brown" <dmlb2000@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: dm-crypt aes sha512 and I/O performance
-In-Reply-To: <9c21eeae0707141718r16de38a7rac80458c168b5f05@mail.gmail.com>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Ds/wDH4+ga4/dAOVlMHASq16r1XLBSRMYhjpc7V5zHHi4vJLqw9kqIEIPb9QqQ9OqiuwxSRdAX4dKLClfCk9kyjiJNfUg7VDdw/rjuw73MjnTpJVJYisBYDG4lrzpxaCGJuX+9U9QGf6b9Pook0DqqMpYVLX6nW5j9oVraoXsVw=
+Message-ID: <2c0942db0707160857s25cbce19j7f057b14e74651e8@mail.gmail.com>
+Date: Mon, 16 Jul 2007 08:57:22 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Roman Zippel" <zippel@linux-m68k.org>
+Subject: Re: [PATCH/RFC] msleep() with hrtimers
+Cc: "Jonathan Corbet" <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.64.0707161654130.1817@scrub.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <9c21eeae0707141718r16de38a7rac80458c168b5f05@mail.gmail.com>
+References: <21003.1184596954@lwn.net>
+	 <Pine.LNX.4.64.0707161654130.1817@scrub.home>
+X-Google-Sender-Auth: 24ef4ff9717e420d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/14/07, David Brown <dmlb2000@gmail.com> wrote:
-> I was forced to put full (almost) hard drive encryption on my laptop
-> so that all the Open Source Work I get paid to do will be protected in
-> case someone tries to steal it and so they won't find any personal
-> information about me if they get a hold of my laptop (because every
-> idiot keeps their entire life history on their computers).
+On 7/16/07, Roman Zippel <zippel@linux-m68k.org> wrote:
+> On Mon, 16 Jul 2007, Jonathan Corbet wrote:
+> > > One possible problem here is that setting up that timer can be
+> > > considerably more expensive, for a relative timer you have to read the
+> > > current time, which can be quite expensive (e.g. your machine now uses the
+> > > PIT timer, because TSC was deemed unstable).
+> >
+> > That's a possibility, I admit I haven't benchmarked it.  I will say that
+> > I don't think it will be enough to matter - msleep() is not a hot-path
+> > sort of function.  Once the system is up and running it almost never
+> > gets called at all - at least, on my setup.
 >
-> Besides the futility of the above statement I've been noticing some
-> oddities with how linux and dm-crypt handles I/O on the system.
+> That's a bit my problem - we have to consider other setups as well.
+> Is it worth converting all msleep users behind their back or should we
+> just a provide a separate function for those who care?
+
+As a driver author (2.4 timeframe, embedded platform, see gitinc.com
+for the hardware description), I would rather msleep did what it says
+it's going to do. If the current one can wait 20 times longer than you
+ask for, then that's just broken.
+
+> > > One question here would be, is it really a problem to sleep a little more?
+> >
+> > "A little more" is a bit different than "twenty times as long as you
+> > asked for."  That "little bit more" added up to a few seconds when
+> > programming a device which needs a brief delay after tweaking each of
+> > almost 200 registers.
 >
-> Now normally I get about 30Mb/s write speed I would expect some sort
-> of drop in performance due to the encryption but currently I'm getting
-> about 9Mb/s write speed and I'm kinda confused as to what the choke
-> point is and how to improve the write speed, if it can be.
->
-> Currently both my swap and root are encrypted with the default debian
-> installer encryption and there's two kcryptd processes running. Now
-> from what I've noticed when I'm dumping data to disk they both seem to
-> be working, yet I'm not swapping or anything. So am I right to assume
-> that the two kcryptd processes are running in parallel encrypting the
-> data to the one root device? Also they only seem to be using 20% of
-> the processors they are running on, why isn't it 100%? I'm guessing
-> that the data isn't being either compressed or blown up when
-> encrypting using this encryption style (but I'm not an expert). Would
-> making more kcryptd threads increase the I/O speed (more processes
-> doing encrypting)? Is there a way to specify more threads of kcryptd?
->
-> I'm kinda at a loss, so any help would be appreciated.
-> - David Brown
->
+> Which driver is this? I'd like to look at this, in case there's some other
+> hidden problem.
 
-I should remember never to email the LKML during the weekend...
+"Hidden problem"? Lots of hardware has quiescent wait-time
+requirements, to guarantee that whatever is going on it it's little
+state machine head finally reaches a stable state. Waiting for those
+changes to take effect before starting the next set of register
+reprogramming is a common requirement -- on the hardware I've worked
+with at least.
 
-Did anyone see this?
-
-I did some number crunching and with about 15Mb/s read and 9Mb/s write
-I end up copying files on the hard drive locally at about 3Mb/s
-(rounded). Which is really lame getting twice without encryption was
-much better.
-
-I'm using the ata_piix driver in the 2.6.22.1 kernel.
-
-Thanks,
-- David Brown
+Ray
