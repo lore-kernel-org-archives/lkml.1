@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761887AbXGPCeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762318AbXGPCys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761887AbXGPCeh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 22:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757206AbXGPCe2
+	id S1762318AbXGPCys (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 22:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759297AbXGPCyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 22:34:28 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34194 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754898AbXGPCe1 (ORCPT
+	Sun, 15 Jul 2007 22:54:39 -0400
+Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:28729 "HELO
+	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759234AbXGPCyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 22:34:27 -0400
-Date: Mon, 16 Jul 2007 04:33:46 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/mmc/core/: make 4 functions static
-Message-ID: <20070716023345.GO3565@stusta.de>
-References: <20070712235602.GV3492@stusta.de> <20070715185234.584f7e1c@poseidon.drzeus.cx>
+	Sun, 15 Jul 2007 22:54:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=cdz5sJPZXQzfwqd0AH/R+LfZR8ZYNjalYEXnFMYtumJdVeJtT4ejIz82HXN6tQENQSclTVI2z4pPWxDOA/io1aHxMFhf+sXW4ejEG4/75Tli6a/HR5HGu+8CquPqKUoEWjcZpDaR+D1fAtj9HrKzWwGotQc21OAXCsej7FHnD5c=  ;
+X-YMail-OSG: w2xaeWgVM1lnj3hMPCbAgYW6KYJhDmxlXh7iQxyps32hm91lq7Uw84h8acZ812fl.MLDhbSDKg--
+From: David Brownell <david-b@pacbell.net>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] minimal fixes for drivers/usb/gadget/m66592-udc.c
+Date: Sun, 15 Jul 2007 19:54:36 -0700
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
+References: <200707151607.20275.david-b@pacbell.net> <200707151618.10688.david-b@pacbell.net> <20070715232410.GH21668@ftp.linux.org.uk>
+In-Reply-To: <20070715232410.GH21668@ftp.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070715185234.584f7e1c@poseidon.drzeus.cx>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200707151954.36583.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 15, 2007 at 06:52:34PM +0200, Pierre Ossman wrote:
-> On Fri, 13 Jul 2007 01:56:02 +0200
-> Adrian Bunk <bunk@stusta.de> wrote:
+On Sunday 15 July 2007, Al Viro wrote:
+> On Sun, Jul 15, 2007 at 04:18:10PM -0700, David Brownell wrote:
+> > Re the leaks, in probe() request_irq() isn't cleaned up ... but it
+> > looked to me like the rest of the allocations did get cleaned up
+> > afer probe() errors.  But remove() does indeed leak the memory you
+> > highlighted.
 > 
-> > This patch makes the following needlessly global functions static:
-> > - sd_ops.c: mmc_wait_for_app_cmd()
-> > - core.c: mmc_start_request()
-> 
-> I am a bit torn about these two. Even though we don't cater to
-> out-of-tree stuff, having these as exported symbols shows that they are
-> part of the API. Removing them might risk people going about doing
-> something silly because they don't know the functionality exists, and
-> we might not spot it at patch review time.
+> Why not make ep0_buf a 16bit field in that struct?
 
-If mmc_start_request() is considered part of an API people should use, 
-why isn't there a prototype in a header file?
+Ask the driver author.  :)
 
-> Rgds
+That should work, given proper byteswapping.  It's only
+used to transmit certain results.
 
-cu
-Adrian
+- Dave
+ 
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
