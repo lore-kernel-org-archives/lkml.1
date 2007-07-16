@@ -1,43 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762695AbXGPP3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764249AbXGPPcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762695AbXGPP3j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbXGPP3b
+	id S1764249AbXGPPcz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbXGPPcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:29:31 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:44760 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754331AbXGPP3a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:29:30 -0400
-Date: Mon, 16 Jul 2007 17:29:45 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 3/10] sysfs: fix error handling in create_files()
-Message-ID: <20070716172945.54e07c3c@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070716135230.GC2040@APFDCB5C>
-References: <20070716134855.GA1858@APFDCB5C>
-	<20070716135230.GC2040@APFDCB5C>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 16 Jul 2007 11:32:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43322 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754331AbXGPPcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:32:47 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Mon, 16 Jul 2007 17:40:25 +0200
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707161417.50166.rjw@sisk.pl> <1184596950.24143.28.camel@caritas-dev.intel.com>
+In-Reply-To: <1184596950.24143.28.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707161740.26703.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007 22:52:30 +0900,
-Akinobu Mita <akinobu.mita@gmail.com> wrote:
+On Monday, 16 July 2007 16:42, Huang, Ying wrote:
+> On Mon, 2007-07-16 at 14:17 +0200, Rafael J. Wysocki wrote:
+> > > is this  a matter of running some test to find out, or is this a question 
+> > > for the kexec implemantors?
+> > 
+> > Actually, I'd like someone to tell me. ;-)
+> > 
+> > I've browsed the kexec code, but haven't found anything related to the devices
+> > in it.  Perhaps I didn't know where to look ...
+> 
+> There are two stages for kexec. For "normal" kexec, first the
+> sys_kexe_load is called to load the kernel image, then
+> sys_reboot(LINUX_REBOOT_CMD_KEXEC) is called to boot the new kernel.
 
-> Current error handling in create_files() attempts to remove
-> all attributes passed by argument by remove_files(). But it should
-> only remove the attributes that have been successfully added.
+OK, thanks.  This is the information that I was missing.
 
-While this is certainly cleaner, a question out of curiousity: Does
-this fix any problem you saw? sysfs_hash_and_remove() used to be safe
-on non-existing attributes...
+> The call chain is as follow:
+> 
+> sys_reboot(LINUX_REBOOT_CMD_KEXEC)
+>     kernel_kexec
+>         kernel_restart_prepare
+>             device_shutdown
+>         machine_shutdown
+>         machine_kexec
+> 
+> In device_shutdown, the dev->bus->shutdown or dev->driver->shutdown of
+> every device is called to put device in quiescent state. In
+> machine_kexec, the new kernel is booted.
+
+Yes.
+
+> So, for normal kexec, there is no code path for device state saving and
+> restoring.
+
+Exactly.
+
+> State of device can be restore after shutdown? I don't think so.
+
+No, it can't, but we need something like this for hibernation and
+device_shutdown() is not appropriate for this purpose IMO.
+
+> > I think that the right approach is to separate devices' suspend from the
+> > devices' hibernation-related operations FIRST.  Then, many different approaches
+> > to hibernation will be much easier to implement than they are now.
+> > 
+> > I've been saying this for weeks now, but no one seems to listen frankly I'm
+> > tired of repeating it:
+> 
+> I agree with you on this. :)
+
+OK :-)
+
+> > If we want to improve things, let's do that IN AN ORDERED WAY.  If everyone
+> > will come up with a new idea every two days, we won't be able to get anything
+> > actually _done_.
+> 
+> Yes, and I am very glad to collaborate with everybody who is interested
+> in this subject. But I think we should try to verify our idea with code
+> as early as possible. Now, I am trying to implement a prototype of
+> kexec/kdump based image writing/reading mechanism to verify the
+> feasibility. (I suppose you are working on separating device suspend and
+> device hibernate).
+
+Yes, I am.
+
+> What do you think about the pattern of collaboration?
+
+Sounds good.
+
+> At last, thank you very much for your valuable reminding in the mail of
+> "hibernation considerations".
+
+You're welcome. :-)
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
