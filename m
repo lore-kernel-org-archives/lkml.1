@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbXGPDex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbXGPEQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763416AbXGPDex (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 23:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759459AbXGPDeq
+	id S1755623AbXGPEQn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 00:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbXGPEQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 23:34:46 -0400
-Received: from www.sysreset.com ([209.97.229.250]:10582 "EHLO sysreset"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759038AbXGPDep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 23:34:45 -0400
-X-Greylist: delayed 357 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Jul 2007 23:34:45 EDT
-Message-Id: <6.2.0.14.2.20070715210841.02fcab90@linux.sysreset.com>
-X-Mailer: QUALCOMM Windows Eudora Version 6.2.0.14
-Date: Sun, 15 Jul 2007 21:28:39 -0600
-To: linux-ide@vger.kernel.org
-From: Ryan Power <rpower@sysreset.com>
-Subject: [PATCH 2.6.22.1] libata: Adjust libata to ignore errors after
-  spinup
-Cc: jgarzik@pobox.com, Mark Lord <liml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46982875.60503@rtr.ca>
-References: <6.2.0.14.2.20070713000748.031a2660@linux.sysreset.com>
- <469775E0.2000609@rtr.ca>
- <6.2.0.14.2.20070713184231.02db2d20@linux.sysreset.com>
- <46982875.60503@rtr.ca>
+	Mon, 16 Jul 2007 00:16:34 -0400
+Received: from nlpi043.sbcis.sbc.com ([207.115.36.72]:48049 "EHLO
+	nlpi043.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817AbXGPEQd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 00:16:33 -0400
+X-Greylist: delayed 448 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 00:16:33 EDT
+X-ORBL: [68.91.195.235]
+Date: Sun, 15 Jul 2007 23:01:00 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, konishi.ryusuke@lab.ntt.co.jp,
+       mhalcrow@us.ibm.com
+Subject: [PATCH] eCryptfs: ecryptfs_setattr() bugfix
+Message-ID: <20070716040059.GA6275@halcrow.us>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ryan Power <rpower@sysreset.com>
+There is another bug recently introduced into the ecryptfs_setattr()
+function in 2.6.22. eCryptfs will attempt to treat special files like
+regular eCryptfs files on chmod, chown, and so forth. This leads to a
+NULL pointer dereference. This patch validates that the file is a
+regular file before proceeding with operations related to the inode's
+crypt_stat.
 
-Adjust libata to ignore errors after spinup
+Thanks to Ryusuke Konishi for finding this bug and suggesting the fix.
 
-This patch is to ignore errors from the spinup attempt if the drive is
-in the "standby id" state.
-
-Signed-off-by: Ryan Power <rpower@sysreset.com>
-
+Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
 ---
+ fs/ecryptfs/inode.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Index: drivers.new/ata/libata-core.c
---- drivers/ata/libata-core.c   2007-07-10 12:56:30.000000000 -0600
-+++ drivers.new/ata/libata-core.c       2007-07-15 01:58:49.000000000 -0600
-@@ -1750,7 +1750,7 @@ int ata_dev_read_id(struct ata_device *d
-                 tf.protocol = ATA_PROT_NODATA;
-                 tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
-                 err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, 
-NULL, 0);
--               if (err_mask) {
-+               if (err_mask && id[2] != 0x738c) {
-                         rc = -EIO;
-                         reason = "SPINUP failed";
-                         goto err_out;
-
-
+diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+index 83e94fe..9c6877c 100644
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -902,8 +902,9 @@ static int ecryptfs_setattr(struct dentry *dentry, struct iattr *ia)
+ 	mutex_lock(&crypt_stat->cs_mutex);
+ 	if (S_ISDIR(dentry->d_inode->i_mode))
+ 		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
+-	else if (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED)
+-		 || !(crypt_stat->flags & ECRYPTFS_KEY_VALID)) {
++	else if (S_ISREG(dentry->d_inode->i_mode)
++		 && (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED)
++		     || !(crypt_stat->flags & ECRYPTFS_KEY_VALID))) {
+ 		struct vfsmount *lower_mnt;
+ 		struct file *lower_file = NULL;
+ 		struct ecryptfs_mount_crypt_stat *mount_crypt_stat;
+-- 
+1.5.2.1
