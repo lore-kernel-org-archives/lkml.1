@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765096AbXGPRic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbXGPRqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765096AbXGPRic (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 13:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756828AbXGPRiY
+	id S1756672AbXGPRqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 13:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXGPRqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 13:38:24 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:7095 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 13:46:10 -0400
+Received: from vena.lwn.net ([206.168.112.25]:36950 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752105AbXGPRiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 13:38:23 -0400
-Date: Mon, 16 Jul 2007 19:37:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Brown <dmlb2000@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: dm-crypt aes sha512 and I/O performance
-Message-ID: <20070716173738.GD5195@kernel.dk>
-References: <9c21eeae0707141718r16de38a7rac80458c168b5f05@mail.gmail.com> <9c21eeae0707160855g7f8ca115g272ba9d99a21ab6e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9c21eeae0707160855g7f8ca115g272ba9d99a21ab6e@mail.gmail.com>
+	id S1751782AbXGPRqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 13:46:10 -0400
+To: Roman Zippel <zippel@linux-m68k.org>
+cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH/RFC] msleep() with hrtimers 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Mon, 16 Jul 2007 17:43:22 +0200."
+             <Pine.LNX.4.64.0707161654130.1817@scrub.home> 
+Date: Mon, 16 Jul 2007 11:46:09 -0600
+Message-ID: <28799.1184607969@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16 2007, David Brown wrote:
-> On 7/14/07, David Brown <dmlb2000@gmail.com> wrote:
->> I was forced to put full (almost) hard drive encryption on my laptop
->> so that all the Open Source Work I get paid to do will be protected in
->> case someone tries to steal it and so they won't find any personal
->> information about me if they get a hold of my laptop (because every
->> idiot keeps their entire life history on their computers).
->>
->> Besides the futility of the above statement I've been noticing some
->> oddities with how linux and dm-crypt handles I/O on the system.
->>
->> Now normally I get about 30Mb/s write speed I would expect some sort
->> of drop in performance due to the encryption but currently I'm getting
->> about 9Mb/s write speed and I'm kinda confused as to what the choke
->> point is and how to improve the write speed, if it can be.
->>
->> Currently both my swap and root are encrypted with the default debian
->> installer encryption and there's two kcryptd processes running. Now
->> from what I've noticed when I'm dumping data to disk they both seem to
->> be working, yet I'm not swapping or anything. So am I right to assume
->> that the two kcryptd processes are running in parallel encrypting the
->> data to the one root device? Also they only seem to be using 20% of
->> the processors they are running on, why isn't it 100%? I'm guessing
->> that the data isn't being either compressed or blown up when
->> encrypting using this encryption style (but I'm not an expert). Would
->> making more kcryptd threads increase the I/O speed (more processes
->> doing encrypting)? Is there a way to specify more threads of kcryptd?
->>
->> I'm kinda at a loss, so any help would be appreciated.
->> - David Brown
->>
->
-> I should remember never to email the LKML during the weekend...
->
-> Did anyone see this?
->
-> I did some number crunching and with about 15Mb/s read and 9Mb/s write
-> I end up copying files on the hard drive locally at about 3Mb/s
-> (rounded). Which is really lame getting twice without encryption was
-> much better.
->
-> I'm using the ata_piix driver in the 2.6.22.1 kernel.
+Roman Zippel <zippel@linux-m68k.org> wrote:
 
-Try and blktrace the crypt device, perhaps? Do a simple dd from your
-crypted device to /dev/null, and run blktrace on the device at the same
-time. Just for a few seconds. Then check with blkparse if anything
-obvious pops up.
+> > That's a possibility, I admit I haven't benchmarked it.  I will say that
+> > I don't think it will be enough to matter - msleep() is not a hot-path
+> > sort of function.  Once the system is up and running it almost never
+> > gets called at all - at least, on my setup.
+> 
+> That's a bit my problem - we have to consider other setups as well.
+> Is it worth converting all msleep users behind their back or should we 
+> just a provide a separate function for those who care?
 
--- 
-Jens Axboe
+Any additional overhead is clearly small - enough not to disrupt a *high
+resolution* timer, after all.  And msleep() is used mostly during
+initialization time.  My box had a few hundred calls, almost all during
+boot.  Any cost will be bounded by the fact that, well, it sleeps for
+milliseconds on every call.
 
+I could run a million-msleep profile if you really want, but I just
+can't imagine it's going to have a measurable effect on any real-world
+situation.  Is there a specific setup you're worried about?
+
+I'm not *that* attached to this patch; if it causes heartburn we can
+just forget it.  But I had thought it might be useful...
+
+> Which driver is this? I'd like to look at this, in case there's some other 
+> hidden problem. 
+
+drivers/media/video/cafe_ccic.c, and cafe_smbus_write_data() in
+particular.  The "hidden problem," though, is that the hardware has
+periods where reading the status registers will send it off into its
+room where it will hide under its bed and never come out.
+
+I have an alternative which avoids the sleep at the cost of a small,
+relatively harmless race; it may be my real solution in the end, we'll
+see.
+
+> > Except that then, with the current implementation, you're paying for the
+> > higher HZ whenever the CPU is busy.  I bet that doesn't take long to
+> > overwhelm any added overhead in the hrtimer msleep().
+> 
+> Actually if that's the case I'd consider this a bug, where is that extra 
+> cost coming from?
+
+My understanding is that the current dyntick code only turns off the
+tick during idle periods; while things are running it's business as
+usual.  Perhaps I misunderstood?
+
+jon
