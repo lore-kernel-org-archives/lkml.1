@@ -1,90 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761901AbXGPKhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbXGPKsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761901AbXGPKhU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 06:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbXGPKhI
+	id S1760909AbXGPKsy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 06:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756754AbXGPKso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 06:37:08 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:40056 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754745AbXGPKhH (ORCPT
+	Mon, 16 Jul 2007 06:48:44 -0400
+Received: from emh07.mail.saunalahti.fi ([62.142.5.117]:37994 "EHLO
+	emh07.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756697AbXGPKsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 06:37:07 -0400
-Date: Mon, 16 Jul 2007 11:37:04 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: -mm merge plans -- lumpy reclaim
-Message-ID: <20070716103704.GA1082@skynet.ie>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <46937DA2.4040302@shadowen.org> <4694A427.7070708@shadowen.org> <20070711094600.b2a525d5.akpm@linux-foundation.org>
+	Mon, 16 Jul 2007 06:48:43 -0400
+Date: Mon, 16 Jul 2007 13:48:28 +0300 (EEST)
+From: Kai Makisara <Kai.Makisara@kolumbus.fi>
+X-X-Sender: makisara@kai.makisara.local
+To: Bruce Allen <ballen@gravity.phys.uwm.edu>
+cc: Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
+       Douglas Gilbert <dougg@torque.net>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Dvorak <fermentol@gmail.com>,
+       Klaus Fuerstberger <kfuerstberger@arcor.de>,
+       Bruce Allen <bruce.allen@aei.mpg.de>, Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SMART problems in 2.6.22
+In-Reply-To: <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local>
+Message-ID: <Pine.LNX.4.64.0707161327470.4941@kai.makisara.local>
+References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu>
+ <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070711094600.b2a525d5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Antivirus: VAMS
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (11/07/07 09:46), Andrew Morton didst pronounce:
-> On Wed, 11 Jul 2007 10:34:31 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+On Tue, 10 Jul 2007, Kai Makisara wrote:
+
+> On Sun, 8 Jul 2007, Bruce Allen wrote:
 > 
-> > [Seems a PEBKAC occured on the subject line, resending lest it become a
-> > victim of "oh thats spam".]
+> > Mark, David, Doug, Tejin, Alan, Jeff, LKML,
 > > 
-> > Andy Whitcroft wrote:
-> > > Andrew Morton wrote:
-> > > 
-> > > [...]
-> > >> lumpy-reclaim-v4.patch
-> > >> have-kswapd-keep-a-minimum-order-free-other-than-order-0.patch
-> > >> only-check-absolute-watermarks-for-alloc_high-and-alloc_harder-allocations.patch
-> > >>
-> > >>  Lumpy reclaim.  In a similar situation to Mel's patches.  Stuck due to
-> > >>  general lack or interest and effort.
-> > > 
-> > > The lumpy reclaim patches originally came out of work to support Mel's
-> > > anti-fragmentation work.  As such I think they have become somewhat
-> > > attached to those patches.  Whilst lumpy is most effective where
-> > > placement controls are in place as offered by Mel's work, we see benefit
-> > > from reduction in the "blunderbuss" effect when we reclaim at higher
-> > > orders.  While placement control is pretty much required for the very
-> > > highest orders such as huge page size, lower order allocations are
-> > > benefited in terms of lower collateral damage.
-> > > 
-> > > There are now a few areas other than huge page allocations which can
-> > > benefit.  Stacks are still order 1.  Jumbo frames want higher order
-> > > contiguous pages for there incoming hardware buffers.  SLUB is showing
-> > > performance benefits from moving to a higher allocation order.  All of
-> > > these should benefit from more aggressive targeted reclaim, indeed I
-> > > have been surprised just how often my test workloads trigger lumpy at
-> > > order 1 to get new stacks.
-> > > 
-> > > Truly representative work loads are hard to generate for some of these.
-> > >  Though we have heard some encouraging noises from those who can
-> > > reproduce these problems.
+> > I'm afraid that there may be some problem with SMART + libata in the 2.6.22
+> > kernel.  An hour ago I discovered that I missed a month of correspondence
+> > (some LKML, some private) about this problem which Alan, Tejun, Jeff, Mark and
+> > others copied to me -- it was automatically shoved into one of my mailboxes by
+> > my mail client.  Sorry about that.  So I am trying to catch up to see if there
+> > is some real problem or not.
+> > 
+...
+> > http://www.ussg.iu.edu/hypermail/linux/kernel/0706.1/0849.html
 > 
-> I'd expect that the main application for lumpy-reclaim is in keeping a pool
-> of order-2 (say) pages in reserve for GFP_ATOMIC allocators.  ie: jumbo
-> frames.
+> I have done some more debugging on this one. An easy way to reproduce the 
+> problem is to use 'smartctl -H /dev/sdb'. If I enable debugging with '-r 
+> ioctl,2', I find the following difference between outputs using 2.6.21.1 
+> (works OK) and 2.6.22 (fails):
 > 
-> At present this relies upon the wakeup_kswapd(..., order) mechanism.
+...
+> The log shows that the sense data returned by the commands differ: with 
+> 2.6.22 the bytes 4f and 2c (tf.lbam and tf.lbah) are not returned. Both of 
+> the status commands fail to return these bytes but the tests in smartctl 
+> are more strict for the second case. This is why the second status command 
+> seems to be failing.
 > 
-> How effective is this at solving the jumbo frame problem?
+> Next I added printks to the function ata_qc_complete() in libata-core.c. 
+> The changed code from 2.6.22 at line 5222 looked like this:
 > 
-> (And do we still have a jumbo frame problem?  Reports seems to have subsided)
+...
+> The output from 2.6.21.6 looks like this:
+> 
+> Jul  9 18:37:44 kai kernel: [  193.443874] ata_qc_complete before: 00 00 00 40
+> Jul  9 18:37:44 kai kernel: [  193.443880] ata_qc_complete 16: 00 4f c2 50
+> Jul  9 18:37:44 kai kernel: [  193.462802] ata_qc_complete before: 00 4f c2 40
+> Jul  9 18:37:44 kai kernel: [  193.462807] ata_qc_complete 16: 00 4f c2 50
+> 
+> i.e., the bytes are returned.
+> 
+> The output from 2.6.22 is different:
+> 
+> Jul  9 18:44:35 kai kernel: [  147.765965] ata_qc_complete before: 00 00 00 40
+> Jul  9 18:44:35 kai kernel: [  147.765970] ata_qc_complete 16: 00 00 00 50
+> Jul  9 18:44:35 kai kernel: [  147.784890] ata_qc_complete before: 00 00 00 40
+> Jul  9 18:44:35 kai kernel: [  147.784894] ata_qc_complete 16: 00 00 00 50
+> 
+> The lbam and lbah bytes are not returned but the command byte is.
+> 
+The other system with the Maxtor disk fails in a slightly different way 
+(it correctly returns the c2 byte but not in the correct location):
 
-The patches have an application with hugepage pool resizing.
+[  162.896173] ata_qc_complete before: 00 00 00 40
+[  162.896179] ata_qc_complete 16: 00 c2 00 50
 
-When lumpy-reclaim is used used with ZONE_MOVABLE, the hugepages pool can
-be resized with greater reliability. Testing on a desktop machine with 2GB
-of RAM showed that growing the hugepage pool with ZONE_MOVABLE on it's own
-was very slow as the success rate was quite low. Without lumpy-reclaim, each
-attempt to grow the pool by 100 pages would yield 1 or 2 hugepages. With
-lumpy-reclaim, getting 40 to 70 hugepages on each attempt was typical.
+
+
+My earlier 'git bisect' suggested that this problem surfaced after the 
+patch
+
+1e999736cafdffc374f22eed37b291129ef82e4e is first bad commit
+commit 1e999736cafdffc374f22eed37b291129ef82e4e
+Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date:   Wed Apr 11 00:23:13 2007 +0100
+
+    libata: HPA support
+
+I have now done some further tests to see what is happening. 
+It turned out that after commenting the call (at line 1956 in 
+drivers/ata/libata-core.c in 2.6.22)
+
+                        if (ata_id_hpa_enabled(dev->id))
+                           dev->n_sectors = ata_hpa_resize(dev);
+
+'smartctl -H' worked again without problems. This applied to both of the 
+systems where I see the problem. The disks in both systems support hpa but 
+nothing is hidden. Next I commented only the call to 
+ata_read_native_max_address_ext() in ata_hpa_resize(). This was enough 
+to remove the problem (as was expected).
+
+So, the question is: why does calling ata_read_native_max_address_ext() 
+when booting the system cause the SMART RETURN STATUS fail much later?
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Kai
