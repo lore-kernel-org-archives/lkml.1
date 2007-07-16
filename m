@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXGPPuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765529AbXGPPvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932461AbXGPPuS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759987AbXGPPuE
+	id S1765529AbXGPPvV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759987AbXGPPvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:50:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45466 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757064AbXGPPuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:50:01 -0400
-Date: Mon, 16 Jul 2007 11:49:39 -0400
-From: Dave Jones <davej@redhat.com>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Meelis Roos <mroos@linux.ee>
-Subject: Re: [PATCH] 9p: fix debug compilation error
-Message-ID: <20070716154939.GA30789@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Eric Van Hensbergen <ericvh@gmail.com>,
-	linux-kernel@vger.kernel.org, Meelis Roos <mroos@linux.ee>
-References: <Pine.SOC.4.64.0707161432480.1471@math.ut.ee> <11845972692586-git-send-email-ericvh@gmail.com>
+	Mon, 16 Jul 2007 11:51:08 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:61251 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754331AbXGPPvF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:51:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=j63bqsTmrsCESGAFAj/TwlOvHRPuZEiCAVhTzMUduKVPsXFFqPZaPkh0Ie/DjHFC9NkGClUrU1rwQMA9ZKckgNp63Z0h6pwvMBi6RqDqSd/H17FnATuaG0ItmIGaq8Bu9FX8+WYf7/hgfv6NpgBQfHk2RLAsvz3W8OLTyZg9B+E=
+Message-ID: <469B93DD.3090003@gmail.com>
+Date: Mon, 16 Jul 2007 11:50:53 -0400
+From: Florin Malita <fmalita@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11845972692586-git-send-email-ericvh@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: gregkh@suse.de
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: [PATCH] mos7720, mos7840: remove redundant urb check
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 09:47:49AM -0500, Eric Van Hensbergen wrote:
- > From: Meelis Roos <mroos@linux.ee>
- > 
- > With 9P but no 9P debug options, this error occurs:
- >   CC [M]  fs/9p/v9fs.o
- > fs/9p/v9fs.c: In function 'v9fs_parse_options':
- > fs/9p/v9fs.c:134: error: 'p9_debug_level' undeclared (first use in this function)
- > 
- > The following patch moves the definition of p9_debug_level out of #ifdef
- > and seems to fix the problem.
- > 
- > (Original patch took care of the extern definition in the includes, but
- > not the actual definition in mod.c - ericvh)
+Coverity (1709, 1710, 1711, 1712, 1713) actually flagged these as 
+REVERSE_INULLs (NULL check performed after dereference). But looking at 
+the other drivers I can't see any similar tests and the USB core already 
+makes sure urb is non-null - so might as well get rid of the checks.
 
-Seems somewhat wasteful to include the debug options when the config
-option has been disabled though.
-Wouldn't something like this (untested) make more sense ?
 
-	Dave
+Signed-off-by: Florin Malita <fmalita@gmail.com>
+---
 
----  
+ drivers/usb/serial/mos7720.c |    5 -----
+ drivers/usb/serial/mos7840.c |   19 -------------------
+ 2 files changed, 24 deletions(-)
 
-fs/9p/v9fs.c: In function 'v9fs_parse_options':
-fs/9p/v9fs.c:134: error: 'p9_debug_level' undeclared (first use in this function)
+diff --git a/drivers/usb/serial/mos7720.c b/drivers/usb/serial/mos7720.c
+index 231b584..01e811b 100644
+--- a/drivers/usb/serial/mos7720.c
++++ b/drivers/usb/serial/mos7720.c
+@@ -110,11 +110,6 @@ static void mos7720_interrupt_callback(struct urb *urb)
+ 
+ 	dbg("%s"," : Entering\n");
+ 
+-	if (!urb) {
+-		dbg("%s","Invalid Pointer !!!!:\n");
+-		return;
+-	}
+-
+ 	switch (status) {
+ 	case 0:
+ 		/* success */
+diff --git a/drivers/usb/serial/mos7840.c b/drivers/usb/serial/mos7840.c
+index 37f41f5..f76480f 100644
+--- a/drivers/usb/serial/mos7840.c
++++ b/drivers/usb/serial/mos7840.c
+@@ -436,11 +436,6 @@ static void mos7840_control_callback(struct urb *urb)
+ 	int result = 0;
+ 	int status = urb->status;
+ 
+-	if (!urb) {
+-		dbg("%s", "Invalid Pointer !!!!:\n");
+-		return;
+-	}
+-
+ 	mos7840_port = (struct moschip_port *)urb->context;
+ 
+ 	switch (status) {
+@@ -525,10 +520,6 @@ static void mos7840_interrupt_callback(struct urb *urb)
+ 	int status = urb->status;
+ 
+ 	dbg("%s", " : Entering\n");
+-	if (!urb) {
+-		dbg("%s", "Invalid Pointer !!!!:\n");
+-		return;
+-	}
+ 
+ 	switch (status) {
+ 	case 0:
+@@ -676,11 +667,6 @@ static void mos7840_bulk_in_callback(struct urb *urb)
+ 	struct tty_struct *tty;
+ 	int status = urb->status;
+ 
+-	if (!urb) {
+-		dbg("%s", "Invalid Pointer !!!!:\n");
+-		return;
+-	}
+-
+ 	if (status) {
+ 		dbg("nonzero read bulk status received: %d", status);
+ 		return;
+@@ -753,11 +739,6 @@ static void mos7840_bulk_out_data_callback(struct urb *urb)
+ 	int status = urb->status;
+ 	int i;
+ 
+-	if (!urb) {
+-		dbg("%s", "Invalid Pointer !!!!:\n");
+-		return;
+-	}
+-
+ 	mos7840_port = (struct moschip_port *)urb->context;
+ 	spin_lock(&mos7840_port->pool_lock);
+ 	for (i = 0; i < NUM_URBS; i++) {
 
-Signed-off-by: Dave Jones <davej@redhat.com>
-
---- linux-2.6.22.noarch/fs/9p/v9fs.c~	2007-07-16 11:45:56.000000000 -0400
-+++ linux-2.6.22.noarch/fs/9p/v9fs.c	2007-07-16 11:46:12.000000000 -0400
-@@ -131,7 +131,9 @@ static void v9fs_parse_options(char *opt
- 		switch (token) {
- 		case Opt_debug:
- 			v9ses->debug = option;
-+#ifdef CONFIG_NET_9P_DEBUG
- 			p9_debug_level = option;
-+#endif
- 			break;
- 		case Opt_port:
- 			v9ses->port = option;
-
--- 
-http://www.codemonkey.org.uk
