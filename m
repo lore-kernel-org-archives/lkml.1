@@ -1,71 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbXGPJ7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932778AbXGPKAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932736AbXGPJ7y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764407AbXGPJt4
+	id S932778AbXGPKAb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 06:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759379AbXGPJto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:49:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44974 "EHLO mx2.mail.elte.hu"
+	Mon, 16 Jul 2007 05:49:44 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9332 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764264AbXGPJtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:49:47 -0400
-Date: Mon, 16 Jul 2007 11:49:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc][patch 2/2] x86_64: FIFO ticket spinlocks
-Message-ID: <20070716094940.GA23080@elte.hu>
-References: <20070716045932.GA19914@wotan.suse.de> <20070716050134.GB19914@wotan.suse.de> <20070716092646.GA18423@elte.hu> <20070716094503.GC21464@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070716094503.GC21464@wotan.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1759645AbXGPJsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:48:37 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>, davem@davemloft.net
+Subject: [PATCH 13/33] SPARC: sg chaining support
+Date: Mon, 16 Jul 2007 11:47:27 +0200
+Message-Id: <118457926823-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.5.3.rc2
+In-Reply-To: <11845792671245-git-send-email-jens.axboe@oracle.com>
+References: <11845792671245-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This updates the sparc iommu/pci dma mappers to sg chaining.
 
-* Nick Piggin <npiggin@suse.de> wrote:
+Cc: davem@davemloft.net
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ arch/sparc/kernel/ioport.c      |   25 +++++++++++++------------
+ arch/sparc/mm/io-unit.c         |   12 +++++++-----
+ arch/sparc/mm/iommu.c           |   10 +++++-----
+ arch/sparc/mm/sun4c.c           |   10 ++++++----
+ include/asm-sparc/scatterlist.h |    2 ++
+ 5 files changed, 33 insertions(+), 26 deletions(-)
 
-> On Mon, Jul 16, 2007 at 11:26:46AM +0200, Ingo Molnar wrote:
-> > 
-> > * Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > [...] trylock is more significantly slower, but they are relatively 
-> > > rare.
-> > 
-> > trylock is the main thing that the spinlock debugging code uses, and 
-> > SPINLOCK_DEBUG is frequently enabled by distro kernels. OTOH, the cost 
-> > looks like to be +5 instructions, right? Still ...
-> 
-> Which trylocks do you mean? The lockbreak spinlocks use trylock, but 
-> those are not used with the ticket version.
-
-the trylocks in lib/spinlock-debug.c:
-
- static void __spin_lock_debug(spinlock_t *lock)
+diff --git a/arch/sparc/kernel/ioport.c b/arch/sparc/kernel/ioport.c
+index 62182d2..9c3ed88 100644
+--- a/arch/sparc/kernel/ioport.c
++++ b/arch/sparc/kernel/ioport.c
+@@ -35,6 +35,7 @@
+ #include <linux/slab.h>
+ #include <linux/pci.h>		/* struct pci_dev */
+ #include <linux/proc_fs.h>
++#include <linux/scatterlist.h>
+ 
+ #include <asm/io.h>
+ #include <asm/vaddrs.h>
+@@ -717,19 +718,19 @@ void pci_unmap_page(struct pci_dev *hwdev,
+  * Device ownership issues as mentioned above for pci_map_single are
+  * the same here.
+  */
+-int pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg, int nents,
++int pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sgl, int nents,
+     int direction)
  {
- ...
-                         if (__raw_spin_trylock(&lock->raw_lock))
-                                 return;
- ...
- void _raw_spin_lock(spinlock_t *lock)
- {
-         debug_spin_lock_before(lock);
-         if (unlikely(!__raw_spin_trylock(&lock->raw_lock)))
-                 __spin_lock_debug(lock);
-         debug_spin_lock_after(lock);
++	struct scatterlist *sg;
+ 	int n;
+ 
+ 	BUG_ON(direction == PCI_DMA_NONE);
+ 	/* IIep is write-through, not flushing. */
+-	for (n = 0; n < nents; n++) {
++	for_each_sg(sgl, sg, nents, n) {
+ 		BUG_ON(page_address(sg->page) == NULL);
+ 		sg->dvma_address =
+ 			virt_to_phys(page_address(sg->page)) + sg->offset;
+ 		sg->dvma_length = sg->length;
+-		sg++;
+ 	}
+ 	return nents;
  }
+@@ -738,19 +739,19 @@ int pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg, int nents,
+  * Again, cpu read rules concerning calls here are the same as for
+  * pci_unmap_single() above.
+  */
+-void pci_unmap_sg(struct pci_dev *hwdev, struct scatterlist *sg, int nents,
++void pci_unmap_sg(struct pci_dev *hwdev, struct scatterlist *sgl, int nents,
+     int direction)
+ {
++	struct scatterlist *sg;
+ 	int n;
+ 
+ 	BUG_ON(direction == PCI_DMA_NONE);
+ 	if (direction != PCI_DMA_TODEVICE) {
+-		for (n = 0; n < nents; n++) {
++		for_each_sg(sgl, sg, nents, n) {
+ 			BUG_ON(page_address(sg->page) == NULL);
+ 			mmu_inval_dma_area(
+ 			    (unsigned long) page_address(sg->page),
+ 			    (sg->length + PAGE_SIZE-1) & PAGE_MASK);
+-			sg++;
+ 		}
+ 	}
+ }
+@@ -789,34 +790,34 @@ void pci_dma_sync_single_for_device(struct pci_dev *hwdev, dma_addr_t ba, size_t
+  * The same as pci_dma_sync_single_* but for a scatter-gather list,
+  * same rules and usage.
+  */
+-void pci_dma_sync_sg_for_cpu(struct pci_dev *hwdev, struct scatterlist *sg, int nents, int direction)
++void pci_dma_sync_sg_for_cpu(struct pci_dev *hwdev, struct scatterlist *sgl, int nents, int direction)
+ {
++	struct scatterlist *sg;
+ 	int n;
+ 
+ 	BUG_ON(direction == PCI_DMA_NONE);
+ 	if (direction != PCI_DMA_TODEVICE) {
+-		for (n = 0; n < nents; n++) {
++		for_each_sg(sgl, sg, nents, n) {
+ 			BUG_ON(page_address(sg->page) == NULL);
+ 			mmu_inval_dma_area(
+ 			    (unsigned long) page_address(sg->page),
+ 			    (sg->length + PAGE_SIZE-1) & PAGE_MASK);
+-			sg++;
+ 		}
+ 	}
+ }
+ 
+-void pci_dma_sync_sg_for_device(struct pci_dev *hwdev, struct scatterlist *sg, int nents, int direction)
++void pci_dma_sync_sg_for_device(struct pci_dev *hwdev, struct scatterlist *sgl, int nents, int direction)
+ {
++	struct scatterlist *sg;
+ 	int n;
+ 
+ 	BUG_ON(direction == PCI_DMA_NONE);
+ 	if (direction != PCI_DMA_TODEVICE) {
+-		for (n = 0; n < nents; n++) {
++		for_each_sg(sgl, sg, nents, n) {
+ 			BUG_ON(page_address(sg->page) == NULL);
+ 			mmu_inval_dma_area(
+ 			    (unsigned long) page_address(sg->page),
+ 			    (sg->length + PAGE_SIZE-1) & PAGE_MASK);
+-			sg++;
+ 		}
+ 	}
+ }
+diff --git a/arch/sparc/mm/io-unit.c b/arch/sparc/mm/io-unit.c
+index 4ccda77..71442fe 100644
+--- a/arch/sparc/mm/io-unit.c
++++ b/arch/sparc/mm/io-unit.c
+@@ -11,8 +11,8 @@
+ #include <linux/mm.h>
+ #include <linux/highmem.h>	/* pte_offset_map => kmap_atomic */
+ #include <linux/bitops.h>
++#include <linux/scatterlist.h>
+ 
+-#include <asm/scatterlist.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+ #include <asm/sbus.h>
+@@ -144,8 +144,9 @@ static void iounit_get_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_bus
+ 	spin_lock_irqsave(&iounit->lock, flags);
+ 	while (sz != 0) {
+ 		--sz;
+-		sg[sz].dvma_address = iounit_get_area(iounit, (unsigned long)page_address(sg[sz].page) + sg[sz].offset, sg[sz].length);
+-		sg[sz].dvma_length = sg[sz].length;
++		sg->dvma_address = iounit_get_area(iounit, (unsigned long)page_address(sg->page) + sg->offset, sg->length);
++		sg->dvma_length = sg->length;
++		sg = sg_next(sg);
+ 	}
+ 	spin_unlock_irqrestore(&iounit->lock, flags);
+ }
+@@ -173,11 +174,12 @@ static void iounit_release_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_
+ 	spin_lock_irqsave(&iounit->lock, flags);
+ 	while (sz != 0) {
+ 		--sz;
+-		len = ((sg[sz].dvma_address & ~PAGE_MASK) + sg[sz].length + (PAGE_SIZE-1)) >> PAGE_SHIFT;
+-		vaddr = (sg[sz].dvma_address - IOUNIT_DMA_BASE) >> PAGE_SHIFT;
++		len = ((sg->dvma_address & ~PAGE_MASK) + sg->length + (PAGE_SIZE-1)) >> PAGE_SHIFT;
++		vaddr = (sg->dvma_address - IOUNIT_DMA_BASE) >> PAGE_SHIFT;
+ 		IOD(("iounit_release %08lx-%08lx\n", (long)vaddr, (long)len+vaddr));
+ 		for (len += vaddr; vaddr < len; vaddr++)
+ 			clear_bit(vaddr, iounit->bmap);
++		sg = sg_next(sg);
+ 	}
+ 	spin_unlock_irqrestore(&iounit->lock, flags);
+ }
+diff --git a/arch/sparc/mm/iommu.c b/arch/sparc/mm/iommu.c
+index be042ef..0534cd0 100644
+--- a/arch/sparc/mm/iommu.c
++++ b/arch/sparc/mm/iommu.c
+@@ -12,8 +12,8 @@
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+ #include <linux/highmem.h>	/* pte_offset_map => kmap_atomic */
++#include <linux/scatterlist.h>
+ 
+-#include <asm/scatterlist.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+ #include <asm/sbus.h>
+@@ -240,7 +240,7 @@ static void iommu_get_scsi_sgl_noflush(struct scatterlist *sg, int sz, struct sb
+ 		n = (sg->length + sg->offset + PAGE_SIZE-1) >> PAGE_SHIFT;
+ 		sg->dvma_address = iommu_get_one(sg->page, n, sbus) + sg->offset;
+ 		sg->dvma_length = (__u32) sg->length;
+-		sg++;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+@@ -254,7 +254,7 @@ static void iommu_get_scsi_sgl_gflush(struct scatterlist *sg, int sz, struct sbu
+ 		n = (sg->length + sg->offset + PAGE_SIZE-1) >> PAGE_SHIFT;
+ 		sg->dvma_address = iommu_get_one(sg->page, n, sbus) + sg->offset;
+ 		sg->dvma_length = (__u32) sg->length;
+-		sg++;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+@@ -285,7 +285,7 @@ static void iommu_get_scsi_sgl_pflush(struct scatterlist *sg, int sz, struct sbu
+ 
+ 		sg->dvma_address = iommu_get_one(sg->page, n, sbus) + sg->offset;
+ 		sg->dvma_length = (__u32) sg->length;
+-		sg++;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+@@ -325,7 +325,7 @@ static void iommu_release_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_b
+ 		n = (sg->length + sg->offset + PAGE_SIZE-1) >> PAGE_SHIFT;
+ 		iommu_release_one(sg->dvma_address & PAGE_MASK, n, sbus);
+ 		sg->dvma_address = 0x21212121;
+-		sg++;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+diff --git a/arch/sparc/mm/sun4c.c b/arch/sparc/mm/sun4c.c
+index 436021c..e5c703b 100644
+--- a/arch/sparc/mm/sun4c.c
++++ b/arch/sparc/mm/sun4c.c
+@@ -17,8 +17,8 @@
+ #include <linux/highmem.h>
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
++#include <linux/scatterlist.h>
+ 
+-#include <asm/scatterlist.h>
+ #include <asm/page.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+@@ -1229,8 +1229,9 @@ static void sun4c_get_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_bus *
+ {
+ 	while (sz != 0) {
+ 		--sz;
+-		sg[sz].dvma_address = (__u32)sun4c_lockarea(page_address(sg[sz].page) + sg[sz].offset, sg[sz].length);
+-		sg[sz].dvma_length = sg[sz].length;
++		sg->dvma_address = (__u32)sun4c_lockarea(page_address(sg->page) + sg->offset, sg->length);
++		sg->dvma_length = sg->length;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+@@ -1245,7 +1246,8 @@ static void sun4c_release_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_b
+ {
+ 	while (sz != 0) {
+ 		--sz;
+-		sun4c_unlockarea((char *)sg[sz].dvma_address, sg[sz].length);
++		sun4c_unlockarea((char *)sg->dvma_address, sg->length);
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+diff --git a/include/asm-sparc/scatterlist.h b/include/asm-sparc/scatterlist.h
+index a4fcf9a..4055af9 100644
+--- a/include/asm-sparc/scatterlist.h
++++ b/include/asm-sparc/scatterlist.h
+@@ -19,4 +19,6 @@ struct scatterlist {
+ 
+ #define ISA_DMA_THRESHOLD (~0UL)
+ 
++#define ARCH_HAS_SG_CHAIN
++
+ #endif /* !(_SPARC_SCATTERLIST_H) */
+-- 
+1.5.3.rc0.90.gbaa79
 
-am i missing something?
-
-	Ingo
