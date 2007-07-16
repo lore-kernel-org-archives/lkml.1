@@ -1,115 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbXGPFDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761249AbXGPFES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758819AbXGPFDR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 01:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbXGPFDH
+	id S1761249AbXGPFES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 01:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXGPFEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 01:03:07 -0400
-Received: from mga02.intel.com ([134.134.136.20]:56157 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbXGPFDG convert rfc822-to-8bit (ORCPT
+	Mon, 16 Jul 2007 01:04:09 -0400
+Received: from [212.12.190.156] ([212.12.190.156]:32850 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751972AbXGPFEI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 01:03:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,540,1175497200"; 
-   d="scan'208";a="266653909"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 16 Jul 2007 01:04:08 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Hibernation considerations
+Date: Mon, 16 Jul 2007 08:02:46 +0300
+User-Agent: KMail/1.5
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>, <david@lang.hm>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for  2.6.22
-Date: Sun, 15 Jul 2007 22:03:02 -0700
-Message-ID: <5FD5754DDBA0B1499B5A0B4BB54194850164B27C@fmsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070715234543.GN3565@stusta.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for  2.6.22
-Thread-Index: AcfHOlvXkbl099b0RKm1/xPcnr45qQAIC9Hw
-From: "Li, Tong N" <tong.n.li@intel.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Cc: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Jul 2007 05:03:04.0411 (UTC) FILETIME=[9767EAB0:01C7C766]
+Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <200707160802.46567.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Stern wrote:
+> As for the VGA font, the effect is easy to see: Run setfont before
+> hibernating; when you resume the original font will be back.  The
+> kernel simply does not bother to save the VGA font information across a
+> hibernate.
+
+This could probably be handled by a device suspend/resume call; but this 
+problem is not specific to kexec.
+
+> > Ok, after applying the latest kexec patches, I was able to use the
+> > kexec'd kernel to suspend to ram and resume to the normal kernel, while
+> > working under a full-blown X session.  It went without a hitch.  All
+> > that is needed now are the dump/restore hibernation-image routines.
+>
+> That's exactly my point.  While doing suspend-to-RAM from a kexec'd
+> kernel may be simple, saving the hibernation image will add
+> complications.
+
+>From a kexec'd hibernation kernel pov, both S3 and S4 look conceptually 
+exactly the same.  The only difference is, in S3 the memory is in memory and 
+in S4 the memory is on storage.  All device handling is exactly the same, so 
+if there is a problem with device handling between the kexec'd hibernation 
+kernel and the normal kernel, then that would have made itself visible.
+
+david@lang.hm wrote:
+> suspend-to-RAM should not involve kexec, the only reason for doing the
+> kexec to to get a seperate userspace to use for suspend-to-disk operations
+> instead of trying to partially freeze the sustem and keep useing it.
+
+Or you could do suspend-to-disk-and-RAM.  But in the above case, it was meant 
+to test kexec compatibility with device suspend/resume calls.
 
 
-> -----Original Message-----
-> From: Adrian Bunk [mailto:bunk@stusta.de]
-> Sent: Sunday, July 15, 2007 4:46 PM
-> To: Li, Tong N
-> Cc: Giuseppe Bilotta; linux-kernel@vger.kernel.org
-> Subject: Re: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for 2.6.22
-> 
-> On Sun, Jul 15, 2007 at 10:47:51AM -0700, Li, Tong N wrote:
-> > > On Thursday 12 July 2007 00:17, Al Boldi wrote:
-> > >
-> > > > Peter Williams wrote:
-> > > >>
-> > > >> Probably the last one now that CFS is in the main line :-(.
-> > > >
-> > > > What do you mean?  A pluggable scheduler framework is
-indispensible
-> > even
-> > > in
-> > > > the presence of CFS or SD.
-> > >
-> > > Indeed, and I hope it gets merged, giving people the chance to
-test
-> > out
-> > > different schedulers easily, without having to do patching,
-> > de-patching,
-> > > re-patching and blah blah blah.
-> > >
-> >
-> > Yes, such a framework would be invaluable, especially given that
-> > scheduling often has conflicting goals and different workloads have
-> > different requirements. No single solution fits all.
-> >...
-> 
-> Having a framework for giving people the choice between different
-> solutions usually sounds good in theory, but in practice there's the
-> often underestimated high price of people using a different solution
-> instead of reporting a problem with one solution or people adding
-> features to only one of the solutions resulting in different solutions
-> having different features and bugs instead of one solution with all
-> features and bug fixes.
-> 
-> So you should give a good technical explanation why it's not
-technically
-> possible or not desirable for one solution to work well for everyone.
+Thanks!
 
-There are various metrics a scheduler may want to optimize for, such as
-throughput, response time, power consumption, fairness, and so on. Each
-of these may also be defined differently in different environments. Take
-fairness as an example. People have traditionally talked about it in
-terms of CPU time. Now it'd also make sense to talk about scheduling
-that enables fair usage of other types of resources, such as shared
-caches. Different metrics may require different scheduling policies.
-Plus, many metrics may in fact conflict, e.g., a scheduling policy
-optimized for throughput may not be power efficient. As a result, Linux,
-and all general-purpose OSes, strive to achieve a balance, but it's
-conceivable that different hardware platforms and different application
-workloads may want to have different scheduling policies to meet their
-own needs.
+--
+Al
 
-Given that the scheduling policies can be diverse, the mechanisms to
-enforce them can also be different. The per-cpu runqueue model may be
-best for many scenarios, some scheduling policies (like many real-time
-ones) might want global knowledge about all tasks in the system and thus
-prefer a global task queue at the cost of being less scalable and
-cache-efficient. HPC systems may also want to gang-schedule. And, in
-terms of implementation, O(1) might be desirable for large-scale MP
-systems while O(log N) might be good enough for small systems. These are
-just examples that indicate the scheduler data structures, algorithms,
-and implementation can have a variety of possibilities in different
-usage models. A single scheduler that is easily extensible for
-incorporating different policies would be ideal, but IMO this is not yet
-the case and may not even be possible. Therefore, I think having a
-framework that enables multiple schedulers to co-exist would be
-invaluable and PlugSched seems to be one good step towards this.
-
-  tong
