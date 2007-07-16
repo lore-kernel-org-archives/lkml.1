@@ -1,142 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761998AbXGPUkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763437AbXGPUl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761998AbXGPUkf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 16:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759681AbXGPUkQ
+	id S1763437AbXGPUl1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 16:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbXGPUlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 16:40:16 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:34739 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759165AbXGPUkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 16:40:15 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: Build error with latest git
+	Mon, 16 Jul 2007 16:41:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:49309 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbXGPUlS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 16:41:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=UzGT4ucRu7qH8sfsvyWGHzKtLEWGTUZcEx6Qv5DRpOnuyR3QIggPVAJkcf+6nMjAOrdsrFSKPMgfDi2YBOtZMcTIndruOItXyVKrQaCZQFPiylRnS5PLYskjQ0Csz7pX0dG0Iz87xH7XjUm0QxUs5XlsEgxUhO1mf7E3Du+3icA=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Valerie Henson <val@nmt.edu>
+Subject: [PATCH][RFC] Semi-pointless NULL test in uli526x driver
+Date: Mon, 16 Jul 2007 22:40:29 +0200
 User-Agent: KMail/1.9.7
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, jens.axboe@oracle.com
-References: <469BC420.8080204@lwfinger.net>
-In-Reply-To: <469BC420.8080204@lwfinger.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       tulip-users@lists.sourceforge.net, Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Date: Mon, 16 Jul 2007 23:39:36 +0300
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707162339.39197.caglar@pardus.org.tr>
+Message-Id: <200707162240.29230.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-[Resend, gnupg damaged the patch, sorry for noise]
+In drivers/net/tulip/uli526x.c::uli526x_interrupt() there's a test 
+of the function argument 'void *dev_id' against NULL. But that 
+test is pretty pointless, since if ever 'dev_id' is NULL we'll 
+already have crashed inside "netdev_priv(dev)".
 
-16 Tem 2007 Pts tarihinde, Larry Finger şunları yazmıştı: 
-> Using the latest git pull (commit
-> abce891a10559343d8ac9f79b46d78afdba63a40), I get the following linker
-> error:
->
-> block/built-in.o: In function `bsg_init':
-> bsg.c:(.init.text+0x43d): undefined reference to `scsi_register_interface'
->
-> This is on an x86_64 system with the following .config:
+I don't think dev_id can ever actually be NULL, so the whole block 
+inside "if (!dev) {" could probably just go away. But I guess 
+there's a good reason someone put that ULI526X_DBUG() in there - and
+if 'dev_id' /can/ actually be NULL then it's nice to have and in 
+that case this patch actually fixes a possible crash (hence the 
+version number update). 
+So I guess that in this case we should just move the 
+"db = netdev_priv(dev)" assignment past that NULL test. That's what 
+this patch does.
 
-I've hit that also (current git cannot compiled with CONFIG_BLK_DEV_BSG=y
-), if i'm not wrongly interpret the Makefile it seems a ordering issue;
+Found by the Coverity checker.
+Compile tested.
 
-Makefile
-...
-ifeq ($(KBUILD_EXTMOD),)
-core-y· ·   += kernel/ mm/ fs/ ipc/ security/ crypto/ block/
-...
-vmlinux-init := $(head-y) $(init-y)
-vmlinux-main := $(core-y) $(libs-y) $(drivers-y) $(net-y)
-...
 
-but block block/bsg.c uses "scsi_register_interface" exported by 
-drivers/scsi/scsi_sysfs.c which lives in drivers-y. Moving bsg in 
-drivers/scsi seems solves this issues, see following
+PS. Please keep me on Cc when replying.
 
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 
- block/Kconfig                 |    8 --------
- block/Makefile                |    1 -
- drivers/scsi/Kconfig          |    8 ++++++++
- drivers/scsi/Makefile         |    1 +
- {block => drivers/scsi}/bsg.c |    0 
- 5 files changed, 9 insertions(+), 9 deletions(-)
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-diff --git a/block/Kconfig b/block/Kconfig
-index 1d16b08..2859351 100644
---- a/block/Kconfig
-+++ b/block/Kconfig
-@@ -51,12 +51,4 @@ config LSF
+ drivers/net/tulip/uli526x.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/tulip/uli526x.c b/drivers/net/tulip/uli526x.c
+index ca2548e..3df2376 100644
+--- a/drivers/net/tulip/uli526x.c
++++ b/drivers/net/tulip/uli526x.c
+@@ -13,8 +13,8 @@
+ */
  
- endif # BLOCK
+ #define DRV_NAME	"uli526x"
+-#define DRV_VERSION	"0.9.3"
+-#define DRV_RELDATE	"2005-7-29"
++#define DRV_VERSION	"0.9.4"
++#define DRV_RELDATE	"2007-7-16"
  
--config BLK_DEV_BSG
--	bool "Block layer SG support"
--	depends on SCSI && EXPERIMENTAL
--	default y
--	---help---
--	Saying Y here will enable generic SG (SCSI generic) v4
--	support for any block device.
--
- source block/Kconfig.iosched
-diff --git a/block/Makefile b/block/Makefile
-index 959feeb..4b84d0d 100644
---- a/block/Makefile
-+++ b/block/Makefile
-@@ -4,7 +4,6 @@
+ #include <linux/module.h>
  
- obj-$(CONFIG_BLOCK) := elevator.o ll_rw_blk.o ioctl.o genhd.o scsi_ioctl.o
+@@ -662,7 +662,7 @@ static int uli526x_stop(struct net_device *dev)
+ static irqreturn_t uli526x_interrupt(int irq, void *dev_id)
+ {
+ 	struct net_device *dev = dev_id;
+-	struct uli526x_board_info *db = netdev_priv(dev);
++	struct uli526x_board_info *db;
+ 	unsigned long ioaddr = dev->base_addr;
+ 	unsigned long flags;
  
--obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
- obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
- obj-$(CONFIG_IOSCHED_AS)	+= as-iosched.o
- obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index 3727231..fbb06de 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -81,6 +81,14 @@ config BLK_DEV_SD
- 	  In this case, do not compile the driver for your SCSI host adapter
- 	  (below) as a module either.
+@@ -670,6 +670,7 @@ static irqreturn_t uli526x_interrupt(int irq, void *dev_id)
+ 		ULI526X_DBUG(1, "uli526x_interrupt() without DEVICE arg", 0);
+ 		return IRQ_NONE;
+ 	}
++	db = netdev_priv(dev);
  
-+config BLK_DEV_BSG
-+	 bool "Block layer SG support"
-+	depends on SCSI && EXPERIMENTAL
-+	default y
-+	---help---
-+	Saying Y here will enable generic SG (SCSI generic) v4
-+	support for any block device.
-+
- config CHR_DEV_ST
- 	tristate "SCSI tape support"
- 	depends on SCSI
-diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
-index 0f86895..15de029 100644
---- a/drivers/scsi/Makefile
-+++ b/drivers/scsi/Makefile
-@@ -139,6 +139,7 @@ obj-$(CONFIG_CHR_DEV_ST)	+= st.o
- obj-$(CONFIG_CHR_DEV_OSST)	+= osst.o
- obj-$(CONFIG_BLK_DEV_SD)	+= sd_mod.o
- obj-$(CONFIG_BLK_DEV_SR)	+= sr_mod.o
-+obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
- obj-$(CONFIG_CHR_DEV_SG)	+= sg.o
- obj-$(CONFIG_CHR_DEV_SCH)	+= ch.o
- 
-diff --git a/block/bsg.c b/drivers/scsi/bsg.c
-similarity index 100%
-rename from block/bsg.c
-rename to drivers/scsi/bsg.c
+ 	spin_lock_irqsave(&db->lock, flags);
+ 	outl(0, ioaddr + DCR7);
 
 
-
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
