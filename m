@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764217AbXGPL6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764323AbXGPL7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764217AbXGPL6B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 07:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbXGPL5x
+	id S1764323AbXGPL7B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 07:59:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757356AbXGPL6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 07:57:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34346 "EHLO mx2.mail.elte.hu"
+	Mon, 16 Jul 2007 07:58:53 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1440 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755621AbXGPL5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 07:57:52 -0400
-Date: Mon, 16 Jul 2007 13:57:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH/RFC] msleep() with hrtimers
-Message-ID: <20070716115744.GA14131@elte.hu>
-References: <19044.1184539364@lwn.net> <Pine.LNX.4.64.0707161325040.1818@scrub.home> <20070716114734.GA12010@elte.hu> <Pine.LNX.4.64.0707161353350.1818@scrub.home>
+	id S1756768AbXGPL6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 07:58:52 -0400
+Date: Mon, 16 Jul 2007 13:58:36 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: James Bruce <bruce@andrew.cmu.edu>, Thomas Gleixner <tglx@linutronix.de>,
+       Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+In-Reply-To: <20070716112037.GA6895@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707161331570.1817@scrub.home>
+References: <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random>
+ <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
+ <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184355835.12353.321.camel@chaos>
+ <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu>
+ <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707161353350.1818@scrub.home>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Roman Zippel <zippel@linux-m68k.org> wrote:
+On Mon, 16 Jul 2007, Ingo Molnar wrote:
 
+> > As soon as you add another loop the difference changes again, while 
+> > it's always correct to say it gets 25% more cpu time [...]
+> 
+> yep, and i'll add the relative effect to the comment too.
 
-> > > One possible problem here is that setting up that timer can be 
-> > > considerably more expensive, for a relative timer you have to read 
-> > > the current time, which can be quite expensive (e.g. your machine 
-> > > now uses the PIT timer, because TSC was deemed unstable).
-> >
-> > i dont think there's any significant overhead. The OLPC folks are 
-> > pretty sensitive to performance, so if there was any genuine 
-> > measurable overhead due to this, i'd expect them to report it. And 
-> > even if there _was_ overhead, it would be well worth its price, the 
-> > legacies of HZ are clearly biting the OLPC project here. The sooner 
-> > we get rid of HZ dependencies and HZ artifacts, the better.
->
-> How is a sleep function relevant to performace?
+Why did you cut off the rest of the sentence?
+To illustrate the problem a little different: a task with a nice level -20 
+got around 700% more cpu time (or 8 times more), now it gets 8500% more 
+cpu time (or 86.7 times more).
+You don't think that change to the nice levels is a little drastic?
 
-i'm not sure how your question relates/connects to what i wrote above, 
-could you please re-phrase your question into a bit more verbose form so 
-that i can answer it? Thanks,
-
-	Ingo
+bye, Roman
