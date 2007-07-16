@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765567AbXGPWIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764717AbXGPWLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765567AbXGPWIn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761999AbXGPWIc
+	id S1764717AbXGPWLO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbXGPWK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:08:32 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:13333 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760837AbXGPWIb (ORCPT
+	Mon, 16 Jul 2007 18:10:59 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35555
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759965AbXGPWK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:08:31 -0400
-Date: Tue, 17 Jul 2007 01:08:12 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, ak@suse.de
-Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg helpers
-Message-ID: <20070716220812.GL4902@rhun.haifa.ibm.com>
-References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792681830-git-send-email-jens.axboe@oracle.com> <20070716130608.4d096e29.akpm@linux-foundation.org> <20070716201002.GQ5195@kernel.dk> <20070716133427.e212b753.akpm@linux-foundation.org>
+	Mon, 16 Jul 2007 18:10:58 -0400
+Date: Mon, 16 Jul 2007 15:00:57 -0700 (PDT)
+Message-Id: <20070716.150057.59832795.davem@davemloft.net>
+To: jeremy@goop.org
+Cc: linux-kernel@vger.kernel.org, chrisw@sous-sol.org, ak@suse.de
+Subject: Re: powerd in arch/sparc64/kernel/power.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <469BC777.5010207@goop.org>
+References: <469BC777.5010207@goop.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070716133427.e212b753.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 01:34:27PM -0700, Andrew Morton wrote:
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Date: Mon, 16 Jul 2007 12:31:03 -0700
 
-> > I'll keep rebasing sglist and the other branches I pull into for-akpm,
-> > so you can just re-enable the for-akpm pull when the a) is true.
+> Hi Dave,
 > 
-> Andi's tree is very out of date and is about to be damaged (to what
-> extent I don't yet know) by a xen merge.  I don't know if a) is
-> going to happen.
+> I was about to submit the patch below for merging, but it obviously 
+> conflicts with your change 13077d80286205e02eebe1c2786a914a4bbd2588 
+> ("[SPARC64]: Export powerd facilities for external entities.") which was 
+> merged this morning.
+> 
+> My patch makes orderly_poweroff() a globally-common function to generate 
+> a user-level poweroff event, and it basically a superset of powerd.   
+> Should I drop the sparc parts of this patch, or would you be OK with 
+> dropping powerd?
 
-The Xen and Calgary bits are mutually exclusive, so hopefully (a) will
-not be held up on account of the Xen merge (or for any other
-reason... CalIOC2 machines which are out there won't boot without it
-if CONFIG_CALGARY_IOMMU is enabled).
-
-Cheers,
-Muli
+Put the generic code in and I'll try to make use of it in sparc64.
+I have two spots that need it now.
