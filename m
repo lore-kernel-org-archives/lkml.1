@@ -1,89 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbXGPWRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbXGPWSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932093AbXGPWRA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbXGPWQx
+	id S1765675AbXGPWSW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXGPWSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:16:53 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:43748 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbXGPWQx (ORCPT
+	Mon, 16 Jul 2007 18:18:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51031 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752377AbXGPWSM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:16:53 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Mon, 16 Jul 2007 18:14:30 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Yoann Padioleau <padator@wanadoo.fr>, linux-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] potential parse error, drivers/serial/dz.h
-In-Reply-To: <20070716150421.c21d38c5.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707161812390.12891@localhost.localdomain>
-References: <87k5t05r4a.fsf@wanadoo.fr> <20070716150421.c21d38c5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Mon, 16 Jul 2007 18:18:12 -0400
+Date: Mon, 16 Jul 2007 15:17:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
+Subject: Re: [PATCH] Fix user struct leakage with locked IPC shem segment
+Message-Id: <20070716151738.2f4b5cf4.akpm@linux-foundation.org>
+In-Reply-To: <469B636C.3060007@openvz.org>
+References: <469B636C.3060007@openvz.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007, Andrew Morton wrote:
+On Mon, 16 Jul 2007 16:24:12 +0400
+Pavel Emelianov <xemul@openvz.org> wrote:
 
-> On Mon, 16 Jul 2007 17:02:13 +0200
-> Yoann Padioleau <padator@wanadoo.fr> wrote:
->
-> >
-> > potential parse error in declaration under a #ifdef.
->
-> A certain parse error, I'd say.  How come nobody is reporting it?
->
-> > Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-> >
-> >
-> > diff --git a/drivers/serial/dz.h b/drivers/serial/dz.h
-> > index 9674d4e..9141c37 100644
-> > --- a/drivers/serial/dz.h
-> > +++ b/drivers/serial/dz.h
-> > @@ -125,8 +125,8 @@ #define DZ_XMIT_SIZE   4096
-> >  #define DZ_WAKEUP_CHARS   DZ_XMIT_SIZE/4
-> >
-> >  #ifdef MODULE
-> > -int init_module (void)
-> > -void cleanup_module (void)
-> > +int init_module (void);
-> > +void cleanup_module (void);
-> >  #endif
-> >
-> >  #endif /* DZ_SERIAL_H */
->
-> I don't think these symbols are actually implemented in anything
-> which uses this header.  If they _do_ exist then they are awfully
-> named and should be renamed ASAP.  Or they should be made static.
->
-> However I suspect they just don't exist, and this stuff should be
-> simply deleted.
+> When user locks an ipc shmem segmant with SHM_LOCK ctl and the
+> segment is already locked the shmem_lock() function returns 0. 
+> After this the subsequent code leaks the existing user struct:
 
-that header file is included only by drivers/serial/dz.c, whose
-Kconfig controlling setting is:
+I'm curious.  For the past few months, people@openvz.org have discovered
+(and fixed) an ongoing stream of obscure but serious and quite
+long-standing bugs.
 
-config SERIAL_DZ
-        bool "DECstation DZ serial driver"
-	...
+How are you discovering these bugs?
 
-so, since it's "bool," there's no way "#ifdef MODULE" can ever be
-true, yes?
+> == ipc/shm.c: sys_shmctl() ==
+>      ...
+>      err = shmem_lock(shp->shm_file, 1, user);
+>      if (!err) {
+>           shp->shm_perm.mode |= SHM_LOCKED;
+>           shp->mlock_user = user;
+>      }
+>      ...
+> ==
+> 
+> Other results of this are:
+> 1. the new shp->mlock_user is not get-ed and will point to freed
+>    memory when the task dies.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+That sounds fairly serious - can this lead to memory corruption and crashes?
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+> 2. the RLIMIT_MEMLOCK is screwed on both user structs.
+> 
+> The exploit looks like this:
+> 
+> ==
+>     id = shmget(...);
+>     setresuid(uid, 0, 0);
+>     shmctl(id, SHM_LOCK, NULL);
+>     setresuid(uid + 1, 0, 0);
+>     shmctl(id, SHM_LOCK, NULL);
+> ==
+> 
+> My solution is to return 0 to the userspace and do not change the
+> segment's user.
+> 
+> Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+> 
+> ---
+> 
+> --- ./ipc/shm.c.shlfix	2007-07-06 10:58:57.000000000 +0400
+> +++ ./ipc/shm.c	2007-07-16 16:12:34.000000000 +0400
+> @@ -715,7 +715,7 @@ asmlinkage long sys_shmctl (int shmid, i
+>  			struct user_struct * user = current->user;
+>  			if (!is_file_hugepages(shp->shm_file)) {
+>  				err = shmem_lock(shp->shm_file, 1, user);
+> -				if (!err) {
+> +				if (!err && !(shp->shm_perm.mode & SHM_LOCKED)){
+>  					shp->shm_perm.mode |= SHM_LOCKED;
+>  					shp->mlock_user = user;
+>  				}
