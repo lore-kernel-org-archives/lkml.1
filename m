@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbXGPXHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765992AbXGPXH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763648AbXGPXHo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXGPXHf
+	id S1765992AbXGPXH7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbXGPXHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:07:35 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:17971 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754778AbXGPXHe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:07:34 -0400
-Date: Tue, 17 Jul 2007 01:03:07 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       geert@linux-m68k.org, zippel@linux-m68k.org, jdike@karaya.com,
-       alan@lxorguk.ukuu.org.uk, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: uninline check_signature()
-Message-ID: <20070716230307.GB12230@osiris.ibm.com>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org> <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org> <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
+	Mon, 16 Jul 2007 19:07:40 -0400
+Received: from rtr.ca ([64.26.128.89]:1688 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757662AbXGPXHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 19:07:39 -0400
+Message-ID: <469BFA38.1090309@rtr.ca>
+Date: Mon, 16 Jul 2007 19:07:36 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Ryan Power <rpower@sysreset.com>, jgarzik@pobox.com,
+       Tejun Heo <htejun@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.22.1] libata: Adjust libata to ignore errors after
+  spinup
+References: <6.2.0.14.2.20070713000748.031a2660@linux.sysreset.com> <469775E0.2000609@rtr.ca> <6.2.0.14.2.20070713184231.02db2d20@linux.sysreset.com> <46982875.60503@rtr.ca> <6.2.0.14.2.20070715210841.02fcab90@linux.sysreset.com>
+In-Reply-To: <6.2.0.14.2.20070715210841.02fcab90@linux.sysreset.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 03:35:34PM -0700, Linus Torvalds wrote:
-> On Mon, 16 Jul 2007, Andrew Morton wrote:
-> > 
-> > No, no revert, please.  If the architecture doesn't support readb() then we
-> > need some reliable way of working that out within Kconfig.
+Ryan Power wrote:
+> From: Ryan Power <rpower@sysreset.com>
 > 
-> Isn't that CONFIG_HAS_IOMEM?
+> Adjust libata to ignore errors after spinup
+> 
+> This patch is to ignore errors from the spinup attempt if the drive is
+> in the "standby id" state.
 
-That was my understanding as well considering commits  
-5ea8176994003483a18c8fed580901e2125f8a83 and  
-23db764d3db5a4bb1e104ad9310e5dc18e4ffa1b  
-  
-so the patch below should be correct... Geert, Roman?
-
-Subject: [PATCH] Make check_signature() depend on CONFIG_HAS_IOMEM
-
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-
-check_signature() uses readb() and therefore should only be build on
-CONFIG_HAS_IOMEM.
-
-Otherwise breaks s390:
-lib/check_signature.c: In function `check_signature':
-lib/check_signature.c:19: error: implicit declaration of function `readb'
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Jeff / Tejun:  here is Ryan's patch for his WD drive spinup problems.
+This copy has the pathnames and whitespace repaired.
+ 
+Signed-off-by: Ryan Power <rpower@sysreset.com>
+Signed-off-by: Mark Lord <mlord@pobox.com>
 ---
- lib/Makefile |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+Index: linux/drivers/ata/libata-core.c
+--- old/drivers/ata/libata-core.c   2007-07-10 12:56:30.000000000 -0600
++++ linux/drivers/ata/libata-core.c       2007-07-15 01:58:49.000000000 -0600
+@@ -1750,7 +1750,7 @@ int ata_dev_read_id(struct ata_device *d
+		tf.protocol = ATA_PROT_NODATA;
+		tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
+		err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
+-		if (err_mask) {
++		if (err_mask && id[2] != 0x738c) {
+			rc = -EIO;
+			reason = "SPINUP failed";
+			goto err_out;
 
-Index: linux-2.6/lib/Makefile
-===================================================================
---- linux-2.6.orig/lib/Makefile
-+++ linux-2.6/lib/Makefile
-@@ -13,7 +13,7 @@ lib-$(CONFIG_SMP) += cpumask.o
- lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
- 
- obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
--	 bust_spinlocks.o hexdump.o check_signature.o
-+	 bust_spinlocks.o hexdump.o
- 
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
-@@ -21,7 +21,7 @@ CFLAGS_kobject_uevent.o += -DDEBUG
- endif
- 
- obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
--obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
-+obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
- obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
- obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
- lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
