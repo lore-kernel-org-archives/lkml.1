@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761067AbXGPJGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbXGPJK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761067AbXGPJGI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbXGPJFy
+	id S1760156AbXGPJK4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXGPJKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:05:54 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:39430 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755158AbXGPJFx (ORCPT
+	Mon, 16 Jul 2007 05:10:48 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57438 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753825AbXGPJKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:05:53 -0400
-To: jeremy@goop.org
-CC: jengelh@computergmbh.de, viro@ftp.linux.org.uk, nmiell@comcast.net,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <469B2CAE.9010101@goop.org> (message from Jeremy Fitzhardinge on
-	Mon, 16 Jul 2007 01:30:38 -0700)
-Subject: Re: *at syscalls for xattrs?
-References: <Pine.LNX.4.64.0707132228460.25352@fbirervta.pbzchgretzou.qr> <20070715205313.GE21668@ftp.linux.org.uk> <1184534001.2765.5.camel@entropy> <20070715222323.GG21668@ftp.linux.org.uk> <Pine.LNX.4.64.0707160954160.25352@fbirervta.pbzchgretzou.qr> <469B2CAE.9010101@goop.org>
-Message-Id: <E1IAMWA-0004fM-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 16 Jul 2007 11:05:22 +0200
+	Mon, 16 Jul 2007 05:10:47 -0400
+Date: Mon, 16 Jul 2007 10:16:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch 2/2] x86_64: FIFO ticket spinlocks
+Message-ID: <20070716101654.1c20493f@the-village.bc.nu>
+In-Reply-To: <20070716050134.GB19914@wotan.suse.de>
+References: <20070716045932.GA19914@wotan.suse.de>
+	<20070716050134.GB19914@wotan.suse.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > fd1 = open("dir1", O_DIRECTORY):
-> > fd2 = open("dir2", O_DIRECTORY);
-> > system("mount -t tmpfs none dir1");
-> > system("mount -t tmpfs none dir2");
-> > openat(fd1, "file1", O_RDWR | O_CREAT);
-> > openat(fd2, "file2", O_RDWR | O_CREAT);
-> > If you have a better way to accomplish this, let me know. :)
-> >   
-> 
-> This should work:
-> 
->     fchdir(fd1);
->     open("file1", O_RDWR | O_CREAT);
->     fchdir(fd2);
->     open("file2", O_RDWR | O_CREAT);
+> however the difference is quite small on Core2 and Opteron when working out of
+> cache, and becomes almost insignificant even on P4 when the lock misses cache.
+> trylock is more significantly slower, but they are relatively rare.
 
-If you only have a single thread, yes.
+This has a 255 processor limit (worst case). That should probably be
+clearly documented for the future.
 
-The *at() thing basically gives you the advantages of a CWD without
-the disadvantages.
-
-For example it could be useful to implement the functionality of
-find(1) as a library interface.
-
-Miklos
