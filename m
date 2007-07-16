@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762267AbXGPBKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764308AbXGPBLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762267AbXGPBKt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 21:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbXGPBKl
+	id S1764308AbXGPBLI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 21:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759709AbXGPBKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 21:10:41 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:58488 "EHLO
+	Sun, 15 Jul 2007 21:10:42 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:58487 "EHLO
 	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756407AbXGPBKk (ORCPT
+	with ESMTP id S1758370AbXGPBKk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 15 Jul 2007 21:10:40 -0400
-X-Greylist: delayed 1932 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Jul 2007 21:10:40 EDT
-To: jens.axboe@oracle.com
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] splice: fix wrong __splice_from_pipe() usage
+Subject: [PATCH] fat: Fix the race of read/write the FAT12 entry
 From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Mon, 16 Jul 2007 09:38:22 +0900
-Message-ID: <877ip1qj29.fsf@duaron.myhome.or.jp>
+Date: Mon, 16 Jul 2007 09:40:05 +0900
+Message-ID: <873azpqize.fsf@duaron.myhome.or.jp>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,57 +24,63 @@ X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 240520
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I've noticed the nfsd read corruption by recent change. And this patch
-fixes the problem for me, is this right fix?
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+FAT12 entry is 12bits, so it needs 2 phase to update the value.  And
+writer and reader access it without any lock, so reader can get the
+half updated value.
 
-
-__splice_from_pipe() is updating the sd->pos for the actor, but those
-functions are passing the sd of reader side directory. So, splice
-updates sd->pos twice.
-
-This fixes usage of __splice_from_pipe().
+This fixes the long standing race condition by adding a global
+spinlock to only FAT12 for avoiding any impact against FAT16/32.
 
 Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 ---
 
- drivers/block/loop.c |    5 +++--
- fs/nfsd/vfs.c        |    5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ fs/fat/fatent.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff -puN fs/nfsd/vfs.c~splice-fix-__splice_from_pipe-usage fs/nfsd/vfs.c
---- linux-2.6/fs/nfsd/vfs.c~splice-fix-__splice_from_pipe-usage	2007-07-16 09:30:10.000000000 +0900
-+++ linux-2.6-hirofumi/fs/nfsd/vfs.c	2007-07-16 09:30:10.000000000 +0900
-@@ -842,9 +842,10 @@ nfsd_splice_actor(struct pipe_inode_info
- }
+diff -puN fs/fat/fatent.c~fat_fat12-entry-race-fix fs/fat/fatent.c
+--- linux-2.6/fs/fat/fatent.c~fat_fat12-entry-race-fix	2007-07-15 05:18:09.000000000 +0900
++++ linux-2.6-hirofumi/fs/fat/fatent.c	2007-07-15 05:18:56.000000000 +0900
+@@ -17,6 +17,8 @@ struct fatent_operations {
+ 	int (*ent_next)(struct fat_entry *);
+ };
  
- static int nfsd_direct_splice_actor(struct pipe_inode_info *pipe,
--				    struct splice_desc *sd)
-+				    struct splice_desc *__sd)
++static DEFINE_SPINLOCK(fat12_entry_lock);
++
+ static void fat12_ent_blocknr(struct super_block *sb, int entry,
+ 			      int *offset, sector_t *blocknr)
  {
--	return __splice_from_pipe(pipe, sd, nfsd_splice_actor);
-+	struct splice_desc sd = *__sd;
-+	return __splice_from_pipe(pipe, &sd, nfsd_splice_actor);
- }
+@@ -116,10 +118,13 @@ static int fat12_ent_get(struct fat_entr
+ 	u8 **ent12_p = fatent->u.ent12_p;
+ 	int next;
  
- static __be32
-diff -puN drivers/block/loop.c~splice-fix-__splice_from_pipe-usage drivers/block/loop.c
---- linux-2.6/drivers/block/loop.c~splice-fix-__splice_from_pipe-usage	2007-07-16 09:30:10.000000000 +0900
-+++ linux-2.6-hirofumi/drivers/block/loop.c	2007-07-16 09:30:10.000000000 +0900
-@@ -437,9 +437,10 @@ lo_splice_actor(struct pipe_inode_info *
- }
++	spin_lock(&fat12_entry_lock);
+ 	if (fatent->entry & 1)
+ 		next = (*ent12_p[0] >> 4) | (*ent12_p[1] << 4);
+ 	else
+ 		next = (*ent12_p[1] << 8) | *ent12_p[0];
++	spin_unlock(&fat12_entry_lock);
++
+ 	next &= 0x0fff;
+ 	if (next >= BAD_FAT12)
+ 		next = FAT_ENT_EOF;
+@@ -151,6 +156,7 @@ static void fat12_ent_put(struct fat_ent
+ 	if (new == FAT_ENT_EOF)
+ 		new = EOF_FAT12;
  
- static int
--lo_direct_splice_actor(struct pipe_inode_info *pipe, struct splice_desc *sd)
-+lo_direct_splice_actor(struct pipe_inode_info *pipe, struct splice_desc *__sd)
- {
--	return __splice_from_pipe(pipe, sd, lo_splice_actor);
-+	struct splice_desc sd = *__sd;
-+	return __splice_from_pipe(pipe, &sd, lo_splice_actor);
- }
++	spin_lock(&fat12_entry_lock);
+ 	if (fatent->entry & 1) {
+ 		*ent12_p[0] = (new << 4) | (*ent12_p[0] & 0x0f);
+ 		*ent12_p[1] = new >> 4;
+@@ -158,6 +164,7 @@ static void fat12_ent_put(struct fat_ent
+ 		*ent12_p[0] = new & 0xff;
+ 		*ent12_p[1] = (*ent12_p[1] & 0xf0) | (new >> 8);
+ 	}
++	spin_unlock(&fat12_entry_lock);
  
- static int
+ 	mark_buffer_dirty(fatent->bhs[0]);
+ 	if (fatent->nr_bhs == 2)
 _
+
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
