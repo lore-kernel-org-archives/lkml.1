@@ -1,60 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932413AbXGPJ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932482AbXGPJ5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932413AbXGPJ5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763561AbXGPJtj
+	id S932482AbXGPJ5o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764229AbXGPJtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:49:39 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9335 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 05:49:41 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9334 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760448AbXGPJsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:48:38 -0400
+	id S1758083AbXGPJsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:48:37 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>, ak@suse.de
-Subject: [PATCH 10/33] x86-64: enable sg chaining
-Date: Mon, 16 Jul 2007 11:47:24 +0200
-Message-Id: <11845792683024-git-send-email-jens.axboe@oracle.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, dgilbert@interlog.com
+Subject: [PATCH 19/33] scsi_debug: support sg chaining
+Date: Mon, 16 Jul 2007 11:47:33 +0200
+Message-Id: <11845792682668-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.3.rc2
 In-Reply-To: <11845792671245-git-send-email-jens.axboe@oracle.com>
 References: <11845792671245-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: ak@suse.de
+Cc: dgilbert@interlog.com
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- include/asm-x86_64/dma-mapping.h |    3 +--
- include/asm-x86_64/scatterlist.h |    2 ++
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/scsi/scsi_debug.c |   30 ++++++++++++++++--------------
+ 1 files changed, 16 insertions(+), 14 deletions(-)
 
-diff --git a/include/asm-x86_64/dma-mapping.h b/include/asm-x86_64/dma-mapping.h
-index 6897e2a..ecd0f61 100644
---- a/include/asm-x86_64/dma-mapping.h
-+++ b/include/asm-x86_64/dma-mapping.h
-@@ -6,8 +6,7 @@
-  * documentation.
-  */
- 
--
--#include <asm/scatterlist.h>
+diff --git a/drivers/scsi/scsi_debug.c b/drivers/scsi/scsi_debug.c
+index 4cd9c58..46a3e07 100644
+--- a/drivers/scsi/scsi_debug.c
++++ b/drivers/scsi/scsi_debug.c
+@@ -38,6 +38,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/vmalloc.h>
+ #include <linux/moduleparam.h>
 +#include <linux/scatterlist.h>
- #include <asm/io.h>
- #include <asm/swiotlb.h>
  
-diff --git a/include/asm-x86_64/scatterlist.h b/include/asm-x86_64/scatterlist.h
-index eaf7ada..ef3986b 100644
---- a/include/asm-x86_64/scatterlist.h
-+++ b/include/asm-x86_64/scatterlist.h
-@@ -11,6 +11,8 @@ struct scatterlist {
-     unsigned int        dma_length;
- };
+ #include <linux/blkdev.h>
+ #include "scsi.h"
+@@ -600,7 +601,7 @@ static int fill_from_dev_buffer(struct scsi_cmnd * scp, unsigned char * arr,
+ 	int k, req_len, act_len, len, active;
+ 	void * kaddr;
+ 	void * kaddr_off;
+-	struct scatterlist * sgpnt;
++	struct scatterlist * sg;
  
-+#define ARCH_HAS_SG_CHAIN
-+
- #define ISA_DMA_THRESHOLD (0x00ffffff)
+ 	if (0 == scp->request_bufflen)
+ 		return 0;
+@@ -619,16 +620,16 @@ static int fill_from_dev_buffer(struct scsi_cmnd * scp, unsigned char * arr,
+ 			scp->resid = req_len - act_len;
+ 		return 0;
+ 	}
+-	sgpnt = (struct scatterlist *)scp->request_buffer;
+ 	active = 1;
+-	for (k = 0, req_len = 0, act_len = 0; k < scp->use_sg; ++k, ++sgpnt) {
++	req_len = act_len = 0;
++	scsi_for_each_sg(scp, sg, scp->use_sg, k) {
+ 		if (active) {
+ 			kaddr = (unsigned char *)
+-				kmap_atomic(sgpnt->page, KM_USER0);
++				kmap_atomic(sg->page, KM_USER0);
+ 			if (NULL == kaddr)
+ 				return (DID_ERROR << 16);
+-			kaddr_off = (unsigned char *)kaddr + sgpnt->offset;
+-			len = sgpnt->length;
++			kaddr_off = (unsigned char *)kaddr + sg->offset;
++			len = sg->length;
+ 			if ((req_len + len) > arr_len) {
+ 				active = 0;
+ 				len = arr_len - req_len;
+@@ -637,7 +638,7 @@ static int fill_from_dev_buffer(struct scsi_cmnd * scp, unsigned char * arr,
+ 			kunmap_atomic(kaddr, KM_USER0);
+ 			act_len += len;
+ 		}
+-		req_len += sgpnt->length;
++		req_len += sg->length;
+ 	}
+ 	if (scp->resid)
+ 		scp->resid -= act_len;
+@@ -653,7 +654,7 @@ static int fetch_to_dev_buffer(struct scsi_cmnd * scp, unsigned char * arr,
+ 	int k, req_len, len, fin;
+ 	void * kaddr;
+ 	void * kaddr_off;
+-	struct scatterlist * sgpnt;
++	struct scatterlist * sg;
  
- /* These macros should be used after a pci_map_sg call has been done
+ 	if (0 == scp->request_bufflen)
+ 		return 0;
+@@ -668,13 +669,14 @@ static int fetch_to_dev_buffer(struct scsi_cmnd * scp, unsigned char * arr,
+ 		memcpy(arr, scp->request_buffer, len);
+ 		return len;
+ 	}
+-	sgpnt = (struct scatterlist *)scp->request_buffer;
+-	for (k = 0, req_len = 0, fin = 0; k < scp->use_sg; ++k, ++sgpnt) {
+-		kaddr = (unsigned char *)kmap_atomic(sgpnt->page, KM_USER0);
++	sg = scsi_sglist(scp);
++	req_len = fin = 0;
++	for (k = 0; k < scp->use_sg; ++k, sg = sg_next(sg)) {
++		kaddr = (unsigned char *)kmap_atomic(sg->page, KM_USER0);
+ 		if (NULL == kaddr)
+ 			return -1;
+-		kaddr_off = (unsigned char *)kaddr + sgpnt->offset;
+-		len = sgpnt->length;
++		kaddr_off = (unsigned char *)kaddr + sg->offset;
++		len = sg->length;
+ 		if ((req_len + len) > max_arr_len) {
+ 			len = max_arr_len - req_len;
+ 			fin = 1;
+@@ -683,7 +685,7 @@ static int fetch_to_dev_buffer(struct scsi_cmnd * scp, unsigned char * arr,
+ 		kunmap_atomic(kaddr, KM_USER0);
+ 		if (fin)
+ 			return req_len + len;
+-		req_len += sgpnt->length;
++		req_len += sg->length;
+ 	}
+ 	return req_len;
+ }
 -- 
 1.5.3.rc0.90.gbaa79
 
