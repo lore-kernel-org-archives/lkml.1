@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764037AbXGPLXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760865AbXGPL0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764037AbXGPLXb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 07:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbXGPLXY
+	id S1760865AbXGPL0r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 07:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbXGPL0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 07:23:24 -0400
-Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:37337 "EHLO
-	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754058AbXGPLXY (ORCPT
+	Mon, 16 Jul 2007 07:26:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54936
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752426AbXGPL0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 07:23:24 -0400
-X-Greylist: delayed 1419 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 07:23:23 EDT
-Date: Mon, 16 Jul 2007 12:59:42 +0200
-From: Martin Mares <mj@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: torvalds@linux-foundation.org, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [x86 setup 27/33] Video mode probing support for the new x86 setup code
-Message-ID: <mj+md-20070716.105920.26230.nikam@ucw.cz>
-References: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com> <509992ad2f618e07db2c72a96f8f5d708bfc6991.1184181208.git.hpa@zytor.com>
+	Mon, 16 Jul 2007 07:26:38 -0400
+Date: Mon, 16 Jul 2007 04:26:40 -0700 (PDT)
+Message-Id: <20070716.042640.18306462.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       olaf.kirch@oracle.com
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070716091236.GA10718@elte.hu>
+References: <20070716091236.GA10718@elte.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <509992ad2f618e07db2c72a96f8f5d708bfc6991.1184181208.git.hpa@zytor.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Video mode probing for the new x86 setup code.  This code breaks down
-> different drivers into modules.  This code deliberately drops support
-> for a lot of the vendor-specific mode probing present in the assembly
-> version, since a lot of those probes have been found to be stale in
-> current versions of those chips -- frequently, support for those modes
-> have been dropped from recent video BIOSes due to space constraints,
-> but the video BIOS signatures are still the same.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 16 Jul 2007 11:12:36 +0200
 
-Acked-By: Martin Mares <mj@ucw.cz>
+> Applying the revert patch below makes it work again.
 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-"It's a lemon tree, my dear Watson." -- Sherlock Holmes (?)
+Well, let's figure out why before we revert because it
+is attempting to fix a legitimate bug.
+
+Olaf, any ideas?
