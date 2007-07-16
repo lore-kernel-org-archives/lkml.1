@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbXGPGSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762852AbXGPGVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759751AbXGPGSc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 02:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXGPGSY
+	id S1762852AbXGPGVH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 02:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbXGPGU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 02:18:24 -0400
-Received: from main.gmane.org ([80.91.229.2]:36879 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751459AbXGPGSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 02:18:24 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: James Bruce <bruce@andrew.cmu.edu>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-Date: Mon, 16 Jul 2007 02:18:06 -0400
-Message-ID: <469B0D9E.3030402@andrew.cmu.edu>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>	 <20070711211638.GE18767@one.firstfloor.org>	 <20070711214649.GK14435@v2.random>	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>	 <1184302024.6709.11.camel@Homer.simpson.net>	 <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184355835.12353.321.camel@chaos>
+	Mon, 16 Jul 2007 02:20:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40591 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752945AbXGPGU4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 02:20:56 -0400
+Date: Sun, 15 Jul 2007 23:20:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: hugh@veritas.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch 1/5] avoid tlb gather restarts.
+Message-Id: <20070715232031.5479614e.akpm@linux-foundation.org>
+In-Reply-To: <20070703121228.254110263@de.ibm.com>
+References: <20070703111822.418649776@de.ibm.com>
+	<20070703121228.254110263@de.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Roman Zippel <zippel@linux-m68k.org>, Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-X-Gmane-NNTP-Posting-Host: dhcp-7-156.dsl.telerama.com
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-In-Reply-To: <1184355835.12353.321.camel@chaos>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> Roman Zippel noticed inconsistency of the wmult table.
-> wmult[16] has a missing digit.
-[snip]
+On Tue, 03 Jul 2007 13:18:23 +0200 Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
 
-While we're at it, isn't the comment above the wmult table incorrect?
-The multiplier is 1.25, meaning a 25% change per nice level, not 10%.
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> If need_resched() is false in the inner loop of unmap_vmas it is
+> unnecessary to do a full blown tlb_finish_mmu / tlb_gather_mmu for
+> each ZAP_BLOCK_SIZE ptes. Do a tlb_flush_mmu() instead. That gives
+> architectures with a non-generic tlb flush implementation room for
+> optimization. The tlb_flush_mmu primitive is a available with the
+> generic tlb flush code, the ia64_tlb_flush_mm needs to be renamed
+> and a dummy function is added to arm and arm26.
+> 
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+> 
+>  include/asm-arm/tlb.h   |    5 +++++
+>  include/asm-arm26/tlb.h |    5 +++++
+>  include/asm-ia64/tlb.h  |    6 +++---
+>  mm/memory.c             |   16 ++++++----------
+>  4 files changed, 19 insertions(+), 13 deletions(-)
 
-  - Jim
+sparc64 broke:
 
+mm/memory.c: In function `unmap_vmas':
+mm/memory.c:862: error: too many arguments to function `tlb_flush_mmu'
+
+grep, please.
