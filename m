@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764721AbXGPNFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763163AbXGPNNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764721AbXGPNFk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbXGPNFb
+	id S1763163AbXGPNNZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300AbXGPNNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:05:31 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:7301 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757576AbXGPNFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:05:30 -0400
-Date: Mon, 16 Jul 2007 15:04:47 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-Message-ID: <20070716130447.GO5195@kernel.dk>
-References: <20070704132212.726923000@pademelon.sonytel.be> <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be> <1184335333.3402.20.camel@localhost.localdomain> <200707131619.54898.arnd@arndb.de> <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be> <1184340528.3402.32.camel@localhost.localdomain> <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be> <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be> <20070716121649.GI5195@kernel.dk> <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
+	Mon, 16 Jul 2007 09:13:17 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:60704 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755182AbXGPNNQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 09:13:16 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Patches for REALLY TINY 386 kernels
+To: Satyam Sharma <satyam.sharma@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Mon, 16 Jul 2007 15:12:54 +0200
+References: <8HjYY-4Jk-15@gated-at.bofh.it> <8HlxM-7iT-13@gated-at.bofh.it> <8HlxL-7iT-11@gated-at.bofh.it> <8HlHq-7vR-17@gated-at.bofh.it> <8HlHr-7vR-25@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1IAQNj-0006hB-2M@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19zlVeu40NOKDoABb0nqnTZM13LL97iHGaBFZt
+ stkafoHfJzvY8IN3tlL43f6MZd5Ns7ta2fOq3aWDqbA3LiRPKk
+ d5D2oLCylpmPZgq+IkgIg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> On Mon, 16 Jul 2007, Jens Axboe wrote:
-> > On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
-> > > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
-> > > > Ah, that explains it. flush_dcache_page() is used in some drivers.
-> > > > I'll update my patches. Thanks for the comments!
-> > > 
-> > > Does this look OK?
-> > >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
-> > >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
-> > >     (ps3rom))
-> > 
-> > That looks good.
-> > 
-> > >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
-> > 
-> > Hmm, I would have thought a flush_dcache_page() would be more
-> > appropriate, the backing could be page cache pages.
-> 
-> OK, I'll change it to flush_dcache_page().
+Satyam Sharma <satyam.sharma@gmail.com> wrote:
 
-Then you may add my acked-by as well, if you want.
+[zillions of ways to do -X dontdiff]
 
+> Or just "cp -al" to create multiple trees at (almost) no disk cost
+> that won't interfere with each other in any way, and makes the
+> development process / generating patchsets trifle easier as well ...
+
+Beware, some editors do edit in-place. If you cp -rs "$PWD"/a b, you'll
+at least spot those files you didn't copy before editing.
 -- 
-Jens Axboe
+Top 100 things you don't want the sysadmin to say:
+87. Sorry, the new equipment didn't get budgetted.
 
+Friﬂ, Spammer: sun5@eE.7eggert.dyndns.org po@Tu1.7eggert.dyndns.org
