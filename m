@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764103AbXGPNcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXGPNdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764103AbXGPNcs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXGPNck
+	id S932224AbXGPNdG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763667AbXGPNcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:32:40 -0400
-Received: from mfo11.iij4u.or.jp ([210.138.174.81]:47427 "EHLO
+	Mon, 16 Jul 2007 09:32:46 -0400
+Received: from mfo11.iij4u.or.jp ([210.138.174.81]:47428 "EHLO
 	mfo11.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755171AbXGPNcj (ORCPT
+	with ESMTP id S1760118AbXGPNcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:32:39 -0400
-X-Greylist: delayed 762 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 09:32:38 EDT
-Message-Id: <200707161319.l6GDJd07027464@mbox.iij4u.or.jp>
-To: mark_salyzyn@adaptec.com, jens.axboe@oracle.com
+	Mon, 16 Jul 2007 09:32:45 -0400
+Message-Id: <200707161319.l6GDJffm027482@mbox.iij4u.or.jp>
+To: michaelc@cs.wisc.edu, jens.axboe@oracle.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        fujita.tomonori@lab.ntt.co.jp
 Subject: Re: [PATCH 00/33] SG table chaining support
@@ -22,7 +21,7 @@ References: <11845792671245-git-send-email-jens.axboe@oracle.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Mon, 16 Jul 2007 22:19:38 +0900
+Date: Mon, 16 Jul 2007 22:19:41 +0900
 X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,59 +36,128 @@ Date: Mon, 16 Jul 2007 11:47:14 +0200
 >   to use the sg accessor helpers, which nicely shrinks this patchset
 >   from 70 to 33 patches. Great!
 
+It's against Jens' sglist branch though there are lots of changes to
+the data path in Mike's iscsi tree.
+
 ---
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] ips: sg chaining support
-
-ips properly uses scsi_for_each_sg for the normal I/O path, however,
-the breakup path doesn't.
+Subject: [PATCH] iscsi_tcp: sg chaining support
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- drivers/scsi/ips.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/scsi/iscsi_tcp.c |   41 ++++++++++++++++++++++-------------------
+ 1 files changed, 22 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/scsi/ips.c b/drivers/scsi/ips.c
-index 9f8ed6b..cc5ac4f 100644
---- a/drivers/scsi/ips.c
-+++ b/drivers/scsi/ips.c
-@@ -3251,7 +3251,7 @@ ips_done(ips_ha_t * ha, ips_scb_t * scb)
- 		 */
- 		if ((scb->breakup) || (scb->sg_break)) {
-                         struct scatterlist *sg;
--                        int sg_dma_index, ips_sg_index = 0;
-+                        int i, sg_dma_index, ips_sg_index = 0;
+diff --git a/drivers/scsi/iscsi_tcp.c b/drivers/scsi/iscsi_tcp.c
+index aebcd5f..4598231 100644
+--- a/drivers/scsi/iscsi_tcp.c
++++ b/drivers/scsi/iscsi_tcp.c
+@@ -316,7 +316,7 @@ iscsi_solicit_data_init(struct iscsi_con
  
- 			/* we had a data breakup */
- 			scb->data_len = 0;
-@@ -3260,20 +3260,22 @@ ips_done(ips_ha_t * ha, ips_scb_t * scb)
+ 	sg = scsi_sglist(sc);
+ 	r2t->sg = NULL;
+-	for (i = 0; i < scsi_sg_count(sc); i++, sg += 1) {
++	for (i = 0; i < scsi_sg_count(sc); i++, sg = sg_next(sg)) {
+ 		/* FIXME: prefetch ? */
+ 		if (sg_count + sg->length > r2t->data_offset) {
+ 			int page_offset;
+@@ -332,7 +332,7 @@ iscsi_solicit_data_init(struct iscsi_con
+ 			r2t->sendbuf.sg.length -= page_offset;
  
-                         /* Spin forward to last dma chunk */
-                         sg_dma_index = scb->breakup;
-+                        for (i = 0; i < scb->breakup; i++)
-+                                sg = sg_next(sg);
+ 			/* xmit logic will continue with next one */
+-			r2t->sg = sg + 1;
++			r2t->sg = sg_next(sg);;
+ 			break;
+ 		}
+ 		sg_count += sg->length;
+@@ -707,18 +707,21 @@ static int iscsi_scsi_data_in(struct isc
+ 	sg = scsi_sglist(sc);
  
- 			/* Take care of possible partial on last chunk */
-                         ips_fill_scb_sg_single(ha,
--                                               sg_dma_address(&sg[sg_dma_index]),
-+                                               sg_dma_address(sg),
-                                                scb, ips_sg_index++,
--                                               sg_dma_len(&sg[sg_dma_index]));
-+                                               sg_dma_len(sg));
+ 	if (tcp_ctask->data_offset)
+-		for (i = 0; i < tcp_ctask->sg_count; i++)
+-			offset -= sg[i].length;
++		for (i = 0; i < tcp_ctask->sg_count; i++, sg = sg_next(sg))
++			offset -= sg->length;
+ 	/* we've passed through partial sg*/
+ 	if (offset < 0)
+ 		offset = 0;
  
-                         for (; sg_dma_index < scsi_sg_count(scb->scsi_cmd);
--                             sg_dma_index++) {
-+                             sg_dma_index++, sg = sg_next(sg)) {
-                                 if (ips_fill_scb_sg_single
-                                     (ha,
--                                     sg_dma_address(&sg[sg_dma_index]),
-+                                     sg_dma_address(sg),
-                                      scb, ips_sg_index++,
--                                     sg_dma_len(&sg[sg_dma_index])) < 0)
-+                                     sg_dma_len(sg)) < 0)
-                                         break;
-                         }
+-	for (i = tcp_ctask->sg_count; i < scsi_sg_count(sc); i++) {
++	for (i = 0, sg = scsi_sglist(sc); i < tcp_ctask->sg_count; i++)
++		sg = sg_next(sg);
++
++	for (i = tcp_ctask->sg_count; i < scsi_sg_count(sc); i++, sg = sg_next(sg)) {
+ 		char *dest;
  
+-		dest = kmap_atomic(sg[i].page, KM_SOFTIRQ0);
+-		rc = iscsi_ctask_copy(tcp_conn, ctask, dest + sg[i].offset,
+-				      sg[i].length, offset);
++		dest = kmap_atomic(sg->page, KM_SOFTIRQ0);
++		rc = iscsi_ctask_copy(tcp_conn, ctask, dest + sg->offset,
++				      sg->length, offset);
+ 		kunmap_atomic(dest, KM_SOFTIRQ0);
+ 		if (rc == -EAGAIN)
+ 			/* continue with the next SKB/PDU */
+@@ -728,13 +731,13 @@ static int iscsi_scsi_data_in(struct isc
+ 				if (!offset)
+ 					crypto_hash_update(
+ 							&tcp_conn->rx_hash,
+-							&sg[i], sg[i].length);
++							sg, sg->length);
+ 				else
+ 					partial_sg_digest_update(
+ 							&tcp_conn->rx_hash,
+-							&sg[i],
+-							sg[i].offset + offset,
+-							sg[i].length - offset);
++							sg,
++							sg->offset + offset,
++							sg->length - offset);
+ 			}
+ 			offset = 0;
+ 			tcp_ctask->sg_count++;
+@@ -746,9 +749,9 @@ static int iscsi_scsi_data_in(struct isc
+ 				 * data-in is complete, but buffer not...
+ 				 */
+ 				partial_sg_digest_update(&tcp_conn->rx_hash,
+-							 &sg[i],
+-							 sg[i].offset,
+-							 sg[i].length-rc);
++							 sg,
++							 sg->offset,
++							 sg->length - rc);
+ 			rc = 0;
+ 			break;
+ 		}
+@@ -1246,7 +1249,7 @@ iscsi_solicit_data_cont(struct iscsi_con
+ 		return;
+ 
+ 	iscsi_buf_init_sg(&r2t->sendbuf, r2t->sg);
+-	r2t->sg += 1;
++	r2t->sg = sg_next(r2t->sg);
+ }
+ 
+ static void iscsi_set_padding(struct iscsi_tcp_cmd_task *tcp_ctask,
+@@ -1378,8 +1381,8 @@ iscsi_send_cmd_hdr(struct iscsi_conn *co
+ 			struct scatterlist *sg = scsi_sglist(sc);
+ 
+ 			iscsi_buf_init_sg(&tcp_ctask->sendbuf, sg);
+-			tcp_ctask->sg = sg + 1;
+-			tcp_ctask->bad_sg = sg + scsi_sg_count(sc);
++			tcp_ctask->sg = sg_next(sg);
++			tcp_ctask->bad_sg = sg_last(sg, scsi_sg_count(sc));
+ 
+ 			debug_scsi("cmd [itt 0x%x total %d imm_data %d "
+ 				   "unsol count %d, unsol offset %d]\n",
+@@ -1509,7 +1512,7 @@ iscsi_send_data(struct iscsi_cmd_task *c
+ 				buf_sent);
+ 		if (!iscsi_buf_left(sendbuf) && *sg != tcp_ctask->bad_sg) {
+ 			iscsi_buf_init_sg(sendbuf, *sg);
+-			*sg = *sg + 1;
++			*sg = sg_next(*sg);
+ 		}
+ 
+ 		if (rc)
 -- 
 1.4.3.2
 
