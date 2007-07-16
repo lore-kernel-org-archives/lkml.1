@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764289AbXGPPRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765534AbXGPPSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764289AbXGPPRx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbXGPPRq
+	id S1765534AbXGPPSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbXGPPSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:17:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43256 "EHLO ogre.sisk.pl"
+	Mon, 16 Jul 2007 11:18:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60715 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755163AbXGPPRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:17:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Hibernation considerations
-Date: Mon, 16 Jul 2007 17:25:15 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, david@lang.hm,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-References: <Pine.LNX.4.44L0.0707161013440.3410-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707161013440.3410-100000@iolanthe.rowland.org>
+	id S1756323AbXGPPSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:18:23 -0400
+Date: Mon, 16 Jul 2007 17:18:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH/RFC] msleep() with hrtimers
+Message-ID: <20070716151812.GA25944@elte.hu>
+References: <Pine.LNX.4.64.0707161325040.1818@scrub.home> <21003.1184596954@lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707161725.16593.rjw@sisk.pl>
+In-Reply-To: <21003.1184596954@lwn.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 16 July 2007 16:15, Alan Stern wrote:
-> On Mon, 16 Jul 2007, Nigel Cunningham wrote:
-> 
-> > > As I understand it, running a different OS between the hibernate and 
-> > > the resume would violate the ACPI spec.
-> > 
-> > Well then, I know one or two people who would argue that the ACPI spec is 
-> > faulty. :\
-> 
-> It's hard to argue against that.  In fact there are people who would 
-> argue that the ACPI spec is incomplete and inconsistent period, 
-> regardless of any questions about what happens between hibernate and 
-> resume.  :-)
 
-That's true, but OTOH it's difficult to argue with my notebook's firmware
-about that. ;-)
+* Jonathan Corbet <corbet@lwn.net> wrote:
 
-Greetings,
-Rafael
+> In the end, I did this because I thought msleep() should do what it 
+> claims to do, because I thought that getting a known-to-expire timeout 
+> off the timer wheel made sense, and to make a tiny baby step in the 
+> direction of reducing the use of jiffies in the core code.
 
+yeah, fully agreed.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	Ingo
