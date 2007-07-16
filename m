@@ -1,118 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762711AbXGPFiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764681AbXGPFih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762711AbXGPFiY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 01:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbXGPFiO
+	id S1764681AbXGPFih (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 01:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760647AbXGPFiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 01:38:14 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49001 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752071AbXGPFiN (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 01:38:13 -0400
-Date: Mon, 16 Jul 2007 15:37:51 +1000
-From: David Chinner <dgc@sgi.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, tytso@mit.edu,
-       cmm@us.ibm.com, suparna@in.ibm.com, adilger@clusterfs.com, dgc@sgi.com,
-       michael.kerrisk@gmx.net
-Subject: [PATCH] xfs: implement fallocate V2
-Message-ID: <20070716053751.GN12413810@sgi.com>
-References: <20070713184125.GA12156@amitarora.in.ibm.com>
-Mime-Version: 1.0
+	Mon, 16 Jul 2007 01:38:22 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:65267 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759771AbXGPFiU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 01:38:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=LfskfyiZ6MQCPH4Ex8Qm3xDm0h/Ru+1Bt0kAV/cqxFZlKCHUcoldqR4U0OgYV7AgEjc2K9u/8A2h5Gq6C9qrkrx0p3zd9msSy4YX/jkbt6lqJ26ga+BPTiv58EWWQONoPqiqpHAps3CjCUBOjTbn6r+q0C/Of/Z9wqZsMkXGTsw=
+Date: Mon, 16 Jul 2007 01:37:52 -0400
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Joseph Fannin <jfannin@gmail.com>, david@lang.hm,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: Hibernating To Swap Considered Harmful
+Message-ID: <20070716053751.GA13707@nineveh.local>
+Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Joseph Fannin <jfannin@gmail.com>, david@lang.hm,
+	"Huang, Ying" <ying.huang@intel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+	Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+	linux-pm@lists.linux-foundation.org
+References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707131130.51279.rjw@sisk.pl> <20070714004517.GA18336@nineveh.local> <200707141148.18279.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070713184125.GA12156@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200707141148.18279.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: jfannin@gmail.com (Joseph Fannin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initial implementation of ->fallocate for XFS.
+On Sat, Jul 14, 2007 at 11:48:17AM +0200, Rafael J. Wysocki wrote:
+> On Saturday, 14 July 2007 02:45, Joseph Fannin wrote:
+> > On Fri, Jul 13, 2007 at 11:30:50AM +0200, Rafael J. Wysocki wrote:
+> > > On Friday, 13 July 2007 07:42, Joseph Fannin wrote:
+> > > > On Thu, Jul 12, 2007 at 08:06:43PM -0700, david@lang.hm wrote:
+> > >
+> > > If you're afraid of that, use a dedicated swap file.
+> >
+> >     I don't understand what you mean.  A dedicated swap file for what?
+>
+> Sorry, I should have been more precise.
+>
+> For hibernation (ie. a swap file that you activate right befor the
+> hibernation).
+>
+> Also tuxonice (formerly known as suspend2) allows you to use regular files
+> hibernation.
 
-Version 2:
+     How is that different from what I proposed, other than the
+requirement to pass the swap data stuctures between the two kernels?
 
-o Make allocation and setting the file size atomic.
-o Drop deallocate/punch functionality
-o use mode field appropriately to determine if size needs changing.
+     Even if you only expect hibernation to work only _most of the
+time_, suspending to swap means allocating a bunch of swap space that
+you intend to never be used as swap.  The two functions don't really
+belong together.
 
----
- fs/xfs/linux-2.6/xfs_iops.c |   47 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+--
+Joseph Fannin
+jfannin@gmail.com
 
-Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_iops.c
-===================================================================
---- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_iops.c	2007-07-16 14:16:02.090255611 +1000
-+++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_iops.c	2007-07-16 14:50:07.087885337 +1000
-@@ -51,6 +51,7 @@
- #include <linux/xattr.h>
- #include <linux/namei.h>
- #include <linux/security.h>
-+#include <linux/falloc.h>
- 
- /*
-  * Get a XFS inode from a given vnode.
-@@ -812,6 +813,51 @@ xfs_vn_removexattr(
- 	return namesp->attr_remove(vp, attr, xflags);
- }
- 
-+/*
-+ * generic space allocation vector.
-+ *
-+ * This should really through a bhv_vop before stuffing around
-+ * with xfs_inodes and such.
-+ */
-+STATIC long
-+xfs_vn_fallocate(
-+	struct inode	*inode,
-+	int		mode,
-+	loff_t		offset,
-+	loff_t		len)
-+{
-+	long		error = -EOPNOTSUPP;
-+	bhv_vnode_t	*vp = vn_from_inode(inode);
-+	bhv_desc_t	*bdp;
-+	loff_t		new_size = 0;
-+	xfs_flock64_t	bf;
-+
-+	bf.l_whence = 0;
-+	bf.l_start = offset;
-+	bf.l_len = len;
-+
-+	bdp = bhv_lookup_range(VN_BHV_HEAD(vp), VNODE_POSITION_XFS,
-+						VNODE_POSITION_XFS);
-+
-+	xfs_ilock(xfs_vtoi(vp), XFS_IOLOCK_EXCL);
-+	error = xfs_change_file_space(bdp, XFS_IOC_RESVSP, &bf, 0, NULL,
-+							ATTR_NOLOCK);
-+	if (!error && !(mode & FALLOC_FL_KEEP_SIZE) &&
-+	    offset + len > i_size_read(inode))
-+		new_size = offset + len;
-+
-+	/* Change file size if needed */
-+	if (new_size) {
-+		bhv_vattr_t	va;
-+
-+		va.va_mask = XFS_AT_SIZE;
-+		va.va_size = new_size;
-+		error = bhv_vop_setattr(vp, &va, ATTR_NOLOCK, NULL);
-+	}
-+
-+	xfs_iunlock(xfs_vtoi(vp), XFS_IOLOCK_EXCL);
-+	return error;
-+}
- 
- const struct inode_operations xfs_inode_operations = {
- 	.permission		= xfs_vn_permission,
-@@ -822,6 +868,7 @@ const struct inode_operations xfs_inode_
- 	.getxattr		= xfs_vn_getxattr,
- 	.listxattr		= xfs_vn_listxattr,
- 	.removexattr		= xfs_vn_removexattr,
-+	.fallocate		= xfs_vn_fallocate,
- };
- 
- const struct inode_operations xfs_dir_inode_operations = {
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
