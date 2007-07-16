@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762331AbXGPOxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763667AbXGPO6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762331AbXGPOxm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXGPOxe
+	id S1763667AbXGPO6o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758192AbXGPO6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:53:34 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51522 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753751AbXGPOxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:53:33 -0400
-Date: Mon, 16 Jul 2007 10:53:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Al Boldi <a1426z@gawab.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>, <david@lang.hm>
-Subject: Re: Hibernation considerations
-In-Reply-To: <200707160802.46567.a1426z@gawab.com>
-Message-ID: <Pine.LNX.4.44L0.0707161045520.3410-100000@iolanthe.rowland.org>
+	Mon, 16 Jul 2007 10:58:37 -0400
+Received: from sicnat2.emn.fr ([193.54.76.193]:45479 "EHLO ron.emn.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758092AbXGPO6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 10:58:37 -0400
+From: Yoann Padioleau <padator@wanadoo.fr>
+To: linux-janitors@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] potential parse error, drivers/i2c/busses/i2c-pmcmsp.c
+Date: Mon, 16 Jul 2007 16:57:02 +0200
+Message-ID: <87r6n85rcx.fsf@wanadoo.fr>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007, Al Boldi wrote:
 
-> From a kexec'd hibernation kernel pov, both S3 and S4 look conceptually 
-> exactly the same.  The only difference is, in S3 the memory is in memory and 
-> in S4 the memory is on storage.  All device handling is exactly the same, so 
-> if there is a problem with device handling between the kexec'd hibernation 
-> kernel and the normal kernel, then that would have made itself visible.
+potential parse error in initializer.
 
-You have contradicted yourself.  "In S3 the memory is in memory and in
-S4 the memory is on storage".  How does the memory get onto storage?  
-The kexec'd hibernation kernel writes it there.  To do so it accesses a 
-storage device.
 
-Consequently the device handling _cannot_ be exactly the same in S3 and
-S4.
+Signed-off-by: Yoann Padioleau <padator@wanadoo.fr> 
 
-Alan Stern
+diff --git a/drivers/i2c/busses/i2c-pmcmsp.c b/drivers/i2c/busses/i2c-pmcmsp.c
+index 03188d2..17cecf1 100644
+--- a/drivers/i2c/busses/i2c-pmcmsp.c
++++ b/drivers/i2c/busses/i2c-pmcmsp.c
+@@ -630,7 +630,7 @@ static struct i2c_adapter pmcmsptwi_adap
+ static struct platform_driver pmcmsptwi_driver = {
+ 	.probe  = pmcmsptwi_probe,
+ 	.remove	= __devexit_p(pmcmsptwi_remove),
+-	.driver {
++	.driver = {
+ 		.name	= DRV_NAME,
+ 		.owner	= THIS_MODULE,
+ 	},
 
