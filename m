@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763860AbXGPOAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765094AbXGPOBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763860AbXGPOAi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757462AbXGPOAb
+	id S1765094AbXGPOBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760153AbXGPOAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:00:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:27924 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756301AbXGPOAa (ORCPT
+	Mon, 16 Jul 2007 10:00:53 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:42184 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759920AbXGPOAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:00:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=PN6Cs35G8NujZMbqeyqiAkjI0d+nkcKUtPKlTj3EZtRMD2EEyd+/70+3gRNGx18OmX0S4KrfIZ3DjeqZfmwzhZFS6L1d4vIfTHzNPF//hU3q/A0y0ftfufHXy5NEmIsX/VpJlYDebGuK9gLe86BA6H6P5yZSNqSLV6Vj1sLVVP4=
-Date: Mon, 16 Jul 2007 22:50:28 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/10] sysfs: fix kmem_cache_free(NULL)
-Message-ID: <20070716135028.GA2040@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-References: <20070716134855.GA1858@APFDCB5C>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070716134855.GA1858@APFDCB5C>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 16 Jul 2007 10:00:52 -0400
+Message-Id: <20070716135550.010775000@pademelon.sonytel.be>
+User-Agent: quilt/0.46-1
+Date: Mon, 16 Jul 2007 15:55:50 +0200
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, James Simmons <jsimmons@infradead.org>,
+       linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [patch 0/4] Cell SPE logos
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes out of memory error handling in sysfs_new_dirent().
-kmem_cache_free() with NULL is not allowed.
+The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
+threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
+When booting Linux, 2 penguins logos are shown on the graphical console by
+the standard frame buffer console logo code.
 
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+To emphasize the existence of the SPEs (which can be used under Linux), we
+added a second row of (smaller) helper penguin logos, one for each SPE.
 
----
- fs/sysfs/dir.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+A sample screenshot can be found at
+http://www.kernel.org/pub/linux/kernel/people/geoff/cell/debian-penguin-shot.png
+(or on the ps3linux T-shirts we wore at OLS :-)
 
-Index: 2.6-mm/fs/sysfs/dir.c
-===================================================================
---- 2.6-mm.orig/fs/sysfs/dir.c
-+++ 2.6-mm/fs/sysfs/dir.c
-@@ -361,20 +361,20 @@ static struct dentry_operations sysfs_de
- struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
- {
- 	char *dup_name = NULL;
--	struct sysfs_dirent *sd = NULL;
-+	struct sysfs_dirent *sd;
+Summaries:
+  [1] fbdev: extract fb_show_logo_line()
+  [2] fbdev: Add fb_append_extra_logo()
+  [3] fbdev: SPE helper penguin logo
+  [4] Cell: Draw SPE helper penguin logos
+
+Compared to the previous submission, patches 2 and 4 were modified (cfr. the
+changelogs in those patches).
+
+Thanks for applying!
+
+With kind regards,
  
- 	if (type & SYSFS_COPY_NAME) {
- 		name = dup_name = kstrdup(name, GFP_KERNEL);
- 		if (!name)
--			goto err_out;
-+			return NULL;
- 	}
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
  
- 	sd = kmem_cache_zalloc(sysfs_dir_cachep, GFP_KERNEL);
- 	if (!sd)
--		goto err_out;
-+		goto err_out1;
- 
- 	if (sysfs_alloc_ino(&sd->s_ino))
--		goto err_out;
-+		goto err_out2;
- 
- 	atomic_set(&sd->s_count, 1);
- 	atomic_set(&sd->s_active, 0);
-@@ -386,9 +386,10 @@ struct sysfs_dirent *sysfs_new_dirent(co
- 
- 	return sd;
- 
-- err_out:
--	kfree(dup_name);
-+ err_out2:
- 	kmem_cache_free(sysfs_dir_cachep, sd);
-+ err_out1:
-+	kfree(dup_name);
- 	return NULL;
- }
- 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+
