@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761616AbXGPNXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764386AbXGPNYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761616AbXGPNXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbXGPNXG
+	id S1764386AbXGPNYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758919AbXGPNYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:23:06 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:39834 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757977AbXGPNXF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:23:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=d0WNTEng0SMWh9QxjiVbMQRYftVsE5t6Yh86J1ruipgqyHC4cLZ1ruv5u93ZLgoSV6zjM4ezxUE6wv2I04pWJxK/GQYMTdTgzTZ3KSKI0dW7VQvvtwl8oo4F2wdMBlyrOlrgw/Htl6nvxNh6pZNinKQNdemSD42+ounUDo8j+/I=
-Message-ID: <469B712D.80208@googlemail.com>
-Date: Mon, 16 Jul 2007 14:22:53 +0100
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Mon, 16 Jul 2007 09:24:42 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:27532 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757977AbXGPNYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 09:24:42 -0400
+Date: Mon, 16 Jul 2007 15:23:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: mark_salyzyn@adaptec.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 00/33] SG table chaining support
+Message-ID: <20070716132359.GQ5195@kernel.dk>
+References: <11845792671245-git-send-email-jens.axboe@oracle.com> <200707161319.l6GDJd07027464@mbox.iij4u.or.jp>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: try_module_get question
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Robert Beckett <bob.beckett@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707161319.l6GDJd07027464@mbox.iij4u.or.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Mon, Jul 16 2007, FUJITA Tomonori wrote:
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Subject: [PATCH 00/33] SG table chaining support
+> Date: Mon, 16 Jul 2007 11:47:14 +0200
+> 
+> > Changes since last post:
+> > 
+> > - Rebase to current -git. Lots of SCSI drivers have been converted
+> >   to use the sg accessor helpers, which nicely shrinks this patchset
+> >   from 70 to 33 patches. Great!
+> 
+> ---
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] ips: sg chaining support
+> 
+> ips properly uses scsi_for_each_sg for the normal I/O path, however,
+> the breakup path doesn't.
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-Im a newcomer to kernel development, and have my first question :
+Thanks, applied!
 
-I want to create a small module that simply powers on an FPGA, and 
-powers it off when it is released. Two other modules will then depend on 
-this module and control different devices programmed into the FPGA. So 
-that the shared module does not get removed before any of the device 
-drivers, I want to do a try_module_get from each driver targeting the 
-shared module. What is the easiest way to get a reference to the shared 
-module?
+-- 
+Jens Axboe
 
-My current thought is to export a function that will return a reference 
-to it (using THIS_MODULE from the shared module). The device driver 
-modules can then try_module_get the returned module. Is this the best 
-way to do this?
-
-Is there an alternative way? maybe based on a similar system to the 
-device / driver matching code?
-There seem to be a lot of FAQs online saying that you need to get and 
-put a module before calling any function that may stall for example, but 
-they dont tell you how to get the module reference to use.
-
-Or am I just missing something obvious?
-
-Thanks
-
-Robert Beckett.
