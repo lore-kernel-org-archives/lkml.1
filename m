@@ -1,76 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762718AbXGPURT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbXGPUS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762718AbXGPURT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 16:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbXGPURL
+	id S1762862AbXGPUS1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 16:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbXGPUST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 16:17:11 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:4734 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbXGPURI (ORCPT
+	Mon, 16 Jul 2007 16:18:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:20008 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbXGPUSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 16:17:08 -0400
+	Mon, 16 Jul 2007 16:18:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rNf9BHVoAdkcbrg8EGhhMGnBf4XLy4Lonmd5NbUgYQa7UgpE0hHU2FIJgvPKuWp/hnx5rHxnh+3Q1PLMFP65ylXtolSPIswoKpnVscXIFbybR5fbji8JNA5hsC8Bn4qUCCC1YTTa+W0zkyt6znp8/Ciwxm6DuFh89fY9O0/5I8k=
-Message-ID: <3efb10970707161317h72b30aabq208150b2abde8e5e@mail.gmail.com>
-Date: Mon, 16 Jul 2007 22:17:08 +0200
-From: "Remy Bohmer" <l.pinguin@gmail.com>
-Reply-To: linux@bohmer.net
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [Question] Hooks for scheduler tracing (CFS)
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>, mathieu.desnoyers@polymtl.ca,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1184615557.2698.3.camel@laptopd505.fenrus.org>
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=sMxWV3+tC7z1cJY6n+F8PHjvwMRtVjfrOOYGzAt/5z6eGCH/zXDHCe5cpOOjkuiGo/oNR5I3T6Btx0nDqHo9G8QM+y+Bxqsw8m1dbIz+wZ+vQhZqnvc67KalQMM1P7rEBFQPPm5Z07hDfyygIllRRxviyBS2+hkRkgjgUHxUkXY=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Remove pointless conditional in drivers/usb/serial/io_ti.c::edge_shutdown()
+Date: Mon, 16 Jul 2007 22:17:25 +0200
+User-Agent: KMail/1.9.7
+Cc: Peter Berger <pberger@brimson.com>,
+       Al Borchers <alborchers@steinerpoint.com>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com>
-	 <1184615557.2698.3.camel@laptopd505.fenrus.org>
+Message-Id: <200707162217.25766.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Arjan,
+Coverity scan found (CID: 1708) this in 
+drivers/usb/serial/io_ti.c::edge_shutdown() : 
 
-Thanks for this suggestion.
-But I looked at Systemtap before, and as I remember, it is very
-flexible, but it only traces function calls. (or am I missing
-something?)
-I also need this scheduler-tracer, besides for fully fledged X86
-systems, also for ARM based boards also with a very minimal userland,
-and limited flash. So, it has to be lightweight also. I can only use
-cross-compilers to build the tools... (something Systemtap is not good
-at as I remember...)
+...
+2797 		for (i=0; i < serial->num_ports; ++i) {
+2798 			edge_port = usb_get_serial_port_data(serial->port[i]);
+2799 			edge_remove_sysfs_attrs(edge_port->port);
+2800 			if (edge_port) {
+2801 				edge_buf_free(edge_port->ep_out_buf);
+2802 				kfree(edge_port);
+2803 			}
+2804 			usb_set_serial_port_data(serial->port[i], NULL);
+2805 		}
+...
 
-So, I am missing something here, or it is unfortunately not what I am
-looking for...
+It's complaining that we dereference 'edge_port' in line 2799 which 
+makes the test of that pointer against NULL in 2800 pointless, since 
+if edge_port was actually NULL we'd have crashed already before 
+reaching line 2800.
+Reading the edge_open() function it seems to me that the pointer 
+returned by usb_get_serial_port_data(serial->port[i]) and stored in 
+'edge_port' can never actually be NULL here, so the test is entirely 
+superfluous (even if it could be NULL it would be pointless here, 
+ignoring the then possible crash in that case, since both 
+edge_buf_free() and kfree() can handle being passed NULL pointers.
+
+This patch removes the pointless conditional (and also makes a few
+tiny style corrections now that I was in the area anyway).
 
 
-Kind Regards,
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-Remy
+ drivers/usb/serial/io_ti.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/usb/serial/io_ti.c b/drivers/usb/serial/io_ti.c
+index 0d39036..b867090 100644
+--- a/drivers/usb/serial/io_ti.c
++++ b/drivers/usb/serial/io_ti.c
+@@ -2794,16 +2794,14 @@ static void edge_shutdown (struct usb_serial *serial)
+ 
+ 	dbg ("%s", __FUNCTION__);
+ 
+-	for (i=0; i < serial->num_ports; ++i) {
++	for (i = 0; i < serial->num_ports; ++i) {
+ 		edge_port = usb_get_serial_port_data(serial->port[i]);
+ 		edge_remove_sysfs_attrs(edge_port->port);
+-		if (edge_port) {
+-			edge_buf_free(edge_port->ep_out_buf);
+-			kfree(edge_port);
+-		}
++		edge_buf_free(edge_port->ep_out_buf);
++		kfree(edge_port);
+ 		usb_set_serial_port_data(serial->port[i], NULL);
+ 	}
+-	kfree (usb_get_serial_data(serial));
++	kfree(usb_get_serial_data(serial));
+ 	usb_set_serial_data(serial, NULL);
+ }
+ 
 
 
-2007/7/16, Arjan van de Ven <arjan@infradead.org>:
-> On Mon, 2007-07-16 at 21:46 +0200, Remy Bohmer wrote:
-> > So I was wondering if anybody knows some tool/kernel mechanism which
-> > can do this?
-> > If not, I will build a kernel extension for it myself (new extension
-> > to 'latency_trace' ?)
->
-> systemtap has been able to do such things for me in the past...
->
-> --
-> if you want to mail me at work (you don't), use arjan (at)
-> linux.intel.com
-> Test the interaction between Linux and your BIOS via
-> http://www.linuxfirmwarekit.org
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
