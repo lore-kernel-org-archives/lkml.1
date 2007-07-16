@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762695AbXGPO2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762632AbXGPObx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762695AbXGPO2Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbXGPO2R
+	id S1762632AbXGPObx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbXGPObr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:28:17 -0400
-Received: from mail-in-05.arcor-online.net ([151.189.21.45]:50028 "EHLO
-	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757064AbXGPO2R convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:28:17 -0400
-Message-ID: <9335978.1184596094749.JavaMail.ngmail@webmail12>
-Date: Mon, 16 Jul 2007 16:28:14 +0200 (CEST)
-From: "M. Koehrer" <mathias_koehrer@arcor.de>
-To: linux-kernel@vger.kernel.org
-Subject: CONFIG_PREEMPT_RT Patch and UDP/IP on Ethernet in real time.
+	Mon, 16 Jul 2007 10:31:47 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1899 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756823AbXGPObq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 10:31:46 -0400
+Date: Mon, 16 Jul 2007 16:32:03 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH/RFC] msleep() with hrtimers
+In-Reply-To: <20070716140904.GA15028@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707161615400.1817@scrub.home>
+References: <19044.1184539364@lwn.net> <Pine.LNX.4.64.0707161325040.1818@scrub.home>
+ <20070716114734.GA12010@elte.hu> <Pine.LNX.4.64.0707161353350.1818@scrub.home>
+ <20070716115744.GA14131@elte.hu> <Pine.LNX.4.64.0707161404240.1817@scrub.home>
+ <20070716121906.GA18169@elte.hu> <Pine.LNX.4.64.0707161444510.1817@scrub.home>
+ <20070716140904.GA15028@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-ngMessageSubType: MessageSubType_MAIL
-X-WebmailclientIP: 213.68.15.100
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+Hi,
 
-I have a question concerning Ingo Molnar's realtime preempt patch.
-This patch is great go get low latency on timer threads and a really
-good real time behaviour.
-I want to connect an external, embedded device via Ethernet (UDP/IP) 
-to my Linux PC. This communication should be in real time as well.
-For this I have a separate network adapter in my PC that is used
-solely for this UDP Ethernet traffic.
-However, I think all Ethernet traffic is be handled by
-the soft IRQ threads [softirq-net-rx] [softirq-net-tx] but I do
-not see a way to do real time networking via my dedicated network adapter.
+On Mon, 16 Jul 2007, Ingo Molnar wrote:
 
-How can I get this UDP networking real time capable?
+> because when i assumed the obvious, you called it an 
+> insult so please dont leave any room for assumptions and remove any 
+> ambiguity - especially as our communication seems to be marred by what 
+> appears to be frequent misunderstandings ;-)
 
-I use kernel 2.6.21.6 and the related realtime preempt patch.
-However, this is a general question that is not related to a certain kernel
-version.
+What the hell is this supposed to be? How am I not to take this:
 
-Any feedback is welcome.
+"i did not want to embarrass you (and distract the discussion) with
+answering a pretty stupid, irrelevant question"
 
-Thanks a lot!
+as an insult? How does it reflect on someone if he asks "stupid, 
+irrelevant questions"? If it had been a misunderstanding, you could have 
+ask appropriately instead of assuming I'm an idiot.
+BTW Adding smileys to it doesn't make it any funnier, since it I don't 
+believe in the "misunderstandings" theory anymore. :-(
 
-Regards
-
-Mathias
-
-
-
-
--- 
-Mathias Koehrer
-mathias_koehrer@arcor.de
-
-
-Viel oder wenig? Schnell oder langsam? Unbegrenzt surfen + telefonieren
-ohne Zeit- und Volumenbegrenzung? DAS TOP ANGEBOT JETZT bei Arcor: günstig
-und schnell mit DSL - das All-Inclusive-Paket für clevere Doppel-Sparer,
-nur  39,85 €  inkl. DSL- und ISDN-Grundgebühr!
-http://www.arcor.de/rd/emf-dsl-2
+bye, Roman
