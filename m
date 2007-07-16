@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761773AbXGPIj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbXGPIu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761773AbXGPIj7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 04:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761201AbXGPIju
+	id S1757864AbXGPIu5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 04:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbXGPIut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 04:39:50 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:46886 "EHLO tim.rpsys.net"
+	Mon, 16 Jul 2007 04:50:49 -0400
+Received: from no-way.org ([212.55.212.131]:33389 "EHLO no-way.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761119AbXGPIjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 04:39:49 -0400
-Subject: [GIT PULL] LED updates
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 16 Jul 2007 09:39:33 +0100
-Message-Id: <1184575173.9602.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1753750AbXGPIus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 04:50:48 -0400
+Date: Mon, 16 Jul 2007 10:50:46 +0200
+From: Flavio Curti <lists.fcu@no-way.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Flavio Curti <lists.fcu@no-way.org>, linux-kernel@vger.kernel.org
+Subject: Re: panics with 16port Promise Supertrack EX Controller
+Message-ID: <20070716085046.GE21260@no-way.org>
+References: <20070708225246.GD16285@no-way.org> <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com> <46919688.1050005@yahoo.com.au> <20070715225155.GD21260@no-way.org> <20070715173515.49883f4a.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070715173515.49883f4a.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hello
 
-Could you please pull from:
+On Sun, Jul 15, 2007 at 05:35:15PM -0700, Randy Dunlap wrote:
+> On Mon, 16 Jul 2007 00:51:55 +0200 Flavio Curti wrote:
+> > Ok, I now switched to cfg, and the machine panicd again. Panic attached.
+> > Any help is appreciated.
+> Make sure that you switched to "cfq" and not "cfg".
 
-git://git.o-hand.com/linux-rpurdie-leds for-linus
+Oh, it is. Typo when writing the email, sorry...
 
-This adds a couple of new LED drivers and converts the LED class away
-from struct class_device as well as some bug fixes. Most of this has
-been in -mm for a while.
+kernel          /boot/vmlinuz-2.6.22.1-dorade root=/dev/sda1 ro
+netconsole=4444@62.12.130.18/eth0,514@213.189.128.9/ elevator=cfq
 
-Thanks,
+Kind Regards
 
-Richard
+Flavio Curti
 
- arch/avr32/boards/atngw100/setup.c    |   31 +++++
- arch/avr32/configs/atngw100_defconfig |   16 ++
- drivers/leds/Kconfig                  |   22 ++-
- drivers/leds/Makefile                 |    1 
- drivers/leds/led-class.c              |   49 +++-----
- drivers/leds/led-triggers.c           |   27 +++-
- drivers/leds/leds-gpio.c              |  199 ++++++++++++++++++++++++++++++++++
- drivers/leds/leds-locomo.c            |    2 
- drivers/leds/leds.h                   |    8 -
- drivers/leds/ledtrig-timer.c          |   49 +++-----
- include/linux/leds.h                  |   17 ++
- 11 files changed, 343 insertions(+), 78 deletions(-)
-
-David Brownell (2):
-      leds: Teach leds-gpio to handle timer-unsafe GPIOs
-      leds: leds-gpio for ngw100
-
-Jan Engelhardt (1):
-      leds: Use menuconfig objects II - LED
-
-Raphael Assenat (1):
-      leds: Add generic GPIO LED driver
-
-Richard Purdie (3):
-      leds: Fix trigger unregister_simple if register_simple fails
-      leds: Add warning printks in error paths
-      leds: Convert from struct class_device to struct device
-
-
+--
+http://no-way.org/~fcu/
