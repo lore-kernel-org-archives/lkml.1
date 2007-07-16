@@ -1,53 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762318AbXGPCys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbXGPC7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762318AbXGPCys (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 22:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759297AbXGPCyj
+	id S1762921AbXGPC7H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 22:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759234AbXGPC64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 22:54:39 -0400
-Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:28729 "HELO
-	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759234AbXGPCyj (ORCPT
+	Sun, 15 Jul 2007 22:58:56 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62869 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758999AbXGPC6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 22:54:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=cdz5sJPZXQzfwqd0AH/R+LfZR8ZYNjalYEXnFMYtumJdVeJtT4ejIz82HXN6tQENQSclTVI2z4pPWxDOA/io1aHxMFhf+sXW4ejEG4/75Tli6a/HR5HGu+8CquPqKUoEWjcZpDaR+D1fAtj9HrKzWwGotQc21OAXCsej7FHnD5c=  ;
-X-YMail-OSG: w2xaeWgVM1lnj3hMPCbAgYW6KYJhDmxlXh7iQxyps32hm91lq7Uw84h8acZ812fl.MLDhbSDKg--
-From: David Brownell <david-b@pacbell.net>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] minimal fixes for drivers/usb/gadget/m66592-udc.c
-Date: Sun, 15 Jul 2007 19:54:36 -0700
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
-References: <200707151607.20275.david-b@pacbell.net> <200707151618.10688.david-b@pacbell.net> <20070715232410.GH21668@ftp.linux.org.uk>
-In-Reply-To: <20070715232410.GH21668@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 15 Jul 2007 22:58:55 -0400
+Date: Mon, 16 Jul 2007 11:49:48 +0900 (JST)
+Message-Id: <20070716.114948.48508930.tshibata@ab.jp.nec.com>
+To: leo@zh-kernel.org
+Cc: rob@landley.net, gh@us.ibm.com, hpa@zytor.com, kunai@linux-foundation.jp,
+       holzheu@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       tshibata@ab.jp.nec.com
+Subject: Re: [PATCH] Chinese Language Maintainer
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+In-Reply-To: <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com>
+References: <1184330583.23373.65.camel@Gundam>
+	<200707131352.12952.rob@landley.net>
+	<a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com>
+X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
+ =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707151954.36583.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 July 2007, Al Viro wrote:
-> On Sun, Jul 15, 2007 at 04:18:10PM -0700, David Brownell wrote:
-> > Re the leaks, in probe() request_irq() isn't cleaned up ... but it
-> > looked to me like the rest of the allocations did get cleaned up
-> > afer probe() errors.  But remove() does indeed leak the memory you
-> > highlighted.
+On Sun, 15 Jul 2007 22:42:07 +0800, leo wrote:
+> On 7/14/07, Rob Landley <rob@landley.net> wrote:
+> > On Friday 13 July 2007 8:43:03 am Li Yang wrote:
+> > > On Thu, 2007-07-12 at 12:05 -0400, Rob Landley wrote:
+> > > > +A language maintainer accepts patches to the Linux kernel, written in C,
+> > > > from +authors who do not also speak English.  The language maintainer
+> > > > translates the +description of each patch into English, forwards the
+> > > > patches to linux-kernel +and to the appropriate maintainers for inclusion
+> > > > in the Linux kernel, and +translates questions and replies about such
+> > > > patches as part of the +patch review process.
+> > >
+> > > In addiction to this responsibility, I would like to add two more which,
+> > > in my opinion, are more important.  And these are what I'm trying to
+> > > do.  :)
+> > > First, promoting contribution to Linux kernel in local language.
+> > > Second, coordinate the translation effort of key kernel documents.
+> >
+> > Cool.  It's good to do that, but not the problem I'm worried about solving.
+> >
+> > I was trying to describe the minimum requirements for being a language
+> > maintainer, I.E. what non-english users need in order to be able to merge
+> > their patches.  Because without someone to contribute patches to (I.E a
+> > language maintainer), documentation in non-english languages promotes the
+> > creation of patches that can't be merged.  That's the problem I'm trying to
+> > solve.
+> >
+> > To me, finding language maintainers is the flip side of the coin of
+> > translating documentation.
 > 
-> Why not make ep0_buf a 16bit field in that struct?
+> I think you worried too much about this problem.  :)  Let me explain
+> the situation here in China more clearly.  Actually, English is
+> mandatory in most schools and universities.  Only very few people
+> learn other language as a second language.  Therefore software
+> developers who are almost educated should have the basic English
+> skill.  However, that doesn't mean that they can read English or
+> communicate with native English speaker very easily.  Consider your
+> second language learn in school for analogy.  Read in English will be
+> much slower and more likely to cause misunderstanding.  This will
+> reduce the likelihood greatly of English documentation being read.  If
+> we are promoting contribution to the Linux community, we should
+> maximum the possibility that these key documents being read.
+> Translation will serve this purpose very well.
+> 
+> So the possibility is very little that a translator is needed between
+> the Linux maintainer and a Chinese developer.  Although sometimes help
+> is needed when there is misunderstanding.
+> 
+> After a brief talk with the Japanese translator, I think the case is
+> similar for Japanese too.
 
-Ask the driver author.  :)
+Yes, In Japan, situation is mostly the same.
+We are trying to increase number of Linux community developer with
+Linux Foundation Japan or CELF people in Japan.
+In our discussion, the problem is not only Language.
 
-That should work, given proper byteswapping.  It's only
-used to transmit certain results.
+In case of some developer, once he step forward (he try to send patch
+or comment on LKML), he got some comment and he can work with
+community even if it's slow (because of he was non-native).
+So, I thought if some key document are available in Japanese like
+HOWTO, that will help such early stage of developers.
 
-- Dave
- 
+> Therefore, in my opinion, language maintainer should be more a helper
+> and promoter rather than a gatekeeper.  I will give a proposed process
+> later about how this helper mechanism works.
 
+I will be able to help this as a stand point of Japanese situation.
 
+> - Leo
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
