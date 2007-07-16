@@ -1,52 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXGPLx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763456AbXGPLyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761972AbXGPLx1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 07:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbXGPLxU
+	id S1763456AbXGPLyT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 07:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756939AbXGPLyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 07:53:20 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:58477 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756565AbXGPLxT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 07:53:19 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH 01/02] USB: sierra: Add TRU-Install (c) Support [ATTEMPT 4]
-Date: Mon, 16 Jul 2007 13:55:08 +0200
-User-Agent: KMail/1.9.7
-Cc: Kevin Lloyd <klloyd@sierrawireless.com>, gregkh@suse.de,
-       linux@sierrawireless.com, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org
-References: <4696C9EF.9050406@sierrawireless.com>
-In-Reply-To: <4696C9EF.9050406@sierrawireless.com>
+	Mon, 16 Jul 2007 07:54:11 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:3939 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756441AbXGPLyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 07:54:10 -0400
+Date: Mon, 16 Jul 2007 13:54:28 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH/RFC] msleep() with hrtimers
+In-Reply-To: <20070716114734.GA12010@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707161353350.1818@scrub.home>
+References: <19044.1184539364@lwn.net> <Pine.LNX.4.64.0707161325040.1818@scrub.home>
+ <20070716114734.GA12010@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707161355.08548.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 13 Juli 2007 schrieb Kevin Lloyd:
-> +int sierra_probe(struct usb_interface *iface, const struct usb_device_id *id)
-> +{
-> +       int result;     
-> +       struct usb_device *udev;
-> +
-> +       udev = usb_get_dev(interface_to_usbdev(iface));
-> +
-> +       /* Check if in installer mode */
-> +       if (id->driver_info == DEVICE_INSTALLER){
-> +               dev_dbg(&udev->dev, "%s", "FOUND DEVICE(SW)\n");
-> +               result = sierra_set_ms_mode(udev, SWIMS_SET_MODE_Modem);
-> +               return result;
+Hi,
 
-As I mentioned, you'd better return -EIO here. You don't want to bind
-to the device, as it is not yet a serial device and you want the driver core
-to stop trying while it goes away and transforms itself.
+On Mon, 16 Jul 2007, Ingo Molnar wrote:
 
-	Regards
-		Oliver
+> i dont think there's any significant overhead. The OLPC folks are pretty 
+> sensitive to performance,
 
+How is a sleep function relevant to performace?
+
+bye, Roman
