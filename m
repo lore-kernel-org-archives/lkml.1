@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932420AbXGPNdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763480AbXGPNec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932420AbXGPNdf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbXGPNdX
+	id S1763480AbXGPNec (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765425AbXGPNeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:33:23 -0400
-Received: from [212.12.190.118] ([212.12.190.118]:32923 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758779AbXGPNdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:33:22 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: david@lang.hm
-Subject: Re: Hibernation considerations
-Date: Mon, 16 Jul 2007 16:32:02 +0300
-User-Agent: KMail/1.5
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org> <200707160802.46567.a1426z@gawab.com> <Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
+	Mon, 16 Jul 2007 09:34:03 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:26705 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765348AbXGPNd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 09:33:59 -0400
+Date: Mon, 16 Jul 2007 15:33:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+Message-ID: <20070716133316.GU5195@kernel.dk>
+References: <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be> <1184335333.3402.20.camel@localhost.localdomain> <200707131619.54898.arnd@arndb.de> <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be> <1184340528.3402.32.camel@localhost.localdomain> <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be> <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be> <20070716121649.GI5195@kernel.dk> <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be> <Pine.LNX.4.62.0707161515460.1072@pademelon.sonytel.be>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707161632.02334.a1426z@gawab.com>
+In-Reply-To: <Pine.LNX.4.62.0707161515460.1072@pademelon.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Mon, 16 Jul 2007, Al Boldi wrote:
-> > david@lang.hm wrote:
-> >> suspend-to-RAM should not involve kexec, the only reason for doing the
-> >> kexec to to get a seperate userspace to use for suspend-to-disk
-> >> operations instead of trying to partially freeze the sustem and keep
-> >> useing it.
-> >
-> > Or you could do suspend-to-disk-and-RAM.  But in the above case, it was
-> > meant to test kexec compatibility with device suspend/resume calls.
->
-> the point I am trying to make here is that there is no reason that the
-> kexec approach needs to do _any_ suspend/resume calls.
+On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
+> On Mon, 16 Jul 2007, Geert Uytterhoeven wrote:
+> > On Mon, 16 Jul 2007, Jens Axboe wrote:
+> > > On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
+> > > > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
+> > > > > Ah, that explains it. flush_dcache_page() is used in some drivers.
+> > > > > I'll update my patches. Thanks for the comments!
+> > > > 
+> > > > Does this look OK?
+> > > >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
+> > > >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
+> > > >     (ps3rom))
+> > > 
+> > > That looks good.
+> > > 
+> > > >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
+> > > 
+> > > Hmm, I would have thought a flush_dcache_page() would be more
+> > > appropriate, the backing could be page cache pages.
+> > 
+> > OK, I'll change it to flush_dcache_page().
+> 
+> Upon closer look, while flush_kernel_dcache_page() is a no-op on ppc64,
+> flush_dcache_page() isn't. So I'd prefer to not call it if not really needed.
+> 
+> And according to James, flush_kernel_dcache_page() should be sufficient...
+> 
+> So I'm getting puzzled again...
 
-When you go through ACPI, then that implies calling suspend/resume calls.
+I'll let James expand on why he thinks flush_kernel_dcache_page() should
+be sufficient. If the backing is always user memory from
+get_user_pages(), then the flush_kernel_dcache_page() looks sufficient.
+For the normal IO paths, it could be that or page cache pages too for
+instance.
 
-> all that is needed is the ability of the new kernel to initialize the
-> devices it needs.
-
-We have to go through ACPI, for wakeup functions to succeed.  A simple 
-power-off won't do.
-
-> suspend-to-disk-and-ram could be implemented as three
-> seperate steps
->
-> 1. suspend-to-disk
->
-> 2. resume-from-disk
->
-> 3. suspend-to-ram
->
-> followed by either
->
-> 4. resume-from-ram
->
-> or
->
-> 4. battery dies and loptop powers off completely
->
-> 5. power-on boot.
->
-> 6. resume-from-disk
->
-> all that you need to do is to make sure that the system doesn't run
-> anything that would affect permanent media or the outside world between
-> steps #2 and #3
-
-Exactly, which is why your scheme would break down on #3, and that's why you 
-need to call S3 from within the kexec'd hibernation kernel after saving the 
-hibernation image.
-
-
-Thanks!
-
---
-Al
+-- 
+Jens Axboe
 
