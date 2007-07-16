@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764482AbXGPOoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764965AbXGPOo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764482AbXGPOoX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759812AbXGPOoO
+	id S1764965AbXGPOo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760021AbXGPOou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:44:14 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:14122 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759759AbXGPOoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:44:13 -0400
-Date: Mon, 16 Jul 2007 16:43:32 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 00/33] SG table chaining support
-Message-ID: <20070716144331.GY5195@kernel.dk>
-References: <11845792671245-git-send-email-jens.axboe@oracle.com> <18075.31515.974905.507754@stoffel.org> <yq1d4ysv35d.fsf@sermon.lab.mkp.net>
+	Mon, 16 Jul 2007 10:44:50 -0400
+Received: from [212.12.190.105] ([212.12.190.105]:32951 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759812AbXGPOot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 10:44:49 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+Date: Mon, 16 Jul 2007 17:44:48 +0300
+User-Agent: KMail/1.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <yq1d4ysv35d.fsf@sermon.lab.mkp.net>
+Message-Id: <200707161744.48298.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16 2007, Martin K. Petersen wrote:
-> >>>>> "John" == John Stoffel <john@stoffel.org> writes:
-> 
-> John> Will this help out tape drive performance at all?  I looked
-> John> through the patches quickly, esp the AIC7xxx stuff since that's
-> John> what I use, but nothing jumped out at me...
-> 
-> Yes.  Most modern tape drives want a block size of 1MB or higher.
-> With the old stack we'd be stuck at 512KB because the sg limitations
-> caused us to come just short of 1MB...
+Roman Zippel wrote:
+> On Mon, 16 Jul 2007, Ingo Molnar wrote:
+> > to sum it up: a nice +19 task (the most commonly used nice level in
+> > practice) gets 9.1%, 3.9%, 3.1% of CPU time on the old scheduler,
+> > depending on the value of HZ. This is quite inconsistent and illogical.
+>
+> You're correct that you can find artifacts in the extreme cases, it's
+> subjective whether this is a serious problem.
+> It's nice that these artifacts are gone, but that still doesn't explain
+> why this ratio had to be increase that much from around 1:10 to 1:69.
 
-Indeed. John, note that the driver changes aren't related to enabling
-some hardware feature. Drivers just need to be converted to use the sg
-walker helpers instead of doing it manually, then they'll also gain
-larger IO support. The SCSI drivers are currently being transitioned to
-that seperately, my patchset just contains patches for remaining drivers
-(which include non-SCSI ones as well).
+The ratio is definitely to high, but in addition to having a sane ratio by 
+default, it's probably wise to allow this to be user-configureable.
 
-The hardware has to support a big number of segments of course, looking
-at aic7xxx it seems to be limited at 128. From the comment that looks
-like it can be increased though, see AHD_NSEG in
-drivers/scsi/aic7xxx/aic79xx_osm.h:
 
-/*
- * Number of SG segments we require.  So long as the S/G segments for
- * a particular transaction are allocated in a physically contiguous
- * manner and are allocated below 4GB, the number of S/G segments is
- * unrestricted.
- */
-#define AHD_NSEG 128
+Thanks!
 
--- 
-Jens Axboe
+--
+Al
 
