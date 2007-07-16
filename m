@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764053AbXGPGze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764696AbXGPG4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764053AbXGPGze (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 02:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbXGPGz1
+	id S1764696AbXGPG4W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 02:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXGPG4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 02:55:27 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:54292 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752929AbXGPGz0 (ORCPT
+	Mon, 16 Jul 2007 02:56:14 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:60997
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbXGPG4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 02:55:26 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <469B164F.4070308@s5r6.in-berlin.de>
-Date: Mon, 16 Jul 2007 08:55:11 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Mon, 16 Jul 2007 02:56:12 -0400
+Date: Sun, 15 Jul 2007 23:49:20 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Al Boldi <a1426z@gawab.com>
+cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Hibernation considerations
+In-Reply-To: <200707160802.46567.a1426z@gawab.com>
+Message-ID: <Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+ <200707160802.46567.a1426z@gawab.com>
 MIME-Version: 1.0
-To: linux1394-user@lists.sourceforge.net
-CC: linux-kernel@vger.kernel.org
-Subject: Re: irq 9: nobody cared (try booting with the "irqpoll" option)
-References: <20070716030343.GC30349@shallowsky.com>
-In-Reply-To: <20070716030343.GC30349@shallowsky.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Full quote for LKML)
+On Mon, 16 Jul 2007, Al Boldi wrote:
 
-Akkana Peck wrote:
-> I've been participating in a thread on the linux-usb list about an
-> IRQ conflict problem several of us have seen with 2.6.21 and 2.6.22
-> (which didn't happen with earlier kernels).
-> 
-> The full thread starts at
-> http://www.mail-archive.com/linux-usb-users@lists.sourceforge.net/msg18856.html
-> but I'll summarize: at boot time, the kernel finds contention over
-> an IRQ (23 for the original poster, 9 for me), prints the "nobody
-> cared" message and a list of handlers, then disables the IRQ (which
-> of course makes things fail). My machine is a Vaio SR17, while the
-> OP's is a Lenovo T61. booting with irqpoll does solve the problem,
-> but it's not a solution I wanted to run with in the long term.
-> 
-> I got suspicious because one of the handlers was reported as
-> [<c02c1e50>] (ohci_irq_handler+0x0/0x920)
-> which seemed odd because my machine uses UHCI for USB and doesn't
-> have OHCI in the kernel at all. But it turned out the problem wasn't
-> UHCI for USB, but OHCI1394, and building a kernel without that driver
-> made everything else work fine.
-> 
-> I don't use Firewire much, so that solves the problem for me, but
-> I wanted to report this since it seems like 1394 has a problem on
-> some machines. (I've seen reports of the problem elsewhere too --
-> there's an ubuntu bug, and googling found a few other examples.)
-> 
-> I'd be happy to post further details or run tests, if anyone
-> is interested.
-> 
-> 	...Akkana
+>
+> david@lang.hm wrote:
+>> suspend-to-RAM should not involve kexec, the only reason for doing the
+>> kexec to to get a seperate userspace to use for suspend-to-disk operations
+>> instead of trying to partially freeze the sustem and keep useing it.
+>
+> Or you could do suspend-to-disk-and-RAM.  But in the above case, it was meant
+> to test kexec compatibility with device suspend/resume calls.
 
-I am not aware of anything that a PCI driver like ohci1394 could do
-about it.  Somebody correct me if I'm wrong, but this is between the
-BIOS and low-level code for the x86 PC platform.
+the point I am trying to make here is that there is no reason that the 
+kexec approach needs to do _any_ suspend/resume calls.
 
-Is anybody aware of relevant changes from 2.6.20 to 2.6.21 that could
-have introduced this regression?
--- 
-Stefan Richter
--=====-=-=== -=== =----
-http://arcgraph.de/sr/
+all that is needed is the ability of the new kernel to initialize the 
+devices it needs.
+
+suspend-to-disk-and-ram could be implemented as three 
+seperate steps
+
+1. suspend-to-disk
+
+2. resume-from-disk
+
+3. suspend-to-ram
+
+followed by either
+
+4. resume-from-ram
+
+or
+
+4. battery dies and loptop powers off completely
+
+5. power-on boot.
+
+6. resume-from-disk
+
+all that you need to do is to make sure that the system doesn't run 
+anything that would affect permanent media or the outside world between 
+steps #2 and #3
+
+yes it's more steps, but each step is logicly seperate, and each step will 
+be excercised on a regular basis, so the combination of the steps will 
+also be reliable.
+
+this is far better then creating yet another way to pause the system that 
+only a few people will use.
+
+David Lang
