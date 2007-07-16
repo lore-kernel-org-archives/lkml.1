@@ -1,206 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbXGPWyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbXGPWzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760100AbXGPWyY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbXGPWyP
+	id S1758173AbXGPWzE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:55:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXGPWyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:54:15 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:53430 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbXGPWyO (ORCPT
+	Mon, 16 Jul 2007 18:54:54 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:16949 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbXGPWyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:54:14 -0400
-Date: Mon, 16 Jul 2007 15:54:11 -0700
-From: sukadev@us.ibm.com
-To: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, Herbert Poetzel <herbert@13thfloor.at>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] Move alloc_pid call to copy_process
-Message-ID: <20070716225411.GH25053@us.ibm.com>
-References: <20070715123600.GA210@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 16 Jul 2007 18:54:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=spHQmViPiW9sMpkHknkkxnzpMKETLpkmYyywo5EIOHdX3nTbdQWjrD8VZxRPVV96CdyT7X6dV9ThWpT78NbHdYTOvNuSIxDElgpulf/HncKh7PmTxPFisafdJFbSpYH53wFk3xtq1HHpiEnKQKkCbeHoAWxA3g3EjFfWDSy4enk=
+Message-ID: <9a8748490707161554j1fa7625fq1f1cb7e6aa359715@mail.gmail.com>
+Date: Tue, 17 Jul 2007 00:54:46 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+Cc: "Rene Herman" <rene.herman@gmail.com>, "Bodo Eggert" <7eggert@gmx.de>,
+       "Matt Mackall" <mpm@selenic.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070715123600.GA210@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+References: <8FO1e-2jW-35@gated-at.bofh.it> <8Gj55-hJ-5@gated-at.bofh.it>
+	 <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it>
+	 <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz>
+	 <469A5D7C.5010904@gmail.com>
+	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
+	 <469BF104.1040703@gmail.com>
+	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@tv-sign.ru] wrote:
-| Sukadev Bhattiprolu wrote:
-| >
-| > --- lx26-22-rc6-mm1.orig/kernel/pid.c	2007-07-13 18:23:55.000000000 -0700
-| > +++ lx26-22-rc6-mm1/kernel/pid.c	2007-07-13 18:23:55.000000000 -0700
-| > @@ -206,6 +206,10 @@ fastcall void free_pid(struct pid *pid)
-| >  	/* We can be called with write_lock_irq(&tasklist_lock) held */
-| >  	unsigned long flags;
-| >  
-| > +	/* check this here to keep copy_process() cleaner */
-| > +	if (unlikely(pid == &init_struct_pid))
-| > +		return;
-| > +
-| >  	spin_lock_irqsave(&pidmap_lock, flags);
-| >  	hlist_del_rcu(&pid->pid_chain);
-| >  	spin_unlock_irqrestore(&pidmap_lock, flags);
-| > @@ -214,13 +218,17 @@ fastcall void free_pid(struct pid *pid)
-| >  	call_rcu(&pid->rcu, delayed_put_pid);
-| >  }
-| >  
-| > -struct pid *alloc_pid(void)
-| > +struct pid *alloc_pid(enum copy_process_type copy_src)
-| >  {
-| >  	struct pid *pid;
-| >  	enum pid_type type;
-| >  	int nr = -1;
-| >  	struct pid_namespace *ns;
-| >  
-| > +	/* check this here to keep copy_process() cleaner */
-| > +	if (unlikely(copy_src == COPY_IDLE_PROCESS))
-| > +		return &init_struct_pid;
-| > +
-| >  	ns = task_active_pid_ns(current);
-| >  	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
-| >  	if (!pid)
-| 
-| Ugh. I am sorry! but imho this is so ugly :(
+On 17/07/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+> On 7/16/07, Rene Herman <rene.herman@gmail.com> wrote:
+> > Seeing as how single-page stacks are much easier on the VM so that creating
+> > those zillion threads should also be faster, at _some_ percentage we get to
+> > say "and now to hell with the rest".
+>
+> This is the core dispute here. Stated differently, I hope you never
+> design a bridge that I have to drive over.
+>
+> Correctness first, optimization second. Introducing random and
+> difficult to trace crashes upon an unsuspecting audience of sysadmins
+> and users is not a viable option.
+>
+> If at some point one of the pro-4k stacks crowd can prove that all
+> code paths are safe, or introduce another viable alternative (such as
+> Matt's idea for extending the stack dynamically), then removing the 8k
+> stacks option makes sense.
+>
 
-Ok :-)
+Please note that I was not trying to remove the 8K stack option right
+now - heck, I didn't even add anything to feature-removal-schedule.txt
+- all I wanted to accomplish with the patch that started this threas
+was;  a) indicate that the 4K option is no longer a debug thing  and
+b) make 4K stacks the default option in vanilla kernel.org kernels as
+a gentle nudge towards getting people to start fixing the code paths
+that are not 4K stack safe.
+Distros that currently use 8K stacks can continue to do so just fine,
+individuals compiling their own kernel.org kernels can as well and
+people using oldconfig wouldn't get any change, only people
+configuring a new kernel.org kernel from scratch would see a change.
+It was mostly meant as a hint that we want to move in the 4K stack
+direction over time...
+In the future (perhaps far future) when all 4K unsafe codepaths are
+believed to have been fixed an entry could be made in
+feature-removal-schedule.txt stating that the 8K option would go away
+in 6, 12 or whatever, months.   That was my intention with the patch I
+posted, I never intended to rip out 8K stacks anytime *soon*.
 
-| 
-| Could you please give more details why we need this change?
 
-Well, with multiple pid namespaces, we may need to allocate a new
-'struct pid_namespace' if the CLONE_NEWPID flag is specified. And
-as a part of initializing this pid_namespace, we need the 'task_struct'
-that will be the reaper of the new pid namespace.
-
-And this task_struct is allocated in copy_process(). So we could
-still alloc_pid() in do_fork(), as we are doing currently and set
-the reaper of the new pid_namespace later in copy_process(). But
-that seemed to complicate error handling and add checks again in
-copy_process() for the CLONE_NEWPID.
-
-| Even if we really need this, can't we do these checks in copy_process() ?
-
-We could and I did have a check in copy_process() in one of my earlier
-versions to Containers@ list.  We thought it cluttered copy_process() a
-bit. I can't seem to find that patch now, but will use Pavel Emelianov's
-more recent idea and even remove 'copy_src'
-
-Pavel pls Sign-off (or at least ack) this patch.
-
-| free_pid(&init_struct_pid) can only happen when fork fails, this is a slow
-| path, and copy_process() knows copy_src.
-
-Yep.
-
-| 
-| Oleg.
-
-Subject: [PATCH 5/5] Move alloc_pid call to copy_process
-
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-
-Move alloc_pid() into copy_process(). This will keep all pid and pid
-namespace code together and simplify error handling when we support
-multiple pid namespaces.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-
-Cc: Pavel Emelianov <xemul@openvz.org>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>
-Cc: Serge Hallyn <serue@us.ibm.com>
-Cc: Herbert Poetzel <herbert@13thfloor.at>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>
----
- kernel/fork.c |   18 ++++++++++++------
- kernel/pid.c  |    4 ++++
- 2 files changed, 16 insertions(+), 6 deletions(-)
-
-Index: lx26-22-rc6-mm1a/kernel/fork.c
-===================================================================
---- lx26-22-rc6-mm1a.orig/kernel/fork.c	2007-07-16 12:55:13.000000000 -0700
-+++ lx26-22-rc6-mm1a/kernel/fork.c	2007-07-16 14:36:48.000000000 -0700
-@@ -1029,6 +1029,12 @@ static struct task_struct *copy_process(
- 	if (p->binfmt && !try_module_get(p->binfmt->module))
- 		goto bad_fork_cleanup_put_domain;
- 
-+	if (!pid) {
-+		pid = alloc_pid();
-+		if (!pid)
-+			goto bad_fork_put_binfmt_module;
-+	}
-+
- 	p->did_exec = 0;
- 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
- 	copy_flags(clone_flags, p);
-@@ -1316,6 +1322,8 @@ bad_fork_cleanup_container:
- #endif
- 	container_exit(p, container_callbacks_done);
- 	delayacct_tsk_free(p);
-+	free_pid(pid);
-+bad_fork_put_binfmt_module:
- 	if (p->binfmt)
- 		module_put(p->binfmt->module);
- bad_fork_cleanup_put_domain:
-@@ -1380,19 +1388,16 @@ long do_fork(unsigned long clone_flags,
- {
- 	struct task_struct *p;
- 	int trace = 0;
--	struct pid *pid = alloc_pid();
- 	long nr;
- 
--	if (!pid)
--		return -EAGAIN;
--	nr = pid->nr;
- 	if (unlikely(current->ptrace)) {
- 		trace = fork_traceflag (clone_flags);
- 		if (trace)
- 			clone_flags |= CLONE_PTRACE;
- 	}
- 
--	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, pid);
-+	p = copy_process(clone_flags, stack_start, regs, stack_size,
-+			parent_tidptr, child_tidptr, NULL);
- 	/*
- 	 * Do this prior waking up the new thread - the thread pointer
- 	 * might get invalid after that point, if the thread exits quickly.
-@@ -1400,6 +1405,8 @@ long do_fork(unsigned long clone_flags,
- 	if (!IS_ERR(p)) {
- 		struct completion vfork;
- 
-+		nr = pid_nr(task_pid(p));
-+
- 		if (clone_flags & CLONE_VFORK) {
- 			p->vfork_done = &vfork;
- 			init_completion(&vfork);
-@@ -1433,7 +1440,6 @@ long do_fork(unsigned long clone_flags,
- 			}
- 		}
- 	} else {
--		free_pid(pid);
- 		nr = PTR_ERR(p);
- 	}
- 	return nr;
-Index: lx26-22-rc6-mm1a/kernel/pid.c
-===================================================================
---- lx26-22-rc6-mm1a.orig/kernel/pid.c	2007-07-16 13:10:48.000000000 -0700
-+++ lx26-22-rc6-mm1a/kernel/pid.c	2007-07-16 14:36:00.000000000 -0700
-@@ -206,6 +206,10 @@ fastcall void free_pid(struct pid *pid)
- 	/* We can be called with write_lock_irq(&tasklist_lock) held */
- 	unsigned long flags;
- 
-+	/* check this here to keep copy_process() cleaner */
-+	if (unlikely(pid == &init_struct_pid))
-+		return;
-+
- 	spin_lock_irqsave(&pidmap_lock, flags);
- 	hlist_del_rcu(&pid->pid_chain);
- 	spin_unlock_irqrestore(&pidmap_lock, flags);
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
