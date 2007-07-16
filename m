@@ -1,46 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765610AbXGPWE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764874AbXGPWIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765610AbXGPWE4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763849AbXGPWEp
+	id S1764874AbXGPWIQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbXGPWID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:04:45 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:59173 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760622AbXGPWEo (ORCPT
+	Mon, 16 Jul 2007 18:08:03 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:43445 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756578AbXGPWIA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:04:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aS75SZVcjS6eBYIMZ5uQFg9YTwNW+tKZPzDi6gPfr7Q4/fmcnaxHb18AHo2nh2XftuJ+7p6sEBCBj+Ju4PkvwtcGZvtZnE36FZCrDB8Rak56lmzY1Li0N33FHMNCNghJ+wgaYmgQ3ua0AvMtCQpDti2gV9GkI0R7ESvLk0ufup0=
-Message-ID: <4d8e3fd30707161504s7f49d136x590cefd52ef2e337@mail.gmail.com>
-Date: Tue, 17 Jul 2007 00:04:43 +0200
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: [PATCH] Add the knwon_regression URI to the documentation
-Cc: michal.k.k.piotrowski@gmail.com
-In-Reply-To: <20070716235505.51ebe812@paolo-desktop>
+	Mon, 16 Jul 2007 18:08:00 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Mon, 16 Jul 2007 18:06:03 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Force erroneous inclusions of compiler-*.h files to be
+ errors.
+Message-ID: <Pine.LNX.4.64.0707161801560.12661@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070716235505.51ebe812@paolo-desktop>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/16/07, Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
-> We should let everybody know about where the regression
-> list is hosted. The more is known the more it is used.
->
-> Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-[...]
-I do apologize for the multiple post,
-Sylpheed-claws 1.0.5 was logging the error message "error occured
-while sending the message" after the SMTP QUIT and I thought the
-message was not sent.
-I was _wrong_
 
-Regards,
+Replace worthless comments with actual preprocessor errors when
+including the wrong versions of the compiler.h files.
+
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+ include/linux/compiler-gcc.h   |    4 +++-
+ include/linux/compiler-gcc3.h  |    4 +++-
+ include/linux/compiler-gcc4.h  |    4 +++-
+ include/linux/compiler-intel.h |    4 +++-
+ 4 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index 03ec231..4590df2 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -1,4 +1,6 @@
+-/* Never include this file directly.  Include <linux/compiler.h> instead.  */
++#ifndef _LINUX_COMPILER_H
++#error "Please don't include <linux/compiler-gcc.h> directly, include <linux/compiler.h> instead."
++#endif
+
+ /*
+  * Common definitions for all gcc versions go here.
+diff --git a/include/linux/compiler-gcc3.h b/include/linux/compiler-gcc3.h
+index a9e2863..66af0be 100644
+--- a/include/linux/compiler-gcc3.h
++++ b/include/linux/compiler-gcc3.h
+@@ -1,4 +1,6 @@
+-/* Never include this file directly.  Include <linux/compiler.h> instead.  */
++#ifndef _LINUX_COMPILER_H
++#error "Please don't include <linux/compiler-gcc3.h> directly, include <linux/compiler.h> instead."
++#endif
+
+ /* These definitions are for GCC v3.x.  */
+ #include <linux/compiler-gcc.h>
+diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
+index a03e939..03ce2dd 100644
+--- a/include/linux/compiler-gcc4.h
++++ b/include/linux/compiler-gcc4.h
+@@ -1,4 +1,6 @@
+-/* Never include this file directly.  Include <linux/compiler.h> instead.  */
++#ifndef _LINUX_COMPILER_H
++#error "Please don't include <linux/compiler-gcc4.h> directly, include <linux/compiler.h> instead."
++#endif
+
+ /* These definitions are for GCC v4.x.  */
+ #include <linux/compiler-gcc.h>
+diff --git a/include/linux/compiler-intel.h b/include/linux/compiler-intel.h
+index b769961..2851a7f 100644
+--- a/include/linux/compiler-intel.h
++++ b/include/linux/compiler-intel.h
+@@ -1,4 +1,6 @@
+-/* Never include this file directly.  Include <linux/compiler.h> instead.  */
++#ifndef _LINUX_COMPILER_H
++#error "Please don't include <linux/compiler-intel.h> directly, include <linux/compiler.h> instead."
++#endif
+
+ #ifdef __ECC
+
 -- 
-Paolo
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
