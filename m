@@ -1,72 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765331AbXGPN1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbXGPN1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765331AbXGPN1W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759997AbXGPN1M
+	id S932337AbXGPN1l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765385AbXGPN11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:27:12 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:27561 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 09:27:27 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:27745 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755032AbXGPN1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:27:10 -0400
-Date: Mon, 16 Jul 2007 15:26:28 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rolandd@cisco.com, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 29/33] infiniband: sg chaining support
-Message-ID: <20070716132627.GT5195@kernel.dk>
-References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792693361-git-send-email-jens.axboe@oracle.com> <200707161321.l6GDLxfA028923@mbox.iij4u.or.jp>
-MIME-Version: 1.0
+	id S1765353AbXGPN1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 09:27:25 -0400
+Date: Mon, 16 Jul 2007 17:26:33 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: [PATCH 1/2] Use list_head in binfmt handling
+Message-ID: <20070716132633.GA11126@localhost.sw.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200707161321.l6GDLxfA028923@mbox.iij4u.or.jp>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16 2007, FUJITA Tomonori wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Subject: [PATCH 29/33] infiniband: sg chaining support
-> Date: Mon, 16 Jul 2007 11:47:43 +0200
-> 
-> > @@ -226,7 +228,8 @@ static int iser_sg_to_page_vec(struct iser_data_buf *data,
-> >  			       struct iser_page_vec *page_vec,
-> >  			       struct ib_device *ibdev)
-> >  {
-> > -	struct scatterlist *sg = (struct scatterlist *)data->buf;
-> > +	struct scatterlist *sgl = (struct scatterlist *)data->buf;
-> > +	struct scatterlist *sg;
-> >  	u64 first_addr, last_addr, page;
-> >  	int end_aligned;
-> >  	unsigned int cur_page = 0;
-> > @@ -234,14 +237,14 @@ static int iser_sg_to_page_vec(struct iser_data_buf *data,
-> >  	int i;
-> >  
-> >  	/* compute the offset of first element */
-> > -	page_vec->offset = (u64) sg[0].offset & ~MASK_4K;
-> > +	page_vec->offset = (u64) sgl[0].offset & ~MASK_4K;
-> >  
-> > -	for (i = 0; i < data->dma_nents; i++) {
-> > -		unsigned int dma_len = ib_sg_dma_len(ibdev, &sg[i]);
-> > +	for_each_sg(sgl, sg, data->dma_nents, i) {
-> > +		unsigned int dma_len = ib_sg_dma_len(ibdev, sg);
-> >  
-> >  		total_sz += dma_len;
-> >  
-> > -		first_addr = ib_sg_dma_address(ibdev, &sg[i]);
-> > +		first_addr = ib_sg_dma_address(ibdev, sg);
-> >  		last_addr  = first_addr + dma_len;
-> >  
-> >  		end_aligned   = !(last_addr  & ~MASK_4K);
-> > @@ -249,9 +252,9 @@ static int iser_sg_to_page_vec(struct iser_data_buf *data,
-> >  		/* continue to collect page fragments till aligned or SG ends */
-> >  		while (!end_aligned && (i + 1 < data->dma_nents)) {
-> >  			i++;
-> 
-> Do we need to replace i++ with sg = sg_next(sg) here?
+Switch single-linked binfmt formats list to usual list_head's.
+This leads to one-liners in register_binfmt() and unregister_binfmt().
+The downside is one pointer more in struct linux_binfmt. This is not a
+problem, since the set of registered binfmts on typical box is very small
+(ELF + something distro enabled for you).
 
-We do, updating the patch. Thanks for your review!
+Test-booted, played with executable .txt files, modprobe/rmmod binfmt_misc.
 
--- 
-Jens Axboe
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
+
+ fs/exec.c               |   34 ++++++----------------------------
+ include/linux/binfmts.h |    3 +--
+ 2 files changed, 7 insertions(+), 30 deletions(-)
+
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -66,27 +66,15 @@ int suid_dumpable = 0;
+ EXPORT_SYMBOL(suid_dumpable);
+ /* The maximal length of core_pattern is also specified in sysctl.c */
+ 
+-static struct linux_binfmt *formats;
++static LIST_HEAD(formats);
+ static DEFINE_RWLOCK(binfmt_lock);
+ 
+ int register_binfmt(struct linux_binfmt * fmt)
+ {
+-	struct linux_binfmt ** tmp = &formats;
+-
+ 	if (!fmt)
+ 		return -EINVAL;
+-	if (fmt->next)
+-		return -EBUSY;
+ 	write_lock(&binfmt_lock);
+-	while (*tmp) {
+-		if (fmt == *tmp) {
+-			write_unlock(&binfmt_lock);
+-			return -EBUSY;
+-		}
+-		tmp = &(*tmp)->next;
+-	}
+-	fmt->next = formats;
+-	formats = fmt;
++	list_add(&fmt->lh, &formats);
+ 	write_unlock(&binfmt_lock);
+ 	return 0;	
+ }
+@@ -95,20 +83,10 @@ EXPORT_SYMBOL(register_binfmt);
+ 
+ int unregister_binfmt(struct linux_binfmt * fmt)
+ {
+-	struct linux_binfmt ** tmp = &formats;
+-
+ 	write_lock(&binfmt_lock);
+-	while (*tmp) {
+-		if (fmt == *tmp) {
+-			*tmp = fmt->next;
+-			fmt->next = NULL;
+-			write_unlock(&binfmt_lock);
+-			return 0;
+-		}
+-		tmp = &(*tmp)->next;
+-	}
++	list_del(&fmt->lh);
+ 	write_unlock(&binfmt_lock);
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ EXPORT_SYMBOL(unregister_binfmt);
+@@ -155,7 +133,7 @@ asmlinkage long sys_uselib(const char __user * library)
+ 		struct linux_binfmt * fmt;
+ 
+ 		read_lock(&binfmt_lock);
+-		for (fmt = formats ; fmt ; fmt = fmt->next) {
++		list_for_each_entry(fmt, &formats, lh) {
+ 			if (!fmt->load_shlib)
+ 				continue;
+ 			if (!try_module_get(fmt->module))
+@@ -1097,7 +1075,7 @@ int search_binary_handler(struct linux_binprm *bprm,struct pt_regs *regs)
+ 	retval = -ENOENT;
+ 	for (try=0; try<2; try++) {
+ 		read_lock(&binfmt_lock);
+-		for (fmt = formats ; fmt ; fmt = fmt->next) {
++		list_for_each_entry(fmt, &formats, lh) {
+ 			int (*fn)(struct linux_binprm *, struct pt_regs *) = fmt->load_binary;
+ 			if (!fn)
+ 				continue;
+--- a/include/linux/binfmts.h
++++ b/include/linux/binfmts.h
+@@ -55,7 +55,7 @@ struct linux_binprm{
+  * linux accepts.
+  */
+ struct linux_binfmt {
+-	struct linux_binfmt * next;
++	struct list_head lh;
+ 	struct module *module;
+ 	int (*load_binary)(struct linux_binprm *, struct  pt_regs * regs);
+ 	int (*load_shlib)(struct file *);
 
