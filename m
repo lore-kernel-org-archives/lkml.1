@@ -1,39 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764898AbXGPAuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765248AbXGPAuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764898AbXGPAuY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 20:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761196AbXGPAtH
+	id S1765248AbXGPAuo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 20:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760843AbXGPAtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 20:49:07 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:39440 "EHLO snapgear.com"
+	Sun, 15 Jul 2007 20:49:06 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:39441 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756343AbXGPAtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756328AbXGPAtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 15 Jul 2007 20:49:01 -0400
 Date: Mon, 16 Jul 2007 10:48:11 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200707160048.l6G0mBK3010137@goober>
+Message-Id: <200707160048.l6G0mBww010139@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: use TRHEAD_SIZE instead of hard constant
+Subject: [M68KNOMMU]: start dump from exception stack
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use THREAD_SIZE instead of a hard constant.
+In die_if_kernel() start the stack dump at the exception-time SP, not
+at the SP with all the saved registers; the stack below exception-time
+sp contains only exception-saved values and is already printed in
+details just before.
 
 Signed-off-by: Philippe De Muyter <phdm@macqel.be>
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
 
-diff -Naur linux-2.6.22/arch/m68knommu/kernel/process.c linux-2.6.22-uc0/arch/m68knommu/kernel/process.c
---- linux-2.6.22/arch/m68knommu/kernel/process.c	2007-07-12 15:23:02.000000000 +1000
-+++ linux-2.6.22-uc0/arch/m68knommu/kernel/process.c	2007-07-12 15:27:00.000000000 +1000
-@@ -377,7 +377,7 @@
- 	fp = ((struct switch_stack *)p->thread.ksp)->a6;
- 	do {
- 		if (fp < stack_page+sizeof(struct thread_info) ||
--		    fp >= 8184+stack_page)
-+		    fp >= THREAD_SIZE-8+stack_page)
- 			return 0;
- 		pc = ((unsigned long *)fp)[1];
- 		if (!in_sched_functions(pc))
+diff -Naur linux-2.6.22/arch/m68knommu/kernel/traps.c linux-2.6.22-uc0/arch/m68knommu/kernel/traps.c
+--- linux-2.6.22/arch/m68knommu/kernel/traps.c	2007-07-12 15:23:02.000000000 +1000
++++ linux-2.6.22-uc0/arch/m68knommu/kernel/traps.c	2007-07-12 15:27:00.000000000 +1000
+@@ -82,7 +80,7 @@
+ 
+ 	printk(KERN_EMERG "Process %s (pid: %d, stackpage=%08lx)\n",
+ 		current->comm, current->pid, PAGE_SIZE+(unsigned long)current);
+-	show_stack(NULL, (unsigned long *)fp);
++	show_stack(NULL, (unsigned long *)(fp+1));
+ 	do_exit(SIGSEGV);
+ }
+ 
