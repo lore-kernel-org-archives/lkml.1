@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932267AbXGPPMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765965AbXGPPNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932267AbXGPPMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765479AbXGPPM1
+	id S1765965AbXGPPNW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbXGPPNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:12:27 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:65330 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765394AbXGPPMZ (ORCPT
+	Mon, 16 Jul 2007 11:13:06 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:63439 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760344AbXGPPNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:12:25 -0400
-Date: Mon, 16 Jul 2007 11:12:21 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, prasanna@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: Re: [patch 1/8] Kprobes - do not use kprobes mutex in arch code
-Message-ID: <20070716151220.GA23133@Krystal>
-References: <20070714012133.612727310@polymtl.ca> <20070714012411.262873138@polymtl.ca> <20070714104914.GB7358@infradead.org> <20070714192002.GK6975@Krystal> <20070716102738.GA4276@in.ibm.com>
+	Mon, 16 Jul 2007 11:13:05 -0400
+Date: Mon, 16 Jul 2007 17:12:34 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 2/10] sysdev: add error check in sysdev_register()
+Message-ID: <20070716171234.2bc31be8@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070716135138.GB2040@APFDCB5C>
+References: <20070716134855.GA1858@APFDCB5C>
+	<20070716135138.GB2040@APFDCB5C>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070716102738.GA4276@in.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:08:51 up 9 days,  5:14,  3 users,  load average: 1.22, 0.76, 0.49
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ananth N Mavinakayanahalli (ananth@in.ibm.com) wrote:
-> On Sat, Jul 14, 2007 at 03:20:02PM -0400, Mathieu Desnoyers wrote:
-> > * Christoph Hellwig (hch@infradead.org) wrote:
-> > > On Fri, Jul 13, 2007 at 09:21:34PM -0400, Mathieu Desnoyers wrote:
-> > > > Remove the kprobes mutex from kprobes.h, since it does not belong there. Also
-> > > > remove all use of this mutex in the architecture specific code, replacing it by
-> > > > a proper mutex lock/unlock in the architecture agnostic code.
-> > > 
-> > > This is not very nice for avr32/sparc64 which have a noop arch_remove_kprobe
-> > > and now need to take a mutex to do nothing.  Maybe you can find a nice
-> > > way to avoid that?
-> > > 
-> > > Except for this issue making kprobes_mutex static to kprobes.c sounds like
-> > > a good improvement.
-> > > 
-> > 
-> > Since only unregister_kprobe() calls arch_remove_kprobe(), and only
-> > after having removed the struct kprobe from the kprobes list (while the
-> > kprobes mutex is held), I wonder if there is any need to hold the
-> > kprobes mutex at all when calling arch_remove_kprobe(). It turns out
-> > that only get_insn_slot()/free_insn_slot() (which is in
-> > kernel/kprobes.c, but called from arch specific code) seems to really
-> > use protection of this mutex.
-> 
-> Right.
-> 
-> > Would it make sense to protect the kprobe_insn_pages list with a
-> > new kprobe_insn_mutex, nestable in the kprobe_mutex ?
-> 
-> Do you think it is required after your change to make kprobe_mutex
-> static? But yes, for architectures that don't need a arch_remove_kprobe,
-> the situation is a bit odd... a mutex to do nothing. IIRC, that was the
-> primary reason why we made the mutex visible outside of kernel/kprobes.c
-> 
+On Mon, 16 Jul 2007 22:51:38 +0900,
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-After making the kprobe_mutex static, the only alternative we have is to
-protect the arch_remove_kprobe (empty on some architectures) call with
-kprobe_mutex, which, as Christoph pointed out, is not so great. Besides,
-I think the kprobe_insn_mutex would make more sense than taking a mutex
-in the arch-specific arch_remove_kprobe() for a resource that is not
-clearly identified.
+> This patch enables to catch the errors returned by add() procedure of
+> sysdev driver in sysdev_register.
 
-Mathieu
+> @@ -253,23 +254,50 @@ int sysdev_register(struct sys_device * 
+> 
+>  		/* Notify global drivers */
+>  		list_for_each_entry(drv, &sysdev_drivers, entry) {
+> -			if (drv->add)
+> -				drv->add(sysdev);
+> +			if (drv->add) {
+> +				error = drv->add(sysdev);
+> +				if (error)
+> +					goto error_sysdev;
+> +			}
+> +			added_sysdev++;
+>  		}
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+This looks asymmetric to me. Imagine we have a device/driver
+combination for which drv->add will return -ESOMEERROR. Now, it depends
+on the order:
+
+1. The device is registered when the driver is already registered:
+registration of the device will fail.
+
+2. The driver is registered when the device is already registered:
+driver registration will succeed, and the device will stay registered.
+
+I'm not sure if that is what we really want.
