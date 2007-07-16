@@ -1,45 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760139AbXGPM62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762789AbXGPM71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760139AbXGPM62 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 08:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbXGPM6V
+	id S1762789AbXGPM71 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 08:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbXGPM7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 08:58:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46305 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756301AbXGPM6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 08:58:20 -0400
-Date: Mon, 16 Jul 2007 14:58:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched_cacheflush is now unused
-Message-ID: <20070716125812.GA30635@elte.hu>
-References: <20070716124706.GA14250@linux-mips.org>
+	Mon, 16 Jul 2007 08:59:18 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41590 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752792AbXGPM7R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 08:59:17 -0400
+Date: Mon, 16 Jul 2007 14:59:14 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+In-Reply-To: <20070716121649.GI5195@kernel.dk>
+Message-ID: <Pine.LNX.4.62.0707161459010.1072@pademelon.sonytel.be>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+ <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
+ <1184335333.3402.20.camel@localhost.localdomain> <200707131619.54898.arnd@arndb.de>
+ <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+ <1184340528.3402.32.camel@localhost.localdomain>
+ <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
+ <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be> <20070716121649.GI5195@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070716124706.GA14250@linux-mips.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1083484419-1184590754=:1072"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Ralf Baechle <ralf@linux-mips.org> wrote:
+---584337861-1083484419-1184590754=:1072
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> Since Ingo's recent scheduler rewrite which was merged as commit
-> 0437e109e1841607f2988891eaa36c531c6aa6ac sched_cacheflush is unused.
+On Mon, 16 Jul 2007, Jens Axboe wrote:
+> On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
+> > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
+> > > Ah, that explains it. flush_dcache_page() is used in some drivers.
+> > > I'll update my patches. Thanks for the comments!
+> > 
+> > Does this look OK?
+> >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
+> >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
+> >     (ps3rom))
 > 
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> That looks good.
+> 
+> >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
+> 
+> Hmm, I would have thought a flush_dcache_page() would be more
+> appropriate, the backing could be page cache pages.
 
-yeah, indeed - i've added your patch to my queue of scheduler patches.
+OK, I'll change it to flush_dcache_page().
 
-	Ingo
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1083484419-1184590754=:1072--
