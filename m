@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764106AbXGPRhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765096AbXGPRic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764106AbXGPRhZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 13:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXGPRhO
+	id S1765096AbXGPRic (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 13:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756828AbXGPRiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 13:37:14 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:62045 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbXGPRhM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 13:37:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAD9Jm0arR7PD/2dsb2JhbAA
-X-IronPort-AV: i="4.16,542,1175497200"; 
-   d="scan'208"; a="385958889:sNHT29474410"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 10/10] IB/ehca: Support large page MRs
-X-Message-Flag: Warning: May contain useful information
-References: <200707121745.27592.fenkes@de.ibm.com>
-	<200707121754.20293.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 16 Jul 2007 10:37:09 -0700
-In-Reply-To: <200707121754.20293.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 12 Jul 2007 17:54:19 +0200")
-Message-ID: <adaabtww8qi.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Mon, 16 Jul 2007 13:38:24 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:7095 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752105AbXGPRiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 13:38:23 -0400
+Date: Mon, 16 Jul 2007 19:37:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Brown <dmlb2000@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: dm-crypt aes sha512 and I/O performance
+Message-ID: <20070716173738.GD5195@kernel.dk>
+References: <9c21eeae0707141718r16de38a7rac80458c168b5f05@mail.gmail.com> <9c21eeae0707160855g7f8ca115g272ba9d99a21ab6e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Jul 2007 17:37:10.0178 (UTC) FILETIME=[EFFC1020:01C7C7CF]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <9c21eeae0707160855g7f8ca115g272ba9d99a21ab6e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Add support for MR pages larger than 4K on eHCA2. This reduces firmware
- > memory consumption. If enabled via the mr_largepage module parameter, the MR
- > page size will be determined based on the MR length and the hardware
- > capabilities - if the MR is >= 16M, 16M pages are used, for example.
+On Mon, Jul 16 2007, David Brown wrote:
+> On 7/14/07, David Brown <dmlb2000@gmail.com> wrote:
+>> I was forced to put full (almost) hard drive encryption on my laptop
+>> so that all the Open Source Work I get paid to do will be protected in
+>> case someone tries to steal it and so they won't find any personal
+>> information about me if they get a hold of my laptop (because every
+>> idiot keeps their entire life history on their computers).
+>>
+>> Besides the futility of the above statement I've been noticing some
+>> oddities with how linux and dm-crypt handles I/O on the system.
+>>
+>> Now normally I get about 30Mb/s write speed I would expect some sort
+>> of drop in performance due to the encryption but currently I'm getting
+>> about 9Mb/s write speed and I'm kinda confused as to what the choke
+>> point is and how to improve the write speed, if it can be.
+>>
+>> Currently both my swap and root are encrypted with the default debian
+>> installer encryption and there's two kcryptd processes running. Now
+>> from what I've noticed when I'm dumping data to disk they both seem to
+>> be working, yet I'm not swapping or anything. So am I right to assume
+>> that the two kcryptd processes are running in parallel encrypting the
+>> data to the one root device? Also they only seem to be using 20% of
+>> the processors they are running on, why isn't it 100%? I'm guessing
+>> that the data isn't being either compressed or blown up when
+>> encrypting using this encryption style (but I'm not an expert). Would
+>> making more kcryptd threads increase the I/O speed (more processes
+>> doing encrypting)? Is there a way to specify more threads of kcryptd?
+>>
+>> I'm kinda at a loss, so any help would be appreciated.
+>> - David Brown
+>>
+>
+> I should remember never to email the LKML during the weekend...
+>
+> Did anyone see this?
+>
+> I did some number crunching and with about 15Mb/s read and 9Mb/s write
+> I end up copying files on the hard drive locally at about 3Mb/s
+> (rounded). Which is really lame getting twice without encryption was
+> much better.
+>
+> I'm using the ata_piix driver in the 2.6.22.1 kernel.
 
-Why the module parameter?  Is there any reason a user would want to
-turn this off?  Or conversely, why is it off by default?
+Try and blktrace the crypt device, perhaps? Do a simple dd from your
+crypted device to /dev/null, and run blktrace on the device at the same
+time. Just for a few seconds. Then check with blkparse if anything
+obvious pops up.
 
-Also this patch seems to depend heavily on the multiple EQ patch,
-which I am holding off on now.  So you may want to rebase to my
-current tree, which has all the ehca patches except the EQ one.
+-- 
+Jens Axboe
 
- >  static ssize_t ehca_show_nr_eqs(struct device *dev,
- >  				struct device_attribute *attr,
- >  				char *buf)
- >  {
- >  	return sprintf(buf, "%d\n", ehca_nr_eqs);
- >  }
- > -
- >  static DEVICE_ATTR(nr_eqs, S_IRUGO, ehca_show_nr_eqs, NULL);
-
-Although trivial, this chunk doesn't really belong in this patch --
-just fix it up in the multiple EQ patch (which I haven't merged yet).
-
- - R.
