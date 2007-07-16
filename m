@@ -1,198 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXGPJzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbXGPJzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932067AbXGPJzc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762640AbXGPJt1
+	id S932274AbXGPJzw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759454AbXGPJtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:49:27 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9336 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 05:49:31 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9305 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759678AbXGPJsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760556AbXGPJsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Jul 2007 05:48:38 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>, hch@infradead.org
-Subject: [PATCH 21/33] qla1280: sg chaining support
-Date: Mon, 16 Jul 2007 11:47:35 +0200
-Message-Id: <11845792683713-git-send-email-jens.axboe@oracle.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, jgarzik@pobox.com, htejun@gmail.com
+Subject: [PATCH 18/33] libata: convert to using sg helpers
+Date: Mon, 16 Jul 2007 11:47:32 +0200
+Message-Id: <1184579268910-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.3.rc2
 In-Reply-To: <11845792671245-git-send-email-jens.axboe@oracle.com>
 References: <11845792671245-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interesting hardware setup...
+This converts libata to using the sg helpers for looking up sg
+elements, instead of doing it manually.
 
-Cc: hch@infradead.org
+Cc: jgarzik@pobox.com
+Cc: htejun@gmail.com
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- drivers/scsi/qla1280.c |   66 +++++++++++++++++++++++++++---------------------
- 1 files changed, 37 insertions(+), 29 deletions(-)
+ drivers/ata/libata-core.c |   30 ++++++++++++++++--------------
+ include/linux/libata.h    |   16 ++++++++++------
+ 2 files changed, 26 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-index 54d8bdf..bd805ec 100644
---- a/drivers/scsi/qla1280.c
-+++ b/drivers/scsi/qla1280.c
-@@ -2775,7 +2775,7 @@ qla1280_64bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 	struct device_reg __iomem *reg = ha->iobase;
- 	struct scsi_cmnd *cmd = sp->cmd;
- 	cmd_a64_entry_t *pkt;
--	struct scatterlist *sg = NULL;
-+	struct scatterlist *sg = NULL, *s;
- 	__le32 *dword_ptr;
- 	dma_addr_t dma_handle;
- 	int status = 0;
-@@ -2889,13 +2889,16 @@ qla1280_64bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 	 * Load data segments.
- 	 */
- 	if (seg_cnt) {	/* If data transfer. */
-+		int remseg = seg_cnt;
- 		/* Setup packet address segment pointer. */
- 		dword_ptr = (u32 *)&pkt->dseg_0_address;
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 88e2dd0..788dc7b 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1341,7 +1341,7 @@ static void ata_qc_complete_internal(struct ata_queued_cmd *qc)
+  */
+ unsigned ata_exec_internal_sg(struct ata_device *dev,
+ 			      struct ata_taskfile *tf, const u8 *cdb,
+-			      int dma_dir, struct scatterlist *sg,
++			      int dma_dir, struct scatterlist *sgl,
+ 			      unsigned int n_elem)
+ {
+ 	struct ata_port *ap = dev->ap;
+@@ -1399,11 +1399,12 @@ unsigned ata_exec_internal_sg(struct ata_device *dev,
+ 	qc->dma_dir = dma_dir;
+ 	if (dma_dir != DMA_NONE) {
+ 		unsigned int i, buflen = 0;
++		struct scatterlist *sg;
  
- 		if (cmd->use_sg) {	/* If scatter gather */
- 			/* Load command entry data segments. */
--			for (cnt = 0; cnt < 2 && seg_cnt; cnt++, seg_cnt--) {
--				dma_handle = sg_dma_address(sg);
-+			for_each_sg(sg, s, seg_cnt, cnt) {
-+				if (cnt == 2)
-+					break;
-+				dma_handle = sg_dma_address(s);
- #if defined(CONFIG_IA64_GENERIC) || defined(CONFIG_IA64_SGI_SN2)
- 				if (ha->flags.use_pci_vchannel)
- 					sn_pci_set_vchan(ha->pdev,
-@@ -2906,12 +2909,12 @@ qla1280_64bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 					cpu_to_le32(pci_dma_lo32(dma_handle));
- 				*dword_ptr++ =
- 					cpu_to_le32(pci_dma_hi32(dma_handle));
--				*dword_ptr++ = cpu_to_le32(sg_dma_len(sg));
--				sg++;
-+				*dword_ptr++ = cpu_to_le32(sg_dma_len(s));
- 				dprintk(3, "S/G Segment phys_addr=%x %x, len=0x%x\n",
- 					cpu_to_le32(pci_dma_hi32(dma_handle)),
- 					cpu_to_le32(pci_dma_lo32(dma_handle)),
--					cpu_to_le32(sg_dma_len(sg)));
-+					cpu_to_le32(sg_dma_len(sg_next(s))));
-+				remseg--;
- 			}
- 			dprintk(5, "qla1280_64bit_start_scsi: Scatter/gather "
- 				"command packet data - b %i, t %i, l %i \n",
-@@ -2926,7 +2929,9 @@ qla1280_64bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 			dprintk(3, "S/G Building Continuation...seg_cnt=0x%x "
- 				"remains\n", seg_cnt);
+-		for (i = 0; i < n_elem; i++)
+-			buflen += sg[i].length;
++		for_each_sg(sgl, sg, n_elem, i)
++			buflen += sg->length;
  
--			while (seg_cnt > 0) {
-+			while (remseg > 0) {
-+				/* Update sg start */
-+				sg = s;
- 				/* Adjust ring index. */
- 				ha->req_ring_index++;
- 				if (ha->req_ring_index == REQUEST_ENTRY_CNT) {
-@@ -2952,9 +2957,10 @@ qla1280_64bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 					(u32 *)&((struct cont_a64_entry *) pkt)->dseg_0_address;
+-		ata_sg_init(qc, sg, n_elem);
++		ata_sg_init(qc, sgl, n_elem);
+ 		qc->nbytes = buflen;
+ 	}
  
- 				/* Load continuation entry data segments. */
--				for (cnt = 0; cnt < 5 && seg_cnt;
--				     cnt++, seg_cnt--) {
--					dma_handle = sg_dma_address(sg);
-+				for_each_sg(sg, s, remseg, cnt) {
-+					if (cnt == 5)
-+						break;
-+					dma_handle = sg_dma_address(s);
- #if defined(CONFIG_IA64_GENERIC) || defined(CONFIG_IA64_SGI_SN2)
- 				if (ha->flags.use_pci_vchannel)
- 					sn_pci_set_vchan(ha->pdev, 
-@@ -2966,12 +2972,12 @@ qla1280_64bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 					*dword_ptr++ =
- 						cpu_to_le32(pci_dma_hi32(dma_handle));
- 					*dword_ptr++ =
--						cpu_to_le32(sg_dma_len(sg));
-+						cpu_to_le32(sg_dma_len(s));
- 					dprintk(3, "S/G Segment Cont. phys_addr=%x %x, len=0x%x\n",
- 						cpu_to_le32(pci_dma_hi32(dma_handle)),
- 						cpu_to_le32(pci_dma_lo32(dma_handle)),
--						cpu_to_le32(sg_dma_len(sg)));
--					sg++;
-+						cpu_to_le32(sg_dma_len(s)));
-+					remseg--;
- 				}
- 				dprintk(5, "qla1280_64bit_start_scsi: "
- 					"continuation packet data - b %i, t "
-@@ -3062,7 +3068,7 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 	struct device_reg __iomem *reg = ha->iobase;
- 	struct scsi_cmnd *cmd = sp->cmd;
- 	struct cmd_entry *pkt;
--	struct scatterlist *sg = NULL;
-+	struct scatterlist *sg = NULL, *s;
- 	__le32 *dword_ptr;
- 	int status = 0;
- 	int cnt;
-@@ -3188,6 +3194,7 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 	 * Load data segments.
- 	 */
- 	if (seg_cnt) {
-+		int remseg = seg_cnt;
- 		/* Setup packet address segment pointer. */
- 		dword_ptr = &pkt->dseg_0_address;
+@@ -4000,7 +4001,7 @@ void ata_sg_clean(struct ata_queued_cmd *qc)
+ 		if (qc->n_elem)
+ 			dma_unmap_sg(ap->dev, sg, qc->n_elem, dir);
+ 		/* restore last sg */
+-		sg[qc->orig_n_elem - 1].length += qc->pad_len;
++		sg_last(sg, qc->orig_n_elem)->length += qc->pad_len;
+ 		if (pad_buf) {
+ 			struct scatterlist *psg = &qc->pad_sgent;
+ 			void *addr = kmap_atomic(psg->page, KM_IRQ0);
+@@ -4225,6 +4226,7 @@ void ata_sg_init_one(struct ata_queued_cmd *qc, void *buf, unsigned int buflen)
+ 	qc->orig_n_elem = 1;
+ 	qc->buf_virt = buf;
+ 	qc->nbytes = buflen;
++	qc->cursg = qc->__sg;
  
-@@ -3196,22 +3203,25 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 			qla1280_dump_buffer(1, (char *)sg, 4 * 16);
+ 	sg_init_one(&qc->sgent, buf, buflen);
+ }
+@@ -4250,6 +4252,7 @@ void ata_sg_init(struct ata_queued_cmd *qc, struct scatterlist *sg,
+ 	qc->__sg = sg;
+ 	qc->n_elem = n_elem;
+ 	qc->orig_n_elem = n_elem;
++	qc->cursg = qc->__sg;
+ }
  
- 			/* Load command entry data segments. */
--			for (cnt = 0; cnt < 4 && seg_cnt; cnt++, seg_cnt--) {
-+			for_each_sg(sg, s, seg_cnt, cnt) {
-+				if (cnt == 4)
-+					break;
- 				*dword_ptr++ =
--					cpu_to_le32(pci_dma_lo32(sg_dma_address(sg)));
--				*dword_ptr++ =
--					cpu_to_le32(sg_dma_len(sg));
-+					cpu_to_le32(pci_dma_lo32(sg_dma_address(s)));
-+				*dword_ptr++ = cpu_to_le32(sg_dma_len(s));
- 				dprintk(3, "S/G Segment phys_addr=0x%lx, len=0x%x\n",
--					(pci_dma_lo32(sg_dma_address(sg))),
--					(sg_dma_len(sg)));
--				sg++;
-+					(pci_dma_lo32(sg_dma_address(s))),
-+					(sg_dma_len(s)));
-+				remseg--;
- 			}
- 			/*
- 			 * Build continuation packets.
- 			 */
- 			dprintk(3, "S/G Building Continuation"
- 				"...seg_cnt=0x%x remains\n", seg_cnt);
--			while (seg_cnt > 0) {
-+			while (remseg > 0) {
-+				/* Continue from end point */
-+				sg = s;
- 				/* Adjust ring index. */
- 				ha->req_ring_index++;
- 				if (ha->req_ring_index == REQUEST_ENTRY_CNT) {
-@@ -3239,18 +3249,16 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 					&((struct cont_entry *) pkt)->dseg_0_address;
+ /**
+@@ -4339,7 +4342,7 @@ static int ata_sg_setup(struct ata_queued_cmd *qc)
+ {
+ 	struct ata_port *ap = qc->ap;
+ 	struct scatterlist *sg = qc->__sg;
+-	struct scatterlist *lsg = &sg[qc->n_elem - 1];
++	struct scatterlist *lsg = sg_last(qc->__sg, qc->n_elem);
+ 	int n_elem, pre_n_elem, dir, trim_sg = 0;
  
- 				/* Load continuation entry data segments. */
--				for (cnt = 0; cnt < 7 && seg_cnt;
--				     cnt++, seg_cnt--) {
-+				for_each_sg(sg, s, remseg, cnt) {
- 					*dword_ptr++ =
--						cpu_to_le32(pci_dma_lo32(sg_dma_address(sg)));
-+						cpu_to_le32(pci_dma_lo32(sg_dma_address(s)));
- 					*dword_ptr++ =
--						cpu_to_le32(sg_dma_len(sg));
-+						cpu_to_le32(sg_dma_len(s));
- 					dprintk(1,
- 						"S/G Segment Cont. phys_addr=0x%x, "
- 						"len=0x%x\n",
--						cpu_to_le32(pci_dma_lo32(sg_dma_address(sg))),
--						cpu_to_le32(sg_dma_len(sg)));
--					sg++;
-+						cpu_to_le32(pci_dma_lo32(sg_dma_address(s))),
-+						cpu_to_le32(sg_dma_len(s)));
- 				}
- 				dprintk(5, "qla1280_32bit_start_scsi: "
- 					"continuation packet data - "
+ 	VPRINTK("ENTER, ata%u\n", ap->print_id);
+@@ -4503,7 +4506,6 @@ void ata_data_xfer_noirq(struct ata_device *adev, unsigned char *buf,
+ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ {
+ 	int do_write = (qc->tf.flags & ATA_TFLAG_WRITE);
+-	struct scatterlist *sg = qc->__sg;
+ 	struct ata_port *ap = qc->ap;
+ 	struct page *page;
+ 	unsigned int offset;
+@@ -4512,8 +4514,8 @@ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ 	if (qc->curbytes == qc->nbytes - qc->sect_size)
+ 		ap->hsm_task_state = HSM_ST_LAST;
+ 
+-	page = sg[qc->cursg].page;
+-	offset = sg[qc->cursg].offset + qc->cursg_ofs;
++	page = qc->cursg->page;
++	offset = qc->cursg->offset + qc->cursg_ofs;
+ 
+ 	/* get the current page and offset */
+ 	page = nth_page(page, (offset >> PAGE_SHIFT));
+@@ -4541,8 +4543,8 @@ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ 	qc->curbytes += qc->sect_size;
+ 	qc->cursg_ofs += qc->sect_size;
+ 
+-	if (qc->cursg_ofs == (&sg[qc->cursg])->length) {
+-		qc->cursg++;
++	if (qc->cursg_ofs == qc->cursg->length) {
++		qc->cursg = sg_next(qc->cursg);
+ 		qc->cursg_ofs = 0;
+ 	}
+ }
+@@ -4635,7 +4637,7 @@ static void __atapi_pio_bytes(struct ata_queued_cmd *qc, unsigned int bytes)
+ 		ap->hsm_task_state = HSM_ST_LAST;
+ 
+ next_sg:
+-	if (unlikely(qc->cursg >= qc->n_elem)) {
++	if (unlikely(qc->cursg == sg_last(qc->__sg, qc->n_elem))) {
+ 		/*
+ 		 * The end of qc->sg is reached and the device expects
+ 		 * more data to transfer. In order not to overrun qc->sg
+@@ -4658,7 +4660,7 @@ next_sg:
+ 		return;
+ 	}
+ 
+-	sg = &qc->__sg[qc->cursg];
++	sg = qc->cursg;
+ 
+ 	page = sg->page;
+ 	offset = sg->offset + qc->cursg_ofs;
+@@ -4697,7 +4699,7 @@ next_sg:
+ 	qc->cursg_ofs += count;
+ 
+ 	if (qc->cursg_ofs == sg->length) {
+-		qc->cursg++;
++		qc->cursg = sg_next(qc->cursg);
+ 		qc->cursg_ofs = 0;
+ 	}
+ 
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 47cd2a1..005b159 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -30,7 +30,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/pci.h>
+ #include <linux/dma-mapping.h>
+-#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ #include <linux/io.h>
+ #include <linux/ata.h>
+ #include <linux/workqueue.h>
+@@ -386,6 +386,7 @@ struct ata_queued_cmd {
+ 	unsigned long		flags;		/* ATA_QCFLAG_xxx */
+ 	unsigned int		tag;
+ 	unsigned int		n_elem;
++	unsigned int		n_iter;
+ 	unsigned int		orig_n_elem;
+ 
+ 	int			dma_dir;
+@@ -396,7 +397,7 @@ struct ata_queued_cmd {
+ 	unsigned int		nbytes;
+ 	unsigned int		curbytes;
+ 
+-	unsigned int		cursg;
++	struct scatterlist	*cursg;
+ 	unsigned int		cursg_ofs;
+ 
+ 	struct scatterlist	sgent;
+@@ -943,7 +944,7 @@ ata_sg_is_last(struct scatterlist *sg, struct ata_queued_cmd *qc)
+ 		return 1;
+ 	if (qc->pad_len)
+ 		return 0;
+-	if (((sg - qc->__sg) + 1) == qc->n_elem)
++	if (qc->n_iter == qc->n_elem)
+ 		return 1;
+ 	return 0;
+ }
+@@ -951,6 +952,7 @@ ata_sg_is_last(struct scatterlist *sg, struct ata_queued_cmd *qc)
+ static inline struct scatterlist *
+ ata_qc_first_sg(struct ata_queued_cmd *qc)
+ {
++	qc->n_iter = 0;
+ 	if (qc->n_elem)
+ 		return qc->__sg;
+ 	if (qc->pad_len)
+@@ -963,8 +965,8 @@ ata_qc_next_sg(struct scatterlist *sg, struct ata_queued_cmd *qc)
+ {
+ 	if (sg == &qc->pad_sgent)
+ 		return NULL;
+-	if (++sg - qc->__sg < qc->n_elem)
+-		return sg;
++	if (++qc->n_iter < qc->n_elem)
++		return sg_next(sg);
+ 	if (qc->pad_len)
+ 		return &qc->pad_sgent;
+ 	return NULL;
+@@ -1158,9 +1160,11 @@ static inline void ata_qc_reinit(struct ata_queued_cmd *qc)
+ 	qc->dma_dir = DMA_NONE;
+ 	qc->__sg = NULL;
+ 	qc->flags = 0;
+-	qc->cursg = qc->cursg_ofs = 0;
++	qc->cursg = NULL;
++	qc->cursg_ofs = 0;
+ 	qc->nbytes = qc->curbytes = 0;
+ 	qc->n_elem = 0;
++	qc->n_iter = 0;
+ 	qc->err_mask = 0;
+ 	qc->pad_len = 0;
+ 	qc->sect_size = ATA_SECT_SIZE;
 -- 
 1.5.3.rc0.90.gbaa79
 
