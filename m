@@ -1,135 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761989AbXGPPma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764790AbXGPPnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761989AbXGPPma (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbXGPPmT
+	id S1764790AbXGPPnR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759139AbXGPPnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:42:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:48923 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754331AbXGPPmS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:42:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=fQnMT3OlDjbMWpMMHDdjfFoAYTM7j/2WVWI9B5aedGFoY8rgRJMwlCb9QFzM5x9G/IPysR1MdtIG1I/TWOXwkhmSloCHRQHQAAJ01O5KWJE6GXGaCadbxqWtP2opUxha7/TH1MmdtI54Pot+e10KvVgqp7CpUtB0LRu51oIipBo=
-Message-ID: <469B91A7.909@googlemail.com>
-Date: Mon, 16 Jul 2007 17:41:27 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Mon, 16 Jul 2007 11:43:00 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1453 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757330AbXGPPnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:43:00 -0400
+Date: Mon, 16 Jul 2007 17:43:22 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Jonathan Corbet <corbet@lwn.net>
+cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH/RFC] msleep() with hrtimers 
+In-Reply-To: <21003.1184596954@lwn.net>
+Message-ID: <Pine.LNX.4.64.0707161654130.1817@scrub.home>
+References: <21003.1184596954@lwn.net>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, htejun@gmail.com, gregkh@suse.de
-Subject: Re: Oops while modprobing phy fixed module
-References: <4698BF14.10807@googlemail.com>	 <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>	 <469A5C94.7030201@googlemail.com>	 <a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>	 <469A9D5D.10509@googlemail.com> <469B61C8.8010902@googlemail.com> <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
-In-Reply-To: <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> Hi Gabriel,
->
-> On 7/16/07, Gabriel C <nix.or.die@googlemail.com> wrote:
->
->   
->> ( http://194.231.229.228/Oops.txt )
->>     
->
->   
->> I cannot reproduce this on plain 2.6.22 so I've started to bisect the
->> problem.
->>     
->
-> Could you reproduce this oops at will at the "bad" points? [ Note that
-> git-bisect isn't quite applicable to bugs that are not 100% reproducible.
-> The ones that passed as "good" may have passed only because the
-> bug didn't get triggered on that particular test. Also, a perfectly good
-> commit could get unnecessarily marked "bad" because the bug
-> happened to get triggered for it ... so it's not quite trust-worthy for
-> your case. ]
->   
+Hi,
 
-Yes all marked 'bad' ponts have the Oops , at least here.
+On Mon, 16 Jul 2007, Jonathan Corbet wrote:
 
->   
->> Here the bisect result:
->>
->> 3007e997de91ec59af39a3f9c91595b31ae6e08b is first bad commit
->> commit 3007e997de91ec59af39a3f9c91595b31ae6e08b
->> Author: Tejun Heo <htejun@gmail.com>
->> Date:   Thu Jun 14 04:27:23 2007 +0900
->>
->>     sysfs: use sysfs_mutex to protect the sysfs_dirent tree
->>
->>     As kobj sysfs dentries and inodes are gonna be made reclaimable,
->>     i_mutex can't be used to protect sysfs_dirent tree.  Use sysfs_mutex
->>     globally instead.  As the whole tree is protected with sysfs_mutex,
->>     there is no reason to keep sysfs_rename_sem.  Drop it.
->>
->>     While at it, add docbook comments to functions which require
->>     sysfs_mutex locking.
->>
->>     Signed-off-by: Tejun Heo <htejun@gmail.com>
->>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->>
->> :040000 040000 9deba7887752bc343cc4f5dea2dac70e895ea8b6
->> 75340b6e18c1ada500bb1a2b99ee88fd93ebae8c M      fs
->>     
->
-> Hmm, I don't see why this one could introduce an oops in SLUB,
-> but it's doing some locking-related stuff, and if it didn't get it right,
-> the resulting races /could/ lead to some oops. But ... a recently
-> posted patch (http://lkml.org/lkml/2007/7/16/204) from Akinobu
-> Mita does point to an oops that was introduced by commit
-> 0c096b507f15397da890051ee73de4266d3941fb that belongs to the
-> same patchset -- kmem_cache_free(NULL) is illegal and so will oops.
-> A curious coincidence is that you do see sysfs_new_dirent() in the
-> stack trace there, but the oops there is in kmem_cache_free(), not
-> kmem_cache_zalloc() as your dmesg output indicated.
->
-> Try that patch anyway, but I don't think that'll solve your problem --
-> if it was, you would've been seeing "unable to handle kernel NULL
-> pointer dereference" but what you've been posting is "unable to
-> handle kernel paging request at virtual address <non_null_ptr>" ...
->   
+> > One possible problem here is that setting up that timer can be 
+> > considerably more expensive, for a relative timer you have to read the 
+> > current time, which can be quite expensive (e.g. your machine now uses the 
+> > PIT timer, because TSC was deemed unstable).
+> 
+> That's a possibility, I admit I haven't benchmarked it.  I will say that
+> I don't think it will be enough to matter - msleep() is not a hot-path
+> sort of function.  Once the system is up and running it almost never
+> gets called at all - at least, on my setup.
 
-I will try this patch and look whatever it helps.
+That's a bit my problem - we have to consider other setups as well.
+Is it worth converting all msleep users behind their back or should we 
+just a provide a separate function for those who care?
+I would really like to keep hrtimer and kernel timer separate and make it 
+obvious who is using what, as the usage requirements are somewhat 
+different.
 
-> Gaah.
->
-> And the worst thing about it all is that we're not able to trigger the
-> oops with debugging options -- that backtrace is horrible, so I'd
-> suggest CONFIG_FRAME_POINTER, at the very least. And also
-> perhaps DEBUG_INFO while we're at it -- that'll make later
-> analysis easier, if nothing else.
->   
+> > One question here would be, is it really a problem to sleep a little more?
+> 
+> "A little more" is a bit different than "twenty times as long as you
+> asked for."  That "little bit more" added up to a few seconds when
+> programming a device which needs a brief delay after tweaking each of
+> almost 200 registers.
 
-I will enable DEBUG option and reproduce in a bit.
+Which driver is this? I'd like to look at this, in case there's some other 
+hidden problem. 
 
-> [ BTW I couldn't even get my compiler to generate the same
-> "Code:" as we saw in your dmesg (I suspect all the oopsen
-> have occurred with DEBUG=n, yes?) so my earlier analysis
-> that suspected SLUB's page->lockless_freelist in slab_alloc()
-> as the source of that invalid kernel address was actually
-> based on some human-work rather than simple tools doing
-> their thing. Gaah, again! ]
->   
+> > BTW there is another thing to consider. If you already run with hrtimer/ 
+> > dyntick, there is not much reason to keep HZ at 100, so you could just 
+> > increase HZ to get the same effect.
+> 
+> Except that then, with the current implementation, you're paying for the
+> higher HZ whenever the CPU is busy.  I bet that doesn't take long to
+> overwhelm any added overhead in the hrtimer msleep().
 
-My original report ( also first Oops posted here ) was with DEBUG_KERNEL=y
-but as I said I will reproduce in a bit with all the DEBUG options you
-suggested.
+Actually if that's the case I'd consider this a bug, where is that extra 
+cost coming from?
 
-Shall I enable DEBUG_PAGEALLOC too ?
+> In the end, I did this because I thought msleep() should do what it
+> claims to do, because I thought that getting a known-to-expire timeout
+> off the timer wheel made sense, and to make a tiny baby step in the
+> direction of reducing the use of jiffies in the core code.
 
-> I'm thoroughly mystified ... Christoph? Tejun? Someone?
->
-> Satyam
->
->   
+I know that Ingo considers everything HZ related evil, but it really is 
+not - it keeps Linux scalable. Unless you need the high resolution the 
+timer wheel performance is still pretty hard to beat. That 
+"known-to-expire" stuff is really the least significant problem to 
+consider here, please just forget about it.
+I don't want to keep anyone from using hrtimer, if it's just some driver 
+go wild, but in generic code we have to consider portability issues. Using 
+jiffies as a time base is still unbeatable cheap in the general case, so 
+we have to carefully consider whether using a different time source is 
+required. There is nothing wrong with using jiffies if it fits the bill 
+and in many cases it still does.
 
-Gabriel
-
+bye, Roman
