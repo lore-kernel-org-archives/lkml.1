@@ -1,81 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbXGPNdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932420AbXGPNdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759873AbXGPNdz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932388AbXGPNde
+	id S932420AbXGPNdf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbXGPNdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:33:34 -0400
-Received: from mfo11.iij4u.or.jp ([210.138.174.81]:47429 "EHLO
-	mfo11.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932402AbXGPNdc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:33:32 -0400
-Message-Id: <200707161320.l6GDKDRP006750@mbox.iij4u.or.jp>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Eric.Moore@lsi.com, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 31/33] Fusion: sg chaining support
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <11845792691073-git-send-email-jens.axboe@oracle.com>
-References: <11845792671245-git-send-email-jens.axboe@oracle.com>
-	<11845792691073-git-send-email-jens.axboe@oracle.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 16 Jul 2007 09:33:23 -0400
+Received: from [212.12.190.118] ([212.12.190.118]:32923 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758779AbXGPNdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 09:33:22 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: david@lang.hm
+Subject: Re: Hibernation considerations
+Date: Mon, 16 Jul 2007 16:32:02 +0300
+User-Agent: KMail/1.5
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org> <200707160802.46567.a1426z@gawab.com> <Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Mon, 16 Jul 2007 22:20:13 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Message-Id: <200707161632.02334.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 31/33] Fusion: sg chaining support
-Date: Mon, 16 Jul 2007 11:47:45 +0200
+david@lang.hm wrote:
+> On Mon, 16 Jul 2007, Al Boldi wrote:
+> > david@lang.hm wrote:
+> >> suspend-to-RAM should not involve kexec, the only reason for doing the
+> >> kexec to to get a seperate userspace to use for suspend-to-disk
+> >> operations instead of trying to partially freeze the sustem and keep
+> >> useing it.
+> >
+> > Or you could do suspend-to-disk-and-RAM.  But in the above case, it was
+> > meant to test kexec compatibility with device suspend/resume calls.
+>
+> the point I am trying to make here is that there is no reason that the
+> kexec approach needs to do _any_ suspend/resume calls.
 
-> Cc: Eric.Moore@lsi.com
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  drivers/message/fusion/mptscsih.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
-> index d356173..f087249 100644
-> --- a/drivers/message/fusion/mptscsih.c
-> +++ b/drivers/message/fusion/mptscsih.c
-> @@ -297,7 +297,7 @@ nextSGEset:
->  		v2 = sg_dma_address(sg);
->  		mptscsih_add_sge(psge, sgflags | thisxfer, v2);
->  
-> -		sg++;		/* Get next SG element from the OS */
-> +		sg = sg_next(sg);	/* Get next SG element from the OS */
->  		psge += (sizeof(u32) + sizeof(dma_addr_t));
->  		sgeOffset += (sizeof(u32) + sizeof(dma_addr_t));
->  		sg_done++;
-> @@ -318,7 +318,7 @@ nextSGEset:
->  		v2 = sg_dma_address(sg);
->  		mptscsih_add_sge(psge, sgflags | thisxfer, v2);
->  		/*
-> -		sg++;
-> +		sg = sg_next(sg);
->  		psge += (sizeof(u32) + sizeof(dma_addr_t));
->  		*/
->  		sgeOffset += (sizeof(u32) + sizeof(dma_addr_t));
-> -- 
+When you go through ACPI, then that implies calling suspend/resume calls.
 
-We also need this change?
+> all that is needed is the ability of the new kernel to initialize the
+> devices it needs.
 
-diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
-index f087249..a3e6170 100644
---- a/drivers/message/fusion/mptscsih.c
-+++ b/drivers/message/fusion/mptscsih.c
-@@ -289,7 +289,7 @@ nextSGEset:
- 	for (ii=0; ii < (numSgeThisFrame-1); ii++) {
- 		thisxfer = sg_dma_len(sg);
- 		if (thisxfer == 0) {
--			sg ++; /* Get next SG element from the OS */
-+			sg = sg_next(sg); /* Get next SG element from the OS */
- 			sg_done++;
- 			continue;
- 		}
--- 
-1.4.3.2
+We have to go through ACPI, for wakeup functions to succeed.  A simple 
+power-off won't do.
+
+> suspend-to-disk-and-ram could be implemented as three
+> seperate steps
+>
+> 1. suspend-to-disk
+>
+> 2. resume-from-disk
+>
+> 3. suspend-to-ram
+>
+> followed by either
+>
+> 4. resume-from-ram
+>
+> or
+>
+> 4. battery dies and loptop powers off completely
+>
+> 5. power-on boot.
+>
+> 6. resume-from-disk
+>
+> all that you need to do is to make sure that the system doesn't run
+> anything that would affect permanent media or the outside world between
+> steps #2 and #3
+
+Exactly, which is why your scheme would break down on #3, and that's why you 
+need to call S3 from within the kexec'd hibernation kernel after saving the 
+hibernation image.
+
+
+Thanks!
+
+--
+Al
 
