@@ -1,127 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbXGPSwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXGPS5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760845AbXGPSwl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 14:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbXGPSvU
+	id S1758349AbXGPS5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 14:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbXGPS5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 14:51:20 -0400
-Received: from mail.zelnet.ru ([80.92.97.13]:35835 "EHLO mail.zelnet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754877AbXGPSvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 14:51:18 -0400
-Message-ID: <469BBE19.5020900@namesys.com>
-Date: Mon, 16 Jul 2007 22:51:05 +0400
-From: Edward Shishkin <edward@namesys.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
-X-Accept-Language: en-us, en
+	Mon, 16 Jul 2007 14:57:30 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:49000 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750936AbXGPS53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 14:57:29 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: axboe@suse.de
+Subject: [PATCH] error: too few arguments to function `scsi_cmd_ioctl'
+Date: Mon, 16 Jul 2007 21:56:51 +0300
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>
-CC: ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: [patch 3/3] reiser4: fix unix-file readpages filler
-X-Enigmail-Version: 0.86.0.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: multipart/mixed;
- boundary="------------070000020800020305000904"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200707162156.53424.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070000020800020305000904
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi;
 
+Following patch corrects following compile error introduced by commit 
+e245befce7af0a1e1347079ed62695b059594bd4
 
+caglar@zangetsu linux-2.6 $ make
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  LD      drivers/block/built-in.o
+  CC [M]  drivers/block/cciss.o
+drivers/block/cciss.c: In function `cciss_ioctl':
+drivers/block/cciss.c:1173: warning: passing arg 2 of `scsi_cmd_ioctl' from 
+incompatible pointer type
+drivers/block/cciss.c:1173: warning: passing arg 3 of `scsi_cmd_ioctl' makes 
+pointer from integer without a cast
+drivers/block/cciss.c:1173: warning: passing arg 4 of `scsi_cmd_ioctl' makes 
+integer from pointer without a cast
+drivers/block/cciss.c:1173: error: too few arguments to function 
+`scsi_cmd_ioctl'
+...
+make[2]: *** [drivers/block/cciss.o] Hata 1
+make[1]: *** [drivers/block] Hata 2
+make: *** [drivers] Hata 2
 
+Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 
---------------070000020800020305000904
-Content-Type: text/x-patch;
- name="reiser4-fix-uf_readpages_filler.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="reiser4-fix-uf_readpages_filler.patch"
-
-Protect page (via incrementing page count) from
-being reclaimed when looking for extent pointer
-in unix-file specific readpages filler.
-
-Signed-off-by: Edward Shishkin <edward@namesys.com>
----
- linux-2.6.22-rc6-mm1/fs/reiser4/plugin/file/file.c |   32 +++++++++++----------
- 1 files changed, 18 insertions(+), 14 deletions(-)
-
---- linux-2.6.22-rc6-mm1/fs/reiser4/plugin/file/file.c.orig
-+++ linux-2.6.22-rc6-mm1/fs/reiser4/plugin/file/file.c
-@@ -1607,6 +1607,8 @@
- 		unlock_page(page);
- 		return 0;
- 	}
-+	page_cache_get(page);
-+
- 	if (rc->lh.node == 0) {
- 		/* no twig lock  - have to do tree search. */
- 		reiser4_key key;
-@@ -1619,21 +1621,19 @@
- 			&key, &rc->coord, &rc->lh,
- 			ZNODE_READ_LOCK, FIND_EXACT,
- 			TWIG_LEVEL, TWIG_LEVEL, CBK_UNIQUE, NULL);
--		if (ret)
--			return ret;
-+		if (unlikely(ret))
-+			goto exit;
- 		lock_page(page);
- 		cbk_done = 1;
- 	}
- 	ret = zload(rc->coord.node);
--	if (ret) {
--		unlock_page(page);
--		return ret;
--	}
-+	if (unlikely(ret))
-+		goto unlock;
- 	if (!coord_is_existing_item(&rc->coord) ||
- 	    !item_is_extent(&rc->coord)) {
- 		zrelse(rc->coord.node);
--		unlock_page(page);
--		return RETERR(-EIO);
-+		ret = RETERR(-EIO);
-+		goto unlock;
- 	}
- 	ext = extent_by_coord(&rc->coord);
- 	ext_index = extent_unit_index(&rc->coord);
-@@ -1647,22 +1647,26 @@
- 		/* we can be here after a CBK call only in case of
- 		   corruption of the tree or the tree lookup algorithm bug. */
- 		if (unlikely(cbk_done)) {
--			unlock_page(page);
--			return RETERR(-EIO);
-+			ret = RETERR(-EIO);
-+			goto unlock;
- 		}
- 		goto repeat;
- 	}
- 	node = jnode_of_page(page);
- 	if (unlikely(IS_ERR(node))) {
- 		zrelse(rc->coord.node);
--		unlock_page(page);
--		return PTR_ERR(node);
-+		ret = PTR_ERR(node);
-+		goto unlock;
- 	}
- 	ret = reiser4_do_readpage_extent(ext, page->index - ext_index, page);
- 	jput(node);
- 	zrelse(rc->coord.node);
--	if (ret)
--		unlock_page(page);
-+	if (likely(!ret))
-+		goto exit;
-+ unlock:
-+	unlock_page(page);
-+ exit:
-+	page_cache_release(page);
- 	return ret;
- }
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 0fcad43..a2d6612 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1170,7 +1170,7 @@ static int cciss_ioctl(struct inode *inode, struct file 
+*filep,
+ 	case SG_EMULATED_HOST:
+ 	case SG_IO:
+ 	case SCSI_IOCTL_SEND_COMMAND:
+-		return scsi_cmd_ioctl(filep, disk, cmd, argp);
++		return scsi_cmd_ioctl(filep, disk->queue, disk, cmd, argp);
  
+ 	/* scsi_cmd_ioctl would normally handle these, below, but */
+ 	/* they aren't a good fit for cciss, as CD-ROMs are */
 
 
---------------070000020800020305000904--
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
