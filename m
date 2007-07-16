@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760540AbXGPTxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762119AbXGPTxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760540AbXGPTxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 15:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbXGPTxP
+	id S1762119AbXGPTxk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 15:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758839AbXGPTxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 15:53:15 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45253
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754094AbXGPTxO (ORCPT
+	Mon, 16 Jul 2007 15:53:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37210 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758288AbXGPTxT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 15:53:14 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: Documentation of kernel messages (Summary)
-Date: Mon, 16 Jul 2007 15:53:06 -0400
-User-Agent: KMail/1.9.6
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       leoli@freescale.com, Gerrit Huizenga <gh@us.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, gregkh@suse.de, pavel@ucw.cz,
-       tim.bird@am.sony.com, arjan@infradead.org, sam@ravnborg.org,
-       jengelh@computergmbh.de, joe@perches.com, auke-jan.h.kok@intel.com,
-       hansendc@us.ibm.com, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
-       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       linux-doc@vger.kernel.org
-References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com> <200707142156.16139.rob@landley.net> <20070715092806.d15d1156.rdunlap@xenotime.net>
-In-Reply-To: <20070715092806.d15d1156.rdunlap@xenotime.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 16 Jul 2007 15:53:19 -0400
+Subject: Re: [Question] Hooks for scheduler tracing (CFS)
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux@bohmer.net
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>, mathieu.desnoyers@polymtl.ca,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com>
+References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 16 Jul 2007 12:52:37 -0700
+Message-Id: <1184615557.2698.3.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707161553.07813.rob@landley.net>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 July 2007 12:28:06 pm Randy Dunlap wrote:
-> On Sat, 14 Jul 2007 21:56:15 -0400 Rob Landley wrote:
-> > On Friday 13 July 2007 11:54:41 pm Randy Dunlap wrote:
-> > > > If there's interest, I can push some patches to clean up
-> > > > Documentation by moving files into subdirectories, but
-> > > > Documentation's not well-suited to link out to the web.  (You need
-> > > > html for that, and it's text.)
-> > >
-> > > I think that you should start moving Documentation/ files around
-> > > and adding subdirectories -- if you are pretty sure of where they
-> > > should go (i.e., they won't likely be moved again later on).
-> >
-> > You mean like these?
-> > http://www.uwsg.iu.edu/hypermail/linux/kernel/0705.3/2925.html
-> > http://www.uwsg.iu.edu/hypermail/linux/kernel/0705.3/2924.html
->
-> Yes.  Have any of these been merged?
+On Mon, 2007-07-16 at 21:46 +0200, Remy Bohmer wrote:
+> So I was wondering if anybody knows some tool/kernel mechanism which
+> can do this?
+> If not, I will build a kernel extension for it myself (new extension
+> to 'latency_trace' ?)
 
-Not that I know of.  They seemed to meet with resounding indifference, so I 
-went on to other things...
+systemtap has been able to do such things for me in the past...
 
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+if you want to mail me at work (you don't), use arjan (at)
+linux.intel.com
+Test the interaction between Linux and your BIOS via
+http://www.linuxfirmwarekit.org
+
