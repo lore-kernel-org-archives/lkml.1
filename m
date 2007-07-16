@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762832AbXGPUoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbXGPUof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762832AbXGPUoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 16:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbXGPUoI
+	id S1760093AbXGPUof (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 16:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762828AbXGPUoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 16:44:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36150 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753365AbXGPUoG (ORCPT
+	Mon, 16 Jul 2007 16:44:19 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:63709 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762708AbXGPUoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 16:44:06 -0400
-Message-ID: <469BD7B7.30009@zytor.com>
-Date: Mon, 16 Jul 2007 13:40:23 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 16 Jul 2007 16:44:18 -0400
+Date: Mon, 16 Jul 2007 16:44:09 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru,
+       Jonathan Corbet <corbet@lwn.net>,
+       Arjan van de Ven <arjan@infradead.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC PATCH 1/8] Convert the RCU tasklet into a softirq
+In-Reply-To: <alpine.LFD.0.999.0707161322440.20061@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.58.0707161638460.18244@gandalf.stny.rr.com>
+References: <20070627193633.025544061@goodmis.org> <20070627194327.241131609@goodmis.org>
+ <20070716201251.GB12458@linux.vnet.ibm.com>
+ <alpine.LFD.0.999.0707161322440.20061@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Miklos Szeredi <miklos@szeredi.hu>, jeremy@goop.org,
-       jengelh@computergmbh.de, viro@ftp.linux.org.uk, nmiell@comcast.net,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: *at syscalls for xattrs?
-References: <Pine.LNX.4.64.0707132228460.25352@fbirervta.pbzchgretzou.qr> <20070715205313.GE21668@ftp.linux.org.uk> <1184534001.2765.5.camel@entropy> <20070715222323.GG21668@ftp.linux.org.uk> <Pine.LNX.4.64.0707160954160.25352@fbirervta.pbzchgretzou.qr> <469B2CAE.9010101@goop.org> <E1IAMWA-0004fM-00@dorka.pomaz.szeredi.hu> <469B3B73.9010400@zytor.com> <469B3EC2.8080702@garzik.org> <469BB190.1080300@zytor.com> <469BCF0C.6070109@garzik.org>
-In-Reply-To: <469BCF0C.6070109@garzik.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->>
->> Well, as Jeremy pointed out, in the absence of threads you can do the
->> same thing with fchdir(), however, that's much more of a hack.
-> 
-> My posixutils project (coreutils replacement) used fchdir(2), but that
-> still doesn't get you 100% race-free.  It gets you close, yes.
-> 
 
-I guess you're horked in the case where a single system call (e.g.
-rename()) needs more than one pathname.  Yet another reason why a single
-cwd isn't enough.
+On Mon, 16 Jul 2007, Linus Torvalds wrote:
 
-	-hpa
+>
+> Btw, are there any numbers on this? Is this whole thing actually
+> noticeable?
+
+Besides the obvious removal of code?
+
+The old way actually made an effort to create per_cpu tasklets!  So that
+the tasklets *can* run simultaneously, making it in essense a softirq.
+Since tasklets are implemented by the softirq, with a lot of code to make
+a tasklet function run only on one CPU at a time, and it can run on any
+CPU.  By converting the rcu tasklet (which had work to make it act like a
+softirq) to just be a softirq, we removed all the extra overhead of a
+tasklet.
+
+But to answer your question.  No, I didn't take any actual measurements.
+The changes just seemed obvious to me (and others).
+
+-- Steve
+
