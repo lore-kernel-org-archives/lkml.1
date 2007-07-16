@@ -1,81 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbXGPUkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761998AbXGPUkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763341AbXGPUkF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 16:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757195AbXGPUjv
+	id S1761998AbXGPUkf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 16:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759681AbXGPUkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 16:39:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38023 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756683AbXGPUjt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 16:39:49 -0400
-Date: Mon, 16 Jul 2007 13:34:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, ak@suse.de
-Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg
- helpers
-Message-Id: <20070716133427.e212b753.akpm@linux-foundation.org>
-In-Reply-To: <20070716201002.GQ5195@kernel.dk>
-References: <11845792671245-git-send-email-jens.axboe@oracle.com>
-	<11845792681830-git-send-email-jens.axboe@oracle.com>
-	<20070716130608.4d096e29.akpm@linux-foundation.org>
-	<20070716201002.GQ5195@kernel.dk>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Jul 2007 16:40:16 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:34739 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759165AbXGPUkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 16:40:15 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: Build error with latest git
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, jens.axboe@oracle.com
+References: <469BC420.8080204@lwfinger.net>
+In-Reply-To: <469BC420.8080204@lwfinger.net>
+MIME-Version: 1.0
+Date: Mon, 16 Jul 2007 23:39:36 +0300
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200707162339.39197.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007 22:10:03 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Mon, Jul 16 2007, Andrew Morton wrote:
-> > On Mon, 16 Jul 2007 11:47:23 +0200
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > This prepares x86-64 for sg chaining support.
-> > > 
-> > > Additional improvements/fixups for pci-gart from
-> > > Benny Halevy <bhalevy@panasas.com>
-> > > 
-> > > Cc: ak@suse.de
-> > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > > ---
-> > >  arch/x86_64/kernel/pci-calgary.c |   25 ++++++++------
-> > >  arch/x86_64/kernel/pci-gart.c    |   63 ++++++++++++++++++++-----------------
-> > >  arch/x86_64/kernel/pci-nommu.c   |    5 ++-
-> > >  3 files changed, 51 insertions(+), 42 deletions(-)
-> > 
-> > This causes fairly extensive destruction of 2.6.23 changes which are
-> > pending in Andi's tree.
-> > 
-> > I shall drop the block tree until a) Andi has merged the pending Calgary
-> > changes and b) the block tree has been fixed up to account for those (and
-> > other) changes.
-> > 
-> > Really, this was the perfectly worst time possible to go tromping all over
-> > everyone else's trees.
-> 
-> Well, that's a bit hard for me to know, all I can do is push my stuff to
-> for-akpm so that it gets -mm exposure. If I don't, then you are yelling
-> at me as well :-)
+[Resend, gnupg damaged the patch, sorry for noise]
 
-It is to be expected that there will be conflicts when making large-scale
-changes like this while there is 25MB of unmerged diff sitting out in 50
-different trees.  Doing it around the -rc1 time would be better.
+16 Tem 2007 Pts tarihinde, Larry Finger şunları yazmıştı: 
+> Using the latest git pull (commit
+> abce891a10559343d8ac9f79b46d78afdba63a40), I get the following linker
+> error:
+>
+> block/built-in.o: In function `bsg_init':
+> bsg.c:(.init.text+0x43d): undefined reference to `scsi_register_interface'
+>
+> This is on an x86_64 system with the following .config:
 
-Even better would be not doing it at all: add the necessary stuff into the
-block core and then send the followup work to the relevant maintainers. ie:
-standard practice.
+I've hit that also (current git cannot compiled with CONFIG_BLK_DEV_BSG=y
+), if i'm not wrongly interpret the Makefile it seems a ordering issue;
 
-> I'll keep rebasing sglist and the other branches I pull into for-akpm,
-> so you can just re-enable the for-akpm pull when the a) is true.
+Makefile
+...
+ifeq ($(KBUILD_EXTMOD),)
+core-y· ·   += kernel/ mm/ fs/ ipc/ security/ crypto/ block/
+...
+vmlinux-init := $(head-y) $(init-y)
+vmlinux-main := $(core-y) $(libs-y) $(drivers-y) $(net-y)
+...
 
-Andi's tree is very out of date and is about to be damaged (to what extent
-I don't yet know) by a xen merge.  I don't know if a) is going to happen.
+but block block/bsg.c uses "scsi_register_interface" exported by 
+drivers/scsi/scsi_sysfs.c which lives in drivers-y. Moving bsg in 
+drivers/scsi seems solves this issues, see following
+
+Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+
+ block/Kconfig                 |    8 --------
+ block/Makefile                |    1 -
+ drivers/scsi/Kconfig          |    8 ++++++++
+ drivers/scsi/Makefile         |    1 +
+ {block => drivers/scsi}/bsg.c |    0 
+ 5 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/block/Kconfig b/block/Kconfig
+index 1d16b08..2859351 100644
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -51,12 +51,4 @@ config LSF
+ 
+ endif # BLOCK
+ 
+-config BLK_DEV_BSG
+-	bool "Block layer SG support"
+-	depends on SCSI && EXPERIMENTAL
+-	default y
+-	---help---
+-	Saying Y here will enable generic SG (SCSI generic) v4
+-	support for any block device.
+-
+ source block/Kconfig.iosched
+diff --git a/block/Makefile b/block/Makefile
+index 959feeb..4b84d0d 100644
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -4,7 +4,6 @@
+ 
+ obj-$(CONFIG_BLOCK) := elevator.o ll_rw_blk.o ioctl.o genhd.o scsi_ioctl.o
+ 
+-obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
+ obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
+ obj-$(CONFIG_IOSCHED_AS)	+= as-iosched.o
+ obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index 3727231..fbb06de 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -81,6 +81,14 @@ config BLK_DEV_SD
+ 	  In this case, do not compile the driver for your SCSI host adapter
+ 	  (below) as a module either.
+ 
++config BLK_DEV_BSG
++	 bool "Block layer SG support"
++	depends on SCSI && EXPERIMENTAL
++	default y
++	---help---
++	Saying Y here will enable generic SG (SCSI generic) v4
++	support for any block device.
++
+ config CHR_DEV_ST
+ 	tristate "SCSI tape support"
+ 	depends on SCSI
+diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
+index 0f86895..15de029 100644
+--- a/drivers/scsi/Makefile
++++ b/drivers/scsi/Makefile
+@@ -139,6 +139,7 @@ obj-$(CONFIG_CHR_DEV_ST)	+= st.o
+ obj-$(CONFIG_CHR_DEV_OSST)	+= osst.o
+ obj-$(CONFIG_BLK_DEV_SD)	+= sd_mod.o
+ obj-$(CONFIG_BLK_DEV_SR)	+= sr_mod.o
++obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
+ obj-$(CONFIG_CHR_DEV_SG)	+= sg.o
+ obj-$(CONFIG_CHR_DEV_SCH)	+= ch.o
+ 
+diff --git a/block/bsg.c b/drivers/scsi/bsg.c
+similarity index 100%
+rename from block/bsg.c
+rename to drivers/scsi/bsg.c
 
 
-Things are more than usually messy this time around.
+
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
