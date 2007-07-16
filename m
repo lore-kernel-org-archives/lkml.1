@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbXGPXlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764769AbXGPXmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763454AbXGPXlI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGPXk4
+	id S1764769AbXGPXmq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGPXmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:40:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:54140 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750832AbXGPXky (ORCPT
+	Mon, 16 Jul 2007 19:42:39 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:54848 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbXGPXmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:40:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=DpF9gGI94CdIhVvU+RXC2VmRor+1Z1ctIrg68nK0o4AcQkoi8RQ32eqlAS8wRQ3NXOltFQqnwEqRST2oRiI7VEGgT9bLQzqLlrMjTybQnEmEJ4WxJsj3zi2ZIdyvhP3JBf71wPCLBdx9AebCHOkGxDK+NxXf1ZMbU5MwwTq2tl0=
-Message-ID: <2c0942db0707161640h3c3afd7avecd7b3c61c4e7df1@mail.gmail.com>
-Date: Mon, 16 Jul 2007 16:40:53 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Rene Herman" <rene.herman@gmail.com>
+	Mon, 16 Jul 2007 19:42:38 -0400
+Date: Tue, 17 Jul 2007 01:42:20 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: Ray Lee <ray-lk@madrabbit.org>, Rene Herman <rene.herman@gmail.com>,
+       Bodo Eggert <7eggert@gmx.de>, Matt Mackall <mpm@selenic.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Cc: "Bodo Eggert" <7eggert@gmx.de>, "Matt Mackall" <mpm@selenic.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <469BFDA7.1040204@gmail.com>
+In-Reply-To: <9a8748490707161554j1fa7625fq1f1cb7e6aa359715@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0707170134390.29868@be1.lrz>
+References: <8FO1e-2jW-35@gated-at.bofh.it> <8Gj55-hJ-5@gated-at.bofh.it> 
+ <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it> 
+ <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz>  <469A5D7C.5010904@gmail.com>
+  <Pine.LNX.4.58.0707161523500.25779@be1.lrz>  <469BF104.1040703@gmail.com>
+  <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
+ <9a8748490707161554j1fa7625fq1f1cb7e6aa359715@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
-	 <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>
-	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
-	 <469BF104.1040703@gmail.com>
-	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
-	 <469BF768.6040200@gmail.com>
-	 <2c0942db0707161613lff9c07bpcf002b9139163a86@mail.gmail.com>
-	 <469BFDA7.1040204@gmail.com>
-X-Google-Sender-Auth: f304c82a5fef8434
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/7W93IKSmkguvZOowsElWm4DZKx+l1U2+Eyt6
+ poWWIHopzdco65v5G61TOXqMGU/cdVJ1SjUTNG+/ExqhxO4Jex
+ hXRnLDk9lIBfMbua9E6kQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/16/07, Rene Herman <rene.herman@gmail.com> wrote:
-> On 07/17/2007 01:13 AM, Ray Lee wrote:
-> > Given that there's actual, y'know, reports of people who can easily
-> > crash a 4k+interrupt stacks kernel, and not an 8k one, I think the
-> > current evidence speaks for itself.
->
-> Where?
+On Tue, 17 Jul 2007, Jesper Juhl wrote:
 
-The second message in this thread, according to my reader, from Zan
-Lynx. Another from Utz Lehmann a few minutes ago.
+> Please note that I was not trying to remove the 8K stack option right
+> now - heck, I didn't even add anything to feature-removal-schedule.txt
+> - all I wanted to accomplish with the patch that started this threas
+> was;  a) indicate that the 4K option is no longer a debug thing  and
 
-> > The point remains that the burden of proof of the safety of the 4k only
-> > option is upon those people who want to remove the 8k option.
->
-> Removing any such option was not the objective of this thread, just lifting
-> 4K stacks from debug and making it the default.
+Very ACK.
 
-True, but your messages are reading as advocacy for removing the 8k
-option. I'm saying that's a bad idea. If I misunderstood your
-position, then my bad.
+> b) make 4K stacks the default option in vanilla kernel.org kernels as
+> a gentle nudge towards getting people to start fixing the code paths
+> that are not 4K stack safe.
 
-> People fortunate enough to
-> use workloads where some piece of crap code by accident works more often
-> with the current shared 8K stacks then it does with the unshared 4K stacks
-> can then still nicely not select it (or fix the code if possible).
+That's the big NACK. It's OK for MM, where things are supposed to be in a 
+not well-tested state, but for running possibly mission-critical systems,
+you should take no risk.
 
-If they even realize that it's the cause of the problem. In the
-meantime, we're generating more bug reports to lkml. As the general
-opinion is that the ones getting received now aren't getting enough
-attention (see regression tracking threads), setting a default that is
-known to break setups in hard to debug ways seems counterproductive.
+If you'd run a 4K stack on the NFS+XFS+LVM+dmcrypt+MD+somethingmore 
+setup driving your loved one's life support, you may go ahead.
+-- 
+I'm a member of DNA (National Assocciation of Dyslexics).
+	-- Storm in <5Z4Z7.52353$4x4.6445347@news2-win.server.ntlworld.com>
