@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbXGPXpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765399AbXGPXqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758820AbXGPXpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbXGPXpY
+	id S1765399AbXGPXqI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbXGPXpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:45:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:59152 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751459AbXGPXpX (ORCPT
+	Mon, 16 Jul 2007 19:45:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:61898 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbXGPXpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:45:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=sxm5ezw51V0oB9IK7eHegOKIGvhxCW/eIduoHbvlmqalTLvrzTes1FuPl0ooscfUqnUT/SYyk6ASozpwbSzk/4M1P5Y/e+LlcBumIGc6dOOJM+2Kui2ARDHLr64nbwRbuSPDiquTtqusk0vBcNV+9jmjngSPuk2sacyNauvSqRc=
-Message-ID: <469C02E1.7010308@googlemail.com>
-Date: Tue, 17 Jul 2007 01:44:33 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Mon, 16 Jul 2007 19:45:54 -0400
+Date: Tue, 17 Jul 2007 01:45:48 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Rene Herman <rene.herman@gmail.com>
+cc: Ray Lee <ray-lk@madrabbit.org>, Bodo Eggert <7eggert@gmx.de>,
+       Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+In-Reply-To: <469BF768.6040200@gmail.com>
+Message-ID: <Pine.LNX.4.58.0707170143200.29868@be1.lrz>
+References: <8FO1e-2jW-35@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it>
+  <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it> 
+ <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it> 
+ <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com> 
+ <Pine.LNX.4.58.0707161523500.25779@be1.lrz>  <469BF104.1040703@gmail.com>
+ <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
+ <469BF768.6040200@gmail.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: trivial@kernel.org
-Subject: [PATCH] Typo fixes errror -> error
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1893W4qG7ZzVwA7YtfTu9w9BHEVx7CP075EYuw
+ 7LYbTgxcdVE9O5TPKxcASxdeFURytaBImMTaTH7IQLfhjBXNxW
+ ez97D2C48mzO4OXxi3apg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Typo fixes errror -> error
+On Tue, 17 Jul 2007, Rene Herman wrote:
+> On 07/17/2007 12:37 AM, Ray Lee wrote:
+> > On 7/16/07, Rene Herman <rene.herman@gmail.com> wrote:
 
+> > If at some point one of the pro-4k stacks crowd can prove that all
+> > code paths are safe
+> 
+> I'll do that the minute you prove the current shared 8K stacks are safe. Do 
+> we have a deal?
 
-Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
-
----
-
- drivers/infiniband/hw/ehca/ehca_irq.c |    2 +-
- drivers/net/skfp/pmf.c                |    2 +-
- drivers/net/via-velocity.c            |    2 +-
- drivers/s390/block/dasd_eckd.c        |    4 ++--
- security/selinux/ss/services.c        |    2 +-
- 5 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index 96eba38..533d7c4 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -116,7 +116,7 @@ static void print_error_data(struct ehca_shca * shca, void* data,
- 	}
- 	default:
- 		ehca_err(&shca->ib_device,
--			 "Unknown errror type: %lx on %s.",
-+			 "Unknown error type: %lx on %s.",
- 			 type, shca->ib_device.name);
- 		break;
- 	}
-diff --git a/drivers/net/skfp/pmf.c b/drivers/net/skfp/pmf.c
-index efc639c..ea85de9 100644
---- a/drivers/net/skfp/pmf.c
-+++ b/drivers/net/skfp/pmf.c
-@@ -575,7 +575,7 @@ void smt_add_para(struct s_smc *smc, struct s_pcon *pcon, u_short para,
- 	int		sp_len ;
- 
- 	/*
--	 * skip if errror
-+	 * skip if error
- 	 */
- 	if (pcon->pc_err)
- 		return ;
-diff --git a/drivers/net/via-velocity.c b/drivers/net/via-velocity.c
-index f331843..93574ad 100644
---- a/drivers/net/via-velocity.c
-+++ b/drivers/net/via-velocity.c
-@@ -1613,7 +1613,7 @@ static void velocity_error(struct velocity_info *vptr, int status)
- 	if (status & ISR_TXSTLI) {
- 		struct mac_regs __iomem * regs = vptr->mac_regs;
- 
--		printk(KERN_ERR "TD structure errror TDindex=%hx\n", readw(&regs->TDIdx[0]));
-+		printk(KERN_ERR "TD structure error TDindex=%hx\n", readw(&regs->TDIdx[0]));
- 		BYTE_REG_BITS_ON(TXESR_TDSTR, &regs->TXESR);
- 		writew(TRDCSR_RUN, &regs->TDCSRClr);
- 		netif_stop_queue(vptr->dev);
-diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
-index 418b4e6..ea63ba7 100644
---- a/drivers/s390/block/dasd_eckd.c
-+++ b/drivers/s390/block/dasd_eckd.c
-@@ -555,7 +555,7 @@ dasd_eckd_read_conf(struct dasd_device *device)
- 			if (conf_data == NULL) {
- 				MESSAGE(KERN_WARNING, "%s", "No configuration "
- 					"data retrieved");
--				continue;	/* no errror */
-+				continue;	/* no error */
- 			}
- 			if (conf_len != sizeof (struct dasd_eckd_confdata)) {
- 				MESSAGE(KERN_WARNING,
-@@ -564,7 +564,7 @@ dasd_eckd_read_conf(struct dasd_device *device)
- 					conf_len,
- 					sizeof (struct dasd_eckd_confdata));
- 				kfree(conf_data);
--				continue;	/* no errror */
-+				continue;	/* no error */
- 			}
- 			/* save first valid configuration data */
- 			if (!conf_data_saved){
-diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-index b5f017f..b2c5b34 100644
---- a/security/selinux/ss/services.c
-+++ b/security/selinux/ss/services.c
-@@ -792,7 +792,7 @@ int security_context_to_sid(char *scontext, u32 scontext_len, u32 *sid)
-  * @scontext: security context
-  * @scontext_len: length in bytes
-  * @sid: security identifier, SID
-- * @def_sid: default SID to assign on errror
-+ * @def_sid: default SID to assign on error
-  *
-  * Obtains a SID associated with the security context that
-  * has the string representation specified by @scontext.
-
+You claim 4k+4k is safe, therefore 8k must be safe, too. But if 8k is 
+safe, this does not yet prove that you can store 5k+3k in 4k+4k.
+-- 
+Funny quotes:
+38. Last night I played a blank tape at full blast. The mime next door went
+    nuts.
