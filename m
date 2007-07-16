@@ -1,43 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764586AbXGPAfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764285AbXGPAhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764586AbXGPAfh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 20:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760811AbXGPAf2
+	id S1764285AbXGPAhV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 20:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759162AbXGPAhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 20:35:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45535
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758499AbXGPAf1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 20:35:27 -0400
-Date: Sun, 15 Jul 2007 17:35:29 -0700 (PDT)
-Message-Id: <20070715.173529.96681471.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: torvalds@linux-foundation.org, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Crypto Update for 2.6.23
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070715131557.GA21255@gondor.apana.org.au>
-References: <20070711130849.GA10494@gondor.apana.org.au>
-	<20070714.234839.34761809.davem@davemloft.net>
-	<20070715131557.GA21255@gondor.apana.org.au>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Jul 2007 20:37:09 -0400
+Received: from smtp.xtech.com.ar ([200.68.115.49]:4752 "EHLO smtp.xtech.com.ar"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758370AbXGPAhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 20:37:08 -0400
+From: Diego Woitasen <diego@woitasen.com.ar>
+To: linux-kernel@vger.kernel.org
+Cc: Diego Woitasen <diego@woitasen.com.ar>
+Subject: [PATCH] Add KERN_* prefix to printks in bug.h
+Date: Sun, 15 Jul 2007 21:36:59 -0300
+Message-Id: <11845462192199-git-send-email-diego@woitasen.com.ar>
+X-Mailer: git-send-email 1.5.2.3
+X-Bogosity: No, tests=bogofilter, spamicity=0.000000, version=0.94.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Sun, 15 Jul 2007 21:15:57 +0800
+---
+ include/asm-generic/bug.h |   25 +++++++++++++------------
+ 1 files changed, 13 insertions(+), 12 deletions(-)
 
-> On Sat, Jul 14, 2007 at 11:48:39PM -0700, David Miller wrote:
-> > Herbert can you contact the async_tx author to make sure that
-> > his crypto/ bits go through you in the future so that conflicts
-> > like this can be avoided?
-> 
-> No problems.  This was a once-off because it involved multiple
-> conflicts all over the place as Andrew can no doubt attest to :)
+diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
+index 7f30cce..6e49266 100644
+--- a/include/asm-generic/bug.h
++++ b/include/asm-generic/bug.h
+@@ -8,22 +8,23 @@
+ #ifdef CONFIG_GENERIC_BUG
+ #ifndef __ASSEMBLY__
+ struct bug_entry {
+-	unsigned long	bug_addr;
++	unsigned long bug_addr;
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
+-	const char	*file;
+-	unsigned short	line;
++	const char *file;
++	unsigned short line;
+ #endif
+-	unsigned short	flags;
++	unsigned short flags;
+ };
+-#endif		/* __ASSEMBLY__ */
++#endif				/* __ASSEMBLY__ */
+ 
+ #define BUGFLAG_WARNING	(1<<0)
+-#endif	/* CONFIG_GENERIC_BUG */
++#endif				/* CONFIG_GENERIC_BUG */
+ 
+ #ifndef HAVE_ARCH_BUG
+-#define BUG() do { \
+-	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
+-	panic("BUG!"); \
++#define BUG() do { 							\
++	printk(KERN_EMERG "BUG: failure at %s:%d/%s()!\n",		\
++		__FILE__, __LINE__, __FUNCTION__); 			\
++	panic("BUG!"); 							\
+ } while (0)
+ #endif
+ 
+@@ -35,15 +36,15 @@ struct bug_entry {
+ #define WARN_ON(condition) ({						\
+ 	typeof(condition) __ret_warn_on = (condition);			\
+ 	if (unlikely(__ret_warn_on)) {					\
+-		printk("WARNING: at %s:%d %s()\n", __FILE__,		\
+-			__LINE__, __FUNCTION__);			\
++		printk(KERN_WARNING "WARNING: at %s:%d %s()\n",		\
++			__FILE__, __LINE__, __FUNCTION__);		\
+ 		dump_stack();						\
+ 	}								\
+ 	unlikely(__ret_warn_on);					\
+ })
+ #endif
+ 
+-#else /* !CONFIG_BUG */
++#else				/* !CONFIG_BUG */
+ #ifndef HAVE_ARCH_BUG
+ #define BUG()
+ #endif
+-- 
+1.5.2.3
 
-I kind of figured as much since it had dependencies on other
-subsystems.
