@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763114AbXGPVuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763931AbXGPVvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763114AbXGPVuG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 17:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbXGPVtx
+	id S1763931AbXGPVvV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 17:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbXGPVvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 17:49:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36907 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752792AbXGPVtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 17:49:52 -0400
-Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Arnd Bergmann <arnd@arndb.de>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1184593643.3447.9.camel@localhost.localdomain>
-References: <20070704132212.726923000@pademelon.sonytel.be>
-	 <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
-	 <1184335333.3402.20.camel@localhost.localdomain>
-	 <200707131619.54898.arnd@arndb.de>
-	 <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
-	 <1184340528.3402.32.camel@localhost.localdomain>
-	 <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
-	 <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
-	 <20070716121649.GI5195@kernel.dk>
-	 <1184593643.3447.9.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 07:49:15 +1000
-Message-Id: <1184622555.25235.91.camel@localhost.localdomain>
+	Mon, 16 Jul 2007 17:51:14 -0400
+Received: from hu-out-0506.google.com ([72.14.214.227]:42163 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752682AbXGPVvN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 17:51:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=WTEplTERURV3gXvkZt4QUmUEVxnjxsPvRUiytEl7/9XZHWQyoZslFS5BMiag3JO3dTjxntcr9gyxhmCIVgUmE6o8UCcgI12reefdHU0yUIxmnbFD9JB1GtthdbVVNMBWiBgFPibscSKNz6NIg8spaxpg0PZM+rOTReGFXlUNN00=
+Date: Mon, 16 Jul 2007 23:51:07 +0200
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: linux-kernel@vger.kernel.org, greg@kroah.com
+Cc: michal.k.k.piotrowski@gmail.com
+Subject: [PATCH] Add the knwon_regression URI to the documentation
+Message-ID: <20070716235107.60e0c47a@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We should let everybody know about where the regression
+list is hosted. The more is known the more it is used.
 
-> No ... that was the point of flush_kernel_dcache_page().  The page in
-> question is page cache backed and contains user mappings.  However, the
-> block layer has already done a flush_dcache_page() in get_user_pages()
-> and the user shouldn't be touching memory under I/O (unless they want
-> self induced aliasing problems) so we're free to assume all the user
-> cachelines are purged, hence all we have to do is flush the kernel alias
-> to bring the page up to date and make the users see it correctly.
+Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+---
+ Documentation/HOWTO |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-The block layer will have done that even in the swap-out path ? (Just
-asking... I'm not very familiar with the block layer)
-
-Ben.
+diff --git a/Documentation/HOWTO b/Documentation/HOWTO
+index 98e2701..08f4eb4 100644
+--- a/Documentation/HOWTO
++++ b/Documentation/HOWTO
+@@ -249,6 +249,9 @@ process is as follows:
+     release a new -rc kernel every week.
+   - Process continues until the kernel is considered "ready", the
+     process should last around 6 weeks.
++  - A list of known regressions present in each -rc release is 
++    tracked at the following URI:
++    http://kernelnewbies.org/known_regressions 
+ 
+ It is worth mentioning what Andrew Morton wrote on the linux-kernel
+ mailing list about kernel releases:
+-- 
+1.5.3.rc2
 
