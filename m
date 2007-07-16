@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbXGPSdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbXGPSgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757091AbXGPSdi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 14:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbXGPSda
+	id S1757351AbXGPSgG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 14:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbXGPSfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 14:33:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:17852 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbXGPSd3 (ORCPT
+	Mon, 16 Jul 2007 14:35:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36802 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751187AbXGPSfy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 14:33:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=A5+AkNGVUN7wUNYBbWfOK7Jo8mFfUtmXf7O3qK+keRvv8i7HcVNq52W2+NLoLI9t1+PaMPfQnBIS5Zg0BUox/BrmKZpkBRF0rw1DeFs1IStfpb8RQgHXfLp7XoXlUATC/UFu51Lws6GLlKAsGc6tspRvDoPr6i+EMAnzdqmKEYY=
-Message-ID: <469BB9CA.6090500@googlemail.com>
-Date: Mon, 16 Jul 2007 20:32:42 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Satyam Sharma <satyam.sharma@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, gregkh@suse.de
-Subject: Re: Oops while modprobing phy fixed module
-References: <4698BF14.10807@googlemail.com>	 <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>	 <469A5C94.7030201@googlemail.com>	 <a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>	 <469A9D5D.10509@googlemail.com> <469B61C8.8010902@googlemail.com> <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com> <469BB7B8.3060002@gmail.com>
-In-Reply-To: <469BB7B8.3060002@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Jul 2007 14:35:54 -0400
+Date: Mon, 16 Jul 2007 11:35:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       torvalds <torvalds@linux-foundation.org>
+Subject: Re: sysctl.c: add text telling people to use CTL_UNNUMBERED
+Message-Id: <20070716113547.5a746fcc.akpm@linux-foundation.org>
+In-Reply-To: <20070716112305.6308686f.randy.dunlap@oracle.com>
+References: <200707161802.l6GI2h6J006803@hera.kernel.org>
+	<20070716112305.6308686f.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Satyam Sharma wrote:
->   
->> On 7/16/07, Gabriel C <nix.or.die@googlemail.com> wrote:
->>     
->>> Here the bisect result:
->>>
->>> 3007e997de91ec59af39a3f9c91595b31ae6e08b is first bad commit
->>> commit 3007e997de91ec59af39a3f9c91595b31ae6e08b
->>> Author: Tejun Heo <htejun@gmail.com>
->>> Date:   Thu Jun 14 04:27:23 2007 +0900
->>>
->>>     sysfs: use sysfs_mutex to protect the sysfs_dirent tree
->>>       
->
-> Hmmm... Weird.  The patch is supposed to make synchronization more
-> strict not less unless I've forgotten locking at some place.  Gabriel,
-> can you please choose SLAB and enable CONFIG_DEBUG_SLAB and
-> DEBUG_SLAB_LEAK and see whether kernel complains about something?
->   
+On Mon, 16 Jul 2007 11:23:05 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Sure , give me some minutes.
+> > +/*
+> > + * NOTE: do not add new entries to this table unless you have read
+> > + * Documentation/sysctl/ctl_unnumbered.txt
+> > + */
+> > +/*
+> > + * NOTE: do not add new entries to this table unless you have read
+> > + * Documentation/sysctl/ctl_unnumbered.txt
+> > + */
+> >  	{ .ctl_name = 0 }
+> >  };
+> 
+> Are these comments above &  below doubled up for Emphasis??
 
-> Thanks.
->
->   
+hm, that could have been some late-night reject-fixing.
+
+sysctl.c is (hopefully "was") the second worst source of rejects in the
+tree.
+
+PITA #1 is Documentation/feature-removal-schedule.txt, but that is
+fortunately amenable to the insert-it-at-a-random-position solution.
 
