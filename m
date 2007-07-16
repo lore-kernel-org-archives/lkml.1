@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763392AbXGPOXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762695AbXGPO2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763392AbXGPOXj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765939AbXGPOXV
+	id S1762695AbXGPO2Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbXGPO2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:23:21 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:12551 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758126AbXGPOXT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:23:19 -0400
-To: "John Stoffel" <john@stoffel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 00/33] SG table chaining support
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <11845792671245-git-send-email-jens.axboe@oracle.com>
-	<18075.31515.974905.507754@stoffel.org>
-Date: Mon, 16 Jul 2007 10:23:10 -0400
-In-Reply-To: <18075.31515.974905.507754@stoffel.org> (John Stoffel's message of "Mon, 16 Jul 2007 10:05:15 -0400")
-Message-ID: <yq1d4ysv35d.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.50 (gnu/linux)
+	Mon, 16 Jul 2007 10:28:17 -0400
+Received: from mail-in-05.arcor-online.net ([151.189.21.45]:50028 "EHLO
+	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757064AbXGPO2R convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 10:28:17 -0400
+Message-ID: <9335978.1184596094749.JavaMail.ngmail@webmail12>
+Date: Mon, 16 Jul 2007 16:28:14 +0200 (CEST)
+From: "M. Koehrer" <mathias_koehrer@arcor.de>
+To: linux-kernel@vger.kernel.org
+Subject: CONFIG_PREEMPT_RT Patch and UDP/IP on Ethernet in real time.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-ngMessageSubType: MessageSubType_MAIL
+X-WebmailclientIP: 213.68.15.100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "John" == John Stoffel <john@stoffel.org> writes:
+Hi everybody,
 
-John> Will this help out tape drive performance at all?  I looked
-John> through the patches quickly, esp the AIC7xxx stuff since that's
-John> what I use, but nothing jumped out at me...
+I have a question concerning Ingo Molnar's realtime preempt patch.
+This patch is great go get low latency on timer threads and a really
+good real time behaviour.
+I want to connect an external, embedded device via Ethernet (UDP/IP) 
+to my Linux PC. This communication should be in real time as well.
+For this I have a separate network adapter in my PC that is used
+solely for this UDP Ethernet traffic.
+However, I think all Ethernet traffic is be handled by
+the soft IRQ threads [softirq-net-rx] [softirq-net-tx] but I do
+not see a way to do real time networking via my dedicated network adapter.
 
-Yes.  Most modern tape drives want a block size of 1MB or higher.
-With the old stack we'd be stuck at 512KB because the sg limitations
-caused us to come just short of 1MB...
+How can I get this UDP networking real time capable?
+
+I use kernel 2.6.21.6 and the related realtime preempt patch.
+However, this is a general question that is not related to a certain kernel
+version.
+
+Any feedback is welcome.
+
+Thanks a lot!
+
+Regards
+
+Mathias
+
+
+
 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+Mathias Koehrer
+mathias_koehrer@arcor.de
 
+
+Viel oder wenig? Schnell oder langsam? Unbegrenzt surfen + telefonieren
+ohne Zeit- und Volumenbegrenzung? DAS TOP ANGEBOT JETZT bei Arcor: günstig
+und schnell mit DSL - das All-Inclusive-Paket für clevere Doppel-Sparer,
+nur  39,85 €  inkl. DSL- und ISDN-Grundgebühr!
+http://www.arcor.de/rd/emf-dsl-2
