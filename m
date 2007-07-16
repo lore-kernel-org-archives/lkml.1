@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764962AbXGPVv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764030AbXGPVzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764962AbXGPVv5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 17:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764757AbXGPVvg
+	id S1764030AbXGPVzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 17:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760133AbXGPVzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 17:51:36 -0400
-Received: from hu-out-0506.google.com ([72.14.214.227]:42163 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761641AbXGPVvf (ORCPT
+	Mon, 16 Jul 2007 17:55:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:6544 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759777AbXGPVzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 17:51:35 -0400
+	Mon, 16 Jul 2007 17:55:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=j8MaT0s/VqHqS9lsD28PSptFptVGieOGiP+Kkz7k5kMK696QrcilcLs215RWuZCWP2l3+OQweW0oDZVY9ULMtdwYgwwU8HBzYYcmdSlFDip1+btjdCLgMscouPXQ+mprPO4WON2o5n2napmKOQ9JsaNmR1d0/oNapxT3yRb3BTo=
-Date: Mon, 16 Jul 2007 23:51:31 +0200
+        b=uj1bZahRFXs8P6KkRMX5e3d4wWu54vjK4aPO2ATQKFs656ZyJzDvzo5iRcHcnH99nTEeIZBxA4NUoCyX/oVZWK+HCl4PmMVe7ma9pHAfs/njmSxnapRGYktlHHPLPc6xkl7/EqpHrK/FT3hl4CWu++t0rhLpqRXuzlSFIbyfQGQ=
+Date: Mon, 16 Jul 2007 23:55:05 +0200
 From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 To: linux-kernel@vger.kernel.org, greg@kroah.com
 Cc: michal.k.k.piotrowski@gmail.com
 Subject: [PATCH] Add the knwon_regression URI to the documentation
-Message-ID: <20070716235131.59e32129@paolo-desktop>
+Message-ID: <20070716235505.51ebe812@paolo-desktop>
 X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
