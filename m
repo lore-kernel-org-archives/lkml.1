@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbXGPJST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762324AbXGPJSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761329AbXGPJST (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXGPJSL
+	id S1762324AbXGPJSw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbXGPJSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:18:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54426 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756014AbXGPJSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:18:10 -0400
-Date: Mon, 16 Jul 2007 11:17:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ed Tomlinson <edt@aei.ca>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v19
-Message-ID: <20070716091737.GB5964@elte.hu>
-References: <20070706173319.GA2356@elte.hu> <200707141319.13270.edt@aei.ca>
+	Mon, 16 Jul 2007 05:18:44 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:39296 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756658AbXGPJSn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:18:43 -0400
+Date: Mon, 16 Jul 2007 11:18:36 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Mike Frysinger <vapier@gentoo.org>
+cc: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] use __attribute__ in asm-powerpc
+In-Reply-To: <200707142336.10343.vapier@gentoo.org>
+Message-ID: <Pine.LNX.4.62.0707161117150.1072@pademelon.sonytel.be>
+References: <200707142336.10343.vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707141319.13270.edt@aei.ca>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-735000793-1184577516=:1072"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Ed Tomlinson <edt@aei.ca> wrote:
+---584337861-735000793-1184577516=:1072
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> I run a java application at nice 15.  Its been a background 
-> application here for as long as SD and CFS have been around.  If I 
-> have a compile running at nice 0, with v19 java gets so little cpu 
-> that the the wrapper that runs to monitor it is timing out waiting for 
-> it to start.  This is new in v19 - something in v19 is not meshing 
-> well with my mix of applications...
+On Sat, 14 Jul 2007, Mike Frysinger wrote:
+> Pretty much everyone uses "__attribute__" or "attribute", no one
+> uses "__attribute".  This patch tweaks the three places in asm-powerpc where
+> this comes up.  While only asm-powerpc/types.h is interesting (for userspace),
+> I did asm-powerpc/processor.h as well for consistency.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+> diff --git a/include/asm-powerpc/processor.h b/include/asm-powerpc/processor.h
+> index d947b16..2ce6ea6 100644
+> --- a/include/asm-powerpc/processor.h
+> +++ b/include/asm-powerpc/processor.h
+> @@ -153,9 +153,9 @@ struct thread_struct {
+>  	unsigned long	dabr;		/* Data address breakpoint register */
+>  #ifdef CONFIG_ALTIVEC
+>  	/* Complete AltiVec register set */
+> -	vector128	vr[32] __attribute((aligned(16)));
+> +	vector128	vr[32] __attribute__((aligned(16)));
 
-how much longer did the startup of the java app get relative to say v18?
+If the code is not exported to userspace (and thus not subject to different
+compilers), I think the preferred form is plain `attribute'.
 
-to debug this, could you check whether this problem goes away if you use 
-nice 10 (or nice 5) instead of nice 15?
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-	Ingo
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-735000793-1184577516=:1072--
