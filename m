@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765736AbXGPXSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbXGPXTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765736AbXGPXSF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXGPXRz
+	id S932136AbXGPXTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbXGPXTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:17:55 -0400
-Received: from waste.org ([66.93.16.53]:38171 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753990AbXGPXRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:17:55 -0400
-Date: Mon, 16 Jul 2007 18:17:20 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, olaf.kirch@oracle.com
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070716231720.GD11166@waste.org>
-References: <20070716091236.GA10718@elte.hu> <20070716.042640.18306462.davem@davemloft.net> <alpine.LFD.0.999.0707161425361.20061@woody.linux-foundation.org> <20070716.150825.66176632.davem@davemloft.net> <alpine.LFD.0.999.0707161525250.20061@woody.linux-foundation.org>
-MIME-Version: 1.0
+	Mon, 16 Jul 2007 19:19:07 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41812 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753990AbXGPXTF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 19:19:05 -0400
+Date: Tue, 17 Jul 2007 00:18:55 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH] utime(s): Honour CAP_FOWNER when times==NULL
+Message-ID: <20070716231855.GL21668@ftp.linux.org.uk>
+References: <20070716185423.1607.78787.sendpatchset@cselinux1.cse.iitk.ac.in> <alpine.LFD.0.999.0707161142210.20061@woody.linux-foundation.org> <Pine.LNX.4.64.0707170054100.2005@cselinux1.cse.iitk.ac.in> <20070716204523.GJ21668@ftp.linux.org.uk> <Pine.LNX.4.64.0707170306200.2005@cselinux1.cse.iitk.ac.in> <Pine.LNX.4.64.0707170322430.2005@cselinux1.cse.iitk.ac.in>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707161525250.20061@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0707170322430.2005@cselinux1.cse.iitk.ac.in>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 03:29:15PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 16 Jul 2007, David Miller wrote:
+On Tue, Jul 17, 2007 at 03:24:14AM +0530, Satyam Sharma wrote:
+> On Tue, 17 Jul 2007, Satyam Sharma wrote:
+> > [...]
+> > Anwyay, so I'm thinking of adding:
 > > 
-> > Ingo is the only person hitting and reporting this and last time I
-> > checked he is competent enough to revert the thing locally in his own
-> > trees, right? :-)
+> > struct inode;
+> > 
+> > int is_not_owner(struct inode *)
 > 
-> Umm. And your suggestion is what? Wait until -rc1, when non-developers 
-> (the kinds of people who are supposed to *not* be competent enough) come 
-> along, and report the problem?
+>   ^static inline                 ^inode
 > 
-> That's explicitly what I do *not* want to happen.
-> 
-> If we knew something was wrong before the -rc1 release, all the better: we 
-> can avoid havign that bug in -rc1, and the people who test it will tell us 
-> about the problems we did *not* know about.
+> of course.
+ 
+> > {
+> > 	return ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER));
+> > }
 
-Unfortunately the particular patch from Olaf is presumably covering up
-another bug that other people (including Olaf) had hit. So reverting
-it is going to introduce a different regression.
-
-I think this particular problem has _already_ bounced back and forth
-once. But I haven't been keeping count as most of the relevant patches
-weren't cc:ed to me.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+This is pointless.  If you do not have definition of struct inode
+already available, you'll get breakage on access to ->i_uid.
