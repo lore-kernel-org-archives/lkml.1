@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbXGPSQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbXGPSST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758401AbXGPSQO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 14:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXGPSP6
+	id S1757351AbXGPSST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 14:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbXGPSSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 14:15:58 -0400
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:59072 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752838AbXGPSP5 (ORCPT
+	Mon, 16 Jul 2007 14:18:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60252 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbXGPSSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 14:15:57 -0400
-Date: Mon, 16 Jul 2007 20:16:50 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Trilok Soni" <soni.trilok@gmail.com>
-Cc: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>, i2c@lm-sensors.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Tony Lindgren" <tony@atomide.com>,
-       "David Brownell" <david-b@pacbell.net>, amit.kucheria@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [i2c] OMAP: Add TI TWL92330/Menelaus Power Management chip
- driver
-Message-ID: <20070716201650.7554bb28@hyperion.delvare>
-In-Reply-To: <5d5443650707160014g7b1bec24uf2c89837fd6fc538@mail.gmail.com>
-References: <5d5443650707092353v153fe90clbd1a42d465ed79a4@mail.gmail.com>
-	<Pine.LNX.4.60.0707150104050.12464@poirot.grange>
-	<5d5443650707160014g7b1bec24uf2c89837fd6fc538@mail.gmail.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Mon, 16 Jul 2007 14:18:08 -0400
+Subject: Re: [PATCH] ACPI: Add reboot mechanism
+From: Arjan van de Ven <arjan@infradead.org>
+To: Aaron Durbin <adurbin@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       len.brown@intel.com, ak@suse.de, akpm@osdl.org
+In-Reply-To: <20070716180019.GA5112@google.com>
+References: <20070716180019.GA5112@google.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 16 Jul 2007 11:17:24 -0700
+Message-Id: <1184609844.2698.1.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007 12:44:50 +0530, Trilok Soni wrote:
-> Hi Guennadi,
+On Mon, 2007-07-16 at 11:00 -0700, Aaron Durbin wrote:
+> Add the ability to reset the machine using the RESET_REG in ACPI's FADT table.
 > 
-> On 7/15/07, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> > On Tue, 10 Jul 2007, Trilok Soni wrote:
-> >
-> > > Hi Jean/Andrew,
-> > >
-> > > Attached patch adds Texas Instruments TWL92330/Menelaus Power
-> > > Management chip driver. Also includes RTC code in the same driver
-> > > instead of the separate module. Here is the description of
-> > > driver/commit message :)
-> >
-> > I think, the plan is to eventually merge the power_supply class currently
-> > in -mm, so, it would be nice to interface menelaus to it?
+> Signed-off-by: Aaron Durbin <adurbin@google.com>
+> ---
 > 
-> Could you please point me to the exact name of that patch for
-> power_supply class in -mm?
+> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+> index d4336f1..c9906a5 100644
+> --- a/drivers/acpi/Makefile
+> +++ b/drivers/acpi/Makefile
+> @@ -21,7 +21,7 @@ obj-$(CONFIG_X86)		+= blacklist.o
+>  #
+>  # ACPI Core Subsystem (Interpreter)
+>  #
+> -obj-y				+= osl.o utils.o \
+> +obj-y				+= osl.o utils.o reboot.o \
 
-It's already in Linus' tree as far as I can see:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=4a11b59d8283662193a9c6a9c14c58d1b9bf0617
+a one function C file? Can you just stick it in one of the other files
+instead?
 
--- 
-Jean Delvare
+Greetings,
+   Arjan van de Ven
+
