@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759535AbXGPJcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761303AbXGPJiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759535AbXGPJcG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbXGPJbz
+	id S1761303AbXGPJiT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbXGPJiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:31:55 -0400
-Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:21665 "EHLO
-	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754437AbXGPJbx (ORCPT
+	Mon, 16 Jul 2007 05:38:07 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37676 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755382AbXGPJiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:31:53 -0400
-X-Greylist: delayed 497 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 05:31:53 EDT
-Message-ID: <00a701c7c78a$2478cfa0$8700a8c0@btlooksmart.net>
-From: "Dr. Keith G. Bowden" <k.bowden@physics.bbk.ac.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>, "Li Yang" <leo@zh-kernel.org>
-Cc: "Rob Landley" <rob@landley.net>, "Gerrit Huizenga" <gh@us.ibm.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       <holzheu@linux.vnet.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>,
-       <lf_kernel_messages@linux-foundation.org>, <mtk-manpages@gmx.net>,
-       <jack@suse.cz>, <randy.dunlap@oracle.com>, <gregkh@suse.de>,
-       <pavel@ucw.cz>, <tim.bird@am.sony.com>, <arjan@infradead.org>,
-       <sam@ravnborg.org>, <jengelh@computergmbh.de>, <joe@perches.com>,
-       <auke-jan.h.kok@intel.com>, <hansendc@us.ibm.com>,
-       <davem@davemloft.net>, <Valdis.Kletnieks@vt.edu>, <kenistoj@us.ibm.com>,
-       <schwidefsky@de.ibm.com>, <heiko.carstens@de.ibm.com>,
-       <linux-doc@vger.kernel.org>
-References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net>	 <200707121205.20959.rob@landley.net>	 <1184330583.23373.65.camel@Gundam>	 <200707131352.12952.rob@landley.net> <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com> <469A6370.4020404@zytor.com>
-Subject: Re: [PATCH] Chinese Language Maintainer
-Date: Mon, 16 Jul 2007 10:17:29 +0100
+	Mon, 16 Jul 2007 05:38:06 -0400
+Message-ID: <469B3B73.9010400@zytor.com>
+Date: Mon, 16 Jul 2007 02:33:39 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: jeremy@goop.org, jengelh@computergmbh.de, viro@ftp.linux.org.uk,
+       nmiell@comcast.net, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: *at syscalls for xattrs?
+References: <Pine.LNX.4.64.0707132228460.25352@fbirervta.pbzchgretzou.qr> <20070715205313.GE21668@ftp.linux.org.uk> <1184534001.2765.5.camel@entropy> <20070715222323.GG21668@ftp.linux.org.uk> <Pine.LNX.4.64.0707160954160.25352@fbirervta.pbzchgretzou.qr> <469B2CAE.9010101@goop.org> <E1IAMWA-0004fM-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1IAMWA-0004fM-00@dorka.pomaz.szeredi.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1807
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1807
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What I would like to see is the Americans learning English as a FIRST
-language.
+Miklos Szeredi wrote:
+> 
+> The *at() thing basically gives you the advantages of a CWD without
+> the disadvantages.
+> 
+> For example it could be useful to implement the functionality of
+> find(1) as a library interface.
+> 
 
-Keith (England)
+What the *at() interfaces really do is fix/paper over a longstanding
+wart in Unix: the cwd really should have been a standard file descriptor
+(like stdin/stdout/stderr) instead of a magic piece of state maintained
+in kernel space.
 
------ Original Message ----- 
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: "Li Yang" <leo@zh-kernel.org>
-Cc: "Rob Landley" <rob@landley.net>; "Gerrit Huizenga" <gh@us.ibm.com>;
-"Kunai, Takashi" <kunai@linux-foundation.jp>; <holzheu@linux.vnet.ibm.com>;
-"Andrew Morton" <akpm@linux-foundation.org>; <linux-kernel@vger.kernel.org>;
-<lf_kernel_messages@linux-foundation.org>; <mtk-manpages@gmx.net>;
-<jack@suse.cz>; <randy.dunlap@oracle.com>; <gregkh@suse.de>; <pavel@ucw.cz>;
-<tim.bird@am.sony.com>; <arjan@infradead.org>; <sam@ravnborg.org>;
-<jengelh@computergmbh.de>; <joe@perches.com>; <auke-jan.h.kok@intel.com>;
-<hansendc@us.ibm.com>; <davem@davemloft.net>; <Valdis.Kletnieks@vt.edu>;
-<kenistoj@us.ibm.com>; <schwidefsky@de.ibm.com>;
-<heiko.carstens@de.ibm.com>; <linux-doc@vger.kernel.org>
-Sent: Sunday, July 15, 2007 7:12 PM
-Subject: Re: [PATCH] Chinese Language Maintainer
+If they had been designed-in from the beginning I suspect we wouldn't
+have had, say, stat() and fstat(), but simply statat() -- the "normal"
+ones would simply be statat(stddir, path) and statat(fd, NULL)
+respectively.  Now it isn't quite so clean.
 
+You can do some of that stuff with fchdir(), but *at() is much nicer,
+minus the oddball Solaris naming with random presence and absence of f-
+prefixes.
 
-> Li Yang wrote:
-> >
-> > I think you worried too much about this problem.  :)  Let me explain
-> > the situation here in China more clearly.  Actually, English is
-> > mandatory in most schools and universities.  Only very few people
-> > learn other language as a second language.  Therefore software
-> > developers who are almost educated should have the basic English
-> > skill.  However, that doesn't mean that they can read English or
-> > communicate with native English speaker very easily.  Consider your
-> > second language learn in school for analogy.
->
-> Actually, I disagree.  English *is* the second language learned in
-> school for most European developers (except, obviously, the ones from
-> the British isles), and we don't have that problem.
->
-> > Read in English will be much slower and more likely to cause
-> > misunderstanding.  This will
-> > reduce the likelihood greatly of English documentation being read.  If
-> > we are promoting contribution to the Linux community, we should
-> > maximum the possibility that these key documents being read.
-> > Translation will serve this purpose very well.
->
-> What we have found in Europe, is that that it has limited value, and
-> that the closer to the core you are, the less value it is, because at
-> that stage you should be communicating more with other developers.
-> Putting yourself behind a wall of translation is unfortunately a
-> detriment in that way.
->
-> -hpa
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-doc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+	-hpa
