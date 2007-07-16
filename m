@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbXGPLQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762318AbXGPLSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbXGPLQU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 07:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbXGPLQM
+	id S1762318AbXGPLSk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 07:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbXGPLSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 07:16:12 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:28794 "EHLO kernel.dk"
+	Mon, 16 Jul 2007 07:18:33 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:28808 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757989AbXGPLQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 07:16:11 -0400
-Date: Mon, 16 Jul 2007 13:15:28 +0200
+	id S1755318AbXGPLSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 07:18:32 -0400
+Date: Mon, 16 Jul 2007 13:17:49 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] splice: fix wrong __splice_from_pipe() usage
-Message-ID: <20070716111528.GD5195@kernel.dk>
-References: <877ip1qj29.fsf@duaron.myhome.or.jp> <20070716063435.GG5328@kernel.dk> <87odiczkky.fsf@duaron.myhome.or.jp>
+To: Flavio Curti <fcu@no-way.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Flavio Curti <lists.fcu@no-way.org>, linux-kernel@vger.kernel.org,
+       promise_linux@promise.com
+Subject: Re: panics with 16port Promise Supertrack EX Controller
+Message-ID: <20070716111749.GE5195@kernel.dk>
+References: <20070708225246.GD16285@no-way.org> <6bffcb0e0707081620pf4afd46re9e74e18518b352a@mail.gmail.com> <46919688.1050005@yahoo.com.au> <20070715080209.GC21260@no-way.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87odiczkky.fsf@duaron.myhome.or.jp>
+In-Reply-To: <20070715080209.GC21260@no-way.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16 2007, OGAWA Hirofumi wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
+On Sun, Jul 15 2007, Flavio Curti wrote:
+> Hello
 > 
-> > On Mon, Jul 16 2007, OGAWA Hirofumi wrote:
-> >> Hi,
-> >> 
-> >> I've noticed the nfsd read corruption by recent change. And this patch
-> >> fixes the problem for me, is this right fix?
-> >> -- 
-> >> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> >> 
-> >> 
-> >> __splice_from_pipe() is updating the sd->pos for the actor, but those
-> >> functions are passing the sd of reader side directory. So, splice
-> >> updates sd->pos twice.
-> >> 
-> >> This fixes usage of __splice_from_pipe().
-> >
-> > For sendfile() usage, or the nfsd path that uses splice to send?
+> On Mon, Jul 09, 2007 at 11:59:36AM +1000, Nick Piggin wrote:
+> > >Jul  8 00:19:13 dorade.cyberlink.ch EFLAGS: 00210046   
+> > >(2.6.22-rc7-dorade #1)
+> > >>The machine panics
+> > >>after some days of running fine, the machine inst heavy loaded.
+> > >>The Controller detects as stex device:
+> > >kernel BUG at block/as-iosched.c:1084!
+> > >
+> > >BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[REQ_ASYNC]));
+> > Could be a bug in the driver that just happens to be caught by AS checks.
+> > If you could test another scheduler (boot with elevator=deadline or 
+> > elevator=cfq),
+> > it might help give us an idea.
 > 
-> nfsd_vfs_read() path.
-> 
-> nfsd_vfs_read()
->     splice_direct_to_actor()
->         while(len) {
->             do_splice_to()                     [update sd->pos]
->                 -> generic_file_splice_read()  [read from sd->pos]
->             nfsd_direct_splice_actor()
->                 -> __splice_from_pipe()        [update sd->pos]
->         }
-> 
-> do_splice_to() updates sd->pos for read, and pass updated sd to
-> __splice_from_pipe(), and __splice_from_pipe() updates sd->pos for
-> write. So, next do_splice_to() read from wrong position.
+> Ok, I now switched to cfg, and the machine panicd again. Panic attached.
+> Any help is appreciated.
 
-Ah, I see. Copying the structure over would work, but it seems like a
-big work-around for something that is essentially bad behaviour in the
-splice core for direct splicing.
-
-Can you check if this works for you?
-
-diff --git a/fs/splice.c b/fs/splice.c
-index 6c98286..5e5071a 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -1061,8 +1061,9 @@ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
- 
- 	while (len) {
- 		size_t read_len;
-+		loff_t pos = sd->pos;
- 
--		ret = do_splice_to(in, &sd->pos, pipe, len, flags);
-+		ret = do_splice_to(in, &pos, pipe, len, flags);
- 		if (unlikely(ret <= 0))
- 			goto out_release;
- 
-@@ -1080,6 +1081,7 @@ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
- 
- 		bytes += ret;
- 		len -= ret;
-+		sd->pos = pos;
- 
- 		if (ret < read_len)
- 			goto out_release;
+It really looks like a stex bug - perhaps it's doing double completions
+of a request?
 
 -- 
 Jens Axboe
