@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXGPWOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbXGPWO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932282AbXGPWOK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762197AbXGPWN5
+	id S932367AbXGPWO4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761261AbXGPWOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:13:57 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2889 "EHLO scrub.xs4all.nl"
+	Mon, 16 Jul 2007 18:14:46 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42958 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761573AbXGPWN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:13:56 -0400
-Date: Tue, 17 Jul 2007 00:13:08 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: Matt Mackall <mpm@selenic.com>, James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-In-Reply-To: <20070716211851.GB18661@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707162351030.1817@scrub.home>
-References: <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu>
- <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
- <Pine.LNX.4.64.0707161331570.1817@scrub.home> <20070716121246.GA17880@elte.hu>
- <Pine.LNX.4.64.0707161427100.1817@scrub.home> <20070716134036.GA1533@elte.hu>
- <Pine.LNX.4.64.0707161548000.1817@scrub.home> <20070716203117.GC11166@waste.org>
- <20070716211851.GB18661@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752568AbXGPWOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 18:14:44 -0400
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Arnd Bergmann <arnd@arndb.de>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1184623415.3447.48.camel@localhost.localdomain>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	 <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
+	 <1184335333.3402.20.camel@localhost.localdomain>
+	 <200707131619.54898.arnd@arndb.de>
+	 <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+	 <1184340528.3402.32.camel@localhost.localdomain>
+	 <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
+	 <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
+	 <20070716121649.GI5195@kernel.dk>
+	 <1184593643.3447.9.camel@localhost.localdomain>
+	 <1184622555.25235.91.camel@localhost.localdomain>
+	 <1184623415.3447.48.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 17 Jul 2007 08:12:39 +1000
+Message-Id: <1184623959.25235.100.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 2007-07-16 at 17:03 -0500, James Bottomley wrote:
+> On Tue, 2007-07-17 at 07:49 +1000, Benjamin Herrenschmidt wrote:
+> > > No ... that was the point of flush_kernel_dcache_page().  The page in
+> > > question is page cache backed and contains user mappings.  However, the
+> > > block layer has already done a flush_dcache_page() in get_user_pages()
+> > > and the user shouldn't be touching memory under I/O (unless they want
+> > > self induced aliasing problems) so we're free to assume all the user
+> > > cachelines are purged, hence all we have to do is flush the kernel alias
+> > > to bring the page up to date and make the users see it correctly.
+> > 
+> > The block layer will have done that even in the swap-out path ? (Just
+> > asking... I'm not very familiar with the block layer)
+> 
+> Er ... not really, this is the I/O path for user initiated I/O.  The
+> page out path, by definition, can't have any extant user mappings.  For
+> page out, the relevant page is flushed before its mapping is detached,
+> and then it can be paged to the backing store (or for anonymous pages to
+> the swap device) when no mappings remain.
 
-On Mon, 16 Jul 2007, Ingo Molnar wrote:
+Ok, thanks.
 
-> and note that even on the old scheduler, nice-0 was "3200% more 
-> powerful" than nice +19 (with CONFIG_HZ=300),
+Ben.
 
-How did you get that value? At any HZ the ratio should be around 1:10
-(+- rounding error).
 
-> in fact i like it that nice -20 has a slightly bigger punch than it used 
-> to have before:
-
-"Slightly bigger"??? You're joking, right?
-Especially the user levels are doing something completely different now, 
-which may break user expectation. While the user couldn't expect anything 
-precise, it's still a big difference whether a process at nice 5 gets 75% 
-of the time or only 30%.
-
-bye, Roman
