@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761303AbXGPKZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759841AbXGPKgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761303AbXGPKZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 06:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbXGPKZt
+	id S1759841AbXGPKgL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 06:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbXGPKf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 06:25:49 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:34887 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754689AbXGPKZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 06:25:48 -0400
-Date: Mon, 16 Jul 2007 15:57:38 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, prasanna@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: Re: [patch 1/8] Kprobes - do not use kprobes mutex in arch code
-Message-ID: <20070716102738.GA4276@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20070714012133.612727310@polymtl.ca> <20070714012411.262873138@polymtl.ca> <20070714104914.GB7358@infradead.org> <20070714192002.GK6975@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 16 Jul 2007 06:35:58 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:54365 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbXGPKf5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 06:35:57 -0400
+From: Olaf Kirch <olaf.kirch@oracle.com>
+Organization: Oracle
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Date: Mon, 16 Jul 2007 12:35:41 +0200
+User-Agent: KMail/1.9.1
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+References: <20070716091236.GA10718@elte.hu>
+In-Reply-To: <20070716091236.GA10718@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070714192002.GK6975@Krystal>
-User-Agent: Mutt/1.5.11
+Message-Id: <200707161235.42637.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 14, 2007 at 03:20:02PM -0400, Mathieu Desnoyers wrote:
-> * Christoph Hellwig (hch@infradead.org) wrote:
-> > On Fri, Jul 13, 2007 at 09:21:34PM -0400, Mathieu Desnoyers wrote:
-> > > Remove the kprobes mutex from kprobes.h, since it does not belong there. Also
-> > > remove all use of this mutex in the architecture specific code, replacing it by
-> > > a proper mutex lock/unlock in the architecture agnostic code.
-> > 
-> > This is not very nice for avr32/sparc64 which have a noop arch_remove_kprobe
-> > and now need to take a mutex to do nothing.  Maybe you can find a nice
-> > way to avoid that?
-> > 
-> > Except for this issue making kprobes_mutex static to kprobes.c sounds like
-> > a good improvement.
-> > 
+On Monday 16 July 2007 11:12, Ingo Molnar wrote:
+> After a bisection session the bad commit turned out to be:
 > 
-> Since only unregister_kprobe() calls arch_remove_kprobe(), and only
-> after having removed the struct kprobe from the kprobes list (while the
-> kprobes mutex is held), I wonder if there is any need to hold the
-> kprobes mutex at all when calling arch_remove_kprobe(). It turns out
-> that only get_insn_slot()/free_insn_slot() (which is in
-> kernel/kprobes.c, but called from arch specific code) seems to really
-> use protection of this mutex.
+>  29578624e354f56143d92510fff33a8b2aaa2c03 is first bad commit
+>  commit 29578624e354f56143d92510fff33a8b2aaa2c03
+>  Author: Olaf Kirch <olaf.kirch@oracle.com>
+>  Date:   Wed Jul 11 19:32:02 2007 -0700
+> 
+>      [NET]: Fix races in net_rx_action vs netpoll.
+> 
+>      Keep netpoll/poll_napi from messing with the poll_list.
+>      Only net_rx_action is allowed to manipulate the list.
+> 
+>      Signed-off-by: Olaf Kirch <olaf.kirch@oracle.com>
+>      Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Right.
+Apologies - I'll look into it.
 
-> Would it make sense to protect the kprobe_insn_pages list with a
-> new kprobe_insn_mutex, nestable in the kprobe_mutex ?
-
-Do you think it is required after your change to make kprobe_mutex
-static? But yes, for architectures that don't need a arch_remove_kprobe,
-the situation is a bit odd... a mutex to do nothing. IIRC, that was the
-primary reason why we made the mutex visible outside of kernel/kprobes.c
-
-Ananth
+Olaf
+-- 
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
