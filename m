@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764607AbXGPPFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765036AbXGPPL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764607AbXGPPFG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:05:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757198AbXGPPEs
+	id S1765036AbXGPPL6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbXGPPLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:04:48 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:56380 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762468AbXGPPEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:04:47 -0400
-Message-ID: <469B8909.8030001@dgreaves.com>
-Date: Mon, 16 Jul 2007 16:04:41 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+	Mon, 16 Jul 2007 11:11:49 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1420 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756942AbXGPPLs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:11:48 -0400
+Date: Mon, 16 Jul 2007 16:11:45 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Songmao Tian <tiansm@lemote.com>
+cc: LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: about cs5536 interrupt ack
+In-Reply-To: <4695D78F.8010806@lemote.com>
+Message-ID: <Pine.LNX.4.64N.0707161556560.15539@blysk.ds.pg.gda.pl>
+References: <4694A495.1050006@lemote.com> <Pine.LNX.4.64N.0707111347360.26459@blysk.ds.pg.gda.pl>
+ <4694F4EB.8040000@lemote.com> <Pine.LNX.4.64N.0707111634430.26459@blysk.ds.pg.gda.pl>
+ <4695D78F.8010806@lemote.com>
 MIME-Version: 1.0
-To: LinuxKernel@jamesplace.net
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: Problem recovering a failed RIAD5 array with 4-drives. --RESOLVED
-References: <200707120849.16068.LinuxKernel@jamesplace.net> <200707121810.57648.LinuxKernel@jamesplace.net> <18070.46997.541325.761868@notabene.brown> <200707121949.08662.LinuxKernel@jamesplace.net>
-In-Reply-To: <200707121949.08662.LinuxKernel@jamesplace.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James wrote:
->>> I don't know the original order of the array before all the problems 
-> started. 
->>> Is there a way to determine the original order? 
->> No, unless you have some old kernel logs of the last time it assembled
->> the array properly.
->> The one thing that "--create" does destroy is the information about
->> any previous array that the drives were a part of.
->>
->>> The order that --detail is showing now is the order that appeared after 
->>> issuing the command is it is in the email. (ie: a b c d)
->> Odd.  I cannot reproduce it.
->> I suggest you try different arrangements (of the 3 good drives and the
->> word 'missing') until you find one that 'fsck -n' likes.
->>
->> NeilBrown
->>
->>
+On Thu, 12 Jul 2007, Songmao Tian wrote:
+
+> 8259 problem  seems to be done with the attached patch, IDE hung seems to be
+> the dma setting problem.
 > 
-> I don't understand how the order of --detail was different than the command 
-> line on my system, however....
-> 
-> YOU ARE A LIFE SAVER!!!
-> 
-> After going through 21 combinations, beginning to lose all hope and plummeting 
-> into eternal despair, combo 22 worked. The array is up and working. All the 
-> data (1.3Tb) is there and I'm probably the happiest character on the mail 
-> list today. 
-> 
-> Thanks a bunch for your help.
+> Thanks all for your advise, comments. I have learned a lot. now I continue to
+> trace down the IDE problem.
 
-Funnily enough someone else was having a similar problem on the linux-raid list 
-at the same time
+ I would still recommend you to investigate the option of making the 8259A 
+cores "transparent" and using the mapper registers to dispatch interrupts 
+directly -- it would make processing of interrupt requests considerably 
+faster and less complicated.  Please note that ffs() is O(1) and actually 
+some two or three machine instructions on MIPS architecture processors and 
+the model used by the mapper is closer to the spirit of how MIPS 
+processors do interrupt handling.  With such an approach it will also 
+likely be easier to integrate your changes upstream, than it would for 
+your changes to i8259.{c,h} needed for your unusual setup to work.
 
-Here's a script that may be useful to others in this predicament - a hell of a 
-lot quicker than doing it by hand...
+ Of course as an intermediate solution during development to make the 
+whole thing work the complicated use of the 8259A cores may be justified.
 
-The 'is the filesystem safe' test probably wants improving from a read-only mount...
-
-http://linux-raid.osdl.org/index.php/RAID_Recovery
-http://linux-raid.osdl.org/index.php/Permute_array.pl
-
-David
+  Maciej
