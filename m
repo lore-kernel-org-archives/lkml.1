@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761771AbXGPVJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbXGPVMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761771AbXGPVJm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 17:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbXGPVJd
+	id S1760008AbXGPVMj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 17:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXGPVMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 17:09:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41276 "EHLO mx2.mail.elte.hu"
+	Mon, 16 Jul 2007 17:12:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53535 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754575AbXGPVJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 17:09:32 -0400
-Date: Mon, 16 Jul 2007 23:09:24 +0200
+	id S1751706AbXGPVM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 17:12:29 -0400
+Date: Mon, 16 Jul 2007 23:12:22 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       olaf.kirch@oracle.com
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070716210924.GA17807@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <20070716.042640.18306462.davem@davemloft.net>
+To: linux@bohmer.net
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>, mathieu.desnoyers@polymtl.ca
+Subject: Re: [Question] Hooks for scheduler tracing (CFS)
+Message-ID: <20070716211222.GA18661@elte.hu>
+References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com> <1184615557.2698.3.camel@laptopd505.fenrus.org> <3efb10970707161317h72b30aabq208150b2abde8e5e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070716.042640.18306462.davem@davemloft.net>
+In-Reply-To: <3efb10970707161317h72b30aabq208150b2abde8e5e@mail.gmail.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -34,25 +35,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+* Remy Bohmer <l.pinguin@gmail.com> wrote:
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon, 16 Jul 2007 11:12:36 +0200
+> Hello Arjan,
 > 
-> > Applying the revert patch below makes it work again.
-> 
-> Well, let's figure out why before we revert because it is attempting 
-> to fix a legitimate bug.
+> Thanks for this suggestion.
 
-yeah, no doubt about it, but this fix breaks my box _for sure_, while 
-whatever problem the commit fixed, it was not something that ever 
-triggered on my boxes =B-)
+(please dont top-post, ever. See:
+ www.zipworld.com.au/~akpm/linux/patches/stuff/top-posting.txt)
 
-so ... i can promise to test whatever new version of the patch Olaf 
-sends me (the problem is easy to reproduce and easy to test, so i can 
-check it all in a heartbeat), so to get things back on track, and to 
-value the time i spent on bisecting this, could we please apply the 
-revert upstream (temporarily), because Linus' -git tree as of today is 
-still broken for me. (and likely broken for others)
+> But I looked at Systemtap before, and as I remember, it is very 
+> flexible, but it only traces function calls. (or am I missing 
+> something?)
+
+systemtap it should be able to trace variables as well. (as long as 
+those variables are not eliminated by gcc)
 
 	Ingo
