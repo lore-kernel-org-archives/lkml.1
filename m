@@ -1,74 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761249AbXGPFES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761082AbXGPFGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761249AbXGPFES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 01:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXGPFEJ
+	id S1761082AbXGPFGi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 01:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXGPFGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 01:04:09 -0400
-Received: from [212.12.190.156] ([212.12.190.156]:32850 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751972AbXGPFEI convert rfc822-to-8bit (ORCPT
+	Mon, 16 Jul 2007 01:06:31 -0400
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:28291 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751351AbXGPFGa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 01:04:08 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Hibernation considerations
-Date: Mon, 16 Jul 2007 08:02:46 +0300
-User-Agent: KMail/1.5
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>, <david@lang.hm>
-References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+	Mon, 16 Jul 2007 01:06:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=L5ggHGtheU6rraQmXuS04vNK3bl6Jwhe8Itbg9YlaYnbFZ8B4YCBr3DYUngi7gh5BFlYfxzbB5gOF8CeWAB6aRR41X6okkbelzfLp4raJSTvagTUKSoQmeqk7FPyB+aLtOtRZO9zeLRgFxRA29ZYr+f8/RKTWHKOhQHjuk482Kc=  ;
+X-YMail-OSG: 2PRy0PEVM1naNSZ.YIiHj6nd04JuMhkMYVOtS7RHN4yZVKcl
+From: David Brownell <david-b@pacbell.net>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>,
+       "Timo Lindemann" <tlindemann@arcor.de>
+Subject: Re: PROBLEM: kernel hang in ohci init
+Date: Sun, 15 Jul 2007 22:06:26 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <4695EC25.6050003@arcor.de> <4699F9CB.5010407@arcor.de> <a781481a0707150418o35e4d60fs59cba3f835ebef67@mail.gmail.com>
+In-Reply-To: <a781481a0707150418o35e4d60fs59cba3f835ebef67@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <200707160802.46567.a1426z@gawab.com>
+Message-Id: <200707152206.26995.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> As for the VGA font, the effect is easy to see: Run setfont before
-> hibernating; when you resume the original font will be back.  The
-> kernel simply does not bother to save the VGA font information across a
-> hibernate.
+On Sunday 15 July 2007, Satyam Sharma wrote:
+> On 7/15/07, Timo Lindemann <tlindemann@arcor.de> wrote:
 
-This could probably be handled by a device suspend/resume call; but this 
-problem is not specific to kexec.
+> > It is just odd that up to (not including) the 2.6.21-series every kernel
+> > boots, and after that, they just freeze.
 
-> > Ok, after applying the latest kexec patches, I was able to use the
-> > kexec'd kernel to suspend to ram and resume to the normal kernel, while
-> > working under a full-blown X session.  It went without a hitch.  All
-> > that is needed now are the dump/restore hibernation-image routines.
->
-> That's exactly my point.  While doing suspend-to-RAM from a kexec'd
-> kernel may be simple, saving the hibernation image will add
-> complications.
-
->From a kexec'd hibernation kernel pov, both S3 and S4 look conceptually 
-exactly the same.  The only difference is, in S3 the memory is in memory and 
-in S4 the memory is on storage.  All device handling is exactly the same, so 
-if there is a problem with device handling between the kexec'd hibernation 
-kernel and the normal kernel, then that would have made itself visible.
-
-david@lang.hm wrote:
-> suspend-to-RAM should not involve kexec, the only reason for doing the
-> kexec to to get a seperate userspace to use for suspend-to-disk operations
-> instead of trying to partially freeze the sustem and keep useing it.
-
-Or you could do suspend-to-disk-and-RAM.  But in the above case, it was meant 
-to test kexec compatibility with device suspend/resume calls.
+On *your* system, note -- all my OHCI+PCI systems that have
+been upgraded to 2.6.22 are behaving just peachy-keen-swell.
+And that's true for most people, it seems...
 
 
-Thanks!
+> > I am kinda stumped here.
 
---
-Al
+It gets that way sometimes.  Thing is, pci-quirks.c runs early
+enough in the boot process -- before the OHCI driver can even
+run!! -- that you can probably rule out the USB stack as being
+the cause of this regression.  Disable the USB host controllers
+in your config, and see what happens...
+
+
+> Hey, just try git-bisect already :-)
+> 
+> In fact, you can first try by just reverting / un-applying that patch that
+> you initially had a suspicion on. 
+
+Extremely unlikely to matter, since it wouldn't have been able
+to run that early.  Plus, you were seeing problems even before
+that recent change to pci-quirks ... 
+
+
+> Or, because you've already spent 
+> some time tracking down the issue, you could simply go through the
+> git history of that file / subsystem in question 
+
+Where the subsystem in question is early PCI/ACPI initialization,
+before the drivers start binding to PCI devices... it's always
+annoying when changes in that area cause USB to break, since the
+only involvement of USB is to display a "rude failure" symptom.
+It took a long time to get the IRQ setup glitches fixed!
+
+One thing you might do is enable all the ACPI debug messaging and
+disable the usb/host/pci-quirks.c stuff (just comment it all out),
+assuming you can boot without USB keyboard/mouse.  Then compare
+the relevant diagnostics between "good" and "bad" kernels.  It's
+likely something interesting will appear.
+
+- Dave
+
 
