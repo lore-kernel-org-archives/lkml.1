@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765552AbXGPOCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765670AbXGPOCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765552AbXGPOCQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764502AbXGPOA5
+	id S1765670AbXGPOCo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764589AbXGPOA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:00:57 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:42222 "EHLO
+	Mon, 16 Jul 2007 10:00:58 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:42233 "EHLO
 	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760212AbXGPOAy (ORCPT
+	by vger.kernel.org with ESMTP id S1760801AbXGPOAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:00:54 -0400
-Message-Id: <20070716135950.895120000@pademelon.sonytel.be>
+	Mon, 16 Jul 2007 10:00:55 -0400
+Message-Id: <20070716135951.157006000@pademelon.sonytel.be>
 References: <20070716135550.010775000@pademelon.sonytel.be>
 User-Agent: quilt/0.46-1
-Date: Mon, 16 Jul 2007 15:55:52 +0200
+Date: Mon, 16 Jul 2007 15:55:54 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: "Antonino A. Daplas" <adaplas@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
@@ -22,284 +22,113 @@ Cc: Arnd Bergmann <arnd@arndb.de>, James Simmons <jsimmons@infradead.org>,
        linux-kernel@vger.kernel.org,
        Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
        Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: [patch 2/4] fbdev: Add fb_append_extra_logo()
-Content-Disposition: inline; filename=spe-logo/fb_append_extra_logo.diff
+Subject: [patch 4/4] Cell: Draw SPE helper penguin logos
+Content-Disposition: inline; filename=spe-logo/logo-extra-spe-glue-2.6.21.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add fb_append_extra_logo(), to append extra lines of logos below the standard
-Linux logo.
+Let spu_management_ops.enumerate_spus() return the number of found SPEs
+and use that information to draw some little helper penguin logos.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Acked-By: James Simmons <jsimmons@infradead.org>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
 Changes since last version:
-  - Introduce CONFIG_FB_LOGO_EXTRA to protect all new code
-  - Move fb_prepare_logo() down to satisfy declaration dependencies
+  - Let FB_LOGO_EXTRA default to y if SPU_BASE is enabled
 
- drivers/video/fbmem.c      |  210 ++++++++++++++++++++++++++++++---------------
- drivers/video/logo/Kconfig |    4 
- include/linux/linux_logo.h |    8 +
- 3 files changed, 154 insertions(+), 68 deletions(-)
+ arch/powerpc/platforms/cell/spu_base.c   |   15 ++++++++++++++-
+ arch/powerpc/platforms/cell/spu_manage.c |    4 +++-
+ arch/powerpc/platforms/ps3/spu.c         |    6 ++++--
+ drivers/video/logo/Kconfig               |    1 +
+ 4 files changed, 22 insertions(+), 4 deletions(-)
 
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -411,72 +411,6 @@ static void fb_do_show_logo(struct fb_in
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -31,6 +31,7 @@
+ #include <linux/mm.h>
+ #include <linux/io.h>
+ #include <linux/mutex.h>
++#include <linux/linux_logo.h>
+ #include <asm/spu.h>
+ #include <asm/spu_priv1.h>
+ #include <asm/xmon.h>
+@@ -603,12 +604,24 @@ static int __init init_spu_base(void)
+ 
+ 	ret = spu_enumerate_spus(create_spu);
+ 
+-	if (ret) {
++	if (ret < 0) {
+ 		printk(KERN_WARNING "%s: Error initializing spus\n",
+ 			__FUNCTION__);
+ 		goto out_unregister_sysdev_class;
  	}
- }
  
--int fb_prepare_logo(struct fb_info *info, int rotate)
--{
--	int depth = fb_get_color_depth(&info->var, &info->fix);
--	int yres;
--
--	memset(&fb_logo, 0, sizeof(struct logo_data));
--
--	if (info->flags & FBINFO_MISC_TILEBLITTING ||
--	    info->flags & FBINFO_MODULE)
--		return 0;
--
--	if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
--		depth = info->var.blue.length;
--		if (info->var.red.length < depth)
--			depth = info->var.red.length;
--		if (info->var.green.length < depth)
--			depth = info->var.green.length;
--	}
--
--	if (info->fix.visual == FB_VISUAL_STATIC_PSEUDOCOLOR && depth > 4) {
--		/* assume console colormap */
--		depth = 4;
--	}
--
--	if (depth >= 8) {
--		switch (info->fix.visual) {
--		case FB_VISUAL_TRUECOLOR:
--			fb_logo.needs_truepalette = 1;
--			break;
--		case FB_VISUAL_DIRECTCOLOR:
--			fb_logo.needs_directpalette = 1;
--			fb_logo.needs_cmapreset = 1;
--			break;
--		case FB_VISUAL_PSEUDOCOLOR:
--			fb_logo.needs_cmapreset = 1;
--			break;
--		}
--	}
--
--	/* Return if no suitable logo was found */
--	fb_logo.logo = fb_find_logo(depth);
--
--	if (!fb_logo.logo) {
--		return 0;
--	}
--	
--	if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
--		yres = info->var.yres;
--	else
--		yres = info->var.xres;
--
--	if (fb_logo.logo->height > yres) {
--		fb_logo.logo = NULL;
--		return 0;
--	}
--
--	/* What depth we asked for might be different from what we get */
--	if (fb_logo.logo->type == LINUX_LOGO_CLUT224)
--		fb_logo.depth = 8;
--	else if (fb_logo.logo->type == LINUX_LOGO_VGA16)
--		fb_logo.depth = 4;
--	else
--		fb_logo.depth = 1;		
--	return fb_logo.logo->height;
--}
--
- static int fb_show_logo_line(struct fb_info *info, int rotate,
- 			     const struct linux_logo *logo, int y,
- 			     unsigned int n)
-@@ -545,10 +479,150 @@ static int fb_show_logo_line(struct fb_i
- 	return logo->height;
- }
++	if (ret > 0) {
++		/*
++		 * We cannot put the forward declaration in
++		 * <linux/linux_logo.h> because of conflicting session type
++		 * conflicts for const and __initdata with different compiler
++		 * versions
++		 */
++		extern const struct linux_logo logo_spe_clut224;
++
++		fb_append_extra_logo(&logo_spe_clut224, ret);
++	}
++
+ 	xmon_register_spus(&spu_full_list);
  
-+
-+#ifdef CONFIG_FB_LOGO_EXTRA
-+
-+#define FB_LOGO_EX_NUM_MAX 10
-+static struct logo_data_extra {
-+	const struct linux_logo *logo;
-+	unsigned int n;
-+} fb_logo_ex[FB_LOGO_EX_NUM_MAX];
-+static unsigned int fb_logo_ex_num;
-+
-+void fb_append_extra_logo(const struct linux_logo *logo, unsigned int n)
-+{
-+	if (!n || fb_logo_ex_num == FB_LOGO_EX_NUM_MAX)
-+		return;
-+
-+	fb_logo_ex[fb_logo_ex_num].logo = logo;
-+	fb_logo_ex[fb_logo_ex_num].n = n;
-+	fb_logo_ex_num++;
-+}
-+
-+static int fb_prepare_extra_logos(struct fb_info *info, unsigned int height,
-+				  unsigned int yres)
-+{
-+	unsigned int i;
-+
-+	/* FIXME: logo_ex supports only truecolor fb. */
-+	if (info->fix.visual != FB_VISUAL_TRUECOLOR)
-+		fb_logo_ex_num = 0;
-+
-+	for (i = 0; i < fb_logo_ex_num; i++) {
-+		height += fb_logo_ex[i].logo->height;
-+		if (height > yres) {
-+			height -= fb_logo_ex[i].logo->height;
-+			fb_logo_ex_num = i;
-+			break;
-+		}
-+	}
-+	return height;
-+}
-+
-+static int fb_show_extra_logos(struct fb_info *info, int y, int rotate)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < fb_logo_ex_num; i++)
-+		y += fb_show_logo_line(info, rotate,
-+				       fb_logo_ex[i].logo, y, fb_logo_ex[i].n);
-+
-+	return y;
-+}
-+
-+#else /* !CONFIG_FB_LOGO_EXTRA */
-+
-+static inline int fb_prepare_extra_logos(struct fb_info *info,
-+					 unsigned int height,
-+					 unsigned int yres)
-+{
-+	return height;
-+}
-+
-+static inline int fb_show_extra_logos(struct fb_info *info, int y, int rotate)
-+{
-+	return y;
-+}
-+
-+#endif /* CONFIG_FB_LOGO_EXTRA */
-+
-+
-+int fb_prepare_logo(struct fb_info *info, int rotate)
-+{
-+	int depth = fb_get_color_depth(&info->var, &info->fix);
-+	unsigned int yres;
-+
-+	memset(&fb_logo, 0, sizeof(struct logo_data));
-+
-+	if (info->flags & FBINFO_MISC_TILEBLITTING ||
-+	    info->flags & FBINFO_MODULE)
-+		return 0;
-+
-+	if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
-+		depth = info->var.blue.length;
-+		if (info->var.red.length < depth)
-+			depth = info->var.red.length;
-+		if (info->var.green.length < depth)
-+			depth = info->var.green.length;
-+	}
-+
-+	if (info->fix.visual == FB_VISUAL_STATIC_PSEUDOCOLOR && depth > 4) {
-+		/* assume console colormap */
-+		depth = 4;
-+	}
-+
-+	if (depth >= 8) {
-+		switch (info->fix.visual) {
-+		case FB_VISUAL_TRUECOLOR:
-+			fb_logo.needs_truepalette = 1;
-+			break;
-+		case FB_VISUAL_DIRECTCOLOR:
-+			fb_logo.needs_directpalette = 1;
-+			fb_logo.needs_cmapreset = 1;
-+			break;
-+		case FB_VISUAL_PSEUDOCOLOR:
-+			fb_logo.needs_cmapreset = 1;
-+			break;
-+		}
-+	}
-+
-+	/* Return if no suitable logo was found */
-+	fb_logo.logo = fb_find_logo(depth);
-+
-+	if (!fb_logo.logo) {
-+		return 0;
-+	}
-+
-+	if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
-+		yres = info->var.yres;
-+	else
-+		yres = info->var.xres;
-+
-+	if (fb_logo.logo->height > yres) {
-+		fb_logo.logo = NULL;
-+		return 0;
-+	}
-+
-+	/* What depth we asked for might be different from what we get */
-+	if (fb_logo.logo->type == LINUX_LOGO_CLUT224)
-+		fb_logo.depth = 8;
-+	else if (fb_logo.logo->type == LINUX_LOGO_VGA16)
-+		fb_logo.depth = 4;
-+	else
-+		fb_logo.depth = 1;
-+
-+	return fb_prepare_extra_logos(info, fb_logo.logo->height, yres);
-+}
-+
- int fb_show_logo(struct fb_info *info, int rotate)
+ 	return 0;
+--- a/arch/powerpc/platforms/cell/spu_manage.c
++++ b/arch/powerpc/platforms/cell/spu_manage.c
+@@ -279,6 +279,7 @@ static int __init of_enumerate_spus(int 
  {
--	return fb_show_logo_line(info, rotate, fb_logo.logo, 0,
--				 num_online_cpus());
-+	int y;
-+
-+	y = fb_show_logo_line(info, rotate, fb_logo.logo, 0,
-+			      num_online_cpus());
-+	y = fb_show_extra_logos(info, y, rotate);
-+
-+	return y;
+ 	int ret;
+ 	struct device_node *node;
++	unsigned int n = 0;
+ 
+ 	ret = -ENODEV;
+ 	for (node = of_find_node_by_type(NULL, "spe");
+@@ -289,8 +290,9 @@ static int __init of_enumerate_spus(int 
+ 				__FUNCTION__, node->name);
+ 			break;
+ 		}
++		n++;
+ 	}
+-	return ret;
++	return ret ? ret : n;
  }
- #else
- int fb_prepare_logo(struct fb_info *info, int rotate) { return 0; }
+ 
+ static int __init of_create_spu(struct spu *spu, void *data)
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -400,11 +400,13 @@ static int __init ps3_enumerate_spus(int
+ 		}
+ 	}
+ 
+-	if (result)
++	if (result) {
+ 		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
+ 			__func__, __LINE__);
++		return result;
++	}
+ 
+-	return result;
++	return num_resource_id;
+ }
+ 
+ const struct spu_management_ops spu_management_ps3_ops = {
 --- a/drivers/video/logo/Kconfig
 +++ b/drivers/video/logo/Kconfig
-@@ -10,6 +10,10 @@ menuconfig LOGO
+@@ -13,6 +13,7 @@ if LOGO
+ config FB_LOGO_EXTRA
+ 	bool
+ 	depends on FB
++	default y if SPU_BASE
  
- if LOGO
- 
-+config FB_LOGO_EXTRA
-+	bool
-+	depends on FB
-+
  config LOGO_LINUX_MONO
  	bool "Standard black and white Linux logo"
- 	default y
---- a/include/linux/linux_logo.h
-+++ b/include/linux/linux_logo.h
-@@ -33,5 +33,13 @@ struct linux_logo {
- };
- 
- extern const struct linux_logo *fb_find_logo(int depth);
-+#ifdef CONFIG_FB_LOGO_EXTRA
-+extern void fb_append_extra_logo(const struct linux_logo *logo,
-+				 unsigned int n);
-+#else
-+static inline void fb_append_extra_logo(const struct linux_logo *logo,
-+					unsigned int n)
-+{}
-+#endif
- 
- #endif /* _LINUX_LINUX_LOGO_H */
 
 -- 
 With kind regards,
