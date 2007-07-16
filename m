@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764696AbXGPG4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764754AbXGPG46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764696AbXGPG4W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 02:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXGPG4O
+	id S1764754AbXGPG46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 02:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXGPG4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 02:56:14 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:60997
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752929AbXGPG4M (ORCPT
+	Mon, 16 Jul 2007 02:56:51 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34251 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753035AbXGPG4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 02:56:12 -0400
-Date: Sun, 15 Jul 2007 23:49:20 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Al Boldi <a1426z@gawab.com>
-cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Hibernation considerations
-In-Reply-To: <200707160802.46567.a1426z@gawab.com>
-Message-ID: <Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
- <200707160802.46567.a1426z@gawab.com>
+	Mon, 16 Jul 2007 02:56:50 -0400
+Date: Mon, 16 Jul 2007 08:56:10 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Li, Tong N" <tong.n.li@intel.com>
+Cc: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for  2.6.22
+Message-ID: <20070716065610.GA3653@stusta.de>
+References: <20070715234543.GN3565@stusta.de> <5FD5754DDBA0B1499B5A0B4BB54194850164B27C@fmsmsx411.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <5FD5754DDBA0B1499B5A0B4BB54194850164B27C@fmsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007, Al Boldi wrote:
+On Sun, Jul 15, 2007 at 10:03:02PM -0700, Li, Tong N wrote:
+> 
+> There are various metrics a scheduler may want to optimize for, such as
+> throughput, response time, power consumption, fairness, and so on. Each
+> of these may also be defined differently in different environments. Take
+> fairness as an example. People have traditionally talked about it in
+> terms of CPU time. Now it'd also make sense to talk about scheduling
+> that enables fair usage of other types of resources, such as shared
+> caches. Different metrics may require different scheduling policies.
 
->
-> david@lang.hm wrote:
->> suspend-to-RAM should not involve kexec, the only reason for doing the
->> kexec to to get a seperate userspace to use for suspend-to-disk operations
->> instead of trying to partially freeze the sustem and keep useing it.
->
-> Or you could do suspend-to-disk-and-RAM.  But in the above case, it was meant
-> to test kexec compatibility with device suspend/resume calls.
+Are these real-life problems people need solutions for today or just 
+thoughts someone might want to try and write a paper about?
 
-the point I am trying to make here is that there is no reason that the 
-kexec approach needs to do _any_ suspend/resume calls.
+> Plus, many metrics may in fact conflict, e.g., a scheduling policy
+> optimized for throughput may not be power efficient. As a result, Linux,
+> and all general-purpose OSes, strive to achieve a balance, but it's
+> conceivable that different hardware platforms and different application
+> workloads may want to have different scheduling policies to meet their
+> own needs.
 
-all that is needed is the ability of the new kernel to initialize the 
-devices it needs.
+The Linux scheduler already gives you some knobs allowing you to adjust 
+the scheduling to your needs.
 
-suspend-to-disk-and-ram could be implemented as three 
-seperate steps
+What is missing, and why wasn't it included in the current scheduler?
 
-1. suspend-to-disk
+> Given that the scheduling policies can be diverse, the mechanisms to
+> enforce them can also be different. The per-cpu runqueue model may be
+> best for many scenarios, some scheduling policies (like many real-time
+> ones) might want global knowledge about all tasks in the system and thus
+> prefer a global task queue at the cost of being less scalable and
+> cache-efficient. HPC systems may also want to gang-schedule. And, in
+> terms of implementation, O(1) might be desirable for large-scale MP
+> systems while O(log N) might be good enough for small systems. These are
+> just examples that indicate the scheduler data structures, algorithms,
+> and implementation can have a variety of possibilities in different
+> usage models. A single scheduler that is easily extensible for
+> incorporating different policies would be ideal, but IMO this is not yet
+> the case and may not even be possible. Therefore, I think having a
+> framework that enables multiple schedulers to co-exist would be
+> invaluable and PlugSched seems to be one good step towards this.
 
-2. resume-from-disk
+Much is already possible, and e.g. when you talk about HPC you are in an 
+area where the scope of the kernel is anyway often too small and the 
+actual scheduling is done with a userspace batch scheduling program.
 
-3. suspend-to-ram
+What are the real-life problems the current scheduler has, and why 
+weren't they solved when it was designed and implemented?
 
-followed by either
+People implementing a special purpose scheduler to fit their needs would
+really not be an ideal solution - ideally, there should be one scheduler 
+that handles all real-life problems.
 
-4. resume-from-ram
+And therefore the first step for people should be to try to get their 
+problems solved with the one scheduler, and if required enhance it, 
+instead of saying NIH and implement their own special purpose scheduler.
 
-or
+>   tong
 
-4. battery dies and loptop powers off completely
+cu
+Adrian
 
-5. power-on boot.
+-- 
 
-6. resume-from-disk
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-all that you need to do is to make sure that the system doesn't run 
-anything that would affect permanent media or the outside world between 
-steps #2 and #3
-
-yes it's more steps, but each step is logicly seperate, and each step will 
-be excercised on a regular basis, so the combination of the steps will 
-also be reliable.
-
-this is far better then creating yet another way to pause the system that 
-only a few people will use.
-
-David Lang
