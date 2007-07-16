@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765824AbXGPQ1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXGPQ2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765824AbXGPQ1f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 12:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759966AbXGPQ11
+	id S932659AbXGPQ2b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 12:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759966AbXGPQ2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 12:27:27 -0400
-Received: from evsync.sierrawireless.com ([204.50.29.40]:17050 "EHLO
-	mx1.sierrawireless.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758570AbXGPQ10 convert rfc822-to-8bit (ORCPT
+	Mon, 16 Jul 2007 12:28:23 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:25477 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758570AbXGPQ2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 12:27:26 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 16 Jul 2007 12:28:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TPbyRBJaasb8n+hLCNZEIqc2Wfws4i25zA5lhJcfa8hpdjvHy2qEmy1Q66ZjlSi0yL05tZlmw3yK6JZ8GzNMyKW/v8Oq5CVuPJeKrUxnSGcxb0kCJh4IhC934WS8aQh6zit18ScCsQMlG8JPJNqEpYl1qEHtjNKeO2uSJrxEk4M=
+Message-ID: <961aa3350707160928w6c1e8b28l9750cfaa6a08d9d0@mail.gmail.com>
+Date: Tue, 17 Jul 2007 01:28:20 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
+Subject: Re: [PATCH 3/10] sysfs: fix error handling in create_files()
+Cc: linux-kernel@vger.kernel.org, "Greg Kroah-Hartman" <gregkh@suse.de>
+In-Reply-To: <20070716172945.54e07c3c@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [linux-usb-devel] [PATCH 01/02] USB: sierra: Add TRU-Install (c) Support [ATTEMPT 4]
-Date: Mon, 16 Jul 2007 09:27:23 -0700
-Message-ID: <3415E2A2AB26944B9159CDB22001004D01B0FCE7@nestea.sierrawireless.local>
-In-Reply-To: <200707161355.08548.oliver@neukum.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [linux-usb-devel] [PATCH 01/02] USB: sierra: Add TRU-Install (c) Support [ATTEMPT 4]
-Thread-Index: AcfHn+tuWzDCBEV0TcOjmqUfHdH9YQAJiCgw
-References: <4696C9EF.9050406@sierrawireless.com> <200707161355.08548.oliver@neukum.org>
-From: "Kevin Lloyd" <klloyd@sierrawireless.com>
-To: "Oliver Neukum" <oliver@neukum.org>,
-       <linux-usb-devel@lists.sourceforge.net>
-Cc: <gregkh@suse.de>, "Linux Development Group" <linux@sierrawireless.com>,
-       <torvalds@osdl.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Jul 2007 16:27:24.0648 (UTC) FILETIME=[3136DE80:01C7C7C6]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1166-5.0.1021-15296.001
-X-TM-AS-Result: No--7.862200-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070716134855.GA1858@APFDCB5C> <20070716135230.GC2040@APFDCB5C>
+	 <20070716172945.54e07c3c@gondolin.boeblingen.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ah, thanks for spelling it out for me :) I misunderstood you before.
+2007/7/17, Cornelia Huck <cornelia.huck@de.ibm.com>:
+> On Mon, 16 Jul 2007 22:52:30 +0900,
+> Akinobu Mita <akinobu.mita@gmail.com> wrote:
+>
+> > Current error handling in create_files() attempts to remove
+> > all attributes passed by argument by remove_files(). But it should
+> > only remove the attributes that have been successfully added.
+>
+> While this is certainly cleaner, a question out of curiousity: Does
+> this fix any problem you saw? sysfs_hash_and_remove() used to be safe
+> on non-existing attributes...
 
-- Kevin 
+Maybe I folded all suspicious bugfixes that I found while I spend a lot of
+time to pass my cpu hotplug/unplug test script.
 
------Original Message-----
-From: Oliver Neukum [mailto:oliver@neukum.org] 
-Sent: Monday, July 16, 2007 4:55 AM
-To: linux-usb-devel@lists.sourceforge.net
-Cc: Kevin Lloyd; gregkh@suse.de; Linux Development Group; torvalds@osdl.org; linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] [PATCH 01/02] USB: sierra: Add TRU-Install (c) Support [ATTEMPT 4]
-
-Am Freitag 13 Juli 2007 schrieb Kevin Lloyd:
-> +int sierra_probe(struct usb_interface *iface, const struct 
-> +usb_device_id *id) {
-> +       int result;
-> +       struct usb_device *udev;
-> +
-> +       udev = usb_get_dev(interface_to_usbdev(iface));
-> +
-> +       /* Check if in installer mode */
-> +       if (id->driver_info == DEVICE_INSTALLER){
-> +               dev_dbg(&udev->dev, "%s", "FOUND DEVICE(SW)\n");
-> +               result = sierra_set_ms_mode(udev, 
-> +SWIMS_SET_MODE_Modem);
-> +               return result;
-
-As I mentioned, you'd better return -EIO here. You don't want to bind to the device, as it is not yet a serial device and you want the driver core to stop trying while it goes away and transforms itself.
-
-	Regards
-		Oliver
-
-
+I'll test again without this patch.
