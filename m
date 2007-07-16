@@ -1,270 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbXGPExT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758944AbXGPE7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbXGPExT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 00:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbXGPExK
+	id S1758944AbXGPE7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 00:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXGPE7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 00:53:10 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:50747 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbXGPExJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 00:53:09 -0400
-X-Greylist: delayed 2635 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 00:53:08 EDT
-Date: Mon, 16 Jul 2007 05:09:11 +0100 (IST)
-From: Dave Airlie <airlied@skynet.ie>
-To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [git pull] drm patches for 2.6.23-rc1 - FIXED
-Message-ID: <Pine.LNX.4.64.0707160508430.25885@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 16 Jul 2007 00:59:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45961 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751182AbXGPE7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 00:59:35 -0400
+Date: Mon, 16 Jul 2007 06:59:32 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [rfc][patch 1/2] spinlock: lockbreak cleanups
+Message-ID: <20070716045932.GA19914@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Hi Linus,
+These patches are not exactly complete yet (haven't tested many config
+combinations or converted other architectures), but I want to post it
+now to get consensus on whether and how to clean up the lockbreak stuff
+in particular.
 
-(apologies for the first borked tree, I cross compiled this for ppc64,
-  you can blame Telstra - no ADSL or phone at home)
+It gets in the way because ticket spinlocks shouldn't be just repeating
+the low-level trylock to lock, because that never gives the locker a
+ticket, so the FIFO order is ruined.
 
-Please pull the 'drm-patches' branch from the drm git tree.
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+So RFC.
 
-It contains a removal of a lot of typedefs from the core drm and their use in
-drivers. Drivers will have their own typedefs cleaned later. It also
-fixes the 32-bit compat ioctl code
+---
 
-It also contains an updated r300 register file, and radeon vblank routing
-support along with a list macro cleanup.
+The break_lock data structure and code for spinlocks is quite nasty.
+Not only does it double the size of a spinlock but it changes locking to
+a potentially less optimal trylock.
 
-  drivers/char/drm/ati_pcigart.c    |    8 +-
-  drivers/char/drm/drm.h            |  329 ++++++-----
-  drivers/char/drm/drmP.h           |  349 ++++++------
-  drivers/char/drm/drm_agpsupport.c |  116 ++--
-  drivers/char/drm/drm_auth.c       |   40 +-
-  drivers/char/drm/drm_bufs.c       |  209 ++++----
-  drivers/char/drm/drm_context.c    |   97 ++--
-  drivers/char/drm/drm_dma.c        |   12 +-
-  drivers/char/drm/drm_drawable.c   |   34 +-
-  drivers/char/drm/drm_drv.c        |   76 ++--
-  drivers/char/drm/drm_fops.c       |   68 +--
-  drivers/char/drm/drm_hashtab.c    |   34 +-
-  drivers/char/drm/drm_hashtab.h    |   24 +-
-  drivers/char/drm/drm_ioc32.c      |   82 ++--
-  drivers/char/drm/drm_ioctl.c      |   68 ++-
-  drivers/char/drm/drm_irq.c        |   58 +-
-  drivers/char/drm/drm_lock.c       |   28 +-
-  drivers/char/drm/drm_memory.c     |    8 +-
-  drivers/char/drm/drm_mm.c         |   66 +-
-  drivers/char/drm/drm_os_linux.h   |   22 +-
-  drivers/char/drm/drm_pci.c        |    6 +-
-  drivers/char/drm/drm_proc.c       |   50 +-
-  drivers/char/drm/drm_sarea.h      |   26 +-
-  drivers/char/drm/drm_scatter.c    |   22 +-
-  drivers/char/drm/drm_sman.c       |   93 ++--
-  drivers/char/drm/drm_sman.h       |   50 +-
-  drivers/char/drm/drm_stub.c       |   30 +-
-  drivers/char/drm/drm_sysfs.c      |    4 +-
-  drivers/char/drm/drm_vm.c         |  106 ++--
-  drivers/char/drm/i810_dma.c       |  164 +++---
-  drivers/char/drm/i810_drm.h       |    2 +-
-  drivers/char/drm/i810_drv.h       |   18 +-
-  drivers/char/drm/i830_dma.c       |  157 +++---
-  drivers/char/drm/i830_drm.h       |    2 +-
-  drivers/char/drm/i830_drv.h       |   24 +-
-  drivers/char/drm/i830_irq.c       |   20 +-
-  drivers/char/drm/i915_dma.c       |   44 +-
-  drivers/char/drm/i915_drm.h       |    8 +-
-  drivers/char/drm/i915_drv.h       |   22 +-
-  drivers/char/drm/i915_irq.c       |   28 +-
-  drivers/char/drm/i915_mem.c       |    6 +-
-  drivers/char/drm/mga_dma.c        |   79 ++--
-  drivers/char/drm/mga_drm.h        |    6 +-
-  drivers/char/drm/mga_drv.c        |    4 +-
-  drivers/char/drm/mga_drv.h        |   22 +-
-  drivers/char/drm/mga_irq.c        |   12 +-
-  drivers/char/drm/mga_state.c      |   36 +-
-  drivers/char/drm/r128_cce.c       |   41 +-
-  drivers/char/drm/r128_drm.h       |    4 +-
-  drivers/char/drm/r128_drv.h       |   20 +-
-  drivers/char/drm/r128_irq.c       |   10 +-
-  drivers/char/drm/r128_state.c     |   60 +-
-  drivers/char/drm/r300_cmdbuf.c    |   53 +-
-  drivers/char/drm/r300_reg.h       | 1163 +++++++++++++++++++++----------------
-  drivers/char/drm/radeon_cp.c      |   54 +-
-  drivers/char/drm/radeon_drm.h     |   12 +-
-  drivers/char/drm/radeon_drv.c     |    3 +-
-  drivers/char/drm/radeon_drv.h     |   45 +-
-  drivers/char/drm/radeon_irq.c     |  118 ++++-
-  drivers/char/drm/radeon_state.c   |  108 ++--
-  drivers/char/drm/savage_bci.c     |   44 +-
-  drivers/char/drm/savage_drm.h     |    4 +-
-  drivers/char/drm/savage_drv.h     |   20 +-
-  drivers/char/drm/savage_state.c   |   28 +-
-  drivers/char/drm/sis_drv.c        |    4 +-
-  drivers/char/drm/sis_drv.h        |    9 +-
-  drivers/char/drm/sis_mm.c         |   16 +-
-  drivers/char/drm/via_dma.c        |   10 +-
-  drivers/char/drm/via_dmablit.c    |   20 +-
-  drivers/char/drm/via_dmablit.h    |    2 +-
-  drivers/char/drm/via_drm.h        |    4 +-
-  drivers/char/drm/via_drv.h        |   32 +-
-  drivers/char/drm/via_irq.c        |   12 +-
-  drivers/char/drm/via_map.c        |   10 +-
-  drivers/char/drm/via_mm.c         |    6 +-
-  drivers/char/drm/via_verifier.c   |   12 +-
-  drivers/char/drm/via_verifier.h   |    6 +-
-  77 files changed, 2485 insertions(+), 2214 deletions(-)
+Put all of that under CONFIG_GENERIC_LOCKBREAK, and introduce a
+__raw_spin_is_contended that uses the lock data itself to determine whether
+there are waiters on the lock, to be used if CONFIG_GENERIC_LOCKBREAK is
+not set.
 
-commit ff4135aeb1f9a0201f8e22400ebc1d570df9016e
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Mon Jul 16 13:53:57 2007 +1000
+Rename need_lockbreak to spin_needbreak, make it use spin_is_contended to
+decouple it from the spinlock implementation, and make it typesafe (rwlocks
+do not have any need_lockbreak sites -- why do they even get bloated up
+with that break_lock then?).
 
-     drm: remove core typedefs from the ioc32 wrappers
+After this, we can no longer spin on any locks with preempt enabled
+(unless that is done in arch code), but that (and spinning with
+interrupts enabled) is hackish anyway: if the lock happens to be
+called under a preempt or interrupt disabled section, then it is just
+going to have the same problems. The real fix is to keep critical
+sections short, and introduce fairer locks if there are starvation
+issues.
 
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit bd63cb52c05bbb154f539369cae4fb9c9b6277da
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Thu Jul 12 10:35:02 2007 +1000
-
-     drm: remove sarea typedefs
-
-     Leave the userspace typedefs in place
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit e0be428e6645f2891fab6be92d1b0e9aad972e7d
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Thu Jul 12 10:26:44 2007 +1000
-
-     drm: detypedef the hashtab and more of sman
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 9698b4dba42eb758ad98012c21e5fbdb372fe2d9
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Thu Jul 12 10:21:05 2007 +1000
-
-     drm: de-typedef sman
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 55910517af381eba4f978740e5e46e23eb269326
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 16:53:40 2007 +1000
-
-     drm: detypedeffing continues...
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit cdd55a294c13f8bf05b2f4fee4c96934d5ebd2e4
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 16:32:08 2007 +1000
-
-     drm: detypef waitlist/freelist/buf_entry/device_dma/drm_queue structs
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 8fc2fdf4c9437576f38e97c2f5b700ec77038984
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 16:21:47 2007 +1000
-
-     drm: drop drm_vma_entry_t, drm_magic_entry_t
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 056219e2fa6664ec83bc258ebcf30f1a7919d423
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 16:17:42 2007 +1000
-
-     drm: drop drm_buf_t typedef
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit eddca551a3e7be2fed54282f255f18efe9ead131
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 16:09:54 2007 +1000
-
-     drm: fixup other drivers for typedef removals
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 84b1fd103dbbe01b5905db1444d3fc8afa9a7207
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 15:53:27 2007 +1000
-
-     drm: remove drm_file_t, drm_device_t and drm_head_t typedefs
-
-     some drivers still todo.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit c60ce623bd16137627009d05e311d877729f2ad6
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 15:27:12 2007 +1000
-
-     drm: remove a bunch of typedefs on the userspace interface
-
-     This moves a bunch of typedefs into a !defined __KERNEL__ to keep userspace
-     API compatiblity, it changes all internal usages to structs/enum/unions.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit c6c656b4b6ddfc964f1a43394bf86bc76c5e8119
-Author: Oliver McFadden <z3ro.geek@gmail.com>
-Date:   Wed Jul 11 12:24:10 2007 +1000
-
-     r300: updates register header
-
-     This updates the R300 register names and allows the VAP_PVS_WAITIDLE register
-     to be written.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit ddbee33328dcfb892cd91f2d57a1822f4d6f70d9
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 12:16:01 2007 +1000
-
-     radeon: add support for vblank on crtc2
-
-     This adds support for CRTC2 vblank on radeon similiar to the i915.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 7c158acef8f0e51c3a5f71133aaf402628370a64
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Jul 11 12:05:36 2007 +1000
-
-     drm: cleanup list initialisation
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 6f710105f5a4971078c46ae258cbb76db1ee967a
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Mon May 28 19:41:35 2007 +1000
-
-     drm: fix typo on code drm getsarea
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit da509d7a02cb54938776439edc81f057e39f81e0
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sat May 26 05:04:51 2007 +1000
-
-     drm: remove DRM_GETSAREA and replace with drm_getsarea function
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit bd1b331fae2813d9f03ceee649296f02edc0b893
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sat May 26 05:01:51 2007 +1000
-
-     drm: cleanup use of Linux list handling macros
-
-     This makes the drms use of the list handling macros a lot cleaner
-     and more along the lines of how they should be used and uses them
-     in some more places.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
+---
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -1598,26 +1598,16 @@ extern int cond_resched_softirq(void);
+ 
+ /*
+  * Does a critical section need to be broken due to another
+- * task waiting?:
++ * task waiting?: (technically does not depend on CONFIG_PREEMPT,
++ * but a general need for low latency)
+  */
+-#if defined(CONFIG_PREEMPT) && defined(CONFIG_SMP)
+-# define need_lockbreak(lock) ((lock)->break_lock)
++#ifdef CONFIG_PREEMPT
++# define spin_needbreak(lock)	spin_is_contended(lock)
+ #else
+-# define need_lockbreak(lock) 0
++# define spin_needbreak(lock)	0
+ #endif
+ 
+ /*
+- * Does a critical section need to be broken due to another
+- * task waiting or preemption being signalled:
+- */
+-static inline int lock_need_resched(spinlock_t *lock)
+-{
+-	if (need_lockbreak(lock) || need_resched())
+-		return 1;
+-	return 0;
+-}
+-
+-/*
+  * Reevaluate whether the task has signals pending delivery.
+  * Wake the task if so.
+  * This is required every time the blocked sigset_t changes.
+Index: linux-2.6/include/linux/spinlock.h
+===================================================================
+--- linux-2.6.orig/include/linux/spinlock.h
++++ linux-2.6/include/linux/spinlock.h
+@@ -120,6 +120,12 @@ do {								\
+ 
+ #define spin_is_locked(lock)	__raw_spin_is_locked(&(lock)->raw_lock)
+ 
++#ifdef CONFIG_GENERIC_LOCKBREAK
++#define spin_is_contended(lock) ((lock)->break_lock)
++#else
++#define spin_is_contended(lock)	__raw_spin_is_contended(&(lock)->raw_lock)
++#endif
++
+ /**
+  * spin_unlock_wait - wait until the spinlock gets unlocked
+  * @lock: the spinlock in question.
+Index: linux-2.6/fs/jbd/checkpoint.c
+===================================================================
+--- linux-2.6.orig/fs/jbd/checkpoint.c
++++ linux-2.6/fs/jbd/checkpoint.c
+@@ -347,7 +347,8 @@ restart:
+ 				break;
+ 			}
+ 			retry = __process_buffer(journal, jh, bhs,&batch_count);
+-			if (!retry && lock_need_resched(&journal->j_list_lock)){
++			if (!retry && (need_resched() ||
++				spin_needbreak(&journal->j_list_lock))) {
+ 				spin_unlock(&journal->j_list_lock);
+ 				retry = 1;
+ 				break;
+Index: linux-2.6/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.orig/fs/jbd/commit.c
++++ linux-2.6/fs/jbd/commit.c
+@@ -265,7 +265,7 @@ write_out_data:
+ 			put_bh(bh);
+ 		}
+ 
+-		if (lock_need_resched(&journal->j_list_lock)) {
++		if (need_resched() || spin_needbreak(&journal->j_list_lock)) {
+ 			spin_unlock(&journal->j_list_lock);
+ 			goto write_out_data;
+ 		}
+Index: linux-2.6/fs/jbd2/checkpoint.c
+===================================================================
+--- linux-2.6.orig/fs/jbd2/checkpoint.c
++++ linux-2.6/fs/jbd2/checkpoint.c
+@@ -347,7 +347,8 @@ restart:
+ 				break;
+ 			}
+ 			retry = __process_buffer(journal, jh, bhs,&batch_count);
+-			if (!retry && lock_need_resched(&journal->j_list_lock)){
++			if (!retry && (need_resched() ||
++				spin_needbreak(&journal->j_list_lock))) {
+ 				spin_unlock(&journal->j_list_lock);
+ 				retry = 1;
+ 				break;
+Index: linux-2.6/fs/jbd2/commit.c
+===================================================================
+--- linux-2.6.orig/fs/jbd2/commit.c
++++ linux-2.6/fs/jbd2/commit.c
+@@ -265,7 +265,7 @@ write_out_data:
+ 			put_bh(bh);
+ 		}
+ 
+-		if (lock_need_resched(&journal->j_list_lock)) {
++		if (need_resched() || spin_needbreak(&journal->j_list_lock)) {
+ 			spin_unlock(&journal->j_list_lock);
+ 			goto write_out_data;
+ 		}
+Index: linux-2.6/include/linux/spinlock_up.h
+===================================================================
+--- linux-2.6.orig/include/linux/spinlock_up.h
++++ linux-2.6/include/linux/spinlock_up.h
+@@ -64,6 +64,8 @@ static inline void __raw_spin_unlock(raw
+ # define __raw_spin_trylock(lock)	({ (void)(lock); 1; })
+ #endif /* DEBUG_SPINLOCK */
+ 
++#define __raw_spin_is_contended(lock)	(((void)(lock), 0))
++
+ #define __raw_read_can_lock(lock)	(((void)(lock), 1))
+ #define __raw_write_can_lock(lock)	(((void)(lock), 1))
+ 
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -4805,19 +4805,15 @@ EXPORT_SYMBOL(cond_resched);
+  */
+ int cond_resched_lock(spinlock_t *lock)
+ {
++	int resched = need_resched() && system_state == SYSTEM_RUNNING;
+ 	int ret = 0;
+ 
+-	if (need_lockbreak(lock)) {
++	if (spin_needbreak(lock) || resched) {
+ 		spin_unlock(lock);
+-		cpu_relax();
+-		ret = 1;
+-		spin_lock(lock);
+-	}
+-	if (need_resched() && system_state == SYSTEM_RUNNING) {
+-		spin_release(&lock->dep_map, 1, _THIS_IP_);
+-		_raw_spin_unlock(lock);
+-		preempt_enable_no_resched();
+-		__cond_resched();
++		if (resched && need_resched())
++			__cond_resched();
++		else
++			cpu_relax();
+ 		ret = 1;
+ 		spin_lock(lock);
+ 	}
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c
++++ linux-2.6/mm/memory.c
+@@ -516,8 +516,7 @@ again:
+ 		if (progress >= 32) {
+ 			progress = 0;
+ 			if (need_resched() ||
+-			    need_lockbreak(src_ptl) ||
+-			    need_lockbreak(dst_ptl))
++			    spin_needbreak(src_ptl) || spin_needbreak(dst_ptl))
+ 				break;
+ 		}
+ 		if (pte_none(*src_pte)) {
+@@ -856,7 +855,7 @@ unsigned long unmap_vmas(struct mmu_gath
+ 			tlb_finish_mmu(*tlbp, tlb_start, start);
+ 
+ 			if (need_resched() ||
+-				(i_mmap_lock && need_lockbreak(i_mmap_lock))) {
++				(i_mmap_lock && spin_needbreak(i_mmap_lock))) {
+ 				if (i_mmap_lock) {
+ 					*tlbp = NULL;
+ 					goto out;
+@@ -1838,8 +1837,7 @@ again:
+ 
+ 	restart_addr = zap_page_range(vma, start_addr,
+ 					end_addr - start_addr, details);
+-	need_break = need_resched() ||
+-			need_lockbreak(details->i_mmap_lock);
++	need_break = need_resched() || spin_needbreak(details->i_mmap_lock);
+ 
+ 	if (restart_addr >= end_addr) {
+ 		/* We have now completed this vma: mark it so */
+Index: linux-2.6/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86_64/Kconfig
++++ linux-2.6/arch/x86_64/Kconfig
+@@ -32,6 +32,11 @@ config GENERIC_TIME_VSYSCALL
+ 	bool
+ 	default y
+ 
++config GENERIC_LOCKBREAK
++	bool
++	default y
++	depends on SMP && PREEMPT
++
+ config ZONE_DMA32
+ 	bool
+ 	default y
+Index: linux-2.6/include/linux/spinlock_types.h
+===================================================================
+--- linux-2.6.orig/include/linux/spinlock_types.h
++++ linux-2.6/include/linux/spinlock_types.h
+@@ -19,7 +19,7 @@
+ 
+ typedef struct {
+ 	raw_spinlock_t raw_lock;
+-#if defined(CONFIG_PREEMPT) && defined(CONFIG_SMP)
++#ifdef CONFIG_GENERIC_LOCKBREAK
+ 	unsigned int break_lock;
+ #endif
+ #ifdef CONFIG_DEBUG_SPINLOCK
+@@ -35,7 +35,7 @@ typedef struct {
+ 
+ typedef struct {
+ 	raw_rwlock_t raw_lock;
+-#if defined(CONFIG_PREEMPT) && defined(CONFIG_SMP)
++#ifdef CONFIG_GENERIC_LOCKBREAK
+ 	unsigned int break_lock;
+ #endif
+ #ifdef CONFIG_DEBUG_SPINLOCK
+Index: linux-2.6/kernel/spinlock.c
+===================================================================
+--- linux-2.6.orig/kernel/spinlock.c
++++ linux-2.6/kernel/spinlock.c
+@@ -65,8 +65,7 @@ EXPORT_SYMBOL(_write_trylock);
+  * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
+  * not re-enabled during lock-acquire (which the preempt-spin-ops do):
+  */
+-#if !defined(CONFIG_PREEMPT) || !defined(CONFIG_SMP) || \
+-	defined(CONFIG_DEBUG_LOCK_ALLOC)
++#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
+ 
+ void __lockfunc _read_lock(rwlock_t *lock)
+ {
