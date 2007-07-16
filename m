@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763553AbXGPDSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbXGPDex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763553AbXGPDSB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jul 2007 23:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759297AbXGPDRw
+	id S1763416AbXGPDex (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jul 2007 23:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759459AbXGPDeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jul 2007 23:17:52 -0400
-Received: from mail.cc.com.au ([202.125.40.176]:43012 "EHLO mail.cc.com.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759111AbXGPDRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jul 2007 23:17:51 -0400
-Message-ID: <469AE39D.1080200@mel8ourne.org>
-Date: Mon, 16 Jul 2007 13:18:53 +1000
-From: Peter Lieverdink <peter@mel8ourne.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: linux.conf.au - Friday 20 July  - Call for Presentations
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Jul 2007 23:34:46 -0400
+Received: from www.sysreset.com ([209.97.229.250]:10582 "EHLO sysreset"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759038AbXGPDep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jul 2007 23:34:45 -0400
+X-Greylist: delayed 357 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Jul 2007 23:34:45 EDT
+Message-Id: <6.2.0.14.2.20070715210841.02fcab90@linux.sysreset.com>
+X-Mailer: QUALCOMM Windows Eudora Version 6.2.0.14
+Date: Sun, 15 Jul 2007 21:28:39 -0600
+To: linux-ide@vger.kernel.org
+From: Ryan Power <rpower@sysreset.com>
+Subject: [PATCH 2.6.22.1] libata: Adjust libata to ignore errors after
+  spinup
+Cc: jgarzik@pobox.com, Mark Lord <liml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46982875.60503@rtr.ca>
+References: <6.2.0.14.2.20070713000748.031a2660@linux.sysreset.com>
+ <469775E0.2000609@rtr.ca>
+ <6.2.0.14.2.20070713184231.02db2d20@linux.sysreset.com>
+ <46982875.60503@rtr.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Are you planning on submitting a talk
-or tutorial for linux.conf.au 2008?
+From: Ryan Power <rpower@sysreset.com>
 
-http://linux.conf.au/presentations/announcement
+Adjust libata to ignore errors after spinup
 
-Get your submissions in by Friday 20th July.
+This patch is to ignore errors from the spinup attempt if the drive is
+in the "standby id" state.
 
-And for those of you concerned about the video option - please don't
-worry. It's entirely optional. We are aware that many people don't have
-the means or expertise to make a video and get it online - but for those
-who do, for those who want to, go for it!
+Signed-off-by: Ryan Power <rpower@sysreset.com>
 
-Cheers,
-- P.
--- 
-peter lieverdink                    linux.conf.au
-secretary                           MEL8OURNE2008
-www.mel8ourne.org                   must.be.there
-9662 1CB5 8E54 450D 2E12 9D7E 580E 2519 969F 3F57
+---
+
+Index: drivers.new/ata/libata-core.c
+--- drivers/ata/libata-core.c   2007-07-10 12:56:30.000000000 -0600
++++ drivers.new/ata/libata-core.c       2007-07-15 01:58:49.000000000 -0600
+@@ -1750,7 +1750,7 @@ int ata_dev_read_id(struct ata_device *d
+                 tf.protocol = ATA_PROT_NODATA;
+                 tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
+                 err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, 
+NULL, 0);
+-               if (err_mask) {
++               if (err_mask && id[2] != 0x738c) {
+                         rc = -EIO;
+                         reason = "SPINUP failed";
+                         goto err_out;
+
+
