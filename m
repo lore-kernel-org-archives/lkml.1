@@ -1,50 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765740AbXGPODZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766000AbXGPODn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765740AbXGPODZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbXGPOBg
+	id S1766000AbXGPODn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932276AbXGPOBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:01:36 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2707 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932106AbXGPOBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:01:34 -0400
-Date: Mon, 16 Jul 2007 16:01:17 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: James Bruce <bruce@andrew.cmu.edu>, Thomas Gleixner <tglx@linutronix.de>,
-       Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-In-Reply-To: <20070716134036.GA1533@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707161548000.1817@scrub.home>
-References: <1184302024.6709.11.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184355835.12353.321.camel@chaos>
- <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu>
- <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
- <Pine.LNX.4.64.0707161331570.1817@scrub.home> <20070716121246.GA17880@elte.hu>
- <Pine.LNX.4.64.0707161427100.1817@scrub.home> <20070716134036.GA1533@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 16 Jul 2007 10:01:43 -0400
+Received: from qb-out-0506.google.com ([72.14.204.225]:15344 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932241AbXGPOBm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 10:01:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Oq+SHeJHf+itKzUk4Ha+O7MwmhY2f2k+mk6+X4Pjzbn9TjYz2qsvvaEia2ssUqOm/yjGHzJCFZA5vq72vSb06OviUKbeAiWGagMkrQM4Xh5qKSNI4AW63cVQ6j/U9qrO3pijbxdDbEqggcMjNL0ScxdN/Tj8sYmkS9ZBNs9ITWg=
+Date: Mon, 16 Jul 2007 22:51:38 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 2/10] sysdev: add error check in sysdev_register()
+Message-ID: <20070716135138.GB2040@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+References: <20070716134855.GA1858@APFDCB5C>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070716134855.GA1858@APFDCB5C>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch enables to catch the errors returned by add() procedure of
+sysdev driver in sysdev_register.
 
-On Mon, 16 Jul 2007, Ingo Molnar wrote:
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-> to sum it up: a nice +19 task (the most commonly used nice level in 
-> practice) gets 9.1%, 3.9%, 3.1% of CPU time on the old scheduler, 
-> depending on the value of HZ. This is quite inconsistent and illogical.
+---
+ drivers/base/sys.c |   48 ++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 38 insertions(+), 10 deletions(-)
 
-You're correct that you can find artifacts in the extreme cases, it's 
-subjective whether this is a serious problem.
-It's nice that these artifacts are gone, but that still doesn't explain 
-why this ratio had to be increase that much from around 1:10 to 1:69.
-
-bye, Roman
+Index: 2.6-mm/drivers/base/sys.c
+===================================================================
+--- 2.6-mm.orig/drivers/base/sys.c
++++ 2.6-mm/drivers/base/sys.c
+@@ -220,10 +220,13 @@ EXPORT_SYMBOL_GPL(sysdev_driver_unregist
+  *	@sysdev:	device in question
+  *
+  */
+-int sysdev_register(struct sys_device * sysdev)
++int sysdev_register(struct sys_device *sysdev)
+ {
+ 	int error;
+-	struct sysdev_class * cls = sysdev->cls;
++	struct sysdev_class *cls = sysdev->cls;
++	struct sysdev_driver *drv;
++	int added_sysdev = 0;
++	int added_cls = 0;
+ 
+ 	if (!cls)
+ 		return -EINVAL;
+@@ -244,8 +247,6 @@ int sysdev_register(struct sys_device * 
+ 	error = kobject_register(&sysdev->kobj);
+ 
+ 	if (!error) {
+-		struct sysdev_driver * drv;
+-
+ 		mutex_lock(&sysdev_drivers_lock);
+ 		/* Generic notification is implicit, because it's that
+ 		 * code that should have called us.
+@@ -253,23 +254,50 @@ int sysdev_register(struct sys_device * 
+ 
+ 		/* Notify global drivers */
+ 		list_for_each_entry(drv, &sysdev_drivers, entry) {
+-			if (drv->add)
+-				drv->add(sysdev);
++			if (drv->add) {
++				error = drv->add(sysdev);
++				if (error)
++					goto error_sysdev;
++			}
++			added_sysdev++;
+ 		}
+ 
+ 		/* Notify class auxillary drivers */
+ 		list_for_each_entry(drv, &cls->drivers, entry) {
+-			if (drv->add)
+-				drv->add(sysdev);
++			if (drv->add) {
++				error = drv->add(sysdev);
++				if (error)
++					goto error_cls;
++			}
++			added_cls++;
+ 		}
+ 		mutex_unlock(&sysdev_drivers_lock);
+ 	}
+ 	return error;
++
++error_cls:
++	list_for_each_entry(drv, &cls->drivers, entry) {
++		if (added_sysdev--)
++			break;
++		if (drv->add && drv->remove)
++			drv->remove(sysdev);
++	}
++error_sysdev:
++	list_for_each_entry(drv, &sysdev_drivers, entry) {
++		if (added_cls--)
++			break;
++		if (drv->add && drv->remove)
++			drv->remove(sysdev);
++	}
++	mutex_unlock(&sysdev_drivers_lock);
++	kobject_unregister(&sysdev->kobj);
++
++	return error;
+ }
+ 
+-void sysdev_unregister(struct sys_device * sysdev)
++void sysdev_unregister(struct sys_device *sysdev)
+ {
+-	struct sysdev_driver * drv;
++	struct sysdev_driver *drv;
+ 
+ 	mutex_lock(&sysdev_drivers_lock);
+ 	list_for_each_entry(drv, &sysdev_drivers, entry) {
