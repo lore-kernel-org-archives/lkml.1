@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761862AbXGPJPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbXGPJST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761862AbXGPJPU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXGPJPI
+	id S1761329AbXGPJST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXGPJSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:15:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58638 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754744AbXGPJPG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:15:06 -0400
-Message-ID: <469B3714.80105@zytor.com>
-Date: Mon, 16 Jul 2007 02:15:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 16 Jul 2007 05:18:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54426 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756014AbXGPJSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:18:10 -0400
+Date: Mon, 16 Jul 2007 11:17:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [patch] CFS scheduler, -v19
+Message-ID: <20070716091737.GB5964@elte.hu>
+References: <20070706173319.GA2356@elte.hu> <200707141319.13270.edt@aei.ca>
 MIME-Version: 1.0
-To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: RE : Re: RE : Re: x86 setup code rewrite in C - revised
-References: <217644.17566.qm@web26902.mail.ukl.yahoo.com>
-In-Reply-To: <217644.17566.qm@web26902.mail.ukl.yahoo.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707141319.13270.edt@aei.ca>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Etienne Lorrain wrote:
 
-> BUGS:	some implementations (including the original IBM PC) have a bug which
-> 	  destroys BP
-> 	the Trident TVGA8900CL (BIOS dated 1992/9/8) clears DS to 0000h when
-> 	  scrolling in an SVGA mode (800x600 or higher)
+* Ed Tomlinson <edt@aei.ca> wrote:
 
-"When scrolling in an SVGA mode", sounds to me like a bug when using
-BIOS for text output in graphics mode.  We don't do that.
+> I run a java application at nice 15.  Its been a background 
+> application here for as long as SD and CFS have been around.  If I 
+> have a compile running at nice 0, with v19 java gets so little cpu 
+> that the the wrapper that runs to monitor it is timing out waiting for 
+> it to start.  This is new in v19 - something in v19 is not meshing 
+> well with my mix of applications...
 
->>>>>>  Also, I do not know if "m" is right in here:
->>>>>> static inline u8 rdfs8(addr_t addr)
->>>>>> {
->>>>>> 	u8 v;
->>>>>> 	asm("movb %%fs:%1,%0" : "=r" (v) : "m" (*(u8 *)addr));
->>>>>> 	return v;
->>>>>> }
->>>> The "m" is correct right there.
->>>  strange, "g" would mean anything can go there - and this assembly instruction
->>> should accept every access modes.
->> Not with an %fs: prefix.  It would also allow the compiler to do a move
->> into a register "on its own", which would be disastrous, since it would
->> lack the prefix.  So "m" is correct.
-> 
->   "mov %fs:(%ebx,%eax,4),%ecx" works for me.
+how much longer did the startup of the java app get relative to say v18?
 
-That's an example on what "m" can generate.
+to debug this, could you check whether this problem goes away if you use 
+nice 10 (or nice 5) instead of nice 15?
 
-"g" could produce stuff like:
-
-	mov %fs:$1234,%ecx
-	mov %fs:%eax,%ecx
-
-	-hpa
+	Ingo
