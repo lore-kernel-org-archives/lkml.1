@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765595AbXGPPEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764607AbXGPPFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765595AbXGPPEf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764469AbXGPPDy
+	id S1764607AbXGPPFG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757198AbXGPPEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:03:54 -0400
-Received: from p02c11o142.mxlogic.net ([208.65.144.75]:51823 "EHLO
-	p02c11o142.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762468AbXGPPDw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:03:52 -0400
-X-Greylist: delayed 501 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 11:03:51 EDT
-Date: Mon, 16 Jul 2007 17:55:33 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Shirley Ma <xma@us.ibm.com>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       general@lists.openfabrics.org, general-bounces@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org, Roland Dreier <rdreier@cisco.com>
-Subject: Re: [ofa-general] Re: Further 2.6.23 merge plans...
-Message-ID: <20070716145533.GC4454@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070714175425.GA17597@mellanox.co.il> <OF72F6B9D1.F60C4EEF-ON8725731A.00506757-8825731A.0024BD1C@us.ibm.com>
+	Mon, 16 Jul 2007 11:04:48 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:56380 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762468AbXGPPEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:04:47 -0400
+Message-ID: <469B8909.8030001@dgreaves.com>
+Date: Mon, 16 Jul 2007 16:04:41 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <OF72F6B9D1.F60C4EEF-ON8725731A.00506757-8825731A.0024BD1C@us.ibm.com>
-User-Agent: Mutt/1.5.11
-X-OriginalArrivalTime: 16 Jul 2007 14:57:19.0049 (UTC) FILETIME=[9B39EB90:01C7C7B9]
-X-Spam: [F=0.0100000000; S=0.010(2007062701); SS=0.500]
-X-MAIL-FROM: <mst@dev.mellanox.co.il>
-X-SOURCE-IP: [194.90.237.34]
+To: LinuxKernel@jamesplace.net
+Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: Problem recovering a failed RIAD5 array with 4-drives. --RESOLVED
+References: <200707120849.16068.LinuxKernel@jamesplace.net> <200707121810.57648.LinuxKernel@jamesplace.net> <18070.46997.541325.761868@notabene.brown> <200707121949.08662.LinuxKernel@jamesplace.net>
+In-Reply-To: <200707121949.08662.LinuxKernel@jamesplace.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Shirley Ma <xma@us.ibm.com>:
-> Subject: Re: [ofa-general] Re: Further 2.6.23 merge plans...
+James wrote:
+>>> I don't know the original order of the array before all the problems 
+> started. 
+>>> Is there a way to determine the original order? 
+>> No, unless you have some old kernel logs of the last time it assembled
+>> the array properly.
+>> The one thing that "--create" does destroy is the information about
+>> any previous array that the drives were a part of.
+>>
+>>> The order that --detail is showing now is the order that appeared after 
+>>> issuing the command is it is in the email. (ie: a b c d)
+>> Odd.  I cannot reproduce it.
+>> I suggest you try different arrangements (of the 3 good drives and the
+>> word 'missing') until you find one that 'fsck -n' likes.
+>>
+>> NeilBrown
+>>
+>>
 > 
-> Michael,
+> I don't understand how the order of --detail was different than the command 
+> line on my system, however....
 > 
-> I would like to try this patch for one adapter/2 ports scalability performance
-> for IPoIB. Is this patch appliable to OFED-1.2?
+> YOU ARE A LIFE SAVER!!!
+> 
+> After going through 21 combinations, beginning to lose all hope and plummeting 
+> into eternal despair, combo 22 worked. The array is up and working. All the 
+> data (1.3Tb) is there and I'm probably the happiest character on the mail 
+> list today. 
+> 
+> Thanks a bunch for your help.
 
-Most likely yes.
+Funnily enough someone else was having a similar problem on the linux-raid list 
+at the same time
 
--- 
-MST
+Here's a script that may be useful to others in this predicament - a hell of a 
+lot quicker than doing it by hand...
+
+The 'is the filesystem safe' test probably wants improving from a read-only mount...
+
+http://linux-raid.osdl.org/index.php/RAID_Recovery
+http://linux-raid.osdl.org/index.php/Permute_array.pl
+
+David
