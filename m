@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763449AbXGPLWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764037AbXGPLXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763449AbXGPLWZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 07:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbXGPLWS
+	id S1764037AbXGPLXb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 07:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbXGPLXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 07:22:18 -0400
-Received: from qb-out-0506.google.com ([72.14.204.228]:3436 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754058AbXGPLWR (ORCPT
+	Mon, 16 Jul 2007 07:23:24 -0400
+Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:37337 "EHLO
+	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754058AbXGPLXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 07:22:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=AMlxb7gG3NJ3PmC3akaGCeLe1sHeRr/82gTR7gshAn9yxPGEwt48DvIyuL4Ln0G7kxH3WVXDQQ3bkvFUmala5VFiF+APf4Y9jgXHoRQ1BNET8B/Jkl+Y3f5gSXlgxtz8RSQMmsl4XQSSO78SHet8Cr6fX1LtN5eKCH1VOPJd28s=
-Message-ID: <469B54DE.5090703@gmail.com>
-Date: Mon, 16 Jul 2007 20:22:06 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Kai Makisara <Kai.Makisara@kolumbus.fi>
-CC: Bruce Allen <ballen@gravity.phys.uwm.edu>, Mark Lord <liml@rtr.ca>,
-       David Greaves <david@dgreaves.com>, Douglas Gilbert <dougg@torque.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Dvorak <fermentol@gmail.com>,
-       Klaus Fuerstberger <kfuerstberger@arcor.de>,
-       Bruce Allen <bruce.allen@aei.mpg.de>, Robert Hancock <hancockr@shaw.ca>
-Subject: Re: SMART problems in 2.6.22
-References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local> <Pine.LNX.4.64.0707161327470.4941@kai.makisara.local>
-In-Reply-To: <Pine.LNX.4.64.0707161327470.4941@kai.makisara.local>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Jul 2007 07:23:24 -0400
+X-Greylist: delayed 1419 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 07:23:23 EDT
+Date: Mon, 16 Jul 2007 12:59:42 +0200
+From: Martin Mares <mj@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: torvalds@linux-foundation.org, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [x86 setup 27/33] Video mode probing support for the new x86 setup code
+Message-ID: <mj+md-20070716.105920.26230.nikam@ucw.cz>
+References: <7aca4ce0a222438c94300a2ea535270a21db8812.1184181208.git.hpa@zytor.com> <509992ad2f618e07db2c72a96f8f5d708bfc6991.1184181208.git.hpa@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <509992ad2f618e07db2c72a96f8f5d708bfc6991.1184181208.git.hpa@zytor.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please try the patch in the following message.
+> Video mode probing for the new x86 setup code.  This code breaks down
+> different drivers into modules.  This code deliberately drops support
+> for a lot of the vendor-specific mode probing present in the assembly
+> version, since a lot of those probes have been found to be stale in
+> current versions of those chips -- frequently, support for those modes
+> have been dropped from recent video BIOSes due to space constraints,
+> but the video BIOS signatures are still the same.
 
-http://article.gmane.org/gmane.linux.ide/20799/raw
+Acked-By: Martin Mares <mj@ucw.cz>
 
+				Have a nice fortnight
 -- 
-tejun
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+"It's a lemon tree, my dear Watson." -- Sherlock Holmes (?)
