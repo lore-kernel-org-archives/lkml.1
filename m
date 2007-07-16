@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765036AbXGPPL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765622AbXGPPM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765036AbXGPPL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbXGPPLt
+	id S1765622AbXGPPM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbXGPPMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:11:49 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1420 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756942AbXGPPLs (ORCPT
+	Mon, 16 Jul 2007 11:12:12 -0400
+Received: from cpe-70-113-91-236.austin.res.rr.com ([70.113.91.236]:55100 "EHLO
+	ericvh.homeip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756942AbXGPPML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:11:48 -0400
-Date: Mon, 16 Jul 2007 16:11:45 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Songmao Tian <tiansm@lemote.com>
-cc: LinuxBIOS Mailing List <linuxbios@linuxbios.org>, marc.jones@amd.com,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: about cs5536 interrupt ack
-In-Reply-To: <4695D78F.8010806@lemote.com>
-Message-ID: <Pine.LNX.4.64N.0707161556560.15539@blysk.ds.pg.gda.pl>
-References: <4694A495.1050006@lemote.com> <Pine.LNX.4.64N.0707111347360.26459@blysk.ds.pg.gda.pl>
- <4694F4EB.8040000@lemote.com> <Pine.LNX.4.64N.0707111634430.26459@blysk.ds.pg.gda.pl>
- <4695D78F.8010806@lemote.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 16 Jul 2007 11:12:11 -0400
+X-Greylist: delayed 1473 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 11:12:11 EDT
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Meelis Roos <mroos@linux.ee>, Eric Van Hensbergren <ericvh@gmail.com>
+Subject: [PATCH] 9p: fix debug compilation error
+Date: Mon, 16 Jul 2007 09:47:49 -0500
+Message-Id: <11845972692586-git-send-email-ericvh@gmail.com>
+X-Mailer: git-send-email 1.5.0.2.gfbe3d-dirty
+In-Reply-To: <Pine.SOC.4.64.0707161432480.1471@math.ut.ee>
+References: <Pine.SOC.4.64.0707161432480.1471@math.ut.ee>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007, Songmao Tian wrote:
+From: Meelis Roos <mroos@linux.ee>
 
-> 8259 problem  seems to be done with the attached patch, IDE hung seems to be
-> the dma setting problem.
-> 
-> Thanks all for your advise, comments. I have learned a lot. now I continue to
-> trace down the IDE problem.
+With 9P but no 9P debug options, this error occurs:
+  CC [M]  fs/9p/v9fs.o
+fs/9p/v9fs.c: In function 'v9fs_parse_options':
+fs/9p/v9fs.c:134: error: 'p9_debug_level' undeclared (first use in this function)
 
- I would still recommend you to investigate the option of making the 8259A 
-cores "transparent" and using the mapper registers to dispatch interrupts 
-directly -- it would make processing of interrupt requests considerably 
-faster and less complicated.  Please note that ffs() is O(1) and actually 
-some two or three machine instructions on MIPS architecture processors and 
-the model used by the mapper is closer to the spirit of how MIPS 
-processors do interrupt handling.  With such an approach it will also 
-likely be easier to integrate your changes upstream, than it would for 
-your changes to i8259.{c,h} needed for your unusual setup to work.
+The following patch moves the definition of p9_debug_level out of #ifdef
+and seems to fix the problem.
 
- Of course as an intermediate solution during development to make the 
-whole thing work the complicated use of the 8259A cores may be justified.
+(Original patch took care of the extern definition in the includes, but
+not the actual definition in mod.c - ericvh)
 
-  Maciej
+Signed-off-by: Meelis Roos <mroos@linux.ee>
+Signed-off-by: Eric Van Hensbergren <ericvh@gmail.com>
+---
+ include/net/9p/9p.h |    4 ++--
+ net/9p/mod.c        |    2 --
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/include/net/9p/9p.h b/include/net/9p/9p.h
+index 88884d3..8fc3796 100644
+--- a/include/net/9p/9p.h
++++ b/include/net/9p/9p.h
+@@ -27,6 +27,8 @@
+ #ifndef NET_9P_H
+ #define NET_9P_H
+ 
++extern unsigned int p9_debug_level;
++
+ #ifdef CONFIG_NET_9P_DEBUG
+ 
+ #define P9_DEBUG_ERROR		(1<<0)
+@@ -38,8 +40,6 @@
+ #define P9_DEBUG_SLABS	      	(1<<7)
+ #define P9_DEBUG_FCALL		(1<<8)
+ 
+-extern unsigned int p9_debug_level;
+-
+ #define P9_DPRINTK(level, format, arg...) \
+ do {  \
+ 	if ((p9_debug_level & level) == level) \
+diff --git a/net/9p/mod.c b/net/9p/mod.c
+index 4f9e1d2..951bb1d 100644
+--- a/net/9p/mod.c
++++ b/net/9p/mod.c
+@@ -28,12 +28,10 @@
+ #include <linux/moduleparam.h>
+ #include <net/9p/9p.h>
+ 
+-#ifdef CONFIG_NET_9P_DEBUG
+ unsigned int p9_debug_level = 0;	/* feature-rific global debug level  */
+ EXPORT_SYMBOL(p9_debug_level);
+ module_param_named(debug, p9_debug_level, uint, 0);
+ MODULE_PARM_DESC(debug, "9P debugging level");
+-#endif
+ 
+ extern int p9_mux_global_init(void);
+ extern void p9_mux_global_exit(void);
+-- 
+1.5.0.2.gfbe3d-dirty
+
