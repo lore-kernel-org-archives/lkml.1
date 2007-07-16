@@ -1,140 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbXGPWUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbXGPW1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbXGPWUq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 18:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXGPWUi
+	id S1757991AbXGPW1H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 18:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbXGPW0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 18:20:38 -0400
-Received: from ns1.coraid.com ([65.14.39.133]:27543 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752861AbXGPWUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 18:20:37 -0400
-Date: Mon, 16 Jul 2007 18:17:44 -0400
-From: "Ed L. Cashin" <ecashin@coraid.com>
+	Mon, 16 Jul 2007 18:26:55 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:40755 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbXGPW0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 18:26:54 -0400
+Date: Mon, 16 Jul 2007 15:26:50 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Greg K-H <greg@kroah.com>
-Subject: [PATCH] stacked ifs (was Re: [PATCH 02/12] handle multiple network paths to AoE device)
-Message-ID: <20070716221744.GM18477@coraid.com>
-References: <1d8423c28c48a6d26516cdc707dbcdf015a4e347.1182883861.git.ecashin@coraid.com> <60bd316bfa72fb225cefad39569999e583f4f72e.1182883861.git.ecashin@coraid.com> <20070702212949.5a1a1a31.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, shai@scalex86.org
+Subject: [patch] Change softlockup trigger limit using a kernel parameter
+Message-ID: <20070716222650.GA5947@localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070702212949.5a1a1a31.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11+cvs20060126
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 02, 2007 at 09:29:49PM -0700, Andrew Morton wrote:
-> On Tue, 26 Jun 2007 14:50:10 -0400 "Ed L. Cashin" <ecashin@coraid.com> wrote:
-...
-> > +static struct frame *
-> > +freeframe(struct aoedev *d)
-> >  {
-> > +	struct frame *f, *e;
-> > +	struct aoetgt **t;
-> > +	ulong n;
-> > +
-> > +	if (d->targets[0] == NULL) {	/* shouldn't happen, but I'm paranoid */
-> > +		printk(KERN_ERR "aoe: NULL TARGETS!\n");
-> > +		return NULL;
-> > +	}
-> > +	t = d->targets;
-> > +	do {
-> > +		if (t != d->htgt)
-> > +		if ((*t)->ifp->nd)
-> > +		if ((*t)->nout < (*t)->maxout) {
-> 
-> ugh.  Do this:
-> 
-> 	do {
-> 		if (t == d->htgt)
-> 			continue;
-> 		if (!(*t)->ifp->nd)
-> 			continue;
-> 		if ((*t)->nout >= (*t)->maxout)
-> 			continue;
-> 			
-> 		<stuff>
-> 	} while (++t ...)
+Kernel warns of softlockups if the softlockup thread is not able to run
+on a CPU for 10s.  It is useful to lower the softlockup warning
+threshold in testing environments to catch potential lockups early.
+Following patch adds a kernel parameter 'softlockup_lim' to control
+the softlockup threshold.
 
-Do you think the "stacked ifs" in the first version above could be
-accepted as a convenient extension to the K&R-based conventions in
-Documentation/CodingStyle?  Brian Kerhnighan (the "K" in "K&R") and
-Ken Thompson, were among the UNIX hackers who produced the UNIX v7
-files that have stacked ifs:
+Thanks,
+Kiran
 
-  namei.c, dump.c, iostat.c od.c sa.c, vplot.c, refer/what2.c,
-  sed/sed1.c, tbl/t8.c, chess/{agen, play, stdin}.c
 
-Certainly, Linux isn't UNIX, but stacked ifs needn't be treated as
-foreign.  They're in the K&R tradition that Documentation/CodingStyle
-is based on.
+Control the trigger limit for softlockup warnings.  This is useful for
+debugging softlockups, by lowering the softlockup_lim to identify
+possible softlockups earlier.
 
-Stacked ifs are functionally equivalent to a single if with its
-conditionals joined by "&&".  Once that is retained, they are not at
-all difficult to recognize and understand.  And they have some
-advantages over the single if that uses "&&".
+Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+Signed-off-by: Shai Fultheim <shai@scalex86.org>
 
-When editing code, it is easier to remove conditionals that are no
-longer needed, or to arrange conditionals in a different order.
-Conditional expressions stand out clearly.
-
-When stacked ifs are in use, the resulting patches can be easier to
-read because fewer lines need to change (compared to splitting on the
-&&), and also simply because the text is more regular when it comes to
-parentheses and ampersands.  There is less distracting noise.
-
-Of course, my primary motivation is for us to be able to contribute
-aoe driver patches that use this style, and that would be fantastic,
-but I don't think it is unrealistic to say that the adoption of this
-style would benefit others, helping to make patches easier to review
-in some cases.
-
-Understanding it only takes an understanding of C itself, so the only
-"new" change would be a slight and justifiable loosening of the
-indentation policy.
-
-Signed-off-by: "Ed L. Cashin" <ecashin@coraid.com>
-
----
- Documentation/CodingStyle |   21 +++++++++++++++++++++
- 1 files changed, 21 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-index a667eb1..bb2bb57 100644
---- a/Documentation/CodingStyle
-+++ b/Documentation/CodingStyle
-@@ -94,6 +94,27 @@ void fun(int a, int b, int c)
- 		next_statement;
- }
+Index: linux-2.6.22/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.22.orig/Documentation/kernel-parameters.txt	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.22/Documentation/kernel-parameters.txt	2007-07-16 14:07:34.907116001 -0700
+@@ -1781,6 +1781,10 @@ and is between 256 and 4096 characters. 
  
-+One way to break a long condition in an if statement is to use stacked
-+ifs.  The following code extracts are equivalent, but the version with
-+stacked ifs is easier to read and edit, and it generates more specific
-+patches.
-+
-+	/* version one: stacked ifs */
-+	if (condition)
-+	if (condition2)
-+	if (condition3)
-+	if (condition4)
-+		first_statement;
-+	else
-+		next_statement;
-+
-+	/* version two: logical and */
-+	if (condition1 && condition2 && condition3 && condition4)
-+		first_statement;
-+	else
-+		next_statement;
-+
-+
- 		Chapter 3: Placing Braces and Spaces
+ 	snd-ymfpci=	[HW,ALSA]
  
- The other issue that always comes up in C styling is the placement of
--- 
-1.5.2.1
-
-
--- 
-  Ed L Cashin <ecashin@coraid.com>
++	softlockup_lim=
++			[KNL] Soft lock up tolerance limit in seconds
++			{ 1 - 10 }
++
+ 	sonycd535=	[HW,CD]
+ 			Format: <io>[,<irq>]
+ 
+Index: linux-2.6.22/kernel/softlockup.c
+===================================================================
+--- linux-2.6.22.orig/kernel/softlockup.c	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.22/kernel/softlockup.c	2007-07-11 12:50:05.280460591 -0700
+@@ -21,6 +21,7 @@ static DEFINE_PER_CPU(unsigned long, pri
+ static DEFINE_PER_CPU(struct task_struct *, watchdog_task);
+ 
+ static int did_panic = 0;
++static int softlockup_lim = 10;
+ 
+ static int
+ softlock_panic(struct notifier_block *this, unsigned long event, void *ptr)
+@@ -34,6 +35,20 @@ static struct notifier_block panic_block
+ 	.notifier_call = softlock_panic,
+ };
+ 
++static int __init softlockup_lim_setup(char *str)
++{
++	int lim = simple_strtol(str, NULL, 0);
++	if(lim > 0 && lim <= 10) {
++		softlockup_lim = lim;
++	} else {
++		printk("%s: Invalid softlockup_lim parameter.  ", __func__);
++		printk("Using defaults.\n");
++	}
++	return 1;
++}
++
++__setup("softlockup_lim=", softlockup_lim_setup);
++
+ /*
+  * Returns seconds, approximately.  We don't need nanosecond
+  * resolution, and we don't need to waste time with a big divide when
+@@ -97,7 +112,7 @@ void softlockup_tick(void)
+ 		wake_up_process(per_cpu(watchdog_task, this_cpu));
+ 
+ 	/* Warn about unreasonable 10+ seconds delays: */
+-	if (now > (touch_timestamp + 10)) {
++	if (now > (touch_timestamp + softlockup_lim)) {
+ 		per_cpu(print_timestamp, this_cpu) = touch_timestamp;
+ 
+ 		spin_lock(&print_lock);
