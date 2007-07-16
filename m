@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764601AbXGPNnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764974AbXGPNoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764601AbXGPNnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbXGPNnK
+	id S1764974AbXGPNoK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758177AbXGPNn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:43:10 -0400
-Received: from wp020.webpack.hosteurope.de ([80.237.132.27]:56227 "EHLO
-	wp020.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755404AbXGPNnJ (ORCPT
+	Mon, 16 Jul 2007 09:43:58 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:61835 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759226AbXGPNn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:43:09 -0400
-X-Greylist: delayed 1837 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 09:43:09 EDT
-Message-ID: <469B6EB1.1060201@arcor.de>
-Date: Mon, 16 Jul 2007 15:12:17 +0200
-From: Klaus Fuerstberger <kfuerstberger@arcor.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.0.12) Gecko/20070510 Iceape/1.0.9 (Debian-1.0.9-0etch1)
-MIME-Version: 1.0
-To: Kai Makisara <Kai.Makisara@kolumbus.fi>
-CC: Tejun Heo <htejun@gmail.com>, Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       Mark Lord <liml@rtr.ca>, David Greaves <david@dgreaves.com>,
-       Douglas Gilbert <dougg@torque.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>,
+	Mon, 16 Jul 2007 09:43:56 -0400
+Date: Mon, 16 Jul 2007 15:43:38 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Rene Herman <rene.herman@gmail.com>
+cc: 7eggert@gmx.de, Matt Mackall <mpm@selenic.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Dvorak <fermentol@gmail.com>,
-       Klaus Fuerstberger <kfuerstberger@arcor.de>,
-       Bruce Allen <bruce.allen@aei.mpg.de>, Robert Hancock <hancockr@shaw.ca>
-Subject: Re: SMART problems in 2.6.22
-References: <Pine.LNX.4.63.0707081910050.21572@trinity.phys.uwm.edu> <Pine.LNX.4.64.0707092341280.4779@kai.makisara.local> <Pine.LNX.4.64.0707161327470.4941@kai.makisara.local> <469B54DE.5090703@gmail.com> <Pine.LNX.4.64.0707161453230.5065@kai.makisara.local>
-In-Reply-To: <Pine.LNX.4.64.0707161453230.5065@kai.makisara.local>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;kfuerstberger@arcor.de;1184593389;c0761143;
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+In-Reply-To: <469A5D7C.5010904@gmail.com>
+Message-ID: <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
+References: <8FO1e-2jW-35@gated-at.bofh.it> <8FYWD-2eS-7@gated-at.bofh.it>
+ <8GdsH-8dc-13@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it>
+ <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it>
+ <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
+ <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/86n5uNlMLpLkLEFX5tJYZisTldD0fS+iluDU
+ wrbTI9sOXcZLr2k2jsarrBwRuQDEridGNlIT0jVPbJZGokhMgd
+ nfrZh0HAwBt8BgthjQUJA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kai Makisara said the following on 16.07.2007 13:58:
+On Sun, 15 Jul 2007, Rene Herman wrote:
+> On 07/15/2007 07:17 PM, Bodo Eggert wrote:
+> > Matt Mackall <mpm@selenic.com> wrote:
+> >> On Fri, Jul 13, 2007 at 03:20:54PM +0200, Rene Herman wrote:
 
->> Please try the patch in the following message.
->> http://article.gmane.org/gmane.linux.ide/20799/raw
+> >>> As far as I'm aware, the actual reason for 4K stacks is that after the
+> >>> system has been up and running for some time getting "1 physically
+> >>> contiguous pages" becomes significantly easier than 2 which wouldn't be
+> >>> arbitrary.
+> >> 
+> >> If there are exactly two free pages in the system, the odds of them
+> >> being buddies (ie adjacent AND properly aligned) is quite small. The
+> >> available page pool has to grow quite a bit before the availability of
+> >> order-1 page pairs approaches 100%.
+> > 
+> > If there are exactly two free pages in a system, the odds of starting any
+> > program are not very good. You'll have to swap, and if you do, you can swap
+> > two more pages in order to free enough RAM for the stack.
+> 
+> A thread's kernel stack is a kernel allocation. If you'd fail to allocate it 
+> you'd supposedly _already_ have swapt out everything that could be swapped out.
 
-> This solves the 'smartctl -H' problem both of my systems (one with Nvidia 
-> CK804 and one with MCP51).
+So we are in a desperate situation, we can almost make no progress, adding 
+another task is going to push the system into an unrecoverable situation, 
+and we make sure this task can be started.-)
 
-This patch also solved the problem I reported here:
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=428975
+> Moreoveover -- literally two pages free was hardly his point. The point is 
+> just that (with a page being the allocation unit) single page allocations 
+> are guaranteed to succeed if _any_ memory is free, while two adjacent (yes, 
+> and stacksize aligned) pages will be pretty hard to get by once the system 
+> has been up and running for some time.
 
-Thanks!
+That never happened on my servers, therefore I'd opt for the little extra 
+security of having spare 4k on the stack. (I made a patch which would 
+printk a message if allocating a stack would ever fail).
 
-Bye Klaus
+I'm not at all opposed to letting the guys with zillions of threads 
+benefit from having less unused kernel stack, but unless it's secure for
+all users, it should not be default=y.
+
+-- 
+A beggar walked up to a well-dressed woman shopping on Rodeo
+Drive and said, "I haven't eaten anything for days."
+She looked at him and said, "God, I wish I had your willpower."
