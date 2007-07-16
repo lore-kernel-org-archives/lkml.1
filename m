@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761065AbXGPXOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765418AbXGPXPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761065AbXGPXOI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbXGPXNw
+	id S1765418AbXGPXPi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXGPXP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:13:52 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:60367 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754700AbXGPXNu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:13:50 -0400
-Message-ID: <469BFB73.3070105@gmail.com>
-Date: Tue, 17 Jul 2007 01:12:51 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Mon, 16 Jul 2007 19:15:28 -0400
+Received: from rtr.ca ([64.26.128.89]:1409 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753192AbXGPXP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 19:15:27 -0400
+Message-ID: <469BFC0E.60005@rtr.ca>
+Date: Mon, 16 Jul 2007 19:15:26 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Ray Lee <ray-lk@madrabbit.org>, Bodo Eggert <7eggert@gmx.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com> <Pine.LNX.4.58.0707161523500.25779@be1.lrz> <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org>
-In-Reply-To: <20070716230719.GC11115@waste.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Ryan Power <rpower@sysreset.com>, jgarzik@pobox.com,
+       Tejun Heo <htejun@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.22.1] libata: Adjust libata to ignore errors after
+  spinup
+References: <6.2.0.14.2.20070713000748.031a2660@linux.sysreset.com> <469775E0.2000609@rtr.ca> <6.2.0.14.2.20070713184231.02db2d20@linux.sysreset.com> <46982875.60503@rtr.ca> <6.2.0.14.2.20070715210841.02fcab90@linux.sysreset.com> <469BFA38.1090309@rtr.ca>
+In-Reply-To: <469BFA38.1090309@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/17/2007 01:07 AM, Matt Mackall wrote:
-
-> On Tue, Jul 17, 2007 at 12:55:36AM +0200, Rene Herman wrote:
-
->> I'm still waiting for larger soft-pages... does anyone in this thread
->> have a clue on their status?
+Mark Lord wrote:
+> Ryan Power wrote:
+>> From: Ryan Power <rpower@sysreset.com>
+>>
+>> Adjust libata to ignore errors after spinup
+>>
+>> This patch is to ignore errors from the spinup attempt if the drive is
+>> in the "standby id" state.
 > 
-> Given that most x86 users won't want anything to do with them, it's not
-> going to help us at all here.
+> Jeff / Tejun:  here is Ryan's patch for his WD drive spinup problems.
+> This copy has the pathnames and whitespace repaired.
 
-No idea why not? Is this something you expect, or know, or... ? (and who are 
-users in this context?)
+Mmm.. something weird happened there.
+Here it is again, with corrected whitespace.
 
-Rene.
-
+Signed-off-by: Ryan Power <rpower@sysreset.com>
+Signed-off-by: Mark Lord <mlord@pobox.com>
+---
+Index: linux/drivers/ata/libata-core.c
+--- old/drivers/ata/libata-core.c   2007-07-10 12:56:30.000000000 -0600
++++ linux/drivers/ata/libata-core.c       2007-07-15 01:58:49.000000000 -0600
+@@ -1750,7 +1750,7 @@ int ata_dev_read_id(struct ata_device *d
+		tf.protocol = ATA_PROT_NODATA;
+		tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
+		err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
+-		if (err_mask) {
++		if (err_mask && id[2] != 0x738c) {
+			rc = -EIO;
+			reason = "SPINUP failed";
+			goto err_out;
 
