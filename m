@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763783AbXGPXGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbXGPXHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763783AbXGPXGY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXGPXGQ
+	id S1763648AbXGPXHo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXGPXHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:06:16 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:35894 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753990AbXGPXGP (ORCPT
+	Mon, 16 Jul 2007 19:07:35 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:17971 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754778AbXGPXHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:06:15 -0400
-Message-ID: <469BF9A8.20306@gmail.com>
-Date: Tue, 17 Jul 2007 01:05:12 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Bodo Eggert <7eggert@gmx.de>,
-       Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
+	Mon, 16 Jul 2007 19:07:34 -0400
+Date: Tue, 17 Jul 2007 01:03:07 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it>	 <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>	 <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>	 <469BF104.1040703@gmail.com>	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>	 <20070716235438.1bdd0722@the-village.bc.nu> <2c0942db0707161553u5d55724u82424b3ffbbd79f7@mail.gmail.com>
-In-Reply-To: <2c0942db0707161553u5d55724u82424b3ffbbd79f7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+       geert@linux-m68k.org, zippel@linux-m68k.org, jdike@karaya.com,
+       alan@lxorguk.ukuu.org.uk, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: uninline check_signature()
+Message-ID: <20070716230307.GB12230@osiris.ibm.com>
+References: <200707161802.l6GI2tNp007390@hera.kernel.org> <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org> <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/17/2007 12:53 AM, Ray Lee wrote:
-
-> On 7/16/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
->> Any x86-32 path unsafe with 4K stacks is almost certainly unsafe with 8K
->> stacks because the 8K stacks do not have seperate IRQ stack paths, so you
->> have the same space but split. It might be less predictable on 8K stacks
->> but it isn't absent.
+On Mon, Jul 16, 2007 at 03:35:34PM -0700, Linus Torvalds wrote:
+> On Mon, 16 Jul 2007, Andrew Morton wrote:
+> > 
+> > No, no revert, please.  If the architecture doesn't support readb() then we
+> > need some reliable way of working that out within Kconfig.
 > 
-> Understood, but isn't that an argument pro interrupt stacks, rather
-> than one against 8k? wli has a patch to break out the interrupt stack
-> feature from the 4k/8k choice.
+> Isn't that CONFIG_HAS_IOMEM?
 
-Yes but it's also an argument that the 4K stacks don't make the _current_ 
-situation without CONFIG_4KSTACKS selected worse and given that you trust 
-that current situation, that leaves you without your argument :-)
+That was my understanding as well considering commits  
+5ea8176994003483a18c8fed580901e2125f8a83 and  
+23db764d3db5a4bb1e104ad9310e5dc18e4ffa1b  
+  
+so the patch below should be correct... Geert, Roman?
 
-Rene.
+Subject: [PATCH] Make check_signature() depend on CONFIG_HAS_IOMEM
 
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
+check_signature() uses readb() and therefore should only be build on
+CONFIG_HAS_IOMEM.
+
+Otherwise breaks s390:
+lib/check_signature.c: In function `check_signature':
+lib/check_signature.c:19: error: implicit declaration of function `readb'
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ lib/Makefile |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/lib/Makefile
+===================================================================
+--- linux-2.6.orig/lib/Makefile
++++ linux-2.6/lib/Makefile
+@@ -13,7 +13,7 @@ lib-$(CONFIG_SMP) += cpumask.o
+ lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
+ 
+ obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
+-	 bust_spinlocks.o hexdump.o check_signature.o
++	 bust_spinlocks.o hexdump.o
+ 
+ ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+ CFLAGS_kobject.o += -DDEBUG
+@@ -21,7 +21,7 @@ CFLAGS_kobject_uevent.o += -DDEBUG
+ endif
+ 
+ obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
+-obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
++obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
+ obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
+ obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
+ lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
