@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbXGPJ07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761644AbXGPJ3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762635AbXGPJ07 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 05:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbXGPJ0w
+	id S1761644AbXGPJ3P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 05:29:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXGPJ3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 05:26:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44772 "EHLO mx3.mail.elte.hu"
+	Mon, 16 Jul 2007 05:29:01 -0400
+Received: from il.qumranet.com ([82.166.9.18]:39849 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754978AbXGPJ0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 05:26:51 -0400
-Date: Mon, 16 Jul 2007 11:26:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc][patch 2/2] x86_64: FIFO ticket spinlocks
-Message-ID: <20070716092646.GA18423@elte.hu>
-References: <20070716045932.GA19914@wotan.suse.de> <20070716050134.GB19914@wotan.suse.de>
+	id S1754462AbXGPJ3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 05:29:00 -0400
+Message-ID: <469B3A63.50206@qumranet.com>
+Date: Mon, 16 Jul 2007 12:29:07 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070716050134.GB19914@wotan.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL][RESEND] KVM Updates for 2.6.23-rc1
+References: <11843929041758-git-send-email-avi@qumranet.com> <alpine.LFD.0.999.0707151641560.20061@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707151641560.20061@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> On Sat, 14 Jul 2007, Avi Kivity wrote:
+>   
+>> Linus, please do your usual thing from the repository and branch at
+>>     
+>
+> It has code like
+>
+> 	+       /* Can deadlock when called with interrupts disabled */
+> 	+       WARN_ON(irqs_disabled());
+> 	+
+> 	        /* prevent preemption and reschedule on another processor */
+> 	        int me = get_cpu();
+>
+> which is against the coding conventions (and shouldn't even compile 
+> cleanly - but maybe we don't have the "warn about C99 variable 
+> declarations" thng on?).
+>   
 
-* Nick Piggin <npiggin@suse.de> wrote:
+It's on.  I guess I didn't notice because other changes triggered a 
+recompile of the whole tree.
 
-> [...] trylock is more significantly slower, but they are relatively 
-> rare.
+> Please don't do that.
+>   
 
-trylock is the main thing that the spinlock debugging code uses, and 
-SPINLOCK_DEBUG is frequently enabled by distro kernels. OTOH, the cost 
-looks like to be +5 instructions, right? Still ...
+Fixed and rebased.  I also silenced a few warnings on the UP case by 
+adding a missing #include.  It's at the same place:
 
-	Ingo
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
+
+-- 
+error compiling committee.c: too many arguments to function
+
