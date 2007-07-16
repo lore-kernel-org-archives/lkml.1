@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764974AbXGPNoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764768AbXGPNrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764974AbXGPNoK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758177AbXGPNn6
+	id S1764768AbXGPNrk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbXGPNrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:43:58 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:61835 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759226AbXGPNn4 (ORCPT
+	Mon, 16 Jul 2007 09:47:31 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:47924 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756854AbXGPNra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:43:56 -0400
-Date: Mon, 16 Jul 2007 15:43:38 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Rene Herman <rene.herman@gmail.com>
-cc: 7eggert@gmx.de, Matt Mackall <mpm@selenic.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-In-Reply-To: <469A5D7C.5010904@gmail.com>
-Message-ID: <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8FYWD-2eS-7@gated-at.bofh.it>
- <8GdsH-8dc-13@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it>
- <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it>
- <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
- <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/86n5uNlMLpLkLEFX5tJYZisTldD0fS+iluDU
- wrbTI9sOXcZLr2k2jsarrBwRuQDEridGNlIT0jVPbJZGokhMgd
- nfrZh0HAwBt8BgthjQUJA==
+	Mon, 16 Jul 2007 09:47:30 -0400
+Subject: Re: [patch 5/6] ps3: BD/DVD/CD-ROM Storage Driver
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070716121649.GI5195@kernel.dk>
+References: <20070704132212.726923000@pademelon.sonytel.be>
+	 <Pine.LNX.4.62.0707131541150.18802@pademelon.sonytel.be>
+	 <1184335333.3402.20.camel@localhost.localdomain>
+	 <200707131619.54898.arnd@arndb.de>
+	 <Pine.LNX.4.62.0707131707290.18802@pademelon.sonytel.be>
+	 <1184340528.3402.32.camel@localhost.localdomain>
+	 <Pine.LNX.4.62.0707132212520.23000@chinchilla.sonytel.be>
+	 <Pine.LNX.4.62.0707161338230.1072@pademelon.sonytel.be>
+	 <20070716121649.GI5195@kernel.dk>
+Content-Type: text/plain
+Date: Mon, 16 Jul 2007 08:47:23 -0500
+Message-Id: <1184593643.3447.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Jul 2007, Rene Herman wrote:
-> On 07/15/2007 07:17 PM, Bodo Eggert wrote:
-> > Matt Mackall <mpm@selenic.com> wrote:
-> >> On Fri, Jul 13, 2007 at 03:20:54PM +0200, Rene Herman wrote:
-
-> >>> As far as I'm aware, the actual reason for 4K stacks is that after the
-> >>> system has been up and running for some time getting "1 physically
-> >>> contiguous pages" becomes significantly easier than 2 which wouldn't be
-> >>> arbitrary.
-> >> 
-> >> If there are exactly two free pages in the system, the odds of them
-> >> being buddies (ie adjacent AND properly aligned) is quite small. The
-> >> available page pool has to grow quite a bit before the availability of
-> >> order-1 page pairs approaches 100%.
+On Mon, 2007-07-16 at 14:16 +0200, Jens Axboe wrote:
+> On Mon, Jul 16 2007, Geert Uytterhoeven wrote:
+> > On Fri, 13 Jul 2007, Geert Uytterhoeven wrote:
+> > > Ah, that explains it. flush_dcache_page() is used in some drivers.
+> > > I'll update my patches. Thanks for the comments!
 > > 
-> > If there are exactly two free pages in a system, the odds of starting any
-> > program are not very good. You'll have to swap, and if you do, you can swap
-> > two more pages in order to free enough RAM for the stack.
+> > Does this look OK?
+> >   - Replaced KM_USER0 by KM_IRQ0 (all routines are either called from an
+> >     interrupt handler, from .request_fn (ps3disk), or from .queuecommand
+> >     (ps3rom))
 > 
-> A thread's kernel stack is a kernel allocation. If you'd fail to allocate it 
-> you'd supposedly _already_ have swapt out everything that could be swapped out.
+> That looks good.
+> 
+> >   - Add a call to flush_kernel_dcache_page() in routines that write to buffers
+> 
+> Hmm, I would have thought a flush_dcache_page() would be more
+> appropriate, the backing could be page cache pages.
 
-So we are in a desperate situation, we can almost make no progress, adding 
-another task is going to push the system into an unrecoverable situation, 
-and we make sure this task can be started.-)
+No ... that was the point of flush_kernel_dcache_page().  The page in
+question is page cache backed and contains user mappings.  However, the
+block layer has already done a flush_dcache_page() in get_user_pages()
+and the user shouldn't be touching memory under I/O (unless they want
+self induced aliasing problems) so we're free to assume all the user
+cachelines are purged, hence all we have to do is flush the kernel alias
+to bring the page up to date and make the users see it correctly.
 
-> Moreoveover -- literally two pages free was hardly his point. The point is 
-> just that (with a page being the allocation unit) single page allocations 
-> are guaranteed to succeed if _any_ memory is free, while two adjacent (yes, 
-> and stacksize aligned) pages will be pretty hard to get by once the system 
-> has been up and running for some time.
+James
 
-That never happened on my servers, therefore I'd opt for the little extra 
-security of having spare 4k on the stack. (I made a patch which would 
-printk a message if allocating a stack would ever fail).
 
-I'm not at all opposed to letting the guys with zillions of threads 
-benefit from having less unused kernel stack, but unless it's secure for
-all users, it should not be default=y.
-
--- 
-A beggar walked up to a well-dressed woman shopping on Rodeo
-Drive and said, "I haven't eaten anything for days."
-She looked at him and said, "God, I wish I had your willpower."
