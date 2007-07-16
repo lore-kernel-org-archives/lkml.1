@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763163AbXGPNNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761616AbXGPNXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763163AbXGPNNZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 09:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300AbXGPNNR
+	id S1761616AbXGPNXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 09:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbXGPNXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 09:13:17 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:60704 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755182AbXGPNNQ (ORCPT
+	Mon, 16 Jul 2007 09:23:06 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:39834 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757977AbXGPNXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 09:13:16 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Patches for REALLY TINY 386 kernels
-To: Satyam Sharma <satyam.sharma@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Mon, 16 Jul 2007 15:12:54 +0200
-References: <8HjYY-4Jk-15@gated-at.bofh.it> <8HlxM-7iT-13@gated-at.bofh.it> <8HlxL-7iT-11@gated-at.bofh.it> <8HlHq-7vR-17@gated-at.bofh.it> <8HlHr-7vR-25@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Mon, 16 Jul 2007 09:23:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=d0WNTEng0SMWh9QxjiVbMQRYftVsE5t6Yh86J1ruipgqyHC4cLZ1ruv5u93ZLgoSV6zjM4ezxUE6wv2I04pWJxK/GQYMTdTgzTZ3KSKI0dW7VQvvtwl8oo4F2wdMBlyrOlrgw/Htl6nvxNh6pZNinKQNdemSD42+ounUDo8j+/I=
+Message-ID: <469B712D.80208@googlemail.com>
+Date: Mon, 16 Jul 2007 14:22:53 +0100
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IAQNj-0006hB-2M@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19zlVeu40NOKDoABb0nqnTZM13LL97iHGaBFZt
- stkafoHfJzvY8IN3tlL43f6MZd5Ns7ta2fOq3aWDqbA3LiRPKk
- d5D2oLCylpmPZgq+IkgIg==
+To: linux-kernel@vger.kernel.org
+Subject: try_module_get question
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Robert Beckett <bob.beckett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma <satyam.sharma@gmail.com> wrote:
+Hi all,
 
-[zillions of ways to do -X dontdiff]
+Im a newcomer to kernel development, and have my first question :
 
-> Or just "cp -al" to create multiple trees at (almost) no disk cost
-> that won't interfere with each other in any way, and makes the
-> development process / generating patchsets trifle easier as well ...
+I want to create a small module that simply powers on an FPGA, and 
+powers it off when it is released. Two other modules will then depend on 
+this module and control different devices programmed into the FPGA. So 
+that the shared module does not get removed before any of the device 
+drivers, I want to do a try_module_get from each driver targeting the 
+shared module. What is the easiest way to get a reference to the shared 
+module?
 
-Beware, some editors do edit in-place. If you cp -rs "$PWD"/a b, you'll
-at least spot those files you didn't copy before editing.
--- 
-Top 100 things you don't want the sysadmin to say:
-87. Sorry, the new equipment didn't get budgetted.
+My current thought is to export a function that will return a reference 
+to it (using THIS_MODULE from the shared module). The device driver 
+modules can then try_module_get the returned module. Is this the best 
+way to do this?
 
-Friﬂ, Spammer: sun5@eE.7eggert.dyndns.org po@Tu1.7eggert.dyndns.org
+Is there an alternative way? maybe based on a similar system to the 
+device / driver matching code?
+There seem to be a lot of FAQs online saying that you need to get and 
+put a module before calling any function that may stall for example, but 
+they dont tell you how to get the module reference to use.
+
+Or am I just missing something obvious?
+
+Thanks
+
+Robert Beckett.
