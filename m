@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932895AbXGPOLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765958AbXGPOPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932895AbXGPOLo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765297AbXGPOLQ
+	id S1765958AbXGPOPk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760744AbXGPOPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:11:16 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4939 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764502AbXGPOLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:11:15 -0400
-Date: Mon, 16 Jul 2007 16:11:38 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Jonathan Corbet <corbet@lwn.net>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH/RFC] msleep() with hrtimers
-In-Reply-To: <19044.1184539364@lwn.net>
-Message-ID: <Pine.LNX.4.64.0707161601570.1818@scrub.home>
-References: <19044.1184539364@lwn.net>
+	Mon, 16 Jul 2007 10:15:32 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:41882 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760626AbXGPOPc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 10:15:32 -0400
+Date: Mon, 16 Jul 2007 10:15:30 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+cc: david@lang.hm, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+In-Reply-To: <200707160938.16037.nigel@nigel.suspend2.net>
+Message-ID: <Pine.LNX.4.44L0.0707161013440.3410-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 16 Jul 2007, Nigel Cunningham wrote:
 
-On Sun, 15 Jul 2007, Jonathan Corbet wrote:
-
-> The OLPC folks and I recently discovered something interesting: on a
-> HZ=100 system, a call to msleep(1) will delay for about 20ms.  The
-> combination of jiffies timekeeping and rounding up means that the
-> minimum delay from msleep will be two jiffies, never less.  That led to
-> multi-second delays in a driver which does a bunch of short msleep()
-> calls and, in response, a change to mdelay(), which will come back in
-> something closer to the requested time.
+> > As I understand it, running a different OS between the hibernate and 
+> > the resume would violate the ACPI spec.
 > 
-> Here's another approach: a reimplementation of msleep() and
-> msleep_interruptible() using hrtimers.  On a system without real
-> hrtimers this code will at least drop down to single-jiffy delays much
-> of the time (though not deterministically so).  On my x86_64 system with
-> Thomas's hrtimer/dyntick patch applied, msleep(1) gives almost exactly
-> what was asked for.
+> Well then, I know one or two people who would argue that the ACPI spec is 
+> faulty. :\
 
-BTW there is another thing to consider. If you already run with hrtimer/ 
-dyntick, there is not much reason to keep HZ at 100, so you could just 
-increase HZ to get the same effect.
+It's hard to argue against that.  In fact there are people who would 
+argue that the ACPI spec is incomplete and inconsistent period, 
+regardless of any questions about what happens between hibernate and 
+resume.  :-)
 
-bye, Roman
+Alan Stern
+
