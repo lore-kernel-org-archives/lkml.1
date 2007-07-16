@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765965AbXGPPNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764289AbXGPPRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765965AbXGPPNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbXGPPNG
+	id S1764289AbXGPPRx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbXGPPRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:13:06 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:63439 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760344AbXGPPNF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:13:05 -0400
-Date: Mon, 16 Jul 2007 17:12:34 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 2/10] sysdev: add error check in sysdev_register()
-Message-ID: <20070716171234.2bc31be8@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070716135138.GB2040@APFDCB5C>
-References: <20070716134855.GA1858@APFDCB5C>
-	<20070716135138.GB2040@APFDCB5C>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 16 Jul 2007 11:17:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43256 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755163AbXGPPRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:17:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Hibernation considerations
+Date: Mon, 16 Jul 2007 17:25:15 +0200
+User-Agent: KMail/1.9.5
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, david@lang.hm,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+References: <Pine.LNX.4.44L0.0707161013440.3410-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707161013440.3410-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707161725.16593.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007 22:51:38 +0900,
-Akinobu Mita <akinobu.mita@gmail.com> wrote:
-
-> This patch enables to catch the errors returned by add() procedure of
-> sysdev driver in sysdev_register.
-
-> @@ -253,23 +254,50 @@ int sysdev_register(struct sys_device * 
+On Monday, 16 July 2007 16:15, Alan Stern wrote:
+> On Mon, 16 Jul 2007, Nigel Cunningham wrote:
 > 
->  		/* Notify global drivers */
->  		list_for_each_entry(drv, &sysdev_drivers, entry) {
-> -			if (drv->add)
-> -				drv->add(sysdev);
-> +			if (drv->add) {
-> +				error = drv->add(sysdev);
-> +				if (error)
-> +					goto error_sysdev;
-> +			}
-> +			added_sysdev++;
->  		}
+> > > As I understand it, running a different OS between the hibernate and 
+> > > the resume would violate the ACPI spec.
+> > 
+> > Well then, I know one or two people who would argue that the ACPI spec is 
+> > faulty. :\
+> 
+> It's hard to argue against that.  In fact there are people who would 
+> argue that the ACPI spec is incomplete and inconsistent period, 
+> regardless of any questions about what happens between hibernate and 
+> resume.  :-)
 
-This looks asymmetric to me. Imagine we have a device/driver
-combination for which drv->add will return -ESOMEERROR. Now, it depends
-on the order:
+That's true, but OTOH it's difficult to argue with my notebook's firmware
+about that. ;-)
 
-1. The device is registered when the driver is already registered:
-registration of the device will fail.
+Greetings,
+Rafael
 
-2. The driver is registered when the device is already registered:
-driver registration will succeed, and the device will stay registered.
 
-I'm not sure if that is what we really want.
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
