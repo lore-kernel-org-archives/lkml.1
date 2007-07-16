@@ -1,200 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759841AbXGPFBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbXGPFDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759841AbXGPFBn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 01:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXGPFBg
+	id S1758819AbXGPFDR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 01:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbXGPFDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 01:01:36 -0400
-Received: from ns1.suse.de ([195.135.220.2]:45096 "EHLO mx1.suse.de"
+	Mon, 16 Jul 2007 01:03:07 -0400
+Received: from mga02.intel.com ([134.134.136.20]:56157 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbXGPFBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 01:01:35 -0400
-Date: Mon, 16 Jul 2007 07:01:34 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [rfc][patch 2/2] x86_64: FIFO ticket spinlocks
-Message-ID: <20070716050134.GB19914@wotan.suse.de>
-References: <20070716045932.GA19914@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070716045932.GA19914@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+	id S1751250AbXGPFDG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 01:03:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,540,1175497200"; 
+   d="scan'208";a="266653909"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for  2.6.22
+Date: Sun, 15 Jul 2007 22:03:02 -0700
+Message-ID: <5FD5754DDBA0B1499B5A0B4BB54194850164B27C@fmsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070715234543.GN3565@stusta.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for  2.6.22
+Thread-Index: AcfHOlvXkbl099b0RKm1/xPcnr45qQAIC9Hw
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Cc: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 16 Jul 2007 05:03:04.0411 (UTC) FILETIME=[9767EAB0:01C7C766]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Introduce ticket lock spinlocks for x86-64 which are FIFO. The implementation
-is described in the comments. The straight-line lock/unlock instruction
-sequence is slightly slower than the dec based locks on modern x86 CPUs,
-however the difference is quite small on Core2 and Opteron when working out of
-cache, and becomes almost insignificant even on P4 when the lock misses cache.
-trylock is more significantly slower, but they are relatively rare.
 
-The memory ordering of the lock does conform to Intel's standards, and the
-implementation has been reviewed by an Intel engineer.
+> -----Original Message-----
+> From: Adrian Bunk [mailto:bunk@stusta.de]
+> Sent: Sunday, July 15, 2007 4:46 PM
+> To: Li, Tong N
+> Cc: Giuseppe Bilotta; linux-kernel@vger.kernel.org
+> Subject: Re: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for 2.6.22
+> 
+> On Sun, Jul 15, 2007 at 10:47:51AM -0700, Li, Tong N wrote:
+> > > On Thursday 12 July 2007 00:17, Al Boldi wrote:
+> > >
+> > > > Peter Williams wrote:
+> > > >>
+> > > >> Probably the last one now that CFS is in the main line :-(.
+> > > >
+> > > > What do you mean?  A pluggable scheduler framework is
+indispensible
+> > even
+> > > in
+> > > > the presence of CFS or SD.
+> > >
+> > > Indeed, and I hope it gets merged, giving people the chance to
+test
+> > out
+> > > different schedulers easily, without having to do patching,
+> > de-patching,
+> > > re-patching and blah blah blah.
+> > >
+> >
+> > Yes, such a framework would be invaluable, especially given that
+> > scheduling often has conflicting goals and different workloads have
+> > different requirements. No single solution fits all.
+> >...
+> 
+> Having a framework for giving people the choice between different
+> solutions usually sounds good in theory, but in practice there's the
+> often underestimated high price of people using a different solution
+> instead of reporting a problem with one solution or people adding
+> features to only one of the solutions resulting in different solutions
+> having different features and bugs instead of one solution with all
+> features and bug fixes.
+> 
+> So you should give a good technical explanation why it's not
+technically
+> possible or not desirable for one solution to work well for everyone.
 
-XXX: numbers here
+There are various metrics a scheduler may want to optimize for, such as
+throughput, response time, power consumption, fairness, and so on. Each
+of these may also be defined differently in different environments. Take
+fairness as an example. People have traditionally talked about it in
+terms of CPU time. Now it'd also make sense to talk about scheduling
+that enables fair usage of other types of resources, such as shared
+caches. Different metrics may require different scheduling policies.
+Plus, many metrics may in fact conflict, e.g., a scheduling policy
+optimized for throughput may not be power efficient. As a result, Linux,
+and all general-purpose OSes, strive to achieve a balance, but it's
+conceivable that different hardware platforms and different application
+workloads may want to have different scheduling policies to meet their
+own needs.
 
-The algorithm also tells us how many CPUs are contending the lock, so
-lockbreak becomes trivial and we no longer waste 4 bytes per spinlock for it.
+Given that the scheduling policies can be diverse, the mechanisms to
+enforce them can also be different. The per-cpu runqueue model may be
+best for many scenarios, some scheduling policies (like many real-time
+ones) might want global knowledge about all tasks in the system and thus
+prefer a global task queue at the cost of being less scalable and
+cache-efficient. HPC systems may also want to gang-schedule. And, in
+terms of implementation, O(1) might be desirable for large-scale MP
+systems while O(log N) might be good enough for small systems. These are
+just examples that indicate the scheduler data structures, algorithms,
+and implementation can have a variety of possibilities in different
+usage models. A single scheduler that is easily extensible for
+incorporating different policies would be ideal, but IMO this is not yet
+the case and may not even be possible. Therefore, I think having a
+framework that enables multiple schedulers to co-exist would be
+invaluable and PlugSched seems to be one good step towards this.
 
----
-Index: linux-2.6/include/asm-x86_64/spinlock.h
-===================================================================
---- linux-2.6.orig/include/asm-x86_64/spinlock.h
-+++ linux-2.6/include/asm-x86_64/spinlock.h
-@@ -19,67 +19,81 @@
- 
- static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
- {
--	return *(volatile signed int *)(&(lock)->slock) <= 0;
-+	int tmp = *(volatile signed int *)(&(lock)->slock);
-+
-+	return (((tmp >> 8) & 0xff) != (tmp & 0xff));
- }
- 
--static inline void __raw_spin_lock(raw_spinlock_t *lock)
-+static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
- {
--	asm volatile(
--		"\n1:\t"
--		LOCK_PREFIX " ; decl %0\n\t"
--		"jns 2f\n"
--		"3:\n"
--		"rep;nop\n\t"
--		"cmpl $0,%0\n\t"
--		"jle 3b\n\t"
--		"jmp 1b\n"
--		"2:\t" : "=m" (lock->slock) : : "memory");
-+	int tmp = *(volatile signed int *)(&(lock)->slock);
-+
-+	return (((tmp >> 8) & 0xff) - (tmp & 0xff)) > 1;
- }
- 
--/*
-- * Same as __raw_spin_lock, but reenable interrupts during spinning.
-- */
--#ifndef CONFIG_PROVE_LOCKING
--static inline void __raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
-+static inline void __raw_spin_lock(raw_spinlock_t *lock)
- {
--	asm volatile(
--		"\n1:\t"
--		LOCK_PREFIX " ; decl %0\n\t"
--		"jns 5f\n"
--		"testl $0x200, %1\n\t"	/* interrupts were disabled? */
--		"jz 4f\n\t"
--	        "sti\n"
--		"3:\t"
--		"rep;nop\n\t"
--		"cmpl $0, %0\n\t"
--		"jle 3b\n\t"
--		"cli\n\t"
-+	short inc = 0x0100;
-+
-+	/*
-+	 * Ticket locks are conceptually two bytes, one indicating the current
-+	 * head of the queue, and the other indicating the current tail. The
-+	 * lock is acquired by atomically noting the tail and incrementing it
-+	 * by one (thus adding ourself to the queue and noting our position),
-+	 * then waiting until the head becomes equal to the the initial value
-+	 * of the tail.
-+	 *
-+	 * This uses a 16-bit xadd to increment the tail and also load the
-+	 * position of the head, which takes care of memory ordering issues
-+	 * and should be optimal for the uncontended case. Note the tail must
-+	 * be in the high byte, otherwise the 16-bit wide increment of the low
-+	 * byte would carry up and contaminate the high byte.
-+	 */
-+
-+	__asm__ __volatile__ (
-+		LOCK_PREFIX "xaddw %w0, %1\n"
-+		"1:\t"
-+		"cmpb %h0, %b0\n\t"
-+		"je 2f\n\t"
-+		"rep ; nop\n\t"
-+		"movb %1, %b0\n\t"
-+		"lfence\n\t"
- 		"jmp 1b\n"
--		"4:\t"
--		"rep;nop\n\t"
--		"cmpl $0, %0\n\t"
--		"jg 1b\n\t"
--		"jmp 4b\n"
--		"5:\n\t"
--		: "+m" (lock->slock) : "r" ((unsigned)flags) : "memory");
-+		"2:"
-+		:"+Q" (inc), "+m" (lock->slock)
-+		:
-+		:"memory", "cc");
- }
--#endif
-+
-+#define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
- 
- static inline int __raw_spin_trylock(raw_spinlock_t *lock)
- {
--	int oldval;
-+	short tmp;
-+        short oldval;
- 
- 	asm volatile(
--		"xchgl %0,%1"
--		:"=q" (oldval), "=m" (lock->slock)
--		:"0" (0) : "memory");
-+                "movw %2,%w0\n\t"
-+                "cmpb %h0, %b0\n\t"
-+                "jne 1f\n\t"
-+                "movw %w0,%w1\n\t"
-+                "incb %h1\n\t"
-+                LOCK_PREFIX "cmpxchgw %w1,%2\n\t"
-+                "1:"
-+                :"=a" (oldval), "=Q" (tmp), "+m" (lock->slock)
-+                :
-+		: "memory", "cc");
- 
--	return oldval > 0;
-+	return ((oldval & 0xff) == ((oldval >> 8) & 0xff));
- }
- 
- static inline void __raw_spin_unlock(raw_spinlock_t *lock)
- {
--	asm volatile("movl $1,%0" :"=m" (lock->slock) :: "memory");
-+	__asm__ __volatile__(
-+		"incb %0"
-+		:"+m" (lock->slock)
-+		:
-+		:"memory", "cc");
- }
- 
- static inline void __raw_spin_unlock_wait(raw_spinlock_t *lock)
-Index: linux-2.6/include/asm-x86_64/spinlock_types.h
-===================================================================
---- linux-2.6.orig/include/asm-x86_64/spinlock_types.h
-+++ linux-2.6/include/asm-x86_64/spinlock_types.h
-@@ -9,7 +9,7 @@ typedef struct {
- 	unsigned int slock;
- } raw_spinlock_t;
- 
--#define __RAW_SPIN_LOCK_UNLOCKED	{ 1 }
-+#define __RAW_SPIN_LOCK_UNLOCKED	{ 0 }
- 
- typedef struct {
- 	unsigned int lock;
-Index: linux-2.6/arch/x86_64/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86_64/Kconfig
-+++ linux-2.6/arch/x86_64/Kconfig
-@@ -34,8 +34,7 @@ config GENERIC_TIME_VSYSCALL
- 
- config GENERIC_LOCKBREAK
- 	bool
--	default y
--	depends on SMP && PREEMPT
-+	default n
- 
- config ZONE_DMA32
- 	bool
+  tong
