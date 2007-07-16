@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764364AbXGPRWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765964AbXGPRX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764364AbXGPRWv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 13:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbXGPRWj
+	id S1765964AbXGPRX6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 13:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbXGPRXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 13:22:39 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:52374 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754582AbXGPRWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 13:22:38 -0400
-Date: Mon, 16 Jul 2007 12:22:36 -0500
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] crash in 2.6.22-git2 sysctl_set_parent()
-Message-ID: <20070716172236.GA5771@austin.ibm.com>
-References: <20070713200515.GS5549@austin.ibm.com> <m13azreqtr.fsf@ebiederm.dsl.xmission.com>
+	Mon, 16 Jul 2007 13:23:50 -0400
+Received: from [212.12.190.32] ([212.12.190.32]:32992 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751984AbXGPRXt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 13:23:49 -0400
+X-Greylist: delayed 10848 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 13:23:47 EDT
+From: Al Boldi <a1426z@gawab.com>
+To: =?utf-8?q?J=C3=B6rn=20Engel?= <joern@logfs.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Subject: Re: Hardlink Pitfalls (was: Patches for REALLY TINY 386 kernels)
+Date: Mon, 16 Jul 2007 20:23:04 +0300
+User-Agent: KMail/1.5
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200707161722.53203.a1426z@gawab.com> <a781481a0707160944h2f991739p69058208cdf13f76@mail.gmail.com> <20070716165312.GA32647@lazybastard.org>
+In-Reply-To: <20070716165312.GA32647@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <m13azreqtr.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+Message-Id: <200707162023.04646.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 07:06:56PM -0600, Eric W. Biederman wrote:
-> >  			.data		= &ipv4_devconf.loop,
-> >  			.maxlen		= sizeof(int),
-> >  			.mode		= 0644,
-> > +			.child	= 0x0,
-> >  			.proc_handler	= &proc_dointvec,
-> >  		},
-> Where did this entry above in devinet_sysctl come from?
+Jörn Engel wrote:
+> On Mon, 16 July 2007 22:14:41 +0530, Satyam Sharma wrote:
+> > On 7/16/07, Al Boldi <a1426z@gawab.com> wrote:
+> > >Satyam Sharma wrote:
+> > >> Or just "cp -al" to create multiple trees at (almost) no disk cost
+> > >> that won't interfere with each other in any way, and makes the
+> > >> development process / generating patchsets trifle easier as well ...
+> > >
+> > >That would be correct if hardlinks would actually do a CoW on modify,
+> > >instead
+> > >of misleading the user into thinking he is modifying an independent
+> > > file.
+> >
+> > "patch" already handles this correctly ... and
+> > backupcopy=auto,breakhardlink in vim (and something similar in other
+> > editors I presume)
+>
+> Yet even a single program failing to break the link will leave you with
+> a mess to sort out.
 
-My bad.
-I habitually apply the "send-to-self" patch, since some of the 
-network testing that I do is easiest if I load up the all of the 
-adapters in the same box. (If you're not familiar with this patch ... 
-its great, and I wish it was integratedd into mainline. It allows
-one to drive network traffic through the physical devices, even
-if they are in the same box.  Without it, the network stack is
-too clever, and won't allow you to do this.)
+No kidding!
 
-> > +		{
-> > +			.ctl_name	= 0,
-> > +			.procname	= 0,
-> > +		},
-> I probably would have just done:
-> +		{},
+> The only place that can ensure to always break the
+> link is the kernel.  Which is why I wrote the cowlink patches some years
+> back.
 
-Yes, in retrospect, this would have been the simplest solution.
+Can you post a patch against 2.6.22?
 
-> What added the additional entry to devinet_root_dir?  I don't see that
-> in Linus' tree?
-> 
-> The result may be fine but if it isn't named in a per network device
-> manner we are adding duplicate entries to the root /proc/sys directory
-> which is wrong.
-> 
-> Actually come to think of it I am concerned that someone added a
-> settable entry into /proc/sys/ it should at least be in /proc/sys/net/
-> where it won't conflict with other uses of that directory.  Especially
-> as things like network devices have user controlled names.
+> The still need a lot of love to be merge-ready.  But I do use them on a
+> daily basis.
 
-Sigh. Silly me. Haste makes waste.
+Well, if the patch is lean and optional and runtime configurable, then they 
+should definitely be considered for inclusion.
 
---linas
+
+Thanks!
+
+--
+Al
 
