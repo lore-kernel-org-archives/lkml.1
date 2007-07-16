@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765259AbXGPPXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762695AbXGPP3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765259AbXGPPXS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbXGPPXJ
+	id S1762695AbXGPP3j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbXGPP3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:23:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35354 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759598AbXGPPXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:23:08 -0400
-Date: Mon, 16 Jul 2007 11:23:03 -0400
-From: Dave Jones <davej@redhat.com>
-To: jgarzik@pobox.com
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Correct comment in libata-sff.c
-Message-ID: <20070716152303.GA13788@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, jgarzik@pobox.com,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 16 Jul 2007 11:29:31 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:44760 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754331AbXGPP3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:29:30 -0400
+Date: Mon, 16 Jul 2007 17:29:45 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 3/10] sysfs: fix error handling in create_files()
+Message-ID: <20070716172945.54e07c3c@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070716135230.GC2040@APFDCB5C>
+References: <20070716134855.GA1858@APFDCB5C>
+	<20070716135230.GC2040@APFDCB5C>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The filename in the file header is incorrect.
+On Mon, 16 Jul 2007 22:52:30 +0900,
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+> Current error handling in create_files() attempts to remove
+> all attributes passed by argument by remove_files(). But it should
+> only remove the attributes that have been successfully added.
 
---- linux-2.6.22.noarch/drivers/ata/libata-sff.c~	2007-07-16 11:21:37.000000000 -0400
-+++ linux-2.6.22.noarch/drivers/ata/libata-sff.c	2007-07-16 11:21:46.000000000 -0400
-@@ -1,5 +1,5 @@
- /*
-- *  libata-bmdma.c - helper library for PCI IDE BMDMA
-+ *  libata-sff.c - helper library for PCI IDE BMDMA
-  *
-  *  Maintained by:  Jeff Garzik <jgarzik@pobox.com>
-  *    		    Please ALWAYS copy linux-ide@vger.kernel.org
-
-
--- 
-http://www.codemonkey.org.uk
+While this is certainly cleaner, a question out of curiousity: Does
+this fix any problem you saw? sysfs_hash_and_remove() used to be safe
+on non-existing attributes...
