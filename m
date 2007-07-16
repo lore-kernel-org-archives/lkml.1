@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759121AbXGPLjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761515AbXGPLl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759121AbXGPLjf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 07:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbXGPLj1
+	id S1761515AbXGPLl6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 07:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbXGPLlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 07:39:27 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4627 "EHLO scrub.xs4all.nl"
+	Mon, 16 Jul 2007 07:41:51 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:36493 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468AbXGPLj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 07:39:26 -0400
-Date: Mon, 16 Jul 2007 13:39:48 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Jonathan Corbet <corbet@lwn.net>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH/RFC] msleep() with hrtimers
-In-Reply-To: <19044.1184539364@lwn.net>
-Message-ID: <Pine.LNX.4.64.0707161325040.1818@scrub.home>
-References: <19044.1184539364@lwn.net>
+	id S1753468AbXGPLlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 07:41:51 -0400
+Date: Mon, 16 Jul 2007 14:41:48 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+cc: ericvh@gmail.com
+Subject: 9P compile fix
+Message-ID: <Pine.SOC.4.64.0707161432480.1471@math.ut.ee>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+With 9P but no 9P debug options, this error occurs:
+  CC [M]  fs/9p/v9fs.o
+fs/9p/v9fs.c: In function 'v9fs_parse_options':
+fs/9p/v9fs.c:134: error: 'p9_debug_level' undeclared (first use in this function)
 
-On Sun, 15 Jul 2007, Jonathan Corbet wrote:
+The following patch moves the definition of p9_debug_level out of #ifdef 
+and seems to fix the compilation.
 
-> Here's another approach: a reimplementation of msleep() and
-> msleep_interruptible() using hrtimers.  On a system without real
-> hrtimers this code will at least drop down to single-jiffy delays much
-> of the time (though not deterministically so).  On my x86_64 system with
-> Thomas's hrtimer/dyntick patch applied, msleep(1) gives almost exactly
-> what was asked for.
+Signed-off-by: Meelis Roos <mroos@linux.ee>
 
-One possible problem here is that setting up that timer can be 
-considerably more expensive, for a relative timer you have to read the 
-current time, which can be quite expensive (e.g. your machine now uses the 
-PIT timer, because TSC was deemed unstable).
-One question here would be, is it really a problem to sleep a little more?
-Another possibility would be to add another sleep function, which uses 
-hrtimer and could also take ktime argument.
+diff --git a/include/net/9p/9p.h b/include/net/9p/9p.h
+index 88884d3..8fc3796 100644
+--- a/include/net/9p/9p.h
++++ b/include/net/9p/9p.h
+@@ -27,6 +27,8 @@
+ #ifndef NET_9P_H
+ #define NET_9P_H
+ 
++extern unsigned int p9_debug_level;
++
+ #ifdef CONFIG_NET_9P_DEBUG
+ 
+ #define P9_DEBUG_ERROR		(1<<0)
+@@ -38,8 +40,6 @@
+ #define P9_DEBUG_SLABS	      	(1<<7)
+ #define P9_DEBUG_FCALL		(1<<8)
+ 
+-extern unsigned int p9_debug_level;
+-
+ #define P9_DPRINTK(level, format, arg...) \
+ do {  \
+ 	if ((p9_debug_level & level) == level) \
 
-bye, Roman
+-- 
+Meelis Roos (mroos@linux.ee)
