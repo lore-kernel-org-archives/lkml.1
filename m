@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764967AbXGPOql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764182AbXGPOth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764967AbXGPOql (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 10:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759759AbXGPOqd
+	id S1764182AbXGPOth (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 10:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759290AbXGPOta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 10:46:33 -0400
-Received: from fep07.mfe.bur.connect.com.au ([203.63.86.27]:45949 "EHLO
-	fep07.mfe.bur.connect.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760152AbXGPOqc (ORCPT
+	Mon, 16 Jul 2007 10:49:30 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:9757 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758126AbXGPOt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 10:46:32 -0400
-Message-ID: <469B83FD.8080409@murdoch.edu.au>
-Date: Mon, 16 Jul 2007 22:43:09 +0800
-From: "Z. Cliffe Schreuders" <c.schreuders@murdoch.edu.au>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 16 Jul 2007 10:49:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dGRhE2FMQ8tesXkN5RN13zZL6am3N906wGqeTu+83H+4Y6QADcFuYDwrGatRxWQhUT1eNyBPjBB4DObmlbNHt8ZO3/ye7hSSLq5dgso1JxpwcDtBrkaRh0NVbQYMvfmylhlnxGZzIR4GGGgt/1c7fAoFgufIkcX9AkdHIzwCu8I=
+Message-ID: <d120d5000707160749r1084ab4ex8d2c4e89e6134d41@mail.gmail.com>
+Date: Mon, 16 Jul 2007 10:49:28 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Christoph Pfister" <christophpfister@gmail.com>
+Subject: Re: keyboard stopped working after de9ce703c6b807b1dfef5942df4f2fadd0fdb67a
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200707132304.30795.christophpfister@gmail.com>
 MIME-Version: 1.0
-To: casey@schaufler-ca.com
-CC: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
-Subject: Re: Including STRTOK_R in a LSM
-References: <214530.36096.qm@web36609.mail.mud.yahoo.com>
-In-Reply-To: <214530.36096.qm@web36609.mail.mud.yahoo.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707132249.26106.christophpfister@gmail.com>
+	 <200707132304.30795.christophpfister@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> --- "Z. Cliffe Schreuders" <c.schreuders@murdoch.edu.au> wrote:
->
->   
->> What I need is to ignore double delimiters such as (::). This can be 
->> done trivially with a string comparison to check for "\0". What I want 
->> to know is if it is ok to include the strtok_r code in my security 
->> module, or if strtok was removed for a very good reason. I am porting a 
->> lot of existing code which already uses strtok_r to a kernel security 
->> module.
->>     
->
-> All over the Linux world little red flags are popping up.
->
-> Text processing of the sort that requires token parsing is rare
-> in the kinds of things the kernel is usually called upon to do.
-> You did mention, and someone else demonstrated, that there are
-> existing alternatives that you could adopt. Cluttering the kernel
-> with duplicate functionality is strongly discouraged.
->   
-Thanks Casey,
+Hi Christoph,
 
-I plan to pass simple lines of policy from user-space into kernel 
-functions which use this information to build the internal 
-representation of policy.
-I had started writing these functions in user-space (to save time :\) 
-and stupidly did not check that strtok_r was available from within the 
-kernel (I thought string.h would include it). Anyway, so now I have a 
-rewrite on my hands (unless I just include the strtok_r code). All part 
-of the learning process I guess.
-> As far as porting existing code into the kernel goes, be sure to
-> have a look at the official coding style before you show what you've
-> done to anyone. 
-Will do.
-> If you're porting "a lot" of code (Use SELinux as a
-> benchmark for an LSM. If you're bigger than that you have "a lot"
-> of code) you may also be putting too much into the kernel. 
-It is not a lot in comparison to SELinux.
+On 7/13/07, Christoph Pfister <christophpfister@gmail.com> wrote:
+> Am Freitag, 13. Juli 2007 22:49 schrieb Christoph Pfister:
+> > Hi,
+> >
+> > After a kernel update I recognised that my keyboard sometimes didn't work
+> > after booting up. I found out that the issue appeared quite reliably after
+> > a cold reboot and not pressing any key (for example not selecting stuff at
+> > the bootloader) till the machine fully booted up.
+> > Because git head (4eb6bf6bfb580afaf1e1a1d30cba17a078530cf4) didn't solve
+> > the problem I did a bisect and your commit was found to be the culprit (the
+> > second last build succeeded 5 of 5 times during my tests and the last build
+> > failed 2 of 3 times).
+> >
+> > Can anybody please shade light on this?
+> >
+> > Thanks,
+> >
+> > Christoph
+>
+> Forgot to mention dmesg: "input: AT Translated Set 2 keyboard
+> as /class/input/input0" is shown in both (working / failing) cases (no
+> additional / related lines nearby).
+>
 
-Thanks,
+Could you please boot with "i8042.debug log_buf_len=131072" and send
+me full dmesg?
 
-Cliffe.
+Thanks!
+
+-- 
+Dmitry
