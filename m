@@ -1,63 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764769AbXGPXmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbXGPXpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764769AbXGPXmq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGPXmj
+	id S1758820AbXGPXpb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbXGPXpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:42:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:54848 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750832AbXGPXmi (ORCPT
+	Mon, 16 Jul 2007 19:45:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:59152 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751459AbXGPXpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:42:38 -0400
-Date: Tue, 17 Jul 2007 01:42:20 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: Ray Lee <ray-lk@madrabbit.org>, Rene Herman <rene.herman@gmail.com>,
-       Bodo Eggert <7eggert@gmx.de>, Matt Mackall <mpm@selenic.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-In-Reply-To: <9a8748490707161554j1fa7625fq1f1cb7e6aa359715@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0707170134390.29868@be1.lrz>
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8Gj55-hJ-5@gated-at.bofh.it> 
- <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it> 
- <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz>  <469A5D7C.5010904@gmail.com>
-  <Pine.LNX.4.58.0707161523500.25779@be1.lrz>  <469BF104.1040703@gmail.com>
-  <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
- <9a8748490707161554j1fa7625fq1f1cb7e6aa359715@mail.gmail.com>
+	Mon, 16 Jul 2007 19:45:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=sxm5ezw51V0oB9IK7eHegOKIGvhxCW/eIduoHbvlmqalTLvrzTes1FuPl0ooscfUqnUT/SYyk6ASozpwbSzk/4M1P5Y/e+LlcBumIGc6dOOJM+2Kui2ARDHLr64nbwRbuSPDiquTtqusk0vBcNV+9jmjngSPuk2sacyNauvSqRc=
+Message-ID: <469C02E1.7010308@googlemail.com>
+Date: Tue, 17 Jul 2007 01:44:33 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/7W93IKSmkguvZOowsElWm4DZKx+l1U2+Eyt6
- poWWIHopzdco65v5G61TOXqMGU/cdVJ1SjUTNG+/ExqhxO4Jex
- hXRnLDk9lIBfMbua9E6kQ==
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: trivial@kernel.org
+Subject: [PATCH] Typo fixes errror -> error
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Jesper Juhl wrote:
+Typo fixes errror -> error
 
-> Please note that I was not trying to remove the 8K stack option right
-> now - heck, I didn't even add anything to feature-removal-schedule.txt
-> - all I wanted to accomplish with the patch that started this threas
-> was;  a) indicate that the 4K option is no longer a debug thing  and
 
-Very ACK.
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
 
-> b) make 4K stacks the default option in vanilla kernel.org kernels as
-> a gentle nudge towards getting people to start fixing the code paths
-> that are not 4K stack safe.
+---
 
-That's the big NACK. It's OK for MM, where things are supposed to be in a 
-not well-tested state, but for running possibly mission-critical systems,
-you should take no risk.
+ drivers/infiniband/hw/ehca/ehca_irq.c |    2 +-
+ drivers/net/skfp/pmf.c                |    2 +-
+ drivers/net/via-velocity.c            |    2 +-
+ drivers/s390/block/dasd_eckd.c        |    4 ++--
+ security/selinux/ss/services.c        |    2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
 
-If you'd run a 4K stack on the NFS+XFS+LVM+dmcrypt+MD+somethingmore 
-setup driving your loved one's life support, you may go ahead.
--- 
-I'm a member of DNA (National Assocciation of Dyslexics).
-	-- Storm in <5Z4Z7.52353$4x4.6445347@news2-win.server.ntlworld.com>
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index 96eba38..533d7c4 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -116,7 +116,7 @@ static void print_error_data(struct ehca_shca * shca, void* data,
+ 	}
+ 	default:
+ 		ehca_err(&shca->ib_device,
+-			 "Unknown errror type: %lx on %s.",
++			 "Unknown error type: %lx on %s.",
+ 			 type, shca->ib_device.name);
+ 		break;
+ 	}
+diff --git a/drivers/net/skfp/pmf.c b/drivers/net/skfp/pmf.c
+index efc639c..ea85de9 100644
+--- a/drivers/net/skfp/pmf.c
++++ b/drivers/net/skfp/pmf.c
+@@ -575,7 +575,7 @@ void smt_add_para(struct s_smc *smc, struct s_pcon *pcon, u_short para,
+ 	int		sp_len ;
+ 
+ 	/*
+-	 * skip if errror
++	 * skip if error
+ 	 */
+ 	if (pcon->pc_err)
+ 		return ;
+diff --git a/drivers/net/via-velocity.c b/drivers/net/via-velocity.c
+index f331843..93574ad 100644
+--- a/drivers/net/via-velocity.c
++++ b/drivers/net/via-velocity.c
+@@ -1613,7 +1613,7 @@ static void velocity_error(struct velocity_info *vptr, int status)
+ 	if (status & ISR_TXSTLI) {
+ 		struct mac_regs __iomem * regs = vptr->mac_regs;
+ 
+-		printk(KERN_ERR "TD structure errror TDindex=%hx\n", readw(&regs->TDIdx[0]));
++		printk(KERN_ERR "TD structure error TDindex=%hx\n", readw(&regs->TDIdx[0]));
+ 		BYTE_REG_BITS_ON(TXESR_TDSTR, &regs->TXESR);
+ 		writew(TRDCSR_RUN, &regs->TDCSRClr);
+ 		netif_stop_queue(vptr->dev);
+diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
+index 418b4e6..ea63ba7 100644
+--- a/drivers/s390/block/dasd_eckd.c
++++ b/drivers/s390/block/dasd_eckd.c
+@@ -555,7 +555,7 @@ dasd_eckd_read_conf(struct dasd_device *device)
+ 			if (conf_data == NULL) {
+ 				MESSAGE(KERN_WARNING, "%s", "No configuration "
+ 					"data retrieved");
+-				continue;	/* no errror */
++				continue;	/* no error */
+ 			}
+ 			if (conf_len != sizeof (struct dasd_eckd_confdata)) {
+ 				MESSAGE(KERN_WARNING,
+@@ -564,7 +564,7 @@ dasd_eckd_read_conf(struct dasd_device *device)
+ 					conf_len,
+ 					sizeof (struct dasd_eckd_confdata));
+ 				kfree(conf_data);
+-				continue;	/* no errror */
++				continue;	/* no error */
+ 			}
+ 			/* save first valid configuration data */
+ 			if (!conf_data_saved){
+diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
+index b5f017f..b2c5b34 100644
+--- a/security/selinux/ss/services.c
++++ b/security/selinux/ss/services.c
+@@ -792,7 +792,7 @@ int security_context_to_sid(char *scontext, u32 scontext_len, u32 *sid)
+  * @scontext: security context
+  * @scontext_len: length in bytes
+  * @sid: security identifier, SID
+- * @def_sid: default SID to assign on errror
++ * @def_sid: default SID to assign on error
+  *
+  * Obtains a SID associated with the security context that
+  * has the string representation specified by @scontext.
+
