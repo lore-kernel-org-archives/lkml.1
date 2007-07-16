@@ -1,111 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764249AbXGPPcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761989AbXGPPma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764249AbXGPPcz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 11:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbXGPPcs
+	id S1761989AbXGPPma (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 11:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbXGPPmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 11:32:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43322 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754331AbXGPPcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 11:32:47 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Mon, 16 Jul 2007 17:40:25 +0200
-User-Agent: KMail/1.9.5
-Cc: david@lang.hm, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707161417.50166.rjw@sisk.pl> <1184596950.24143.28.camel@caritas-dev.intel.com>
-In-Reply-To: <1184596950.24143.28.camel@caritas-dev.intel.com>
+	Mon, 16 Jul 2007 11:42:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:48923 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754331AbXGPPmS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 11:42:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=fQnMT3OlDjbMWpMMHDdjfFoAYTM7j/2WVWI9B5aedGFoY8rgRJMwlCb9QFzM5x9G/IPysR1MdtIG1I/TWOXwkhmSloCHRQHQAAJ01O5KWJE6GXGaCadbxqWtP2opUxha7/TH1MmdtI54Pot+e10KvVgqp7CpUtB0LRu51oIipBo=
+Message-ID: <469B91A7.909@googlemail.com>
+Date: Mon, 16 Jul 2007 17:41:27 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, htejun@gmail.com, gregkh@suse.de
+Subject: Re: Oops while modprobing phy fixed module
+References: <4698BF14.10807@googlemail.com>	 <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>	 <469A5C94.7030201@googlemail.com>	 <a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>	 <469A9D5D.10509@googlemail.com> <469B61C8.8010902@googlemail.com> <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
+In-Reply-To: <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707161740.26703.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 16 July 2007 16:42, Huang, Ying wrote:
-> On Mon, 2007-07-16 at 14:17 +0200, Rafael J. Wysocki wrote:
-> > > is this  a matter of running some test to find out, or is this a question 
-> > > for the kexec implemantors?
-> > 
-> > Actually, I'd like someone to tell me. ;-)
-> > 
-> > I've browsed the kexec code, but haven't found anything related to the devices
-> > in it.  Perhaps I didn't know where to look ...
-> 
-> There are two stages for kexec. For "normal" kexec, first the
-> sys_kexe_load is called to load the kernel image, then
-> sys_reboot(LINUX_REBOOT_CMD_KEXEC) is called to boot the new kernel.
+Satyam Sharma wrote:
+> Hi Gabriel,
+>
+> On 7/16/07, Gabriel C <nix.or.die@googlemail.com> wrote:
+>
+>   
+>> ( http://194.231.229.228/Oops.txt )
+>>     
+>
+>   
+>> I cannot reproduce this on plain 2.6.22 so I've started to bisect the
+>> problem.
+>>     
+>
+> Could you reproduce this oops at will at the "bad" points? [ Note that
+> git-bisect isn't quite applicable to bugs that are not 100% reproducible.
+> The ones that passed as "good" may have passed only because the
+> bug didn't get triggered on that particular test. Also, a perfectly good
+> commit could get unnecessarily marked "bad" because the bug
+> happened to get triggered for it ... so it's not quite trust-worthy for
+> your case. ]
+>   
 
-OK, thanks.  This is the information that I was missing.
+Yes all marked 'bad' ponts have the Oops , at least here.
 
-> The call chain is as follow:
-> 
-> sys_reboot(LINUX_REBOOT_CMD_KEXEC)
->     kernel_kexec
->         kernel_restart_prepare
->             device_shutdown
->         machine_shutdown
->         machine_kexec
-> 
-> In device_shutdown, the dev->bus->shutdown or dev->driver->shutdown of
-> every device is called to put device in quiescent state. In
-> machine_kexec, the new kernel is booted.
+>   
+>> Here the bisect result:
+>>
+>> 3007e997de91ec59af39a3f9c91595b31ae6e08b is first bad commit
+>> commit 3007e997de91ec59af39a3f9c91595b31ae6e08b
+>> Author: Tejun Heo <htejun@gmail.com>
+>> Date:   Thu Jun 14 04:27:23 2007 +0900
+>>
+>>     sysfs: use sysfs_mutex to protect the sysfs_dirent tree
+>>
+>>     As kobj sysfs dentries and inodes are gonna be made reclaimable,
+>>     i_mutex can't be used to protect sysfs_dirent tree.  Use sysfs_mutex
+>>     globally instead.  As the whole tree is protected with sysfs_mutex,
+>>     there is no reason to keep sysfs_rename_sem.  Drop it.
+>>
+>>     While at it, add docbook comments to functions which require
+>>     sysfs_mutex locking.
+>>
+>>     Signed-off-by: Tejun Heo <htejun@gmail.com>
+>>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>>
+>> :040000 040000 9deba7887752bc343cc4f5dea2dac70e895ea8b6
+>> 75340b6e18c1ada500bb1a2b99ee88fd93ebae8c M      fs
+>>     
+>
+> Hmm, I don't see why this one could introduce an oops in SLUB,
+> but it's doing some locking-related stuff, and if it didn't get it right,
+> the resulting races /could/ lead to some oops. But ... a recently
+> posted patch (http://lkml.org/lkml/2007/7/16/204) from Akinobu
+> Mita does point to an oops that was introduced by commit
+> 0c096b507f15397da890051ee73de4266d3941fb that belongs to the
+> same patchset -- kmem_cache_free(NULL) is illegal and so will oops.
+> A curious coincidence is that you do see sysfs_new_dirent() in the
+> stack trace there, but the oops there is in kmem_cache_free(), not
+> kmem_cache_zalloc() as your dmesg output indicated.
+>
+> Try that patch anyway, but I don't think that'll solve your problem --
+> if it was, you would've been seeing "unable to handle kernel NULL
+> pointer dereference" but what you've been posting is "unable to
+> handle kernel paging request at virtual address <non_null_ptr>" ...
+>   
 
-Yes.
+I will try this patch and look whatever it helps.
 
-> So, for normal kexec, there is no code path for device state saving and
-> restoring.
+> Gaah.
+>
+> And the worst thing about it all is that we're not able to trigger the
+> oops with debugging options -- that backtrace is horrible, so I'd
+> suggest CONFIG_FRAME_POINTER, at the very least. And also
+> perhaps DEBUG_INFO while we're at it -- that'll make later
+> analysis easier, if nothing else.
+>   
 
-Exactly.
+I will enable DEBUG option and reproduce in a bit.
 
-> State of device can be restore after shutdown? I don't think so.
+> [ BTW I couldn't even get my compiler to generate the same
+> "Code:" as we saw in your dmesg (I suspect all the oopsen
+> have occurred with DEBUG=n, yes?) so my earlier analysis
+> that suspected SLUB's page->lockless_freelist in slab_alloc()
+> as the source of that invalid kernel address was actually
+> based on some human-work rather than simple tools doing
+> their thing. Gaah, again! ]
+>   
 
-No, it can't, but we need something like this for hibernation and
-device_shutdown() is not appropriate for this purpose IMO.
+My original report ( also first Oops posted here ) was with DEBUG_KERNEL=y
+but as I said I will reproduce in a bit with all the DEBUG options you
+suggested.
 
-> > I think that the right approach is to separate devices' suspend from the
-> > devices' hibernation-related operations FIRST.  Then, many different approaches
-> > to hibernation will be much easier to implement than they are now.
-> > 
-> > I've been saying this for weeks now, but no one seems to listen frankly I'm
-> > tired of repeating it:
-> 
-> I agree with you on this. :)
+Shall I enable DEBUG_PAGEALLOC too ?
 
-OK :-)
+> I'm thoroughly mystified ... Christoph? Tejun? Someone?
+>
+> Satyam
+>
+>   
 
-> > If we want to improve things, let's do that IN AN ORDERED WAY.  If everyone
-> > will come up with a new idea every two days, we won't be able to get anything
-> > actually _done_.
-> 
-> Yes, and I am very glad to collaborate with everybody who is interested
-> in this subject. But I think we should try to verify our idea with code
-> as early as possible. Now, I am trying to implement a prototype of
-> kexec/kdump based image writing/reading mechanism to verify the
-> feasibility. (I suppose you are working on separating device suspend and
-> device hibernate).
+Gabriel
 
-Yes, I am.
-
-> What do you think about the pattern of collaboration?
-
-Sounds good.
-
-> At last, thank you very much for your valuable reminding in the mail of
-> "hibernation considerations".
-
-You're welcome. :-)
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
