@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbXGPXjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761403AbXGPXkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758460AbXGPXjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 19:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbXGPXjJ
+	id S1761403AbXGPXkO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 19:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGPXj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 19:39:09 -0400
-Received: from waste.org ([66.93.16.53]:48445 "EHLO waste.org"
+	Mon, 16 Jul 2007 19:39:59 -0400
+Received: from main.gmane.org ([80.91.229.2]:51823 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751452AbXGPXjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 19:39:07 -0400
-Date: Mon, 16 Jul 2007 18:38:50 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
+	id S1750881AbXGPXj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 19:39:58 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
 Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Message-ID: <20070716233849.GE11115@waste.org>
-References: <200707111916.35036.jesper.juhl@gmail.com> <2c0942db0707112159v3ee2cd83i74759c7138e273f7@mail.gmail.com> <9a8748490707121324q3b3e6e65ye14ab8e7f089d999@mail.gmail.com> <4696C89E.4010002@goop.org> <9a8748490707121925w5fb22c0o61068f06d66d5845@mail.gmail.com> <4696FC43.3000201@goop.org> <46977C36.8010403@gmail.com> <20070714191737.GA11166@waste.org> <46994BE3.7010608@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46994BE3.7010608@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Date: Tue, 17 Jul 2007 00:39:48 +0100
+Message-ID: <yw1xr6n76hq3.fsf@thrashbarg.mansr.com>
+References: <8FO1e-2jW-35@gated-at.bofh.it> <8FYWD-2eS-7@gated-at.bofh.it> <8GdsH-8dc-13@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it> <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it> <E1  <469BF104.1040703@gmail.com> <1184628395.8707.15.camel@segv.aura.of.mankind>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: agrajag.inprovide.com
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (Double Solitaire, linux)
+Cancel-Lock: sha1:Ux66Lg73z71SBWrLc4NKsPkA/PM=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 15, 2007 at 12:19:15AM +0200, Rene Herman wrote:
-> On 07/14/2007 09:17 PM, Matt Mackall wrote:
-> 
-> >On Fri, Jul 13, 2007 at 03:20:54PM +0200, Rene Herman wrote:
-> 
-> >>As far as I'm aware, the actual reason for 4K stacks is that after the 
-> >>system has been up and running for some time getting "1 physically 
-> >>contiguous pages" becomes significantly easier than 2 which wouldn't be 
-> >>arbitrary.
-> >
-> >If there are exactly two free pages in the system, the odds of them
-> >being buddies (ie adjacent AND properly aligned) is quite small. The
-> >available page pool has to grow quite a bit before the availability of
-> >order-1 page pairs approaches 100%. 
-> >
-> >So if we fail to allocate an 8k stack when we could have allocated a
-> >4k stack, we're almost certainly failing significantly prematurely.
-> 
-> Quite. Ofcourse, saying "our stacks are 1 page" would be the by far easiest 
-> solution to that. Personally, I've been running with 4K stacks exclusively 
-> on a variety of machines for quite some time now, but I can't say I'm all 
-> too adventurous with respect to filesystems (especially) so I'm not sure 
-> how many problems remain with 4K stacks. I did recently see Andrew Morton 
-> say that problems _do_ still exist. If it's just XFS -- well, heck...
+utz lehmann <lkml123@s2y4n2c.de> writes:
 
-One long-standing problem is DM/LVM. That -may- be fixed now, but I
-suspect issues remain.
- 
-> >As I've pointed out before, it's fairly easy to make our stack
-> >growable with a trampoline in the troublesome paths. Something like:
-> >
-> >int growstack(int headroom, int func, void *data)
-> >{
-> >	void *new_stack;
-> >	int ret;
-> >
-> >	if (likely(available_stack() > headroom))
-> >		return func(data);
-> >
-> >#ifdef CONFIG_GROWSTACK_STATS
-> >	/* gather statistics about stack-heavy paths */
-> >#endif
-> >	/* warn/abort if we're recursing too deeply */
-> >
-> >	new_stack = get_free_page();
-> >	switch_to_new_stack(new_stack);
-> >	ret = func(data);
-> >	cleanup_stack(new_stack);
-> >	return ret;
-> >}
-> 
-> This would also need something to tell func() where its current_thread_info 
->  is now at.
+> On Tue, 2007-07-17 at 00:28 +0200, Rene Herman wrote:
+>> Given that as Arjan stated Fedora and even RHEL have been using 4K
+>> stacks for some time now, and certainly the latter being a
+>> distribution which I would expect to both host a relatively large
+>> number of lvm/md/xfs and what stackeaters have you users and to be
+>> fairly conservative with respect to the chances of scribbling over
+>> kernel memory (I'm a trusting person...) it seems there might at
+>> this stage only be very few offenders left.
+>
+> I have to recompile the fedora kernel rpms (fc6, f7) with 8k stacks on
+> my i686 server. It's using NFS -> XFS -> DM -> MD (raid1) -> IDE disks.
+> With 4k stacks it crash (hang) within minutes after using NFS.
+> With 8k stacks it's rock solid. No crashes within months.
 
-That'd be handled in the usual way by switch_to_new_stack. That is,
-we'd store the location of the old stack at the top of the new stack
-and then literally change everything to point to the new stack.
+Running either vanilla or Gentoo kernels, I've had no luck at all with
+4k stacks.  On SATA+MD(raid1)+LVM+XFS I've had numerous crashes when
+doing even light I/O.  One particularly crash-prone scenario is
+writing to random locations in sparse files, thus forcing new blocks
+to be allocated.
 
-> Which might not be much of a problem. Can't think of much else 
-> either but it's the kind of thing you'd _like_ to be a problem just to have 
-> an excuse to shoot down an icky notion like that...
-
-It's not any ickier than explicitly calling schedule().
-
-> Would you intend this just as a "make this path work until we fix it 
-> properly" kind of thing?
-
-Maybe.
+I don't have dedicated testing machines, so I can't afford the time
+and potential data loss of testing this regularly.  I have no shortage
+on RAM with 8k stacks, so for me the choice is quite simple.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Måns Rullgård
+mans@mansr.com
+
