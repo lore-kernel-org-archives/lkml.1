@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762840AbXGPMgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763860AbXGPMiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762840AbXGPMgp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 08:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbXGPMgf
+	id S1763860AbXGPMiO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 08:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbXGPMiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 08:36:35 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:37318 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754985AbXGPMge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 08:36:34 -0400
-Date: Mon, 16 Jul 2007 18:06:33 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
-       Bernhard Walle <bwalle@suse.de>, Dan Aloni <da-x@monatomic.org>
-Subject: Re: Determine version of kernel that produced vmcore
-Message-ID: <20070716123633.GA10920@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070710120243.GA10121@hmsendeavour.rdu.redhat.com> <20070713200533oomichi@mail.jp.nec.com> <20070713131550.GB10985@suse.de> <20070716041918.GA11390@in.ibm.com> <20070716115707.GA29923@suse.de> <20070716122518.GA10506@in.ibm.com> <20070716122854.GC32519@suse.de>
-Mime-Version: 1.0
+	Mon, 16 Jul 2007 08:38:00 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:13870 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751990AbXGPMh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 08:37:59 -0400
+Date: Mon, 16 Jul 2007 14:37:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] splice: fix wrong __splice_from_pipe() usage
+Message-ID: <20070716123716.GK5195@kernel.dk>
+References: <877ip1qj29.fsf@duaron.myhome.or.jp> <20070716063435.GG5328@kernel.dk> <87odiczkky.fsf@duaron.myhome.or.jp> <20070716111528.GD5195@kernel.dk> <87hco4v847.fsf@duaron.myhome.or.jp>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070716122854.GC32519@suse.de>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <87hco4v847.fsf@duaron.myhome.or.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 02:28:54PM +0200, Bernhard Walle wrote:
-> * Vivek Goyal <vgoyal@in.ibm.com> [2007-07-16 14:25]:
-> > 
-> > Ok. Now there seems to be two ways for accessing such info.
-> > - Through global variables
-> > - Export through ELF notes.
-> > 
-> > Personally, I like the approach taken by Dan Aloni of exporting required
-> > info through ELF notes. That seems to be more standard in the sense we 
-> > are not dependent on somebody removing above variable tomorrow.
-> > 
-> > Dan, are you planning to put the modified patch for discussions on LKML?
+On Mon, Jul 16 2007, OGAWA Hirofumi wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
 > 
-> You mean the proposal with the makedumpfile-compatible ELF note?
-> Although I like that idea, I think Ken'ichi Ohmichi was against it.
+> >> nfsd_vfs_read() path.
+> >> 
+> >> nfsd_vfs_read()
+> >>     splice_direct_to_actor()
+> >>         while(len) {
+> >>             do_splice_to()                     [update sd->pos]
+> >>                 -> generic_file_splice_read()  [read from sd->pos]
+> >>             nfsd_direct_splice_actor()
+> >>                 -> __splice_from_pipe()        [update sd->pos]
+> >>         }
+> >> 
+> >> do_splice_to() updates sd->pos for read, and pass updated sd to
+> >> __splice_from_pipe(), and __splice_from_pipe() updates sd->pos for
+> >> write. So, next do_splice_to() read from wrong position.
+> >
+> > Ah, I see. Copying the structure over would work, but it seems like a
+> > big work-around for something that is essentially bad behaviour in the
+> > splice core for direct splicing.
+> >
+> > Can you check if this works for you?
 > 
+> Simple test was done. The patch works for me.
 
-Yes, makedumpfile compatible ELF note one. Ken'ichi did not like the idea
-too much, but I am not sure we discussed his objections in detail. I had
-also responded with a mail with some of the advantages of ELF note based
-approach. No response on that.
+Great, thanks a lot for retesting. I'll get the patch upstream asap.
 
-Thanks
-Vivek
+-- 
+Jens Axboe
+
