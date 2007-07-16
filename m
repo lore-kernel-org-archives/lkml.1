@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762805AbXGPGj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbXGPGm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762805AbXGPGj4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 02:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbXGPGjq
+	id S1762921AbXGPGm6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 02:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXGPGmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 02:39:46 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49145 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752218AbXGPGjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 02:39:46 -0400
-Date: Mon, 16 Jul 2007 07:34:32 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: Richard Hughes <hughsient@gmail.com>
-Cc: Alexey Starikovskiy <aystarik@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
-       Zhang Rui <rui.zhang@intel.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] the scheduled ACPI_PROCFS removal
-Message-ID: <20070716053432.GA20102@suse.de>
-References: <20070709145755.GD3492@stusta.de> <20070709174544.2a6b7067@the-village.bc.nu> <Pine.LNX.4.64.0707092044520.2887@fbirervta.pbzchgretzou.qr> <46951969.4030109@tmr.com> <4695BCEA.4060108@gmail.com> <1184231897.2380.2.camel@work>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1184231897.2380.2.camel@work>
-X-Operating-System: openSUSE 10.3 (i586) Alpha5plus, Kernel 2.6.22-2-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+	Mon, 16 Jul 2007 02:42:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41683 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752496AbXGPGmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 02:42:51 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+xzhsmZ0Cx7qsD7nuRDuuVDT7RBVueXKeCvZ0Unk
+	h/5f0cteJW6bVK
+Subject: Re: [patch] CFS scheduler, -v19
+From: Mike Galbraith <efault@gmx.de>
+To: Markus <lists4me@web.de>
+Cc: Ed Tomlinson <edt@aei.ca>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+In-Reply-To: <200707152311.05286.lists4me@web.de>
+References: <20070706173319.GA2356@elte.hu>
+	 <200707151453.57725.lists4me@web.de>
+	 <1184528791.6324.41.camel@Homer.simpson.net>
+	 <200707152311.05286.lists4me@web.de>
+Content-Type: text/plain
+Date: Mon, 16 Jul 2007 08:42:45 +0200
+Message-Id: <1184568165.6317.63.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 12, 2007 at 10:18:17AM +0100, Richard Hughes wrote:
-> On Thu, 2007-07-12 at 09:32 +0400, Alexey Starikovskiy wrote:
-> > >> [*] Does someone have an alternative for
-> > >> /proc/acpi/battery/BAT1/{state,info}?
-> > I'm working on it. Should have proto by the end of week.
+On Sun, 2007-07-15 at 23:11 +0200, Markus wrote:
+> > > [1] http://lkml.org/lkml/2007/07/14/60
+> > 
+> > Hm.  Tasks disappearing isn't you're typical process scheduler problem
+> > by any means, nor is an idle box exhibiting mouse "lurchiness".  Is
+> > there anything unusual in your logs?
 > 
-> If you are using the power_supply class (i hope you are ;-) then a HAL
-> from freedesktop git should make userspace continue to just work.
+> I know that its not typical, but when my current kernel is stable and 
+> shows the same problem with the cfs-patch applied like the 
+> git-snapshot, I would say its a cfs issue.
 
-Having to update HAL is not my definition of "does not break userspace".
-And, BTW, there is more than just HAL out there using /proc/acpi, and
-this should continue to work.
--- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+Yes, from your description, and with the now presented additional
+information that the git-snapshot exhibits the same symptoms, it sounds
+like cfs _may_ be implicated in some way.  I can't imagine how at the
+moment.  In your original report, there are other patches involved,
+which are an unknown variables.  The git-snapshot contains very many
+changes other than cfs as well.  I'd eliminate absolutely all unknowns
+as the first step.
 
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+> But I can build a plain 2.6.22 without cfs and one with it and compare 
+> dmesgs output, if that helps.
+
+Yes.  It would definitely be worth while to test a virgin stable kernel,
+and then add only cfs with identical config.  Dmesg output may not turn
+up anything, but eliminating all other variables should either pin the
+tail on the donkey (cfs?) or vindicate it, and that's what needs to be
+nailed down solidly first.
+
+	-Mike
+
