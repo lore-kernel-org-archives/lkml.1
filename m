@@ -1,140 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934572AbXGQPoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935001AbXGQPot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934572AbXGQPoL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 11:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934597AbXGQPlN
+	id S935001AbXGQPot (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 11:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934600AbXGQPlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 11:41:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45489 "EHLO mx1.redhat.com"
+	Tue, 17 Jul 2007 11:41:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45507 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934593AbXGQPlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 11:41:11 -0400
-Message-Id: <20070717173758.272328000@chello.nl>
+	id S934598AbXGQPlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 11:41:14 -0400
+Message-Id: <20070717173759.299149000@chello.nl>
 References: <20070717173428.355522000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 17 Jul 2007 19:34:35 +0200
+Date: Tue, 17 Jul 2007 19:34:39 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Zach Brown <zach.brown@oracle.com>,
        Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC/T PATCH 07/12] lockdep: non-recursive validation
-Content-Disposition: inline; filename=lockdep-norecursion.patch
+Subject: [RFC/T PATCH 11/12] lockdep: lock_page: use per fs-type lock_page class
+Content-Disposition: inline; filename=lockdep-fs-map.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a validation mode that diregards all recursive locking errors.
-This is useful for locks like lock_page where there is a high degree
-of nested locking.
-
-Obviously it will not report a useful class of errors :-/
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl> 
 ---
- include/linux/lockdep.h |   15 ++++++++-------
- kernel/lockdep.c        |   15 ++++++++++++---
- 2 files changed, 20 insertions(+), 10 deletions(-)
+ include/linux/pagemap.h |   55 +++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 45 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/include/linux/lockdep.h
+Index: linux-2.6/include/linux/pagemap.h
 ===================================================================
---- linux-2.6.orig/include/linux/lockdep.h
-+++ linux-2.6/include/linux/lockdep.h
-@@ -286,7 +286,8 @@ extern void lockdep_init_map(struct lock
-  *
-  *   0: disabled
-  *   1: simple checks (freeing, held-at-exit-time, etc.)
-- *   2: full validation
-+ *   2: validation without recursion checks
-+ *   3: full validation
-  */
- extern void lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 			 int trylock, int read, int check, unsigned long ip);
-@@ -426,7 +427,7 @@ static inline void print_irqtrace_events
+--- linux-2.6.orig/include/linux/pagemap.h
++++ linux-2.6/include/linux/pagemap.h
+@@ -357,14 +357,44 @@ extern void FASTCALL(unlock_page_nocheck
  
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # ifdef CONFIG_PROVE_LOCKING
--#  define spin_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, i)
-+#  define spin_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 3, i)
- # else
- #  define spin_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, i)
- # endif
-@@ -438,8 +439,8 @@ static inline void print_irqtrace_events
+ extern struct lockdep_map page_lockdep_map;
  
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # ifdef CONFIG_PROVE_LOCKING
--#  define rwlock_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, i)
--#  define rwlock_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 2, 2, i)
-+#  define rwlock_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 3, i)
-+#  define rwlock_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 2, 3, i)
- # else
- #  define rwlock_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, i)
- #  define rwlock_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 2, 1, i)
-@@ -453,7 +454,7 @@ static inline void print_irqtrace_events
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # ifdef CONFIG_PROVE_LOCKING
--#  define mutex_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, i)
-+#  define mutex_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 3, i)
- # else
- #  define mutex_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, i)
- # endif
-@@ -465,8 +466,8 @@ static inline void print_irqtrace_events
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # ifdef CONFIG_PROVE_LOCKING
--#  define rwsem_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 2, i)
--#  define rwsem_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 1, 2, i)
-+#  define rwsem_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 3, i)
-+#  define rwsem_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 1, 3, i)
- # else
- #  define rwsem_acquire(l, s, t, i)		lock_acquire(l, s, t, 0, 1, i)
- #  define rwsem_acquire_read(l, s, t, i)	lock_acquire(l, s, t, 1, 1, i)
-Index: linux-2.6/kernel/lockdep.c
-===================================================================
---- linux-2.6.orig/kernel/lockdep.c
-+++ linux-2.6/kernel/lockdep.c
-@@ -2176,7 +2176,7 @@ static int __lock_acquire(struct lockdep
- 	struct task_struct *curr = current;
- 	struct lock_class *class = NULL;
- 	struct held_lock *hlock;
--	unsigned int depth, id;
-+	unsigned int depth, id, first;
- 	int chain_head = 0;
- 	u64 chain_key;
- 
-@@ -2225,6 +2225,14 @@ static int __lock_acquire(struct lockdep
- 		return 0;
- 
- 	hlock = curr->held_locks + depth;
-+	if (check == 2 && depth > 0) {
-+		struct held_lock *prev_hlock = NULL;
+-static inline void __lock_page_acquire(int try, unsigned long ip)
++static inline struct lockdep_map *page_map(struct page *page)
+ {
+-	lock_acquire(&page_lockdep_map, 0, try, 0, 2, ip);
++	struct address_space *mapping;
++	struct inode *inode;
++	struct super_block *sb;
++	struct file_system_type *type;
++	struct lockdep_map *map = &page_lockdep_map;
 +
-+		prev_hlock = curr->held_locks + depth - 1;
-+		if (prev_hlock->class == class)
-+			first = 0;
-+	} else
-+		first = 1;
++	mapping = page_mapping(page);
++	if (!mapping)
++		goto out;
++
++	inode = mapping->host;
++	if (!inode)
++		goto out;
++
++	sb = inode->i_sb;
++	if (!sb)
++		goto out;
++
++	type = sb->s_type;
++	if (type)
++		map = &type->s_mapping_map;
++
++out:
++	return map;
+ }
  
- 	hlock->class = class;
- 	hlock->acquire_ip = ip;
-@@ -2238,7 +2246,7 @@ static int __lock_acquire(struct lockdep
- 	hlock->holdtime_stamp = sched_clock();
- #endif
+-static inline void __unlock_page_release(unsigned long ip)
++static inline void __lock_page_acquire(struct page *page, int try, unsigned long ip)
+ {
+-	lock_release(&page_lockdep_map, 1, ip);
++	struct lockdep_map *map = page_map(page);
++	lock_acquire(map, 0, try, 0, 2, ip);
++}
++
++static inline void __unlock_page_release(struct page *page, unsigned long ip)
++{
++	struct lockdep_map *map = page_map(page);
++	lock_release(map, 1, ip);
+ }
  
--	if (check != 2)
-+	if (check < 2)
- 		goto out_calc_hash;
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	/*
-@@ -2347,7 +2355,8 @@ out_calc_hash:
- 	 * graph_lock for us)
- 	 */
- #ifdef CONFIG_PROVE_LOCKING
--	if (!trylock && (check == 2) && lookup_chain_cache(chain_key, class)) {
-+	if (!trylock && (check >= 2 && first) &&
-+			lookup_chain_cache(chain_key, class)) {
- 		/*
- 		 * Check whether last held lock:
- 		 *
+ /*
+@@ -373,22 +403,27 @@ static inline void __unlock_page_release
+ static inline void lock_page(struct page *page)
+ {
+ 	might_sleep();
+-	__lock_page_acquire(0, _RET_IP_);
++	__lock_page_acquire(page, 0, _RET_IP_);
+ 	if (TestSetPageLocked(page))
+ 		__lock_page(page);
+ }
+ 
++static inline void __lock_page_check(struct page *page)
++{
++	__lock_page_acquire(page, 0, _RET_IP_);
++}
++
+ static inline int trylock_page(struct page *page)
+ {
+ 	int ret = !TestSetPageLocked(page);
+ 	if (ret)
+-		__lock_page_acquire(1, _RET_IP_);
++		__lock_page_acquire(page, 1, _RET_IP_);
+ 	return ret;
+ }
+ 
+ static inline void __unlock_page_check(struct page *page)
+ {
+-	__unlock_page_release(_RET_IP_);
++	__unlock_page_release(page, _RET_IP_);
+ }
+ 
+ static inline void unlock_page(struct page *page)
+@@ -404,7 +439,7 @@ static inline void unlock_page(struct pa
+ static inline void lock_page_nosync(struct page *page)
+ {
+ 	might_sleep();
+-	__lock_page_acquire(0, _RET_IP_);
++	__lock_page_acquire(page, 0, _RET_IP_);
+ 	if (TestSetPageLocked(page))
+ 		__lock_page_nosync(page);
+ }
+@@ -424,10 +459,10 @@ extern void FASTCALL(wait_on_page_bit(st
+  */
+ static inline void wait_on_page_locked(struct page *page)
+ {
+-	__lock_page_acquire(0, _RET_IP_);
++	__lock_page_acquire(page, 0, _RET_IP_);
+ 	if (PageLocked(page))
+ 		wait_on_page_bit(page, PG_locked);
+-	__unlock_page_release(_RET_IP_);
++	__unlock_page_release(page, _RET_IP_);
+ }
+ 
+ /* 
 
 --
 
