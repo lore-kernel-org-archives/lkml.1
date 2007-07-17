@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbXGQHfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbXGQHid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758144AbXGQHfT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbXGQHfG
+	id S1760251AbXGQHid (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXGQHiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:35:06 -0400
-Received: from main.gmane.org ([80.91.229.2]:55744 "EHLO ciao.gmane.org"
+	Tue, 17 Jul 2007 03:38:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36855 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbXGQHfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:35:05 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Ganesan Rajagopal <rganesan@gmail.com>
-Subject: Re: [PATCH] Chinese Language Maintainer
-Followup-To: gmane.linux.documentation
-Date: Tue, 17 Jul 2007 12:49:59 +0530
-Message-ID: <xkvhwswzijj4.fsf@grajagop-lnx.cisco.com>
-References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net> <200707121205.20959.rob@landley.net> <1184330583.23373.65.camel@Gundam> <200707131352.12952.rob@landley.net> <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com> <469A6370.4020404@zytor.com> <20070715195008.6bdf48c7@the-village.bc.nu> <xkvhwsx1j70j.fsf@grajagop-lnx.cisco.com> <20070716224307.74483812@the-village.bc.nu>
-Mime-Version: 1.0
+	id S1750732AbXGQHiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:38:25 -0400
+Date: Tue, 17 Jul 2007 09:37:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus <lists4me@web.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [patch] CFS scheduler, -v19
+Message-ID: <20070717073709.GA12465@elte.hu>
+References: <20070706173319.GA2356@elte.hu> <200707141711.25272.lists4me@web.de> <20070716094158.GA19491@elte.hu> <200707161959.17750.lists4me@web.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: grajagop-lnx.cisco.com
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.51 (gnu/linux)
-Cancel-Lock: sha1:DSuahH4Hdz+EGwh/4N67yt3FdHc=
-Cc: linux-doc@vger.kernel.org
+Content-Disposition: inline
+In-Reply-To: <200707161959.17750.lists4me@web.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
->> preferred.  Moreover, technical education is completely in English. I don't
->> see much value in translating developer documentation into Indian
->> languages. User documentation is another story.
+* Markus <lists4me@web.de> wrote:
 
-> I am not convinced that users do not become developers, nor that we
-> should have language barriers that make this unneccessarily hard.
+> The dmesg output is not differing in any interesting point (just some 
+> numbers, like raid-benchmark, some irqs or usb-numbers...)
 
-Again speaking only from the Indian context, we're somewhat unique when
-compared to China and Japan ;-). It's extremely unlikely that a non-english
-speaking user will become a developer. As I mentioned in my previous mail
-technical education is almost completely in English. 
+could you please send me the cfs-debug-info output nevertheless?
 
-Most Indian IT work places communicate almost exclusively in English,
-including verbal communication because of employees from all over India with
-different native languages.  English is not a language barrier for
-developers or even technical users from India.
+> Nothing is printed for a disapeared app for me.
+> 
+> Is there anything more I can try?
 
-Ganesan
+sure - could you start one of those apps via:
 
--- 
-Ganesan Rajagopal
+	strace -ttt -TTT -o trace.log -f <app>
 
+and wait for it to "disappear"? Then compress the trace.log via bzip2 -9 
+(it's probably going to be a really large file) and send me it?
+
+	Ingo
