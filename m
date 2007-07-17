@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934423AbXGQOWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933511AbXGQOX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934423AbXGQOWv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933778AbXGQOPr
+	id S933511AbXGQOX0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933807AbXGQOP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:15:47 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:53880 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933490AbXGQOPq (ORCPT
+	Tue, 17 Jul 2007 10:15:57 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:62378 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933800AbXGQOPz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 10:15:46 -0400
-Date: Tue, 17 Jul 2007 10:15:39 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: david@lang.hm
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <Pine.LNX.4.64.0707162137220.19248@asgard.lang.hm>
-Message-ID: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+	Tue, 17 Jul 2007 10:15:55 -0400
+Message-ID: <469CCF17.3020709@codemonkey.ws>
+Date: Tue, 17 Jul 2007 09:15:51 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Avi Kivity <avi@qumranet.com>
+CC: Jeff Dike <jdike@addtoit.com>, KVM devel <kvm-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] [PATCH 3/3] KVM - add hypercall nr to kvm_run
+References: <20070716192447.GA16253@c2.user-mode-linux.org> <469C7C8D.1020600@qumranet.com>
+In-Reply-To: <469C7C8D.1020600@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007 david@lang.hm wrote:
+Avi Kivity wrote:
+> Jeff Dike wrote:
+>   
+>> Add the hypercall number to kvm_run and initialize it.  This might be
+>> considered API-changing, so I kept it separate.
+>>
+>> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+>> --
+>>  drivers/kvm/kvm_main.c |    1 +
+>>  include/linux/kvm.h    |    1 +
+>>  2 files changed, 2 insertions(+)
+>>
+>> Index: kvm/drivers/kvm/kvm_main.c
+>> ===================================================================
+>> --- kvm.orig/drivers/kvm/kvm_main.c
+>> +++ kvm/drivers/kvm/kvm_main.c
+>> @@ -1361,6 +1361,7 @@ int kvm_hypercall(struct kvm_vcpu *vcpu,
+>>  	}
+>>  	switch (nr) {
+>>  	default:
+>> +		run->hypercall.nr = nr;
+>>  		run->hypercall.args[0] = a0;
+>>  		run->hypercall.args[1] = a1;
+>>  		run->hypercall.args[2] = a2;
+>> Index: kvm/include/linux/kvm.h
+>> ===================================================================
+>> --- kvm.orig/include/linux/kvm.h
+>> +++ kvm/include/linux/kvm.h
+>> @@ -106,6 +106,7 @@ struct kvm_run {
+>>  		} mmio;
+>>  		/* KVM_EXIT_HYPERCALL */
+>>  		struct {
+>> +			__u64 nr;
+>>  			__u64 args[6];
+>>  			__u64 ret;
+>>  			__u32 longmode;
+>>   
+>>     
+>
+> It isn't API changing as the API could not be (and has not been) used.  
+> We do need to add a padding element to the union to make sure additional 
+> union members don't cause its size to change.
+>
+> Quite sad that we got this far with such brokenness.
+>   
 
-> > I agree, it would be good to have a non-ACPI-specific hibernation mode,
-> > something which would look to ACPI like a normal shutdown.  But I'm not
-> > so sure this is possible.
-> 
-> why would it not be possible?
+I'm planning on breaking this interface again since the new hypercall 
+API only takes 4 arguments instead of 6.
 
-> I can't think of anything much more frustrating then thinking that I 
-> suspended a system and then discovering that becouse the battery went dead 
-> (a complete power loss) that the system wouldn't boot up properly. to me 
-> this would be a fairly common condition (when I'm mobile I use the machine 
-> until I am out of battery, then stop and it may be a long time (days) 
-> before I can charge the thing up again) this would not be a reliable 
-> suspend as far as I'm concerned.
-> 
-> for suspend-to-ram you have to worry about ACPI states and what you are 
-> doing with them, for suspend-to-disk you can ignore them and completely 
-> power the system off instead.
+Regards,
 
-If the only problem with doing this would be lack of wakeup support
-then I'm all for it.  There must be a lot of people who would like
-their computers to hibernate with power drain as close to 0 as possible
-and who don't care about remote wakeup.  In fact they might even prefer
-not to have wakeup support, so the computer doesn't resume at
-unexpected times.
-
-Alan Stern
+Anthony Liguori
 
