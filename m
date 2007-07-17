@@ -1,173 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933031AbXGQRsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934167AbXGQRs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933031AbXGQRsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758920AbXGQRsB
+	id S934167AbXGQRs6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758639AbXGQRst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:48:01 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39593 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706AbXGQRsA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:48:00 -0400
-Date: Tue, 17 Jul 2007 10:47:57 -0700
-From: sukadev@us.ibm.com
-To: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, Herbert Poetzel <herbert@13thfloor.at>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] Move alloc_pid call to copy_process
-Message-ID: <20070717174757.GA11150@us.ibm.com>
-References: <20070715123600.GA210@tv-sign.ru> <20070716225411.GH25053@us.ibm.com> <20070717133430.GA214@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 17 Jul 2007 13:48:49 -0400
+Received: from ns1.suse.de ([195.135.220.2]:58190 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758920AbXGQRss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 13:48:48 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] Reading the VDSO area - i386
+Date: Tue, 17 Jul 2007 19:48:41 +0200
+User-Agent: KMail/1.9.6
+Cc: john.blackwood@ccur.com, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Roland McGrath <roland@redhat.com>, bugsy@ccur.com,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <469CECFE.6060408@ccur.com> <469CF2BC.3000306@goop.org>
+In-Reply-To: <469CF2BC.3000306@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070717133430.GA214@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Message-Id: <200707171948.42054.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@tv-sign.ru] wrote:
-| On 07/16, sukadev@us.ibm.com wrote:
-| >
-| > Oleg Nesterov [oleg@tv-sign.ru] wrote:
-| > | 
-| > | Could you please give more details why we need this change?
-| > 
-| > Well, with multiple pid namespaces, we may need to allocate a new
-| > 'struct pid_namespace' if the CLONE_NEWPID flag is specified. And
-| > as a part of initializing this pid_namespace, we need the 'task_struct'
-| > that will be the reaper of the new pid namespace.
-| > 
-| > And this task_struct is allocated in copy_process(). So we could
-| > still alloc_pid() in do_fork(), as we are doing currently and set
-| > the reaper of the new pid_namespace later in copy_process(). But
-| > that seemed to complicate error handling and add checks again in
-| > copy_process() for the CLONE_NEWPID.
-| 
-| OK, thanks.
-| 
-| > 
-| > | Even if we really need this, can't we do these checks in copy_process() ?
-| > 
-| > We could and I did have a check in copy_process() in one of my earlier
-| > versions to Containers@ list.  We thought it cluttered copy_process() a
-| > bit.
-| 
-| Yes, but having the "pid == &init_struct_pid" in free_pid() is imho worse,
-| 
-| >  	container_exit(p, container_callbacks_done);
-| >  	delayacct_tsk_free(p);
-| > +	free_pid(pid);
-| > +bad_fork_put_binfmt_module:
-| > [...snip...]
-| > @@ -206,6 +206,10 @@ fastcall void free_pid(struct pid *pid)
-| >  	/* We can be called with write_lock_irq(&tasklist_lock) held */
-| >  	unsigned long flags;
-| >  
-| > +	/* check this here to keep copy_process() cleaner */
-| > +	if (unlikely(pid == &init_struct_pid))
-| > +		return;
-| > +
-| 
-| Wouldn't it better if copy_process()'s error path does
-| 
-| 	if (pid != &init_struct_pid)
-| 		free_pid(pid);
-| 
-| instead? OK, "cleaner" is a matter of taste, but from the perfomance POV
-| this would be better, even if not noticable.
+On Tuesday 17 July 2007 18:47:56 Jeremy Fitzhardinge wrote:
+> John Blackwood wrote:
+> > I was doing some tests that attempt to read the VDSO area of a
+> > task through either the /proc/pid/mem or ptrace(PTRACE_PEEKTEXT,
+> > ...) interfaces, and it seems that when the CONFIG_COMPAT_VDSO kernel
+> > parameter is enabled, we can no longer successfully read the VDSO area
+> > on i386 kernels.
+> 
+> Thanks.  Someone else noticed this recently, and posted a near-identical
+> patch.  But I can't seem to find it right now...
+> 
+> Andrew, Andi: do you remember something like this passing by?
 
-Agree. I realized it too late last night. Here is a modified patch
-(this checks init_struct_pid in both places now for better consistency)
+Yes it was from Jan Beulich.
 
-Subject: [PATCH 5/5] Move alloc_pid call to copy_process
-
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-
-Move alloc_pid() into copy_process(). This will keep all pid and pid
-namespace code together and simplify error handling when we support
-multiple pid namespaces.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-
-Cc: Pavel Emelianov <xemul@openvz.org>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>
-Cc: Serge Hallyn <serue@us.ibm.com>
-Cc: Herbert Poetzel <herbert@13thfloor.at>
----
- kernel/fork.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
-
-Index: lx26-22-rc6-mm1a/kernel/fork.c
-===================================================================
---- lx26-22-rc6-mm1a.orig/kernel/fork.c	2007-07-16 12:55:13.000000000 -0700
-+++ lx26-22-rc6-mm1a/kernel/fork.c	2007-07-17 10:08:12.000000000 -0700
-@@ -1029,6 +1029,12 @@ static struct task_struct *copy_process(
- 	if (p->binfmt && !try_module_get(p->binfmt->module))
- 		goto bad_fork_cleanup_put_domain;
- 
-+	if (pid != &init_struct_pid) {
-+		pid = alloc_pid();
-+		if (!pid)
-+			goto bad_fork_put_binfmt_module;
-+	}
-+
- 	p->did_exec = 0;
- 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
- 	copy_flags(clone_flags, p);
-@@ -1316,6 +1322,9 @@ bad_fork_cleanup_container:
- #endif
- 	container_exit(p, container_callbacks_done);
- 	delayacct_tsk_free(p);
-+	if (pid != &init_struct_pid)
-+		free_pid(pid);
-+bad_fork_put_binfmt_module:
- 	if (p->binfmt)
- 		module_put(p->binfmt->module);
- bad_fork_cleanup_put_domain:
-@@ -1380,19 +1389,16 @@ long do_fork(unsigned long clone_flags,
- {
- 	struct task_struct *p;
- 	int trace = 0;
--	struct pid *pid = alloc_pid();
- 	long nr;
- 
--	if (!pid)
--		return -EAGAIN;
--	nr = pid->nr;
- 	if (unlikely(current->ptrace)) {
- 		trace = fork_traceflag (clone_flags);
- 		if (trace)
- 			clone_flags |= CLONE_PTRACE;
- 	}
- 
--	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, pid);
-+	p = copy_process(clone_flags, stack_start, regs, stack_size,
-+			parent_tidptr, child_tidptr, NULL);
- 	/*
- 	 * Do this prior waking up the new thread - the thread pointer
- 	 * might get invalid after that point, if the thread exits quickly.
-@@ -1400,6 +1406,8 @@ long do_fork(unsigned long clone_flags,
- 	if (!IS_ERR(p)) {
- 		struct completion vfork;
- 
-+		nr = pid_nr(task_pid(p));
-+
- 		if (clone_flags & CLONE_VFORK) {
- 			p->vfork_done = &vfork;
- 			init_completion(&vfork);
-@@ -1433,7 +1441,6 @@ long do_fork(unsigned long clone_flags,
- 			}
- 		}
- 	} else {
--		free_pid(pid);
- 		nr = PTR_ERR(p);
- 	}
- 	return nr;
+-Andi
