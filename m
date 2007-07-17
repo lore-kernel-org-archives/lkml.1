@@ -1,129 +1,806 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbXGQUJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764283AbXGQUK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760857AbXGQUJa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbXGQUJV
+	id S1764283AbXGQUK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbXGQUKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:09:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49847 "EHLO ogre.sisk.pl"
+	Tue, 17 Jul 2007 16:10:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40896 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753713AbXGQUJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:09:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 22:17:00 +0200
-User-Agent: KMail/1.9.5
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>,
+	id S1755893AbXGQUKQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 16:10:16 -0400
+Date: Tue, 17 Jul 2007 22:09:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus <lists4me@web.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch] CFS scheduler, -v19
+Message-ID: <20070717200929.GA2426@elte.hu>
+References: <20070706173319.GA2356@elte.hu> <200707171506.37886.lists4me@web.de> <20070717170628.GA6002@elte.hu> <200707172142.42008.lists4me@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707172217.01890.rjw@sisk.pl>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200707172142.42008.lists4me@web.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 17 July 2007 20:32, Alan Stern wrote:
-> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
-> 
-> > I'm afraid of one thing, though.
-> > 
-> > If we create a framework without ACPI (well, ACPI needs to be enabled in the
-> > kernel anyway for other reasons, like the ability to suspend to RAM) and then
-> > it turns out that we have to add some ACPI hooks to it, that might be difficult
-> > to do cleanly.
-> > 
-> > Thus, it seems reasonable to think of the ACPI handling in advance.
-> 
-> Absolutely.  This needs to be done in such a way that it will work:
-> 
-> 	On platforms without ACPI;
-> 
-> 	On platforms with ACPI where we do a non-ACPI type of shutdown
-> 	to whatever extent it is possible (or perhaps an ACPI-aware
-> 	shutdown rather than change to S4);
-> 
-> 	On platforms with ACPI where we do an ACPI-aware transition
-> 	to S4.
-> 
-> Rafael, for those of us who aren't thoroughly familiar with all the ins
-> and outs of the ACPI spec, could you please summarize a list of the
-> ACPI calls needed in the second and third cases above?  Indicate which
-> ones need to be done from within the original kernel and which should
-> be done from within a kexec'd hibernation kernel.
 
-Sure.
+* Markus <lists4me@web.de> wrote:
 
-In the third case (ie. transition to S4) we are supposed to do the following:
+> > i think konqueror tried to say something here about an image problem?
 
-(1) Upon entering the sleep state, which IMO can be done _after_ the image
-    has been saved:
-  * figure out which devices can wake up
-  * put devices into low power states (wake-up devices are placed in the Dx
-    states compatible with the wake capability, the others are powered off)
-  * execute the _PTS global control method
-  * switch off the nonlocal CPUs (eg. nonboot CPUs on x86)
-  * execute the _GTS global control method
-  * set the GPE enable registers corresponding to the wake-up devices)
-  * make the platform enter S4 (there's a well defined procedure for that)
-  I think that this should be done by the image-saving kernel.
+> Well, yes:
+> In file kernel/qpixmap_x11.cpp, line 633: Out of memory
+> QImage::convertDepth: Image is a null image
+> In file kernel/qpixmap_x11.cpp, line 633: Out of memory
+> QImage::convertDepth: Image is a null image
+> In file kernel/qpixmap_x11.cpp, line 633: Out of memory
+> QImage::convertDepth: Image is a null image
+> In file kernel/qpixmap_x11.cpp, line 633: Out of memory
+> QImage::convertDepth: Image is a null image
+> konqueror: Fatal IO error: client killed
 
-(2) Upon start-up (by which I mean what happens after the user has pressed
-    the power button or something like that):
-  * check if the image is present (and valid) _without_ enabling ACPI (we don't
-    do that now, but I see no reason for not doing it in the new framework)
-  * if the image is present (and valid), load it
-  * turn on ACPI (unless already turned on by the BIOS, that is)
-  * execute the _BFS global control method
-  * execute the _WAK global control method
-  * continue
-  Here, the first two things should be done by the image-loading kernel, but
-  the remaining operations have to be carried out by the restored kernel.
+i think the problem starts here:
 
-In the remaining two cases we generally don't need to bother with the global
-ACPI handling.
+  11902 1184699865.141939 read(3, "", 32) = 0 <0.000007>
 
-> I'm still not entirely clear on how "suspend-to-both" ought to be
-> handled.  Presumably it will start off as a normal hibernation.  But
-> instead of shutting down, wouldn't the kexec'd kernel return to the
-> original kernel?
+file descriptor 3 is the Unix domain socket connection to X:
 
-No, I think the image-saving kernel should suspend.  Then, on resume the
-platform will go back to it and it will jump back to the hibernated kernel.
+  11902 1184699521.012316 socket(PF_FILE, SOCK_STREAM, 0) = 3 <0.000018>
 
-> After all, the original kernel knows about all the devices and can put them
-> into a low-power state, while the kexec'd kernel might not have sufficient
-> information.
+a read result of 0 confused Konqueror so it quit immediately. I've 
+attached the relevant section below - does it make sense to anyone who 
+knows more about X, KDE and Konqueror internals than me? :)
 
-That's correct, but ...
+	Ingo
 
-> But what about the freezer?  The original reason for using kexec was to
-> avoid the need for the freezer.  With no freezer, while the original
-> kernel is busy powering down its devices, user tasks will be free to
-> carry out I/O -- which will make the memory snapshot inconsistent with
-> the on-disk data structures.
-
-... we can't return to the hibernated kernel unless we are going to cancel the
-hibernation.
-
-That's why I think that for the suspend-to-both the image-saving kernel will
-need to support the same set of devices as the hibernated kernel.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+----------------------->
+11902 1184699811.587247 gettimeofday({1184699811, 587257}, NULL) = 0 <0.000007>
+11902 1184699811.587280 select(10, [3 4 5 7 9], [], [], {9, 999727}) = 1 (in [3], left {7, 946666}) <2.054594>
+11902 1184699813.642502 gettimeofday({1184699813, 642849}, NULL) = 0 <0.000339>
+11902 1184699813.643145 ioctl(3, FIONREAD, [32]) = 0 <0.000343>
+11902 1184699813.643720 read(3, "\v\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\4\0\0\0\0\0\0\0\0\0\0\0", 32) = 32 <0.000219>
+11902 1184699813.644271 ioctl(3, FIONREAD, [0]) = 0 <0.000179>
+11902 1184699813.644724 ioctl(3, FIONREAD, [0]) = 0 <0.000143>
+11902 1184699813.645011 gettimeofday({1184699813, 645265}, NULL) = 0 <0.000248>
+11902 1184699813.645448 select(10, [3 4 5 7 9], [], [], {7, 941719}) = 1 (in [3], left {0, 703333}) <7.238595>
+11902 1184699820.884750 gettimeofday({1184699820, 884911}, NULL) = 0 <0.000155>
+11902 1184699820.885279 ioctl(3, FIONREAD, [224]) = 0 <0.000339>
+11902 1184699820.885960 read(3, "\34a\301!\5\0\200\4\365\0\0\0\210+\10\0\0\352\323\0\0\0\0\0\347 C\0\0\0\0\0\v\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\v\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\34a\301![\0\0\0V\1\0\0\211+\10\0\0mp\0\0\0\0\0\347 C\0\0\0\0\0\34a\301![\0\0\0V\1\0\0\211+\10\0\0mp\0\0\0\0\0\347 C\0\0\0\0\0\v\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\34a\301![\0\0\0002\1\0\0\211+\10\0\0mp\0\0\0\0\0\347 C\0\0\0\0\0", 224) = 224 <0.000475>
+11902 1184699820.886800 write(3, "\24\0\6\0\5\0\200\4\365\0\0\0\4\0\0\0\0\0\0\0\0\4\0\0", 24) = 24 <0.000392>
+11902 1184699820.887445 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000338>
+11902 1184699820.888119 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.022256>
+11902 1184699820.910435 read(3, "\34a\301![\0\0\0V\1\0\0\241+\10\0\0mp\0\0\0\0\0\347 C\0\0\0\0\0", 32) = 32 <0.000010>
+11902 1184699820.910506 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000009>
+11902 1184699820.910557 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.073035>
+11902 1184699820.983650 read(3, "\34~\301!\5\0\200\4a\1\0\0\357+\10\0\1\r.\2\0\0\0\0`\257\235\0\0\0\0\0", 32) = 32 <0.000011>
+11902 1184699820.983722 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000009>
+11902 1184699820.983773 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.114041>
+11902 1184699821.097872 read(3, "\34a\301!\5\0\200\4a\1\0\0Z,\10\0\0\352\323\0\0\0\0\0\347 C\0\0\0\0\0", 32) = 32 <0.000011>
+11902 1184699821.097943 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000009>
+11902 1184699821.097994 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.006383>
+11902 1184699821.104428 read(3, "\1 \302!\0\0\0\0\4\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0b\340T\0\0\0\0\0", 32) = 32 <0.000010>
+11902 1184699821.104519 ioctl(3, FIONREAD, [0]) = 0 <0.000010>
+11902 1184699821.104571 ioctl(3, FIONREAD, [0]) = 0 <0.000009>
+11902 1184699821.104626 gettimeofday({1184699821, 104643}, NULL) = 0 <0.000011>
+11902 1184699821.104683 select(10, [3 4 5 7 9], [], [], {0, 482341}) = 0 (Timeout) <0.480889>
+11902 1184699821.585719 gettimeofday({1184699821, 585738}, NULL) = 0 <0.000010>
+11902 1184699821.585789 ioctl(3, FIONREAD, [0]) = 0 <0.000010>
+11902 1184699821.585846 gettimeofday({1184699821, 585862}, NULL) = 0 <0.000009>
+11902 1184699821.585900 select(10, [3 4 5 7 9], [], [], {0, 1122}) = 0 (Timeout) <0.003013>
+11902 1184699821.588979 gettimeofday({1184699821, 588995}, NULL) = 0 <0.000010>
+11902 1184699821.589065 ioctl(3, FIONREAD, [0]) = 0 <0.000010>
+11902 1184699821.589121 gettimeofday({1184699821, 589137}, NULL) = 0 <0.000010>
+11902 1184699821.589175 select(10, [3 4 5 7 9], [], [], {9, 997847}) = 0 (Timeout) <9.998225>
+11902 1184699831.587540 gettimeofday({1184699831, 587594}, NULL) = 0 <0.000010>
+11902 1184699831.587673 ioctl(3, FIONREAD, [0]) = 0 <0.000009>
+11902 1184699831.587735 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <16.674843>
+11902 1184699848.263072 ioctl(3, FIONREAD, [224]) = 0 <0.000191>
+11902 1184699848.263658 read(3, "\34a\302!\5\0\200\4\365\0\0\0{\226\10\0\0\352\323\0\0\0\0\0\347 C\0\0\0\0\0\v\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\v\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\34a\302![\0\0\0V\1\0\0|\226\10\0\0mp\0\0\0\0\0\347 C\0\0\0\0\0\34a\302![\0\0\0V\1\0\0|\226\10\0\0mp\0\0\0\0\0\347 C\0\0\0\0\0\v\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\34a\302![\0\0\0002\1\0\0|\226\10\0\0mp\0\0\0\0\0\347 C\0\0\0\0\0", 224) = 224 <0.000500>
+11902 1184699848.264825 write(3, "\24\0\6\0\5\0\200\4\365\0\0\0\4\0\0\0\0\0\0\0\0\4\0\0", 24) = 24 <0.000968>
+11902 1184699848.266093 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000283>
+11902 1184699848.266933 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.069502>
+11902 1184699848.336494 read(3, "\34a\302![\0\0\0V\1\0\0\305\226\10\0\0mp\0\0\0\0\0\347 C\0\0\0\0\0", 32) = 32 <0.000010>
+11902 1184699848.336565 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000008>
+11902 1184699848.336616 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.140445>
+11902 1184699848.477120 read(3, "\34\0\302!\5\0\200\4a\1\0\0U\227\10\0\1t\31\1\0\0\0\0`\257\235\0\0\0\0\0", 32) = 32 <0.000011>
+11902 1184699848.477192 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000009>
+11902 1184699848.477242 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.137828>
+11902 1184699848.615128 read(3, "\34a\302!\5\0\200\4a\1\0\0\333\227\10\0\0\352\323\0\0\0\0\0\347 C\0\0\0\0\0", 32) = 32 <0.000011>
+11902 1184699848.615201 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000009>
+11902 1184699848.615252 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.009307>
+11902 1184699848.624614 read(3, "\1 \303!\0\0\0\0\4\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0b\340T\0\0\0\0\0", 32) = 32 <0.000011>
+11902 1184699848.624710 ioctl(3, FIONREAD, [0]) = 0 <0.000009>
+11902 1184699848.624762 ioctl(3, FIONREAD, [0]) = 0 <0.000048>
+11902 1184699848.624866 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <16.495008>
+11902 1184699865.119950 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.119988 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120031 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120065 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120106 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120140 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.120181 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120214 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120255 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.120289 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120330 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120364 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120405 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120438 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120479 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.120513 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120554 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.120587 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120628 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120662 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120703 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120736 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120777 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.120839 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120881 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120915 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.120956 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.120990 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000008>
+11902 1184699865.121030 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.121064 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121105 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.121156 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121198 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.121232 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121273 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.121307 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121348 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.121382 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121423 ioctl(3, FIONREAD, [0]) = 0 <0.000007>
+11902 1184699865.121504 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000008>
+11902 1184699865.121546 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.121584 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121626 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.121659 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121704 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.121738 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121780 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.121813 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121855 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.121889 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.121930 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.121964 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122005 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.122038 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122080 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.122113 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122154 ioctl(3, FIONREAD, [0]) = 0 <0.000007>
+11902 1184699865.122189 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122231 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.122278 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000015>
+11902 1184699865.122329 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.122362 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.122403 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.122437 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122478 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.122512 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122553 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.122587 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122628 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.122662 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122703 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.122737 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122778 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.122811 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122865 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.122900 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.122941 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.122975 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123031 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.123065 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123106 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.123140 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123181 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.123215 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123256 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.123290 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123331 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.123365 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123406 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.123440 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123481 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.123515 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123556 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.123589 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.123631 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.123665 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123705 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.123739 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123780 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.123814 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123855 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.123889 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.123930 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.123964 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124005 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.124060 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000008>
+11902 1184699865.124102 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.124135 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124177 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.124211 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124255 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.124289 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124330 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.124363 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000008>
+11902 1184699865.124405 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.124439 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124479 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.124513 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124554 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.124588 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124629 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.124662 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124703 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.124737 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124778 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.124811 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124865 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.124899 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.124941 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.124974 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125015 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.125049 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125090 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.125136 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000008>
+11902 1184699865.125178 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.125212 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125254 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.125287 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125329 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.125363 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125404 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.125440 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125482 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.125516 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125557 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.125591 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000044>
+11902 1184699865.125706 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.125740 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125781 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.125815 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125856 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.125889 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.125930 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.125964 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126005 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.126039 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126080 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.126113 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.126154 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.126188 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126229 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.126263 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126304 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.126338 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126379 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.126413 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126454 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.126488 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126529 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.126563 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126604 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.126638 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126679 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.126712 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126753 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.126787 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126828 ioctl(3, FIONREAD, [0]) = 0 <0.000016>
+11902 1184699865.126873 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126914 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.126948 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.126988 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.127039 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.127083 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.127117 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.127159 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.127193 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.127234 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.127267 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000011>
+11902 1184699865.127325 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.127359 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000483>
+11902 1184699865.127882 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.127917 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.127957 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.127990 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128030 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128063 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.128102 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128135 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128175 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128207 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128247 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128279 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128320 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128352 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.128391 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128423 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128463 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128495 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128535 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.128568 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128607 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128639 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.128679 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128711 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128751 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128783 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.128823 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128870 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.128910 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.128998 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.129038 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129071 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.129111 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129143 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.129183 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129215 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.129254 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129287 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.129326 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.129359 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.129399 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129432 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.129471 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129503 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.129543 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.129575 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.129614 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129647 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.129686 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129718 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.129758 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.129790 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.129830 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.129876 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.129915 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.129948 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.129987 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130021 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.130061 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130094 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.130133 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130166 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.130206 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.130239 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.130278 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130311 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.130351 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.130384 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.130423 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130456 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.130496 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.130530 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.130569 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130602 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.130641 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130674 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.130714 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130747 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.130786 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130819 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.130870 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130902 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.130942 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.130974 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.131014 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131046 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.131087 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131120 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.131160 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131192 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.131232 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131264 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.131304 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.131336 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.131376 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.131408 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.131448 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131480 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.131519 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131552 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.131591 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131624 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.131663 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131696 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.131735 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131768 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.131807 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.131840 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.131892 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.131924 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.131964 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.131996 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.132036 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.132070 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132109 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.132142 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.132182 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.132215 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.132255 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.132298 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.132338 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.132370 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132409 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.132442 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132481 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.132513 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132552 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.132585 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132624 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.132656 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.132696 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.132728 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132768 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.132801 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132840 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.132884 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132923 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.132956 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.132995 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.133027 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.133067 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133099 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.133138 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133171 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.133210 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133242 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.133281 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133333 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.133374 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133406 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.133445 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133478 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.133517 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133553 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.133592 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133624 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.133663 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133696 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.133735 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133767 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.133806 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133838 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.133878 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.133923 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.133963 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.133995 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.134035 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.134067 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.134107 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134141 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134180 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134213 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134252 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134285 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134324 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.134356 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134396 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134428 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.134469 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.134502 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134541 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134574 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134613 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134646 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134685 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134718 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134757 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134790 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.134830 ioctl(3, FIONREAD, [0]) = 0 <0.000017>
+11902 1184699865.134874 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000021>
+11902 1184699865.134931 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.134964 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.135004 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135036 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.135075 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135108 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000010>
+11902 1184699865.135151 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135184 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.135223 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135256 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.135295 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135328 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.135370 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135403 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.135442 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135475 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.135515 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.135547 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.135587 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135631 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.135671 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135703 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.135742 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135775 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.135814 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.135846 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.135886 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.135918 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.135971 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136003 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.136043 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136075 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.136115 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136147 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136189 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136223 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136263 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136295 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136335 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136367 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.136407 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136439 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136479 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136511 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136551 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136583 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136623 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136655 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136694 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136727 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136766 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136799 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136838 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.136884 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136923 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.136956 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.136996 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137028 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137067 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137100 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137139 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137172 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137211 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137243 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137283 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137316 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137356 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137388 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137428 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137460 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.137500 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137532 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.137572 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137604 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.137644 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137676 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137716 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137748 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137787 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137820 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137861 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.137893 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.137932 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.137979 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.138018 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138051 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.138090 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138122 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.138161 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
+11902 1184699865.138193 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.138232 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138266 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.138322 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138355 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.138394 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138426 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.138465 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138498 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.138537 ioctl(3, FIONREAD, [0]) = 0 <0.000008>
+11902 1184699865.138572 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.138612 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138644 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.138683 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138715 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.138754 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138786 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.138825 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.138871 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.138910 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141180 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.141222 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.141254 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.141292 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141324 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.141362 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141393 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.141432 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141463 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.141502 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141533 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.141572 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141603 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
+11902 1184699865.141641 ioctl(3, FIONREAD, [0]) = 0 <0.000004>
+11902 1184699865.141673 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.141711 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141742 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000006>
+11902 1184699865.141781 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141809 poll([{fd=3, events=POLLIN, revents=POLLIN|POLLHUP}], 1, 0) = 1 <0.000005>
+11902 1184699865.141838 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
+11902 1184699865.141939 read(3, "", 32) = 0 <0.000007>
+11902 1184699865.142120 access("/usr/kde/3.5/share/apps/konqueror/icons/crystalsvg/16x16/actions/folder.png", R_OK) = -1 ENOENT (No such file or directory) <0.000019>
+11902 1184699865.142185 access("/usr/kde/3.5/share/icons/crystalsvg/16x16/actions/folder.png", R_OK) = -1 ENOENT (No such file or directory) <0.000010>
+11902 1184699865.142231 access("/usr/kde/3.5/share/icons/crystalsvg/16x16/actions/folder.png", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.142287 access("/usr/kde/3.5/share/icons/crystalsvg/16x16/apps/folder.png", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.142348 access("/usr/kde/3.5/share/icons/crystalsvg/16x16/apps/folder.png", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.142391 access("/usr/kde/3.5/share/icons/crystalsvg/16x16/devices/folder.png", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.142434 access("/usr/kde/3.5/share/icons/crystalsvg/16x16/devices/folder.png", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.142477 access("/usr/kde/3.5/share/icons/crystalsvg/16x16/filesystems/folder.png", R_OK) = 0 <0.000010>
+11902 1184699865.142556 open("/usr/kde/3.5/share/icons/crystalsvg/16x16/filesystems/folder.png", O_RDONLY) = 12 <0.000013>
+11902 1184699865.142600 fstat(12, {st_mode=S_IFREG|0644, st_size=594, ...}) = 0 <0.000006>
+11902 1184699865.142650 fstat(12, {st_mode=S_IFREG|0644, st_size=594, ...}) = 0 <0.000004>
+11902 1184699865.142688 mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x2b00fb935000 <0.000010>
+11902 1184699865.142721 lseek(12, 0, SEEK_SET) = 0 <0.000005>
+11902 1184699865.142761 read(12, "\211PNG\r\n\32\n\0\0\0\rIHDR\0\0\0\20\0\0\0\20\10\6\0\0\0\37\363\377a\0\0\0\tpHYs\0\0\v\23\0\0\v\23\1\0\232\234\30\0\0\0\4gAMA\0\0\261\216|\373Q\223\0\0\0 cHRM\0\0z%\0\0\200\203\0\0\371\377\0\0\200\351\0\0u0\0\0\352`\0\0:\230\0\0\27o\222_\305F\0\0\1\310IDATx\332bd\200\2\243\222\333\377\31\376300\2\331\377\31\301$X\374\\\217*#\3\36\0\20@`dXp\355\377\327\337\177\377\177\375\371\27AC1H\16\237^\200\0b1\310\275\364\177{\253:\303\347_P\21\250\34507\350\361\336f`\310\275\370\377?#H\214\221\1\354L\250\374\371\311\372\214\0\1\304\302\360\367\27\303\347\337\230&\377\377\7T\304\304\300PS\350\3\3413@\370\f@q\6&\10?\354\357\231\377\0\1\304\362\377\317/\206\17?\360\270\21hUT\331\25\34\222\254\f\0\1\304\362\37\350\202wP\3473\3\361_\30\375\37Bg\326]a\250L\227e\2103\343G\321\272\341*\3Ce\337\25\6\200\0b\371\377\357/\304\5@\233jZ0mJ\214\222\6k\236p\20h(,>\220\202\25 \200\200.\370\315\360\341\'\3Cg\3339\6\317@#\206\211A\230\16\315_\213\10\\d\360\367\327o\6\200\0\2\206\301O\206\367@\27\374\375\371\213\341\351;\6\206\3409\10[@\311\341?f\220@\304\200\304\237\237?\31\0\2\10\354\205O@\27\374\375\376\203\341\345{\250\nx\260#\331\212\234\234\240r =\0\1\4\16DP\32\370\3\344\274\377\212C3\232\20\314\254\277\337~0\0\4\0208\f\276\2]\360\373\373W\206\253\215\fD\203\215\33O2\244\356\371\316\0\20@L\f\377\376\300M#\25\374\375\366\215\1 \200\200.\370\303\360\366;\320\5?\276\203M%\5\374\1\352\1\10 \260w\324\275\247\377\177t\351\27jP#\373\32\234\21\320B\23\310\375\3768\237\21 \200\30\377\377\377\317@\t\0\0100\0\303\210\322P:\270\222\\\0\0\0\0IEND\256B`\202", 4096) = 594 <0.000013>
+11902 1184699865.143043 close(12)       = 0 <0.000007>
+11902 1184699865.143072 munmap(0x2b00fb935000, 4096) = 0 <0.000010>
+11902 1184699865.143175 gettimeofday({1184699865, 143185}, NULL) = 0 <0.000007>
+11902 1184699865.143413 ioctl(5, FIONREAD, [0]) = 0 <0.000008>
+11902 1184699865.143446 write(6, "\0", 1) = 1 <0.000007>
+11902 1184699865.143484 gettimeofday({1184699865, 143494}, NULL) = 0 <0.000007>
+11902 1184699865.143553 gettimeofday({1184699865, 143563}, NULL) = 0 <0.000006>
+11902 1184699865.143631 gettimeofday({1184699865, 143641}, NULL) = 0 <0.000006>
+11902 1184699865.143679 ioctl(5, FIONREAD, [1]) = 0 <0.000007>
+11902 1184699865.143840 write(2, "In file kernel/qpixmap_x11.cpp, line 633: Out of memory\n", 56) = 56 <0.000110>
+11902 1184699865.143988 write(2, "QImage::convertDepth: Image is a null image\n", 44) = 44 <0.000047>
+11902 1184699865.144080 write(2, "In file kernel/qpixmap_x11.cpp, line 633: Out of memory\n", 56) = 56 <0.000046>
+11902 1184699865.144161 write(2, "QImage::convertDepth: Image is a null image\n", 44) = 44 <0.000044>
+11902 1184699865.144242 write(2, "In file kernel/qpixmap_x11.cpp, line 633: Out of memory\n", 56) = 56 <0.000045>
+11902 1184699865.144322 write(2, "QImage::convertDepth: Image is a null image\n", 44) = 44 <0.000046>
+11902 1184699865.144569 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.144618 ioctl(5, FIONREAD, [1]) = 0 <0.000007>
+11902 1184699865.144671 ioctl(5, FIONREAD, [1]) = 0 <0.000007>
+11902 1184699865.144752 gettimeofday({1184699865, 144763}, NULL) = 0 <0.000006>
+11902 1184699865.144981 gettimeofday({1184699865, 144993}, NULL) = 0 <0.000007>
+11902 1184699865.145041 gettimeofday({1184699865, 145051}, NULL) = 0 <0.000007>
+11902 1184699865.145189 gettimeofday({1184699865, 145200}, NULL) = 0 <0.000006>
+11902 1184699865.145272 gettimeofday({1184699865, 145283}, NULL) = 0 <0.000006>
+11902 1184699865.145372 gettimeofday({1184699865, 145383}, NULL) = 0 <0.000006>
+11902 1184699865.145450 gettimeofday({1184699865, 145461}, NULL) = 0 <0.000006>
+11902 1184699865.145549 gettimeofday({1184699865, 145560}, NULL) = 0 <0.000006>
+11902 1184699865.145703 gettimeofday({1184699865, 145715}, NULL) = 0 <0.000007>
+11902 1184699865.145807 gettimeofday({1184699865, 145817}, NULL) = 0 <0.000006>
+11902 1184699865.145909 gettimeofday({1184699865, 145920}, NULL) = 0 <0.000007>
+11902 1184699865.146006 gettimeofday({1184699865, 146017}, NULL) = 0 <0.000006>
+11902 1184699865.146126 gettimeofday({1184699865, 146137}, NULL) = 0 <0.000006>
+11902 1184699865.146244 gettimeofday({1184699865, 146255}, NULL) = 0 <0.000006>
+11902 1184699865.146281 gettimeofday({1184699865, 146291}, NULL) = 0 <0.000007>
+11902 1184699865.146317 gettimeofday({1184699865, 146327}, NULL) = 0 <0.000006>
+11902 1184699865.146353 gettimeofday({1184699865, 146363}, NULL) = 0 <0.000006>
+11902 1184699865.146389 gettimeofday({1184699865, 146399}, NULL) = 0 <0.000006>
+11902 1184699865.146425 gettimeofday({1184699865, 146434}, NULL) = 0 <0.000007>
+11902 1184699865.146756 gettimeofday({1184699865, 146767}, NULL) = 0 <0.000007>
+11902 1184699865.146983 write(2, "In file kernel/qpixmap_x11.cpp, line 633: Out of memory\n", 56) = 56 <0.000089>
+11902 1184699865.147110 write(2, "QImage::convertDepth: Image is a null image\n", 44) = 44 <0.000045>
+11902 1184699865.147270 gettimeofday({1184699865, 147281}, NULL) = 0 <0.000006>
+11902 1184699865.147359 write(11, "close(73ba3c08):about:konqueror\n", 32) = 32 <0.020144>
+11902 1184699865.167842 gettimeofday({1184699865, 167855}, NULL) = 0 <0.001126>
+11902 1184699865.169498 gettimeofday({1184699865, 169511}, NULL) = 0 <0.000007>
+11902 1184699865.169757 gettimeofday({1184699865, 169769}, NULL) = 0 <0.000006>
+11902 1184699865.171117 ioctl(5, FIONREAD, [1]) = 0 <0.000008>
+11902 1184699865.171179 ioctl(5, FIONREAD, [1]) = 0 <0.000016>
+11902 1184699865.171394 gettimeofday({1184699865, 171406}, NULL) = 0 <0.000006>
+11902 1184699865.171468 gettimeofday({1184699865, 171479}, NULL) = 0 <0.000006>
+11902 1184699865.171891 futex(0x2b00f9963f10, FUTEX_WAKE, 2147483647) = 0 <0.000006>
+11902 1184699865.172057 futex(0x2b00f972a350, FUTEX_WAKE, 2147483647) = 0 <0.000006>
+11902 1184699865.208209 gettimeofday({1184699865, 208282}, NULL) = 0 <0.000044>
+11902 1184699865.208337 gettimeofday({1184699865, 208348}, NULL) = 0 <0.000007>
+11902 1184699865.208404 gettimeofday({1184699865, 208416}, NULL) = 0 <0.000007>
+11902 1184699865.208453 gettimeofday({1184699865, 208463}, NULL) = 0 <0.000007>
+11902 1184699865.208492 gettimeofday({1184699865, 208503}, NULL) = 0 <0.000007>
+11902 1184699865.208551 gettimeofday({1184699865, 208561}, NULL) = 0 <0.000006>
+11902 1184699865.208643 ioctl(5, FIONREAD, [1]) = 0 <0.000007>
+11902 1184699865.208689 gettimeofday({1184699865, 208699}, NULL) = 0 <0.000006>
+11902 1184699865.208782 munmap(0x2b00f9b67000, 60718) = 0 <0.000017>
+11902 1184699865.208825 munmap(0x2b00f9b39000, 187022) = 0 <0.000031>
+11902 1184699865.208881 munmap(0x2b00f9d70000, 148286) = 0 <0.000009>
+11902 1184699865.208913 munmap(0x2b00f9d95000, 5123) = 0 <0.000021>
+11902 1184699865.208967 munmap(0x2b00f9d97000, 995) = 0 <0.000008>
+11902 1184699865.208998 munmap(0x2b00f9d98000, 9225) = 0 <0.000007>
+11902 1184699865.209029 munmap(0x2b00f9d9b000, 959) = 0 <0.000006>
+11902 1184699865.209059 munmap(0x2b00f9d9c000, 1176) = 0 <0.000007>
+11902 1184699865.209089 munmap(0x2b00f9d9d000, 1707) = 0 <0.000008>
+11902 1184699865.209120 munmap(0x2b00f9d9e000, 558) = 0 <0.000007>
+11902 1184699865.209150 munmap(0x2b00f9d9f000, 1212) = 0 <0.000008>
+11902 1184699865.209224 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/konqueror.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000015>
+11902 1184699865.209282 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/konqueror.mo", R_OK) = 0 <0.000013>
+11902 1184699865.209325 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/konqueror.mo", {st_mode=S_IFREG|0644, st_size=60718, ...}) = 0 <0.000011>
+11902 1184699865.209397 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/kdelibs.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.209441 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/kdelibs.mo", R_OK) = 0 <0.000010>
+11902 1184699865.209479 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/kdelibs.mo", {st_mode=S_IFREG|0644, st_size=187022, ...}) = 0 <0.000009>
+11902 1184699865.209543 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/kio.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.209585 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/kio.mo", R_OK) = 0 <0.000009>
+11902 1184699865.209623 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/kio.mo", {st_mode=S_IFREG|0644, st_size=148286, ...}) = 0 <0.000009>
+11902 1184699865.209686 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/libkonq.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.209729 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/libkonq.mo", R_OK) = 0 <0.000009>
+11902 1184699865.209767 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/libkonq.mo", {st_mode=S_IFREG|0644, st_size=5123, ...}) = 0 <0.000009>
+11902 1184699865.209830 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/searchbarplugin.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.209874 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/searchbarplugin.mo", R_OK) = 0 <0.000009>
+11902 1184699865.209913 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/searchbarplugin.mo", {st_mode=S_IFREG|0644, st_size=995, ...}) = 0 <0.000009>
+11902 1184699865.209976 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/kcmkurifilt.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.210019 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/kcmkurifilt.mo", R_OK) = 0 <0.000009>
+11902 1184699865.210058 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/kcmkurifilt.mo", {st_mode=S_IFREG|0644, st_size=9225, ...}) = 0 <0.000010>
+11902 1184699865.210139 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/akregatorkonqfeedicon.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.210184 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/akregatorkonqfeedicon.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000010>
+11902 1184699865.210227 access("/usr/share/locale/de/LC_MESSAGES/akregatorkonqfeedicon.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000010>
+11902 1184699865.210277 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/autorefresh.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000008>
+11902 1184699865.210319 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/autorefresh.mo", R_OK) = 0 <0.000010>
+11902 1184699865.210357 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/autorefresh.mo", {st_mode=S_IFREG|0644, st_size=1176, ...}) = 0 <0.000009>
+11902 1184699865.210440 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/khtmlsettingsplugin.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.210484 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/khtmlsettingsplugin.mo", R_OK) = 0 <0.000010>
+11902 1184699865.210524 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/khtmlsettingsplugin.mo", {st_mode=S_IFREG|0644, st_size=1707, ...}) = 0 <0.000010>
+11902 1184699865.210588 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/minitoolsplugin.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000009>
+11902 1184699865.210631 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/minitoolsplugin.mo", R_OK) = 0 <0.000010>
+11902 1184699865.210670 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/minitoolsplugin.mo", {st_mode=S_IFREG|0644, st_size=558, ...}) = 0 <0.000010>
+11902 1184699865.210748 access("/home/markus/.kde3.5/share/locale/de/LC_MESSAGES/uachangerplugin.mo", R_OK) = -1 ENOENT (No such file or directory) <0.000008>
+11902 1184699865.210791 access("/usr/kde/3.5/share/locale/de/LC_MESSAGES/uachangerplugin.mo", R_OK) = 0 <0.000010>
+11902 1184699865.210830 stat("/usr/kde/3.5/share/locale/de/LC_MESSAGES/uachangerplugin.mo", {st_mode=S_IFREG|0644, st_size=1212, ...}) = 0 <0.000009>
+11902 1184699865.210893 open("/usr/kde/3.5/share/locale/de/LC_MESSAGES/kdelibs.mo", O_RDONLY) = 12 <0.000013>
+11902 1184699865.210933 fstat(12, {st_mode=S_IFREG|0644, st_size=187022, ...}) = 0 <0.000006>
+11902 1184699865.210972 mmap(NULL, 187022, PROT_READ, MAP_PRIVATE, 12, 0) = 0x2b00f9b39000 <0.000010>
+11902 1184699865.211006 close(12)       = 0 <0.000006>
+11902 1184699865.211187 ioctl(5, FIONREAD, [1]) = 0 <0.000005>
+11902 1184699865.211227 gettimeofday({1184699865, 211237}, NULL) = 0 <0.000006>
+11902 1184699865.211351 ioctl(5, FIONREAD, [1]) = 0 <0.000005>
+11902 1184699865.211389 gettimeofday({1184699865, 211399}, NULL) = 0 <0.000006>
+11902 1184699865.211593 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.211631 gettimeofday({1184699865, 211642}, NULL) = 0 <0.000007>
+11902 1184699865.212007 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.212047 gettimeofday({1184699865, 212057}, NULL) = 0 <0.000006>
+11902 1184699865.215764 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.215811 gettimeofday({1184699865, 215821}, NULL) = 0 <0.000006>
+11902 1184699865.216046 gettimeofday({1184699865, 216058}, NULL) = 0 <0.000007>
+11902 1184699865.216659 gettimeofday({1184699865, 216673}, NULL) = 0 <0.000007>
+11902 1184699865.216729 gettimeofday({1184699865, 216740}, NULL) = 0 <0.000007>
+11902 1184699865.217458 ioctl(5, FIONREAD, [1]) = 0 <0.000009>
+11902 1184699865.217576 gettimeofday({1184699865, 217588}, NULL) = 0 <0.000007>
+11902 1184699865.217617 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.217649 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.217682 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.217714 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.217748 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.217788 gettimeofday({1184699865, 217798}, NULL) = 0 <0.000006>
+11902 1184699865.217826 ioctl(5, FIONREAD, [1]) = 0 <0.000030>
+11902 1184699865.217900 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.217934 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.218284 gettimeofday({1184699865, 218297}, NULL) = 0 <0.000006>
+11902 1184699865.218390 ioctl(1, SNDCTL_TMR_TIMEBASE or TCGETS, {B38400 opost isig -icanon -echo ...}) = 0 <0.000010>
+11902 1184699865.218445 write(2, "konqueror: Fatal IO error: client killed\n", 41) = 41 <0.000115>
+11902 1184699865.219919 ioctl(5, FIONREAD, [1]) = 0 <0.000026>
+11902 1184699865.220001 gettimeofday({1184699865, 220012}, NULL) = 0 <0.000006>
+11902 1184699865.220093 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.220132 gettimeofday({1184699865, 220142}, NULL) = 0 <0.000007>
+11902 1184699865.220206 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.220243 gettimeofday({1184699865, 220254}, NULL) = 0 <0.000007>
+11902 1184699865.220322 ioctl(5, FIONREAD, [1]) = 0 <0.000006>
+11902 1184699865.220359 gettimeofday({1184699865, 220370}, NULL) = 0 <0.000007>
+11902 1184699865.220831 write(9, "\1\2\1\0\313\0\0\0\300\2\0\0", 12) = 12 <0.000084>
+11902 1184699865.220975 write(9, "\0\0\0\20konqueror-11902\0\0\0\0\vDCOPServer\0\0\0\0\0\0\0\0?disconnectSignal(QCString,QCString,QCString,QCString,QCString)\0\0\0\0]", 110) = 110 <0.000011>
+11902 1184699865.221025 write(9, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0IKBookmarkManager-/home/markus/.kde3.5/share/apps/konqueror/bookmarks.xml\0\0\0\0\0", 93) = 93 <0.000065>
+11902 1184699865.221129 read(9, "\2\3\0\0021\0\0\0", 8) = 8 <0.000006>
+11902 1184699865.221163 read(9, "\300\2\0\0", 4) = 4 <0.000015>
+11902 1184699865.221204 read(9, "\0\0\0\vDCOPServer\0\0\0\0\20konqueror-11902\0\0\0\0\5bool\0\0\0\0\1\1", 49) = 49 <0.000023>
+11902 1184699865.222389 munmap(0x2b00f9b39000, 187022) = 0 <0.000018>
+11902 1184699865.223946 exit_group(1)   = ?
