@@ -1,35 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763847AbXGQIN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXGQIPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763847AbXGQIN5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933234AbXGQINZ
+	id S933084AbXGQIPh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762380AbXGQIPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:13:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34214
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933080AbXGQINX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:13:23 -0400
-Date: Tue, 17 Jul 2007 01:13:25 -0700 (PDT)
-Message-Id: <20070717.011325.85627840.davem@davemloft.net>
-To: viro@ftp.linux.org.uk
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] sparc32 has working dma-mapping only with CONFIG_PCI
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <E1IAhoN-0001iq-Rf@ZenIV.linux.org.uk>
-References: <E1IAhoN-0001iq-Rf@ZenIV.linux.org.uk>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 17 Jul 2007 04:15:20 -0400
+Received: from il.qumranet.com ([82.166.9.18]:44062 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760825AbXGQIPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 04:15:19 -0400
+Message-ID: <469C7A9E.30207@qumranet.com>
+Date: Tue, 17 Jul 2007 11:15:26 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Anthony Liguori <aliguori@us.ibm.com>
+CC: Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>,
+       KVM devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: [PATCH 2/3] KVM - Fix hypercall arguments
+References: <20070716192447.GA16248@c2.user-mode-linux.org>
+In-Reply-To: <20070716192447.GA16248@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Tue, 17 Jul 2007 08:49:35 +0100
+Jeff Dike wrote:
+> It looks like kvm_hypercall is trying to match the system call
+> convention and mixed up the call number and first argument in the
+> 32-bit case.
+>
+> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+> --
+>  drivers/kvm/kvm_main.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> Index: kvm/drivers/kvm/kvm_main.c
+> ===================================================================
+> --- kvm.orig/drivers/kvm/kvm_main.c
+> +++ kvm/drivers/kvm/kvm_main.c
+> @@ -1351,8 +1351,8 @@ int kvm_hypercall(struct kvm_vcpu *vcpu,
+>  	} else
+>  #endif
+>  	{
+> -		nr = vcpu->regs[VCPU_REGS_RBX] & -1u;
+> -		a0 = vcpu->regs[VCPU_REGS_RAX] & -1u;
+> +		nr = vcpu->regs[VCPU_REGS_RAX] & -1u;
+> +		a0 = vcpu->regs[VCPU_REGS_RBX] & -1u;
+>  		a1 = vcpu->regs[VCPU_REGS_RCX] & -1u;
+>  		a2 = vcpu->regs[VCPU_REGS_RDX] & -1u;
+>  		a3 = vcpu->regs[VCPU_REGS_RSI] & -1u;
+>   
 
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Anthony?  I think you were hacking this area?
 
-Acked-by: David S. Miller <davem@davemloft.net>
+-- 
+error compiling committee.c: too many arguments to function
+
