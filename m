@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934006AbXGQQBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbXGQQCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934006AbXGQQBb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbXGQQBV
+	id S933053AbXGQQCZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXGQQCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 12:01:21 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34892 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753545AbXGQQBU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:01:20 -0400
-Message-ID: <469CE7C7.1000501@zytor.com>
-Date: Tue, 17 Jul 2007 09:01:11 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/10] Use standard CR8 flags, and fix TPR definition
-References: <1184677946.10380.4.camel@localhost.localdomain>	 <1184678060.10380.7.camel@localhost.localdomain>	 <1184678129.10380.10.camel@localhost.localdomain>	 <1184678171.10380.12.camel@localhost.localdomain>	 <1184678216.10380.14.camel@localhost.localdomain>	 <1184678275.10380.16.camel@localhost.localdomain>	 <1184678348.10380.19.camel@localhost.localdomain>	 <1184679175.10380.25.camel@localhost.localdomain>	 <1184679256.10380.27.camel@localhost.localdomain> <1184679437.10380.31.camel@localhost.localdomain> <469CC7CC.7050102@qumranet.com>
-In-Reply-To: <469CC7CC.7050102@qumranet.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jul 2007 12:02:17 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:45672 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753531AbXGQQCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 12:02:16 -0400
+Subject: Re: Containers: css_put() dilemma
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Paul =?UTF-8?Q?=28=E5=AE=9D=E7=91=A0=29?= Menage 
+	<menage@google.com>
+Cc: balbir@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Pavel Emelianov <xemul@sw.ru>, Paul Jackson <pj@sgi.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
+References: <469BBE00.8000709@linux.vnet.ibm.com>
+	 <6599ad830707161203o7f148c75p52e77d4be3ace487@mail.gmail.com>
+	 <469C2792.6050009@linux.vnet.ibm.com>
+	 <6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com>
+	 <20070717070031.GA22410@linux.vnet.ibm.com>
+	 <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com>
+	 <469C99D1.7090807@linux.vnet.ibm.com>
+	 <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 17 Jul 2007 09:02:11 -0700
+Message-Id: <1184688131.6454.109.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> 
-> X86_CR8_TPR is not used in the kernel.  But is this meant to be a mask,
-> or something else?
-> 
+On Tue, 2007-07-17 at 08:49 -0700, Paul (宝瑠) Menage wrote:
+> Because as soon as you do the atomic_dec_and_test() on css->refcnt and
+> the refcnt hits zero, then theoretically someone other thread (that
+> already holds container_mutex) could check that the refcount is zero
+> and free the container structure.
 
-Yes, a mask.
+Then that other task had a reference and itself should have bumped the
+count, and the other user would never have seen it hit zero.
 
-And no, it's not used, except for KVM...
+Even if there are still pages attached to the container, why not just
+have those take a reference, and don't bother actually freeing the
+container until the last true reference is dropped?
 
-	-hpa
+Does it matter if the destruction callbacks don't happen until well
+after an attempt to destroy the container is made?
+
+-- Dave
+
