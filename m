@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937082AbXGQXbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936228AbXGQXiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937082AbXGQXbW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 19:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbXGQXbO
+	id S936228AbXGQXiJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 19:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbXGQXiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 19:31:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39946 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757402AbXGQXbN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 19:31:13 -0400
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Rene Herman <rene.herman@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
-In-Reply-To: <Pine.LNX.4.58.0707172334210.2141@be1.lrz>
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it>
-	 <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it>
-	 <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>
-	 <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>
-	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>  <469BF104.1040703@gmail.com>
-	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
-	 <469BF768.6040200@gmail.com> <Pine.LNX.4.58.0707170143200.29868@be1.lrz>
-	 <469C0D32.2090102@gmail.com> <Pine.LNX.4.58.0707171119050.2210@be1.lrz>
-	 <469CD456.801@gmail.com>  <Pine.LNX.4.58.0707172334210.2141@be1.lrz>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 17 Jul 2007 16:29:59 -0700
-Message-Id: <1184714999.2691.0.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Tue, 17 Jul 2007 19:38:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50921 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754852AbXGQXh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 19:37:59 -0400
+Message-ID: <469D52D1.1000803@garzik.org>
+Date: Tue, 17 Jul 2007 19:37:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: block/bsg.c
+References: <20070716165706.348f6bbf.akpm@linux-foundation.org>	 <20070717063810.GY5195@kernel.dk>	 <20070717121821.3212cd60.akpm@linux-foundation.org>	 <20070717132233.ed11362c.akpm@linux-foundation.org> <1184710755.3378.30.camel@localhost.localdomain>
+In-Reply-To: <1184710755.3378.30.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Bottomley wrote:
+> @@ -1052,9 +1054,10 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
+>  	int err, (*setfunc)(ide_drive_t *, int);
+>  	u8 *val;
+>  
+> -	err = scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+> -	if (err != -ENOTTY)
+> -		return err;
+> +	switch (cmd) {
+> +	case SG_IO:
+> +		return scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+> +	}
+>  
+>  	switch (cmd) {
+>  	case HDIO_GET_32BIT:	    val = &drive->io_32bit;	 goto read_val;
 
-> 1) It all can be reduced to 4K + 4K by asuming all IRQ happen on one CPU.
 
-no it's separate stacks for soft and hard irqs, so it's really 4+4+4
+At that point you might as well use an 'if'.
 
+But overall -- agreed.  ACK.
 
-another angle is that while correctness rules, userspace correctness
-rules as well. If you can't fork enough threads for what you need the
-machine for, why have the machine in the first place?
+	Jeff
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
