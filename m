@@ -1,63 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbXGQFT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbXGQFg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757673AbXGQFT0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 01:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbXGQFTS
+	id S1757310AbXGQFg1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 01:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXGQFgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 01:19:18 -0400
-Received: from 1wt.eu ([62.212.114.60]:3353 "EHLO 1wt.eu"
+	Tue, 17 Jul 2007 01:36:17 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53488 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753545AbXGQFTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 01:19:17 -0400
-Date: Tue, 17 Jul 2007 07:16:48 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Tony Borras <tonyb@sysdev.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.4.35 tree abandoned/delayed?
-Message-ID: <20070717051646.GD943@1wt.eu>
-References: <20070716133025.55327074.tonyb@sysdev.org> <20070716163047.55a21e6c.tonyb@sysdev.org>
+	id S1752867AbXGQFgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 01:36:16 -0400
+Date: Tue, 17 Jul 2007 11:08:03 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: Re: [patch 1/8] Kprobes - do not use kprobes mutex in arch code
+Message-ID: <20070717053803.GA7033@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20070714012133.612727310@polymtl.ca> <20070714012411.262873138@polymtl.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070716163047.55a21e6c.tonyb@sysdev.org>
+In-Reply-To: <20070714012411.262873138@polymtl.ca>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tony,
+On Fri, Jul 13, 2007 at 09:21:34PM -0400, Mathieu Desnoyers wrote:
+> Remove the kprobes mutex from kprobes.h, since it does not belong there. Also
+> remove all use of this mutex in the architecture specific code, replacing it by
+> a proper mutex lock/unlock in the architecture agnostic code.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-On Mon, Jul 16, 2007 at 04:30:47PM -0800, Tony Borras wrote:
-> I did get the current 'pre' set of 2.4.35 (circa early
-> June) patches and applied to 2.4.34.5.  After fixing a goto
-> mislable in one of the patches (dont remember if it was one of
-> the patch-2.4.34.? or patch-2.4.35.pre5), managed to build a
-> vmlinuz-2.4.35 successfully.
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-could you please report what the problem was, in case it's not fixed
-yet ?
+Thanks Mathieu.
 
-> Just wondered whether to expect an abandonded tree, in which
-> case I will fly with this 2.4.35 build or should wait for its
-> eventual release.
- 
-No it's not abandonned at all !!!
-
-The difficulty with 2.4 is to get user feedback on patches. While in 2.6,
-there are hundreds or thousands of testers for every release, in 2.4,
-I have to wait longer after every release in order to start collecting
-problem reports, or confirmation of fixes. People using it in production
-generally cannot reboot a machine in the evening just to try a patch.
-Also, subsystem maintainers have less time to spend on it and are
-themselves slowed down by the slow feedback process.
-
-That's merely why I maintain a parallel 2.4.34.X stable branch. I thought
-I could release one version every 6 months, but I think that this delay
-will probably slightly increase after 2.4.35, we'll see.
-
-I still have a few patches to merge, and I expect to be able to work on
-them next week-end, then release -rc1, which I expect to be the only -rc
-before -final (which will probably not be true as in every -rc).
-
-Thanks,
-Willy
-
+> CC: prasanna@in.ibm.com
+> CC: ananth@in.ibm.com
+> CC: anil.s.keshavamurthy@intel.com
+> CC: davem@davemloft.net
+> ---
+>  arch/i386/kernel/kprobes.c    |    2 --
+>  arch/ia64/kernel/kprobes.c    |    2 --
+>  arch/powerpc/kernel/kprobes.c |    2 --
+>  arch/s390/kernel/kprobes.c    |    2 --
+>  arch/x86_64/kernel/kprobes.c  |    2 --
+>  include/linux/kprobes.h       |    2 --
+>  kernel/kprobes.c              |    2 ++
+>  7 files changed, 2 insertions(+), 12 deletions(-)
+> 
+> Index: linux-2.6-lttng/include/linux/kprobes.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/linux/kprobes.h	2007-07-13 18:42:08.000000000 -0400
+> +++ linux-2.6-lttng/include/linux/kprobes.h	2007-07-13 18:42:52.000000000 -0400
+> @@ -35,7 +35,6 @@
+>  #include <linux/percpu.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/rcupdate.h>
+> -#include <linux/mutex.h>
+> 
+>  #ifdef CONFIG_KPROBES
+>  #include <asm/kprobes.h>
+> @@ -177,7 +176,6 @@
+>  }
+> 
+>  extern spinlock_t kretprobe_lock;
+> -extern struct mutex kprobe_mutex;
+>  extern int arch_prepare_kprobe(struct kprobe *p);
+>  extern void arch_arm_kprobe(struct kprobe *p);
+>  extern void arch_disarm_kprobe(struct kprobe *p);
+> Index: linux-2.6-lttng/arch/i386/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/i386/kernel/kprobes.c	2007-07-13 18:42:08.000000000 -0400
+> +++ linux-2.6-lttng/arch/i386/kernel/kprobes.c	2007-07-13 18:42:52.000000000 -0400
+> @@ -209,9 +209,7 @@
+> 
+>  void __kprobes arch_remove_kprobe(struct kprobe *p)
+>  {
+> -	mutex_lock(&kprobe_mutex);
+>  	free_insn_slot(p->ainsn.insn, (p->ainsn.boostable == 1));
+> -	mutex_unlock(&kprobe_mutex);
+>  }
+> 
+>  static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
+> Index: linux-2.6-lttng/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/kernel/kprobes.c	2007-07-13 18:42:10.000000000 -0400
+> +++ linux-2.6-lttng/kernel/kprobes.c	2007-07-13 18:43:17.000000000 -0400
+> @@ -641,7 +641,9 @@
+>  			list_del_rcu(&p->list);
+>  			kfree(old_p);
+>  		}
+> +		mutex_lock(&kprobe_mutex);
+>  		arch_remove_kprobe(p);
+> +		mutex_unlock(&kprobe_mutex);
+>  	} else {
+>  		mutex_lock(&kprobe_mutex);
+>  		if (p->break_handler)
+> Index: linux-2.6-lttng/arch/ia64/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/ia64/kernel/kprobes.c	2007-07-13 18:43:59.000000000 -0400
+> +++ linux-2.6-lttng/arch/ia64/kernel/kprobes.c	2007-07-13 18:44:03.000000000 -0400
+> @@ -565,9 +565,7 @@
+> 
+>  void __kprobes arch_remove_kprobe(struct kprobe *p)
+>  {
+> -	mutex_lock(&kprobe_mutex);
+>  	free_insn_slot(p->ainsn.insn, 0);
+> -	mutex_unlock(&kprobe_mutex);
+>  }
+>  /*
+>   * We are resuming execution after a single step fault, so the pt_regs
+> Index: linux-2.6-lttng/arch/powerpc/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/powerpc/kernel/kprobes.c	2007-07-13 18:44:20.000000000 -0400
+> +++ linux-2.6-lttng/arch/powerpc/kernel/kprobes.c	2007-07-13 18:44:26.000000000 -0400
+> @@ -86,9 +86,7 @@
+> 
+>  void __kprobes arch_remove_kprobe(struct kprobe *p)
+>  {
+> -	mutex_lock(&kprobe_mutex);
+>  	free_insn_slot(p->ainsn.insn, 0);
+> -	mutex_unlock(&kprobe_mutex);
+>  }
+> 
+>  static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+> Index: linux-2.6-lttng/arch/s390/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/s390/kernel/kprobes.c	2007-07-13 18:44:43.000000000 -0400
+> +++ linux-2.6-lttng/arch/s390/kernel/kprobes.c	2007-07-13 18:44:46.000000000 -0400
+> @@ -218,9 +218,7 @@
+> 
+>  void __kprobes arch_remove_kprobe(struct kprobe *p)
+>  {
+> -	mutex_lock(&kprobe_mutex);
+>  	free_insn_slot(p->ainsn.insn, 0);
+> -	mutex_unlock(&kprobe_mutex);
+>  }
+> 
+>  static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+> Index: linux-2.6-lttng/arch/x86_64/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/x86_64/kernel/kprobes.c	2007-07-13 18:45:08.000000000 -0400
+> +++ linux-2.6-lttng/arch/x86_64/kernel/kprobes.c	2007-07-13 18:45:14.000000000 -0400
+> @@ -249,9 +249,7 @@
+> 
+>  void __kprobes arch_remove_kprobe(struct kprobe *p)
+>  {
+> -	mutex_lock(&kprobe_mutex);
+>  	free_insn_slot(p->ainsn.insn, 0);
+> -	mutex_unlock(&kprobe_mutex);
+>  }
+> 
+>  static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
