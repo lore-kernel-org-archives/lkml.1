@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763959AbXGQLRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762485AbXGQLTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763959AbXGQLRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 07:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXGQLRK
+	id S1762485AbXGQLTn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 07:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXGQLTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 07:17:10 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:43006 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755211AbXGQLRI (ORCPT
+	Tue, 17 Jul 2007 07:19:36 -0400
+Received: from mx02.hansenet.de ([213.191.73.26]:34597 "EHLO
+	webmail.hansenet.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755032AbXGQLTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 07:17:08 -0400
-X-Sasl-enc: FWc3m+IJu6bJHUDREdrvqHPW8tcLn5hD4roMiM3rubk1 1184671026
-Subject: Re: [patch] CFS scheduler, -v19
-From: Ian Kent <raven@themaw.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Bill Davidsen <davidsen@tmr.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20070717074537.GA13539@elte.hu>
-References: <20070706173319.GA2356@elte.hu>
-	 <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com>
-	 <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com>
-	 <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu>
-	 <1184648474.3188.33.camel@raven.themaw.net>
-	 <20070717074537.GA13539@elte.hu>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 19:17:00 +0800
-Message-Id: <1184671021.3188.51.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+	Tue, 17 Jul 2007 07:19:35 -0400
+Message-ID: <469CA5B4.5080106@e-dict.net>
+Date: Tue, 17 Jul 2007 13:19:16 +0200
+From: Ingo Freund <linux-kernel-news@e-dict.net>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: howto create partitions bigger than 2TB
+References: <4697760E.4070803@e-dict.net> <46980232.4080500@zytor.com>
+In-Reply-To: <46980232.4080500@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 09:45 +0200, Ingo Molnar wrote:
-> * Ian Kent <raven@themaw.net> wrote:
+On 14.07.2007 00:52, H. Peter Anvin wrote (please find the answer below the original text):
+> Ingo Freund wrote:
+>> Hi
+>>
+>> I've got a RAID5 (driver aacraid for an ICP9047MA) with four
+>> 750GB hdds which provides a 2.25TB sized device.
+>> None of the until now used tools will work with that device.
+>> fdisk complains about missing cylinder count.
+>> cfdisk misses the device size.
+>> parted shows the right device size but only creates a partion
+>> with 51GB.
+>> What am I supposed to do to work with this device?
+>> Which fs can handle it?
+>> (CONFIG LARGE BLOCK is on)
+>> We are talking about a 32Bit machine with vanilla kernel 2.6.21.5.
+>>
 > 
-> > Yes it does and I have two reported bugs so far.
-> > 
-> > In several places I have code similar to:
-> > 
-> > wait.tv_sec = time(NULL) + 1;
-> > wait.tv_nsec = 0;
-> > 
-> > signaled = 0;
-> > while (!signaled) {
-> >         status = pthread_cond_timedwait(&cond, &mutex, &wait);
-> >        if (status) {
-> >              if (status == ETIMEDOUT)
-> >                   break;
-> >              fatal(status);
-> >       }
-> > }
+> You have to use GPT partitions instead of DOS partitions (although you
+> may have to leave your /boot as an DOS partitions, this is supposed to
+> be possible as the two partitioning schemes are designed to coexist, but
+> I don't think parted has support for it yet.)
 > 
-> ah! It passes in a low-res time source into a high-res time interface 
-> (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to 
-> time(NULL) + 2, or change it to:
-> 
-> 	gettimeofday(&wait, NULL);
-> 	wait.tv_sec++;
 
-OK, I'm with you, hi-res timer.
-But even so, how is the time in the past after adding a second.
+This is the solution (for use as a data container on a backup machine):
 
-Is it because I'm not setting tv_nsec when it's close to a second
-boundary, and hence your recommendation above?
+parted /dev/sdb:
+(parted) mklabel gpt
+(parted) mkpart p 0 100%
+(parted) quit
+mkreiserfs /dev/sdb1
+...and all seems to work.
 
-> 
-> does this solve the spinning?
+Thank you all very much for your hints.
 
-I don't have a system to test this on so I'll try to get one of the
-people that logged the problem to test a patch.
-
-> 
-> i'm wondering how widespread this is. If automount is the only app doing 
-> this then _maybe_ we could get away with it by changing automount?
-
-I'm happy to change automount but that could cause odd version specific
-problems for people updating their kernel on an older installed base.
-
-Aaah .. and they'll all blame me!! ;)
-
-Ian
-
-
+Regards - Ingo.
