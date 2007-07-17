@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbXGQMLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbXGQMLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479AbXGQMLD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 08:11:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbXGQMKx
+	id S1756767AbXGQMLk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 08:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXGQMLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 08:10:53 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:1142 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbXGQMKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 08:10:52 -0400
-Date: Tue, 17 Jul 2007 14:10:17 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Don't define empty struct bsg_class_device if
-	!CONFIG_BLK_DEV_BSG  (was: Re: block/bsg.c)
-Message-ID: <20070717121017.GS5195@kernel.dk>
-References: <20070716165706.348f6bbf.akpm@linux-foundation.org> <Pine.LNX.4.62.0707171359110.29326@pademelon.sonytel.be>
+	Tue, 17 Jul 2007 08:11:30 -0400
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:2137 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbXGQML3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 08:11:29 -0400
+X-Greylist: delayed 426 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jul 2007 08:11:28 EDT
+Message-ID: <4194.194.196.35.3.1184673826.squirrel@webmail.xs4all.nl>
+In-Reply-To: <20070717114741.GC25083@localhost.sw.ru>
+References: <20070717114741.GC25083@localhost.sw.ru>
+Date: Tue, 17 Jul 2007 14:03:46 +0200 (CEST)
+Subject: Re: [PATCH] ivtv: don't recompile needlessly
+From: "Hans Verkuil" <hverkuil@xs4all.nl>
+To: "Alexey Dobriyan" <adobriyan@sw.ru>
+Cc: akpm@osdl.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, hverkuil@xs4all.nl
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0707171359110.29326@pademelon.sonytel.be>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17 2007, Geert Uytterhoeven wrote:
-> Don't define an empty struct bsg_class_device if !CONFIG_BLK_DEV_BSG.
-> 
-> It's embedded in struct request_queue, but there we have
-> 
-> #if defined(CONFIG_BLK_DEV_BSG)
-> 	struct bsg_class_device bsg_dev;
-> #endif
-> 
-> anyway.
+> Driver prints 3l33t banner including kernel version.
+> Could we _please_ never do this in future.
 
-Thanks, applied.
+Thanks for reporting this. This was a leftover from when the driver was
+standalone. I've merged this patch in my repository and will push it
+upstream.
 
--- 
-Jens Axboe
+Regards,
+
+        Hans
+
+>
+> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+> ---
+>
+>  drivers/media/video/ivtv/ivtv-driver.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> --- a/drivers/media/video/ivtv/ivtv-driver.c
+> +++ b/drivers/media/video/ivtv/ivtv-driver.c
+> @@ -56,7 +56,6 @@
+>  #include "ivtv-gpio.h"
+>  #include "ivtv-yuv.h"
+>
+> -#include <linux/vermagic.h>
+>  #include <media/tveeprom.h>
+>  #include <media/v4l2-chip-ident.h>
+>
+> @@ -1315,7 +1314,7 @@ static struct pci_driver ivtv_pci_driver = {
+>  static int module_start(void)
+>  {
+>  	printk(KERN_INFO "ivtv:  ==================== START INIT IVTV
+> ====================\n");
+> -	printk(KERN_INFO "ivtv:  version %s (" VERMAGIC_STRING ") loading\n",
+> IVTV_VERSION);
+> +	printk(KERN_INFO "ivtv:  version %s loading\n", IVTV_VERSION);
+>
+>  	memset(ivtv_cards, 0, sizeof(ivtv_cards));
+>
+>
+>
+
 
