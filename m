@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763517AbXGQNK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765396AbXGQNME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763517AbXGQNK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 09:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbXGQNKT
+	id S1765396AbXGQNME (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 09:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXGQNLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 09:10:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55903 "EHLO mx1.redhat.com"
+	Tue, 17 Jul 2007 09:11:55 -0400
+Received: from smtp19.orange.fr ([80.12.242.17]:56546 "EHLO smtp19.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbXGQNKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 09:10:17 -0400
-Date: Tue, 17 Jul 2007 15:10:14 +0200
-From: Karel Zak <kzak@redhat.com>
-To: List util-linux-ng <util-linux-ng@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng 2.13-rc2
-Message-ID: <20070717131014.GA28982@petra.dvoda.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751926AbXGQNLy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 09:11:54 -0400
+X-ME-UUID: 20070717131152912.DEDB51C000A2@mwinf1912.orange.fr
+From: David CHANIAL <david.ml@euro-web.fr>
+Organization: Euro Web
+To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
+Date: Tue, 17 Jul 2007 15:11:43 +0200
+User-Agent: KMail/1.9.5
+Cc: Neil Brown <neilb@suse.de>
+References: <200707160638.15750.david.ml@euro-web.fr> <18076.42052.961808.528867@notabene.brown>
+In-Reply-To: <18076.42052.961808.528867@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200707171511.43621.david.ml@euro-web.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Le mardi 17 juillet 2007 13:13, Neil Brown a écrit :
+> What is "-sdf88-core" ?? Are there any extra patches that we should
+> know about?
+
+I have upgraded to 2.6.22.1-sdf90-intel
+-sdf90 is a set of a configuration with one little patch :
+	http://www.ssi.bg/~ja/#hidden
+
+intel or core juste say for wich CPU it was compiled (the previous 
+kernel "core" was named-error, the kernel really was for a intel (and not 
+core2) cpu)
 
 
-The second util-linux-ng 2.13 release candidate is available at
+>    1/ if possible, run memtest86 on the machine for a while, to make
+>       sure there isn't a problem with the memory.
+>    2/ If the problem happens again, post another report with all the
+>       "oops" information again.  Maybe the next time it will be slightly
+>       different and will make more sense in some way.
 
-    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
+Since the kernel update, no crash anymore - for the moment -.
+If it re-crash i will floow this advices.
 
-
-v2.13-rc2 changelog:
-~~~~~~~~~~~~~~~~~~~
-
-readprofile:
-    - also search for __stext in readprofile  [Mike Frysinger]
-build-sys:
-    - remove libtool  [Karel Zak]
-cal:
-    - add test code  [Karel Zak]
-fdisk:
-    - check returns in fdisk from partition changes  [Mike Frysinger]
-    - do not complain about regular files  [H. Peter Anvin]
-    - when generating a DOS disk label, give it an ID  [H. Peter Anvin]
-login-utils:
-    - remove deprecated sigsetmask() from wall  [Karel Zak]
-    - remove unwanted newlines from wall  [Karel Zak, Matthias Koenig]
-lomount.c:
-    - don't use mlockall if CRYPT_NONE [Masatake YAMATO]
-misc-util:
-    - new rtcwake command [Bernhard Walle]
-mount:
-    - add acl option documentation for ext3 and reiserfs [Matthias Koenig]
-schedutils:
-    - fix chrt docs and pid=0 usage [Matthias Koenig]
-    - prefer SYS_ioprio_{set,get} from glibc to hardcoded version [Karel Zak]
-sys-utils:
-    - add arch(1) back to the official tree (see ReleaseNotes
-            for more details)  [Karel Zak]
-whereis:
-    - add lib64 paths  [Karel Zak]
-
-
- Feedback and bug reports, as always, are welcomed.
-
-    Karel
-
+Thanks Niel,
 -- 
- Karel Zak  <kzak@redhat.com>
+David
+
