@@ -1,89 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbXGQBl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbXGQBpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760601AbXGQBl4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 21:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbXGQBlr
+	id S1761356AbXGQBpO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 21:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbXGQBpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 21:41:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:64843 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753747AbXGQBlq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 21:41:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=pFee6FKCZe2/9HjhRiE5BNGIYg/autIfs+o+yzbIcjzmuq5OE+3YCl60IAVU/FiffeslwsngRWT5CquTQXcnqwpjRJXRCSRWjJdKl5tSJuxTiwSh8mcocCelIQnNdRt6VL2iq0LgJsFJp5EfbVsLWVkzX5vS7FRpVcYhiYex0uU=
-Message-ID: <469C1E2A.8010508@googlemail.com>
-Date: Tue, 17 Jul 2007 03:40:58 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Mon, 16 Jul 2007 21:45:01 -0400
+Received: from smtpq3.tilbu1.nb.home.nl ([213.51.146.202]:48951 "EHLO
+	smtpq3.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754318AbXGQBpA (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 21:45:00 -0400
+Message-ID: <469C1EE0.1090808@gmail.com>
+Date: Tue, 17 Jul 2007 03:44:00 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org
-Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-References: <469BD9C8.4000808@googlemail.com>	<469C10F6.3050008@googlemail.com> <20070717100921W.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20070717100921W.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=us-ascii
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: pomac@vapor.com, Linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [BUG] AS io-scheduler.
+References: <1184512821.10630.26.camel@localhost> <469B9D6B.60101@redhat.com>
+In-Reply-To: <469B9D6B.60101@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> From: Gabriel C <nix.or.die@googlemail.com>
-> Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-> Date: Tue, 17 Jul 2007 02:44:38 +0200
->
->   
->> Gabriel C wrote:
->>     
->>> Hello,
->>>
->>> sdparm and hdparm are broken for me on git (
->>> abce891a10559343d8ac9f79b46d78afdba63a40 )
->>>
->>>
->>> ~$ sudo hdparm  /dev/sdc
->>>
->>> /dev/sdc:
->>>  BLKROGET failed: Inappropriate ioctl for device
->>>  BLKRAGET failed: Inappropriate ioctl for device
->>>  BLKGETSIZE failed: Inappropriate ioctl for device
->>>
->>>
->>> ~$ sudo sdparm  --all /dev/sdc
->>> unable to access /dev/sdc, ATA disk?
->>>
->>>   
->>>       
->> Well it is bsg , setting BLK_DEV_BSG=n fixed all this errors.
->>     
->
-> Can you check the major number of your /dev/sdc? I've seen that
-> /dev/sd* is linked to bsg devices somehow.
->
->
->   
+On 07/16/2007 06:31 PM, Chuck Ebbert wrote:
 
-All my disks are doing this sdc was meant as example.
+>> BUG: unable to handle kernel paging request at virtual address ea86ac54
+>>  printing eip:
+>> c022dfec
+>> *pde = 00000000
+>> Oops: 0000 [#1]
+>> Modules linked in: eeprom i2c_viapro vt8231 i2c_isa skge
+>> CPU:    0
+>> EIP:    0060:[<c022dfec>]    Not tainted VLI
+>> EFLAGS: 00010082   (2.6.22.1 #26)
+>> EIP is at as_can_break_anticipation+0xc/0x190
+>> eax: dfcdaba0   ebx: dfcdaba0   ecx: 0035ff95   edx: cb296844
+>> esi: cb296844   edi: dfcdaba0   ebp: 00000000   esp: ceff6a70
+>> ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+>> Process rsync (pid: 1667, ti=ceff6000 task=d59cf5b0 task.ti=ceff6000)
+>> Stack: cb296844 00000001 cb296844 dfcdaba0 00000000 c022efc8 cb296844
+>> 00000000 
+>>        dfcffb9c c0227a76 dfcffb9c 00000000 c016e96e cb296844 00000000
+>> dfcffb9c 
+>>        00000000 c022af64 00000000 dfcffb9c 00000008 00000000 08ff6b30
+>> c04d1ec0 
+>> Call Trace:
+>>  [<c022efc8>] as_add_request+0xa8/0xc0
+>>  [<c0227a76>] elv_insert+0xa6/0x150
+>>  [<c016e96e>] bio_phys_segments+0xe/0x20
+>>  [<c022af64>] __make_request+0x384/0x490
+>>  [<c02add1e>] ide_do_request+0x6ee/0x890
+>>  [<c02294ab>] generic_make_request+0x18b/0x1c0
+>>  [<c022b596>] submit_bio+0xa6/0xb0
+>>  [<c013b7b8>] mempool_alloc+0x28/0xa0
+>>  [<c016bb66>] __find_get_block+0xf6/0x130
+>>  [<c016e0bc>] bio_alloc_bioset+0x8c/0xf0
+>>  [<c016b647>] submit_bh+0xb7/0xe0
+>>  [<c016c1f8>] ll_rw_block+0x78/0x90
+>>  [<c019c85d>] search_by_key+0xdd/0xd20
+>>  [<c016c201>] ll_rw_block+0x81/0x90
+>>  [<c011f190>] irq_exit+0x40/0x60
+>>  [<c01066e4>] do_IRQ+0x94/0xb0
+>>  [<c0104bc3>] common_interrupt+0x23/0x30
+>>  [<c018beca>] reiserfs_read_locked_inode+0x6a/0x490
+>>  [<c018e580>] reiserfs_find_actor+0x0/0x20
+>>  [<c018c33b>] reiserfs_iget+0x4b/0x80
+>>  [<c018e570>] reiserfs_init_locked_inode+0x0/0x10
+>>  [<c0189824>] reiserfs_lookup+0xa4/0xf0
+>>  [<c0157b03>] do_lookup+0xa3/0x140
+>>  [<c0159265>] __link_path_walk+0x615/0xa20
+>>  [<c0168a18>] __mark_inode_dirty+0x28/0x150
+>>  [<c01631c1>] mntput_no_expire+0x11/0x50
+>>  [<c01596b2>] link_path_walk+0x42/0xb0
+>>  [<c0159960>] do_path_lookup+0x130/0x150
+>>  [<c015a190>] __user_walk_fd+0x30/0x50
+>>  [<c0154766>] vfs_lstat_fd+0x16/0x40
+>>  [<c01547df>] sys_lstat64+0xf/0x30
+>>  [<c0103c42>] syscall_call+0x7/0xb
+>>  =======================
+> 
+> static int as_can_break_anticipation(struct as_data *ad, struct request *rq)
+> {
+>         struct io_context *ioc;
+>         struct as_io_context *aic;
+> 
+>         ioc = ad->io_context;  <======== ad is bogus
+>         BUG_ON(!ioc);
+> 
+> 
+> Call chain is:
+> 
+> 	as_add_request
+> 	as_update_rq:
+> 	        if (ad->antic_status == ANTIC_WAIT_REQ
+>         	                || ad->antic_status == ANTIC_WAIT_NEXT) {
+>                 	if (as_can_break_anticipation(ad, rq))
+>                         	as_antic_stop(ad);
+>         	}
+> 
+> 
+> So somehow 'ad' became invalid between the time ad->antic_status was
+> checked and as_can_break_anticipation() tried to access ad->io_context?
 
-...
+Is this similar to:
 
-$ ls -la /dev/sd{a,b,c}
-brw-r----- 1 root disk 8, 0 16. Jul 23:11 /dev/sda
-brw-rw---- 1 root disk 8, 16 16. Jul 23:11 /dev/sdb
-brw-r----- 1 root disk 8, 32 16. Jul 23:11 /dev/sdc
+http://lkml.org/lkml/2007/6/4/50
 
-...
+?
 
-sd{a,b} are SCSI disks and sdc is an ATA disk.
-
-You can get the used config from there :
-
-
-http://194.231.229.228/2.6.22-gabce891a/config
-
-
-
-Gabriel
+Rene.
