@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934784AbXGQUk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935884AbXGQUlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934784AbXGQUk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXGQUkG
+	id S935884AbXGQUlA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbXGQUko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:40:06 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:53591
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbXGQUkE (ORCPT
+	Tue, 17 Jul 2007 16:40:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36184 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754329AbXGQUkn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:40:04 -0400
-Date: Tue, 17 Jul 2007 13:27:51 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+	Tue, 17 Jul 2007 16:40:43 -0400
+Date: Tue, 17 Jul 2007 13:40:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Jeff Dike <jdike@addtoit.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
-Message-ID: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>, jdike@karaya.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: uninline check_signature()
+In-Reply-To: <Pine.LNX.4.64.0707172225260.23024@anakin>
+Message-ID: <alpine.LFD.0.999.0707171338290.27353@woody.linux-foundation.org>
+References: <200707161802.l6GI2tNp007390@hera.kernel.org>
+ <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
+ <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
+ <20070716230307.GB12230@osiris.ibm.com> <Pine.LNX.4.64.0707171519300.10600@anakin>
+ <20070717163328.GG7965@c2.user-mode-linux.org> <Pine.LNX.4.64.0707171842590.10600@anakin>
+ <alpine.LFD.0.999.0707171102040.19166@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707172225260.23024@anakin>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Alan Stern wrote:
 
-> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
->
->> I'm afraid of one thing, though.
->>
->> If we create a framework without ACPI (well, ACPI needs to be enabled in the
->> kernel anyway for other reasons, like the ability to suspend to RAM) and then
->> it turns out that we have to add some ACPI hooks to it, that might be difficult
->> to do cleanly.
->>
->> Thus, it seems reasonable to think of the ACPI handling in advance.
->
-> Absolutely.  This needs to be done in such a way that it will work:
->
-> 	On platforms without ACPI;
->
-> 	On platforms with ACPI where we do a non-ACPI type of shutdown
-> 	to whatever extent it is possible (or perhaps an ACPI-aware
-> 	shutdown rather than change to S4);
->
-> 	On platforms with ACPI where we do an ACPI-aware transition
-> 	to S4.
->
-> Rafael, for those of us who aren't thoroughly familiar with all the ins
-> and outs of the ACPI spec, could you please summarize a list of the
-> ACPI calls needed in the second and third cases above?  Indicate which
-> ones need to be done from within the original kernel and which should
-> be done from within a kexec'd hibernation kernel.
->
 
-there was just a link on slashdot toa primer on the subject of power 
-management
+On Tue, 17 Jul 2007, Geert Uytterhoeven wrote:
+> 
+> OR I'll have to disable HAS_IOMEM on m68k, and invent a new Kconfig
+> symbol for lots of other stuff that currently depends on HAS_IOMEM...
 
-http://www.techarp.com/showarticle.aspx?artno=420
+Well, as far as I'm concerned, you could also make all drivers that 
+actually need "check_signature()" do a Kconfig level
 
->
-> I'm still not entirely clear on how "suspend-to-both" ought to be
-> handled.  Presumably it will start off as a normal hibernation.  But
-> instead of shutting down, wouldn't the kexec'd kernel return to the
-> original kernel?  After all, the original kernel knows about all the
-> devices and can put them into a low-power state, while the kexec'd
-> kernel might not have sufficient information.
+	select CHECK_SIGNATURE
 
-this is what I'm thinking, but the issue here is that the original kernel 
-needs to go into suspend-to-ram mode instead of resuming operation. per 
-the e-mail I got from Ying last night this should not be hard to 
-implement.
+along with a
 
-> But what about the freezer?  The original reason for using kexec was to
-> avoid the need for the freezer.  With no freezer, while the original
-> kernel is busy powering down its devices, user tasks will be free to
-> carry out I/O -- which will make the memory snapshot inconsistent with
-> the on-disk data structures.
+	config CHECK_SIGNATURE
+		bool
+		default n
 
-no, user tasks just don't get scheduled during shutdown.
+in lib/Kconfig, and thus make it totally independent of any hw/bus 
+features at all, and simply depend on whether it is needed or not. I'd be 
+ok with that, and it's certainly "correct" too.
 
-the big problem with the freezer isn't stopping anything from happening, 
-it's _selectivly_ stopping things.
+Hmm?
 
-with kexec you don't need to let any portion of the origional kernel or 
-userspace operate so you don't have a problem.
-
-David Lang
+		Linus
