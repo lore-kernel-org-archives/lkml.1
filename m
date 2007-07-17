@@ -1,100 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935602AbXGQWkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936243AbXGQWkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935602AbXGQWkZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 18:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757733AbXGQWkP
+	id S936243AbXGQWkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 18:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934447AbXGQWkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 18:40:15 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:34082 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbXGQWkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 18:40:13 -0400
-Subject: Re: clocksource change of behavior in 2.6.22 compared to 2.6.20
-	causes massive system clock slowdown
-From: john stultz <johnstul@us.ibm.com>
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <5a4c581d0707171531y7d4be4a2re66493e5cd28785f@mail.gmail.com>
-References: <5a4c581d0707090727q15eff62ax1fdb1271754cc2d2@mail.gmail.com>
-	 <20070710002935.f082b7c3.akpm@linux-foundation.org>
-	 <1184088500.30575.9.camel@localhost>
-	 <5a4c581d0707101631g40fcdcd2m3d6b2f448a4c8cee@mail.gmail.com>
-	 <1184187980.1513.5.camel@localhost>
-	 <5a4c581d0707171531y7d4be4a2re66493e5cd28785f@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 15:40:06 -0700
-Message-Id: <1184712006.5836.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 17 Jul 2007 18:40:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45048 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1762674AbXGQWkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 18:40:23 -0400
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 18 Jul 2007 00:40:22 +0200
+From: "Michael Kerrisk" <mtk-manpages@gmx.net>
+In-Reply-To: <Pine.LNX.4.64.0707171514290.26781@alien.or.mcafeemobile.com>
+Message-ID: <20070717224022.257750@gmx.net>
+MIME-Version: 1.0
+References: <469D2A40.2060008@gmx.net>
+ <Pine.LNX.4.64.0707171514290.26781@alien.or.mcafeemobile.com>
+Subject: Re: signalfd and thread semantics
+To: Davide Libenzi <davidel@xmailserver.org>
+X-Authenticated: #24879014
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX18f/qkprVUf7kXjnre/qGrTIAZAsc7gPPxB0cyrli
+ niYwkUiCCQ+5Rce1xUOGBiGY31IBTUJbWeOw== 
 Content-Transfer-Encoding: 7bit
+X-GMX-UID: HgP7LMcSaHItUtzNXSQlnQBiamdhZMSG
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-18 at 00:31 +0200, Alessandro Suardi wrote:
-> On 7/11/07, john stultz <johnstul@us.ibm.com> wrote:
-> > On Wed, 2007-07-11 at 01:31 +0200, Alessandro Suardi wrote:
-> > > On 7/10/07, john stultz <johnstul@us.ibm.com> wrote:
-> > > > On Tue, 2007-07-10 at 00:29 -0700, Andrew Morton wrote:
-> > > > > On Mon, 9 Jul 2007 16:27:59 +0200 "Alessandro Suardi" <alessandro.suardi@gmail.com> wrote:
-> > > > >
-> > > > > > My oldish AMD K7-800's clock began falling behind after
-> > > > > >  rebooting from 2.6.20 (and 109 days uptime with a spotless
-> > > > > >  clock) into 2.6.22; time lost is about four minutes each hour.
-> > > > > >
-> > > > > > Turns out that 2.6.22 marks my TSC as unstable and starts
-> > > > > >  using PIT instead. Rebooting 2.6.22 with clocksource=tsc
-> > > > > >  gets the original stable system time back.
-> > > >
-> > > > Alessandro,
-> > > > Can you send me dmesg output for 2.6.20 and 2.6.22 (without
-> > > > clocksource=tsc)?
-> > >
-> > > Actually, I lied a little bit - it was 2.6.22 with clock=tsc (which
-> > >  warns on boot about clock= being deprecated in favor of
-> > >  clocksource= ). I assume behavior is identical for now.
-> > >
-> > > Please find attached the dmesg ring (incomplete, as the
-> > >  kernel ring size I have seems too small to hold the full
-> > >  buffer, but it seems to have all the interesting stuff) of
-> > >  2.6.20, 2.6.22, 2.6.22 with clock=tsc.
-> > >
-> > > If you need more info, just ask. I'll be out of the country
-> > >  from July 12 to the morning of July 16, and again from
-> > >  July 17 to July 20, so if you'd rather get at this later on,
-> > >  it's okay for me ;)
-> >
-> > You're dmesg output got chopped at the top. Please increase the kernel
-> > log buffer size.
-> 
-> Done, please find attached both 2620 and 2622 full dmesg output,
->  with no clock= or clocksource= parameters.
-> 
-> > Sounds like your PIT frequency is out of whack, and I'm guessing the
-> > generic clocksource watchdog blames the TSC and disqualifies it.
-> >
-> > Few things to check:
-> > 1) Make sure you're running the latest BIOS.
-> 
-> I'm probably not, though I'm not sure I'd flash anything on such
->  an old machine - been running it since RedHat 9 with the
->  current BIOS. Plus, I removed the floppy drive to make room
->  for an extra IDE disk... it'd take me a little bit to find out whether
->  I still have the floppy drive around.
-> 
-> > 2) See if booting w/ noapic changes anything
-> 
-> Nope, 2622+noapic => PIT is still used and clock very quickly
->  lags behind.
-> 
-> For the moment being I'll keep booting with clocksource=tsc.
-> Let me know whether you want me to test anything more...
 
-Hmm. One other thing to check: If you boot 2.6.20 w/ clocksource=pit, is
-it consistent w/ 2.6.22 and same slow timekeeping issue shows up?
+> On Tue, 17 Jul 2007, Michael Kerrisk wrote:
+> 
+> > Hi Davide,
+> > 
+> > Working on the signalfd man page, another question comes up:
+> > 
+> > What are the intended semantics for a signalfd file descriptor with
+> > respect to threads?  I have not yet tested the behavior, but in 
+> > any case, I better check what is expected.
+> > 
+> > A signal can be directed to the process as a whole (e.g., using
+> > kill(2)), or to a particular thread (using, e.g., pthread_kill(2), 
+> > or tgkill(2)).
+> > 
+> > So that raises the question: If a thread calls signalfd(), does the
+> > resulting file descriptor return just those signals directed to [the
+> > thread and the process as a whole], or will it also receive signals 
+> > that are targeted at other threads in the process?  I would hope the 
+> > former is the case, but I'm not sure what has been implemented 
+> > (or intended).
+> 
+> If thread A calls signalfd(), a read() from the signalfd will return 
+> thread A private (tgkill) signals (only when called by thread A) and 
+> thread A shared (kill) signals (readable from any thread).
+> So a call to signalfd() virtually attaches the fd to the calling thread 
+> signal context.
+> This is the reason of the "virtual connection" dropped I was talking 
+> about in the other email. If the signal context the fd is attached to 
+> (struct sighand), goes away, the fd becomes like a disconnected socket 
+> with no peer to read form.
 
-thanks
--john
+It's late at night, and perhaps I am being slow: in what 
+circumstances can the signal context go away while the
+thread itself continues to live?  (I mean in
+what circumstances from the point of view of the userland
+program?)
 
+Cheers,
+
+Michael
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+
+Want to help with man page maintenance?  
+Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages , 
+read the HOWTOHELP file and grep the source 
+files for 'FIXME'.
 
