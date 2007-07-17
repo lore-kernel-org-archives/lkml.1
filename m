@@ -1,94 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbXGQHUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764428AbXGQHXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932284AbXGQHUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759309AbXGQHUa
+	id S1764428AbXGQHXW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759259AbXGQHXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:20:30 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:14860 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759039AbXGQHU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:20:29 -0400
-Date: Tue, 17 Jul 2007 09:19:52 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: block/bsg.c
-Message-ID: <20070717071952.GF5195@kernel.dk>
-References: <20070717065940.GZ5195@kernel.dk> <20070717160816K.fujita.tomonori@lab.ntt.co.jp> <20070717071045.GD5195@kernel.dk> <20070717161720V.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070717161720V.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 17 Jul 2007 03:23:15 -0400
+Received: from 69-12-177-67.dsl.static.sonic.net ([69.12.177.67]:47347 "EHLO
+	orion.sysdev.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756459AbXGQHXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:23:14 -0400
+Date: Mon, 16 Jul 2007 23:23:57 -0800
+From: Tony Borras <tonyb@sysdev.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.4.35 tree abandoned/delayed?
+Message-Id: <20070716232357.3d9e5ca7.tonyb@sysdev.org>
+In-Reply-To: <8HNDE-JM-11@gated-at.bofh.it>
+References: <8HJqo-2BV-23@gated-at.bofh.it>
+	<8HJqo-2BV-21@gated-at.bofh.it>
+	<8HNDE-JM-11@gated-at.bofh.it>
+Organization: SysDev Inc.
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; i686-pc-linux-gnu)
+X-Operating-System: Linux-2.6.27-SMP64
+X-SlakBoot: SlakbootIBS v11.0.2
+User-Agent: Sylpheed/1.0.6
+X-Sylpheed-Rules: You Bet
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17 2007, FUJITA Tomonori wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Subject: Re: block/bsg.c
-> Date: Tue, 17 Jul 2007 09:10:45 +0200
-> 
-> > On Tue, Jul 17 2007, FUJITA Tomonori wrote:
-> > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > Subject: Re: block/bsg.c
-> > > Date: Tue, 17 Jul 2007 08:59:40 +0200
-> > > 
-> > > > On Tue, Jul 17 2007, FUJITA Tomonori wrote:
-> > > > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > > > Subject: Re: block/bsg.c
-> > > > > Date: Tue, 17 Jul 2007 08:38:11 +0200
-> > > > > 
-> > > > > > On Mon, Jul 16 2007, Andrew Morton wrote:
-> > > > > > > 
-> > > > > > > A belated review (I've never seen this before and there it is in mainline)
-> > > > > > > 
-> > > > > > > > static char bsg_version[] = "block layer sg (bsg) 0.4";
-> > > > > > > 
-> > > > > > > `const' would be better.  That moves it into a write-protected memory section.
-> > > > > > 
-> > > > > > Agree
-> > > > > > 
-> > > > > > > > #define list_entry_bc(entry)	list_entry((entry), struct bsg_command, list)
-> > > > > > > 
-> > > > > > > This makes the code easier to write but harder to read.  We should optimise
-> > > > > > > for readers.  Please open-code this at callsites.
-> > > > > > > 
-> > > > > > > Or at least convert it into a (commented) (possibly inlined) C function.
-> > > > > > 
-> > > > > > list_entry_to_bc(), then? The main objective is to save on typing, and
-> > > > > > (just as important) make sure we don't bump over the 80 chars per line.
-> > > > > > 
-> > > > > > > > /*
-> > > > > > > >  * just for testing
-> > > > > > > >  */
-> > > > > > > > #define BSG_MAJOR	(240)
-> > > > > > > 
-> > > > > > > What's this doing in mainline?  240 is a "reserved for local use" major. 
-> > > > > > > This will cause collisions.  This code should be using dynamic major
-> > > > > > > assignment.
-> > > > > > 
-> > > > > > Yeah, that's a big error on my part. Will get that fixed up right away.
-> > > > > 
-> > > > > I've been testing the patchset to fix the issues that Andrew pointed
-> > > > > out. I can send it soon.
-> > > > > 
-> > > > > Jens, have you already fixed some?
-> > > > 
-> > > > I already pushed some of the changes locally, just the idr change is
-> > > > missing. See the #bsg branch:
-> > > > 
-> > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=bsg
-> > > 
-> > > I see.
-> > 
-> > Since Linus is happily snoring by now, could you test and see if the
-> > tree works for you?
-> 
-> Yeah, I'll do and send patches later if necessary.
+On Tue, 17 Jul 2007 07:20:06 +0200
+Willy Tarreau <w@1wt.eu> wrote:
 
-Great, thanks.
+> could you please report what the problem was, in case it's not
+> fixed yet ?
 
--- 
-Jens Axboe
+Ok, reproduced error at ./net/ipv4/fib_semantics.c
+  line 436 changed label:
+                   errout -> err_inval
+
+then it builds fine!
+
+started with linux-2.4.34
+then patched
+     patch-2.4.34.1
+     patch-2.4.34.2
+     patch-2.4.34.3
+     patch-2.4.34.4
+     patch-2.4.34.5
+     patch-2.4.35.pre5
+I used a make oldconfig on a .config that builds in 2.4.34
+
+Hope that helps
+TonyB
+
+
+There are 10 types of people in this world, those that read
+binary and those who don't!
+
+--
+  __      __  _     I N C.               http://www.sysdev.org
+/ __|\\// __||  \  __   __          /         tonyb@sysdev.org
+\__ \ \/\__ \||)|/ O_)\/ /        \/  System Tools / Utilities
+|___/ || ___/|_ /\___|\_/        WIntel / Linux Device Drivers
 
