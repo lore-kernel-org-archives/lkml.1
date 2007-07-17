@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764914AbXGQObp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbXGQOdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764914AbXGQObp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXGQObi
+	id S1756091AbXGQOdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbXGQOdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:31:38 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:64840 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752244AbXGQObg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 10:31:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hY4x++YyM/ni6/zgnTQ9X6qyvqdoqqF+U2cl0Mgj1A4LuHEsE2bTII7drPrVagEAcHCuP1v7LBiaUDuv1c3/PMYhDrbAsdLNQ4aevY1thVI4bMHNMIP5xVv04q0nptyHyVY05GkR25w/l0jmUTc0XbtPyyO/woYO+HiVthCyA1M=
-Message-ID: <9a8748490707170731m28e86e92nf486ba7ae8e6e838@mail.gmail.com>
-Date: Tue, 17 Jul 2007 16:31:34 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Sasa Ostrouska" <casaxa@gmail.com>
-Subject: Re: VESAFB CUSTOM RESOLUTION
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
+	Tue, 17 Jul 2007 10:33:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48478 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752144AbXGQOdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 10:33:02 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 16:40:38 +0200
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
+Message-Id: <200707171640.39955.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/07/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
-> Hi ,
->
-> I want to ask one question about a custom resolution in the console.
-> I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
-> 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
-> ugly as I get a border of about 2-3cm on one the sides of the screen.
-> So is there a way that I set the 1280x800 resolution at boot time ?
->
-See these documents:
- Documentation/fb/vesafb.txt
- Documentation/fb/fbcon.txt
- Documentation/svga.txt
- Documentation/i386/boot.txt
- Documentation/kernel-parameters.txt
+On Tuesday, 17 July 2007 16:15, Alan Stern wrote:
+> On Mon, 16 Jul 2007 david@lang.hm wrote:
+> 
+> > > I agree, it would be good to have a non-ACPI-specific hibernation mode,
+> > > something which would look to ACPI like a normal shutdown.  But I'm not
+> > > so sure this is possible.
+> > 
+> > why would it not be possible?
+> 
+> > I can't think of anything much more frustrating then thinking that I 
+> > suspended a system and then discovering that becouse the battery went dead 
+> > (a complete power loss) that the system wouldn't boot up properly. to me 
+> > this would be a fairly common condition (when I'm mobile I use the machine 
+> > until I am out of battery, then stop and it may be a long time (days) 
+> > before I can charge the thing up again) this would not be a reliable 
+> > suspend as far as I'm concerned.
+> > 
+> > for suspend-to-ram you have to worry about ACPI states and what you are 
+> > doing with them, for suspend-to-disk you can ignore them and completely 
+> > power the system off instead.
+> 
+> If the only problem with doing this would be lack of wakeup support
+> then I'm all for it.  There must be a lot of people who would like
+> their computers to hibernate with power drain as close to 0 as possible
+> and who don't care about remote wakeup.  In fact they might even prefer
+> not to have wakeup support, so the computer doesn't resume at
+> unexpected times.
 
-Have you tried something like this?
- vga=0x360 video=vesafb:mtrr,1280x800-16@72
+I'm afraid of one thing, though.
+
+If we create a framework without ACPI (well, ACPI needs to be enabled in the
+kernel anyway for other reasons, like the ability to suspend to RAM) and then
+it turns out that we have to add some ACPI hooks to it, that might be difficult
+to do cleanly.
+
+Thus, it seems reasonable to think of the ACPI handling in advance.
+
+Greetings,
+Rafael
 
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+"Premature optimization is the root of all evil." - Donald Knuth
