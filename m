@@ -1,117 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934798AbXGQQYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762877AbXGQQYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934798AbXGQQYc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762155AbXGQQYW
+	id S1762877AbXGQQYq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762998AbXGQQYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 17 Jul 2007 12:24:23 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:33330 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756912AbXGQQYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Jul 2007 12:24:22 -0400
-Received: from dns.hk.18mail.cn ([210.245.210.181]:38976 "EHLO
-	hkm1.server.hk.18mail.cn" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755655AbXGQQYV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:24:21 -0400
-Message-ID: <469CED27.4060904@zh-kernel.org>
-Date: Wed, 18 Jul 2007 00:24:07 +0800
-From: Li Yang <leo@zh-kernel.org>
-Reply-To: leo@zh-kernel.org
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: Tsugikazu Shibata <tshibata@ab.jp.nec.com>, rob@landley.net
-Cc: gh@us.ibm.com, hpa@zytor.com, kunai@linux-foundation.jp,
-       holzheu@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org
-Subject: Re: [PATCH] Chinese Language Maintainer
-References: <1184330583.23373.65.camel@Gundam>	<200707131352.12952.rob@landley.net>	<a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com> <20070716.114948.48508930.tshibata@ab.jp.nec.com>
-In-Reply-To: <20070716.114948.48508930.tshibata@ab.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [patch 0/3] reiser4 fixups
+From: Zan Lynx <zlynx@acm.org>
+To: Edward Shishkin <edward@namesys.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+In-Reply-To: <469BBE07.2010606@namesys.com>
+References: <1184090582.6933.20.camel@localhost>
+	 <469523FA.7010308@namesys.com>  <46968F88.7070300@acm.org>
+	 <1184344914.468943.3.camel@localhost>  <469BBE07.2010606@namesys.com>
+Content-Type: multipart/signed; micalg=sha1; protocol="application/x-pkcs7-signature"; boundary="=-kYcw43ms4N2E8v4vT5g4"
+Date: Tue, 17 Jul 2007 10:24:16 -0600
+Message-Id: <1184689456.457333.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-Envelope-From: zlynx@acm.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tsugikazu Shibata wrote:
-> On Sun, 15 Jul 2007 22:42:07 +0800, leo wrote:
->> On 7/14/07, Rob Landley <rob@landley.net> wrote:
->>> On Friday 13 July 2007 8:43:03 am Li Yang wrote:
->>>> On Thu, 2007-07-12 at 12:05 -0400, Rob Landley wrote:
->>>>> +A language maintainer accepts patches to the Linux kernel, written in C,
->>>>> from +authors who do not also speak English.  The language maintainer
->>>>> translates the +description of each patch into English, forwards the
->>>>> patches to linux-kernel +and to the appropriate maintainers for inclusion
->>>>> in the Linux kernel, and +translates questions and replies about such
->>>>> patches as part of the +patch review process.
->>>> In addiction to this responsibility, I would like to add two more which,
->>>> in my opinion, are more important.  And these are what I'm trying to
->>>> do.  :)
->>>> First, promoting contribution to Linux kernel in local language.
->>>> Second, coordinate the translation effort of key kernel documents.
->>> Cool.  It's good to do that, but not the problem I'm worried about solving.
->>>
->>> I was trying to describe the minimum requirements for being a language
->>> maintainer, I.E. what non-english users need in order to be able to merge
->>> their patches.  Because without someone to contribute patches to (I.E a
->>> language maintainer), documentation in non-english languages promotes the
->>> creation of patches that can't be merged.  That's the problem I'm trying to
->>> solve.
->>>
->>> To me, finding language maintainers is the flip side of the coin of
->>> translating documentation.
->> I think you worried too much about this problem.  :)  Let me explain
->> the situation here in China more clearly.  Actually, English is
->> mandatory in most schools and universities.  Only very few people
->> learn other language as a second language.  Therefore software
->> developers who are almost educated should have the basic English
->> skill.  However, that doesn't mean that they can read English or
->> communicate with native English speaker very easily.  Consider your
->> second language learn in school for analogy.  Read in English will be
->> much slower and more likely to cause misunderstanding.  This will
->> reduce the likelihood greatly of English documentation being read.  If
->> we are promoting contribution to the Linux community, we should
->> maximum the possibility that these key documents being read.
->> Translation will serve this purpose very well.
->>
->> So the possibility is very little that a translator is needed between
->> the Linux maintainer and a Chinese developer.  Although sometimes help
->> is needed when there is misunderstanding.
->>
->> After a brief talk with the Japanese translator, I think the case is
->> similar for Japanese too.
-> 
-> Yes, In Japan, situation is mostly the same.
-> We are trying to increase number of Linux community developer with
-> Linux Foundation Japan or CELF people in Japan.
-> In our discussion, the problem is not only Language.
-> 
-> In case of some developer, once he step forward (he try to send patch
-> or comment on LKML), he got some comment and he can work with
-> community even if it's slow (because of he was non-native).
-> So, I thought if some key document are available in Japanese like
-> HOWTO, that will help such early stage of developers.
-> 
->> Therefore, in my opinion, language maintainer should be more a helper
->> and promoter rather than a gatekeeper.  I will give a proposed process
->> later about how this helper mechanism works.
-> 
-> I will be able to help this as a stand point of Japanese situation.
 
-Here is the helper process I propose to help more people to participate. 
-  Suggestions and comments are welcomed.
+--=-kYcw43ms4N2E8v4vT5g4
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature";
+	boundary="=-0RpgR5l6YQgy70NrkTLk"
 
-1) Developer who can't speak English or has a problem going through the 
-submission process sends patches to the Language maintainer and cc the 
-local mail list provided.
-2) Language maintainer and experienced Linux developer on the local mail 
-list can review the patch and give comments in native language.
-3) When the language maintainer thinks the patch is good in general, he 
-will pass the patch onto corresponding subsystem maintainer and mail 
-list for further review, cc the author and local list.
-4) The author communicates directly with the community.
-5) If the author has a problem understanding the comments or expressing 
-himself in English, he can ask for help in native language on the local 
-list.  The language maintainer and the developers on the list are 
-responsible to help out.
-6) When the developer gets familiar with the submission process and can 
-go through it with no problem, he can then submit patch directly without 
-the helper process and probably join the mail list to help other new 
-developer.
 
-- Leo
+--=-0RpgR5l6YQgy70NrkTLk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2007-07-16 at 22:50 +0400, Edward Shishkin wrote:
+> Zan Lynx wrote:
+> ...
+>=20
+> >Unable to handle kernel NULL pointer dereference at 0000000000000000
+> RIP:=20
+> > [<ffffffff8033d324>] reiser4_tree_by_page+0x4/0x20
+[snip]
+> This is bug in Zam's new file_read: unlocked page was reclaimed,
+> then reiser4_tree_by_page() looks at page->mapping->host.
+> The patch #3 fixes this problem.
+>=20
+> Andrew, please apply the following series.
+
+These three patches appear to have fixed my problem.  I ran it all of
+last afternoon and last night, and it did not oops.
+
+Thank you, Edward.
+
+--=20
+Zan Lynx <zlynx@acm.org>
+
+--=-0RpgR5l6YQgy70NrkTLk
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: quoted-printable
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
+
+iD8DBQBGnO0jG8fHaOLTWwgRAsbPAJwIRmu/IOZ1qcl1cFlxvPveHMPYcACcCCzi
+yfibwcG5j/HQldGmpoWer4w=3D
+=3DTCsi
+-----END PGP SIGNATURE-----
+
+--=-0RpgR5l6YQgy70NrkTLk--
+
+--=-kYcw43ms4N2E8v4vT5g4
+Content-Type: application/x-pkcs7-signature; name=smime.p7s
+Content-Disposition: attachment; filename=smime.p7s
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIII8zCCAtQw
+ggI9oAMCAQICEBmv7WBciYMnO0zg9KmbGQUwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
+JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
+ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA3MDUyMjE5NDYxOVoXDTA4MDUyMTE5NDYx
+OVowPzEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEcMBoGCSqGSIb3DQEJARYNemx5
+bnhAYWNtLm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALi7cy1U27KrA5lA/KVg
+o6U8a8v5gCfscOX8i2dMvknRvug1jE/P+Tqkv/R8+ThgWNtCLxG3siF2+ZTNqbv+9wOYemwjcjiG
+zPxcz8AguL/eTLmShf/JNGus6M0wxtW94u6Ghmu2q6nWfE5WSaiLugPItk4zZzqJsQN7S0sIGetG
+WjJGo18ZKu58CMHHhHEnmPi8uQfPkxnjktSBM78DdbBYhnFssmhC4yaItPJlla0Cxg5TZe74cNwt
+3KTfE+F3R9IQ+/hPlXMnheifTJdK5Hh/Uy4/wgvV4RvvnLerKjA9bLzSnkth+Kp0Qq/uBL+NG5uw
+cKu1/f9pYm2eo5OinU0CAwEAAaMqMCgwGAYDVR0RBBEwD4ENemx5bnhAYWNtLm9yZzAMBgNVHRMB
+Af8EAjAAMA0GCSqGSIb3DQEBBQUAA4GBAMGVms8JNsdEQWxf5ubEqUmtqseXSOkWOc06LQ1WWgDF
+9rGw3toh+Uupx7QXiF0BszZ65p16TdmwgrTYN8OznlGlbQFlYO1gQhgbqBpJAiVocRiVAAaLlJ76
+ESZC/oQJ5Yk2RX+IKJOwtUuOVVt/XPJpqyKSX+QduzAfzt9rIB2tMIIC1DCCAj2gAwIBAgIQGa/t
+YFyJgyc7TOD0qZsZBTANBgkqhkiG9w0BAQUFADBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhh
+d3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVt
+YWlsIElzc3VpbmcgQ0EwHhcNMDcwNTIyMTk0NjE5WhcNMDgwNTIxMTk0NjE5WjA/MR8wHQYDVQQD
+ExZUaGF3dGUgRnJlZW1haWwgTWVtYmVyMRwwGgYJKoZIhvcNAQkBFg16bHlueEBhY20ub3JnMIIB
+IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuLtzLVTbsqsDmUD8pWCjpTxry/mAJ+xw5fyL
+Z0y+SdG+6DWMT8/5OqS/9Hz5OGBY20IvEbeyIXb5lM2pu/73A5h6bCNyOIbM/FzPwCC4v95MuZKF
+/8k0a6zozTDG1b3i7oaGa7arqdZ8TlZJqIu6A8i2TjNnOomxA3tLSwgZ60ZaMkajXxkq7nwIwceE
+cSeY+Ly5B8+TGeOS1IEzvwN1sFiGcWyyaELjJoi08mWVrQLGDlNl7vhw3C3cpN8T4XdH0hD7+E+V
+cyeF6J9Ml0rkeH9TLj/CC9XhG++ct6sqMD1svNKeS2H4qnRCr+4Ev40bm7Bwq7X9/2libZ6jk6Kd
+TQIDAQABoyowKDAYBgNVHREEETAPgQ16bHlueEBhY20ub3JnMAwGA1UdEwEB/wQCMAAwDQYJKoZI
+hvcNAQEFBQADgYEAwZWazwk2x0RBbF/m5sSpSa2qx5dI6RY5zTotDVZaAMX2sbDe2iH5S6nHtBeI
+XQGzNnrmnXpN2bCCtNg3w7OeUaVtAWVg7WBCGBuoGkkCJWhxGJUABouUnvoRJkL+hAnliTZFf4go
+k7C1S45VW39c8mmrIpJf5B27MB/O32sgHa0wggM/MIICqKADAgECAgENMA0GCSqGSIb3DQEBBQUA
+MIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMMV2VzdGVybiBDYXBlMRIwEAYDVQQHEwlDYXBlIFRv
+d24xGjAYBgNVBAoTEVRoYXd0ZSBDb25zdWx0aW5nMSgwJgYDVQQLEx9DZXJ0aWZpY2F0aW9uIFNl
+cnZpY2VzIERpdmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgQ0ExKzAp
+BgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0ZS5jb20wHhcNMDMwNzE3MDAwMDAw
+WhcNMTMwNzE2MjM1OTU5WjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRp
+bmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3Vpbmcg
+Q0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMSmPFVzVftOucqZWh5owHUEcJ3f6f+jHuy9
+zfVb8hp2vX8MOmHyv1HOAdTlUAow1wJjWiyJFXCO3cnwK4Vaqj9xVsuvPAsH5/EfkTYkKhPPK9Xz
+gnc9A74r/rsYPge/QIACZNenprufZdHFKlSFD0gEf6e20TxhBEAeZBlyYLf7AgMBAAGjgZQwgZEw
+EgYDVR0TAQH/BAgwBgEB/wIBADBDBgNVHR8EPDA6MDigNqA0hjJodHRwOi8vY3JsLnRoYXd0ZS5j
+b20vVGhhd3RlUGVyc29uYWxGcmVlbWFpbENBLmNybDALBgNVHQ8EBAMCAQYwKQYDVR0RBCIwIKQe
+MBwxGjAYBgNVBAMTEVByaXZhdGVMYWJlbDItMTM4MA0GCSqGSIb3DQEBBQUAA4GBAEiM0VCD6gsu
+zA2jZqxnD3+vrL7CF6FDlpSdf0whuPg2H6otnzYvwPQcUCCTcDz9reFhYsPZOhl+hLGZGwDFGguC
+dJ4lUJRix9sncVcljd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo05RAaWzVNd+NWIXiC3CEZNd4ksdMd
+Rv9dX2VPMYIDEDCCAwwCAQEwdjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1
+bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3Vp
+bmcgQ0ECEBmv7WBciYMnO0zg9KmbGQUwCQYFKw4DAhoFAKCCAW8wGAYJKoZIhvcNAQkDMQsGCSqG
+SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMDcwNzE3MTYyNDAzWjAjBgkqhkiG9w0BCQQxFgQUU21f
+K+YYiHLiPWhLr1b4f//03V8wgYUGCSsGAQQBgjcQBDF4MHYwYjELMAkGA1UEBhMCWkExJTAjBgNV
+BAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25h
+bCBGcmVlbWFpbCBJc3N1aW5nIENBAhAZr+1gXImDJztM4PSpmxkFMIGHBgsqhkiG9w0BCRACCzF4
+oHYwYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4x
+LDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAhAZr+1gXImDJztM
+4PSpmxkFMA0GCSqGSIb3DQEBAQUABIIBABvUGFADzQhjZD557L3b/tGUHxE2Ipd1eOYlfHirDBhS
+NWZ4/RfNxEFjUCcnV50znhmJ09GFvEIYVaMRTnmz4opx3M2sUpCfx+swTROmhbHIuEhWmVa1HkD5
+yafQYCE6jR/BIGbg3dCahZRyCkQJ3nM8aWWGuoVQIvI0bq2O8wQIL+1MAPjZrX6r+fNxynK9KImo
+Y59KfQyqSvZOQo9tCZhTlG9KK6Aim5VIxIMz4J4tf0DHBdsi/+iz4q+1+haVu+SY7SDN06w/GvpR
+OSW5NnW7Je8z8VvJ7a8/4oDQTLtTMG409TzV3NKE0wlgkKAMLg65DAgPhyL6TzjOdoSej3kAAAAA
+AAA=
+
+
+--=-kYcw43ms4N2E8v4vT5g4--
+
