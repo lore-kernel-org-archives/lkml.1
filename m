@@ -1,37 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762600AbXGQJLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbXGQJLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762600AbXGQJLI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 05:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbXGQJK4
+	id S1765728AbXGQJLx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 05:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbXGQJLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 05:10:56 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57961 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751690AbXGQJKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 05:10:55 -0400
-Date: Tue, 17 Jul 2007 11:12:09 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
+	Tue, 17 Jul 2007 05:11:45 -0400
+Received: from ik-out-1112.google.com ([66.249.90.182]:10823 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753501AbXGQJLo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 05:11:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Pgav2hz4LrETXcyqEgeQ+r3I3qeXrj1FmNRbhMy7ZnHL4r/RVC0CgIsK8PsdCAzXVwwHtCrZy9KZ6aYKYN9TXruW8uKDj3cPHzgiFKV7HNmAYmFPSm7Pc10Q0syCTJDSuo//Rr4KiEN+50x1ozp3FQGGbtfBOoB3c88nRy+Tnwk=
+Message-ID: <6cf66ee10707170211t62714949me975656143e7b710@mail.gmail.com>
+Date: Mon, 16 Jul 2007 23:11:41 -1000
+From: "charles gagalac" <charles.gagalac@gmail.com>
+To: airlied@linux.ie
+Subject: [BUG] wine locks up system
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] modpost white list pattern adjustment
-Message-ID: <20070717091209.GA19679@uranus.ravnborg.org>
-References: <466E6785.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <466E6785.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 09:29:41AM +0200, Jan Beulich wrote:
-> gcc puts data into .data.rel or .data.rel.* on some architectures (e.g.
-> ia64) or under certain conditions, so whatever is legal relative to
-> .data should also be legal for those other sections. Fixes a few
-> modpost warnings on ia64.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+starting an application under wine 0.9.41 locks up my system.  bisect
+generated the following commit:
 
-Applied.
+ commit d4e2cbe9cb9219fc924191a6baa2369140cb5ea8
+  Author: Dave Airlie <airlied@linux.ie>
+ Date:   Tue Jul 17 10:55:47 2007 +1000
 
-	Sam
+     drm: convert drawable code to using idr
+
+     This converts the code for allocating drawables to the Linux idr,
+
+     Fixes from: Michel Dänzer <michel@tungstengraphics.com>,
+Kristian Høgsberg <krh@redhat.com>
+
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
