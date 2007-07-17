@@ -1,174 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935914AbXGQSQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935120AbXGQSTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935914AbXGQSQf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763406AbXGQSQX
+	id S935120AbXGQSTq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759240AbXGQSTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:16:23 -0400
-Received: from nn7.de ([85.214.94.156]:49104 "EHLO nn7.de"
+	Tue, 17 Jul 2007 14:19:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36077 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935860AbXGQSQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:16:22 -0400
-Subject: Re: [PATCH] appletouch powersaving - please apply for 2.6.23-rc1
-	take #3
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-usb-devel@lists.sourceforge.net,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nicolas Boichat <nicolas@boichat.ch>,
-       Michael Hanselmann <linux-kernel@hansmi.ch>,
-       Peter Osterlund <petero2@telia.com>,
-       Frank Arnold <frank@scirocco-5v-turbo.de>,
-       Stelian Pop <stelian@popies.net>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Greg Kroah-Hartman <greg@kroah.com>
-In-Reply-To: <d120d5000707170801u27e11936h9546bd36da7a1162@mail.gmail.com>
-References: <1184656218.14051.43.camel@localhost>
-	 <d120d5000707170801u27e11936h9546bd36da7a1162@mail.gmail.com>
-Content-Type: multipart/mixed; boundary="=-3iIqw4oSVkuVWbDcAuui"
-Date: Tue, 17 Jul 2007 20:16:19 +0200
-Message-Id: <1184696179.6161.18.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	id S1758758AbXGQSTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 14:19:37 -0400
+Date: Tue, 17 Jul 2007 20:18:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Olaf Kirch <olaf.kirch@oracle.com>
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Message-ID: <20070717181857.GA16918@elte.hu>
+References: <20070716091236.GA10718@elte.hu> <200707171607.08644.olaf.kirch@oracle.com> <20070717165720.GA4386@elte.hu> <200707172006.11664.olaf.kirch@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707172006.11664.olaf.kirch@oracle.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-3iIqw4oSVkuVWbDcAuui
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+* Olaf Kirch <olaf.kirch@oracle.com> wrote:
 
-On Tue, 2007-07-17 at 11:01 -0400, Dmitry Torokhov wrote:
-> Hi,
+> Hi Ingo,
 > 
-> On 7/17/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
-> >
-> >  err_free_buffer:
-> > @@ -656,6 +699,7 @@ static void atp_disconnect(struct usb_interface *iface)
-> >
-> >        usb_set_intfdata(iface, NULL);
-> >        if (dev) {
-> > +               cancel_work_sync(&dev->work);
-> >                usb_kill_urb(dev->urb);
-> >                input_unregister_device(dev->input);
-> >                usb_buffer_free(dev->udev, dev->datalen,
-> >
+> On Tuesday 17 July 2007 18:57, Ingo Molnar wrote:
+> > i've done the patch below, but it did not change the timeouts nor did it 
+> > solve the 'no network' problem. netconsole output hung earlier as well.
+> Hm, pity.
 > 
-> This should go into atp_close() and I think you need to do
-> cancel_work_sync after calling usb_kill_urb() otherwise you risk it
-> being submitted while you gettingto kill the urb.
+> To rule out any e1000 problem, can you try the the following please, 
+> both with HZ=250 and HZ=1000?
 
-good catch. modified patch accordingly+attached.
+done, find the logs here:
 
-> How many boxes did you try this patch on?
+ http://redhat.com/~mingo/misc/100hz.log
+ http://redhat.com/~mingo/misc/1000hz.log
 
-Mine plus 1 other. However please note that Matthews patch has been
-(which is what this patch is based on) is in the mactel-patches
-repository for quite some time now and that the not-yet-cleanup up
-variant of this patch was posted to mactel-devel...
+(one is HZ=100, the other HZ=1000. HZ=100 produces a hung network just 
+like HZ=250.)
 
-So the modeswitch part should work...
+no 'rx_sched set' messages in either case. Network still hung for 
+HZ=100, and is working for HZ=1000.
 
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
-
---=-3iIqw4oSVkuVWbDcAuui
-Content-Disposition: attachment; filename=appletouch3.patch
-Content-Type: text/x-patch; name=appletouch3.patch; charset=ISO-8859-15
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW5wdXQvbW91c2UvYXBwbGV0b3VjaC5jIGIvZHJpdmVycy9p
-bnB1dC9tb3VzZS9hcHBsZXRvdWNoLmMNCmluZGV4IGUzMjE1MjYuLjdmMTgwZjcgMTAwNjQ0DQot
-LS0gYS9kcml2ZXJzL2lucHV0L21vdXNlL2FwcGxldG91Y2guYw0KKysrIGIvZHJpdmVycy9pbnB1
-dC9tb3VzZS9hcHBsZXRvdWNoLmMNCkBAIC0xNTUsNiArMTU1LDggQEAgc3RydWN0IGF0cCB7DQog
-CWludAkJCXh5X2FjY1tBVFBfWFNFTlNPUlMgKyBBVFBfWVNFTlNPUlNdOw0KIAlpbnQJCQlvdmVy
-Zmxvd3dhcm47CS8qIG92ZXJmbG93IHdhcm5pbmcgcHJpbnRlZD8gKi8NCiAJaW50CQkJZGF0YWxl
-bjsJLyogc2l6ZSBvZiBhbiBVU0IgdXJiIHRyYW5zZmVyICovDQorCWludAkJCWlkbGVjb3VudDsg
-ICAgICAvKiBudW1iZXIgb2YgZW1wdHkgcGFja2V0cyAqLw0KKwlzdHJ1Y3Qgd29ya19zdHJ1Y3Qg
-ICAgICB3b3JrOw0KIH07DQogDQogI2RlZmluZSBkYmdfZHVtcChtc2csIHRhYikgXA0KQEAgLTIw
-OCw2ICsyMTAsNjMgQEAgc3RhdGljIGlubGluZSBpbnQgYXRwX2lzX2dleXNlcl8zKHN0cnVjdCBh
-dHAgKmRldikNCiAJCShwcm9kdWN0SWQgPT0gR0VZU0VSNF9KSVNfUFJPRFVDVF9JRCk7DQogfQ0K
-IA0KKy8qDQorICogQnkgZGVmYXVsdCBHZXlzZXIgMyBkZXZpY2Ugc2VuZHMgc3RhbmRhcmQgVVNC
-IEhJRCBtb3VzZQ0KKyAqIHBhY2tldHMgKFJlcG9ydCBJRCAyKS4gVGhpcyBjb2RlIGNoYW5nZXMg
-ZGV2aWNlIG1vZGUsIHNvIGl0DQorICogc2VuZHMgcmF3IHNlbnNvciByZXBvcnRzIChSZXBvcnQg
-SUQgNSkuDQorICovDQorc3RhdGljIGludCBhdHBfZ2V5c2VyM19pbml0KHN0cnVjdCB1c2JfZGV2
-aWNlICp1ZGV2KQ0KK3sNCisJY2hhciBkYXRhWzhdOw0KKwlpbnQgc2l6ZTsNCisJaW50IGk7DQor
-DQorCXNpemUgPSB1c2JfY29udHJvbF9tc2codWRldiwgdXNiX3JjdmN0cmxwaXBlKHVkZXYsIDAp
-LA0KKwkJCQlBVFBfR0VZU0VSM19NT0RFX1JFQURfUkVRVUVTVF9JRCwNCisJCQkJVVNCX0RJUl9J
-TiB8IFVTQl9UWVBFX0NMQVNTIHwgVVNCX1JFQ0lQX0lOVEVSRkFDRSwNCisJCQkJQVRQX0dFWVNF
-UjNfTU9ERV9SRVFVRVNUX1ZBTFVFLA0KKwkJCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfSU5E
-RVgsICZkYXRhLCA4LCA1MDAwKTsNCisNCisJaWYgKHNpemUgIT0gOCkgew0KKwkJcHJpbnRrKCJh
-cHBsZXRvdWNoIGF0cF9nZXlzZXIzX2luaXQgUkVBRCBlcnJvclxuIik7DQorCQlmb3IgKGk9MDsg
-aTw4OyBpKyspDQorCQkJcHJpbnRrKCJhcHBsZXRvdWNoWyVkXTogJWRcbiIsIGksIChpbnQpIGRh
-dGFbaV0pOw0KKw0KKwkJZXJyKCJDb3VsZCBub3QgZG8gbW9kZSByZWFkIHJlcXVlc3QgZnJvbSBk
-ZXZpY2UiDQorCQkgICAgIiAoR2V5c2VyIDMgbW9kZSkiKTsNCisJCXJldHVybiAtRUlPOw0KKwl9
-DQorDQorCS8qIEFwcGx5IHRoZSBtb2RlIHN3aXRjaCAqLw0KKwlkYXRhWzBdID0gQVRQX0dFWVNF
-UjNfTU9ERV9WRU5ET1JfVkFMVUU7DQorDQorCXNpemUgPSB1c2JfY29udHJvbF9tc2codWRldiwg
-dXNiX3NuZGN0cmxwaXBlKHVkZXYsIDApLA0KKwkJCQlBVFBfR0VZU0VSM19NT0RFX1dSSVRFX1JF
-UVVFU1RfSUQsDQorCQkJCVVTQl9ESVJfT1VUIHwgVVNCX1RZUEVfQ0xBU1MgfCBVU0JfUkVDSVBf
-SU5URVJGQUNFLA0KKwkJCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfVkFMVUUsDQorCQkJCUFU
-UF9HRVlTRVIzX01PREVfUkVRVUVTVF9JTkRFWCwgJmRhdGEsIDgsIDUwMDApOw0KKw0KKwlpZiAo
-c2l6ZSAhPSA4KSB7DQorCQlwcmludGsoImFwcGxldG91Y2ggYXRwX2dleXNlcjNfaW5pdCBXUklU
-RSBlcnJvclxuIik7DQorCQlmb3IgKGk9MDsgaTw4OyBpKyspDQorCQkJcHJpbnRrKCJhcHBsZXRv
-dWNoWyVkXTogJWRcbiIsIGksIChpbnQpIGRhdGFbaV0pOw0KKwkJZXJyKCJDb3VsZCBub3QgZG8g
-bW9kZSB3cml0ZSByZXF1ZXN0IHRvIGRldmljZSINCisJCSAgICAiIChHZXlzZXIgMyBtb2RlKSIp
-Ow0KKwkJcmV0dXJuIC1FSU87DQorCX0NCisJcmV0dXJuIDA7DQorfQ0KKw0KKy8qIFJlaW5pdGlh
-bGlzZSB0aGUgZGV2aWNlIGlmIGl0J3MgYSBnZXlzZXIgMyAqLw0KK3N0YXRpYyB2b2lkIGF0cF9y
-ZWluaXQoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKQ0KK3sNCisJc3RydWN0IGF0cCAqZGV2ID0g
-Y29udGFpbmVyX29mKHdvcmssIHN0cnVjdCBhdHAsIHdvcmspOw0KKwlzdHJ1Y3QgdXNiX2Rldmlj
-ZSAqdWRldiA9IGRldi0+dWRldjsNCisNCisJZGV2LT5pZGxlY291bnQgPSAwOw0KKwlhdHBfZ2V5
-c2VyM19pbml0KHVkZXYpOw0KK30NCisNCiBzdGF0aWMgaW50IGF0cF9jYWxjdWxhdGVfYWJzKGlu
-dCAqeHlfc2Vuc29ycywgaW50IG5iX3NlbnNvcnMsIGludCBmYWN0LA0KIAkJCSAgICAgaW50ICp6
-LCBpbnQgKmZpbmdlcnMpDQogew0KQEAgLTQ0OSwxMSArNTA4LDIxIEBAIHN0YXRpYyB2b2lkIGF0
-cF9jb21wbGV0ZShzdHJ1Y3QgdXJiKiB1cmIpDQogDQogCQkvKiByZXNldCB0aGUgYWNjdW11bGF0
-b3Igb24gcmVsZWFzZSAqLw0KIAkJbWVtc2V0KGRldi0+eHlfYWNjLCAwLCBzaXplb2YoZGV2LT54
-eV9hY2MpKTsNCi0JfQ0KIA0KLQlpbnB1dF9yZXBvcnRfa2V5KGRldi0+aW5wdXQsIEJUTl9MRUZU
-LA0KLQkJCSAhIWRldi0+ZGF0YVtkZXYtPmRhdGFsZW4gLSAxXSk7DQorCQkvKiBHZXlzZXIgMyB3
-aWxsIGNvbnRpbnVlIHRvIHNlbmQgcGFja2V0cyBjb250aW51YWxseSBhZnRlcg0KKwkJICAgdGhl
-IGZpcnN0IHRvdWNoIHVubGVzcyByZWluaXRpYWxpc2VkLiBEbyBzbyBpZiBpdCdzIGJlZW4NCisJ
-CSAgIGlkbGUgZm9yIGEgd2hpbGUgaW4gb3JkZXIgdG8gYXZvaWQgd2FraW5nIHRoZSBrZXJuZWwg
-dXANCisJCSAgIHNldmVyYWwgaHVuZHJlZCB0aW1lcyBhIHNlY29uZCAqLw0KKwkJaWYgKGF0cF9p
-c19nZXlzZXJfMyhkZXYpKSB7DQorCQkJZGV2LT5pZGxlY291bnQrKzsNCisJCQlpZiAoZGV2LT5p
-ZGxlY291bnQgPT0gMTApIHsNCisJCQkJZGV2LT52YWxpZD0wOw0KKwkJCQlzY2hlZHVsZV93b3Jr
-ICgmZGV2LT53b3JrKTsNCisJCQl9DQorCQl9DQorCX0NCiANCisJaW5wdXRfcmVwb3J0X2tleShk
-ZXYtPmlucHV0LCBCVE5fTEVGVCwgZGV2LT5kYXRhW2Rldi0+ZGF0YWxlbi0xXSAmIDEpOw0KIAlp
-bnB1dF9zeW5jKGRldi0+aW5wdXQpOw0KIA0KIGV4aXQ6DQpAQCAtNDgwLDYgKzU0OSw3IEBAIHN0
-YXRpYyB2b2lkIGF0cF9jbG9zZShzdHJ1Y3QgaW5wdXRfZGV2ICppbnB1dCkNCiAJc3RydWN0IGF0
-cCAqZGV2ID0gaW5wdXRfZ2V0X2RydmRhdGEoaW5wdXQpOw0KIA0KIAl1c2Jfa2lsbF91cmIoZGV2
-LT51cmIpOw0KKwljYW5jZWxfd29ya19zeW5jKCZkZXYtPndvcmspOw0KIAlkZXYtPm9wZW4gPSAw
-Ow0KIH0NCiANCkBAIC01MjgsNDAgKzU5OCwxMCBAQCBzdGF0aWMgaW50IGF0cF9wcm9iZShzdHJ1
-Y3QgdXNiX2ludGVyZmFjZSAqaWZhY2UsIGNvbnN0IHN0cnVjdCB1c2JfZGV2aWNlX2lkICppZA0K
-IAkJZGV2LT5kYXRhbGVuID0gODE7DQogDQogCWlmIChhdHBfaXNfZ2V5c2VyXzMoZGV2KSkgew0K
-LQkJLyoNCi0JCSAqIEJ5IGRlZmF1bHQgR2V5c2VyIDMgZGV2aWNlIHNlbmRzIHN0YW5kYXJkIFVT
-QiBISUQgbW91c2UNCi0JCSAqIHBhY2tldHMgKFJlcG9ydCBJRCAyKS4gVGhpcyBjb2RlIGNoYW5n
-ZXMgZGV2aWNlIG1vZGUsIHNvIGl0DQotCQkgKiBzZW5kcyByYXcgc2Vuc29yIHJlcG9ydHMgKFJl
-cG9ydCBJRCA1KS4NCi0JCSAqLw0KLQkJY2hhciBkYXRhWzhdOw0KLQkJaW50IHNpemU7DQotDQot
-CQlzaXplID0gdXNiX2NvbnRyb2xfbXNnKHVkZXYsIHVzYl9yY3ZjdHJscGlwZSh1ZGV2LCAwKSwN
-Ci0JCQlBVFBfR0VZU0VSM19NT0RFX1JFQURfUkVRVUVTVF9JRCwNCi0JCQlVU0JfRElSX0lOIHwg
-VVNCX1RZUEVfQ0xBU1MgfCBVU0JfUkVDSVBfSU5URVJGQUNFLA0KLQkJCUFUUF9HRVlTRVIzX01P
-REVfUkVRVUVTVF9WQUxVRSwNCi0JCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfSU5ERVgsICZk
-YXRhLCA4LCA1MDAwKTsNCi0NCi0JCWlmIChzaXplICE9IDgpIHsNCi0JCQllcnIoIkNvdWxkIG5v
-dCBkbyBtb2RlIHJlYWQgcmVxdWVzdCBmcm9tIGRldmljZSINCi0JCQkJCQkJIiAoR2V5c2VyIDMg
-bW9kZSkiKTsNCisJCS8qIHN3aXRjaCB0byByYXcgc2Vuc29yIG1vZGUgKi8NCisJCWlmIChhdHBf
-Z2V5c2VyM19pbml0KHVkZXYpKQ0KIAkJCWdvdG8gZXJyX2ZyZWVfZGV2czsNCi0JCX0NCi0NCi0J
-CS8qIEFwcGx5IHRoZSBtb2RlIHN3aXRjaCAqLw0KLQkJZGF0YVswXSA9IEFUUF9HRVlTRVIzX01P
-REVfVkVORE9SX1ZBTFVFOw0KLQ0KLQkJc2l6ZSA9IHVzYl9jb250cm9sX21zZyh1ZGV2LCB1c2Jf
-c25kY3RybHBpcGUodWRldiwgMCksDQotCQkJQVRQX0dFWVNFUjNfTU9ERV9XUklURV9SRVFVRVNU
-X0lELA0KLQkJCVVTQl9ESVJfT1VUIHwgVVNCX1RZUEVfQ0xBU1MgfCBVU0JfUkVDSVBfSU5URVJG
-QUNFLA0KLQkJCUFUUF9HRVlTRVIzX01PREVfUkVRVUVTVF9WQUxVRSwNCi0JCQlBVFBfR0VZU0VS
-M19NT0RFX1JFUVVFU1RfSU5ERVgsICZkYXRhLCA4LCA1MDAwKTsNCiANCi0JCWlmIChzaXplICE9
-IDgpIHsNCi0JCQllcnIoIkNvdWxkIG5vdCBkbyBtb2RlIHdyaXRlIHJlcXVlc3QgdG8gZGV2aWNl
-Ig0KLQkJCQkJCQkiIChHZXlzZXIgMyBtb2RlKSIpOw0KLQkJCWdvdG8gZXJyX2ZyZWVfZGV2czsN
-Ci0JCX0NCiAJCXByaW50aygiYXBwbGV0b3VjaCBHZXlzZXIgMyBpbml0ZWQuXG4iKTsNCiAJfQ0K
-IA0KQEAgLTYzNiw2ICs2NzYsOCBAQCBzdGF0aWMgaW50IGF0cF9wcm9iZShzdHJ1Y3QgdXNiX2lu
-dGVyZmFjZSAqaWZhY2UsIGNvbnN0IHN0cnVjdCB1c2JfZGV2aWNlX2lkICppZA0KIAkvKiBzYXZl
-IG91ciBkYXRhIHBvaW50ZXIgaW4gdGhpcyBpbnRlcmZhY2UgZGV2aWNlICovDQogCXVzYl9zZXRf
-aW50ZmRhdGEoaWZhY2UsIGRldik7DQogDQorCUlOSVRfV09SSygmZGV2LT53b3JrLCBhdHBfcmVp
-bml0KTsNCisNCiAJcmV0dXJuIDA7DQogDQogIGVycl9mcmVlX2J1ZmZlcjoNCi==
-
-
---=-3iIqw4oSVkuVWbDcAuui--
+	Ingo
