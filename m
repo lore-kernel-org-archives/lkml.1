@@ -1,110 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934392AbXGQSiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934234AbXGQSkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934392AbXGQSiP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXGQSh7
+	id S934234AbXGQSkA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbXGQSjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:37:59 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58974 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753214AbXGQSh7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:37:59 -0400
-Date: Tue, 17 Jul 2007 19:37:57 +0100 (BST)
-From: James Simmons <jsimmons@infradead.org>
-To: Linus Torvalds <torvalds@osdl.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux console project <linuxconsole-dev@lists.sourceforge.net>
-Subject: [PATCH] Use tty_schedule in VT code. 
-Message-ID: <Pine.LNX.4.64.0707171933180.6721@pentafluge.infradead.org>
+	Tue, 17 Jul 2007 14:39:53 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:44238 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753729AbXGQSjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 14:39:52 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Avi Kivity <avi@qumranet.com>
+Subject: Re: [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
+Date: Tue, 17 Jul 2007 21:39:05 +0300
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+References: <11846910642166-git-send-email-avi@qumranet.com>
+In-Reply-To: <11846910642166-git-send-email-avi@qumranet.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed;
+  boundary="nextPart296178828.qKOvTYKK74";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707172139.09131.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart296178828.qKOvTYKK74
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This patch has the VT subsystem use tty_schedule_flip instead of
-con_schedule_flip. The patch has been tested for several weeks 
-on my local system and has been in the linuxconsole repository
-for some time. Please apply.
+Hi;
 
-Signed-Off: James Simmons <jsimmons@infradead.org>
+17 Tem 2007 Sal tarihinde, Avi Kivity =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
+=C4=B1:=20
+> I fixed the issue with the previous patchset.  Please provide further
+> feedback, or pull from:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
+>
+> This contains kvm updates for the 2.6.23 merge window, including
+>
+>  - performance improvements
+>  - suspend/resume fixes
+>  - guest smp
+>  - random fixes and cleanups
 
-diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
-index 2ce0af1..68eab40 100644
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -278,7 +278,7 @@ static void put_queue(struct vc_data *vc, int ch)
- 
- 	if (tty) {
- 		tty_insert_flip_char(tty, ch, 0);
--		con_schedule_flip(tty);
-+		tty_schedule_flip(tty);
- 	}
- }
- 
-@@ -293,7 +293,7 @@ static void puts_queue(struct vc_data *vc, char *cp)
- 		tty_insert_flip_char(tty, *cp, 0);
- 		cp++;
- 	}
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void applkey(struct vc_data *vc, int key, char mode)
-@@ -533,7 +533,7 @@ static void fn_send_intr(struct vc_data *vc)
- 	if (!tty)
- 		return;
- 	tty_insert_flip_char(tty, 0, TTY_BREAK);
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void fn_scroll_forw(struct vc_data *vc)
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index de37ebc..34894e5 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -559,7 +559,7 @@ void tty_schedule_flip(struct tty_struct *tty)
- 	if (tty->buf.tail != NULL)
- 		tty->buf.tail->commit = tty->buf.tail->used;
- 	spin_unlock_irqrestore(&tty->buf.lock, flags);
--	schedule_delayed_work(&tty->buf.work, 1);
-+	schedule_delayed_work(&tty->buf.work, 0);
- }
- EXPORT_SYMBOL(tty_schedule_flip);
- 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index edb7002..d17cfcd 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -1260,7 +1260,7 @@ static void respond_string(const char *p, struct tty_struct *tty)
- 		tty_insert_flip_char(tty, *p, 0);
- 		p++;
- 	}
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void cursor_report(struct vc_data *vc, struct tty_struct *tty)
-diff --git a/include/linux/kbd_kern.h b/include/linux/kbd_kern.h
-index 506ad20..7b24a0d 100644
---- a/include/linux/kbd_kern.h
-+++ b/include/linux/kbd_kern.h
-@@ -149,16 +149,4 @@ void compute_shiftstate(void);
- 
- extern unsigned int keymap_count;
- 
--/* console.c */
--
--static inline void con_schedule_flip(struct tty_struct *t)
--{
--	unsigned long flags;
--	spin_lock_irqsave(&t->buf.lock, flags);
--	if (t->buf.tail != NULL)
--		t->buf.tail->commit = t->buf.tail->used;
--	spin_unlock_irqrestore(&t->buf.lock, flags);
--	schedule_delayed_work(&t->buf.work, 0);
--}
--
- #endif
+I have a tiny question triggered in my mind after seeing following, sorry i=
+f=20
+this was disccussed before;
+
+config KVM
+    tristate "Kernel-based Virtual Machine (KVM) support"
+    depends on X86 && EXPERIMENTAL
+    depends on X86_CMPXCHG64 || 64BIT
+
+If i'm not wrong X86_CMPXCHG64 depends on CONFIG_X86_PAE which depends on=20
+HIGHMEM64 and again if i'm not wrong this means distributions who wants to=
+=20
+provide KVM must enable CONFIG_X86_PAE and CONFIG_HIGHMEM64G from now on?
+
+Is this intentional or this is here because of an assumption like "processo=
+rs=20
+supports virtualization already provides PAE", could you please enlighten m=
+e?
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart296178828.qKOvTYKK74
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGnQzMy7E6i0LKo6YRAl1mAKCi5iaVsF81TuMhj2/QaeN85U3hOACfd10B
+8+dP91p8Mq6KuE8N1mQ7Cac=
+=MC50
+-----END PGP SIGNATURE-----
+
+--nextPart296178828.qKOvTYKK74--
