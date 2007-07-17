@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbXGQBKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXGQBKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932771AbXGQBKI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 21:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932764AbXGQBJk
+	id S933103AbXGQBKh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 21:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932656AbXGQBKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 21:09:40 -0400
-Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:40328 "EHLO
-	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932621AbXGQBJi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 21:09:38 -0400
-X-Greylist: delayed 744 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 21:09:38 EDT
-To: nix.or.die@googlemail.com
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org
-Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <469C10F6.3050008@googlemail.com>
-References: <469BD9C8.4000808@googlemail.com>
-	<469C10F6.3050008@googlemail.com>
+	Mon, 16 Jul 2007 21:10:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:58498 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933006AbXGQBKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 21:10:17 -0400
+Subject: Re: maps2-move-the-page-walker-code-to-lib.patch
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070713204817.GA3529@uranus.ravnborg.org>
+References: <1183873796.6005.269.camel@localhost.localdomain>
+	 <20070709202217.GS11115@waste.org>
+	 <1184033195.6005.439.camel@localhost.localdomain>
+	 <20070713204817.GA3529@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Tue, 17 Jul 2007 11:09:57 +1000
+Message-Id: <1184634597.5955.42.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070717100921W.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 17 Jul 2007 10:09:21 +0900
-X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-Date: Tue, 17 Jul 2007 02:44:38 +0200
-
-> Gabriel C wrote:
-> > Hello,
-> >
-> > sdparm and hdparm are broken for me on git (
-> > abce891a10559343d8ac9f79b46d78afdba63a40 )
-> >
-> >
-> > ~$ sudo hdparm  /dev/sdc
-> >
-> > /dev/sdc:
-> >  BLKROGET failed: Inappropriate ioctl for device
-> >  BLKRAGET failed: Inappropriate ioctl for device
-> >  BLKGETSIZE failed: Inappropriate ioctl for device
-> >
-> >
-> > ~$ sudo sdparm  --all /dev/sdc
-> > unable to access /dev/sdc, ATA disk?
-> >
-> >   
+On Fri, 2007-07-13 at 22:48 +0200, Sam Ravnborg wrote:
+> On Tue, Jul 10, 2007 at 12:06:35PM +1000, Rusty Russell wrote:
+> > On Mon, 2007-07-09 at 15:22 -0500, Matt Mackall wrote:
+> > > On Sun, Jul 08, 2007 at 03:49:56PM +1000, Rusty Russell wrote:
+> > > > Matt wrote:
+> > > > > This lets it get shared outside of proc/ and linked in only when needed.
+> > > > 
+> > > > Erk, this really belongs in the mm dir.  You can use "lib-y +=
+> > > > pagewalk.o" there, and it seems to work as well as doing it in lib.
+> > > 
+> > > Are you sure? I tested that a few months ago and it didn't work for
+> > > me. I seem to recall it wanted a chunk of makefile surgery.
+> > 
+> > Well, I tested here and it worked unless I screwed something (producing
+> > lib.a in mm/ and linking it in).  And when I turned off all the CONFIG
+> > options which required it, the symbols disappeared from the vmlinux...
 > 
-> Well it is bsg , setting BLK_DEV_BSG=n fixed all this errors.
+> I think you had some additional change somewhere...
+> kbuild will only look for lib.a files (produced from all files
+> listed with lib-y _except_ files listed with obj-y too).
 
-Can you check the major number of your /dev/sdc? I've seen that
-/dev/sd* is linked to bsg devices somehow.
+You're right: mm/lib.a gets built, but not linked in.  Sorry for the
+false report...
 
+Rusty.
 
-> Maybe a bit off topic but it depends on EXPERIMENTAL so why the the menu
-> is not telling this ? and why the default is 'y' for it ?
-> 
-> IMO everything depends on EXPERIMENTAL should
-> 
-> 1) Tell it is EXPERIMENTAL ( visible to the user in menu ) " Foo New
-> stuff ( EXPERIMENTAL ) "
-> 2) Should not default to 'y' , is up to the users/admins to set
-> EXPERIMENTAL things to Y/M , isn't it ?
-> 
-> 
-> ( PS: there are even defconfigs with EXPERIMENTAL things set to y but
-> this is really off topic )
-
-I'll fix it, thanks.
