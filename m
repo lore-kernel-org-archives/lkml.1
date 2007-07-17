@@ -1,38 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbXGQQcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762378AbXGQQdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbXGQQcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbXGQQcJ
+	id S1762378AbXGQQdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXGQQdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 12:32:09 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:39051 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754533AbXGQQcI (ORCPT
+	Tue, 17 Jul 2007 12:33:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34490 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753134AbXGQQdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:32:08 -0400
-Date: Tue, 17 Jul 2007 12:31:26 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] um_kmalloc() remnants
-Message-ID: <20070717163126.GF7965@c2.user-mode-linux.org>
-References: <E1IAhoN-0001iw-Ul@ZenIV.linux.org.uk>
+	Tue, 17 Jul 2007 12:33:10 -0400
+Date: Tue, 17 Jul 2007 09:32:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Joe Jin <joe.jin@oracle.com>, bill.irwin@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-Id: <20070717093228.3a3638aa.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707171558470.26771@blonde.wat.veritas.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+	<20070712221842.f5e47065.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707171558470.26771@blonde.wat.veritas.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IAhoN-0001iw-Ul@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.3i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 08:49:35AM +0100, Al Viro wrote:
+On Tue, 17 Jul 2007 16:04:54 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
+
+> On Thu, 12 Jul 2007, Andrew Morton wrote:
+> > 
+> > It'd be much better to fix the race within alloc_fresh_huge_page().  That
+> > function is pretty pathetic.
+> > 
+> > Something like this?
+> > 
+> > --- a/mm/hugetlb.c~a
+> > +++ a/mm/hugetlb.c
+> > @@ -105,13 +105,20 @@ static void free_huge_page(struct page *
+> >  
+> >  static int alloc_fresh_huge_page(void)
+> >  {
+> > -	static int nid = 0;
+> > +	static int prev_nid;
+> > +	static DEFINE_SPINLOCK(nid_lock);
+> >  	struct page *page;
+> > -	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> > -					HUGETLB_PAGE_ORDER);
+> > -	nid = next_node(nid, node_online_map);
+> > +	int nid;
+> > +
+> > +	spin_lock(&nid_lock);
+> > +	nid = next_node(prev_nid, node_online_map);
+> >  	if (nid == MAX_NUMNODES)
+> >  		nid = first_node(node_online_map);
+> > +	prev_nid = nid;
+> > +	spin_unlock(&nid_lock);
+> > +
+> > +	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> > +					HUGETLB_PAGE_ORDER);
+> >  	if (page) {
+> >  		set_compound_page_dtor(page, free_huge_page);
+> >  		spin_lock(&hugetlb_lock);
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> Now that it's gone into the tree, I look at it and wonder, does your
+> nid_lock really serve any purpose?  We're just doing a simple assignment
+> to prev_nid, and it doesn't matter if occasionally two racers choose the
+> same node, and there's no protection here against a node being offlined
+> before the alloc_pages_node anyway (unsupported? I'm ignorant).
 
-ACK.
+umm, actually, yes, the code as it happens to be structured does mean that
+ther is no longer a way in which a race can cause us to pass MAX_NUMNODES
+into alloc_pages_node().
 
-	Jeff
+Or not.  We can call next_node(MAX_NUMNODES, node_online_map) in that race
+window, with perhaps bad results.
 
--- 
-Work email - jdike at linux dot intel dot com
+I think I like the lock ;)
