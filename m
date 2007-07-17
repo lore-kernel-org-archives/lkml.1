@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932262AbXGQOI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbXGQOJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932262AbXGQOI6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbXGQOHy
+	id S932546AbXGQOJX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761757AbXGQOHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:07:54 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35911 "EHLO pasmtpB.tele.dk"
+	Tue, 17 Jul 2007 10:07:55 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:35923 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760801AbXGQOHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 10:07:49 -0400
+	id S1760887AbXGQOHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 10:07:50 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kernel@vger.kernel.org
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 05/33] kbuild: avoid environment to set variables used by kbuild
-Date: Tue, 17 Jul 2007 16:08:34 +0200
-Message-Id: <11846813432300-git-send-email-sam@ravnborg.org>
+Cc: Mike Frysinger <vapier@gentoo.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 07/33] kconfig: use POSIX equality test in check-lxdialog.sh
+Date: Tue, 17 Jul 2007 16:08:36 +0200
+Message-Id: <11846813431389-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11846813433593-git-send-email-sam@ravnborg.org>
-References: 20070717140622.GA25846@uranus.ravnborg.org <11846813423231-git-send-email-sam@ravnborg.org> <11846813432423-git-send-email-sam@ravnborg.org> <1184681343138-git-send-email-sam@ravnborg.org> <11846813433593-git-send-email-sam@ravnborg.org>
+In-Reply-To: <11846813432072-git-send-email-sam@ravnborg.org>
+References: 20070717140622.GA25846@uranus.ravnborg.org <11846813423231-git-send-email-sam@ravnborg.org> <11846813432423-git-send-email-sam@ravnborg.org> <1184681343138-git-send-email-sam@ravnborg.org> <11846813433593-git-send-email-sam@ravnborg.org> <11846813432300-git-send-email-sam@ravnborg.org> <11846813432072-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few of the variables used by kbuild has fixed naming.
-Make sure we do not pick up random values from the environment.
+From: Mike Frysinger <vapier@gentoo.org>
 
+The "==" operator is not in POSIX, so use -eq instead.
+
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/Makefile.build |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+ scripts/kconfig/lxdialog/check-lxdialog.sh |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index a525112..3f7b451 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -7,6 +7,22 @@ src := $(obj)
- PHONY := __build
- __build:
+diff --git a/scripts/kconfig/lxdialog/check-lxdialog.sh b/scripts/kconfig/lxdialog/check-lxdialog.sh
+index cdca738..9681476 100644
+--- a/scripts/kconfig/lxdialog/check-lxdialog.sh
++++ b/scripts/kconfig/lxdialog/check-lxdialog.sh
+@@ -51,7 +51,7 @@ usage() {
+ 	printf "Usage: $0 [-check compiler options|-header|-library]\n"
+ }
  
-+# Init all relevant variables used in kbuild files so
-+# 1) they have correct type
-+# 2) they do not inherit any value from the environment
-+obj-y :=
-+obj-m :=
-+lib-y :=
-+lib-m :=
-+always :=
-+targets :=
-+subdir-y :=
-+subdir-m :=
-+EXTRA_AFLAGS   :=
-+EXTRA_CFLAGS   :=
-+EXTRA_CPPFLAGS :=
-+EXTRA_LDFLAGS  :=
-+
- # Read .config if it exist, otherwise ignore
- -include include/config/auto.conf
- 
+-if [ $# == 0 ]; then
++if [ $# -eq 0 ]; then
+ 	usage
+ 	exit 1
+ fi
 -- 
 1.5.0.6
 
