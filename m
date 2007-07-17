@@ -1,89 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764013AbXGQNFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbXGQNFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764013AbXGQNFa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 09:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbXGQNFW
+	id S1755213AbXGQNFp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 09:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764680AbXGQNFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 09:05:22 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:53834 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbXGQNFV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 09:05:21 -0400
-Subject: Re: [PATCH] appletouch powersaving - please apply for 2.6.23-rc1
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-usb-devel@lists.sourceforge.net,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nicolas Boichat <nicolas@boichat.ch>,
-       Michael Hanselmann <linux-kernel@hansmi.ch>,
-       Peter Osterlund <petero2@telia.com>,
-       Frank Arnold <frank@scirocco-5v-turbo.de>,
-       Stelian Pop <stelian@popies.net>, Greg Kroah-Hartman <greg@kroah.com>
-In-Reply-To: <1184656218.14051.43.camel@localhost>
-References: <1184656218.14051.43.camel@localhost>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ltW17/tmw41IOYBdWxxf"
-Date: Tue, 17 Jul 2007 15:03:44 +0200
-Message-Id: <1184677424.3773.87.camel@johannes.berg>
+	Tue, 17 Jul 2007 09:05:35 -0400
+Received: from mail.screens.ru ([213.234.233.54]:54849 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764415AbXGQNFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 09:05:34 -0400
+Date: Tue, 17 Jul 2007 17:07:05 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jeremy Katz <jeremy.katz@windriver.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Stable Team <stable@kernel.org>
+Subject: Re: [PATCH] posix-timer: fix deletion race
+Message-ID: <20070717130705.GA74@tv-sign.ru>
+References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain> <1184662429.12353.426.camel@chaos>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184662429.12353.426.camel@chaos>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/17, Thomas Gleixner wrote:
+>
+> Jeremy Katz experienced a posix-timer related bug on 2.6.14. This is
+> caused by a subtle race, which is there since the original posix timer
+> commit and persists until today.
+> 
+> timer_delete does:
+> lock_timer();
+> timer->it_process = NULL;
+> unlock_timer();
+> release_posix_timer();
+> 
+> timer->it_process is checked in lock_timer() to prevent access to a
+> timer, which is on the way to be deleted, but the check happens after
+> idr_lock is dropped. This allows release_posix_timer() to delete the
+> timer before the lock code can check the timer:
+> 
+> CPU 0				CPU 1
+> lock_timer();			
+> timer->it_process = NULL;
+> unlock_timer();
+> 				lock_timer()
+> 					spin_lock(idr_lock);
+> 					timer = idr_find();
+> 					spin_lock(timer->lock);
+> 					spin_unlock(idr_lock);
+> release_posix_timer();
+> 	spin_lock(idr_lock);
+> 	idr_remove(timer);
+> 	spin_unlock(idr_lock);
+> 	free_timer(timer);
+> 					if (timer->......)
 
---=-ltW17/tmw41IOYBdWxxf
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This is funny. I do remember this bug was discussed a couple of years ago,
+and the conclusion was "we can fix it later" :)
 
-Hi,
+> --- a/kernel/posix-timers.c
+> +++ b/kernel/posix-timers.c
+> @@ -605,13 +605,14 @@ static struct k_itimer * lock_timer(timer_t timer_id, unsigned long *flags)
+>  	timr = (struct k_itimer *) idr_find(&posix_timers_id, (int) timer_id);
+>  	if (timr) {
+>  		spin_lock(&timr->it_lock);
+> -		spin_unlock(&idr_lock);
+>  
+>  		if ((timr->it_id != timer_id) || !(timr->it_process) ||
+>  				timr->it_process->tgid != current->tgid) {
+> -			unlock_timer(timr, *flags);
+> +			spin_unlock(&timr->it_lock);
+> +			spin_unlock_irqrestore(&idr_lock, *flags);
+>  			timr = NULL;
+> -		}
+> +		} else
+> +			spin_unlock(&idr_lock);
+>  	} else
+>  		spin_unlock_irqrestore(&idr_lock, *flags);
 
-Good stuff :)
+I think we can make a simpler patch,
 
-> +	int                     idlecount;      /* number of empty packets */
-
-should probably use tabs here.
-
-> +	size =3D usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
-> +			       ATP_GEYSER3_MODE_WRITE_REQUEST_ID,
-> +			       USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-> +			       ATP_GEYSER3_MODE_REQUEST_VALUE,
-> +			       ATP_GEYSER3_MODE_REQUEST_INDEX, &data, 8, 5000);
-> +	<eol>
-
-trailing whitespace.
-
-=20
-> +	input_report_key(dev->input, BTN_LEFT, dev->data[dev->datalen-1] & 1);
-> +
+--- posix-timers.c~	2007-06-29 14:45:04.000000000 +0400
++++ posix-timers.c	2007-07-17 16:59:45.000000000 +0400
+@@ -449,6 +449,9 @@ static void release_posix_timer(struct k
+ 		idr_remove(&posix_timers_id, tmr->it_id);
+ 		spin_unlock_irqrestore(&idr_lock, flags);
+ 	}
++
++	spin_unlock_wait(tmr->it_lock);
++
+ 	sigqueue_free(tmr->sigq);
+ 	if (unlikely(tmr->it_process) &&
+ 	    tmr->it_sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
 
 
-> @@ -449,10 +511,19 @@ static void atp_complete(struct urb* urb)
-> =20
->  		/* reset the accumulator on release */
->  		memset(dev->xy_acc, 0, sizeof(dev->xy_acc));
-> -	}
-> =20
-> -	input_report_key(dev->input, BTN_LEFT,
-> -			 !!dev->data[dev->datalen - 1]);
+What do you think? Instead of complicating the lock_timer(), release_posix_timer()
+just makes sure that nobody can "use" tmr.
 
-Any hint as to why you move this? The different test, yes, ok, you
-explained that, but moving it?
+(Actually, I am not sure this is my idea, perhaps something like above was suggested
+ by somebody else, I forgot the discussion completely).
 
-johannes
-
---=-ltW17/tmw41IOYBdWxxf
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGnL4w/ETPhpq3jKURAkBNAJ4piCS61A4pde11xfdb3/JOhxONFACgq0J2
-/vet92dmqmBJAScDM999TQE=
-=10ID
------END PGP SIGNATURE-----
-
---=-ltW17/tmw41IOYBdWxxf--
+Oleg.
 
