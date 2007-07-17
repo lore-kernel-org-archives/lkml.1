@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764814AbXGQHCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764926AbXGQHDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764814AbXGQHCK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764198AbXGQHBr
+	id S1764926AbXGQHDH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbXGQHCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:01:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43350 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764101AbXGQHBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:01:46 -0400
-Date: Tue, 17 Jul 2007 00:01:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jerry Cooperstein <jerry.cooperstein@charter.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mutex_unlock() in interrupt context
-Message-Id: <20070717000138.0d255ed5.akpm@linux-foundation.org>
-In-Reply-To: <46981580.5000008@charter.net>
-References: <20070713160117.0db9d36d.akpm@linux-foundation.org>
-	<0C7297FA1D2D244A9C7F6959C0BF1E5202234496@azsmsx413.amr.corp.intel.com>
-	<20070713170147.6129fc3b.akpm@linux-foundation.org>
-	<46981580.5000008@charter.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jul 2007 03:02:55 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:18430 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756854AbXGQHCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:02:54 -0400
+Date: Tue, 17 Jul 2007 09:02:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, ak@suse.de
+Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg
+	helpers
+Message-ID: <20070717070217.GB5195@kernel.dk>
+References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792681830-git-send-email-jens.axboe@oracle.com> <20070716130608.4d096e29.akpm@linux-foundation.org> <20070716201002.GQ5195@kernel.dk> <20070716133427.e212b753.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070716133427.e212b753.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 19:14:56 -0500 Jerry Cooperstein <jerry.cooperstein@charter.net> wrote:
-
-> kernel/mutex.c says about mutex_unlock():
+On Mon, Jul 16 2007, Andrew Morton wrote:
+> On Mon, 16 Jul 2007 22:10:03 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
->   * This function must not be used in interrupt context.
+> > On Mon, Jul 16 2007, Andrew Morton wrote:
+> > > On Mon, 16 Jul 2007 11:47:23 +0200
+> > > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > This prepares x86-64 for sg chaining support.
+> > > > 
+> > > > Additional improvements/fixups for pci-gart from
+> > > > Benny Halevy <bhalevy@panasas.com>
+> > > > 
+> > > > Cc: ak@suse.de
+> > > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > > ---
+> > > >  arch/x86_64/kernel/pci-calgary.c |   25 ++++++++------
+> > > >  arch/x86_64/kernel/pci-gart.c    |   63 ++++++++++++++++++++-----------------
+> > > >  arch/x86_64/kernel/pci-nommu.c   |    5 ++-
+> > > >  3 files changed, 51 insertions(+), 42 deletions(-)
+> > > 
+> > > This causes fairly extensive destruction of 2.6.23 changes which are
+> > > pending in Andi's tree.
+> > > 
+> > > I shall drop the block tree until a) Andi has merged the pending Calgary
+> > > changes and b) the block tree has been fixed up to account for those (and
+> > > other) changes.
+> > > 
+> > > Really, this was the perfectly worst time possible to go tromping all over
+> > > everyone else's trees.
+> > 
+> > Well, that's a bit hard for me to know, all I can do is push my stuff to
+> > for-akpm so that it gets -mm exposure. If I don't, then you are yelling
+> > at me as well :-)
 > 
-> However I have done some simple test cases that show
-> it works without complaint.  Now I understand that one
-> shouldn't do this for good reasons.  So is this a
-> good coding practice rule, but something that
-> could appear in sloppy or poorly designed code?
+> It is to be expected that there will be conflicts when making large-scale
+> changes like this while there is 25MB of unmerged diff sitting out in 50
+> different trees.  Doing it around the -rc1 time would be better.
 > 
+> Even better would be not doing it at all: add the necessary stuff into the
+> block core and then send the followup work to the relevant maintainers. ie:
+> standard practice.
 
-mutex_unlock() must be called by the process which did the mutex_lock(). 
-Doing the mutex_unlock() from an interrupt will cause warnings when run
-with debugging enabled.  You should run with debugging enabled when doing
-any development.  
+I'll do that. Most of the stuff is trivial, but the x86-64 iommu changes
+are probably the most tricky and invasive of them all.
 
-Also, mutex_unlock() takes a mutex-internal spinlock in a non-irq-safe
-fashion - if the timing is right, your mutex_unlock() in IRQ context will
-deadlock.
+> > I'll keep rebasing sglist and the other branches I pull into for-akpm,
+> > so you can just re-enable the for-akpm pull when the a) is true.
+> 
+> Andi's tree is very out of date and is about to be damaged (to what extent
+> I don't yet know) by a xen merge.  I don't know if a) is going to happen.
+> 
+> 
+> Things are more than usually messy this time around.
+
+Seems so :)
+
+-- 
+Jens Axboe
 
