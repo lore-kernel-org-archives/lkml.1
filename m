@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934482AbXGQTRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765049AbXGQTRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934482AbXGQTRP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbXGQTQ7
+	id S1765049AbXGQTRj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758539AbXGQTR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:16:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57089 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753531AbXGQTQ6 (ORCPT
+	Tue, 17 Jul 2007 15:17:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47222 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754808AbXGQTR0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:16:58 -0400
-Date: Tue, 17 Jul 2007 12:15:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: caglar@pardus.org.tr, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
-In-Reply-To: <469D1317.1050202@zytor.com>
-Message-ID: <alpine.LFD.0.999.0707171212070.27353@woody.linux-foundation.org>
-References: <11846910642166-git-send-email-avi@qumranet.com>
- <200707172139.09131.caglar@pardus.org.tr> <469D1317.1050202@zytor.com>
+	Tue, 17 Jul 2007 15:17:26 -0400
+Date: Tue, 17 Jul 2007 20:17:22 +0100 (BST)
+From: James Simmons <jsimmons@infradead.org>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+cc: Linus Torvalds <torvalds@osdl.org>,
+       Linux console project <linuxconsole-dev@lists.sourceforge.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Use tty_schedule in VT code.
+In-Reply-To: <20070717184943.GA3768@interface.famille.thibault.fr>
+Message-ID: <Pine.LNX.4.64.0707172016470.9131@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0707171933180.6721@pentafluge.infradead.org>
+ <20070717184943.GA3768@interface.famille.thibault.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1831524198-1940100026-1184699842=:9131"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---1831524198-1940100026-1184699842=:9131
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
 
-On Tue, 17 Jul 2007, H. Peter Anvin wrote:
->
-> S.Ã‡aÄŸlar Onur wrote:
-> > 
-> > If i'm not wrong X86_CMPXCHG64 depends on CONFIG_X86_PAE which depends on 
-> > HIGHMEM64 and again if i'm not wrong this means distributions who wants to 
-> > provide KVM must enable CONFIG_X86_PAE and CONFIG_HIGHMEM64G from now on?
-> > 
+> James Simmons, le Tue 17 Jul 2007 19:37:57 +0100, a écrit :
+> > -	schedule_delayed_work(&t->buf.work, 0);
 > 
-> X86_PAE should depend on X86_CMPXCHG64, not the other way around.
+> It was schedule_delayed_work(&t->buf.work, 1); in con_schedule_flip() ;
+> could that matter?
 
-Actually, I think the *real* solution would be:
+I did not detect any regressions.
 
- - add a X86_HAS_CMPXCHG8B config option, and set it for the appropriate 
-   CPU selection (P6 and up, or whatever the rule is)
-
- - make KVM depend on it
-
- - make KVM and HIGHMEM64 _select_ another config option, namely the 
-   NEEDS_CMPXCHG8B
-
-and then we make the cpufeatures code check the CMPXCHG bit only if the 
-NEEDS_CMPXCHG8B thing is set. That gives us the best of all worlds.
-
-Because there is no point in checking whether the CPU supports it if the 
-kernel doesn't _need_ it. Especially since we know that some CPU's lie 
-about it due to old NT bugs.
-
-		Linus
+---1831524198-1940100026-1184699842=:9131--
