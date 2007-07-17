@@ -1,95 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762959AbXGQHk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbXGQHqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762959AbXGQHk4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXGQHks
+	id S1761077AbXGQHqA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbXGQHpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:40:48 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43148
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbXGQHkr (ORCPT
+	Tue, 17 Jul 2007 03:45:50 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40509 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbXGQHpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:40:47 -0400
-Date: Tue, 17 Jul 2007 00:34:16 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Joseph Fannin <jfannin@gmail.com>
-cc: Oliver Neukum <oliver@neukum.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: Hibernating To Swap Considered Harmful
-In-Reply-To: <20070717072601.GA21633@nineveh.local>
-Message-ID: <Pine.LNX.4.64.0707170030460.19248@asgard.lang.hm>
-References: <200707121453.49616.rjw@sisk.pl> <87odig1idx.fsf@jbms.ath.cx>
- <20070717001239.GB20082@nineveh.local> <200707170744.08191.oliver@neukum.org>
- <20070717062803.GA9069@nineveh.local> <Pine.LNX.4.64.0707162338370.19248@asgard.lang.hm>
- <20070717072601.GA21633@nineveh.local>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 17 Jul 2007 03:45:49 -0400
+Date: Tue, 17 Jul 2007 08:45:46 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kirill Kuvaldin <kuvkir@epsmu.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] isofs: mounting to regular file may succeed
+Message-ID: <20070717074546.GM21668@ftp.linux.org.uk>
+References: <20070713234721.GG4536@zetta.epsmu.com> <20070717000407.4c854ec8.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070717000407.4c854ec8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Joseph Fannin wrote:
+On Tue, Jul 17, 2007 at 12:04:07AM -0700, Andrew Morton wrote:
 
-> On Mon, Jul 16, 2007 at 11:42:08PM -0700, david@lang.hm wrote:
->> On Tue, 17 Jul 2007, Joseph Fannin wrote:
->
->>> root is free to "dd if=/dev/random of=/dev/mem".  Root owned
->>> daemons which do bad things are bugs.
->>
->> in this case it would be more like
->>
->> dd if=/block0 of=/dev/sda1 count=1 bs=4096 skip=5000
->> dd if=/block1 of=/dev/sda1 count=1 bs=4096 skip=5050
->> dd if=/block2 of=/dev/sda1 count=1 bs=4096 skip=5400
->> etc
->>
->> to write the blocks to the raw parition in the right place
->
-> What I meant by that was that root is allowed to shoot himself in the
-> foot.  Nothing stops root from opening a swap/hibernate file, which
-> would put it in cache, and cause it to be inconsistant if a
-> hibernation image was written to it behind the kernel's back.
->
-> That would be a very stupid thing to do, however.  There's no reason
-> to open that file, unless you know *exactly* what you are doing, in
-> which case the onus is on you to get it right.
->
-> But you have a point.  The swap file could be very fragmented.  It
-> might often be so, even.
->
-> Still, is this better than exporting the kernel's swap internals
-> (which has never been a public interface before)?
->
-> Does it make the interface that writing hibernation images to swap
-> imposes any better?
->
-> Even if hibernation files are no less complicated to support than
-> hibernating to swap files (which isn't a forgone conclusion) , there
-> are plenty of reasons writing hibernation images to swap doesn't make
-> sense.
->
->
->>> Again, supporting swap files (*which is not optional*) requires the
->>> very same support.
->>
->> in the kexec model why would the second kernel care about swap files at
->> all? (unles it chooses to write to them, in which case it is exactly the
->> same support, but unless it writes to them it doesn't need to care)
->
-> My point is that no extra work is required to write hibernation images
-> to dedicated files than to write hibernation images to swap files.
->
-> If swap files are to be supported, then, there's no technical reason
-> not to support dedicated hibernation files.  Dedicated hibernation
-> files are better, and there's no reason not to implement them.
+> I don't think any (all?) other filesystems perform checks like this.
+> Is this something which can/should be performed at the VFS level?
 
-I agree with your point, but the reverse is not true, the ability to write 
-to a dedicated hibernation file does not produce the capacity to write to 
-a swap file, and I do question the 'requirement' to write the hibernation 
-image to the swap file.
+	I don't see why we _should_ check that; VFS checks that we don't
+turn directory into non-directory and vice versa, same as for binding.
+There is no reason why fs driver could not give you a single-node filesystem
+with root being e.g. a block device node.  You could mount it on any
+non-directory and get a block device seen there, etc.
 
-David Lang
-
+	IOW, if filesystem driver considers fs image it's working from
+as invalid, it's up to filesystem driver.  _What_ is considered invalid
+depends on fs type; what the driver cares to report as dubious is, again,
+up to driver.  If isofs wants to warn about an ISO image that definitely
+violates ISO9660, it's isofs decision.  VFS will work with it as long
+as fs driver does...
