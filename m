@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932622AbXGQH5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933256AbXGQH5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932622AbXGQH5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbXGQH5O
+	id S933256AbXGQH5y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbXGQH5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:57:14 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:21155 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754339AbXGQH5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:57:13 -0400
-Date: Tue, 17 Jul 2007 09:56:37 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, ak@suse.de
-Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg
-	helpers
-Message-ID: <20070717075637.GH5195@kernel.dk>
-References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792681830-git-send-email-jens.axboe@oracle.com> <20070716130608.4d096e29.akpm@linux-foundation.org> <20070716201002.GQ5195@kernel.dk> <20070716133427.e212b753.akpm@linux-foundation.org> <20070717070217.GB5195@kernel.dk>
+	Tue, 17 Jul 2007 03:57:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:21446 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762249AbXGQH5o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:57:44 -0400
+From: Olaf Kirch <olaf.kirch@oracle.com>
+Organization: Oracle
+To: Jarek Poplawski <jarkao2@o2.pl>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Date: Tue, 17 Jul 2007 09:55:37 +0200
+User-Agent: KMail/1.9.1
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+References: <20070716091236.GA10718@elte.hu> <20070717054639.GA1640@ff.dom.local> <20070717061458.GB1640@ff.dom.local>
+In-Reply-To: <20070717061458.GB1640@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070717070217.GB5195@kernel.dk>
+Message-Id: <200707170955.38536.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17 2007, Jens Axboe wrote:
-> On Mon, Jul 16 2007, Andrew Morton wrote:
-> > On Mon, 16 Jul 2007 22:10:03 +0200
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Mon, Jul 16 2007, Andrew Morton wrote:
-> > > > On Mon, 16 Jul 2007 11:47:23 +0200
-> > > > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > 
-> > > > > This prepares x86-64 for sg chaining support.
-> > > > > 
-> > > > > Additional improvements/fixups for pci-gart from
-> > > > > Benny Halevy <bhalevy@panasas.com>
-> > > > > 
-> > > > > Cc: ak@suse.de
-> > > > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > > > > ---
-> > > > >  arch/x86_64/kernel/pci-calgary.c |   25 ++++++++------
-> > > > >  arch/x86_64/kernel/pci-gart.c    |   63 ++++++++++++++++++++-----------------
-> > > > >  arch/x86_64/kernel/pci-nommu.c   |    5 ++-
-> > > > >  3 files changed, 51 insertions(+), 42 deletions(-)
-> > > > 
-> > > > This causes fairly extensive destruction of 2.6.23 changes which are
-> > > > pending in Andi's tree.
-> > > > 
-> > > > I shall drop the block tree until a) Andi has merged the pending Calgary
-> > > > changes and b) the block tree has been fixed up to account for those (and
-> > > > other) changes.
-> > > > 
-> > > > Really, this was the perfectly worst time possible to go tromping all over
-> > > > everyone else's trees.
-> > > 
-> > > Well, that's a bit hard for me to know, all I can do is push my stuff to
-> > > for-akpm so that it gets -mm exposure. If I don't, then you are yelling
-> > > at me as well :-)
-> > 
-> > It is to be expected that there will be conflicts when making large-scale
-> > changes like this while there is 25MB of unmerged diff sitting out in 50
-> > different trees.  Doing it around the -rc1 time would be better.
-> > 
-> > Even better would be not doing it at all: add the necessary stuff into the
-> > block core and then send the followup work to the relevant maintainers. ie:
-> > standard practice.
+On Tuesday 17 July 2007 08:14, Jarek Poplawski wrote:
+> > If after poll_napi dev->quota <= 0 dev->poll is not run and
+> > __LINK_STATE_RX_SCHED bit (plus dev->poll_list) stays uncleared.
 > 
-> I'll do that. Most of the stuff is trivial, but the x86-64 iommu changes
-> are probably the most tricky and invasive of them all.
+> Or, more precisely dev->poll_list will be cleared just after this,
+> and net_rx_action returns with __LINK_STATE_RX_SCHED bit set.
 
-OK, this is what I did:
+I don't think so. dev will remain on poll_list.
 
-Split the set into 3, in the following order:
+What I find more problematic about this portion of code though
+is that once a net_device is over quota, net_rx_action will
+loop for up to one jiffy, even if there's just this one device on
+the poll_list.
 
-CORE -> DRIVERS -> ARCH
-
-So that's 3 branches, core is based off master, drivers off core, and
-arch off drivers. I'll push core+drivers into #for-akpm for testing,
-then the arch bits will stay undisturbed until acked by maintainers.
-
+Olaf
 -- 
-Jens Axboe
-
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
