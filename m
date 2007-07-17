@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935689AbXGQTZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935576AbXGQT1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935689AbXGQTZj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbXGQTZ2
+	id S935576AbXGQT1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759741AbXGQT1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:25:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48735 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757370AbXGQTZ1 (ORCPT
+	Tue, 17 Jul 2007 15:27:08 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50693 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757304AbXGQT1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:25:27 -0400
-Date: Tue, 17 Jul 2007 12:18:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: block/bsg.c
-Message-Id: <20070717121821.3212cd60.akpm@linux-foundation.org>
-In-Reply-To: <20070717063810.GY5195@kernel.dk>
-References: <20070716165706.348f6bbf.akpm@linux-foundation.org>
-	<20070717063810.GY5195@kernel.dk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 17 Jul 2007 15:27:07 -0400
+Message-ID: <469D17C9.9010509@zytor.com>
+Date: Tue, 17 Jul 2007 12:26:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: caglar@pardus.org.tr, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
+References: <11846910642166-git-send-email-avi@qumranet.com> <200707172139.09131.caglar@pardus.org.tr> <469D1317.1050202@zytor.com> <alpine.LFD.0.999.0707171212070.27353@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707171212070.27353@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007 08:38:11 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> > In terms of presentation: this code hit the tree as base patch plus what
-> > appear to be 20 bugfixes, none of which are really interesting or relevant
-> > to mainline.  Personally I think it would be nicer if all that out-of-tree
-> > development work was cleaned up and the new code goes in as a single hit.
-> > 
-> > This makes it a lot easier to find out "wtf does this code all do".  One
-> > finds the first commit and reads the changlog.  But this algorithm yields:
-> > 
-> >     bsg: support for full generic block layer SG v3
-> > 
-> > which is not helpful.
+Linus Torvalds wrote:
 > 
-> I agree, I did consider rebasing the merging all patches into a single
-> commit prior to submission. In retrospect that would have been better,
-> the bug fixes commits prior to inclusion is not that interesting.
+> Actually, I think the *real* solution would be:
+> 
+>  - add a X86_HAS_CMPXCHG8B config option, and set it for the appropriate 
+>    CPU selection (P6 and up, or whatever the rule is)
+> 
+>  - make KVM depend on it
+> 
+>  - make KVM and HIGHMEM64 _select_ another config option, namely the 
+>    NEEDS_CMPXCHG8B
+> 
+> and then we make the cpufeatures code check the CMPXCHG bit only if the 
+> NEEDS_CMPXCHG8B thing is set. That gives us the best of all worlds.
+> 
+> Because there is no point in checking whether the CPU supports it if the 
+> kernel doesn't _need_ it. Especially since we know that some CPU's lie 
+> about it due to old NT bugs.
+> 
 
-I'm doing a git-bisect and....
+Yes.  This is probably also true for other CPU feature options, at least
+in the abstract (i.e. it may not apply to any of the current options).
 
-block/bsg.c: In function 'bsg_register_queue':
-block/bsg.c:1014: error: 'struct kobject' has no member named 'dentry'
-
-That's easily fixable in config, but it's another reason for doing
-that consolidation prior to merging.
+	-hpa
