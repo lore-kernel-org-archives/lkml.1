@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937557AbXGQX71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937474AbXGRAAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937557AbXGQX71 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 19:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937509AbXGQX62
+	id S937474AbXGRAAY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 20:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765606AbXGRAAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 19:58:28 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:58563 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937575AbXGQX60 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 19:58:26 -0400
-Message-ID: <469D5755.3050301@gmail.com>
-Date: Wed, 18 Jul 2007 01:57:09 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 17 Jul 2007 20:00:00 -0400
+Received: from mail.windriver.com ([147.11.1.11]:58523 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760173AbXGQX77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 19:59:59 -0400
+Date: Tue, 17 Jul 2007 16:58:33 -0700 (PDT)
+From: Jeremy Katz <jeremy.katz@windriver.com>
+X-X-Sender: jkatz@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Stable Team <stable@kernel.org>
+Subject: Re: [PATCH] posix-timer: fix deletion race
+In-Reply-To: <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
+Message-ID: <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
+References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain> 
+ <1184662429.12353.426.camel@chaos>  <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
+ <1184703427.12353.476.camel@chaos> <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
 MIME-Version: 1.0
-To: Bodo Eggert <7eggert@gmx.de>
-CC: Ray Lee <ray-lk@madrabbit.org>, Matt Mackall <mpm@selenic.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <8FO1e-2jW-35@gated-at.bofh.it> <8Ghmx-60z-17@gated-at.bofh.it>  <8Gj55-hJ-5@gated-at.bofh.it> <8GkNo-2Vb-1@gated-at.bofh.it>  <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it>  <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com>  <Pine.LNX.4.58.0707161523500.25779@be1.lrz>  <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com> <Pine.LNX.4.58.0707170143200.29868@be1.lrz> <469C0D32.2090102@gmail.com> <Pine.LNX.4.58.0707171119050.2210@be1.lrz> <469CD456.801@gmail.com> <Pine.LNX.4.58.0707172334210.2141@be1.lrz>
-In-Reply-To: <Pine.LNX.4.58.0707172334210.2141@be1.lrz>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-OriginalArrivalTime: 17 Jul 2007 23:58:34.0025 (UTC) FILETIME=[623BC190:01C7C8CE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/18/2007 01:19 AM, Bodo Eggert wrote:
+On Tue, 17 Jul 2007, Jeremy Katz wrote:
 
-> Please post a list of things you have designed, so I can avoid them.
+> On Tue, 17 Jul 2007, Thomas Gleixner wrote:
+>
+>> With 2.6.14 or with current mainline ?
+>
+> I haven't been keeping notes quite as studiously as I should have been, but 
+> this just occurred with 2.6.22.1 + the hrt6 patch + your proposed fix:
 
-- The ability to read
-- The ability to understand
+Scratch that.  I had infrastructure problems, and ended up using the wrong 
+build.
 
-You're doing a hell of a job already.
+This is with the patch (and 2.6.22.1 and hrt6):
 
-Rene.
+------------[ cut here ]------------
+Kernel BUG at c0125adb [verbose debug info unavailable]
+invalid opcode: 0000 [#1]
+SMP
+Modules linked in:
+CPU:    3
+EIP:    0060:[<c0125adb>]    Not tainted VLI
+EFLAGS: 00010246   (2.6.22.1-WR1.4aq_cgl #2)
+EIP is at sigqueue_free+0x23/0x72
+eax: 00000000   ebx: f6eaf1a8   ecx: f6d4b888   edx: 00000202
+esi: f73e2ba8   edi: 00000000   ebp: f7c7bf8c   esp: f7c7bf84
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process hrtm_test (pid: 15340, ti=f7c7b000 task=f6c0f030 task.ti=f7c7b000)
+Stack: 00000202 f73e2ba8 f7c7bf9c c012c941 f73e2ba8 000002fb f7c7bfb0 
+c012d1c0
+        00000286 000002fb 00000000 f7c7b000 c01027ca 000002fb 466afff4 
+08064190
+        00000000 00000000 ae8d43c8 00000107 ffff007b c010007b 00000000 
+00000107
+Call Trace:
+  [<c0103504>] show_trace_log_lvl+0x1a/0x30
+  [<c01035bb>] show_stack_log_lvl+0x8d/0xaa
+  [<c01037f5>] show_registers+0x1cd/0x2cb
+  [<c0103a4a>] die+0x113/0x207
+  [<c039aab5>] do_trap+0x8f/0xc6
+  [<c0103d35>] do_invalid_op+0x88/0x92
+  [<c039a882>] error_code+0x72/0x78
+  [<c012c941>] release_posix_timer+0x1b/0x7a
+  [<c012d1c0>] sys_timer_delete+0xd7/0x10c
+  [<c01027ca>] syscall_call+0x7/0xb
+  =======================
+Code: 74 04 83 48 08 01 5d c3 55 89 e5 56 53 89 c3 8b 40 08 a8 01 74 15 39 
+1b 75 15 83 e0 fe 89 43 08 89 d8 e8 1d ec ff ff 5b 5e 5d c3 <0f> 0b eb fe 
+64 a1 00 c0 4a c0 8b b0 50 04 00 00 b8 00 1e 46 c0
+
