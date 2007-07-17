@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936324AbXGQVQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935936AbXGQVRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936324AbXGQVQp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 17:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbXGQVQf
+	id S935936AbXGQVRg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 17:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbXGQVR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 17:16:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50406 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758957AbXGQVQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 17:16:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 23:24:31 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org> <87odiag45q.fsf@jbms.ath.cx> <Pine.LNX.4.64.0707171335180.2467@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707171335180.2467@asgard.lang.hm>
+	Tue, 17 Jul 2007 17:17:27 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:1505 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754377AbXGQVR0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 17:17:26 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Ian Kent" <raven@themaw.net>
+Cc: "Chuck Ebbert" <cebbert@redhat.com>, "Bill Davidsen" <davidsen@tmr.com>
+Subject: RE: [patch] CFS scheduler, -v19
+Date: Tue, 17 Jul 2007 14:16:39 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKEBPFGAC.davids@webmaster.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707172324.33285.rjw@sisk.pl>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <20070717074537.GA13539@elte.hu>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 17 Jul 2007 14:17:04 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 17 Jul 2007 14:17:12 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 17 July 2007 22:37, david@lang.hm wrote:
-> On Tue, 17 Jul 2007, Jeremy Maitin-Shepard wrote:
-> 
-> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >
-> > [snip]
-> >
-> >>> Rafael, for those of us who aren't thoroughly familiar with all the ins
-> >>> and outs of the ACPI spec, could you please summarize a list of the
-> >>> ACPI calls needed in the second and third cases above?  Indicate which
-> >>> ones need to be done from within the original kernel and which should
-> >>> be done from within a kexec'd hibernation kernel.
-> >
-> >> Sure.
-> >
-> >> In the third case (ie. transition to S4) we are supposed to do the following:
-> >
-> >> (1) Upon entering the sleep state, which IMO can be done _after_ the image
-> >>     has been saved:
-> >
-> > I assume you mean "in order to enter the sleep state", rather than "upon
-> > entering the sleep state".  I still don't understand what you mean by
-> > "which IMO can be done _after_ the image has been saved"; as far as I
-> > understand, the last step of this process, "make the platform enter S4",
-> > is almost like a shutdown as far as the kernel is concerned (except for
-> > the tiny detail of having to call those special ACPI methods on resume);
-> > consequently, it would seem that nothing can be done after that step.
-> >
-> >>   * figure out which devices can wake up
-> >>   * put devices into low power states (wake-up devices are placed in the Dx
-> >>     states compatible with the wake capability, the others are powered off)
-> 
-> this can't be done by the image-saving kernel if that kernel doesn't know 
-> about the device.
 
-Good observation. :-)
+> * Ian Kent <raven@themaw.net> wrote:
+>
+> > Yes it does and I have two reported bugs so far.
+> >
+> > In several places I have code similar to:
+> >
+> > wait.tv_sec = time(NULL) + 1;
+> > wait.tv_nsec = 0;
+> >
+> > signaled = 0;
+> > while (!signaled) {
+> >         status = pthread_cond_timedwait(&cond, &mutex, &wait);
+> >        if (status) {
+> >              if (status == ETIMEDOUT)
+> >                   break;
+> >              fatal(status);
+> >       }
+> > }
+>
+> ah! It passes in a low-res time source into a high-res time interface
+> (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to
+> time(NULL) + 2, or change it to:
+>
+> 	gettimeofday(&wait, NULL);
+> 	wait.tv_sec++;
+>
+> does this solve the spinning?
+>
+> i'm wondering how widespread this is. If automount is the only app doing
+> this then _maybe_ we could get away with it by changing automount?
 
-Greetings,
-Rafael
+This code is horribly broken. Don't change the kernel because this code is
+broken.
+
+First it adds a second, but then it subtracts up to a second. Just before
+the second boundary, this code can burn CPU like crazy, with each wait being
+just a few nanoseconds.
+
+What is the intent of this code? Is it to wait "up to a second, possibly for
+no time at all" or is to wait "for at least a second"? If so, why are you
+zeroing the nanosecond count?
+
+DS
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
