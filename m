@@ -1,90 +1,328 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765705AbXGQR1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760801AbXGQRgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765705AbXGQR1x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758329AbXGQR1p
+	id S1760801AbXGQRgh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbXGQRg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:27:45 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:48839 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757947AbXGQR1o (ORCPT
+	Tue, 17 Jul 2007 13:36:28 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:63946 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752976AbXGQRg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:27:44 -0400
-Date: Tue, 17 Jul 2007 18:26:14 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Joe Jin <joe.jin@oracle.com>, bill.irwin@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
-In-Reply-To: <20070717093228.3a3638aa.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707171818080.19489@blonde.wat.veritas.com>
-References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
- <20070712221842.f5e47065.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0707171558470.26771@blonde.wat.veritas.com>
- <20070717093228.3a3638aa.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAam9lLmppbkBvcmFjbGUuY29tAGJpbGwuaXJ3aW5Ab3JhY2xlLmNvbQBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAA==
-X-Brightmail-Tracker: AAAAAA==
+	Tue, 17 Jul 2007 13:36:26 -0400
+Date: Tue, 17 Jul 2007 10:39:57 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] serial: add back early_serial_setup back to head file
+In-reply-to: <15587.1184685298@redhat.com>
+To: David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200707171039.58182.yinghai.lu@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <15587.1184685298@redhat.com>
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Andrew Morton wrote:
-> On Tue, 17 Jul 2007 16:04:54 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
-> > On Thu, 12 Jul 2007, Andrew Morton wrote:
-> > > 
-> > > It'd be much better to fix the race within alloc_fresh_huge_page().  That
-> > > function is pretty pathetic.
-> > > 
-> > > Something like this?
-> > > 
-> > > --- a/mm/hugetlb.c~a
-> > > +++ a/mm/hugetlb.c
-> > > @@ -105,13 +105,20 @@ static void free_huge_page(struct page *
-> > >  
-> > >  static int alloc_fresh_huge_page(void)
-> > >  {
-> > > -	static int nid = 0;
-> > > +	static int prev_nid;
-> > > +	static DEFINE_SPINLOCK(nid_lock);
-> > >  	struct page *page;
-> > > -	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
-> > > -					HUGETLB_PAGE_ORDER);
-> > > -	nid = next_node(nid, node_online_map);
-> > > +	int nid;
-> > > +
-> > > +	spin_lock(&nid_lock);
-> > > +	nid = next_node(prev_nid, node_online_map);
-> > >  	if (nid == MAX_NUMNODES)
-> > >  		nid = first_node(node_online_map);
-> > > +	prev_nid = nid;
-> > > +	spin_unlock(&nid_lock);
-> > > +
-> > > +	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
-> > > +					HUGETLB_PAGE_ORDER);
-> > >  	if (page) {
-> > >  		set_compound_page_dtor(page, free_huge_page);
-> > >  		spin_lock(&hugetlb_lock);
-> > 
-> > Now that it's gone into the tree, I look at it and wonder, does your
-> > nid_lock really serve any purpose?  We're just doing a simple assignment
-> > to prev_nid, and it doesn't matter if occasionally two racers choose the
-> > same node, and there's no protection here against a node being offlined
-> > before the alloc_pages_node anyway (unsupported? I'm ignorant).
-> 
-> umm, actually, yes, the code as it happens to be structured does mean that
-> ther is no longer a way in which a race can cause us to pass MAX_NUMNODES
-> into alloc_pages_node().
-> 
-> Or not.  We can call next_node(MAX_NUMNODES, node_online_map) in that race
-> window, with perhaps bad results.
-> 
-> I think I like the lock ;)
+[PATCH] serial: add back early_serial_setup back to head file
 
-I hate to waste your time, but I'm still puzzled.  Wasn't the race fixed
-by your changeover from use of "static int nid" throughout, to setting
-local "int nid" from "static int prev_nid", working with nid, then
-setting prev_nid from nid at the end?  What does the lock add to that?
+early_serial_setup is removed from serial.h, but foget to put in
+serial_8250.h
 
-Hugh
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+diff --git a/arch/frv/kernel/setup.c b/arch/frv/kernel/setup.c
+index c1c32e4..a74c087 100644
+--- a/arch/frv/kernel/setup.c
++++ b/arch/frv/kernel/setup.c
+@@ -29,6 +29,7 @@
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
+ #include <linux/serial_reg.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/setup.h>
+ #include <asm/irq.h>
+diff --git a/arch/mips/basler/excite/excite_setup.c b/arch/mips/basler/excite/excite_setup.c
+index 2f0e4c0..5600318 100644
+--- a/arch/mips/basler/excite/excite_setup.c
++++ b/arch/mips/basler/excite/excite_setup.c
+@@ -26,6 +26,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial_core.h>
+ #include <linux/serial.h>
++#include <linux/serial_8250.h>
+ #include <linux/ioport.h>
+ #include <linux/spinlock.h>
+ #include <asm/bootinfo.h>
+diff --git a/arch/mips/gt64120/wrppmc/setup.c b/arch/mips/gt64120/wrppmc/setup.c
+index ea96552..ed58c13 100644
+--- a/arch/mips/gt64120/wrppmc/setup.c
++++ b/arch/mips/gt64120/wrppmc/setup.c
+@@ -14,6 +14,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <linux/pm.h>
+ 
+ #include <asm/io.h>
+diff --git a/arch/mips/mips-boards/atlas/atlas_setup.c b/arch/mips/mips-boards/atlas/atlas_setup.c
+index 1cc6ebb..c68358a 100644
+--- a/arch/mips/mips-boards/atlas/atlas_setup.c
++++ b/arch/mips/mips-boards/atlas/atlas_setup.c
+@@ -22,6 +22,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/cpu.h>
+ #include <asm/bootinfo.h>
+diff --git a/arch/mips/mips-boards/sead/sead_setup.c b/arch/mips/mips-boards/sead/sead_setup.c
+index bb80140..5f70eaf 100644
+--- a/arch/mips/mips-boards/sead/sead_setup.c
++++ b/arch/mips/mips-boards/sead/sead_setup.c
+@@ -23,6 +23,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/cpu.h>
+ #include <asm/bootinfo.h>
+diff --git a/arch/mips/mipssim/sim_setup.c b/arch/mips/mipssim/sim_setup.c
+index 60e6690..17819b5 100644
+--- a/arch/mips/mipssim/sim_setup.c
++++ b/arch/mips/mipssim/sim_setup.c
+@@ -26,6 +26,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/cpu.h>
+ #include <asm/bootinfo.h>
+diff --git a/arch/mips/pmc-sierra/msp71xx/msp_serial.c b/arch/mips/pmc-sierra/msp71xx/msp_serial.c
+index c41b53f..e25bac5 100644
+--- a/arch/mips/pmc-sierra/msp71xx/msp_serial.c
++++ b/arch/mips/pmc-sierra/msp71xx/msp_serial.c
+@@ -32,6 +32,7 @@
+ #include <asm/io.h>
+ #include <asm/processor.h>
+ #include <asm/serial.h>
++#include <linux/serial_8250.h>
+ 
+ #include <msp_prom.h>
+ #include <msp_int.h>
+diff --git a/arch/mips/pmc-sierra/yosemite/setup.c b/arch/mips/pmc-sierra/yosemite/setup.c
+index 6a6e15e..f7f93ae 100644
+--- a/arch/mips/pmc-sierra/yosemite/setup.c
++++ b/arch/mips/pmc-sierra/yosemite/setup.c
+@@ -39,6 +39,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/time.h>
+ #include <asm/bootinfo.h>
+diff --git a/arch/ppc/platforms/4xx/bamboo.c b/arch/ppc/platforms/4xx/bamboo.c
+index 349660b..017623c 100644
+--- a/arch/ppc/platforms/4xx/bamboo.c
++++ b/arch/ppc/platforms/4xx/bamboo.c
+@@ -29,6 +29,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <linux/ethtool.h>
+ 
+ #include <asm/system.h>
+diff --git a/arch/ppc/platforms/4xx/bubinga.c b/arch/ppc/platforms/4xx/bubinga.c
+index 1a7f075..cd696be 100644
+--- a/arch/ppc/platforms/4xx/bubinga.c
++++ b/arch/ppc/platforms/4xx/bubinga.c
+@@ -21,6 +21,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pci-bridge.h>
+diff --git a/arch/ppc/platforms/4xx/cpci405.c b/arch/ppc/platforms/4xx/cpci405.c
+index 8474b05..2e7e25d 100644
+--- a/arch/ppc/platforms/4xx/cpci405.c
++++ b/arch/ppc/platforms/4xx/cpci405.c
+@@ -23,6 +23,7 @@
+ #include <asm/todc.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <asm/ocp.h>
+ #include <asm/ibm_ocp_pci.h>
+ #include <platforms/4xx/ibm405gp.h>
+diff --git a/arch/ppc/platforms/4xx/ebony.c b/arch/ppc/platforms/4xx/ebony.c
+index f0f9cc8..05d7184 100644
+--- a/arch/ppc/platforms/4xx/ebony.c
++++ b/arch/ppc/platforms/4xx/ebony.c
+@@ -32,6 +32,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+diff --git a/arch/ppc/platforms/4xx/luan.c b/arch/ppc/platforms/4xx/luan.c
+index 61706ef..4b16961 100644
+--- a/arch/ppc/platforms/4xx/luan.c
++++ b/arch/ppc/platforms/4xx/luan.c
+@@ -30,6 +30,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+diff --git a/arch/ppc/platforms/4xx/ocotea.c b/arch/ppc/platforms/4xx/ocotea.c
+index 5e994e1..fd0f971 100644
+--- a/arch/ppc/platforms/4xx/ocotea.c
++++ b/arch/ppc/platforms/4xx/ocotea.c
+@@ -30,6 +30,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+diff --git a/arch/ppc/platforms/4xx/taishan.c b/arch/ppc/platforms/4xx/taishan.c
+index 5d9af8d..888c492 100644
+--- a/arch/ppc/platforms/4xx/taishan.c
++++ b/arch/ppc/platforms/4xx/taishan.c
+@@ -30,6 +30,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <linux/platform_device.h>
+ #include <linux/mtd/partitions.h>
+ #include <linux/mtd/nand.h>
+diff --git a/arch/ppc/platforms/4xx/yucca.c b/arch/ppc/platforms/4xx/yucca.c
+index 346787d..a83b0ba 100644
+--- a/arch/ppc/platforms/4xx/yucca.c
++++ b/arch/ppc/platforms/4xx/yucca.c
+@@ -31,6 +31,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+diff --git a/arch/ppc/platforms/85xx/sbc8560.c b/arch/ppc/platforms/85xx/sbc8560.c
+index 1d10ab9..3d7addb 100644
+--- a/arch/ppc/platforms/85xx/sbc8560.c
++++ b/arch/ppc/platforms/85xx/sbc8560.c
+@@ -26,6 +26,7 @@
+ #include <linux/serial.h>
+ #include <linux/tty.h>	/* for linux/serial_core.h */
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <linux/initrd.h>
+ #include <linux/module.h>
+ #include <linux/fsl_devices.h>
+diff --git a/arch/ppc/platforms/chestnut.c b/arch/ppc/platforms/chestnut.c
+index a764ae7..248684f 100644
+--- a/arch/ppc/platforms/chestnut.c
++++ b/arch/ppc/platforms/chestnut.c
+@@ -25,6 +25,7 @@
+ #include <linux/ide.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <linux/mtd/physmap.h>
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+diff --git a/arch/ppc/platforms/ev64260.c b/arch/ppc/platforms/ev64260.c
+index 4957a7b..976270d 100644
+--- a/arch/ppc/platforms/ev64260.c
++++ b/arch/ppc/platforms/ev64260.c
+@@ -35,6 +35,7 @@
+ #include <linux/serial.h>
+ #include <linux/tty.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #else
+ #include <linux/mv643xx.h>
+ #endif
+diff --git a/arch/ppc/platforms/radstone_ppc7d.c b/arch/ppc/platforms/radstone_ppc7d.c
+index b558607..44d4398 100644
+--- a/arch/ppc/platforms/radstone_ppc7d.c
++++ b/arch/ppc/platforms/radstone_ppc7d.c
+@@ -35,6 +35,7 @@
+ #include <linux/serial.h>
+ #include <linux/tty.h>		/* for linux/serial_core.h */
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <linux/mv643xx.h>
+ #include <linux/netdevice.h>
+ #include <linux/platform_device.h>
+diff --git a/arch/ppc/platforms/spruce.c b/arch/ppc/platforms/spruce.c
+index 3c78427..f4de50b 100644
+--- a/arch/ppc/platforms/spruce.c
++++ b/arch/ppc/platforms/spruce.c
+@@ -27,6 +27,7 @@
+ #include <linux/serial.h>
+ #include <linux/tty.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+diff --git a/drivers/parisc/superio.c b/drivers/parisc/superio.c
+index a708c32..38cdf9f 100644
+--- a/drivers/parisc/superio.c
++++ b/drivers/parisc/superio.c
+@@ -73,6 +73,7 @@
+ #include <linux/termios.h>
+ #include <linux/tty.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <linux/delay.h>
+ 
+ #include <asm/io.h>
+diff --git a/drivers/serial/8250_hp300.c b/drivers/serial/8250_hp300.c
+index 53e81a4..2cf0953 100644
+--- a/drivers/serial/8250_hp300.c
++++ b/drivers/serial/8250_hp300.c
+@@ -11,6 +11,7 @@
+ #include <linux/kernel.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ #include <linux/delay.h>
+ #include <linux/dio.h>
+ #include <linux/console.h>
+diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+index 706ee9a..8518fa2 100644
+--- a/include/linux/serial_8250.h
++++ b/include/linux/serial_8250.h
+@@ -60,6 +60,8 @@ void serial8250_unregister_port(int line);
+ void serial8250_suspend_port(int line);
+ void serial8250_resume_port(int line);
+ 
++extern int early_serial_setup(struct uart_port *port);
++
+ extern int serial8250_find_port(struct uart_port *p);
+ extern int serial8250_find_port_for_earlycon(void);
+ extern int setup_early_serial8250_console(char *cmdline);
