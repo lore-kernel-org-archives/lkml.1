@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762485AbXGQLTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761547AbXGQLbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762485AbXGQLTn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 07:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXGQLTg
+	id S1761547AbXGQLbk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 07:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbXGQLbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 07:19:36 -0400
-Received: from mx02.hansenet.de ([213.191.73.26]:34597 "EHLO
-	webmail.hansenet.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755032AbXGQLTf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 07:19:35 -0400
-Message-ID: <469CA5B4.5080106@e-dict.net>
-Date: Tue, 17 Jul 2007 13:19:16 +0200
-From: Ingo Freund <linux-kernel-news@e-dict.net>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 17 Jul 2007 07:31:31 -0400
+Received: from ns.suse.de ([195.135.220.2]:47163 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754704AbXGQLbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 07:31:31 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Pass nr_wake2 to futex_wake_op
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Ulrich Drepper <drepper@redhat.com>
+Date: Tue, 17 Jul 2007 13:31:29 +0200
+Message-ID: <jey7hfs1v2.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: howto create partitions bigger than 2TB
-References: <4697760E.4070803@e-dict.net> <46980232.4080500@zytor.com>
-In-Reply-To: <46980232.4080500@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14.07.2007 00:52, H. Peter Anvin wrote (please find the answer below the original text):
-> Ingo Freund wrote:
->> Hi
->>
->> I've got a RAID5 (driver aacraid for an ICP9047MA) with four
->> 750GB hdds which provides a 2.25TB sized device.
->> None of the until now used tools will work with that device.
->> fdisk complains about missing cylinder count.
->> cfdisk misses the device size.
->> parted shows the right device size but only creates a partion
->> with 51GB.
->> What am I supposed to do to work with this device?
->> Which fs can handle it?
->> (CONFIG LARGE BLOCK is on)
->> We are talking about a 32Bit machine with vanilla kernel 2.6.21.5.
->>
-> 
-> You have to use GPT partitions instead of DOS partitions (although you
-> may have to leave your /boot as an DOS partitions, this is supposed to
-> be possible as the two partitioning schemes are designed to coexist, but
-> I don't think parted has support for it yet.)
-> 
+The fourth argument of sys_futex is ignored when op == FUTEX_WAKE_OP,
+but futex_wake_op expects it as its nr_wake2 parameter.
 
-This is the solution (for use as a data container on a backup machine):
+The only user of this operation in glibc is always passing 1, so this
+bug had no consequences so far.
 
-parted /dev/sdb:
-(parted) mklabel gpt
-(parted) mkpart p 0 100%
-(parted) quit
-mkreiserfs /dev/sdb1
-...and all seems to work.
+Signed-off-by: Andreas Schwab <schwab@suse.de>
 
-Thank you all very much for your hints.
+---
+ kernel/futex.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Regards - Ingo.
+--- linux-2.6.22.orig/kernel/futex.c	2007-07-02 00:40:44.000000000 +0200
++++ linux-2.6.22/kernel/futex.c	2007-07-07 15:56:42.000000000 +0200
+@@ -2061,8 +2061,10 @@ asmlinkage long sys_futex(u32 __user *ua
+ 	}
+ 	/*
+ 	 * requeue parameter in 'utime' if cmd == FUTEX_REQUEUE.
++	 * number of waiters to wake in 'utime' if cmd == FUTEX_WAKE_OP.
+ 	 */
+-	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
++	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE ||
++	    cmd == FUTEX_WAKE_OP)
+ 		val2 = (u32) (unsigned long) utime;
+ 
+ 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
