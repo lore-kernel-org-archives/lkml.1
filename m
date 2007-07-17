@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbXGQMUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbXGQMVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbXGQMUu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 08:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbXGQMUB
+	id S1752535AbXGQMVH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 08:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758898AbXGQMUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 08:20:01 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:34365 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757908AbXGQMT5 (ORCPT
+	Tue, 17 Jul 2007 08:20:08 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:21097 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753271AbXGQMUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 08:19:57 -0400
-Message-Id: <20070717122231.050011517@de.ibm.com>
+	Tue, 17 Jul 2007 08:20:05 -0400
+Message-Id: <20070717122239.461337642@de.ibm.com>
 References: <20070717121747.591687140@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Jul 2007 14:17:49 +0200
+Date: Tue, 17 Jul 2007 14:17:50 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+Cc: Frank Pavlic <fpavlic@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 2/8] Fix disassembly of RX_URRD, SI_URD & PC-relative instructions.
-Content-Disposition: inline; filename=001-disassembler.diff
+Subject: [patch 3/8] qdio: output queue stall on FCP and network devices
+Content-Disposition: inline; filename=002-qdio-stall.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+From: Frank Pavlic <fpavlic@de.ibm.com>
 
-The instructions with format RX_URRD and SI_URD and instructions
-with a PC relative operand are not disassembled correctly.
-For RX_URRD and SI_URD instructions find_insn sets opfrag to code[0].
-The mask byte of these two formats is 0x00. table->opfrag will never
-be identical to (opfrag & opmask) and no matching instruction will
-be found. Set the mask byte to 0xff to actually check byte 0 against
-the table.
-For PC relative instructions the (unsigned) offset value needs to be
-casted to an signed integer so that negative branch offsets are
-handled correctly.
+When running QIOASSIST enabled qdio devices in a z/VM environment
+the output queue for such devices stall in heavy workload situations.
+When SQBS and EQBS instructions returns CCQ=96 qdio does not reissue
+the instruction again with the register settings done by millicode
+but processed the returned qdio buffer. This is wrong. qdio has to
+reissue the instruction once again on CCQ=96, as we already do it
+for CCQ=97.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Frank Pavlic <fpavlic@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/dis.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/s390/cio/qdio.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: quilt-2.6/arch/s390/kernel/dis.c
+Index: quilt-2.6/drivers/s390/cio/qdio.c
 ===================================================================
---- quilt-2.6.orig/arch/s390/kernel/dis.c
-+++ quilt-2.6/arch/s390/kernel/dis.c
-@@ -240,8 +240,8 @@ static const unsigned char formats[][7] 
- 	[INSTR_RXY_FRRD]  = { 0xff, F_8,D20_20,X_12,B_16,0,0 },/* e.g. ley   */
- 	[INSTR_RX_FRRD]	  = { 0xff, F_8,D_20,X_12,B_16,0,0 },  /* e.g. ae    */
- 	[INSTR_RX_RRRD]	  = { 0xff, R_8,D_20,X_12,B_16,0,0 },  /* e.g. l     */
--	[INSTR_RX_URRD]	  = { 0x00, U4_8,D_20,X_12,B_16,0,0 }, /* e.g. bc    */
--	[INSTR_SI_URD]	  = { 0x00, D_20,B_16,U8_8,0,0,0 },    /* e.g. cli   */
-+	[INSTR_RX_URRD]	  = { 0xff, U4_8,D_20,X_12,B_16,0,0 }, /* e.g. bc    */
-+	[INSTR_SI_URD]	  = { 0xff, D_20,B_16,U8_8,0,0,0 },    /* e.g. cli   */
- 	[INSTR_SIY_URD]	  = { 0xff, D20_20,B_16,U8_8,0,0,0 },  /* e.g. tmy   */
- 	[INSTR_SSE_RDRD]  = { 0xff, D_20,B_16,D_36,B_32,0,0 }, /* e.g. mvsdk */
- 	[INSTR_SS_L0RDRD] = { 0xff, D_20,L8_8,B_16,D_36,B_32,0 },
-@@ -1190,7 +1190,8 @@ static int print_insn(char *buffer, unsi
- 			else if (operand->flags & OPERAND_CR)
- 				ptr += sprintf(ptr, "%%c%i", value);
- 			else if (operand->flags & OPERAND_PCREL)
--				ptr += sprintf(ptr, "%lx", value + addr);
-+				ptr += sprintf(ptr, "%lx", (signed int) value
-+								      + addr);
- 			else if (operand->flags & OPERAND_SIGNED)
- 				ptr += sprintf(ptr, "%i", value);
- 			else
+--- quilt-2.6.orig/drivers/s390/cio/qdio.c
++++ quilt-2.6/drivers/s390/cio/qdio.c
+@@ -166,9 +166,9 @@ qdio_check_ccq(struct qdio_q *q, unsigne
+ {
+ 	char dbf_text[15];
+ 
+-	if (ccq == 0 || ccq == 32 || ccq == 96)
++	if (ccq == 0 || ccq == 32)
+ 		return 0;
+-	if (ccq == 97)
++	if (ccq == 96 || ccq == 97)
+ 		return 1;
+ 	/*notify devices immediately*/
+ 	sprintf(dbf_text,"%d", ccq);
 
 -- 
 blue skies,
