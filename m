@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933511AbXGQOX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934459AbXGQOXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933511AbXGQOX0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933807AbXGQOP5
+	id S934459AbXGQOXw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933650AbXGQOQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:15:57 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:62378 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933800AbXGQOPz (ORCPT
+	Tue, 17 Jul 2007 10:16:37 -0400
+Received: from homer.mvista.com ([63.81.120.155]:13498 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933853AbXGQOQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 10:15:55 -0400
-Message-ID: <469CCF17.3020709@codemonkey.ws>
-Date: Tue, 17 Jul 2007 09:15:51 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Tue, 17 Jul 2007 10:16:35 -0400
+Message-ID: <469CCFBD.4030708@ru.mvista.com>
+Date: Tue, 17 Jul 2007 18:18:37 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: Jeff Dike <jdike@addtoit.com>, KVM devel <kvm-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [kvm-devel] [PATCH 3/3] KVM - add hypercall nr to kvm_run
-References: <20070716192447.GA16253@c2.user-mode-linux.org> <469C7C8D.1020600@qumranet.com>
-In-Reply-To: <469C7C8D.1020600@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+Cc: Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
+References: <200706160123.55636.bzolnier@gmail.com> <4693D9B6.4090408@ru.mvista.com> <20070713161612.2f2ebb0b@the-village.bc.nu> <46979652.6040201@rtr.ca> <4697987E.3040406@ru.mvista.com> <4697D425.7000300@rtr.ca> <4697D518.7010108@ru.mvista.com> <4697D686.6090104@rtr.ca> <4697DAAE.5090704@ru.mvista.com> <4697E7E2.70303@rtr.ca> <20070716192925.GA10124@bitwizard.nl>
+In-Reply-To: <20070716192925.GA10124@bitwizard.nl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Jeff Dike wrote:
->   
->> Add the hypercall number to kvm_run and initialize it.  This might be
->> considered API-changing, so I kept it separate.
->>
->> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
->> --
->>  drivers/kvm/kvm_main.c |    1 +
->>  include/linux/kvm.h    |    1 +
->>  2 files changed, 2 insertions(+)
->>
->> Index: kvm/drivers/kvm/kvm_main.c
->> ===================================================================
->> --- kvm.orig/drivers/kvm/kvm_main.c
->> +++ kvm/drivers/kvm/kvm_main.c
->> @@ -1361,6 +1361,7 @@ int kvm_hypercall(struct kvm_vcpu *vcpu,
->>  	}
->>  	switch (nr) {
->>  	default:
->> +		run->hypercall.nr = nr;
->>  		run->hypercall.args[0] = a0;
->>  		run->hypercall.args[1] = a1;
->>  		run->hypercall.args[2] = a2;
->> Index: kvm/include/linux/kvm.h
->> ===================================================================
->> --- kvm.orig/include/linux/kvm.h
->> +++ kvm/include/linux/kvm.h
->> @@ -106,6 +106,7 @@ struct kvm_run {
->>  		} mmio;
->>  		/* KVM_EXIT_HYPERCALL */
->>  		struct {
->> +			__u64 nr;
->>  			__u64 args[6];
->>  			__u64 ret;
->>  			__u32 longmode;
->>   
->>     
->
-> It isn't API changing as the API could not be (and has not been) used.  
-> We do need to add a padding element to the union to make sure additional 
-> union members don't cause its size to change.
->
-> Quite sad that we got this far with such brokenness.
->   
+Hello.
 
-I'm planning on breaking this interface again since the new hypercall 
-API only takes 4 arguments instead of 6.
+Rogier Wolff wrote:
 
-Regards,
+>>>  Ah, that makes sense -- during PIO interrupts happen a lot more often.
+>>>20 secs still seem to be too much.
 
-Anthony Liguori
+>>I don't think so, even for modern drives.
+>>Figure 8-10 seconds max for spin-up,
+>>plus 6-9 seconds to do a sector re-assignment
+>>or retries on a bad block (a measured *real-life* value).
 
+>>That adds up to 14-19 seconds, so 20 seconds is probably good.
+
+>>Still, this does need to be adjustable for faster (CF) devices,
+>>and slower (optical/tape) devices, rather than just a single
+>>set of fixed timeout values.
+
+> In real life, with real bad blocks on real harddrives, some harddrives
+> take more than the DMA TIMEOUT time to read a single block, even without
+> having to spin up. 
+
+   Yeah, "shit happens".
+
+> The current code then resets the drive, on which the drive reports
+> "busy, not ready for command", and things go downhill from there. 
+
+    You are clearly mixing things: this message is a result of retrying 
+command in PIO mode (that fails because the drive is still busy), and then the 
+drives are actually reset. If they keep being busy *after* that, all I'd say 
+is dump them ASAP. ;-)
+
+> 	Roger. 
+
+MBR, Sergei
