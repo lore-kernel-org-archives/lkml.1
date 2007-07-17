@@ -1,84 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbXGQMFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbXGQMJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbXGQMFV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 08:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXGQMFE
+	id S1753895AbXGQMJw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 08:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXGQMJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 08:05:04 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:52351 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750985AbXGQMFB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 08:05:01 -0400
-Date: Tue, 17 Jul 2007 14:04:54 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: [PATCH] Don't define empty struct bsg_class_device if !CONFIG_BLK_DEV_BSG
- (was: Re: block/bsg.c)
-In-Reply-To: <20070716165706.348f6bbf.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0707171359110.29326@pademelon.sonytel.be>
-References: <20070716165706.348f6bbf.akpm@linux-foundation.org>
+	Tue, 17 Jul 2007 08:09:43 -0400
+Received: from [212.12.190.106] ([212.12.190.106]:32869 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750881AbXGQMJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 08:09:42 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: david@lang.hm
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 15:08:06 +0300
+User-Agent: KMail/1.5
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org> <200707161632.02334.a1426z@gawab.com> <Pine.LNX.4.64.0707162129090.19248@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707162129090.19248@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-52744245-1184673894=:29326"
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707171508.06921.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+david@lang.hm wrote:
+> On Mon, 16 Jul 2007, Al Boldi wrote:
+> > We have to go through ACPI, for wakeup functions to succeed.  A simple
+> > power-off won't do.
+>
+> the kexec switch being posted requires ACPI be disabled, so it's clearly
+> possible to switch kernels and initialize devices without ACPI
 
----584337861-52744245-1184673894=:29326
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+It's a given that kexec works in the absence of ACPI; what we have to handle 
+is the ACPI states across kernel invocations, to ensure wakeup functions 
+succeed.  If you don't need this, then just power off.
 
-Don't define an empty struct bsg_class_device if !CONFIG_BLK_DEV_BSG.
+> >> suspend-to-disk-and-ram could be implemented as three
+> >> seperate steps
+> >>
+> >> 1. suspend-to-disk
+> >>
+> >> 2. resume-from-disk
+> >>
+> >> 3. suspend-to-ram
+> >>
+> >> followed by either
+> >>
+> >> 4. resume-from-ram
+> >>
+> >> or
+> >>
+> >> 4. battery dies and loptop powers off completely
+> >>
+> >> 5. power-on boot.
+> >>
+> >> 6. resume-from-disk
+> >>
+> >> all that you need to do is to make sure that the system doesn't run
+> >> anything that would affect permanent media or the outside world between
+> >> steps #2 and #3
+> >
+> > Exactly, which is why your scheme would break down on #3, and that's why
+> > you need to call S3 from within the kexec'd hibernation kernel after
+> > saving the hibernation image.
+>
+> when a kexec is called, how does the kernel know what to execute?
+> something needs to tell it what to do, and I think that something is
+> either something in the kexec image, or it's something passed as a
+> parameter to that image.
+>
+> all that would be needed to do #3 safely is to have the kernel that you
+> restarted on #2 do a suspend-to-ram before it does anything else.
 
-It's embedded in struct request_queue, but there we have
+If you mean by kernel 'the normal kernel', then this won't work, because it 
+would imply a change of state after saving its image.
 
-#if defined(CONFIG_BLK_DEV_BSG)
-	struct bsg_class_device bsg_dev;
-#endif
+If you mean by kernel 'the kexec'd hibernation kernel', then you wouldn't 
+need to do #2, but rather do #3 right after dumping the image in #1.
 
-anyway.
+[...insert from another post...]
+> > BTW, it would be really helpful if people would actually try the kexec
+> > hibernation patches, as this may yield a much more constructive
+> > discussion.
+>
+> I would love to, but so far I don't see the nessasary pieces
+>
+> once I kexec to the new kernel, how can it find out what pages of memory
+> (and swap) need to be saved?
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
-At first I considered dropping the #ifdef around request_queue.bsg_dev, but
-that would make the code more error-prone.
+No need to save the swap, all you need to do is to dump /dev/oldmem onto 
+storage, and if that dump image is compatible with swsusp, then a normal 
+kernel should be able to resume from this image via /dev/snapshot.
 
- include/linux/bsg.h |    1 -
- 1 files changed, 1 deletion(-)
 
---- a/include/linux/bsg.h
-+++ b/include/linux/bsg.h
-@@ -60,7 +60,6 @@ struct bsg_class_device {
- extern int bsg_register_queue(struct request_queue *, const char *);
- extern void bsg_unregister_queue(struct request_queue *);
- #else
--struct bsg_class_device { };
- #define bsg_register_queue(disk, name)		(0)
- #define bsg_unregister_queue(disk)	do { } while (0)
- #endif
+Thanks!
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+--
+Al
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-52744245-1184673894=:29326--
