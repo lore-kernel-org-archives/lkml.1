@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763822AbXGQQrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934288AbXGQQro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763822AbXGQQrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbXGQQrJ
+	id S934288AbXGQQro (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbXGQQrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 12:47:09 -0400
-Received: from ananke.telenet-ops.be ([195.130.137.78]:41213 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753266AbXGQQrH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:47:07 -0400
-Date: Tue, 17 Jul 2007 18:46:54 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jeff Dike <jdike@addtoit.com>
-cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       zippel@linux-m68k.org, jdike@karaya.com, alan@lxorguk.ukuu.org.uk,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: uninline check_signature()
-In-Reply-To: <20070717163328.GG7965@c2.user-mode-linux.org>
-Message-ID: <Pine.LNX.4.64.0707171842590.10600@anakin>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org>
- <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
- <20070716230307.GB12230@osiris.ibm.com> <Pine.LNX.4.64.0707171519300.10600@anakin>
- <20070717163328.GG7965@c2.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Jul 2007 12:47:33 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57628 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754978AbXGQQrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 12:47:32 -0400
+Date: Tue, 17 Jul 2007 18:48:46 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Domen Puncer <domen.puncer@telargo.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] introduce __init_exit function annotation
+Message-ID: <20070717164846.GB26953@uranus.ravnborg.org>
+References: <20070717080248.GK4375@moe.telargo.com> <20070717130230.GB24780@uranus.ravnborg.org> <s5htzs3ulpf.wl%tiwai@suse.de> <20070717151432.GA25939@uranus.ravnborg.org> <s5hodibukle.wl%tiwai@suse.de> <20070717153236.GB25939@uranus.ravnborg.org> <s5hir8jujhc.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hir8jujhc.wl%tiwai@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Jeff Dike wrote:
-> On Tue, Jul 17, 2007 at 03:22:16PM +0200, Geert Uytterhoeven wrote:
-> > I saw this patch went in.
+On Tue, Jul 17, 2007 at 05:40:15PM +0200, Takashi Iwai wrote:
+> At Tue, 17 Jul 2007 17:32:36 +0200,
+> Sam Ravnborg wrote:
 > > 
-> > iomap_copy.o ues the raw I/O memory accessors, so it truly depends on
-> > CONFIG_HAS_IOMEM.
+> > On Tue, Jul 17, 2007 at 05:16:13PM +0200, Takashi Iwai wrote:
+> > > At Tue, 17 Jul 2007 17:14:32 +0200,
+> > > Sam Ravnborg wrote:
+> > > > 
+> > > > On Tue, Jul 17, 2007 at 04:52:12PM +0200, Takashi Iwai wrote:
+> > > > > At Tue, 17 Jul 2007 15:02:30 +0200,
+> > > > > Sam Ravnborg wrote:
+> > > > > > 
+> > > > > > On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
+> > > > > > > Introduce __init_exit, which is useful ie. for drivers that call
+> > > > > > > cleanup functions when they fail in __init functions.
+> > > > > > 
+> > > > > > This is wrong.
+> > > > > > On arm (just one example of several) the __exit section are discarded
+> > > > > > at buildtime so any reference from __init to __exit will cause the
+> > > > > > linker to error out.
+> > > > > 
+> > > > > Hmm, from what I see, it adds __init to the function.  There is no
+> > > > > reference to __exit.
+> > > > 
+> > > > The cleanup functions are marked __exit in the referenced case.
+> > > 
+> > > My understanding is that it's the very purpose of this patch --
+> > > change the mark from __exit to __init_exit for such clean-up
+> > > functions.
+> > 
+> > And that is wrong.
 > 
-> This works for UML.
+> You misunderstood.  What I meant is the case like this:
+> 
+> static void __init_exit cleanup()
+> {
+> 	...
+> }
+> 
+> static void __init foo_init()
+> {
+> 	if (error)
+> 		cleanup();
+> }
+> 
+> static void __exit foo_exit()
+> {
+> 	cleanup();
+> }
+> 
+> Currently, there is no proper way to mark cleanup().  Neither __init,
+> __exit, __devinit nor __devexit can be used there.
 
-Of course. UML (and s390) doesn't have (a need for) I/O memory because it uses
-paravirtualization for all drivers.
+Then you get the annotation sorted out so cleanup() get discarded in the
+built-in case. But you leave no room for automated tools to detect this.
 
-M68k uses I/O memory for all I/O (hence it sets CONFIG_HAS_IOMEM), but
-many m68k machines don't have PCI or ISA (hence it doesn't set
-CONFIG_PCI resp. CONFIG_ISA).
+If this is really necessary (and I daught) then a specific section should be
+dedicated for this usage.
 
-Gr{oetje,eeting}s,
+We have lot of issues with current __init/__exit, __devinit/__devexit, __cpuint/__cpuexit
+and introducing more of the kind does not help it.
+So even if it saves a few bytes in some odd cases the added complaxity is IMHO not worth it.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Sam
