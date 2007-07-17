@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764680AbXGQKM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765764AbXGQKMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764680AbXGQKM3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 06:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbXGQKMT
+	id S1765764AbXGQKMy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 06:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbXGQKMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 06:12:19 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:39051 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754402AbXGQKMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 06:12:16 -0400
-Date: Tue, 17 Jul 2007 14:11:39 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: airlied@linux.ie, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: drm: de-typedef fallout in sis
-Message-ID: <20070717101139.GA11053@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 17 Jul 2007 06:12:44 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:43419 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786AbXGQKMn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 06:12:43 -0400
+To: a.p.zijlstra@chello.nl
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, andrea@suse.de
+In-reply-to: <20070614215817.389524447@chello.nl> (message from Peter Zijlstra
+	on Thu, 14 Jun 2007 23:58:17 +0200)
+Subject: Re: [PATCH 00/17] per device dirty throttling -v7
+References: <20070614215817.389524447@chello.nl>
+Message-Id: <E1IAk16-00007f-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 17 Jul 2007 12:10:52 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  CC      drivers/char/drm/sis_mm.o
-drivers/char/drm/sis_mm.c: In function 'sis_fb_init':
-drivers/char/drm/sis_mm.c:97: error: 'drm_sman_mm_t' undeclared (first use in this function)
+> Latest version of the per bdi dirty throttling patches.
+> 
+> Most of the changes since last time are little cleanups and more
+> detail in the split out of the floating proportion into their
+> own little lib.
+> 
+> Patches are against 2.6.22-rc4-mm2
+> 
+> A rollup of all this against 2.6.21 is available here:
+>   http://programming.kicks-ass.net/kernel-patches/balance_dirty_pages/2.6.21-per_bdi_dirty_pages.patch
+> 
+> This patch-set passes the starve an USB stick test..
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+I've done some testing of several problem cases.
 
- drivers/char/drm/sis_mm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+1) fuse writable mmap patches + bash_shared_mapping
+2) writes in a setup involving a loop dev
+  a) ext3 over loop over ext3
+  b) ext3 over loop over fuse-passthrough over ext3
+  c) ext3 over loop over ntfs-3g
 
---- a/drivers/char/drm/sis_mm.c
-+++ b/drivers/char/drm/sis_mm.c
-@@ -94,7 +94,7 @@ static int sis_fb_init(DRM_IOCTL_ARGS)
- 	mutex_lock(&dev->struct_mutex);
- #if defined(CONFIG_FB_SIS)
- 	{
--		drm_sman_mm_t sman_mm;
-+		struct drm_sman_mm sman_mm;
- 		sman_mm.private = (void *)0xFFFFFFFF;
- 		sman_mm.allocate = sis_sman_mm_allocate;
- 		sman_mm.free = sis_sman_mm_free;
+Without the patch, in all the cases I've seen deadlocks or long
+stalls.  With the patch, I could not reproduce this in any of the
+cases.  As predicted, the patch is performing well in this respect :)
 
+2a is the simplest to reproduce (2.6.22, dual core, 1GB ram)
+
+  dd if=/dev/zero of=/tmp/p5 bs=1M seek=4999 count=1
+  mkfs.ext3 -F /tmp/p5
+  mkdir /tmp/m5
+  mount -oloop /tmp/p5 /tmp/m5
+  dd if=/dev/zero of=/tmp/m5/foo bs=1M count=4000
+
+The second dd can stall for indefinite amounts of time.  Kicking it
+with sync can get it moving, but it relapses after some time.
+
+Even with the per-device-throttling patch, case 2 shows an nr_dirty
+elevated far above the 10% limit, reaching 40% or higher.  I believe,
+this is due to a missing balance_dirty_pages() call in the loop
+device.  And indeed the anomaly can be solved by adding this patch:
+
+  http://lkml.org/lkml/2007/3/24/101
+
+Miklos
