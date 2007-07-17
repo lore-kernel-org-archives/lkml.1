@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbXGQIk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761776AbXGQIpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761511AbXGQIk1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbXGQIkU
+	id S1761776AbXGQIpQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXGQIpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:40:20 -0400
-Received: from il.qumranet.com ([82.166.9.18]:34211 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752682AbXGQIkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:40:19 -0400
-Message-ID: <469C8078.2010900@qumranet.com>
-Date: Tue, 17 Jul 2007 11:40:24 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       KVM devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 3/3] KVM - add hypercall nr to kvm_run
-References: <20070716192447.GA16253@c2.user-mode-linux.org> <469C7C8D.1020600@qumranet.com>
-In-Reply-To: <469C7C8D.1020600@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jul 2007 04:45:03 -0400
+Received: from mailrelay008.isp.belgacom.be ([195.238.6.174]:5867 "EHLO
+	mailrelay008.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755330AbXGQIpA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 04:45:00 -0400
+Date: Tue, 17 Jul 2007 10:48:14 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Bryan Wu <bryan.wu@analog.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <michael.frysinger@analog.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] Blackfin on-chip watchdog driver
+Message-ID: <20070717084814.GA23614@infomag.infomag.iguana.be>
+References: <1184439002.3140.24.camel@roc-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184439002.3140.24.camel@roc-laptop>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Jeff Dike wrote:
->> Add the hypercall number to kvm_run and initialize it.  This might be
->> considered API-changing, so I kept it separate.
->>
->> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
->> -- 
->>  drivers/kvm/kvm_main.c |    1 +
->>  include/linux/kvm.h    |    1 +
->>  2 files changed, 2 insertions(+)
->>
->> Index: kvm/drivers/kvm/kvm_main.c
->> ===================================================================
->> --- kvm.orig/drivers/kvm/kvm_main.c
->> +++ kvm/drivers/kvm/kvm_main.c
->> @@ -1361,6 +1361,7 @@ int kvm_hypercall(struct kvm_vcpu *vcpu,
->>      }
->>      switch (nr) {
->>      default:
->> +        run->hypercall.nr = nr;
->>          run->hypercall.args[0] = a0;
->>          run->hypercall.args[1] = a1;
->>          run->hypercall.args[2] = a2;
->> Index: kvm/include/linux/kvm.h
->> ===================================================================
->> --- kvm.orig/include/linux/kvm.h
->> +++ kvm/include/linux/kvm.h
->> @@ -106,6 +106,7 @@ struct kvm_run {
->>          } mmio;
->>          /* KVM_EXIT_HYPERCALL */
->>          struct {
->> +            __u64 nr;
->>              __u64 args[6];
->>              __u64 ret;
->>              __u32 longmode;
->>   
->
-> It isn't API changing as the API could not be (and has not been) 
-> used.  We do need to add a padding element to the union to make sure 
-> additional union members don't cause its size to change.
->
-> Quite sad that we got this far with such brokenness.
->
+Hi Mike, Bryan,
 
-Applied this, btw.  Thanks.
+> This patch implements the driver necessary use the Analog Devices
+> Blackfin processor's on-chip watchdog controller, supports
+> BF53[123]/BF53[467]/BF54[2489]/BF561.
+> 
+> Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> Cc: Wim Van Sebroeck <wim@iguana.be>
 
+I still need to look at one other driver. After that I will have a look at this one also.
 
--- 
-error compiling committee.c: too many arguments to function
-
+Greetings,
+Wim.
