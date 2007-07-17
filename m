@@ -1,120 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765934AbXGQUf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935871AbXGQUgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765934AbXGQUf4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761804AbXGQUfY
+	id S935871AbXGQUgj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759818AbXGQUgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:35:24 -0400
-Received: from sccrmhc15.comcast.net ([63.240.77.85]:46315 "EHLO
-	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbXGQUfR (ORCPT
+	Tue, 17 Jul 2007 16:36:12 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:43873 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbXGQUgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:35:17 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang\, Ying" <ying.huang@intel.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
-	<200707172217.01890.rjw@sisk.pl>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Tue, 17 Jul 2007 16:34:57 -0400
-In-Reply-To: <200707172217.01890.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Tue\, 17 Jul 2007 22\:17\:00 +0200")
-Message-ID: <87odiag45q.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
+	Tue, 17 Jul 2007 16:36:09 -0400
+Date: Tue, 17 Jul 2007 21:35:19 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Joe Jin <joe.jin@oracle.com>, bill.irwin@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+In-Reply-To: <20070717130118.bc78d31a.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707172133400.9010@blonde.wat.veritas.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+ <20070712221842.f5e47065.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0707171558470.26771@blonde.wat.veritas.com>
+ <20070717093228.3a3638aa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0707171818080.19489@blonde.wat.veritas.com>
+ <20070717115849.9f5e435c.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0707172044001.5286@blonde.wat.veritas.com>
+ <20070717130118.bc78d31a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAam9lLmppbkBvcmFjbGUuY29tAGJpbGwuaXJ3aW5Ab3JhY2xlLmNvbQBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Tue, 17 Jul 2007, Andrew Morton wrote:
+> 
+> Given that we've now gone and added deliberate-but-we-hope-benign 
+> races into this code, an elaborate comment which explains and justifies
+> it all is pretty much obligatory, IMO.
 
-[snip]
+[PATCH] Remove nid_lock from alloc_fresh_huge_page
 
->> Rafael, for those of us who aren't thoroughly familiar with all the ins
->> and outs of the ACPI spec, could you please summarize a list of the
->> ACPI calls needed in the second and third cases above?  Indicate which
->> ones need to be done from within the original kernel and which should
->> be done from within a kexec'd hibernation kernel.
+The fix to that race in alloc_fresh_huge_page() which could give an illegal
+node ID did not need nid_lock at all: the fix was to replace static int nid
+by static int prev_nid and do the work on local int nid.  nid_lock did make
+sure that racers strictly roundrobin the nodes, but that's not something we
+need to enforce strictly.  Kill nid_lock.
 
-> Sure.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+ mm/hugetlb.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-> In the third case (ie. transition to S4) we are supposed to do the following:
-
-> (1) Upon entering the sleep state, which IMO can be done _after_ the image
->     has been saved:
-
-I assume you mean "in order to enter the sleep state", rather than "upon
-entering the sleep state".  I still don't understand what you mean by
-"which IMO can be done _after_ the image has been saved"; as far as I
-understand, the last step of this process, "make the platform enter S4",
-is almost like a shutdown as far as the kernel is concerned (except for
-the tiny detail of having to call those special ACPI methods on resume);
-consequently, it would seem that nothing can be done after that step.
-
->   * figure out which devices can wake up
->   * put devices into low power states (wake-up devices are placed in the Dx
->     states compatible with the wake capability, the others are powered off)
->   * execute the _PTS global control method
->   * switch off the nonlocal CPUs (eg. nonboot CPUs on x86)
->   * execute the _GTS global control method
->   * set the GPE enable registers corresponding to the wake-up devices)
->   * make the platform enter S4 (there's a well defined procedure for that)
->   I think that this should be done by the image-saving kernel.
-
-I agree.
-
-> (2) Upon start-up (by which I mean what happens after the user has pressed
->     the power button or something like that):
->   * check if the image is present (and valid) _without_ enabling ACPI (we don't
->     do that now, but I see no reason for not doing it in the new framework)
->   * if the image is present (and valid), load it
->   * turn on ACPI (unless already turned on by the BIOS, that is)
->   * execute the _BFS global control method
->   * execute the _WAK global control method
->   * continue
->   Here, the first two things should be done by the image-loading kernel, but
->   the remaining operations have to be carried out by the restored
->     kernel.
-
-It doesn't seem like a problem for that to be the case, but out of
-curiosity why do those methods need to be executed by the "restored"
-kernel, rather than the "image loading" kernel.  Do they require some
-information from ACPI-related kernel data structures that were populated
-by the normal ACPI initialization?
-
-[snip]
-
-> ... we can't return to the hibernated kernel unless we are going to cancel the
-> hibernation.
-
-I agree.
-
-> That's why I think that for the suspend-to-both the image-saving kernel will
-> need to support the same set of devices as the hibernated kernel.
-
-If all of the devices that the image writing kernel doesn't know about
-have already been shut down/powered off by the hibernated kernel, then
-does the "image writing" kernel still need to know about them in order
-to suspend to RAM properly (i.e. without leaving some devices on wasting
-power)?
-
--- 
-Jeremy Maitin-Shepard
+--- 2.6.22-git9/mm/hugetlb.c	2007-07-17 20:29:33.000000000 +0100
++++ linux/mm/hugetlb.c	2007-07-17 21:29:58.000000000 +0100
+@@ -107,15 +107,19 @@ static int alloc_fresh_huge_page(void)
+ {
+ 	static int prev_nid;
+ 	struct page *page;
+-	static DEFINE_SPINLOCK(nid_lock);
+ 	int nid;
+ 
+-	spin_lock(&nid_lock);
++	/*
++	 * Copy static prev_nid to local nid, work on that, then copy it
++	 * back to prev_nid afterwards: otherwise there's a window in which
++	 * a racer might pass invalid nid MAX_NUMNODES to alloc_pages_node.
++	 * But we don't need to use a spin_lock here: it really doesn't
++	 * matter if occasionally a racer chooses the same nid as we do.
++	 */
+ 	nid = next_node(prev_nid, node_online_map);
+ 	if (nid == MAX_NUMNODES)
+ 		nid = first_node(node_online_map);
+ 	prev_nid = nid;
+-	spin_unlock(&nid_lock);
+ 
+ 	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+ 					HUGETLB_PAGE_ORDER);
