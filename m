@@ -1,67 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937151AbXGQXj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937187AbXGQXky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937151AbXGQXj1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 19:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761093AbXGQXjQ
+	id S937187AbXGQXky (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 19:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758248AbXGQXkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 19:39:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:60310 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757824AbXGQXjN (ORCPT
+	Tue, 17 Jul 2007 19:40:45 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:61165 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759309AbXGQXko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 19:39:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kfbbb2meCNnG6Xku5Ki4tmbD0W7esVCM5TtGDB61VoRiCW51fQ8n3zhXZqYji6bkJetyQFs/fCY6+uOe6T5pUXkSurK5yd+gX2u+1ex8JW00dWL5nOT/SmXaxeJJ2E+oY+Fs+GwEsCznxCTUT/c9Cev2FpRAtrAeeJg20mzinvw=
-Message-ID: <9a8748490707171639r41c085bfh857c5047a792dd0@mail.gmail.com>
-Date: Wed, 18 Jul 2007 01:39:09 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "William Lee Irwin III" <wli@holomorphy.com>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Ray Lee" <ray-lk@madrabbit.org>,
-       "Rene Herman" <rene.herman@gmail.com>, "Bodo Eggert" <7eggert@gmx.de>,
-       "Matt Mackall" <mpm@selenic.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <20070717170127.GJ11781@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 17 Jul 2007 19:40:44 -0400
+Date: Wed, 18 Jul 2007 08:30:48 +0900 (JST)
+Message-Id: <20070718.083048.74751281.tshibata@ab.jp.nec.com>
+To: rob@landley.net
+Cc: LeoLi@freescale.com, gh@us.ibm.com, hpa@zytor.com,
+       kunai@linux-foundation.jp, holzheu@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       lf_kernel_messages@linux-foundation.org, tshibata@ab.jp.nec.com
+Subject: Re: Documentation of kernel messages (Summary)
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+In-Reply-To: <200707171206.56805.rob@landley.net>
+References: <200707142212.35874.rob@landley.net>
+	<20070716.014642.41651135.tshibata@ab.jp.nec.com>
+	<200707171206.56805.rob@landley.net>
+X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
+ =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8Gj55-hJ-5@gated-at.bofh.it> <8GtnN-7TG-23@gated-at.bofh.it>
-	 <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz>
-	 <469A5D7C.5010904@gmail.com>
-	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
-	 <469BF104.1040703@gmail.com>
-	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
-	 <20070716235438.1bdd0722@the-village.bc.nu>
-	 <20070717170127.GJ11781@holomorphy.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/07/07, William Lee Irwin III <wli@holomorphy.com> wrote:
-> At some point in the past, I wrote:
-> >> If at some point one of the pro-4k stacks crowd can prove that all
-> >> code paths are safe, or introduce another viable alternative (such as
-> >> Matt's idea for extending the stack dynamically), then removing the 8k
-> >> stacks option makes sense.
->
-> On Mon, Jul 16, 2007 at 11:54:38PM +0100, Alan Cox wrote:
-> > Any x86-32 path unsafe with 4K stacks is almost certainly unsafe with 8K
-> > stacks because the 8K stacks do not have seperate IRQ stack paths, so you
-> > have the same space but split. It might be less predictable on 8K stacks
-> > but it isn't absent.
->
-> At hch's suggestion I rewrote the separate IRQ stack configurability
-> patch into one making IRQ stacks mandatory and unconfigurable, and
-> hence enabled with 8K stacks.
->
-For what it's worth, that sounds good to me - like something that we
-would want merged.
+On Tue, 17 Jul 2007 12:06:56 -0400, rob wrote:
+> On Sunday 15 July 2007 12:46:42 pm Tsugikazu Shibata wrote:
+> > On Sat, 14 Jul 2007 22:12:35 -0400, rob wrote:
+> > > On Friday 13 July 2007 9:46:59 pm Tsugikazu Shibata wrote:
+> > > > > > How about adding;
+> > > > > > kernel-doc-nano-HOWTO.txt
+> > > > >
+> > > > > The problem is, the generated htmdocs are in english.  This file is
+> > > > > about how to generate (and author) English documentation that won't
+> > > > > be translated. What's the point of translating the instructions if
+> > > > > the result won't be translated?
+> > > >
+> > > > People (who even in non-native) would better to know and read it such
+> > > > htmldocs because there are good and important documents even in
+> > > > English. I thought that translation of this file may help.
+> > >
+> > > The english version of htmldocs is generated from the source code.    If
+> > > translating remotely current versions of htmldocs into other languages
+> > > was feasible, then the english version wouldn't need to be in the source
+> > > code in the first place.
+> > >
+> > > Translating a document _about_ htmldocs boils down to "Dear non-english
+> > > speaker: here's something you can't read, nor can you update it either
+> > > except though your language maintainer."
+> >
+> > No, kernel-doc-nano-HOWTO includes explanation of tools to extract the
+> > document, format of extractable document in source files and so on.
+> > I thought this file would help non-native people, how to extract or add
+> > in-kernel extractable documents.
+> 
+> Which will be in english, so why can't the instructions on how to do it be in 
+> english too?
+> 
+> > I understand that these tools will generate English documents but
+> > that's OK.
+> 
+> Then the instructions how to do it in english should be ok too.  If they can't 
+> read the instructions, they won't be able to read the result.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+It seems my explanation was not enough.
+We (like me, usually not using English) can read English but it takes
+more time than you (and any natives). So, reading large document takes
+huge amount of time. In case of htmldocs, it is actually large and
+developer may give up before start.
+I thought that if some part (like how to do it) are translated into
+his/her familiar language, he/she may not give it up.
+Yes, it may not be.
+
+Another viewpoint is that if he/she need to modify some interface and
+it may need to change some part of extractable document, this file
+includes, "How to add extractable documentation to your source files".
+It will be some help as well. 
+Yes, He/she should write English and it may take long time but hopefully
+the translation result would push his/her back. 
+
+
+> > Such large volume of documents are not easy to translate 
+> > into other languages.
+> 
+> "Here's how to get a result that will be useless to you."
+> 
+> Why?  What's the point?  I'm not seeing it.
+> 
+> Rob
+> -- 
+> "One of my most productive days was throwing away 1000 lines of code."
+>   - Ken Thompson.
+> 
