@@ -1,102 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936542AbXGQUs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936415AbXGQUtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936542AbXGQUs5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936355AbXGQUo7
+	id S936415AbXGQUtY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936337AbXGQUp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:44:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57401 "EHLO mx3.mail.elte.hu"
+	Tue, 17 Jul 2007 16:45:26 -0400
+Received: from 1wt.eu ([62.212.114.60]:3422 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936220AbXGQUo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:44:58 -0400
-Date: Tue, 17 Jul 2007 22:43:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Markus <lists4me@web.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch] CFS scheduler, -v19
-Message-ID: <20070717204358.GA12037@elte.hu>
-References: <20070706173319.GA2356@elte.hu> <200707171506.37886.lists4me@web.de> <20070717170628.GA6002@elte.hu> <200707172142.42008.lists4me@web.de> <20070717200929.GA2426@elte.hu> <alpine.LFD.0.999.0707171329370.27353@woody.linux-foundation.org>
-MIME-Version: 1.0
+	id S936362AbXGQUpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 16:45:24 -0400
+Date: Tue, 17 Jul 2007 22:41:57 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Tony Borras <tonyb@sysdev.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.4.35 tree abandoned/delayed?
+Message-ID: <20070717204155.GE943@1wt.eu>
+References: <8HJqo-2BV-23@gated-at.bofh.it> <8HJqo-2BV-21@gated-at.bofh.it> <8HNDE-JM-11@gated-at.bofh.it> <20070716232357.3d9e5ca7.tonyb@sysdev.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707171329370.27353@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070716232357.3d9e5ca7.tonyb@sysdev.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Tony,
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+[ first, please always keep people in CC on LKML since it's very easy to
+  miss a thread ]
 
-> But why does that happen? And why would the scheduler have *anything* 
-> to do with this? No idea. Maybe timing. Maybe the time.c changes. 
-> Dunno.
+On Mon, Jul 16, 2007 at 11:23:57PM -0800, Tony Borras wrote:
+> On Tue, 17 Jul 2007 07:20:06 +0200
+> Willy Tarreau <w@1wt.eu> wrote:
+> 
+> > could you please report what the problem was, in case it's not
+> > fixed yet ?
+> 
+> Ok, reproduced error at ./net/ipv4/fib_semantics.c
+>   line 436 changed label:
+>                    errout -> err_inval
 
-hm, Markus indicated that he tried the v2.6.21.6-cfsv19 patch, and that 
-does not include the time.c change. Markus - does your kernel include 
-the code below? (if yes, please revert it via patch -p1 -R )
+I don't know where you downloaded 2.4.35-pre5 from, but I've checked the
+sources and could not find any reference to "errout" here in any version!
 
-	Ingo
+Or what is possible is that your 2.4.34 kernel got corrupted on your disk
+after applying any patch. Sometimes, some shell scripts providede with some
+drivers directly tamper with the sources. You should check that your tree
+is valid by downloading another one and comparing them.
 
-Index: linux/kernel/time.c
-===================================================================
---- linux.orig/kernel/time.c
-+++ linux/kernel/time.c
-@@ -57,14 +57,17 @@ EXPORT_SYMBOL(sys_tz);
-  */
- asmlinkage long sys_time(time_t __user * tloc)
- {
--	time_t i;
--	struct timeval tv;
-+	/*
-+	 * We read xtime.tv_sec atomically - it's updated
-+	 * atomically by update_wall_time(), so no need to
-+	 * even read-lock the xtime seqlock:
-+	 */
-+	time_t i = xtime.tv_sec;
- 
--	do_gettimeofday(&tv);
--	i = tv.tv_sec;
-+	smp_rmb(); /* sys_time() results are coherent */
- 
- 	if (tloc) {
--		if (put_user(i,tloc))
-+		if (put_user(i, tloc))
- 			i = -EFAULT;
- 	}
- 	return i;
-@@ -373,6 +376,20 @@ void do_gettimeofday (struct timeval *tv
- 
- 	tv->tv_sec = sec;
- 	tv->tv_usec = usec;
-+
-+	/*
-+	 * Make sure xtime.tv_sec [returned by sys_time()] always
-+	 * follows the gettimeofday() result precisely. This
-+	 * condition is extremely unlikely, it can hit at most
-+	 * once per second:
-+	 */
-+	if (unlikely(xtime.tv_sec != tv->tv_sec)) {
-+		unsigned long flags;
-+
-+		write_seqlock_irqsave(&xtime_lock);
-+		update_wall_time();
-+		write_seqlock_irqrestore(&xtime_lock);
-+	}
- }
- 
- EXPORT_SYMBOL(do_gettimeofday);
+It had already happened to me in the past and I got 3 or 4 private kernels
+with a fix that I did not know I had applied. Fortunately, this does not
+happen anymore with git ;-)
+
+> then it builds fine!
+> 
+> started with linux-2.4.34
+> then patched
+>      patch-2.4.34.1
+>      patch-2.4.34.2
+>      patch-2.4.34.3
+>      patch-2.4.34.4
+>      patch-2.4.34.5
+>      patch-2.4.35.pre5
+
+Huh !!! You should not apply all 2.4.34 patches before 2.4.35. You should
+see the development process like this :
+
+---> 2.4.34 ----> 2.4.35-pre1 ----> 2.4.35-pre2 ---> ... ---> 2.4.35
+       \
+        `--> 2.4.34.1 --> 2.4.34.2 --> 2.4.34.3 ...
+
+So 2.4.35-preX and 2.4.34.X are two different branches forked from 2.4.34.
+All 2.4.35-preX patches are made for 2.4.34, and all 2.4.34.X patches are
+made for 2.4.34 too.
+
+You should see 2.4.34 as the real official kernel, and other ones as
+convenience versions released in order to help people keep up to date
+without having to use possibly buggy pre-releases, even if they are
+quite close.
+
+> I used a make oldconfig on a .config that builds in 2.4.34
+> 
+> Hope that helps
+> TonyB
+
+Thanks anyway for your feedback !
+
+Regards,
+Willy
+
