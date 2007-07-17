@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932770AbXGQRlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932900AbXGQRmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932770AbXGQRlK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbXGQRk5
+	id S932900AbXGQRmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbXGQRmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:40:57 -0400
-Received: from mx.treblig.org ([80.68.94.177]:3116 "EHLO mx.treblig.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753930AbXGQRk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:40:56 -0400
-Date: Tue, 17 Jul 2007 18:40:44 +0100
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: david@lang.hm
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-Message-ID: <20070717174044.GA11212@gallifrey>
-References: <200707151433.34625.rjw@sisk.pl> <20070715125855.GA1737@gallifrey> <200707160038.12943.rjw@sisk.pl> <Pine.LNX.4.64.0707151526080.25614@asgard.lang.hm>
+	Tue, 17 Jul 2007 13:42:25 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:60448 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756367AbXGQRmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 13:42:24 -0400
+Message-ID: <469CFF2B.1080702@linux.vnet.ibm.com>
+Date: Tue, 17 Jul 2007 23:10:59 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707151526080.25614@asgard.lang.hm>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
-X-Uptime: 18:39:14 up 74 days, 11:22,  2 users,  load average: 0.98, 0.80, 0.75
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: =?windows-1252?Q?=22Paul_=28=3F=3F=29_Menage=22?= 
+	<menage@google.com>
+CC: dhaval@linux.vnet.ibm.com, Pavel Emelianov <xemul@sw.ru>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Paul Jackson <pj@sgi.com>, Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Containers: css_put() dilemma
+References: <469BBE00.8000709@linux.vnet.ibm.com> <6599ad830707161203o7f148c75p52e77d4be3ace487@mail.gmail.com> <469C2792.6050009@linux.vnet.ibm.com> <6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com> <20070717070031.GA22410@linux.vnet.ibm.com> <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com> <469C99D1.7090807@linux.vnet.ibm.com> <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
+In-Reply-To: <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* david@lang.hm (david@lang.hm) wrote:
-> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
-
-> >Encryption is possible with both the userland hibernation (aka uswsusp) and
-> >TuxOnIce (formerly known as suspend2).  Still, I don't consider it as a 
-> >"must
-> >have" feature for a framework to be generally useful (many users don't use 
-> >it
-> >anyway).
+Paul (??) Menage wrote:
+> Because as soon as you do the atomic_dec_and_test() on css->refcnt and
+> the refcnt hits zero, then theoretically someone other thread (that
+> already holds container_mutex) could check that the refcount is zero
+> and free the container structure.
 > 
-> he's talking about the main system useing an encrypted device/partition, 
-> not the hibernate image being stored encrypted.
+
+Hi, Paul,
+
+That sounds correct. I wonder now if the solution should be some form
+of delegation for deletion of unreferenced containers (HINT: work queue
+or kernel threads).
+
+> Adding a synchronize_rcu in container_diput() guarantees that the
+> container structure won't be freed while someone may still be
+> accessing it.
 > 
-> This would require the main system 'forget' the keys when it does the 
-> hinbernate and prompt for it again during the wake-up phase.
 
-Indeed - although as I say I really don't know what you would do with
-apps using the mounts at that point.   Still it seems like a 
-sensible requrest from the security side.
+Do we take rcu_read_lock() in css_put() path or use call_rcu() to
+free the container?
 
-Dave
+>>
+>> Could you please elaborate as to why using a release agent is broken
+>> when the memory controller is attached to it?
+> 
+> Because then it will try to take container_mutex in css_put() if it
+> drops the last reference to a container, which is the thing that you
+> said you had to avoid since you called css_put() in contexts that
+> couldn't sleep.
+> 
+> Paul
+
+
 -- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
