@@ -1,120 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761829AbXGQTpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935946AbXGQTqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761829AbXGQTpE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760608AbXGQTog
+	id S935946AbXGQTqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760469AbXGQTqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:44:36 -0400
-Received: from kukmak.uni-mb.si ([164.8.100.3]:56340 "EHLO kukmak.uni-mb.si"
+	Tue, 17 Jul 2007 15:46:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49742 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758578AbXGQTof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:44:35 -0400
-Date: Tue, 17 Jul 2007 21:44:32 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] introduce __init_exit function annotation
-Message-ID: <20070717194432.GO2400@nd47.coderock.org>
-References: <20070717080248.GK4375@moe.telargo.com> <20070717130230.GB24780@uranus.ravnborg.org> <s5htzs3ulpf.wl%tiwai@suse.de> <20070717151432.GA25939@uranus.ravnborg.org> <s5hodibukle.wl%tiwai@suse.de> <20070717153236.GB25939@uranus.ravnborg.org> <s5hir8jujhc.wl%tiwai@suse.de> <20070717164846.GB26953@uranus.ravnborg.org> <s5habtvufns.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757369AbXGQTqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 15:46:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 21:54:06 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang\, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org> <200707171640.39955.rjw@sisk.pl> <87hco3ypt5.fsf@jbms.ath.cx>
+In-Reply-To: <87hco3ypt5.fsf@jbms.ath.cx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <s5habtvufns.wl%tiwai@suse.de>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200707172154.07703.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/07/07 19:02 +0200, Takashi Iwai wrote:
-> At Tue, 17 Jul 2007 18:48:46 +0200,
-> Sam Ravnborg wrote:
-> > 
-> > On Tue, Jul 17, 2007 at 05:40:15PM +0200, Takashi Iwai wrote:
-> > > At Tue, 17 Jul 2007 17:32:36 +0200,
-> > > Sam Ravnborg wrote:
-> > > > 
-> > > > On Tue, Jul 17, 2007 at 05:16:13PM +0200, Takashi Iwai wrote:
-> > > > > At Tue, 17 Jul 2007 17:14:32 +0200,
-> > > > > Sam Ravnborg wrote:
-> > > > > > 
-> > > > > > On Tue, Jul 17, 2007 at 04:52:12PM +0200, Takashi Iwai wrote:
-> > > > > > > At Tue, 17 Jul 2007 15:02:30 +0200,
-> > > > > > > Sam Ravnborg wrote:
-> > > > > > > > 
-> > > > > > > > On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
-> > > > > > > > > Introduce __init_exit, which is useful ie. for drivers that call
-> > > > > > > > > cleanup functions when they fail in __init functions.
-> > > > > > > > 
-> > > > > > > > This is wrong.
-> > > > > > > > On arm (just one example of several) the __exit section are discarded
-> > > > > > > > at buildtime so any reference from __init to __exit will cause the
-> > > > > > > > linker to error out.
-> > > > > > > 
-> > > > > > > Hmm, from what I see, it adds __init to the function.  There is no
-> > > > > > > reference to __exit.
-> > > > > > 
-> > > > > > The cleanup functions are marked __exit in the referenced case.
-> > > > > 
-> > > > > My understanding is that it's the very purpose of this patch --
-> > > > > change the mark from __exit to __init_exit for such clean-up
-> > > > > functions.
-> > > > 
-> > > > And that is wrong.
-> > > 
-> > > You misunderstood.  What I meant is the case like this:
-> > > 
-> > > static void __init_exit cleanup()
-> > > {
-> > > 	...
-> > > }
-> > > 
-> > > static void __init foo_init()
-> > > {
-> > > 	if (error)
-> > > 		cleanup();
-> > > }
-> > > 
-> > > static void __exit foo_exit()
-> > > {
-> > > 	cleanup();
-> > > }
-> > > 
-> > > Currently, there is no proper way to mark cleanup().  Neither __init,
-> > > __exit, __devinit nor __devexit can be used there.
-> > 
-> > Then you get the annotation sorted out so cleanup() get discarded in the
-> > built-in case. But you leave no room for automated tools to detect this.
-> > 
-> > If this is really necessary (and I daught) then a specific section should be
-> > dedicated for this usage.
-> > 
-> > We have lot of issues with current __init/__exit, __devinit/__devexit, __cpuint/__cpuexit
-> > and introducing more of the kind does not help it.
-> > So even if it saves a few bytes in some odd cases the added complaxity is IMHO not worth it.
+On Tuesday, 17 July 2007 18:09, Jeremy Maitin-Shepard wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Well, I don't think it's a few bytes and not so odd, but I agree that
-> this solution isn't the best way.  And, I now remember that this won't
-> work anyway, too.  Calling __init from __exit also causes error...
+> [snip]
+> 
+> > I'm afraid of one thing, though.
+> 
+> > If we create a framework without ACPI (well, ACPI needs to be enabled in the
+> > kernel anyway for other reasons, like the ability to suspend to RAM) and then
+> > it turns out that we have to add some ACPI hooks to it, that might be difficult
+> > to do cleanly.
+> 
+> > Thus, it seems reasonable to think of the ACPI handling in advance.
+> 
+> As far as I understand, ACPI support is only useful for hibernate to the
+> extent that it allows some or all of the following features:
+> 
+>  - possibly shows a nice looking "hibernate" LED
+>  - possibly allows the BIOS to show something about hibernate
+>  - possibly allows the lid or keyboard to "wake up" (turn on) the system
+> 
+> Note that properly restoring device state (or even properly determining
+> whether on external/mains power vs. battery) on resume is not something
+> that should require special hibernate ACPI support, since it should be
+> possible to make hibernate (and in general it will be the case that
+> hibernate will) look exactly like a reboot to the BIOS/ACPI/devices.
+> The problem that you mentioned on your system regarding power source
+> information would seem to just be a problem with how ACPI is
+> reinitialized after resuming from hibernation, which is not at all
+> surprising since we know it (the use of driver calls for hibernate) is
+> currently broken in many ways.
+> 
+> It seems that enabling S4 mode should just be treated as a special
+> shutdown mode, independent of hibernate.  In practice, it may likely
+> only be useful in conjunction with hibernate, but there doesn't seem to
+> be any reason it needs to be coupled.
+> 
+> It would be useful to determine whether it is necessary to initialize
+> ACPI specially after "resuming" from S4 mode, though, or whether they
+> can be initialized normally (i.e. by a normal kernel for instance,
+> completely unaware of hibernate).  If they can be initialized normally,
+> then it seems that it is unnecessary to have any ACPI S4 mode support in
+> the resume path, and it can merely exist as a special shutdown mode.
+> Note that it seems a bit odd if ACPI can't be initialized normally after
+> resume from S4 (and still work), since the "load image" kernel
+> initializes everything normally before attempting to resume the
+> hibernated system.
 
-I made this patch because I saw __init calling __exit in yet another
-driver (gianfar). Guess I'll just send the old way fix, and remove __exit.
+Unfortunately, this is more complicated (please see my recent reply to David).
+
+Greetings,
+Rafael
 
 
-As for calling __init_exit from __exit:
-1 - in kernel, there's no __exit => no problem
-2 - module, __init_exit is a no-op => no problem
-
-the code in question again:
->  #ifdef MODULE
->  #define __exit               __attribute__ ((__section__(".exit.text")))
-> +#define __init_exit
->  #else
->  #define __exit               __attribute_used__ __attribute__ ((__section__(".exit.text")))
-> +#define __init_exit  __init
->  #endif
-
-Or maybe it's the name that is confuzing, but it makes sense to me:
-__init_exit - you can call it from __init or __exit.
-__init_or_exit?
-
-
-	Domen
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
