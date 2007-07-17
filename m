@@ -1,112 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936093AbXGQVCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936547AbXGQVDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936093AbXGQVCb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 17:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbXGQVCW
+	id S936547AbXGQVDo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 17:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbXGQVDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 17:02:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:2508 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753249AbXGQVCV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 17:02:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=h6PhwBZEunUaYQF+IjU7kkI9Rj1aIU9DM11GxPSP9/UgLR1l3xj2GMF0PNs2bbu7cm2x3/kbx08gXMKILoWwyG5bKq5HJR5FFImJdJIAiMpyyj6WNMWjy8JUv+ZgmS9fTSao8i2++KWgtArRQ16UqovJ48kShDVyyh+4Lxdh8GY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Giacomo Catenazzi <cate@cateee.net>
-Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
-Date: Tue, 17 Jul 2007 23:20:11 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-References: <469D1D5E.8050609@cateee.net>
-In-Reply-To: <469D1D5E.8050609@cateee.net>
+	Tue, 17 Jul 2007 17:03:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50312 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753249AbXGQVDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 17:03:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 23:11:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang\, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org> <200707172217.01890.rjw@sisk.pl> <87odiag45q.fsf@jbms.ath.cx>
+In-Reply-To: <87odiag45q.fsf@jbms.ath.cx>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707172320.12141.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707172311.14721.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Tuesday 17 July 2007, Giacomo Catenazzi wrote:
-> Hello,
+On Tuesday, 17 July 2007 22:34, Jeremy Maitin-Shepard wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> last git changes to git give me the following error (repead very quickly):
+> [snip]
 > 
-> sector 14657019, nr/cmr 0/0
-> bio f7b59280, biotail f7b59280, buffer 0000000, date 0000000, len 36
-> ide_do_rw_disk-bad command: dev hda: type 2, flags 104c8
-
-Heh, I've just finished describing the source of the issue:
-
-http://lkml.org/lkml/2007/7/17/487
-
-ide-disk driver and type 2 (REQ_TYPE_BLOCK_PC) requests don't mix well
-
-Probably some dumb application is sending packet commands without
-checking the device type...
-
-> [note: manually copied]
+> >> Rafael, for those of us who aren't thoroughly familiar with all the ins
+> >> and outs of the ACPI spec, could you please summarize a list of the
+> >> ACPI calls needed in the second and third cases above?  Indicate which
+> >> ones need to be done from within the original kernel and which should
+> >> be done from within a kexec'd hibernation kernel.
 > 
+> > Sure.
 > 
-> I tried bisect:
+> > In the third case (ie. transition to S4) we are supposed to do the following:
 > 
+> > (1) Upon entering the sleep state, which IMO can be done _after_ the image
+> >     has been saved:
 > 
-> cate@catee:~/kernel/6,v2.6/linux-2.6$ git bisect log
-> # bad: [a5fcaa210626a79465321e344c91a6a7dc3881fa] Merge branch
-> 'drm-patches' of
-> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
-> # good: [8f41958bdd577731f7411c9605cfaa9db6766809] Merge
-> git://git.infradead.org/battery-2.6
-> git-bisect start 'a5fcaa21' '8f41958b'
-> # good: [02b2318e07f98a7cdf7089a4457a8d62424aa824] Merge branch 'master'
-> of master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6
-> git-bisect good 02b2318e07f98a7cdf7089a4457a8d62424aa824
-> # good: [f716a425c15ebadf60286cd4fb60d1d6f46e3cf9] [POWERPC] VIOTAPE:
-> Use designated initializers for fops member structures.
-> git-bisect good f716a425c15ebadf60286cd4fb60d1d6f46e3cf9
-> # good: [14dc5249728ff699b1ca4dac01ad416a350a147a] Merge branch
-> 'for-linus' of git://git.kernel.dk/data/git/linux-2.6-block
-> git-bisect good 14dc5249728ff699b1ca4dac01ad416a350a147a
-> # good: [c2dc1ad582196208a2f990eb0230eb922046c684] Merge branch
-> 'drm-patches' of
-> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
-> git-bisect good c2dc1ad582196208a2f990eb0230eb922046c684
-> # good: [c5e3ae8823693b260ce1f217adca8add1bc0b3de] forcedeth bug fix:
-> realtek phy
-> git-bisect good c5e3ae8823693b260ce1f217adca8add1bc0b3de
-> # good: [70584578ab3e940ac9d7820f268f9adc9884e407] [POWERPC] Check for
-> NULL ppc_md.init_IRQ() before calling
-> git-bisect good 70584578ab3e940ac9d7820f268f9adc9884e407
-> # good: [bf22f6fe2d72b4d7e9035be8ceb340414cf490e3] Merge branch
-> 'for-2.6.23' into merge
-> git-bisect good bf22f6fe2d72b4d7e9035be8ceb340414cf490e3
-> # bad: [f798634d806615bee27d1b83479034087a02aa0f] [SERIAL] SUNHV: Fix
-> jerky console on LDOM guests.
-> git-bisect bad f798634d806615bee27d1b83479034087a02aa0f
-> # bad: [29417b899a77aaba1c060f5e123db4f50006f58a] Make BLK_DEV_BSG
-> depend strictly on SCSI=y
-> git-bisect bad 29417b899a77aaba1c060f5e123db4f50006f58a
+> I assume you mean "in order to enter the sleep state", rather than "upon
+> entering the sleep state".
+
+Yes, that seems to be more accurate.
+
+> I still don't understand what you mean by 
+> "which IMO can be done _after_ the image has been saved"; as far as I
+> understand, the last step of this process, "make the platform enter S4",
+> is almost like a shutdown as far as the kernel is concerned (except for
+> the tiny detail of having to call those special ACPI methods on resume);
+> consequently, it would seem that nothing can be done after that step.
+
+Well, the ACPI spec suggests to save the image somewhere after the devices
+have been but into low power states, which is kind of unreasonable. :-)
+
+> >   * figure out which devices can wake up
+> >   * put devices into low power states (wake-up devices are placed in the Dx
+> >     states compatible with the wake capability, the others are powered off)
+> >   * execute the _PTS global control method
+> >   * switch off the nonlocal CPUs (eg. nonboot CPUs on x86)
+> >   * execute the _GTS global control method
+> >   * set the GPE enable registers corresponding to the wake-up devices)
+> >   * make the platform enter S4 (there's a well defined procedure for that)
+> >   I think that this should be done by the image-saving kernel.
 > 
-> but last changeset don't compile (and it doesn't seem relevant).
+> I agree.
+> 
+> > (2) Upon start-up (by which I mean what happens after the user has pressed
+> >     the power button or something like that):
+> >   * check if the image is present (and valid) _without_ enabling ACPI (we don't
+> >     do that now, but I see no reason for not doing it in the new framework)
+> >   * if the image is present (and valid), load it
+> >   * turn on ACPI (unless already turned on by the BIOS, that is)
+> >   * execute the _BFS global control method
+> >   * execute the _WAK global control method
+> >   * continue
+> >   Here, the first two things should be done by the image-loading kernel, but
+> >   the remaining operations have to be carried out by the restored
+> >     kernel.
+> 
+> It doesn't seem like a problem for that to be the case, but out of
+> curiosity why do those methods need to be executed by the "restored"
+> kernel, rather than the "image loading" kernel.  Do they require some
+> information from ACPI-related kernel data structures that were populated
+> by the normal ACPI initialization?
 
-commit 3d6392cfbd7dc11f23058e3493683afab4ac13a3
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Mon Jul 9 12:38:05 2007 +0200
+Well, there are some complications.  For example, _BFS and _WAK should be
+executed with interrupts on (I'm told that the AML interpreter might not work
+with interrupts disabled) and the nonboot CPUs should be offline while they
+are being executed.  Perhaps we should also avoid playing with APICs and
+things like that after executing _WAK, so it's better to execute them from the
+restored kernel.
 
-    bsg: support for full generic block layer SG v3
+> [snip]
+> 
+> > ... we can't return to the hibernated kernel unless we are going to cancel the
+> > hibernation.
+> 
+> I agree.
+> 
+> > That's why I think that for the suspend-to-both the image-saving kernel will
+> > need to support the same set of devices as the hibernated kernel.
+> 
+> If all of the devices that the image writing kernel doesn't know about
+> have already been shut down/powered off by the hibernated kernel, then
+> does the "image writing" kernel still need to know about them in order
+> to suspend to RAM properly (i.e. without leaving some devices on wasting
+> power)?
 
-    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+For some devices it may be illegal to leave them powered on while entering
+S3.
 
-is the guilty one
+Greetings,
+Rafael
 
-Thanks,
-Bart
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
