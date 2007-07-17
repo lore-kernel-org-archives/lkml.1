@@ -1,68 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934870AbXGQUez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935707AbXGQUfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934870AbXGQUez (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbXGQUes
+	id S935707AbXGQUfe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758502AbXGQUfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:34:48 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41656 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751187AbXGQUer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:34:47 -0400
-Date: Tue, 17 Jul 2007 11:36:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Tejun Heo <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sysfs root link count broken in 2.6.22-git5
-Message-ID: <20070717183652.GG9702@suse.de>
-References: <20070715124232.4e371bf9@hyperion.delvare> <20070717034844.GB11602@suse.de> <20070717131255.71b7e72e@hyperion.delvare>
+	Tue, 17 Jul 2007 16:35:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:43482 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757790AbXGQUfQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 16:35:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=evjBuLhiN2UPga4SVOkJd++RdrVgRu7x9pypiPPdlTgDWXOtY6B4RCUTWnn7sGe+kr2+K23VjFBLOzlQ3XC8Gba9zN6uw759EB6C1IbDso6YWJQcDyRQr+bwEwAruTJPJQ1suX7XKxD6Eu4+t4vprZJz3XwDtbz52TxdJSPITco=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: block/bsg.c
+Date: Tue, 17 Jul 2007 22:52:25 +0200
+User-Agent: KMail/1.9.6
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+References: <20070717065940.GZ5195@kernel.dk> <20070717190705T.fujita.tomonori@lab.ntt.co.jp> <20070717101928.GK5195@kernel.dk>
+In-Reply-To: <20070717101928.GK5195@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070717131255.71b7e72e@hyperion.delvare>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200707172252.25729.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 01:12:55PM +0200, Jean Delvare wrote:
-> Hi Greg,
-> 
-> On Mon, 16 Jul 2007 20:48:44 -0700, Greg KH wrote:
-> > On Sun, Jul 15, 2007 at 12:42:32PM +0200, Jean Delvare wrote:
-> > > I'm running 2.6.22-git5 and noticed that the link count of the sysfs
-> > > root is broken:
-> > > 
-> > > $ ls -ld /sys
-> > > drwxr-xr-x 2 root root 0 Jul 15 12:27 /sys
-> > > 
-> > > sysfs is mounted, the link count should be 11, and is with kernel
-> > > 2.6.22.1. find(1) complains about the bad link count.
-> > 
-> > I suggest updating your version of find(1), I get no such complaint
-> > with:
-> > 	$ find --version
-> > 	GNU find version 4.3.8
-> > 	Built using GNU gnulib version 2007-05-26
-> > 	Features enabled: D_TYPE O_NOFOLLOW(enabled) LEAF_OPTIMISATION FTS() CBO(level=0)
-> > 
-> > What are you using?
-> 
-> $ find --version
-> GNU find version 4.2.28
-> Features enabled: D_TYPE O_NOFOLLOW(enabled) LEAF_OPTIMISATION
-> 
-> This is the standard version in openSuse 10.2. But how does it matter?
 
-Well, some people feel that that message from find is not something that
-should be bothering users all the time.  Hence it was fixed in newer
-versions.
+Hi,
 
-> sysfs is broken, not find(1). Don't you see the sysfs root link count
-> at 2 as I do? This needs to be fixed.
+Some more bsg findings...
 
-I'm not disagreeing with that, but other than find, what is the downside
-of this not being correct?  And what should it be?
 
-thanks,
+block/Kconfig:
 
-greg k-h
+endif # BLOCK
+
+Shouldn't BLK_DEV_BSG depend on BLOCK?
+
+config BLK_DEV_BSG
+        bool "Block layer SG support"
+        depends on (SCSI=y) && EXPERIMENTAL
+        default y
+        ---help---
+        Saying Y here will enable generic SG (SCSI generic) v4
+        support for any block device.
+
+
+block/bsg.c:
+
+...
+
+/*
+ * TODO
+ *      - Should this get merged, block/scsi_ioctl.c will be migrated into
+ *        this file. To keep maintenance down, it's easier to have them
+ *        seperated right now.
+ *
+ */
+
+This TODO should be fixed/removed.
+
+Firstly bsg got merged. ;)  Moreover bsg depends on SCSI and scsi_ioctl doesn't.
+Even if SCSI dependency is fixed bsg requires block driver to have struct
+class devices which is not a case for scsi_ioctl.
+
+...
+
+static struct bsg_device *__bsg_get_device(int minor)
+{
+        struct hlist_head *list = &bsg_device_list[bsg_list_idx(minor)];
+
+bsg_device_list[] access should be done under bsg_mutex lock.
+
+May not be a problem currently because of lock_kernel but worth fixing anyway.
+
+        struct bsg_device *bd = NULL;
+        struct hlist_node *entry;
+
+        mutex_lock(&bsg_mutex);
+
+...
+
+static int
+bsg_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+          unsigned long arg)
+{
+...
+        case SCSI_IOCTL_SEND_COMMAND: {
+
+Do we really want to add support for this *deprecated* ioctl to
+the *new* and shiny bsg driver?
+
+                void __user *uarg = (void __user *) arg;
+                return scsi_cmd_ioctl(file, bd->queue, NULL, cmd, uarg);
+        }
+
+...
+
+int bsg_register_queue(struct request_queue *q, const char *name)
+{
+...
+        memset(bcd, 0, sizeof(*bcd));
+...
+        dev = MKDEV(BSG_MAJOR, bcd->minor);
+        class_dev = class_device_create(bsg_class, NULL, dev, bcd->dev, "%s", name);
+
+bcd->dev is always 0 (NULL).
+
+Is it OK to pass NULL struct device *dev argument to class_device_create()?
+
+It should be fixed by either removing bcd->dev or by setting it to something
+other than zero.
+
+...
+
+MODULE_AUTHOR("Jens Axboe");
+MODULE_DESCRIPTION("Block layer SGSI generic (sg) driver");
+
+SGSI? :)
+
+MODULE_LICENSE("GPL");
+
+
+Now back to the first bsg commit 3d6392cfbd7dc11f23058e3493683afab4ac13a3:
+
+diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
+index f429be8..a21f585 100644
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -1258,19 +1258,25 @@ static void idefloppy_create_rw_cmd (idefloppy_floppy_t *floppy, idefloppy_pc_t
+ 	set_bit(PC_DMA_RECOMMENDED, &pc->flags);
+ }
+ 
+-static int
++static void
+ idefloppy_blockpc_cmd(idefloppy_floppy_t *floppy, idefloppy_pc_t *pc, struct request *rq)
+ {
+-	/*
+-	 * just support eject for now, it would not be hard to make the
+-	 * REQ_BLOCK_PC support fully-featured
+-	 */
+-	if (rq->cmd[0] != IDEFLOPPY_START_STOP_CMD)
+-		return 1;
+-
+ 	idefloppy_init_pc(pc);
++	pc->callback = &idefloppy_rw_callback;
+ 	memcpy(pc->c, rq->cmd, sizeof(pc->c));
+-	return 0;
++	pc->rq = rq;
++	pc->b_count = rq->data_len;
++	if (rq->data_len && rq_data_dir(rq) == WRITE)
++		set_bit(PC_WRITING, &pc->flags);
++	pc->buffer = rq->data;
++	if (rq->bio)
++		set_bit(PC_DMA_RECOMMENDED, &pc->flags);
+
+Great to see SG_IO support being added to ide-floppy but this change has
+nothing to do with the addition of bsg driver so WTF they have been mixed
+within the same commit?
+
+I also can't recall seeing this patch on linux-ide mailing list...
+
++	/*
++	 * possibly problematic, doesn't look like ide-floppy correctly
++	 * handled scattered requests if dma fails...
++	 */
+
+Could you give some details on this?
+
++	pc->request_transfer = pc->buffer_size = rq->data_len;
+ }
+ 
+ /*
+@@ -1317,10 +1323,7 @@ static ide_startstop_t idefloppy_do_request (ide_drive_t *drive, struct request
+ 		pc = (idefloppy_pc_t *) rq->buffer;
+ 	} else if (blk_pc_request(rq)) {
+ 		pc = idefloppy_next_pc_storage(drive);
+-		if (idefloppy_blockpc_cmd(floppy, pc, rq)) {
+-			idefloppy_do_end_request(drive, 0, 0);
+-			return ide_stopped;
+-		}
++		idefloppy_blockpc_cmd(floppy, pc, rq);
+ 	} else {
+ 		blk_dump_rq_flags(rq,
+ 			"ide-floppy: unsupported command in queue");
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index c948a5c..9ae60a7 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+
+ide.c changes also have nothing to do with addition of bsg driver.
+
+@@ -1049,9 +1049,13 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
+ 	unsigned long flags;
+ 	ide_driver_t *drv;
+ 	void __user *p = (void __user *)arg;
+-	int err = 0, (*setfunc)(ide_drive_t *, int);
++	int err, (*setfunc)(ide_drive_t *, int);
+ 	u8 *val;
+ 
++	err = scsi_cmd_ioctl(file, bdev->bd_disk, cmd, p);
++	if (err != -ENOTTY)
++		return err;
++
+
+Probably the goal was to add SG_IO IOCTL support for ide-floppy but instead
+it adds support for *all* scsi_ioctl.c IOCTLs to *all* IDE device drivers.
+
+ide-{disk,scsi,tape} don't support REQ_TYPE_BLOCK_PC requests et all
+(so attempts to use SG_IO, CDROM_SEND_PACKET and SCSI_IOCTL_SEND_COMMAND
+will result in requests being failed and error messages in the kernel logs).
+Without REQ_TYPE_BLOCK_PC support there is no sense in supporting any other
+scsi_ioctl.c IOCTLs (while at it: SG_{GET,SET}_RESERVED seems to have no
+real effect in the current tree).
+
+ide-cd already supports all scsi_ioctl.c IOCTLs through cdrom_ioctl() call.
+
+This leaves us with ide-floppy where the above scsi_cmd_ioctl() call should
+belong (we may also want to filter out deprecated SCSI_IOCTL_SEND_COMMAND
+and legacy CDROM_SEND_PACKET IOCTLs).
+
+Please fix it.
+
+ 	switch (cmd) {
+ 	case HDIO_GET_32BIT:	    val = &drive->io_32bit;	 goto read_val;
+ 	case HDIO_GET_KEEPSETTINGS: val = &drive->keep_settings; goto read_val;
+@@ -1171,10 +1175,6 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
+ 			return 0;
+ 		}
+ 
+-		case CDROMEJECT:
+-		case CDROMCLOSETRAY:
+-			return scsi_cmd_ioctl(file, bdev->bd_disk, cmd, p);
+-
+
+This chunk is OK, handling of these IOCTLs should go to ide-floppy
+(ide-cd already handles them fine).
+
+Thanks,
+Bart
