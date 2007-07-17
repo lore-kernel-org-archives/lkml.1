@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbXGQGGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbXGQGRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761575AbXGQGGq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 02:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbXGQGGh
+	id S1758984AbXGQGRR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 02:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXGQGRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 02:06:37 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:30592 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760706AbXGQGGg (ORCPT
+	Tue, 17 Jul 2007 02:17:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40028 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752323AbXGQGRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 02:06:36 -0400
-Date: Tue, 17 Jul 2007 00:08:28 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: sata_nv: 2.6.22 is not fixed, but certainly improved
-In-reply-to: <fa.Y7u9A1ShoS8YDBp6YOFkRHtg2K0@ifi.uio.no>
-To: Charles Shannon Hendrix <shannon@widomaker.com>
-Cc: linux-kernel@vger.kernel.org, Allen Martin <AMartin@nvidia.com>,
-       Jeff Garzik <jeff@garzik.org>
-Message-id: <469C5CDC.8070908@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.zmoY2vXgUq7eREE2Ed2QLHUKvsI@ifi.uio.no>
- <fa.Y7u9A1ShoS8YDBp6YOFkRHtg2K0@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Tue, 17 Jul 2007 02:17:06 -0400
+Date: Mon, 16 Jul 2007 23:16:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thanos Makatos <mcatos@ics.forth.gr>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Full buffer cache not working properly
+Message-Id: <20070716231625.e2bdbc01.akpm@linux-foundation.org>
+In-Reply-To: <469634B6.1070901@ics.forth.gr>
+References: <469634B6.1070901@ics.forth.gr>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Can you post the output you got from the reset on 2.6.22?
+On Thu, 12 Jul 2007 17:03:34 +0300 Thanos Makatos <mcatos@ics.forth.gr> wrote:
 
-It's one of these:
+> I run several times the following test and what I've seen is that when 
+> the buffer cache becomes full, unneeded dirty buffer heads are not evicted
+> and no other memory allocation can happen (including reading a block 
+> from the disk to the buffer cache). Should this happen?
+> Here's the code that reproduces this issue:
+> 
+> for(i = 0; i < get_capacity(bdev->bd_disk)/8; i++) {
+>         bh = __bread(bdev, i, PAGE_SIZE);
+>         lock_buffer(bh);
+>         memset(bh->b_data, 0, PAGE_SIZE);
+>         set_buffer_dirty(bh);
+>         unlock_buffer(bh);
+>         __brelse(bh);
+> }
+> 
+> I added some printks printing the buffer head's reference counter: after 
+> the '__bread' ref count is 2, after '__brelse' ref count is 1. Shouldn't 
+> these
+> numbers be 1 and 0 respectively? I added an extra 'put_bh' before (or 
+> after) the '__brelse' but I get a BUG().
 
-ata4: EH in ADMA mode, notifier 0x0 notifier_error 0x0 gen_ctl 0x1501000
-status 0x400 next cpb count 0x0 next cpb idx 0x0
-ata4: CPB 0: ctl_flags 0x9, resp_flags 0x0
-ata4: timeout waiting for ADMA IDLE, stat=0x400
-ata4: timeout waiting for ADMA LEGACY, stat=0x400
-ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata4.00: cmd e7/00:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0
-          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata4: soft resetting port
-ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata4.00: configured for UDMA/133
-ata4: EH complete
-sd 5:0:0:0: [sdb] 156301488 512-byte hardware sectors (80026 MB)
-sd 5:0:0:0: [sdb] Write Protect is off
-sd 5:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 5:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't 
-support DPO or FUA
-
-Essentially the controller has been given a command (a cache flush, 
-which for whatever reason seems to cause this frequently) but it doesn't 
-give any indication that it has done anything with it (CPB response 
-flags remain at 0). There have been a few reports of this, and I'm at a 
-loss to explain why it happens. Certainly the publicly known information 
-on this controller doesn't seem to give any hints on what if anything we 
-could be doing wrong.
-
-A workaround was added in sata_nv a while back that adds a delay between 
-  completion of an NCQ command and issuing of a non-NCQ command, or vice 
-versa. This seems to have improved things (for unknown reasons), but 
-hasn't entirely fixed the problem. If your drive has NCQ support, it may 
-be a remaining case of this problem.
-
-I've previously asked for info on this issue from NVIDIA (as well as 
-Jeff Garzik who has access to the controller documentation), but haven't 
-gotten any info yet. Consider this another ping :-)
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+You've been very unkind to the VFS.  Put a balance_dirty_pages() call in
+that loop to give the system an opportunity to do some writeback and
+throttling.
 
