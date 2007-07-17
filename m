@@ -1,59 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765656AbXGQHSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbXGQHUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765656AbXGQHSy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758865AbXGQHSq
+	id S932284AbXGQHUi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759309AbXGQHUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:18:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:37347 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757189AbXGQHSp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:18:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=kmc6WidxMfRWPx6usTiFGCk5hOCCpLWBmC0NMbgAmSXElNfGoKQ0/LAILX/zN66X3
-	63bHCXLRkPUEjZSMeaUjA==
-Message-ID: <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com>
-Date: Tue, 17 Jul 2007 00:18:33 -0700
-From: "=?ISO-2022-JP?B?UGF1bCAoGyRCSnVOXBsoQikgTWVuYWdl?=" 
-	<menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Containers: css_put() dilemma
-Cc: "Pavel Emelianov" <xemul@sw.ru>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Paul Jackson" <pj@sgi.com>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, dhaval@linux.vnet.ibm.com
-In-Reply-To: <20070717070031.GA22410@linux.vnet.ibm.com>
+	Tue, 17 Jul 2007 03:20:30 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:14860 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759039AbXGQHU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:20:29 -0400
+Date: Tue, 17 Jul 2007 09:19:52 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: block/bsg.c
+Message-ID: <20070717071952.GF5195@kernel.dk>
+References: <20070717065940.GZ5195@kernel.dk> <20070717160816K.fujita.tomonori@lab.ntt.co.jp> <20070717071045.GD5195@kernel.dk> <20070717161720V.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <469BBE00.8000709@linux.vnet.ibm.com>
-	 <6599ad830707161203o7f148c75p52e77d4be3ace487@mail.gmail.com>
-	 <469C2792.6050009@linux.vnet.ibm.com>
-	 <6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com>
-	 <20070717070031.GA22410@linux.vnet.ibm.com>
+In-Reply-To: <20070717161720V.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >
-> > >                mutex_lock(&container_mutex);
-> > >                set_bit(CONT_RELEASABLE, &cont->flags);
-> > >-               if (atomic_dec_and_test(&css->refcnt)) {
-> > >-                       check_for_release(cont);
-> > >-               }
-> > >+               check_for_release(cont);
-> > >                mutex_unlock(&container_mutex);
-> > >
+On Tue, Jul 17 2007, FUJITA Tomonori wrote:
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Subject: Re: block/bsg.c
+> Date: Tue, 17 Jul 2007 09:10:45 +0200
+> 
+> > On Tue, Jul 17 2007, FUJITA Tomonori wrote:
+> > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > Subject: Re: block/bsg.c
+> > > Date: Tue, 17 Jul 2007 08:59:40 +0200
+> > > 
+> > > > On Tue, Jul 17 2007, FUJITA Tomonori wrote:
+> > > > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > > > Subject: Re: block/bsg.c
+> > > > > Date: Tue, 17 Jul 2007 08:38:11 +0200
+> > > > > 
+> > > > > > On Mon, Jul 16 2007, Andrew Morton wrote:
+> > > > > > > 
+> > > > > > > A belated review (I've never seen this before and there it is in mainline)
+> > > > > > > 
+> > > > > > > > static char bsg_version[] = "block layer sg (bsg) 0.4";
+> > > > > > > 
+> > > > > > > `const' would be better.  That moves it into a write-protected memory section.
+> > > > > > 
+> > > > > > Agree
+> > > > > > 
+> > > > > > > > #define list_entry_bc(entry)	list_entry((entry), struct bsg_command, list)
+> > > > > > > 
+> > > > > > > This makes the code easier to write but harder to read.  We should optimise
+> > > > > > > for readers.  Please open-code this at callsites.
+> > > > > > > 
+> > > > > > > Or at least convert it into a (commented) (possibly inlined) C function.
+> > > > > > 
+> > > > > > list_entry_to_bc(), then? The main objective is to save on typing, and
+> > > > > > (just as important) make sure we don't bump over the 80 chars per line.
+> > > > > > 
+> > > > > > > > /*
+> > > > > > > >  * just for testing
+> > > > > > > >  */
+> > > > > > > > #define BSG_MAJOR	(240)
+> > > > > > > 
+> > > > > > > What's this doing in mainline?  240 is a "reserved for local use" major. 
+> > > > > > > This will cause collisions.  This code should be using dynamic major
+> > > > > > > assignment.
+> > > > > > 
+> > > > > > Yeah, that's a big error on my part. Will get that fixed up right away.
+> > > > > 
+> > > > > I've been testing the patchset to fix the issues that Andrew pointed
+> > > > > out. I can send it soon.
+> > > > > 
+> > > > > Jens, have you already fixed some?
+> > > > 
+> > > > I already pushed some of the changes locally, just the idr change is
+> > > > missing. See the #bsg branch:
+> > > > 
+> > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=bsg
+> > > 
+> > > I see.
+> > 
+> > Since Linus is happily snoring by now, could you test and see if the
+> > tree works for you?
+> 
+> Yeah, I'll do and send patches later if necessary.
 
-I think that this isn't safe as it stands, without a synchronize_rcu()
-in container_diput() prior to the kfree(). Also, it will break if
-anyone tries to use a release agent on a hierarchy that has your
-memory controller bound to it.
+Great, thanks.
 
-Paul
+-- 
+Jens Axboe
+
