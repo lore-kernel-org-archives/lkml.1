@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934714AbXGQQHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934924AbXGQQHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934714AbXGQQHQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757709AbXGQQHE
+	id S934924AbXGQQHk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759226AbXGQQHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 12:07:04 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48525
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757908AbXGQQHB (ORCPT
+	Tue, 17 Jul 2007 12:07:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35330 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758001AbXGQQHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:07:01 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-Subject: Re: Documentation of kernel messages (Summary)
-Date: Tue, 17 Jul 2007 12:06:56 -0400
-User-Agent: KMail/1.9.6
-Cc: LeoLi@freescale.com, gh@us.ibm.com, hpa@zytor.com,
-       kunai@linux-foundation.jp, holzheu@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       lf_kernel_messages@linux-foundation.org
-References: <200707131312.28004.rob@landley.net> <200707142212.35874.rob@landley.net> <20070716.014642.41651135.tshibata@ab.jp.nec.com>
-In-Reply-To: <20070716.014642.41651135.tshibata@ab.jp.nec.com>
+	Tue, 17 Jul 2007 12:07:03 -0400
+Date: Tue, 17 Jul 2007 09:05:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Chuck Ebbert <76306.1226@compuserve.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Q: a bogus set_fs(USER_DS) in setup_frame/setup_rt_frame ?
+In-Reply-To: <20070717154638.GA342@tv-sign.ru>
+Message-ID: <alpine.LFD.0.999.0707170902570.19166@woody.linux-foundation.org>
+References: <20070717154638.GA342@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707171206.56805.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 July 2007 12:46:42 pm Tsugikazu Shibata wrote:
-> On Sat, 14 Jul 2007 22:12:35 -0400, rob wrote:
-> > On Friday 13 July 2007 9:46:59 pm Tsugikazu Shibata wrote:
-> > > > > How about adding;
-> > > > > kernel-doc-nano-HOWTO.txt
-> > > >
-> > > > The problem is, the generated htmdocs are in english.  This file is
-> > > > about how to generate (and author) English documentation that won't
-> > > > be translated. What's the point of translating the instructions if
-> > > > the result won't be translated?
-> > >
-> > > People (who even in non-native) would better to know and read it such
-> > > htmldocs because there are good and important documents even in
-> > > English. I thought that translation of this file may help.
-> >
-> > The english version of htmldocs is generated from the source code.    If
-> > translating remotely current versions of htmldocs into other languages
-> > was feasible, then the english version wouldn't need to be in the source
-> > code in the first place.
-> >
-> > Translating a document _about_ htmldocs boils down to "Dear non-english
-> > speaker: here's something you can't read, nor can you update it either
-> > except though your language maintainer."
+
+
+On Tue, 17 Jul 2007, Oleg Nesterov wrote:
 >
-> No, kernel-doc-nano-HOWTO includes explanation of tools to extract the
-> document, format of extractable document in source files and so on.
-> I thought this file would help non-native people, how to extract or add
-> in-kernel extractable documents.
+> I am really puzzled by set_fs(USER_DS) in setup_frame/setup_rt_frame.
+> 
+> How is it possible that current->addr_limit != USER_DS ? If this _is_
+> possible, how can can we trust the result of access_ok() above?
 
-Which will be in english, so why can't the instructions on how to do it be in 
-english too?
+Heh. I think it's entirely historical.
 
-> I understand that these tools will generate English documents but
-> that's OK.
+Please realize that the whole reason that function is called "set_fs()" is 
+that it literally used to set the %fs segment register, not 
+"->addr_limit".
 
-Then the instructions how to do it in english should be ok too.  If they can't 
-read the instructions, they won't be able to read the result.
+So I think the "set_fs(USER_DS)" is there _only_ to match the other
 
-> Such large volume of documents are not easy to translate 
-> into other languages.
+        regs->xds = __USER_DS;
+        regs->xes = __USER_DS;
+        regs->xss = __USER_DS;
+        regs->xcs = __USER_CS;
 
-"Here's how to get a result that will be useless to you."
+things, and never mattered. And now it matters even less, and has been 
+copied to all other architectures where it is just totally insane.
 
-Why?  What's the point?  I'm not seeing it.
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+		Linus
