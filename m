@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934243AbXGQPba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933567AbXGQPec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934243AbXGQPba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 11:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXGQPbY
+	id S933567AbXGQPec (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 11:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbXGQPeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 11:31:24 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58271 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753591AbXGQPbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 11:31:23 -0400
-Date: Tue, 17 Jul 2007 17:32:36 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Domen Puncer <domen.puncer@telargo.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] introduce __init_exit function annotation
-Message-ID: <20070717153236.GB25939@uranus.ravnborg.org>
-References: <20070717080248.GK4375@moe.telargo.com> <20070717130230.GB24780@uranus.ravnborg.org> <s5htzs3ulpf.wl%tiwai@suse.de> <20070717151432.GA25939@uranus.ravnborg.org> <s5hodibukle.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hodibukle.wl%tiwai@suse.de>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 17 Jul 2007 11:34:24 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:32942
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754584AbXGQPeY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 11:34:24 -0400
+Date: Tue, 17 Jul 2007 08:19:32 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jim Crilly <jim@why.dont.jablowme.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+In-Reply-To: <20070717104231.GA32486@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.64.0707170818460.19248@asgard.lang.hm>
+References: <200707151433.34625.rjw@sisk.pl> <200707161406.28539.rjw@sisk.pl>
+ <20070716123849.GC14212@grifter.jdc.home> <200707161729.16440.rjw@sisk.pl>
+ <Pine.LNX.4.64.0707162119500.19248@asgard.lang.hm> <20070717104231.GA32486@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 05:16:13PM +0200, Takashi Iwai wrote:
-> At Tue, 17 Jul 2007 17:14:32 +0200,
-> Sam Ravnborg wrote:
-> > 
-> > On Tue, Jul 17, 2007 at 04:52:12PM +0200, Takashi Iwai wrote:
-> > > At Tue, 17 Jul 2007 15:02:30 +0200,
-> > > Sam Ravnborg wrote:
-> > > > 
-> > > > On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
-> > > > > Introduce __init_exit, which is useful ie. for drivers that call
-> > > > > cleanup functions when they fail in __init functions.
-> > > > 
-> > > > This is wrong.
-> > > > On arm (just one example of several) the __exit section are discarded
-> > > > at buildtime so any reference from __init to __exit will cause the
-> > > > linker to error out.
-> > > 
-> > > Hmm, from what I see, it adds __init to the function.  There is no
-> > > reference to __exit.
-> > 
-> > The cleanup functions are marked __exit in the referenced case.
-> 
-> My understanding is that it's the very purpose of this patch --
-> change the mark from __exit to __init_exit for such clean-up
-> functions.
+On Tue, 17 Jul 2007, Matthew Garrett wrote:
 
-And that is wrong.
-See following example:
+> On Mon, Jul 16, 2007 at 09:28:13PM -0700, david@lang.hm wrote:
+>
+>> why would the type of hibernate that I'm talking about (power off, not S4
+>> mode) not work on a box that has ACPI?
+>
+> Powering off rather than using S4 means you lose most wakeup device
+> support. That would be a functional regression compared to the current
+> code.
 
-static void __init foo_init()
-{
-	if (error)
-		foo_exit();
-}
+only if the kexec isn't able to initialize those devices.
 
-static void __exit foo_exit()
-{
-}
-
-If foo_init is annotated with __init_exit then in the build-in case it
-become __init and there is a reference to a non existing function because
-functions marked __exit are discarded during link or run-time (depending on arch).
-
-If foo_exit() are marked __init_exit then it becomes __init in the non-module case
-which seems coorrect. If this is the intention of the patch then it should
-be OK but then this intention should be spelled out.
-
-	Sam
+David Lang
