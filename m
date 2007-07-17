@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbXGQIWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933418AbXGQIWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743AbXGQIWE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbXGQIVt
+	id S933418AbXGQIWY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762830AbXGQIWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:21:49 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:32814
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbXGQIVr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:21:47 -0400
-Date: Tue, 17 Jul 2007 01:13:49 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Huang, Ying" <ying.huang@intel.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base	hibernation
-In-Reply-To: <1184491804.1898.121.camel@caritas-dev.intel.com>
-Message-ID: <Pine.LNX.4.64.0707170101010.19248@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> 
- <200707141159.47289.rjw@sisk.pl>  <1184410554.1898.84.camel@caritas-dev.intel.com>
-  <200707142116.10237.rjw@sisk.pl> <1184491804.1898.121.camel@caritas-dev.intel.com>
+	Tue, 17 Jul 2007 04:22:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56757 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933151AbXGQIWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 04:22:06 -0400
+Date: Tue, 17 Jul 2007 10:21:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, clameter@sgi.com
+Subject: Re: [patch] sched: fix the all pinned logic in
+	load_balance_newidle()
+Message-ID: <20070717082159.GC17234@elte.hu>
+References: <20070716235402.GE3318@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070716235402.GE3318@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ying, as the kexec guru in this thread I have a question for you about how 
-kexec works (and possibly where you are going with this)
 
-for the power-off hibernate with ACPI disabled the hibernation seems 
-fairly straightforward (although there are still some missing pieces)
+* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
 
-however, since the resume designed for ACPI won't work would the following 
-approach work
+> nr_moved is not the correct check for triggering all pinned logic. Fix 
+> the all pinned logic in the case of load_balance_newidle().
 
-1. boot one kernel
-2. setup a kexec the same way you would for hibernate
-3. kexec to the new kernel
-4. overwrite the memory of the first kernel
-5. kexec 'back' to the main kernel that has now been overwritten by what was saved?
+indeeed.
 
-as part of this question, when you do a kexec, how does the kernel that 
-you are doing the kexec to know what to run next?
+i've applied your patch to my queue. (I've done a trivial style change 
+to it, see below.)
 
-it needs to do some initialization first before it starts running normal 
-things, and at that point it the move back doesn't look for init like a 
-normal kernel boot (or the system would effectivly boot instead of picking 
-up where it left off)
+	Ingo
 
-is this 'restart point' flexible enough that either the pre-hibernate 
-kerenl or the small hibernate kernel could tell the pre-hibernate kernel 
-to go into suspend-to-ram mode before doing anything else?
+--------------------->
+Subject: sched: fix the all pinned logic in load_balance_newidle()
+From: Suresh Siddha <suresh.b.siddha@intel.com>
 
-Rafael,
-   if ACPI is disabled and not used, is there any memory in the origional 
-kernel that _must not_ be saved in the hibernate image? I recognise that 
-for efficancy it would save time to not save free memory, but if I'm 
-willing to waste some resources would it hurt to save everything?
+nr_moved is not the correct check for triggering all pinned logic. Fix
+the all pinned logic in the case of load_balance_newidle().
 
-David Lang
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -2679,6 +2679,7 @@ load_balance_newidle(int this_cpu, struc
+ 	unsigned long imbalance;
+ 	int nr_moved = 0;
+ 	int sd_idle = 0;
++	int all_pinned = 0;
+ 	cpumask_t cpus = CPU_MASK_ALL;
+ 
+ 	/*
+@@ -2717,10 +2718,11 @@ redo:
+ 		double_lock_balance(this_rq, busiest);
+ 		nr_moved = move_tasks(this_rq, this_cpu, busiest,
+ 					minus_1_or_zero(busiest->nr_running),
+-					imbalance, sd, CPU_NEWLY_IDLE, NULL);
++					imbalance, sd, CPU_NEWLY_IDLE,
++					&all_pinned);
+ 		spin_unlock(&busiest->lock);
+ 
+-		if (!nr_moved) {
++		if (unlikely(all_pinned)) {
+ 			cpu_clear(cpu_of(busiest), cpus);
+ 			if (!cpus_empty(cpus))
+ 				goto redo;
