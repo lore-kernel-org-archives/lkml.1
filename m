@@ -1,249 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935707AbXGQUfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765934AbXGQUf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935707AbXGQUfe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758502AbXGQUfV
+	id S1765934AbXGQUf4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761804AbXGQUfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:35:21 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:43482 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757790AbXGQUfQ (ORCPT
+	Tue, 17 Jul 2007 16:35:24 -0400
+Received: from sccrmhc15.comcast.net ([63.240.77.85]:46315 "EHLO
+	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbXGQUfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:35:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=evjBuLhiN2UPga4SVOkJd++RdrVgRu7x9pypiPPdlTgDWXOtY6B4RCUTWnn7sGe+kr2+K23VjFBLOzlQ3XC8Gba9zN6uw759EB6C1IbDso6YWJQcDyRQr+bwEwAruTJPJQ1suX7XKxD6Eu4+t4vprZJz3XwDtbz52TxdJSPITco=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: block/bsg.c
-Date: Tue, 17 Jul 2007 22:52:25 +0200
-User-Agent: KMail/1.9.6
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-References: <20070717065940.GZ5195@kernel.dk> <20070717190705T.fujita.tomonori@lab.ntt.co.jp> <20070717101928.GK5195@kernel.dk>
-In-Reply-To: <20070717101928.GK5195@kernel.dk>
+	Tue, 17 Jul 2007 16:35:17 -0400
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang\, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
+	<200707172217.01890.rjw@sisk.pl>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Tue, 17 Jul 2007 16:34:57 -0400
+In-Reply-To: <200707172217.01890.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Tue\, 17 Jul 2007 22\:17\:00 +0200")
+Message-ID: <87odiag45q.fsf@jbms.ath.cx>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707172252.25729.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Hi,
+[snip]
 
-Some more bsg findings...
+>> Rafael, for those of us who aren't thoroughly familiar with all the ins
+>> and outs of the ACPI spec, could you please summarize a list of the
+>> ACPI calls needed in the second and third cases above?  Indicate which
+>> ones need to be done from within the original kernel and which should
+>> be done from within a kexec'd hibernation kernel.
 
+> Sure.
 
-block/Kconfig:
+> In the third case (ie. transition to S4) we are supposed to do the following:
 
-endif # BLOCK
+> (1) Upon entering the sleep state, which IMO can be done _after_ the image
+>     has been saved:
 
-Shouldn't BLK_DEV_BSG depend on BLOCK?
+I assume you mean "in order to enter the sleep state", rather than "upon
+entering the sleep state".  I still don't understand what you mean by
+"which IMO can be done _after_ the image has been saved"; as far as I
+understand, the last step of this process, "make the platform enter S4",
+is almost like a shutdown as far as the kernel is concerned (except for
+the tiny detail of having to call those special ACPI methods on resume);
+consequently, it would seem that nothing can be done after that step.
 
-config BLK_DEV_BSG
-        bool "Block layer SG support"
-        depends on (SCSI=y) && EXPERIMENTAL
-        default y
-        ---help---
-        Saying Y here will enable generic SG (SCSI generic) v4
-        support for any block device.
+>   * figure out which devices can wake up
+>   * put devices into low power states (wake-up devices are placed in the Dx
+>     states compatible with the wake capability, the others are powered off)
+>   * execute the _PTS global control method
+>   * switch off the nonlocal CPUs (eg. nonboot CPUs on x86)
+>   * execute the _GTS global control method
+>   * set the GPE enable registers corresponding to the wake-up devices)
+>   * make the platform enter S4 (there's a well defined procedure for that)
+>   I think that this should be done by the image-saving kernel.
 
+I agree.
 
-block/bsg.c:
+> (2) Upon start-up (by which I mean what happens after the user has pressed
+>     the power button or something like that):
+>   * check if the image is present (and valid) _without_ enabling ACPI (we don't
+>     do that now, but I see no reason for not doing it in the new framework)
+>   * if the image is present (and valid), load it
+>   * turn on ACPI (unless already turned on by the BIOS, that is)
+>   * execute the _BFS global control method
+>   * execute the _WAK global control method
+>   * continue
+>   Here, the first two things should be done by the image-loading kernel, but
+>   the remaining operations have to be carried out by the restored
+>     kernel.
 
-...
+It doesn't seem like a problem for that to be the case, but out of
+curiosity why do those methods need to be executed by the "restored"
+kernel, rather than the "image loading" kernel.  Do they require some
+information from ACPI-related kernel data structures that were populated
+by the normal ACPI initialization?
 
-/*
- * TODO
- *      - Should this get merged, block/scsi_ioctl.c will be migrated into
- *        this file. To keep maintenance down, it's easier to have them
- *        seperated right now.
- *
- */
+[snip]
 
-This TODO should be fixed/removed.
+> ... we can't return to the hibernated kernel unless we are going to cancel the
+> hibernation.
 
-Firstly bsg got merged. ;)  Moreover bsg depends on SCSI and scsi_ioctl doesn't.
-Even if SCSI dependency is fixed bsg requires block driver to have struct
-class devices which is not a case for scsi_ioctl.
+I agree.
 
-...
+> That's why I think that for the suspend-to-both the image-saving kernel will
+> need to support the same set of devices as the hibernated kernel.
 
-static struct bsg_device *__bsg_get_device(int minor)
-{
-        struct hlist_head *list = &bsg_device_list[bsg_list_idx(minor)];
+If all of the devices that the image writing kernel doesn't know about
+have already been shut down/powered off by the hibernated kernel, then
+does the "image writing" kernel still need to know about them in order
+to suspend to RAM properly (i.e. without leaving some devices on wasting
+power)?
 
-bsg_device_list[] access should be done under bsg_mutex lock.
-
-May not be a problem currently because of lock_kernel but worth fixing anyway.
-
-        struct bsg_device *bd = NULL;
-        struct hlist_node *entry;
-
-        mutex_lock(&bsg_mutex);
-
-...
-
-static int
-bsg_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-          unsigned long arg)
-{
-...
-        case SCSI_IOCTL_SEND_COMMAND: {
-
-Do we really want to add support for this *deprecated* ioctl to
-the *new* and shiny bsg driver?
-
-                void __user *uarg = (void __user *) arg;
-                return scsi_cmd_ioctl(file, bd->queue, NULL, cmd, uarg);
-        }
-
-...
-
-int bsg_register_queue(struct request_queue *q, const char *name)
-{
-...
-        memset(bcd, 0, sizeof(*bcd));
-...
-        dev = MKDEV(BSG_MAJOR, bcd->minor);
-        class_dev = class_device_create(bsg_class, NULL, dev, bcd->dev, "%s", name);
-
-bcd->dev is always 0 (NULL).
-
-Is it OK to pass NULL struct device *dev argument to class_device_create()?
-
-It should be fixed by either removing bcd->dev or by setting it to something
-other than zero.
-
-...
-
-MODULE_AUTHOR("Jens Axboe");
-MODULE_DESCRIPTION("Block layer SGSI generic (sg) driver");
-
-SGSI? :)
-
-MODULE_LICENSE("GPL");
-
-
-Now back to the first bsg commit 3d6392cfbd7dc11f23058e3493683afab4ac13a3:
-
-diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index f429be8..a21f585 100644
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -1258,19 +1258,25 @@ static void idefloppy_create_rw_cmd (idefloppy_floppy_t *floppy, idefloppy_pc_t
- 	set_bit(PC_DMA_RECOMMENDED, &pc->flags);
- }
- 
--static int
-+static void
- idefloppy_blockpc_cmd(idefloppy_floppy_t *floppy, idefloppy_pc_t *pc, struct request *rq)
- {
--	/*
--	 * just support eject for now, it would not be hard to make the
--	 * REQ_BLOCK_PC support fully-featured
--	 */
--	if (rq->cmd[0] != IDEFLOPPY_START_STOP_CMD)
--		return 1;
--
- 	idefloppy_init_pc(pc);
-+	pc->callback = &idefloppy_rw_callback;
- 	memcpy(pc->c, rq->cmd, sizeof(pc->c));
--	return 0;
-+	pc->rq = rq;
-+	pc->b_count = rq->data_len;
-+	if (rq->data_len && rq_data_dir(rq) == WRITE)
-+		set_bit(PC_WRITING, &pc->flags);
-+	pc->buffer = rq->data;
-+	if (rq->bio)
-+		set_bit(PC_DMA_RECOMMENDED, &pc->flags);
-
-Great to see SG_IO support being added to ide-floppy but this change has
-nothing to do with the addition of bsg driver so WTF they have been mixed
-within the same commit?
-
-I also can't recall seeing this patch on linux-ide mailing list...
-
-+	/*
-+	 * possibly problematic, doesn't look like ide-floppy correctly
-+	 * handled scattered requests if dma fails...
-+	 */
-
-Could you give some details on this?
-
-+	pc->request_transfer = pc->buffer_size = rq->data_len;
- }
- 
- /*
-@@ -1317,10 +1323,7 @@ static ide_startstop_t idefloppy_do_request (ide_drive_t *drive, struct request
- 		pc = (idefloppy_pc_t *) rq->buffer;
- 	} else if (blk_pc_request(rq)) {
- 		pc = idefloppy_next_pc_storage(drive);
--		if (idefloppy_blockpc_cmd(floppy, pc, rq)) {
--			idefloppy_do_end_request(drive, 0, 0);
--			return ide_stopped;
--		}
-+		idefloppy_blockpc_cmd(floppy, pc, rq);
- 	} else {
- 		blk_dump_rq_flags(rq,
- 			"ide-floppy: unsupported command in queue");
-diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-index c948a5c..9ae60a7 100644
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-
-ide.c changes also have nothing to do with addition of bsg driver.
-
-@@ -1049,9 +1049,13 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
- 	unsigned long flags;
- 	ide_driver_t *drv;
- 	void __user *p = (void __user *)arg;
--	int err = 0, (*setfunc)(ide_drive_t *, int);
-+	int err, (*setfunc)(ide_drive_t *, int);
- 	u8 *val;
- 
-+	err = scsi_cmd_ioctl(file, bdev->bd_disk, cmd, p);
-+	if (err != -ENOTTY)
-+		return err;
-+
-
-Probably the goal was to add SG_IO IOCTL support for ide-floppy but instead
-it adds support for *all* scsi_ioctl.c IOCTLs to *all* IDE device drivers.
-
-ide-{disk,scsi,tape} don't support REQ_TYPE_BLOCK_PC requests et all
-(so attempts to use SG_IO, CDROM_SEND_PACKET and SCSI_IOCTL_SEND_COMMAND
-will result in requests being failed and error messages in the kernel logs).
-Without REQ_TYPE_BLOCK_PC support there is no sense in supporting any other
-scsi_ioctl.c IOCTLs (while at it: SG_{GET,SET}_RESERVED seems to have no
-real effect in the current tree).
-
-ide-cd already supports all scsi_ioctl.c IOCTLs through cdrom_ioctl() call.
-
-This leaves us with ide-floppy where the above scsi_cmd_ioctl() call should
-belong (we may also want to filter out deprecated SCSI_IOCTL_SEND_COMMAND
-and legacy CDROM_SEND_PACKET IOCTLs).
-
-Please fix it.
-
- 	switch (cmd) {
- 	case HDIO_GET_32BIT:	    val = &drive->io_32bit;	 goto read_val;
- 	case HDIO_GET_KEEPSETTINGS: val = &drive->keep_settings; goto read_val;
-@@ -1171,10 +1175,6 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
- 			return 0;
- 		}
- 
--		case CDROMEJECT:
--		case CDROMCLOSETRAY:
--			return scsi_cmd_ioctl(file, bdev->bd_disk, cmd, p);
--
-
-This chunk is OK, handling of these IOCTLs should go to ide-floppy
-(ide-cd already handles them fine).
-
-Thanks,
-Bart
+-- 
+Jeremy Maitin-Shepard
