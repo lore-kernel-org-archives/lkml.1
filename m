@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbXGQAlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760460AbXGQAok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758459AbXGQAlz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 20:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbXGQAlq
+	id S1760460AbXGQAok (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 20:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714AbXGQAod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 20:41:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:59382 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbXGQAlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 20:41:46 -0400
-Subject: Re: [Xen-devel] [patch 03/44] usermodehelper: split setup from
-	execution
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Bj?rn Steinbrink <B.Steinbrink@gmx.de>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.com>
-In-Reply-To: <20070716232912.409821000@xensource.com>>
-References: <20070716231536.937393000@xensource.com> >
-	  <20070716232912.409821000@xensource.com>>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 10:41:10 +1000
-Message-Id: <1184632870.5955.26.camel@localhost.localdomain>
+	Mon, 16 Jul 2007 20:44:33 -0400
+Received: from 69-12-177-67.dsl.static.sonic.net ([69.12.177.67]:47331 "EHLO
+	orion.sysdev.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755615AbXGQAoc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 20:44:32 -0400
+X-Greylist: delayed 865 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jul 2007 20:44:32 EDT
+Date: Mon, 16 Jul 2007 16:30:47 -0800
+From: Tony Borras <tonyb@sysdev.org>
+To: linux-kernel@vger.kernel.org
+Cc: tonyb@sysdev.org
+Subject: Linux 2.4.35 tree abandoned/delayed?
+Message-Id: <20070716163047.55a21e6c.tonyb@sysdev.org>
+In-Reply-To: <20070716133025.55327074.tonyb@sysdev.org>
+References: <20070716133025.55327074.tonyb@sysdev.org>
+Organization: SysDev Inc.
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; i686-pc-linux-gnu)
+X-Operating-System: Linux-2.6.27-SMP64
+X-SlakBoot: SlakbootIBS v11.0.2
+User-Agent: Sylpheed/1.0.6
+X-Sylpheed-Rules: You Bet
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-16 at 16:15 -0700, Jeremy Fitzhardinge wrote:
-> plain text document attachment (usermodehelper-split-init.patch)
-> Rather than having hundreds of variations of call_usermodehelper for
-> various pieces of usermode state which could be set up, split the
-> info allocation and initialization from the actual process execution.
-> 
-> This means the general pattern becomes:
->  info = call_usermodehelper_setup(path, argv, envp); /* basic state */
->  call_usermodehelper_<SET EXTRA STATE>(info, stuff...);	/* extra state */
->  call_usermodehelper_exec(info, wait);	/* run process and free info */
+I did get the current 'pre' set of 2.4.35 (circa early
+June) patches and applied to 2.4.34.5.  After fixing a goto
+mislable in one of the patches (dont remember if it was one of
+the patch-2.4.34.? or patch-2.4.35.pre5), managed to build a
+vmlinuz-2.4.35 successfully.
 
-The patch seems fine, but the names are awkward.  They've always been
-awkward (it's *userspace* helper, not *usermode* helper), but this just
-shines a bright light on them.
+Just wondered whether to expect an abandonded tree, in which
+case I will fly with this 2.4.35 build or should wait for its
+eventual release.
+ 
+Thanks Greg!
+ 
+Tony Borras
 
-So how about:
 
-	call_usermodehelper_setup -> create_userspace_helper
-	call_usermodehelper_<SET_EXTRA_STATE> -> userspace_helper_...
-	call_usermodehelper_exec -> run_userspace_helper
+There are 10 types of people in this world, those that read
+binary and those who don't!
 
-I can do that as a separate patch if you prefer (but it'd be nice to
-have it in the same merge window so the interface only churns once).
-
-Rusty.
+--
+  __      __  _     I N C.               http://www.sysdev.org
+/ __|\\// __||  \  __   __          /         tonyb@sysdev.org
+\__ \ \/\__ \||)|/ O_)\/ /        \/  System Tools / Utilities
+|___/ || ___/|_ /\___|\_/        WIntel / Linux Device Drivers
 
