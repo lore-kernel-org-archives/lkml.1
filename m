@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765192AbXGQRx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934829AbXGQRxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765192AbXGQRx0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933038AbXGQRxA
+	id S934829AbXGQRxy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761033AbXGQRxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:53:00 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:54856 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765016AbXGQRw7 (ORCPT
+	Tue, 17 Jul 2007 13:53:45 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57035 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760940AbXGQRxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:52:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CACeenEarR7PE/2dsb2JhbAA
-X-IronPort-AV: i="4.16,546,1175497200"; 
-   d="scan'208"; a="167023261:sNHT28557918"
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-       OF-General <general@lists.openfabrics.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 01/10] IB/ehca: Support for multiple event queues
-X-Message-Flag: Warning: May contain useful information
-References: <OF2377E85C.B05BDE94-ONC125731A.006E64A7-C125731A.00714F9E@de.ibm.com>
-	<ada1wf7vgfb.fsf@cisco.com> <20070717043740.GB8527@mellanox.co.il>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 17 Jul 2007 10:52:55 -0700
-In-Reply-To: <20070717043740.GB8527@mellanox.co.il> (Michael S. Tsirkin's message of "Tue, 17 Jul 2007 07:37:40 +0300")
-Message-ID: <adalkdesyrs.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Jul 2007 17:52:55.0386 (UTC) FILETIME=[4DC91BA0:01C7C89B]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Tue, 17 Jul 2007 13:53:44 -0400
+Date: Tue, 17 Jul 2007 10:53:41 -0700
+From: Paul Jackson <pj@sgi.com>
+To: balbir@linux.vnet.ibm.com
+Cc: menage@google.com, dhaval@linux.vnet.ibm.com, xemul@sw.ru,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       akpm@linux-foundation.org
+Subject: Re: Containers: css_put() dilemma
+Message-Id: <20070717105341.9e51cc79.pj@sgi.com>
+In-Reply-To: <469CFF2B.1080702@linux.vnet.ibm.com>
+References: <469BBE00.8000709@linux.vnet.ibm.com>
+	<6599ad830707161203o7f148c75p52e77d4be3ace487@mail.gmail.com>
+	<469C2792.6050009@linux.vnet.ibm.com>
+	<6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com>
+	<20070717070031.GA22410@linux.vnet.ibm.com>
+	<6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com>
+	<469C99D1.7090807@linux.vnet.ibm.com>
+	<6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
+	<469CFF2B.1080702@linux.vnet.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Here's some anecdotal evidence :)
- > http://lists.openfabrics.org/pipermail/general/2007-May/035758.html
+> That sounds correct. I wonder now if the solution should be some form
+> of delegation for deletion of unreferenced containers (HINT: work queue
+> or kernel threads).
 
-Right, but then we went on to say that we probably want to use
-multiple vectors to separate out multiple HCA ports rather than
-send/sreceive on the same port.  And the current IPoIB implementation
-of having that second CQ seems suboptimal anyway, since it seems to
-leave us susceptible to the interrupt overload that NAPI was supposed
-to solve.
+At least for cpusets (the mother of all containers), notify on release
+is part of the user visible API of cpusets.  The kernel does not remove
+cpusets; it runs a user program, /sbin/cpuset_release_agent.  That
+program might choose to rmdir the cpuset directory, and/or do other
+actions, like notify a batch scheduler that one of its cpusets was
+released.
 
-At a higher level, I'm left wondering why nobody talked about multiple
-EQs during the last months of the 2.6.22 process and now all of a
-sudden it becomes urgent in the last few days of the 2.6.23 merge
-window.  That's not really how I like to merge features....
+That API is not as sacrosanct as some, but it is working, and I wouldn't
+want to break it without good reason.
 
- - R.
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
