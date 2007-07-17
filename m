@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935991AbXGQUjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936101AbXGQUju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935991AbXGQUjO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbXGQUi7
+	id S936101AbXGQUju (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbXGQUjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:38:59 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39975 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbXGQUi6 (ORCPT
+	Tue, 17 Jul 2007 16:39:39 -0400
+Received: from rwcrmhc12.comcast.net ([204.127.192.82]:43758 "EHLO
+	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbXGQUji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:38:58 -0400
-Date: Tue, 17 Jul 2007 21:38:53 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Dike <jdike@addtoit.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Tue, 17 Jul 2007 16:39:38 -0400
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: david@lang.hm
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>, jdike@karaya.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: uninline check_signature()
-Message-ID: <20070717203853.GO21668@ftp.linux.org.uk>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org> <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org> <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org> <20070716230307.GB12230@osiris.ibm.com> <Pine.LNX.4.64.0707171519300.10600@anakin> <20070717163328.GG7965@c2.user-mode-linux.org> <Pine.LNX.4.64.0707171842590.10600@anakin> <alpine.LFD.0.999.0707171102040.19166@woody.linux-foundation.org> <Pine.LNX.4.64.0707172225260.23024@anakin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707172225260.23024@anakin>
-User-Agent: Mutt/1.4.1i
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang\, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+	<200707171802.30903.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
+	<200707172150.44417.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Tue, 17 Jul 2007 16:39:17 -0400
+In-Reply-To: <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
+	(david@lang.hm's message of "Tue\, 17 Jul 2007 13\:18\:13 -0700 \(PDT\)")
+Message-ID: <87k5syg3yi.fsf@jbms.ath.cx>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 10:31:08PM +0200, Geert Uytterhoeven wrote:
-> And we'll all live with a check_signature() in our kernel, which is used
-> only by a few legacy drivers that depend on ISA || PCI...
-> 
-> OR I'll have to disable HAS_IOMEM on m68k, and invent a new Kconfig
-> symbol for lots of other stuff that currently depends on HAS_IOMEM...
+david@lang.hm writes:
 
-Actually...  Is there any reason why it's not simply
-	kmalloc
-	memcpy_fromio
-	memcmp
-on all targets?  Or just a variably-sized auto array, since we never
-do it for large stuff, IIRC...
+[snip]
+
+> the non-ACPI hibernate behaves very differently, and for some people (and I
+> think I am one of them) it will meet their needs better then _any_ of the ACPI
+> suspends.
+
+It may have certain differences from the user point of view, but from
+the implementation view, it seems that it is nearly exactly the same.
+The only differences seem to be: 
+
+ - rather than shutting down, do whatever is necessary to stick the
+   system in S4 state.
+
+ - make sure ACPI isn't initialized by the "load image" kernel
+
+ - rather than "resume from hibernate" ACPI by initializing it normally,
+   issue the special hibernate-related methods.
+
+Thus, it seems that supporting ACPI S4 will have a very minimal affect
+on the hibernate implementation.
+
+-- 
+Jeremy Maitin-Shepard
