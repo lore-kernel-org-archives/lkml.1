@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932508AbXGQIri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765201AbXGQIuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932508AbXGQIri (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758655AbXGQIrB
+	id S1765201AbXGQIuV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbXGQIuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:47:01 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:42300 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764555AbXGQIq7 (ORCPT
+	Tue, 17 Jul 2007 04:50:04 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:58903 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755388AbXGQIuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:46:59 -0400
-X-IronPort-AV: i="4.16,545,1175486400"; 
-   d="scan'208"; a="45691899:sNHT23268952"
-Subject: Re: [PATCH 2/3] Blackfin on-chip watchdog driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Bryan Wu <bryan.wu@analog.com>, LKML <linux-kernel@vger.kernel.org>,
-       Mike Frysinger <michael.frysinger@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070717084814.GA23614@infomag.infomag.iguana.be>
-References: <1184439002.3140.24.camel@roc-laptop>
-	 <20070717084814.GA23614@infomag.infomag.iguana.be>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Tue, 17 Jul 2007 16:53:24 +0800
-Message-Id: <1184662404.6503.32.camel@roc-desktop>
+	Tue, 17 Jul 2007 04:50:01 -0400
+Date: Tue, 17 Jul 2007 11:49:39 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, ak@suse.de
+Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg helpers
+Message-ID: <20070717084939.GO4902@rhun.haifa.ibm.com>
+References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792681830-git-send-email-jens.axboe@oracle.com> <20070716130608.4d096e29.akpm@linux-foundation.org> <20070716201002.GQ5195@kernel.dk> <20070716133427.e212b753.akpm@linux-foundation.org> <20070716220812.GL4902@rhun.haifa.ibm.com> <20070717073858.GG5195@kernel.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-X-OriginalArrivalTime: 17 Jul 2007 08:46:57.0713 (UTC) FILETIME=[08B0E210:01C7C84F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070717073858.GG5195@kernel.dk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 10:48 +0200, Wim Van Sebroeck wrote:
-> Hi Mike, Bryan,
-> 
-> > This patch implements the driver necessary use the Analog Devices
-> > Blackfin processor's on-chip watchdog controller, supports
-> > BF53[123]/BF53[467]/BF54[2489]/BF561.
-> > 
-> > Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
-> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> > Cc: Wim Van Sebroeck <wim@iguana.be>
-> 
-> I still need to look at one other driver. After that I will have a look at this one also.
-> 
-> Greetings,
-> Wim.
+On Tue, Jul 17, 2007 at 09:38:59AM +0200, Jens Axboe wrote:
 
-Thanks a lot. I know, when merge window open, kernel gurus are busy.
+> On Tue, Jul 17 2007, Muli Ben-Yehuda wrote:
 
-Regards,
-- Bryan
+> > The Xen and Calgary bits are mutually exclusive, so hopefully (a)
+> > will not be held up on account of the Xen merge (or for any other
+> > reason... CalIOC2 machines which are out there won't boot without
+> > it if CONFIG_CALGARY_IOMMU is enabled).
+> 
+> Do you have any comments for the patch to calgary (the mail you are
+> replying to)?
+
+It looks ok, I just didn't want to ACK it before testing (I'm paranoid
+that way).
+
+Cheers,
+Muli
