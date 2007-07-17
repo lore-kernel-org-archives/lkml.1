@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934228AbXGQO0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933042AbXGQO35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934228AbXGQO0O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbXGQOZ6
+	id S933042AbXGQO35 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbXGQO3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:25:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39337 "EHLO mx1.suse.de"
+	Tue, 17 Jul 2007 10:29:47 -0400
+Received: from gw.goop.org ([64.81.55.164]:52951 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753276AbXGQOZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 10:25:57 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: [rfc][patch 2/2] x86_64: FIFO ticket spinlocks
-Date: Tue, 17 Jul 2007 16:25:42 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070716045932.GA19914@wotan.suse.de> <20070716050134.GB19914@wotan.suse.de>
-In-Reply-To: <20070716050134.GB19914@wotan.suse.de>
+	id S1755070AbXGQO3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 10:29:45 -0400
+Message-ID: <469CD222.1030202@goop.org>
+Date: Tue, 17 Jul 2007 07:28:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Linus Torvalds <torvalds@linux-foundation.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>, netdev@vger.kernel.org
+Subject: Re: [patch 37/44] xen: add virtual network device driver
+References: <20070716231536.937393000@xensource.com>	<20070716232916.472694000@xensource.com> <20070717094511.795beb69@oldman>
+In-Reply-To: <20070717094511.795beb69@oldman>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707171625.42235.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Stephen Hemminger wrote:
+>> +struct netfront_info {
+>> +	struct list_head list;
+>> +	struct net_device *netdev;
+>> +
+>> +	struct net_device_stats stats;
+>>     
+>
+> There is now a net_device_stats element inside net_device on
+> 2.6.21 or later.
+>   
 
+Ah, OK.  Should I just do a s/stats/netdev->stats/?  Is there a generic
+get_stats routine as well?
 
-When you revamp everything I guess it would make the locks
-easier to read to just put them into a .S file? They're
-out of line anyways.
+>> +
+>> +	struct xen_netif_tx_front_ring tx;
+>> +	struct xen_netif_rx_front_ring rx;
+>> +
+>> +	spinlock_t   tx_lock;
+>> +	spinlock_t   rx_lock;
+>>     
+>
+> It might be a performance advantage to reorder/align these
+> structure elements to put transmit hot elements together, and
+> put tx and rx on different cache lines?
+>   
 
-In general they look ok.
+Oh, right.  I'd been meaning to look at that layout more closely.
 
->  
->  static inline void __raw_spin_unlock(raw_spinlock_t *lock)
->  {
-> -	asm volatile("movl $1,%0" :"=m" (lock->slock) :: "memory");
-> +	__asm__ __volatile__(
-
-Minor nit: please don't use these underlined keywords. They just look
-ugly and asm volatile works as well.
-
--Andi
+Thanks,
+    J
