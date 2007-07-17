@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764474AbXGQANq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761303AbXGQARt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764474AbXGQANq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 20:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbXGQANf
+	id S1761303AbXGQARt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 20:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbXGQARm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 20:13:35 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:56574 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755252AbXGQANe (ORCPT
+	Mon, 16 Jul 2007 20:17:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60082
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754688AbXGQARl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 20:13:34 -0400
-Date: Mon, 16 Jul 2007 17:01:51 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] stacked ifs (was Re: [PATCH 02/12] handle multiple
-	network paths to AoE device)
-Message-ID: <20070717000151.GA5982@kroah.com>
-References: <1d8423c28c48a6d26516cdc707dbcdf015a4e347.1182883861.git.ecashin@coraid.com> <60bd316bfa72fb225cefad39569999e583f4f72e.1182883861.git.ecashin@coraid.com> <20070702212949.5a1a1a31.akpm@linux-foundation.org> <20070716221744.GM18477@coraid.com> <20070716153155.8a63c15d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070716153155.8a63c15d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Mon, 16 Jul 2007 20:17:41 -0400
+Date: Mon, 16 Jul 2007 17:17:44 -0700 (PDT)
+Message-Id: <20070716.171744.85720528.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH]: Fix hrtimer hotplug cpu notifier bug on 64-bit.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 03:31:55PM -0700, Andrew Morton wrote:
-> On Mon, 16 Jul 2007 18:17:44 -0400
-> "Ed L. Cashin" <ecashin@coraid.com> wrote:
-> 
-> > > ugh.  Do this:
-> > > 
-> > > 	do {
-> > > 		if (t == d->htgt)
-> > > 			continue;
-> > > 		if (!(*t)->ifp->nd)
-> > > 			continue;
-> > > 		if ((*t)->nout >= (*t)->maxout)
-> > > 			continue;
-> > > 			
-> > > 		<stuff>
-> > > 	} while (++t ...)
-> > 
-> > Do you think the "stacked ifs" in the first version above could be
-> > accepted as a convenient extension to the K&R-based conventions in
-> > Documentation/CodingStyle?
-> 
-> Maybe.  I don't recall seeing any kernel code which uses that convention:
-> everyone uses &&.  So personally I'd prefer to see kernel code stick to the
-> one convention, given that there is not, afacit, any significant advantage
-> to the alternative one.
 
-I agree, let's stick with the convention we already have and use
-instead.
+I discussed this with Thomas Gleixner last night and he
+seemed to be OK with fixing the problem as follows.
 
-thanks,
+If he wants to do things differently, he can submit an alternate
+change, but this thing is quite trivial so I doubt that will happen
+:-)
 
-greg k-h
+Please apply, thanks.
+
+[HRTIMER]: Fix cpu pointer arg to clockevents_notify().
+
+All of the clockevent notifiers expect a pointer to
+an "unsigned int" cpu argument, but hrtimer_cpu_notify()
+passes in a pointer to a long.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 23c03f4..72d0342 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1406,7 +1406,7 @@ static void migrate_hrtimers(int cpu)
+ static int __cpuinit hrtimer_cpu_notify(struct notifier_block *self,
+ 					unsigned long action, void *hcpu)
+ {
+-	long cpu = (long)hcpu;
++	unsigned int cpu = (long)hcpu;
+ 
+ 	switch (action) {
+ 
