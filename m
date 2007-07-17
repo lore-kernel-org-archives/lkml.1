@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933494AbXGQI6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbXGQI7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933494AbXGQI6R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762153AbXGQI6H
+	id S933125AbXGQI7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760867AbXGQI7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:58:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40420 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761310AbXGQI6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:58:06 -0400
-Date: Tue, 17 Jul 2007 10:57:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070717085748.GA32114@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <20070717061458.GB1640@ff.dom.local> <200707170955.38536.olaf.kirch@oracle.com> <200707171028.36451.olaf.kirch@oracle.com>
+	Tue, 17 Jul 2007 04:59:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:12362 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759693AbXGQI7L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 04:59:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=NPvezuRKlwxzykgjgWY7va3fS6yV94awSUHJ+BOJyo1D6+KC3UquIL6gLPF2uXQWsFTXK0nlWGH1DXIDmaWKPg/Gth3KsjdSV/633CBRbLPcKF05oH2ywx1XP36xDpPN8q8Ub3/TJ4ymBy3+gqIPJWtubUP60kgwo0vD4jaCHHE=
+Message-ID: <84144f020707170159x734ea536hef214c36ef0a1769@mail.gmail.com>
+Date: Tue, 17 Jul 2007 11:59:10 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Heiko Carstens" <heiko.carstens@de.ibm.com>
+Subject: Re: uninline check_signature()
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>, geert@linux-m68k.org,
+       zippel@linux-m68k.org, jdike@karaya.com, alan@lxorguk.ukuu.org.uk,
+       "Martin Schwidefsky" <schwidefsky@de.ibm.com>
+In-Reply-To: <20070716221257.GA12230@osiris.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707171028.36451.olaf.kirch@oracle.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200707161802.l6GI2tNp007390@hera.kernel.org>
+	 <20070716221257.GA12230@osiris.ibm.com>
+X-Google-Sender-Auth: c151af9255a68eee
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Heiko,
 
-Olaf,
+On 7/17/07, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> Hmm.. this breaks s390 and probably m68k and UML as well:
+>
+>   CC      lib/check_signature.o
+> lib/check_signature.c: In function 'check_signature':
+> lib/check_signature.c:19: error: implicit declaration of function 'readb'
 
-i've got a new observation: changing CONFIG_HZ from 250 to 1000 makes 
-the problem go away. So it's somehow also related to jiffies.
-
-	Ingo
+Just to confirm: it breaks UML too.
