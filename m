@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933956AbXGQORZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbXGQORl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933956AbXGQORZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763765AbXGQOIQ
+	id S934001AbXGQORl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761899AbXGQOIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:08:16 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35933 "EHLO pasmtpB.tele.dk"
+	Tue, 17 Jul 2007 10:08:17 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:35926 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760730AbXGQOHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 10:07:52 -0400
+	id S1753625AbXGQOHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 10:07:51 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kernel@vger.kernel.org
-Cc: Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 23/33] modpost white list pattern adjustment
-Date: Tue, 17 Jul 2007 16:08:52 +0200
-Message-Id: <118468134441-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 20/33] kbuild: remove hardcoded _logo names from modpost
+Date: Tue, 17 Jul 2007 16:08:49 +0200
+Message-Id: <11846813444171-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11846813442810-git-send-email-sam@ravnborg.org>
-References: 20070717140622.GA25846@uranus.ravnborg.org <11846813423231-git-send-email-sam@ravnborg.org> <11846813432423-git-send-email-sam@ravnborg.org> <1184681343138-git-send-email-sam@ravnborg.org> <11846813433593-git-send-email-sam@ravnborg.org> <11846813432300-git-send-email-sam@ravnborg.org> <11846813432072-git-send-email-sam@ravnborg.org> <11846813431389-git-send-email-sam@ravnborg.org> <1184681343412-git-send-email-sam@ravnborg.org> <11846813432249-git-send-email-sam@ravnborg.org> <1184681343297-git-send-email-sam@ravnborg.org> <11846813432231-git-send-email-sam@ravnborg.org> <1184681343423-git-send-email-sam@ravnborg.org> <11846813432234-git-send-email-sam@ravnborg.org> <11846813441521-git-send-email-sam@ravnborg.org> <11846813443387-git-send-email-sam@ravnborg.org> <1184681344594-git-send-email-sam@ravnborg.org> <11846813444176-git-send-email-sam@ravnborg.org> <11846813442297-git-send-email-sam@ravnborg.org> <11846813443187-git-send-email-sam@ravnborg.org> <11846813
- 444171-git-send-email-sam@ravnborg.org> <1184681344985-git-send-email-sam@ravnborg.org> <11846813442810-git-send-email-sam@ravnborg.org>
+In-Reply-To: <11846813443187-git-send-email-sam@ravnborg.org>
+References: 20070717140622.GA25846@uranus.ravnborg.org <11846813423231-git-send-email-sam@ravnborg.org> <11846813432423-git-send-email-sam@ravnborg.org> <1184681343138-git-send-email-sam@ravnborg.org> <11846813433593-git-send-email-sam@ravnborg.org> <11846813432300-git-send-email-sam@ravnborg.org> <11846813432072-git-send-email-sam@ravnborg.org> <11846813431389-git-send-email-sam@ravnborg.org> <1184681343412-git-send-email-sam@ravnborg.org> <11846813432249-git-send-email-sam@ravnborg.org> <1184681343297-git-send-email-sam@ravnborg.org> <11846813432231-git-send-email-sam@ravnborg.org> <1184681343423-git-send-email-sam@ravnborg.org> <11846813432234-git-send-email-sam@ravnborg.org> <11846813441521-git-send-email-sam@ravnborg.org> <11846813443387-git-send-email-sam@ravnborg.org> <1184681344594-git-send-email-sam@ravnborg.org> <11846813444176-git-send-email-sam@ravnborg.org> <11846813442297-git-send-email-sam@ravnborg.org> <11846813443187-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Beulich <jbeulich@novell.com>
+Replaced this with a __init_refok marker
+in front of fb_find_logo().
 
-gcc puts data into .data.rel or .data.rel.* on some architectures (e.g.
-ia64) or under certain conditions, so whatever is legal relative to
-.data should also be legal for those other sections. Fixes a few
-modpost warnings on ia64.
+I think that the __initdata marker for the logo's are
+wrong but I have not justified this so I did not remove it.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/mod/modpost.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/logo/logo.c |    7 +++++--
+ scripts/mod/modpost.c     |   14 --------------
+ 2 files changed, 5 insertions(+), 16 deletions(-)
 
+diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
+index 80c0361..2b0f799 100644
+--- a/drivers/video/logo/logo.c
++++ b/drivers/video/logo/logo.c
+@@ -34,8 +34,11 @@ extern const struct linux_logo logo_superh_vga16;
+ extern const struct linux_logo logo_superh_clut224;
+ extern const struct linux_logo logo_m32r_clut224;
+ 
+-
+-const struct linux_logo *fb_find_logo(int depth)
++/* logo's are marked __initdata. Use __init_refok to tell
++ * modpost that it is intended that this function uses data
++ * marked __initdata.
++ */
++const struct linux_logo * __init_refok fb_find_logo(int depth)
+ {
+ 	const struct linux_logo *logo = NULL;
+ 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index ec036c2..3f3848f 100644
+index 1921c43..015c6b0 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -609,7 +609,7 @@ static int strrcmp(const char *s, const char *sub)
-  *   warn here.
-  *   the pattern is identified by:
-  *   tosec   = .init.text | .exit.text | .init.data
-- *   fromsec = .data
-+ *   fromsec = .data | .data.rel | .data.rel.*
-  *   atsym = *driver, *_template, *_sht, *_ops, *_probe, *probe_one, *_console, *_timer
+@@ -624,14 +624,6 @@ static int strrcmp(const char *s, const char *sub)
+  *   This pattern is identified by
+  *   refsymname = __init_begin, _sinittext, _einittext
   *
-  * Pattern 3:
-@@ -672,7 +672,9 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 	    (strcmp(tosec, ".exit.text") != 0) &&
- 	    (strcmp(tosec, ".init.data") != 0))
- 		f2 = 0;
--	if (strcmp(fromsec, ".data") != 0)
-+	if ((strcmp(fromsec, ".data") != 0) &&
-+	    (strcmp(fromsec, ".data.rel") != 0) &&
-+	    (strncmp(fromsec, ".data.rel.", strlen(".data.rel.")) != 0))
- 		f2 = 0;
+- * Pattern 5:
+- *  Logos used in drivers/video/logo reside in __initdata but the
+- *  funtion that references them are EXPORT_SYMBOL() so cannot be
+- *  marker __init. So we whitelist them here.
+- *  The pattern is:
+- *  tosec      = .init.data
+- *  fromsec    = .text*
+- *  refsymname = logo_
+  **/
+ static int secref_whitelist(const char *modname, const char *tosec,
+ 			    const char *fromsec, const char *atsym,
+@@ -698,12 +690,6 @@ static int secref_whitelist(const char *modname, const char *tosec,
+ 		if (strcmp(refsymname, *s) == 0)
+ 			return 1;
  
- 	for (s = pat2sym; *s; s++)
+-	/* Check for pattern 5 */
+-	if ((strcmp(tosec, ".init.data") == 0) &&
+-	    (strncmp(fromsec, ".text", strlen(".text")) == 0) &&
+-	    (strncmp(refsymname, "logo_", strlen("logo_")) == 0))
+-		return 1;
+-
+ 	return 0;
+ }
+ 
 -- 
 1.5.0.6
 
