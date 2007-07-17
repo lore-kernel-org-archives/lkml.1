@@ -1,159 +1,1134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759628AbXGQJ5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbXGQJ6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759628AbXGQJ5x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 05:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbXGQJ5m
+	id S1759244AbXGQJ6n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 05:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXGQJ6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 05:57:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42825 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757642AbXGQJ5i (ORCPT
+	Tue, 17 Jul 2007 05:58:34 -0400
+Received: from mailrelay001.isp.belgacom.be ([195.238.6.51]:64989 "EHLO
+	mailrelay001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752135AbXGQJ6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 05:57:38 -0400
-Date: Tue, 17 Jul 2007 02:57:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sami Farin <safari-kernel@safari.iki.fi>
-Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: Linux 2.6.22: had to reboot after OOM
-Message-Id: <20070717025711.1f36e70f.akpm@linux-foundation.org>
-In-Reply-To: <20070715120321.kyvbw5wjx6mwviu6@m.safari.iki.fi>
-References: <20070715120321.kyvbw5wjx6mwviu6@m.safari.iki.fi>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 17 Jul 2007 05:58:31 -0400
+Date: Tue, 17 Jul 2007 12:01:44 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [WATCHDOG] v2.6.22 patches part 1
+Message-ID: <20070717100144.GA24169@infomag.infomag.iguana.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Jul 2007 15:03:21 +0300 Sami Farin <safari-kernel@safari.iki.fi> wrote:
+Hi Linus,
 
-> After I got this error [1], system got real slow, like 386 having 32 MB of RAM
-> and swapping constantly.
-> My system is P4 SMP with 1GB of RAM.
-> 
-> I got this same behavior with 2.6.19, too, but then I used GNU cp v6.9
-> which had micro-optimization which did not bother doing read() for regular
-> files, like /proc/vmstat , instead, it generated 0-byte destination file
-> (I noticed that only after rebooting).
-> So I do not have useful debug info for 2.6.19.
-> 
-> And now my version of cp does not have that micro-optimization.
-> 
-> I also attached vmstat and slabinfo , in case somebody can figure out
-> something out of them.
-> I also now use --probes=5 for ipset nethash... uses less mem but is slower.
+Please pull from 'master' branch of
+	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+or if master.kernel.org hasn't synced up yet:
+	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
 
-I don't know why your system went bad like that.
+This will update the following files:
 
-> procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa st
->  0  2 762376 748392      0  17104   11    8    52    65   64    53 10  3 85  3  0
->  0  3 762376 748664      0  17144  456   12   908    24  237  3044  2  3 26 70  0
->  0  2 762376 749544      0  16492  464  284  1440   288  248  3633  2  5 14 79  0
->  0  3 762376 749916      0  16392  432    0  1368    16  239  3360  1  2  5 93  0
->  0  3 762376 751108      0  15740  512  432  1656   460  214  3751  1  3 28 69  0
->  0  7 762376 751740      0  15512  532  104  1920   131  237  4014  2  4  5 90  0
->  0 10 762436 755064      0  15652  200 3172   992  3264  274  5086  1  3  1 96  0
->  0 11 762504 757208      0  15156  144  836   624   926  204  2602  1  2  0 98  0
->  0 13 762680 766384      0  12740   36 7284    96  7308  252  8643  0  5  0 95  0
->  0 14 762772 771312      0  11696   12 3908   132  3912  253  5153  0  3  0 97  0
->  0 13 763044 778536      0  10356  184 8088   572  8088  249  6889  1  3  0 97  0
->  0 15 763092 781380      0  10284    0 2136   532  2160  176  2387  1  2  0 98  0
->  0 16 763360 785428      0  10008   60 4884  1312  4985  281  4798  0  5  0 96  0
->  0 19 763636 791192      0   8548   24 6264   476  6268  219  6732  0  3  0 97  0
->  0 18 763824 799184      0   6240    0 7500    52  7504  217  7080  1  6  0 94  0
->  0 18 763872 802196      0   5816    0 2628   552  2640  194  3851  0  4  0 96  0
->  0 28 764048 805072      0   5168   92 1760  1180  1772  185  2703  0  5  0 94  0
->  0 30 764048 806032      0   5256   36  164   364   234  126  1448  0  1  0 99  0
->  0 31 764048 807728      0   4732   32   40    92    84  152  1824  0  3  0 97  0
->  0 35 764056 809372      0   4332 1100  532  9084   804  194  1986  0  7  0 94  0
->  0 74 764012 839544      0   8100 1604    0  5660    12 4216 46853  0  8  0 92  0
-> 
-> procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
->  r  b   swpd   free  inact active   si   so    bi    bo   in    cs us sy id wa st
->  0 14 762504 757108   4004  90724   11    8    52    65   64    53 10  3 85  3  0
->  0 13 762676 764608   8768  78084   44 6324   288  6370  251  7697  0  4  0 95  0
->  0 14 762772 770832  12404  68328   12 4868   128  4880  243  6161  0  4  0 96  0
->  0 13 763044 778536  24248  48736  180 7908   548  7912  296  7208  0  3  0 97  0
->  0 16 763092 781380  21196  49004    4 2312   560  2336  185  2524  1  1  0 98  0
->  0 16 763360 784584  40040  27048   60 4088  1312  4189  267  3964  0  4  0 96  0
->  0 19 763636 791192  36552  23804   24 7064   392  7068  227  7600  0  4  0 96  0
->  0 18 763824 798896  36928  15568    0 7352   136  7356  219  6902  0  5  0 94  0
->  0 19 763872 802088  41372   7876    0 2776   548  2788  195  3917  0  4  0 96  0
->  0 25 764048 804636  39896   6932   56 1760   920  1772  170  2602  0  4  0 95  0
->  0 30 764048 806032  39308   6272   72  164   628   234  131  1579  0  2  0 98  0
->  0 30 764048 807500  38316   5768   32   40    84    68  149  1630  0  2  0 98  0
->  1 34 764056 808476  37900   5444   20  192   660   242  184  1883  0  6  0 94  0
->  1 37 764056 811148  38772   1740   20  100   388   104  168  2409  0  5  0 95  0
->  0 38 764056 813056  34164   4536    0    0   124    47  227  2590  0  6  0 94  0
->  0 38 764056 815500  32924   3308   40    0   608     5  228  2448  0  4  0 96  0
-> 10 37 764056 817764  30404   3800    0   16   260    20  323  3795  0 10  0 90  0
->  1 37 764056 819548  28552   3744    0   20   148    56  207  2275  0  6  0 94  0
->  1 38 764056 820828  27004   4028   20    8   496    21  216  1703  0  3  0 97  0
->  0 71 764056 820064  28228   3508  600    0  1424     4  140   826  0  2  0 99  0
->  0 73 764028 822568  25928   3404   68   36   332    48  205  2223  0  5  0 95  0
-> 
-> 
-> 
-> As a comparison, these are stats after booting, with similar workload:
-> 
-> procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa st
->  2  0 290544  12728      0 444216    2   13   213   285  144   922  7  2 82  9  0
->  0  0 290544  12672      0 444264    0    0    16  1616  270  1881  2  2 96  0  0
->  0  0 290544  12752      0 444280    0    0    16    56  245  1687  2  2 96  1  0
->  0  0 290544  12876      0 444280    0    0     0    31  243  1604  2  1 97  0  0
->  0  0 290544  12520      0 444260   48    0    80    50  333  1708  2  2 94  2  0
->  0  0 290544  12656      0 444424    0    0   136   114  269  1817  3  2 95  1  0
->  0  0 290544  12672      0 444448    0    0    12  1687  330  1822  2  2 97  0  0
-> 
-> procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
->  r  b   swpd   free  inact active   si   so    bi    bo   in    cs us sy id wa st
->  2  0 290544  18756 316324 420928    2   13   212   284  144   922  7  2 82  9  0
->  0  0 290544  18716 316360 421112    0    0    32    72  273  1979  2  2 96  0  0
->  0  0 290544  18472 316504 421152    0    0   144    51  256  1644  3  1 97  0  0
->  0  0 290544  18256 316520 421144    0    0    16    63  240  1768  2  3 96  1  0
->  0  0 290544  18264 316520 421160    0    0     0   121  243  1770  2  1 97  0  0
->  0  0 290544  18312 316520 421168    0    0     8    51  235  1789  2  1 97  0  0
->  0  0 290544  18252 316544 421168    0    0    24   204  296  2017  2  1 96  1  0
-> 
-> ...
-> 
-> and the rest are after the mem allocation failure.
-> 
-> 2007-07-15 10:43:02.271042500 <6>[246964.992391] SysRq : Show Memory
-> 2007-07-15 10:43:02.271082500 <6>[246964.992399] Mem-info:
-> 2007-07-15 10:43:02.271103500 <4>[246964.992401] DMA per-cpu:
-> 2007-07-15 10:43:02.271123500 <4>[246964.992405] CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> 2007-07-15 10:43:02.271144500 <4>[246964.992409] CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> 2007-07-15 10:43:02.271164500 <4>[246964.992412] Normal per-cpu:
-> 2007-07-15 10:43:02.271185500 <4>[246964.992415] CPU    0: Hot: hi:  186, btch:  31 usd:  31   Cold: hi:   62, btch:  15 usd:  50
-> 2007-07-15 10:43:02.271205500 <4>[246964.992419] CPU    1: Hot: hi:  186, btch:  31 usd:  21   Cold: hi:   62, btch:  15 usd:  59
-> 2007-07-15 10:43:02.271225500 <4>[246964.992422] HighMem per-cpu:
-> 2007-07-15 10:43:02.271245500 <4>[246964.992425] CPU    0: Hot: hi:   42, btch:   7 usd:   6   Cold: hi:   14, btch:   3 usd:   1
-> 2007-07-15 10:43:02.271266500 <4>[246964.992429] CPU    1: Hot: hi:   42, btch:   7 usd:   4   Cold: hi:   14, btch:   3 usd:   1
-> 2007-07-15 10:43:02.271287500 <4>[246964.992434] Active:23152 inactive:648 dirty:8 writeback:50 unstable:0
-> 2007-07-15 10:43:02.271307500 <4>[246964.992436]  free:189843 slab:8987 mapped:3892 pagetables:1960 bounce:0
-> 2007-07-15 10:43:02.271329500 <4>[246964.992440] DMA free:10384kB min:68kB low:84kB high:100kB active:0kB inactive:0kB present:16256kB pages_scanned:0 all_unreclaimable? yes
-> 2007-07-15 10:43:02.271349500 <4>[246964.992444] lowmem_reserve[]: 0 873 975
-> 2007-07-15 10:43:02.271371500 <4>[246964.992451] Normal free:742488kB min:3744kB low:4680kB high:5616kB active:2860kB inactive:212kB present:894080kB pages_scanned:0 all_unreclaimable? no
+ drivers/char/watchdog/Kconfig            |    9 +
+ drivers/char/watchdog/Makefile           |    3 
+ drivers/char/watchdog/at32ap700x_wdt.c   |  386 +++++++++++++++++++++++++++++++
+ drivers/char/watchdog/ep93xx_wdt.c       |    4 
+ drivers/char/watchdog/mixcomwd.c         |  127 ++++++----
+ drivers/char/watchdog/pnx4008_wdt.c      |    4 
+ drivers/char/watchdog/s3c2410_wdt.c      |   41 ++-
+ 12 files changed, 878 insertions(+), 393 deletions(-)
 
-You have heaps of free ZONE_NORMAL memory.
+with these Changes:
 
-> 
-> -------------------------------------------------------------------------------------
-> 
-> [1]
-> 
-> 2007-07-15 10:12:40.640668500 <4>[245143.816358] net/ipv4/netfilter/ip_set_nethash.c: retry: rehashing of set blockedp2pnew triggered: hashsize grows from 262144 to 348651
-> 2007-07-15 10:12:40.640672500 <4>[245143.816379] ipset: page allocation failure. order:9, mode:0x20
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Tue Jul 3 17:59:29 2007 +0000
 
-ipset does an order-9 atomic allocation?  That's optimistic.  Hopefully it's
-just doing a probe-for-the-largest-allocation operation, albeit rather stupidly.
+    [WATCHDOG] at32ap700x_wdt.c - Fix compilation warnings
+    
+    Fix warning:
+    * ISO C90 forbids mixed declarations and code
+    * passing argument 2 of ‘test_and_set_bit’ from incompatible pointer type
+    * passing argument 2 of ‘clear_bit’ from incompatible pointer type
+    
+    Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Cc: Andrew Morton <akpm@linux-foundation.org>
 
-ipset is some out-of-tree patch you added, I assume?
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Tue Jul 3 17:59:04 2007 +0000
 
-> 2007-07-15 10:12:40.640808500 <4>[245143.816548] Normal free:9772kB min:3744kB low:4680kB high:5616kB active:465640kB inactive:228696kB present:894080kB pages_scanned:32 all_unreclaimable? no
+    [WATCHDOG] at32ap700x_wdt.c - Add spinlock support
+    
+    Add spinlock support so that forked children can't
+    do different io stuff at the same time.
+    
+    Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Cc: Andrew Morton <akpm@linux-foundation.org>
 
-No free memory, but lots of presumably-reclaimable pagecache there.
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Wed Jun 20 23:36:43 2007 +0200
+
+    [WATCHDOG] at32ap700x_wdt.c - Add nowayout + MAGICCLOSE features
+    
+    Add nowayout + MAGICCLOSE features.
+    
+    Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Cc: Andrew Morton <akpm@linux-foundation.org>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Mon Jun 18 22:49:35 2007 +0200
+
+    [WATCHDOG] at32ap700x_wdt.c - timeout module parameter patch
+    
+    integrate the timeout/heartbeat as a module parameter and not as
+    a CONFIG_* value.
+    
+    Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Cc: Andrew Morton <akpm@linux-foundation.org>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Sun Jun 17 19:34:23 2007 +0000
+
+    [WATCHDOG] at32ap700x_wdt.c - checkpatch.pl-0.05 clean-up's
+    
+    need space after that ',' (ctx:VxV)
+    inline keyword should sit between storage class and type
+    
+    Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Cc: Andrew Morton <akpm@linux-foundation.org>
+
+Author: Ben Dooks <ben-linux@fluff.org>
+Date:   Thu Jun 14 12:08:55 2007 +0100
+
+    [WATCHDOG] change s3c2410_wdt to using dev_() macros for output
+    
+    Move to using dev_info(), dev_dbg() and dev_err() for
+    reporting information from the driver.
+    
+    Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Ben Dooks <ben-linux@fluff.org>
+Date:   Thu Jun 14 12:08:54 2007 +0100
+
+    [WATCHDOG] s3c2410_wdt announce initialisation
+    
+    Announce the watchdog once the initialisation is
+    complete. This aides debugging problems where the
+    watchdog driver has been loaded and shows the
+    current state for the user.
+    
+    Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Date:   Fri Jun 8 11:03:01 2007 -0700
+
+    [WATCHDOG] at32ap700x-wdt: add iounmap if probe function fails
+    
+    Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Author: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Date:   Fri Jun 8 11:01:47 2007 -0700
+
+    [WATCHDOG] at32ap700x-wdt: add missing iounmap in _remove
+    
+    Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Author: Andrew Morton <akpm@linux-foundation.org>
+Date:   Thu Jun 7 16:08:53 2007 -0700
+
+    [WATCHDOG] watchdog-driver-for-at32ap700x-devices-fix-2
+    
+    standard ifdef-reduction trick.
+    
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Cc: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Author: Andrew Morton <akpm@linux-foundation.org>
+Date:   Thu Jun 7 16:06:43 2007 -0700
+
+    [WATCHDOG] watchdog-driver-for-at32ap700x-devices-fix
+    
+    little fiddles.
+    
+    Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Cc: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Author: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Date:   Thu Jun 7 16:06:41 2007 -0700
+
+    [WATCHDOG] Watchdog driver for AT32AP700X devices
+    
+    Add support for the built in watchdog in AT32AP700X devices.
+    
+    Tested on AT32AP7000 and ATSTK1000.
+    
+    Hardware documentation can be found in the AT32AP7000 datasheet.
+    
+    Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+    Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Mon Jun 4 19:13:28 2007 +0000
+
+    [WATCHDOG] Mixcom Watchdog - CodingStyle clean-up
+    
+    Small clean-up in line with CodingStyle guide-lines.
+    
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Mon Jun 4 18:35:41 2007 +0000
+
+    [WATCHDOG] Mixcom Watchdog - clean-up printk's
+    
+    Clean-up printk's.
+    
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Mon Jun 4 18:35:41 2007 +0000
+
+    [WATCHDOG] Mixcom Watchdog - clean-up printk's
+    
+    Clean-up printk's.
+    
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Sun Jun 3 20:46:05 2007 +0000
+
+    [WATCHDOG] Mixcom Watchdog - checkcard part 2
+    
+    Convert the mixcom and flashcom card checks to a
+    single checkcard call by creating a new structure
+    that contains all io-ports and their id's.
+    This is part of the port to the isa watchdog device
+    driver.
+    
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Sun Jun 3 19:01:38 2007 +0000
+
+    [WATCHDOG] Mixcom Watchdog - checkcard
+    
+    Simplify the mixcomwd_checkcard and flashcom_checkcard
+    functions to one checkcard function as part of the
+    port to an isa watchdog device driver.
+    
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Sun Jun 3 15:39:25 2007 +0000
+
+    [WATCHDOG] Mixcom Watchdog - get rid of port offset's
+    
+    Get rid of the port offset's used for the
+    mixcom and flashcom watchdog devices.
+    
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Sun Jun 3 15:22:32 2007 +0000
+
+    [WATCHDOG] Mixcom Watchdog - update "Documentation"
+    
+    Robert Radez started cleaning up the mixcomwd driver
+    in 2002. All his changes have been incorporated.
+    Since he owns that credit -> document it correctly.
+    
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Robert P. J. Day <rpjday@mindspring.com>
+Date:   Mon May 28 14:51:29 2007 -0400
+
+    [WATCHDOG] Remove the redundant check for pwrite() in EP93XXX watchdog.
+    
+    Remove the redundant check for pwrite(), given that the open() routine
+    already invokes nonseekable_open().
+    
+    Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Robert P. J. Day <rpjday@mindspring.com>
+Date:   Mon May 28 14:55:06 2007 -0400
+
+    [WATCHDOG] Remove the redundant check for pwrite() in pnx4008 watchdog.
+    
+    Given that the open routine already calls nonseekable_open(), remove
+    the redundant check for pwrite().
+    
+    Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+The Changes can also be looked at on:
+	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
+
+For completeness, I added the overal diff below.
+
+Greetings,
+Wim.
+
+================================================================================
+diff --git a/drivers/char/watchdog/Kconfig b/drivers/char/watchdog/Kconfig
+index 1cad32c..2f48ba3 100644
+--- a/drivers/char/watchdog/Kconfig
++++ b/drivers/char/watchdog/Kconfig
+@@ -187,6 +187,15 @@ config PNX4008_WATCHDOG
+ 
+ 	  Say N if you are unsure.
+ 
++# AVR32 Architecture
++
++config AT32AP700X_WDT
++	tristate "AT32AP700x watchdog"
++	depends on WATCHDOG && CPU_AT32AP7000
++	help
++	  Watchdog timer embedded into AT32AP700x devices. This will reboot
++	  your system when the timeout is reached.
++
+ # X86 (i386 + ia64 + x86_64) Architecture
+ 
+ config ACQUIRE_WDT
+diff --git a/drivers/char/watchdog/Makefile b/drivers/char/watchdog/Makefile
+index 8bfc00c..3907ec0 100644
+--- a/drivers/char/watchdog/Makefile
++++ b/drivers/char/watchdog/Makefile
+@@ -36,6 +36,9 @@ obj-$(CONFIG_21285_WATCHDOG) += mpcore_wdt.o
+ obj-$(CONFIG_EP93XX_WATCHDOG) += ep93xx_wdt.o
+ obj-$(CONFIG_PNX4008_WATCHDOG) += pnx4008_wdt.o
+ 
++# AVR32 Architecture
++obj-$(CONFIG_AT32AP700X_WDT) += at32ap700x_wdt.o
++
+ # X86 (i386 + ia64 + x86_64) Architecture
+ obj-$(CONFIG_ACQUIRE_WDT) += acquirewdt.o
+ obj-$(CONFIG_ADVANTECH_WDT) += advantechwdt.o
+diff --git a/drivers/char/watchdog/at32ap700x_wdt.c b/drivers/char/watchdog/at32ap700x_wdt.c
+new file mode 100644
+index 0000000..54a5161
+--- /dev/null
++++ b/drivers/char/watchdog/at32ap700x_wdt.c
+@@ -0,0 +1,386 @@
++/*
++ * Watchdog driver for Atmel AT32AP700X devices
++ *
++ * Copyright (C) 2005-2006 Atmel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
++#include <linux/platform_device.h>
++#include <linux/watchdog.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
++#include <linux/spinlock.h>
++
++#define TIMEOUT_MIN		1
++#define TIMEOUT_MAX		2
++#define TIMEOUT_DEFAULT		TIMEOUT_MAX
++
++/* module parameters */
++static int timeout =  TIMEOUT_DEFAULT;
++module_param(timeout, int, 0);
++MODULE_PARM_DESC(timeout,
++		"Timeout value. Limited to be 1 or 2 seconds. (default="
++		__MODULE_STRING(TIMEOUT_DEFAULT) ")");
++
++static int nowayout = WATCHDOG_NOWAYOUT;
++module_param(nowayout, int, 0);
++MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
++		__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++
++/* Watchdog registers and write/read macro */
++#define WDT_CTRL		0x00
++#define WDT_CTRL_EN		   0
++#define WDT_CTRL_PSEL		   8
++#define WDT_CTRL_KEY		  24
++
++#define WDT_CLR			0x04
++
++#define WDT_BIT(name)		(1 << WDT_##name)
++#define WDT_BF(name, value)	((value) << WDT_##name)
++
++#define wdt_readl(dev, reg)				\
++	__raw_readl((dev)->regs + WDT_##reg)
++#define wdt_writel(dev, reg, value)			\
++	__raw_writel((value), (dev)->regs + WDT_##reg)
++
++struct wdt_at32ap700x {
++	void __iomem		*regs;
++	spinlock_t		io_lock;
++	int			timeout;
++	unsigned long		users;
++	struct miscdevice	miscdev;
++};
++
++static struct wdt_at32ap700x *wdt;
++static char expect_release;
++
++/*
++ * Disable the watchdog.
++ */
++static inline void at32_wdt_stop(void)
++{
++	unsigned long psel;
++
++	spin_lock(&wdt->io_lock);
++	psel = wdt_readl(wdt, CTRL) & WDT_BF(CTRL_PSEL, 0x0f);
++	wdt_writel(wdt, CTRL, psel | WDT_BF(CTRL_KEY, 0x55));
++	wdt_writel(wdt, CTRL, psel | WDT_BF(CTRL_KEY, 0xaa));
++	spin_unlock(&wdt->io_lock);
++}
++
++/*
++ * Enable and reset the watchdog.
++ */
++static inline void at32_wdt_start(void)
++{
++	/* 0xf is 2^16 divider = 2 sec, 0xe is 2^15 divider = 1 sec */
++	unsigned long psel = (wdt->timeout > 1) ? 0xf : 0xe;
++
++	spin_lock(&wdt->io_lock);
++	wdt_writel(wdt, CTRL, WDT_BIT(CTRL_EN)
++			| WDT_BF(CTRL_PSEL, psel)
++			| WDT_BF(CTRL_KEY, 0x55));
++	wdt_writel(wdt, CTRL, WDT_BIT(CTRL_EN)
++			| WDT_BF(CTRL_PSEL, psel)
++			| WDT_BF(CTRL_KEY, 0xaa));
++	spin_unlock(&wdt->io_lock);
++}
++
++/*
++ * Pat the watchdog timer.
++ */
++static inline void at32_wdt_pat(void)
++{
++	spin_lock(&wdt->io_lock);
++	wdt_writel(wdt, CLR, 0x42);
++	spin_unlock(&wdt->io_lock);
++}
++
++/*
++ * Watchdog device is opened, and watchdog starts running.
++ */
++static int at32_wdt_open(struct inode *inode, struct file *file)
++{
++	if (test_and_set_bit(1, &wdt->users))
++		return -EBUSY;
++
++	at32_wdt_start();
++	return nonseekable_open(inode, file);
++}
++
++/*
++ * Close the watchdog device.
++ */
++static int at32_wdt_close(struct inode *inode, struct file *file)
++{
++	if (expect_release == 42) {
++		at32_wdt_stop();
++	} else {
++		dev_dbg(wdt->miscdev.parent,
++			"Unexpected close, not stopping watchdog!\n");
++		at32_wdt_pat();
++	}
++	clear_bit(1, &wdt->users);
++	expect_release = 0;
++	return 0;
++}
++
++/*
++ * Change the watchdog time interval.
++ */
++static int at32_wdt_settimeout(int time)
++{
++	/*
++	 * All counting occurs at 1 / SLOW_CLOCK (32 kHz) and max prescaler is
++	 * 2 ^ 16 allowing up to 2 seconds timeout.
++	 */
++	if ((time < TIMEOUT_MIN) || (time > TIMEOUT_MAX))
++		return -EINVAL;
++
++	/*
++	 * Set new watchdog time. It will be used when at32_wdt_start() is
++	 * called.
++	 */
++	wdt->timeout = time;
++	return 0;
++}
++
++static struct watchdog_info at32_wdt_info = {
++	.identity	= "at32ap700x watchdog",
++	.options	= WDIOF_SETTIMEOUT |
++			  WDIOF_KEEPALIVEPING |
++			  WDIOF_MAGICCLOSE,
++};
++
++/*
++ * Handle commands from user-space.
++ */
++static int at32_wdt_ioctl(struct inode *inode, struct file *file,
++		unsigned int cmd, unsigned long arg)
++{
++	int ret = -ENOTTY;
++	int time;
++	void __user *argp = (void __user *)arg;
++	int __user *p = argp;
++
++	switch (cmd) {
++	case WDIOC_KEEPALIVE:
++		at32_wdt_pat();
++		ret = 0;
++		break;
++	case WDIOC_GETSUPPORT:
++		ret = copy_to_user(argp, &at32_wdt_info,
++				sizeof(at32_wdt_info)) ? -EFAULT : 0;
++		break;
++	case WDIOC_SETTIMEOUT:
++		ret = get_user(time, p);
++		if (ret)
++			break;
++		ret = at32_wdt_settimeout(time);
++		if (ret)
++			break;
++		/* Enable new time value */
++		at32_wdt_start();
++		/* fall through */
++	case WDIOC_GETTIMEOUT:
++		ret = put_user(wdt->timeout, p);
++		break;
++	case WDIOC_GETSTATUS: /* fall through */
++	case WDIOC_GETBOOTSTATUS:
++		ret = put_user(0, p);
++		break;
++	case WDIOC_SETOPTIONS:
++		ret = get_user(time, p);
++		if (ret)
++			break;
++		if (time & WDIOS_DISABLECARD)
++			at32_wdt_stop();
++		if (time & WDIOS_ENABLECARD)
++			at32_wdt_start();
++		ret = 0;
++		break;
++	}
++
++	return ret;
++}
++
++static ssize_t at32_wdt_write(struct file *file, const char __user *data,
++				size_t len, loff_t *ppos)
++{
++	/* See if we got the magic character 'V' and reload the timer */
++	if (len) {
++		if (!nowayout) {
++			size_t i;
++
++			/*
++			 * note: just in case someone wrote the magic
++			 * character five months ago...
++			 */
++			expect_release = 0;
++
++			/*
++			 * scan to see whether or not we got the magic
++			 * character
++			 */
++			for (i = 0; i != len; i++) {
++				char c;
++				if (get_user(c, data+i))
++					return -EFAULT;
++				if (c == 'V')
++					expect_release = 42;
++			}
++		}
++		/* someone wrote to us, we should pat the watchdog */
++		at32_wdt_pat();
++	}
++	return len;
++}
++
++static const struct file_operations at32_wdt_fops = {
++	.owner		= THIS_MODULE,
++	.llseek		= no_llseek,
++	.ioctl		= at32_wdt_ioctl,
++	.open		= at32_wdt_open,
++	.release	= at32_wdt_close,
++	.write		= at32_wdt_write,
++};
++
++static int __init at32_wdt_probe(struct platform_device *pdev)
++{
++	struct resource	*regs;
++	int ret;
++
++	if (wdt) {
++		dev_dbg(&pdev->dev, "only 1 wdt instance supported.\n");
++		return -EBUSY;
++	}
++
++	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!regs) {
++		dev_dbg(&pdev->dev, "missing mmio resource\n");
++		return -ENXIO;
++	}
++
++	wdt = kzalloc(sizeof(struct wdt_at32ap700x), GFP_KERNEL);
++	if (!wdt) {
++		dev_dbg(&pdev->dev, "no memory for wdt structure\n");
++		return -ENOMEM;
++	}
++
++	wdt->regs = ioremap(regs->start, regs->end - regs->start + 1);
++	if (!wdt->regs) {
++		ret = -ENOMEM;
++		dev_dbg(&pdev->dev, "could not map I/O memory\n");
++		goto err_free;
++	}
++	spin_lock_init(&wdt->io_lock);
++	wdt->users = 0;
++	wdt->miscdev.minor = WATCHDOG_MINOR;
++	wdt->miscdev.name = "watchdog";
++	wdt->miscdev.fops = &at32_wdt_fops;
++
++	if (at32_wdt_settimeout(timeout)) {
++		at32_wdt_settimeout(TIMEOUT_DEFAULT);
++		dev_dbg(&pdev->dev,
++			"default timeout invalid, set to %d sec.\n",
++			TIMEOUT_DEFAULT);
++	}
++
++	ret = misc_register(&wdt->miscdev);
++	if (ret) {
++		dev_dbg(&pdev->dev, "failed to register wdt miscdev\n");
++		goto err_iounmap;
++	}
++
++	platform_set_drvdata(pdev, wdt);
++	wdt->miscdev.parent = &pdev->dev;
++	dev_info(&pdev->dev,
++		"AT32AP700X WDT at 0x%p, timeout %d sec (nowayout=%d)\n",
++		wdt->regs, wdt->timeout, nowayout);
++
++	return 0;
++
++err_iounmap:
++	iounmap(wdt->regs);
++err_free:
++	kfree(wdt);
++	wdt = NULL;
++	return ret;
++}
++
++static int __exit at32_wdt_remove(struct platform_device *pdev)
++{
++	if (wdt && platform_get_drvdata(pdev) == wdt) {
++		/* Stop the timer before we leave */
++		if (!nowayout)
++			at32_wdt_stop();
++
++		misc_deregister(&wdt->miscdev);
++		iounmap(wdt->regs);
++		kfree(wdt);
++		wdt = NULL;
++		platform_set_drvdata(pdev, NULL);
++	}
++
++	return 0;
++}
++
++static void at32_wdt_shutdown(struct platform_device *pdev)
++{
++	at32_wdt_stop();
++}
++
++#ifdef CONFIG_PM
++static int at32_wdt_suspend(struct platform_device *pdev, pm_message_t message)
++{
++	at32_wdt_stop();
++	return 0;
++}
++
++static int at32_wdt_resume(struct platform_device *pdev)
++{
++	if (wdt->users)
++		at32_wdt_start();
++	return 0;
++}
++#else
++#define at32_wdt_suspend NULL
++#define at32_wdt_resume NULL
++#endif
++
++static struct platform_driver at32_wdt_driver = {
++	.remove		= __exit_p(at32_wdt_remove),
++	.suspend	= at32_wdt_suspend,
++	.resume		= at32_wdt_resume,
++	.driver		= {
++		.name	= "at32_wdt",
++		.owner	= THIS_MODULE,
++	},
++	.shutdown	= at32_wdt_shutdown,
++};
++
++static int __init at32_wdt_init(void)
++{
++	return platform_driver_probe(&at32_wdt_driver, at32_wdt_probe);
++}
++module_init(at32_wdt_init);
++
++static void __exit at32_wdt_exit(void)
++{
++	platform_driver_unregister(&at32_wdt_driver);
++}
++module_exit(at32_wdt_exit);
++
++MODULE_AUTHOR("Hans-Christian Egtvedt <hcegtvedt@atmel.com>");
++MODULE_DESCRIPTION("Watchdog driver for Atmel AT32AP700X");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+diff --git a/drivers/char/watchdog/ep93xx_wdt.c b/drivers/char/watchdog/ep93xx_wdt.c
+index 01cf123..0e4787a 100644
+--- a/drivers/char/watchdog/ep93xx_wdt.c
++++ b/drivers/char/watchdog/ep93xx_wdt.c
+@@ -107,10 +107,6 @@ static ssize_t
+ ep93xx_wdt_write(struct file *file, const char __user *data, size_t len,
+ 		 loff_t *ppos)
+ {
+-	/* Can't seek (pwrite) on this device */
+-	if (*ppos != file->f_pos)
+-		return -ESPIPE;
+-
+ 	if (len) {
+ 		if (!nowayout) {
+ 			size_t i;
+diff --git a/drivers/char/watchdog/mixcomwd.c b/drivers/char/watchdog/mixcomwd.c
+index f35e284..db2ccb8 100644
+--- a/drivers/char/watchdog/mixcomwd.c
++++ b/drivers/char/watchdog/mixcomwd.c
+@@ -29,11 +29,18 @@
+  *		- support for one more type board
+  *
+  * Version 0.5 (2001/12/14) Matt Domsch <Matt_Domsch@dell.com>
+- *              - added nowayout module option to override CONFIG_WATCHDOG_NOWAYOUT
++ *		- added nowayout module option to override CONFIG_WATCHDOG_NOWAYOUT
++ *
++ * Version 0.6 (2002/04/12): Rob Radez <rob@osinvestor.com>
++ *		- make mixcomwd_opened unsigned,
++ *		  removed lock_kernel/unlock_kernel from mixcomwd_release,
++ *		  modified ioctl a bit to conform to API
+  *
+  */
+ 
+-#define VERSION "0.5"
++#define VERSION "0.6"
++#define WATCHDOG_NAME "mixcomwd"
++#define PFX WATCHDOG_NAME ": "
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+@@ -49,12 +56,46 @@
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+ 
+-static int mixcomwd_ioports[] = { 0x180, 0x280, 0x380, 0x000 };
+-
+-#define MIXCOM_WATCHDOG_OFFSET 0xc10
++/*
++ * We have two types of cards that can be probed:
++ * 1) The Mixcom cards: these cards can be found at addresses
++ *    0x180, 0x280, 0x380 with an additional offset of 0xc10.
++ *    (Or 0xd90, 0xe90, 0xf90).
++ * 2) The FlashCOM cards: these cards can be set up at
++ *    0x300 -> 0x378, in 0x8 jumps with an offset of 0x04.
++ *    (Or 0x304 -> 0x37c in 0x8 jumps).
++ *    Each card has it's own ID.
++ */
+ #define MIXCOM_ID 0x11
+-#define FLASHCOM_WATCHDOG_OFFSET 0x4
+ #define FLASHCOM_ID 0x18
++static struct {
++	int ioport;
++	int id;
++} mixcomwd_io_info[] __devinitdata = {
++	/* The Mixcom cards */
++	{0x0d90, MIXCOM_ID},
++	{0x0e90, MIXCOM_ID},
++	{0x0f90, MIXCOM_ID},
++	/* The FlashCOM cards */
++	{0x0304, FLASHCOM_ID},
++	{0x030c, FLASHCOM_ID},
++	{0x0314, FLASHCOM_ID},
++	{0x031c, FLASHCOM_ID},
++	{0x0324, FLASHCOM_ID},
++	{0x032c, FLASHCOM_ID},
++	{0x0334, FLASHCOM_ID},
++	{0x033c, FLASHCOM_ID},
++	{0x0344, FLASHCOM_ID},
++	{0x034c, FLASHCOM_ID},
++	{0x0354, FLASHCOM_ID},
++	{0x035c, FLASHCOM_ID},
++	{0x0364, FLASHCOM_ID},
++	{0x036c, FLASHCOM_ID},
++	{0x0374, FLASHCOM_ID},
++	{0x037c, FLASHCOM_ID},
++	/* The end of the list */
++	{0x0000, 0},
++};
+ 
+ static void mixcomwd_timerfun(unsigned long d);
+ 
+@@ -113,13 +154,13 @@ static int mixcomwd_release(struct inode *inode, struct file *file)
+ {
+ 	if (expect_close == 42) {
+ 		if(mixcomwd_timer_alive) {
+-			printk(KERN_ERR "mixcomwd: release called while internal timer alive");
++			printk(KERN_ERR PFX "release called while internal timer alive");
+ 			return -EBUSY;
+ 		}
+ 		mixcomwd_timer_alive=1;
+ 		mod_timer(&mixcomwd_timer, jiffies + 5 * HZ);
+ 	} else {
+-		printk(KERN_CRIT "mixcomwd: WDT device closed unexpectedly.  WDT will not stop!\n");
++		printk(KERN_CRIT PFX "WDT device closed unexpectedly.  WDT will not stop!\n");
+ 	}
+ 
+ 	clear_bit(0,&mixcomwd_opened);
+@@ -188,8 +229,7 @@ static int mixcomwd_ioctl(struct inode *inode, struct file *file,
+ 	return 0;
+ }
+ 
+-static const struct file_operations mixcomwd_fops=
+-{
++static const struct file_operations mixcomwd_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.llseek		= no_llseek,
+ 	.write		= mixcomwd_write,
+@@ -198,46 +238,30 @@ static const struct file_operations mixcomwd_fops=
+ 	.release	= mixcomwd_release,
+ };
+ 
+-static struct miscdevice mixcomwd_miscdev=
+-{
++static struct miscdevice mixcomwd_miscdev = {
+ 	.minor	= WATCHDOG_MINOR,
+ 	.name	= "watchdog",
+ 	.fops	= &mixcomwd_fops,
+ };
+ 
+-static int __init mixcomwd_checkcard(int port)
++static int __init checkcard(int port, int card_id)
+ {
+ 	int id;
+ 
+-	port += MIXCOM_WATCHDOG_OFFSET;
+-	if (!request_region(port, 1, "MixCOM watchdog")) {
+-		return 0;
+-	}
+-
+-	id=inb_p(port) & 0x3f;
+-	if(id!=MIXCOM_ID) {
+-		release_region(port, 1);
+-		return 0;
+-	}
+-	return port;
+-}
+-
+-static int __init flashcom_checkcard(int port)
+-{
+-	int id;
+-
+-	port += FLASHCOM_WATCHDOG_OFFSET;
+ 	if (!request_region(port, 1, "MixCOM watchdog")) {
+ 		return 0;
+ 	}
+ 
+ 	id=inb_p(port);
+- 	if(id!=FLASHCOM_ID) {
++	if (card_id==MIXCOM_ID)
++		id &= 0x3f;
++
++	if (id!=card_id) {
+ 		release_region(port, 1);
+ 		return 0;
+ 	}
+- 	return port;
+- }
++	return 1;
++}
+ 
+ static int __init mixcomwd_init(void)
+ {
+@@ -245,50 +269,50 @@ static int __init mixcomwd_init(void)
+ 	int ret;
+ 	int found=0;
+ 
+-	for (i = 0; !found && mixcomwd_ioports[i] != 0; i++) {
+-		watchdog_port = mixcomwd_checkcard(mixcomwd_ioports[i]);
+-		if (watchdog_port) {
+-			found = 1;
+-		}
+-	}
+-
+-	/* The FlashCOM card can be set up at 0x300 -> 0x378, in 0x8 jumps */
+-	for (i = 0x300; !found && i < 0x380; i+=0x8) {
+-		watchdog_port = flashcom_checkcard(i);
+-		if (watchdog_port) {
++	for (i = 0; !found && mixcomwd_io_info[i].ioport != 0; i++) {
++		if (checkcard(mixcomwd_io_info[i].ioport,
++			      mixcomwd_io_info[i].id)) {
+ 			found = 1;
++			watchdog_port = mixcomwd_io_info[i].ioport;
+ 		}
+ 	}
+ 
+ 	if (!found) {
+-		printk("mixcomwd: No card detected, or port not available.\n");
++		printk(KERN_ERR PFX "No card detected, or port not available.\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	ret = misc_register(&mixcomwd_miscdev);
+ 	if (ret)
+ 	{
+-		release_region(watchdog_port, 1);
+-		return ret;
++		printk(KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
++			WATCHDOG_MINOR, ret);
++		goto error_misc_register_watchdog;
+ 	}
+ 
+-	printk(KERN_INFO "MixCOM watchdog driver v%s, watchdog port at 0x%3x\n",VERSION,watchdog_port);
++	printk(KERN_INFO "MixCOM watchdog driver v%s, watchdog port at 0x%3x\n",
++		VERSION, watchdog_port);
+ 
+ 	return 0;
++
++error_misc_register_watchdog:
++	release_region(watchdog_port, 1);
++	watchdog_port = 0x0000;
++	return ret;
+ }
+ 
+ static void __exit mixcomwd_exit(void)
+ {
+ 	if (!nowayout) {
+ 		if(mixcomwd_timer_alive) {
+-			printk(KERN_WARNING "mixcomwd: I quit now, hardware will"
++			printk(KERN_WARNING PFX "I quit now, hardware will"
+ 			       " probably reboot!\n");
+ 			del_timer_sync(&mixcomwd_timer);
+ 			mixcomwd_timer_alive=0;
+ 		}
+ 	}
+-	release_region(watchdog_port,1);
+ 	misc_deregister(&mixcomwd_miscdev);
++	release_region(watchdog_port,1);
+ }
+ 
+ module_init(mixcomwd_init);
+@@ -296,5 +320,6 @@ module_exit(mixcomwd_exit);
+ 
+ MODULE_AUTHOR("Gergely Madarasz <gorgo@itc.hu>");
+ MODULE_DESCRIPTION("MixCom Watchdog driver");
++MODULE_VERSION(VERSION);
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+diff --git a/drivers/char/watchdog/pnx4008_wdt.c b/drivers/char/watchdog/pnx4008_wdt.c
+index 5991add..22f8873 100644
+--- a/drivers/char/watchdog/pnx4008_wdt.c
++++ b/drivers/char/watchdog/pnx4008_wdt.c
+@@ -148,10 +148,6 @@ static ssize_t
+ pnx4008_wdt_write(struct file *file, const char *data, size_t len,
+ 		  loff_t * ppos)
+ {
+-	/*  Can't seek (pwrite) on this device  */
+-	if (ppos != &file->f_pos)
+-		return -ESPIPE;
+-
+ 	if (len) {
+ 		if (!nowayout) {
+ 			size_t i;
+diff --git a/drivers/char/watchdog/s3c2410_wdt.c b/drivers/char/watchdog/s3c2410_wdt.c
+index 20fa29c..50430bc 100644
+--- a/drivers/char/watchdog/s3c2410_wdt.c
++++ b/drivers/char/watchdog/s3c2410_wdt.c
+@@ -92,6 +92,7 @@ typedef enum close_state {
+ 
+ static DECLARE_MUTEX(open_lock);
+ 
++static struct device    *wdt_dev;	/* platform device attached to */
+ static struct resource	*wdt_mem;
+ static struct resource	*wdt_irq;
+ static struct clk	*wdt_clock;
+@@ -180,7 +181,7 @@ static int s3c2410wdt_set_heartbeat(int timeout)
+ 		}
+ 
+ 		if ((count / divisor) >= 0x10000) {
+-			printk(KERN_ERR PFX "timeout %d too big\n", timeout);
++			dev_err(wdt_dev, "timeout %d too big\n", timeout);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -233,7 +234,7 @@ static int s3c2410wdt_release(struct inode *inode, struct file *file)
+ 	if (allow_close == CLOSE_STATE_ALLOW) {
+ 		s3c2410wdt_stop();
+ 	} else {
+-		printk(KERN_CRIT PFX "Unexpected close, not stopping watchdog!\n");
++		dev_err(wdt_dev, "Unexpected close, not stopping watchdog\n");
+ 		s3c2410wdt_keepalive();
+ 	}
+ 
+@@ -338,7 +339,7 @@ static struct miscdevice s3c2410wdt_miscdev = {
+ 
+ static irqreturn_t s3c2410wdt_irq(int irqno, void *param)
+ {
+-	printk(KERN_INFO PFX "Watchdog timer expired!\n");
++	dev_info(wdt_dev, "watchdog timer expired (irq)\n");
+ 
+ 	s3c2410wdt_keepalive();
+ 	return IRQ_HANDLED;
+@@ -348,31 +349,36 @@ static irqreturn_t s3c2410wdt_irq(int irqno, void *param)
+ static int s3c2410wdt_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
++	struct device *dev;
++	unsigned int wtcon;
+ 	int started = 0;
+ 	int ret;
+ 	int size;
+ 
+ 	DBG("%s: probe=%p\n", __FUNCTION__, pdev);
+ 
++	dev = &pdev->dev;
++	wdt_dev = &pdev->dev;
++
+ 	/* get the memory region for the watchdog timer */
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (res == NULL) {
+-		printk(KERN_INFO PFX "failed to get memory region resouce\n");
++		dev_err(dev, "no memory resource specified\n");
+ 		return -ENOENT;
+ 	}
+ 
+ 	size = (res->end-res->start)+1;
+ 	wdt_mem = request_mem_region(res->start, size, pdev->name);
+ 	if (wdt_mem == NULL) {
+-		printk(KERN_INFO PFX "failed to get memory region\n");
++		dev_err(dev, "failed to get memory region\n");
+ 		ret = -ENOENT;
+ 		goto err_req;
+ 	}
+ 
+ 	wdt_base = ioremap(res->start, size);
+ 	if (wdt_base == 0) {
+-		printk(KERN_INFO PFX "failed to ioremap() region\n");
++		dev_err(dev, "failed to ioremap() region\n");
+ 		ret = -EINVAL;
+ 		goto err_req;
+ 	}
+@@ -381,20 +387,20 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
+ 
+ 	wdt_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+ 	if (wdt_irq == NULL) {
+-		printk(KERN_INFO PFX "failed to get irq resource\n");
++		dev_err(dev, "no irq resource specified\n");
+ 		ret = -ENOENT;
+ 		goto err_map;
+ 	}
+ 
+ 	ret = request_irq(wdt_irq->start, s3c2410wdt_irq, 0, pdev->name, pdev);
+ 	if (ret != 0) {
+-		printk(KERN_INFO PFX "failed to install irq (%d)\n", ret);
++		dev_err(dev, "failed to install irq (%d)\n", ret);
+ 		goto err_map;
+ 	}
+ 
+ 	wdt_clock = clk_get(&pdev->dev, "watchdog");
+ 	if (IS_ERR(wdt_clock)) {
+-		printk(KERN_INFO PFX "failed to find watchdog clock source\n");
++		dev_err(dev, "failed to find watchdog clock source\n");
+ 		ret = PTR_ERR(wdt_clock);
+ 		goto err_irq;
+ 	}
+@@ -408,22 +414,22 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
+ 		started = s3c2410wdt_set_heartbeat(CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME);
+ 
+ 		if (started == 0) {
+-			printk(KERN_INFO PFX "tmr_margin value out of range, default %d used\n",
++			dev_info(dev,"tmr_margin value out of range, default %d used\n",
+ 			       CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME);
+ 		} else {
+-			printk(KERN_INFO PFX "default timer value is out of range, cannot start\n");
++			dev_info(dev, "default timer value is out of range, cannot start\n");
+ 		}
+ 	}
+ 
+ 	ret = misc_register(&s3c2410wdt_miscdev);
+ 	if (ret) {
+-		printk (KERN_ERR PFX "cannot register miscdev on minor=%d (%d)\n",
++		dev_err(dev, "cannot register miscdev on minor=%d (%d)\n",
+ 			WATCHDOG_MINOR, ret);
+ 		goto err_clk;
+ 	}
+ 
+ 	if (tmr_atboot && started == 0) {
+-		printk(KERN_INFO PFX "Starting Watchdog Timer\n");
++		dev_info(dev, "starting watchdog timer\n");
+ 		s3c2410wdt_start();
+ 	} else if (!tmr_atboot) {
+ 		/* if we're not enabling the watchdog, then ensure it is
+@@ -433,6 +439,15 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
+ 		s3c2410wdt_stop();
+ 	}
+ 
++	/* print out a statement of readiness */
++
++	wtcon = readl(wdt_base + S3C2410_WTCON);
++
++	dev_info(dev, "watchdog %sactive, reset %sabled, irq %sabled\n",
++		 (wtcon & S3C2410_WTCON_ENABLE) ?  "" : "in",
++		 (wtcon & S3C2410_WTCON_RSTEN) ? "" : "dis",
++		 (wtcon & S3C2410_WTCON_INTEN) ? "" : "en");
++	
+ 	return 0;
+ 
+  err_clk:
