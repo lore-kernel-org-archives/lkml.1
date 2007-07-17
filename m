@@ -1,69 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934261AbXGQOU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934289AbXGQOVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934261AbXGQOU7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761481AbXGQOJf
+	id S934289AbXGQOVh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932777AbXGQOL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:09:35 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:36842 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932617AbXGQOJd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 10:09:33 -0400
-From: Olaf Kirch <olaf.kirch@oracle.com>
-Organization: Oracle
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Date: Tue, 17 Jul 2007 16:07:07 +0200
-User-Agent: KMail/1.9.1
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-References: <20070716091236.GA10718@elte.hu> <200707171028.36451.olaf.kirch@oracle.com> <20070717085748.GA32114@elte.hu>
-In-Reply-To: <20070717085748.GA32114@elte.hu>
+	Tue, 17 Jul 2007 10:11:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48337 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932546AbXGQOL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 10:11:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 16:18:59 +0200
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, Alan Stern <stern@rowland.harvard.edu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org> <Pine.LNX.4.64.0707162129090.19248@asgard.lang.hm> <200707171508.06921.a1426z@gawab.com>
+In-Reply-To: <200707171508.06921.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707171607.08644.olaf.kirch@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200707171619.00868.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 July 2007 10:57, Ingo Molnar wrote:
-> i've got a new observation: changing CONFIG_HZ from 250 to 1000 makes 
-> the problem go away. So it's somehow also related to jiffies.
+On Tuesday, 17 July 2007 14:08, Al Boldi wrote:
+> david@lang.hm wrote:
+> > On Mon, 16 Jul 2007, Al Boldi wrote:
+> > > We have to go through ACPI, for wakeup functions to succeed.  A simple
+> > > power-off won't do.
+> >
+> > the kexec switch being posted requires ACPI be disabled, so it's clearly
+> > possible to switch kernels and initialize devices without ACPI
+> 
+> It's a given that kexec works in the absence of ACPI; what we have to handle 
+> is the ACPI states across kernel invocations, to ensure wakeup functions 
+> succeed.  If you don't need this, then just power off.
+> 
+> > >> suspend-to-disk-and-ram could be implemented as three
+> > >> seperate steps
+> > >>
+> > >> 1. suspend-to-disk
+> > >>
+> > >> 2. resume-from-disk
+> > >>
+> > >> 3. suspend-to-ram
+> > >>
+> > >> followed by either
+> > >>
+> > >> 4. resume-from-ram
+> > >>
+> > >> or
+> > >>
+> > >> 4. battery dies and loptop powers off completely
+> > >>
+> > >> 5. power-on boot.
+> > >>
+> > >> 6. resume-from-disk
+> > >>
+> > >> all that you need to do is to make sure that the system doesn't run
+> > >> anything that would affect permanent media or the outside world between
+> > >> steps #2 and #3
+> > >
+> > > Exactly, which is why your scheme would break down on #3, and that's why
+> > > you need to call S3 from within the kexec'd hibernation kernel after
+> > > saving the hibernation image.
+> >
+> > when a kexec is called, how does the kernel know what to execute?
+> > something needs to tell it what to do, and I think that something is
+> > either something in the kexec image, or it's something passed as a
+> > parameter to that image.
+> >
+> > all that would be needed to do #3 safely is to have the kernel that you
+> > restarted on #2 do a suspend-to-ram before it does anything else.
+> 
+> If you mean by kernel 'the normal kernel', then this won't work, because it 
+> would imply a change of state after saving its image.
+> 
+> If you mean by kernel 'the kexec'd hibernation kernel', then you wouldn't 
+> need to do #2, but rather do #3 right after dumping the image in #1.
+> 
+> [...insert from another post...]
+> > > BTW, it would be really helpful if people would actually try the kexec
+> > > hibernation patches, as this may yield a much more constructive
+> > > discussion.
+> >
+> > I would love to, but so far I don't see the nessasary pieces
+> >
+> > once I kexec to the new kernel, how can it find out what pages of memory
+> > (and swap) need to be saved?
+> 
+> No need to save the swap,
 
-There are several "Tx Hang detected" messages in the log, which looks
-a lot as if net_rx_action never runs, or at least never calls
-dev->poll on the e1000 nic.
+Correct.
 
-Can you check whether/how often it bails out of net_rx_action taking
-the softnet_break path?
+> all you need to do is to dump /dev/oldmem onto storage,
 
-My suspicion right now is that dev->quota goes way negative when
-pushing out netconsole output. Normally, we bump the quota in
-__net_rx_schedule. But the whole point of the patch is that
-netpoll has no business removing the device from the poll_list,
-so it stays there, and we don't end up calling __net_rx_schedule
-as often as we would otherwise.
+I'm not sure of that.
 
-Can you try what happens if you change netif_rx_complete to
-something like this:
+> and if that dump image is compatible with swsusp,
 
-	if (test_bit(__LINK_STATE_POLL_LIST_FROZEN, &dev->state)) {
-		dev->quota = dev->weight;
-		return;
-	}
+No, it's not.  swusp additionally needs to know PFNs to restore the pages into.
 
-This is just a hack to make sure that we don't go to insanely
-negative quotas while sending packets through netpoll.
+> then a normal kernel should be able to resume from this image via
+> /dev/snapshot. 
 
-Olaf
+Nope.
+
+Greetings,
+Rafael
+
+
 -- 
-Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
-okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
+"Premature optimization is the root of all evil." - Donald Knuth
