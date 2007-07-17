@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934055AbXGQPI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934055AbXGQPIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934055AbXGQPI0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 11:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXGQPIP
+	id S934055AbXGQPIn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 11:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933810AbXGQPIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 11:08:15 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40153 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753192AbXGQPIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 11:08:14 -0400
-Date: Tue, 17 Jul 2007 17:08:12 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <ak@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc][patch 2/2] x86_64: FIFO ticket spinlocks
-Message-ID: <20070717150812.GC19092@wotan.suse.de>
-References: <20070716045932.GA19914@wotan.suse.de> <20070716050134.GB19914@wotan.suse.de> <200707171625.42235.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 17 Jul 2007 11:08:23 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:22963 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932826AbXGQPIW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 11:08:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=KpUEbjD4x7wkN8USgECGnagGZBEWWgYkpCetej/E6x2hrgThEV864MgQS9lHc/NJr
+	CX8sR27xcwEKlxqb8vw2g==
+Message-ID: <8f95bb250707170808n19799ba5l3acd13e2ee7e0f08@mail.gmail.com>
+Date: Tue, 17 Jul 2007 08:08:19 -0700
+From: "Aaron Durbin" <adurbin@google.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] ACPI: Add reboot mechanism
+Cc: "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com, akpm@osdl.org
+In-Reply-To: <86802c440707170740i30ed2110l130dafbec8e4d4a5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707171625.42235.ak@suse.de>
-User-Agent: Mutt/1.5.9i
+References: <20070716180019.GA5112@google.com> <200707171331.59414.ak@suse.de>
+	 <86802c440707170740i30ed2110l130dafbec8e4d4a5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 04:25:42PM +0200, Andi Kleen wrote:
-> 
-> 
-> When you revamp everything I guess it would make the locks
-> easier to read to just put them into a .S file? They're
-> out of line anyways.
+On 7/17/07, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On 7/17/07, Andi Kleen <ak@suse.de> wrote:
+> > On Monday 16 July 2007 20:00:19 Aaron Durbin wrote:
+> > >
+> > > Add the ability to reset the machine using the RESET_REG in ACPI's FADT table.
+> >
+> > Why? I had such a patch at some point as experiment, but it never
+> > helped actually fix a box.
+> >
+> system without superio, should still have SMI to simulate one keyboard
+> controller. So the key board reset still works.
 
-It is a bit tricky because of the way kernel/spinlock.c uses
-the the inline asm (that, and unlocks are inlined), and some
-of the debugging code.
+This is true if SMIs are still flowing, and the SMI handler correctly handles
+the reset properly. I have seen cases where the SMI handler is broken which
+causes the system to perpetually hang. Utilizing the exposed reset mechanism
+in ACPI should reset the system every time. However, if the reset fails it
+will fall back to the keyboard controller.
 
-Also, I'm not exactly sure what is the best way to clean up
-spinlocks, if it is even possible. I'm afraid to touch it
-more than I have to :)
-
-> 
-> In general they look ok.
-> 
-> >  
-> >  static inline void __raw_spin_unlock(raw_spinlock_t *lock)
-> >  {
-> > -	asm volatile("movl $1,%0" :"=m" (lock->slock) :: "memory");
-> > +	__asm__ __volatile__(
-> 
-> Minor nit: please don't use these underlined keywords. They just look
-> ugly and asm volatile works as well.
-
-OK, I like that better too. I didn't even realise I changed this
-because it is mechanical to do the __. That's good to know and I'll
-change my habit now.
+-Aaron
