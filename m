@@ -1,102 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbXGQH0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbXGQHfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932416AbXGQH0q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761540AbXGQH0g
+	id S1758144AbXGQHfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbXGQHfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:26:36 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:22607 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757406AbXGQH0f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:26:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=ZS1Oxe7VfNOc/GtShjuQD3yaPdU4ClRSL8GmM8yBZeN0MiskvGFoRZm8W8eB/LW/fpcyp/9O9auroG6/GfugTL+wxPlrJDCEYn0Rir+Nmj3YVViFXuyjj4lSOHaVkordVayppuZrsu1eRKcKL2CMZE80w48m8Un9xXGRCClx9Lc=
-Date: Tue, 17 Jul 2007 03:26:01 -0400
-To: david@lang.hm
-Cc: Joseph Fannin <jfannin@gmail.com>, Oliver Neukum <oliver@neukum.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: Hibernating To Swap Considered Harmful
-Message-ID: <20070717072601.GA21633@nineveh.local>
-Mail-Followup-To: david@lang.hm, Joseph Fannin <jfannin@gmail.com>,
-	Oliver Neukum <oliver@neukum.org>,
-	Jeremy Maitin-Shepard <jbms@cmu.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	"Huang, Ying" <ying.huang@intel.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-	linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <200707121453.49616.rjw@sisk.pl> <87odig1idx.fsf@jbms.ath.cx> <20070717001239.GB20082@nineveh.local> <200707170744.08191.oliver@neukum.org> <20070717062803.GA9069@nineveh.local> <Pine.LNX.4.64.0707162338370.19248@asgard.lang.hm>
-MIME-Version: 1.0
+	Tue, 17 Jul 2007 03:35:06 -0400
+Received: from main.gmane.org ([80.91.229.2]:55744 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbXGQHfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:35:05 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Ganesan Rajagopal <rganesan@gmail.com>
+Subject: Re: [PATCH] Chinese Language Maintainer
+Followup-To: gmane.linux.documentation
+Date: Tue, 17 Jul 2007 12:49:59 +0530
+Message-ID: <xkvhwswzijj4.fsf@grajagop-lnx.cisco.com>
+References: <989B956029373F45A0B8AF0297081890F05F2F@zch01exm26.fsl.freescale.net> <200707121205.20959.rob@landley.net> <1184330583.23373.65.camel@Gundam> <200707131352.12952.rob@landley.net> <a0bc9bf80707150742kf217ff3g8dc65efccfa692cc@mail.gmail.com> <469A6370.4020404@zytor.com> <20070715195008.6bdf48c7@the-village.bc.nu> <xkvhwsx1j70j.fsf@grajagop-lnx.cisco.com> <20070716224307.74483812@the-village.bc.nu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707162338370.19248@asgard.lang.hm>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: jfannin@gmail.com (Joseph Fannin)
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: grajagop-lnx.cisco.com
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.51 (gnu/linux)
+Cancel-Lock: sha1:DSuahH4Hdz+EGwh/4N67yt3FdHc=
+Cc: linux-doc@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 16, 2007 at 11:42:08PM -0700, david@lang.hm wrote:
-> On Tue, 17 Jul 2007, Joseph Fannin wrote:
+>>>>> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-> >root is free to "dd if=/dev/random of=/dev/mem".  Root owned
-> >daemons which do bad things are bugs.
->
-> in this case it would be more like
->
-> dd if=/block0 of=/dev/sda1 count=1 bs=4096 skip=5000
-> dd if=/block1 of=/dev/sda1 count=1 bs=4096 skip=5050
-> dd if=/block2 of=/dev/sda1 count=1 bs=4096 skip=5400
-> etc
->
-> to write the blocks to the raw parition in the right place
+>> preferred.  Moreover, technical education is completely in English. I don't
+>> see much value in translating developer documentation into Indian
+>> languages. User documentation is another story.
 
-What I meant by that was that root is allowed to shoot himself in the
-foot.  Nothing stops root from opening a swap/hibernate file, which
-would put it in cache, and cause it to be inconsistant if a
-hibernation image was written to it behind the kernel's back.
+> I am not convinced that users do not become developers, nor that we
+> should have language barriers that make this unneccessarily hard.
 
-That would be a very stupid thing to do, however.  There's no reason
-to open that file, unless you know *exactly* what you are doing, in
-which case the onus is on you to get it right.
+Again speaking only from the Indian context, we're somewhat unique when
+compared to China and Japan ;-). It's extremely unlikely that a non-english
+speaking user will become a developer. As I mentioned in my previous mail
+technical education is almost completely in English. 
 
-But you have a point.  The swap file could be very fragmented.  It
-might often be so, even.
+Most Indian IT work places communicate almost exclusively in English,
+including verbal communication because of employees from all over India with
+different native languages.  English is not a language barrier for
+developers or even technical users from India.
 
-Still, is this better than exporting the kernel's swap internals
-(which has never been a public interface before)?
+Ganesan
 
-Does it make the interface that writing hibernation images to swap
-imposes any better?
-
-Even if hibernation files are no less complicated to support than
-hibernating to swap files (which isn't a forgone conclusion) , there
-are plenty of reasons writing hibernation images to swap doesn't make
-sense.
-
-
-> >Again, supporting swap files (*which is not optional*) requires the
-> >very same support.
->
-> in the kexec model why would the second kernel care about swap files at
-> all? (unles it chooses to write to them, in which case it is exactly the
-> same support, but unless it writes to them it doesn't need to care)
-
-My point is that no extra work is required to write hibernation images
-to dedicated files than to write hibernation images to swap files.
-
-If swap files are to be supported, then, there's no technical reason
-not to support dedicated hibernation files.  Dedicated hibernation
-files are better, and there's no reason not to implement them.
-
-
---
-Joseph Fannin
-jfannin@gmail.com
+-- 
+Ganesan Rajagopal
 
