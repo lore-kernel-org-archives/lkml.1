@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935463AbXGQVNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936550AbXGQVN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935463AbXGQVNX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 17:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759413AbXGQVNH
+	id S936550AbXGQVN6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 17:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbXGQVNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 17:13:07 -0400
-Received: from wx-out-0506.google.com ([66.249.82.225]:27730 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756240AbXGQVNF (ORCPT
+	Tue, 17 Jul 2007 17:13:43 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:47108
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755406AbXGQVNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 17:13:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RbUMbKLflnZWyBeBCaV009j1RbfBE2zxKuFzCi551e7XJaQAwn/RiLPlwup86eWTJ/h3tgJkr1kuC+XRF0COU9c9FcUsiLeKQ9Gr2NS1H+1HXEXEvpSIQHskgWUwkSpqaIirCPWyFIxvEYJnbAsvYomlki354i+anPueCabaxzw=
-Message-ID: <dcf706c60707171413k6becc10cv132500e0f201fc2@mail.gmail.com>
-Date: Tue, 17 Jul 2007 23:13:05 +0200
-From: "Sasa Ostrouska" <casaxa@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: VESAFB CUSTOM RESOLUTION
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1184705070.8642.3.camel@daplas>
+	Tue, 17 Jul 2007 17:13:42 -0400
+Date: Tue, 17 Jul 2007 14:06:28 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+In-Reply-To: <87bqeag369.fsf@jbms.ath.cx>
+Message-ID: <Pine.LNX.4.64.0707171404330.2467@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
+ <200707172217.01890.rjw@sisk.pl> <87odiag45q.fsf@jbms.ath.cx>
+ <Pine.LNX.4.64.0707171335180.2467@asgard.lang.hm> <87bqeag369.fsf@jbms.ath.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
-	 <1184705070.8642.3.camel@daplas>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/17/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> On Tue, 2007-07-17 at 16:13 +0200, Sasa Ostrouska wrote:
-> > Hi ,
-> >
-> > I want to ask one question about a custom resolution in the console.
-> > I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
-> > 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
-> > ugly as I get a border of about 2-3cm on one the sides of the screen.
-> > So is there a way that I set the 1280x800 resolution at boot time ?
->
-> 1280x800 is not a VESA standard, so you have to find out the vendor mode
-> ID for it.  You can use vbetest to list all modes supported by your
-> card. Or if you don't have vbetest, use X plus the 'vesa' driver and
-> look at /var/log/X*.log.
->
-> Choose the mode ID number you want, add 0x200 and use that.
->
-> Tony
+On Tue, 17 Jul 2007, Jeremy Maitin-Shepard wrote:
 
-Tony, thats a nice one, I will try it, as the previous 2 proposed
-didnt work for me.
-Thx
-Sasa
+> david@lang.hm writes:
+>
+> [snip]
+>
+>>>> * figure out which devices can wake up
+>>>> * put devices into low power states (wake-up devices are placed in the Dx
+>>>> states compatible with the wake capability, the others are powered off)
+>
+>> this can't be done by the image-saving kernel if that kernel doesn't know about
+>> the device.
+>
+> The image-saving kernel can be made to know about all of the "wake up"
+> devices; all other devices should have already been powered off by the
+> "hibernated" kernel.
+
+not nessasarily.
+
+for example, you don't want the "hibernated" kernel to spin down your 
+disks in the general case, but your image-writing kernel may not have 
+drivers in it to talk to some of the disks. when things are powered 
+off this just isn't an issue, but if you use S4 mode instead it is.
+
+David Lang
