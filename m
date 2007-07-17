@@ -1,95 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbXGQNQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbXGQNUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbXGQNQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 09:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGQNQQ
+	id S1756331AbXGQNUo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 09:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbXGQNUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 09:16:16 -0400
-Received: from stinky.trash.net ([213.144.137.162]:44394 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbXGQNQP (ORCPT
+	Tue, 17 Jul 2007 09:20:37 -0400
+Received: from qb-out-0506.google.com ([72.14.204.227]:20159 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbXGQNUg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 09:16:15 -0400
-Message-ID: <469CC11B.2020103@trash.net>
-Date: Tue, 17 Jul 2007 15:16:11 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Tue, 17 Jul 2007 09:20:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Y2TKHKrttWfBZ06O6nSGbPm+imZY9kicCW7YrOf7AwA1+LCqSobdKI6Ey9T+DPHnRN2icEtPdeLlRG1CEUyrN8yf4AYUdqYI6CLfILkqjIIvTn0t5tjsdNp4pv+QyJuoj3jmvMZGfQ2Hw0JxThRenG7KTo7XaqsVn95sEIUOfw8=
+Message-ID: <d120d5000707170620y31b8351dkb904312445f3f6e3@mail.gmail.com>
+Date: Tue, 17 Jul 2007 09:20:34 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "=?ISO-8859-1?Q?N=E9meth_M=E1rton?=" <nm127@freemail.hu>
+Subject: Re: [PATCH 3/3] leds-clevo-mail: driver for Clevo mail LED
+Cc: "Richard Purdie" <rpurdie@rpsys.net>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, "Rodrigo Pereira" <rodripe@gmail.com>
+In-Reply-To: <469C978A.5060809@freemail.hu>
 MIME-Version: 1.0
-To: Alasdair G Kergon <agk@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: Re: [2.6.23 PATCH 07/18] dm io: fix panic on large request
-References: <20070711205846.GY24114@agk.fab.redhat.com>
-In-Reply-To: <20070711205846.GY24114@agk.fab.redhat.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <469C978A.5060809@freemail.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alasdair G Kergon wrote:
-> From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-> 
-> bio_alloc_bioset() will return NULL if 'num_vecs' is too large.
-> Use bio_get_nr_vecs() to get estimation of maximum number.
-> 
-> Signed-off-by: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-> Signed-off-by: Alasdair G Kergon <agk@redhat.com>
-> 
-> ---
->  drivers/md/dm-io.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletion(-)
+On 7/17/07, Németh Márton <nm127@freemail.hu> wrote:
+> +
+> +#define TRUE                   1
+> +#define FALSE                  0
+> +
+> +#define CLEVO_MAIL_LED_OFF             0x0084
+> +#define CLEVO_MAIL_LED_BLINK_1HZ       0x008A
+> +#define CLEVO_MAIL_LED_BLINK_0_5HZ     0x0083
+> +
+> +#define MODULE_FNAME   "leds-clevo-mail.c"
+> +#define DRVNAME                        "clevo-mail-led"
+> +#define NO_RESOURCES           NULL
+> +
+> +#define printk_hint(fmt, args...)                       \
+> +       printk(KERN_ERR MODULE_FNAME ": " fmt, ## args)
+> +
+> +
+> +#define printk_dmi(field)                               \
+> +       printk(KERN_ERR MODULE_FNAME                    \
+> +              ":    " # field "=\"%s\"\n",             \
+> +              dmi_get_system_info(field))
+> +
+> +
+> +MODULE_AUTHOR("Márton Németh <nm127@freemail.hu>");
+> +MODULE_DESCRIPTION("Clevo mail LED driver");
+> +MODULE_LICENSE("GPL");
+> +
+> +static unsigned int __initdata nodetect;
+> +module_param_named(nodetect, nodetect, bool, 0);
+> +MODULE_PARM_DESC(nodetect, "Skip DMI hardware detection");
+> +
+> +
+> +static struct platform_device *pdev;
+> +
+> +
+> +static int __init led_dmi_callback(struct dmi_system_id *id) {
 
+Functions are not statements (opening brace placement).
 
-This patch reproducibly oopses my box:
+> +       printk(KERN_INFO MODULE_FNAME ": '%s' found\n", id->ident);
+> +       return 1;
+> +}
+> +
+> +/**
+> + * struct mail_led_whitelist - List of known good models
+> + *
+> + * Contains the known good models this driver is compatible with.
+> + * When adding a new model try to be as strict as possible. This
+> + * makes it possible to keep the false positives (the model is
+> + * detected as working, but in reality it is not) as low as
+> + * possible.
+> + */
+> +static struct dmi_system_id __initdata mail_led_whitelist[] = {
+> +       {
+> +               .callback = led_dmi_callback,
+> +               .ident = "Clevo D410J",
+> +               .matches = {
+> +                       DMI_MATCH(DMI_SYS_VENDOR, "VIA"),
+> +                       DMI_MATCH(DMI_PRODUCT_NAME, "K8N800"),
+> +                       DMI_MATCH(DMI_PRODUCT_VERSION, "VT8204B")
+> +               }
+> +       },
+> +       {
+> +               .callback = led_dmi_callback,
+> +               .ident = "Clevo M5x0N",
+> +               .matches = {
+> +                       DMI_MATCH(DMI_SYS_VENDOR, "CLEVO Co."),
+> +                       DMI_MATCH(DMI_PRODUCT_NAME, "M5x0N")
+> +               }
+> +       },
+> +       {
+> +               .callback = led_dmi_callback,
+> +               .ident = "Positivo Mobile",
+> +               .matches = {
+> +                       DMI_MATCH(DMI_BOARD_VENDOR, "CLEVO Co. "),
+> +                       DMI_MATCH(DMI_BOARD_NAME, "M5X0V "),
+> +                       DMI_MATCH(DMI_PRODUCT_NAME, "Positivo Mobile"),
+> +                       DMI_MATCH(DMI_PRODUCT_VERSION, "VT6198")
+> +               }
+> +       },
+> +       {
+> +               .callback = led_dmi_callback,
+> +               .ident = "Clevo D410V",
+> +               .matches = {
+> +                       DMI_MATCH(DMI_BOARD_VENDOR, "Clevo, Co."),
+> +                       DMI_MATCH(DMI_BOARD_NAME, "D400V/D470V"),
+> +                       DMI_MATCH(DMI_BOARD_VERSION, "SS78B"),
+> +                       DMI_MATCH(DMI_PRODUCT_VERSION, "Rev. A1")
+> +               }
+> +       },
+> +       { }
+> +};
+> +
+> +
+> +static void clevo_mail_led_set(struct led_classdev *led_cdev,
+> +                               enum led_brightness value)
+> +{
+> +       if (value == LED_OFF) {
+> +               i8042_command(NULL, CLEVO_MAIL_LED_OFF);
+> +       } else if (value <= LED_HALF) {
+> +               i8042_command(NULL, CLEVO_MAIL_LED_BLINK_0_5HZ);
+> +       } else {
+> +               i8042_command(NULL, CLEVO_MAIL_LED_BLINK_1HZ);
+> +       }
+> +
 
-[  126.754204] BUG: unable to handle kernel NULL pointer dereference at
-virtual address 00000000
-[  126.754326]  printing eip:
-[  126.754369] c0141a67
-[  126.754420] *pde = 00000000
-[  126.754465] Oops: 0000 [#1]
-[  126.754507] PREEMPT
-[  126.754585] Modules linked in: [...]
+I think general preference is not to use braces for single-line bodies.
 
+> +}
+> +
+> +static int clevo_mail_led_blink(struct led_classdev *led_cdev,
+> +                               int delay_on, int delay_off)
+> +{
+> +       int supported = 0;
+> +
+> +       if (delay_on == 500 /* ms */ && delay_off == 500 /* ms */) {
+> +               /* blink the led with 1Hz */
+> +               i8042_command(NULL, CLEVO_MAIL_LED_BLINK_1HZ);
+> +               supported = 1;
+> +
+> +       } else if (delay_on == 1000 /* ms */ && delay_off == 1000 /* ms */) {
+> +               /* blink the led with 0.5Hz */
+> +               i8042_command(NULL, CLEVO_MAIL_LED_BLINK_0_5HZ);
+> +               supported = 1;
+> +
+> +       } else {
+> +               printk(KERN_DEBUG MODULE_FNAME
+> +                      ": clevo_mail_led_blink(..., %u, %u),"
+> +                      " returning 0 (unsupported)\n", delay_on, delay_off);
+> +       }
+> +
+> +       return supported;
 
-[  126.758372] CPU:    0
-[  126.758373] EIP:    0060:[<c0141a67>]    Not tainted VLI
-[  126.758374] EFLAGS: 00010282   (2.6.22 #1)
-[  126.758511] EIP is at mempool_free+0xe/0xc0
-[  126.758558] eax: d39e65d0   ebx: 00000000   ecx: df2b9898   edx: 00000000
-[  126.758605] esi: 00000000   edi: d39e65d0   ebp: d487d6d0   esp: df79fec0
-[  126.758652] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-[  126.758699] Process kcryptd/0 (pid: 3218, ti=df79f000 task=df2b9640
-task.ti=df79f000)
-[  126.758747] Stack: 00000000 00000000 d3835f80 00000000 e08b0923
-e08a5f69 00000200 e0ad1080
-[  126.759093]        dfb5ab40 d3835f80 e08b08c0 00000000 e08a5fb7
-c01804d8 00000000 00000200
-[  126.759439]        c520bc00 00000c00 d0b77438 d5754b00 df79ff5c
-e08a515e d0b77444 d5754b00
-[  126.759858] Call Trace:
-[  126.759965]  [<e08b0923>] clone_endio+0x63/0xc0 [dm_mod]
-[  126.760066]  [<e08a5f69>] crypt_convert+0x131/0x17f [dm_crypt]
-[  126.760168]  [<e08b08c0>] clone_endio+0x0/0xc0 [dm_mod]
-[  126.760264]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
-[  126.760349]  [<c01804d8>] bio_endio+0x33/0x5d
-[  126.760462]  [<e08a515e>] dec_pending+0x28/0x39 [dm_crypt]
-[  126.760558]  [<e08a61e6>] kcryptd_do_work+0x22f/0x30f [dm_crypt]
-[  126.760669]  [<c0112182>] update_stats_wait_end+0x7f/0xb2
-[  126.760801]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
-[  126.760888]  [<c012700e>] run_workqueue+0x84/0x179
-[  126.760990]  [<c0127292>] worker_thread+0x0/0xf0
-[  126.761074]  [<c012732f>] worker_thread+0x9d/0xf0
-[  126.761160]  [<c012a360>] autoremove_wake_function+0x0/0x37
-[  126.761256]  [<c0127292>] worker_thread+0x0/0xf0
-[  126.761334]  [<c012a15c>] kthread+0x52/0x58
-[  126.761411]  [<c012a10a>] kthread+0x0/0x58
-[  126.761496]  [<c0104983>] kernel_thread_helper+0x7/0x14
-[  126.761598]  =======================
-[  126.761717] Code: 1c 00 89 f6 eb a9 b8 88 13 00 00 e8 b4 56 1c 00 8d
-74 26 00 eb d5 31 db e9 11 ff ff ff 57 56 53 83 ec 04 89 c7 89 d6 85 c0
-74 55 <8b> 02 39 42 04 7d 46 9c 58 90 8d b4 26 00 00 00 00 89 c3 fa 90
-[  126.763964] EIP: [<c0141a67>] mempool_free+0xe/0xc0 SS:ESP 0068:df79fec0
+Please return 0/-EINVAL.
+
+> +}
+> +
+> +
+> +static struct led_classdev clevo_mail_led = {
+> +       .name                   = "clevo::mail",
+> +       .brightness_set         = clevo_mail_led_set,
+> +       .blink_set              = clevo_mail_led_blink,
+> +};
+> +
+> +static int __init clevo_mail_led_probe(struct platform_device *pdev)
+> +{
+> +       int error;
+> +
+> +       printk(KERN_DEBUG MODULE_FNAME ": probe()\n");
+> +
+
+Use pr_debug here or just kill it - it will litter users dmesgs.
+
+> +       error = led_classdev_register(&pdev->dev, &clevo_mail_led);
+> +       return error;
+> +}
+> +
+> +static int clevo_mail_led_remove(struct platform_device *pdev)
+> +{
+> +
+> +       printk(KERN_DEBUG MODULE_FNAME ": remove()\n");
+> +
+> +       led_classdev_unregister(&clevo_mail_led);
+> +       return 0;
+> +}
+> +
+> +
+> +
+> +#ifdef CONFIG_PM
+> +static int clevo_mail_led_suspend(struct platform_device *dev,
+> +                                 pm_message_t state)
+> +{
+> +       led_classdev_suspend(&clevo_mail_led);
+> +       return 0;
+> +}
+> +
+> +static int clevo_mail_led_resume(struct platform_device *dev)
+> +{
+> +       led_classdev_resume(&clevo_mail_led);
+> +       return 0;
+> +}
+> +#endif
+> +
+> +static struct platform_driver clevo_mail_led_driver = {
+> +       .probe          = clevo_mail_led_probe,
+> +       .remove         = clevo_mail_led_remove,
+> +#ifdef CONFIG_PM
+> +       .suspend        = clevo_mail_led_suspend,
+> +       .resume         = clevo_mail_led_resume,
+> +#endif
+> +       .driver         = {
+> +               .name           = DRVNAME,
+> +       },
+> +};
+> +
+> +
+> +static __init void print_hints(void)
+> +{
+> +       if (!nodetect) {
+> +               printk_hint("Current hardware not supported:\n");
+> +       } else {
+> +               printk_hint("Current hardware is:\n");
+> +       }
+> +       printk_dmi(DMI_BIOS_VENDOR);
+> +       printk_dmi(DMI_BIOS_VERSION);
+> +       printk_dmi(DMI_BIOS_DATE);
+> +       printk_dmi(DMI_SYS_VENDOR);
+> +       printk_dmi(DMI_PRODUCT_NAME);
+> +       printk_dmi(DMI_PRODUCT_VERSION);
+> +       printk_dmi(DMI_PRODUCT_SERIAL);
+> +       printk_dmi(DMI_BOARD_VENDOR);
+> +       printk_dmi(DMI_BOARD_NAME);
+> +       printk_dmi(DMI_BOARD_VERSION);
+> +       if (!nodetect) {
+> +               printk_hint("Try 'nodetect' module parameter.\n");
+> +       }
+> +       printk_hint("If this driver is working with your hardware, report\n");
+> +       printk_hint("it through the Tracker at\n");
+> +       printk_hint("http://sourceforge.net/projects/clevo-mailled/ in\n");
+> +       printk_hint("order your laptop model can be added to the detection.\n");
+> +       printk_hint("Please make sure to include in the report\n");
+> +       printk_hint("    - all lines starting with \"%s\"\n", MODULE_FNAME);
+> +       printk_hint("    - the product model of the laptop and\n");
+> +       printk_hint("    - the color of the mail led.\n");
+> +}
+> +
+> +static int __init led_init(void)
+
+clevo_led_init just to be consistent with the rest of the driver?
+
+> +{
+> +       int error = 0;
+> +       int count = 0;
+> +
+> +       /* Check with the help of DMI if we are running on supported hardware */
+> +       if (!nodetect) {
+> +               count = dmi_check_system(mail_led_whitelist);
+> +       }
+> +       if (!count) {
+> +               print_hints();
+
+I really don't want to see that dissertation on my box. Normally we
+silently return if DMI data does not match. User has an option to
+'force' loading the module. In that case I'd say something like
+'Forcing module load. If the driver works on your hardware please
+report in tracker at http://sourceforge.net/projects/clevo-mailled/"
+
+-- 
+Dmitry
