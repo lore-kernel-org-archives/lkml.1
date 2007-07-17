@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934310AbXGRQ25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934201AbXGRQ3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934310AbXGRQ25 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 12:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932777AbXGRQ2q
+	id S934201AbXGRQ3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 12:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932777AbXGRQ3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 12:28:46 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:34785 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933324AbXGRQ2o (ORCPT
+	Wed, 18 Jul 2007 12:29:25 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:30070 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933359AbXGRQ3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 12:28:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NwjKvfUD2XDON8oWjYNAm3UOitePrJReYCB+/tCHf+dWAHpxg4asLIJ7vwZjvC+UJ2qzQJWYnYmFAqHqgZQ5WuPYWXxV0eblvWeimTZIjMAsFUEYTuJuSlNOpvImo5qF7ybw4TimEdIpaYwfMC1qR3OHbF9fyTvE7HTik8NJNjk=
-Message-ID: <961aa3350707180928t418bc755i486bf87453bf6bd6@mail.gmail.com>
-Date: Thu, 19 Jul 2007 01:28:43 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: ego@in.ibm.com
-Subject: Re: [PATCH 4/10] cpu: deliver CPU_UP_CANCELED only to NOTIFY_OKed callbacks with CPU_UP_PREPARE
-Cc: linux-kernel@vger.kernel.org, "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Dmitriy Zavin" <dmitriyz@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Andi Kleen" <andi@firstfloor.org>, "Ashok Raj" <ashok.raj@intel.com>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, heiko.carstens@de.ibm.com,
-       kiran@scalex86.org, clameter@sgi.com,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20070718065404.GA1982@in.ibm.com>
+	Wed, 18 Jul 2007 12:29:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=EztCPYgP4Ry1y1A5JqVG9FR4knyBSOoODnbYRoBfI51zmNSb0pMnS660PJmtTs3FwWehngKXnYYU9R4EIp5xJ+rrNrrpAXRFnGVEJSHmvFlXOKYunyzOEqQaoXjYGmNwEzakicyyRGeKkZeyvqc1pSv/sgYY73X2K0/aIALV4O4=  ;
+X-YMail-OSG: 7hW2eMgVM1lHhQ7PEwyJvhC2cb6ZzPtf7inV.QnPBbk3eF5vn_EcyqapQF1CyJyNP3yQFGWvEw--
+Message-ID: <469C3FE8.30505@yahoo.com.au>
+Date: Tue, 17 Jul 2007 14:04:56 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+CC: Ray Lee <ray-lk@madrabbit.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH/RFC] msleep() with hrtimers
+References: <21003.1184596954@lwn.net>	 <Pine.LNX.4.64.0707161654130.1817@scrub.home>	 <2c0942db0707160857s25cbce19j7f057b14e74651e8@mail.gmail.com> <29495f1d0707160908x32704c7o41ab7857ceac1558@mail.gmail.com>
+In-Reply-To: <29495f1d0707160908x32704c7o41ab7857ceac1558@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070716134855.GA1858@APFDCB5C> <20070716135347.GD2040@APFDCB5C>
-	 <20070717082331.GA12231@in.ibm.com>
-	 <961aa3350707171018i58a47b7asb4a92e1bcd146adf@mail.gmail.com>
-	 <20070718065404.GA1982@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > >[...] However, it might break slab.
-> > >If I am not mistaken, slab code initializes multiple objects in
-> > >CPU_UP_PREPARE and relies on the CPU_UP_CANCELLED to destroy the
-> > >objects which successfully got initialized before the some object's
-> > >initialization went bad.
-> >
-> > My testing machine is ordinary dual core non numa box. So it might not
-> > trigger the problem that you are warried about under heavy slab alloc
-> > failure injection.
-> >
-> > At first glance I couln't find the problem in cpu hottplug code in slab.c
-> > yet,
-> > but found some memory leak path. (it doesn't break slab though)
->
-> That's what I meant. I shouldn't have used the word "break" :-)
-> In case of slab, freeing up of resources on an error during CPU_UP_PREPARE,
-> is currently handled in CPU_UP_CANCELLED.
+Nish Aravamudan wrote:
 
-Now I perfectly understand your concern. The last memleak fix
-patch did not cover for each cachep->array[cpu] in cache_chain.
-So cpu hotplug error handling in slab becomes worse by this change.
+> Well, before these changes, the only guarantee msleep() could make,
+> just like the only guarantee schedule_timeout() could make, was that
+> it would not return early. The 1-jiffy sleep was always tough to deal
+> with, because of rounding and such. And it's simply exacerbated with
+> HZ=100. It's not technically 20 times longer in all cases, it's 2
+> jiffies longer, which depends on HZ, so varies from 2 msecs longer to
+> 20 msecs longer.
 
-> But, like you reasoned out, it makes more sense for such a subsystem
-> to free up all the correctly allocated resources before sending a
-> NOTIFY_BAD, rather than handling it in CPU_UP_CANCELLED. And slab
-> needed that fix, which you've provided, before we send the notification
-> to (nr_calls - 1) callers.
->
-> So could you add this patch to series?
+I don't think you should rely on anything else actually, because Linux
+is not an RT OS. If your driver needs a specific sequence in a given
+amount of time, you have to do something like disable interrupts and
+use delays.
 
-Sure, and I'll CC you on the slab change.
+-- 
+SUSE Labs, Novell Inc.
