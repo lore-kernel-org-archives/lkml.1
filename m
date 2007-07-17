@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbXGQGRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbXGQGU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758984AbXGQGRR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 02:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXGQGRH
+	id S1760695AbXGQGU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 02:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXGQGUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 02:17:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40028 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752323AbXGQGRG (ORCPT
+	Tue, 17 Jul 2007 02:20:18 -0400
+Received: from 69-12-177-67.dsl.static.sonic.net ([69.12.177.67]:38082 "EHLO
+	orion.sysdev.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751858AbXGQGUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 02:17:06 -0400
-Date: Mon, 16 Jul 2007 23:16:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thanos Makatos <mcatos@ics.forth.gr>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Full buffer cache not working properly
-Message-Id: <20070716231625.e2bdbc01.akpm@linux-foundation.org>
-In-Reply-To: <469634B6.1070901@ics.forth.gr>
-References: <469634B6.1070901@ics.forth.gr>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 17 Jul 2007 02:20:17 -0400
+Date: Mon, 16 Jul 2007 22:20:58 -0800
+From: Tony Borras <tonyb@sysdev.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.4.35 tree abandoned/delayed?
+Message-Id: <20070716222058.6d2a979a.tonyb@sysdev.org>
+In-Reply-To: <8HNDE-JM-11@gated-at.bofh.it>
+References: <8HJqo-2BV-23@gated-at.bofh.it>
+	<8HJqo-2BV-21@gated-at.bofh.it>
+	<8HNDE-JM-11@gated-at.bofh.it>
+Organization: SysDev Inc.
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; i686-pc-linux-gnu)
+X-Operating-System: Linux-2.6.27-SMP64
+X-SlakBoot: SlakbootIBS v11.0.2
+User-Agent: Sylpheed/1.0.6
+X-Sylpheed-Rules: You Bet
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jul 2007 17:03:34 +0300 Thanos Makatos <mcatos@ics.forth.gr> wrote:
+On Tue, 17 Jul 2007 07:20:06 +0200
+Willy Tarreau <w@1wt.eu> wrote:
 
-> I run several times the following test and what I've seen is that when 
-> the buffer cache becomes full, unneeded dirty buffer heads are not evicted
-> and no other memory allocation can happen (including reading a block 
-> from the disk to the buffer cache). Should this happen?
-> Here's the code that reproduces this issue:
+> Hi Tony,
 > 
-> for(i = 0; i < get_capacity(bdev->bd_disk)/8; i++) {
->         bh = __bread(bdev, i, PAGE_SIZE);
->         lock_buffer(bh);
->         memset(bh->b_data, 0, PAGE_SIZE);
->         set_buffer_dirty(bh);
->         unlock_buffer(bh);
->         __brelse(bh);
-> }
+> On Mon, Jul 16, 2007 at 04:30:47PM -0800, Tony Borras wrote:
+> > I did get the current 'pre' set of 2.4.35 (circa early
+> > June) patches and applied to 2.4.34.5.  After fixing a goto
+> > mislable in one of the patches (dont remember if it was one
+> > of the patch-2.4.34.? or patch-2.4.35.pre5), managed to
+> > build a vmlinuz-2.4.35 successfully.
 > 
-> I added some printks printing the buffer head's reference counter: after 
-> the '__bread' ref count is 2, after '__brelse' ref count is 1. Shouldn't 
-> these
-> numbers be 1 and 0 respectively? I added an extra 'put_bh' before (or 
-> after) the '__brelse' but I get a BUG().
+> could you please report what the problem was, in case it's not
+> fixed yet ?
+> 
+> > Just wondered whether to expect an abandonded tree, in which
+> > case I will fly with this 2.4.35 build or should wait for
+> > its eventual release.
+>  
+> No it's not abandonned at all !!!
 
-You've been very unkind to the VFS.  Put a balance_dirty_pages() call in
-that loop to give the system an opportunity to do some writeback and
-throttling.
+My process was to start with 2.4.34 sources (that compiled
+fine), applied the 2.4.34.[1-5] patches and then the 2.4.35.rc5.
+
+I didnt patch the patches. I changed a jmp reference to a
+non-existent label to the correct label, in the one file that
+complained at build time.
+
+So have to repeat the full process, again.  Will let you know...
+
+TonyB
+
+
+There are 10 types of people in this world, those that read
+binary and those who don't!
+
+--
+  __      __  _     I N C.               http://www.sysdev.org
+/ __|\\// __||  \  __   __          /         tonyb@sysdev.org
+\__ \ \/\__ \||)|/ O_)\/ /        \/  System Tools / Utilities
+|___/ || ___/|_ /\___|\_/        WIntel / Linux Device Drivers
 
