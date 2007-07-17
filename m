@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761310AbXGQLQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763959AbXGQLRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761310AbXGQLQp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 07:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXGQLQi
+	id S1763959AbXGQLRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 07:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXGQLRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 07:16:38 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:31237 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752535AbXGQLQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 07:16:37 -0400
-Date: Tue, 17 Jul 2007 15:16:29 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH] SLAB_PANIC more (proc, posix-timers, shmem)
-Message-ID: <20070717111629.GB25083@localhost.sw.ru>
+	Tue, 17 Jul 2007 07:17:10 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:43006 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755211AbXGQLRI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 07:17:08 -0400
+X-Sasl-enc: FWc3m+IJu6bJHUDREdrvqHPW8tcLn5hD4roMiM3rubk1 1184671026
+Subject: Re: [patch] CFS scheduler, -v19
+From: Ian Kent <raven@themaw.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Bill Davidsen <davidsen@tmr.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20070717074537.GA13539@elte.hu>
+References: <20070706173319.GA2356@elte.hu>
+	 <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com>
+	 <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com>
+	 <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu>
+	 <1184648474.3188.33.camel@raven.themaw.net>
+	 <20070717074537.GA13539@elte.hu>
+Content-Type: text/plain
+Date: Tue, 17 Jul 2007 19:17:00 +0800
+Message-Id: <1184671021.3188.51.camel@raven.themaw.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These aren't modular, so SLAB_PANIC is OK.
+On Tue, 2007-07-17 at 09:45 +0200, Ingo Molnar wrote:
+> * Ian Kent <raven@themaw.net> wrote:
+> 
+> > Yes it does and I have two reported bugs so far.
+> > 
+> > In several places I have code similar to:
+> > 
+> > wait.tv_sec = time(NULL) + 1;
+> > wait.tv_nsec = 0;
+> > 
+> > signaled = 0;
+> > while (!signaled) {
+> >         status = pthread_cond_timedwait(&cond, &mutex, &wait);
+> >        if (status) {
+> >              if (status == ETIMEDOUT)
+> >                   break;
+> >              fatal(status);
+> >       }
+> > }
+> 
+> ah! It passes in a low-res time source into a high-res time interface 
+> (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to 
+> time(NULL) + 2, or change it to:
+> 
+> 	gettimeofday(&wait, NULL);
+> 	wait.tv_sec++;
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+OK, I'm with you, hi-res timer.
+But even so, how is the time in the past after adding a second.
 
- fs/proc/inode.c       |    4 +---
- kernel/posix-timers.c |    3 ++-
- mm/shmem.c            |    4 +---
- 3 files changed, 4 insertions(+), 7 deletions(-)
+Is it because I'm not setting tv_nsec when it's close to a second
+boundary, and hence your recommendation above?
 
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -118,10 +118,8 @@ int __init proc_init_inodecache(void)
- 	proc_inode_cachep = kmem_cache_create("proc_inode_cache",
- 					     sizeof(struct proc_inode),
- 					     0, (SLAB_RECLAIM_ACCOUNT|
--						SLAB_MEM_SPREAD),
-+						SLAB_MEM_SPREAD|SLAB_PANIC),
- 					     init_once, NULL);
--	if (proc_inode_cachep == NULL)
--		return -ENOMEM;
- 	return 0;
- }
- 
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -241,7 +241,8 @@ static __init int init_posix_timers(void)
- 	register_posix_clock(CLOCK_MONOTONIC, &clock_monotonic);
- 
- 	posix_timers_cache = kmem_cache_create("posix_timers_cache",
--					sizeof (struct k_itimer), 0, 0, NULL, NULL);
-+					sizeof (struct k_itimer), 0, SLAB_PANIC,
-+					NULL, NULL);
- 	idr_init(&posix_timers_id);
- 	return 0;
- }
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -2361,9 +2361,7 @@ static int init_inodecache(void)
- {
- 	shmem_inode_cachep = kmem_cache_create("shmem_inode_cache",
- 				sizeof(struct shmem_inode_info),
--				0, 0, init_once, NULL);
--	if (shmem_inode_cachep == NULL)
--		return -ENOMEM;
-+				0, SLAB_PANIC, init_once, NULL);
- 	return 0;
- }
- 
+> 
+> does this solve the spinning?
+
+I don't have a system to test this on so I'll try to get one of the
+people that logged the problem to test a patch.
+
+> 
+> i'm wondering how widespread this is. If automount is the only app doing 
+> this then _maybe_ we could get away with it by changing automount?
+
+I'm happy to change automount but that could cause odd version specific
+problems for people updating their kernel on an older installed base.
+
+Aaah .. and they'll all blame me!! ;)
+
+Ian
+
 
