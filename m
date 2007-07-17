@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbXGQVaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934671AbXGQVce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759987AbXGQVaV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 17:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759394AbXGQV3t
+	id S934671AbXGQVce (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 17:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXGQVcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 17:29:49 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49267 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759038AbXGQV3s (ORCPT
+	Tue, 17 Jul 2007 17:32:25 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:28155 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbXGQVcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 17:29:48 -0400
-Date: Tue, 17 Jul 2007 22:29:46 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH] smp_call_function_single() should be a macro on UP
-Message-ID: <20070717212946.GP21668@ftp.linux.org.uk>
-Mime-Version: 1.0
+	Tue, 17 Jul 2007 17:32:24 -0400
+Date: Wed, 18 Jul 2007 00:32:15 +0300
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
+       Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+       Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 01/10] IB/ehca: Support for multiple event queues
+Message-ID: <20070717213215.GC17168@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <OF2377E85C.B05BDE94-ONC125731A.006E64A7-C125731A.00714F9E@de.ibm.com>
+	<ada1wf7vgfb.fsf@cisco.com> <20070717043740.GB8527@mellanox.co.il>
+	<adalkdesyrs.fsf@cisco.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <adalkdesyrs.fsf@cisco.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... or we end up with header include order problems from hell.
-E.g. on m68k this is 100% fatal - local_irq_enable() there
-wants preempt_count(), which wants task_struct fields, which
-we won't have when we are in smp.h pulled from sched.h.
+> Quoting Roland Dreier <rdreier@cisco.com>:
+> Subject: Re: [PATCH 01/10] IB/ehca: Support for multiple event queues
+> 
+>  > Here's some anecdotal evidence :)
+>  > http://lists.openfabrics.org/pipermail/general/2007-May/035758.html
+> 
+> Right, but then we went on to say that we probably want to use
+> multiple vectors to separate out multiple HCA ports rather than
+> send/sreceive on the same port.  And the current IPoIB implementation
+> of having that second CQ seems suboptimal anyway, since it seems to
+> leave us susceptible to the interrupt overload that NAPI was supposed
+> to solve.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
+Sure, the ipoib patch is just a proof of concept anyway.
+And I'm actually working on merging send/recv CQs now,
+to address the livelocks.
 
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index 8039dac..259a13c 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -7,7 +7,6 @@
-  */
- 
- #include <linux/errno.h>
--#include <asm/system.h>
- 
- extern void cpu_idle(void);
- 
-@@ -100,15 +99,14 @@ static inline int up_smp_call_function(void)
- static inline void smp_send_reschedule(int cpu) { }
- #define num_booting_cpus()			1
- #define smp_prepare_boot_cpu()			do {} while (0)
--static inline int smp_call_function_single(int cpuid, void (*func) (void *info),
--					   void *info, int retry, int wait)
--{
--	WARN_ON(cpuid != 0);
--	local_irq_disable();
--	func(info);
--	local_irq_enable();
--	return 0;
--}
-+#define smp_call_function_single(cpuid, func, info, retry, wait) \
-+({ \
-+	WARN_ON(cpuid != 0);	\
-+	local_irq_disable();	\
-+	(func)(info);		\
-+	local_irq_enable();	\
-+	0;			\
-+})
- 
- #endif /* !SMP */
- 
+> At a higher level, I'm left wondering why nobody talked about multiple
+> EQs during the last months of the 2.6.22 process and now all of a
+> sudden it becomes urgent in the last few days of the 2.6.23 merge
+> window.
+
+I don't see any emergency in merging the IPoIB hack either.
+
+I just hoped that once we merge the core changes people will start
+experimenting with multiple vectors. This did not seem to have happened.
+Could this be because there's no low level driver support upstream yet?
+
+So I wonder whether merging the mthca patch [that was patch 2 of the series]
+in 2.6.23 will finally get the
+ball rolling, get people to experiment with multiple vectors
+in userspace, and that will hopefully teach us something.
+
+> That's not really how I like to merge features....
+
+If you look just at the mthca patch in isolation,
+do you still see a problem?
+
+-- 
+MST
