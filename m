@@ -1,37 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbXGQIgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbXGQIk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761485AbXGQIgv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbXGQIgo
+	id S1761511AbXGQIk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbXGQIkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:36:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42504 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753002AbXGQIgn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:36:43 -0400
-Date: Tue, 17 Jul 2007 01:36:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Lindsay Roberts" <lindsay.roberts.os@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, celinux-dev@tree.celinuxforum.org
-Subject: Re: [PATCH] fs: Add romfs version 2
-Message-Id: <20070717013635.d6d0b124.akpm@linux-foundation.org>
-In-Reply-To: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
-References: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 17 Jul 2007 04:40:20 -0400
+Received: from il.qumranet.com ([82.166.9.18]:34211 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752682AbXGQIkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 04:40:19 -0400
+Message-ID: <469C8078.2010900@qumranet.com>
+Date: Tue, 17 Jul 2007 11:40:24 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Jeff Dike <jdike@addtoit.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       KVM devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: [PATCH 3/3] KVM - add hypercall nr to kvm_run
+References: <20070716192447.GA16253@c2.user-mode-linux.org> <469C7C8D.1020600@qumranet.com>
+In-Reply-To: <469C7C8D.1020600@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jul 2007 16:01:48 +1000 "Lindsay Roberts" <lindsay.roberts.os@gmail.com> wrote:
+Avi Kivity wrote:
+> Jeff Dike wrote:
+>> Add the hypercall number to kvm_run and initialize it.  This might be
+>> considered API-changing, so I kept it separate.
+>>
+>> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+>> -- 
+>>  drivers/kvm/kvm_main.c |    1 +
+>>  include/linux/kvm.h    |    1 +
+>>  2 files changed, 2 insertions(+)
+>>
+>> Index: kvm/drivers/kvm/kvm_main.c
+>> ===================================================================
+>> --- kvm.orig/drivers/kvm/kvm_main.c
+>> +++ kvm/drivers/kvm/kvm_main.c
+>> @@ -1361,6 +1361,7 @@ int kvm_hypercall(struct kvm_vcpu *vcpu,
+>>      }
+>>      switch (nr) {
+>>      default:
+>> +        run->hypercall.nr = nr;
+>>          run->hypercall.args[0] = a0;
+>>          run->hypercall.args[1] = a1;
+>>          run->hypercall.args[2] = a2;
+>> Index: kvm/include/linux/kvm.h
+>> ===================================================================
+>> --- kvm.orig/include/linux/kvm.h
+>> +++ kvm/include/linux/kvm.h
+>> @@ -106,6 +106,7 @@ struct kvm_run {
+>>          } mmio;
+>>          /* KVM_EXIT_HYPERCALL */
+>>          struct {
+>> +            __u64 nr;
+>>              __u64 args[6];
+>>              __u64 ret;
+>>              __u32 longmode;
+>>   
+>
+> It isn't API changing as the API could not be (and has not been) 
+> used.  We do need to add a padding element to the union to make sure 
+> additional union members don't cause its size to change.
+>
+> Quite sad that we got this far with such brokenness.
+>
 
-> * Increases romfs partition size limit from 2GB to 4GB.
-> * Adds new derivative of romfs filesystem (rom2fs) with
->   block aligned regular file data to bring performance
->   parity with ext2/3. This is about 225% of the read
->   speed of the existing romfs.
+Applied this, btw.  Thanks.
 
-Thanks.  I believe that the people on celinux-dev can help us to
-evaluate this work.
+
+-- 
+error compiling committee.c: too many arguments to function
+
