@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935870AbXGQThU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935962AbXGQThl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935870AbXGQThU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbXGQThJ
+	id S935962AbXGQThl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763288AbXGQThc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:37:09 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3520 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756437AbXGQThH (ORCPT
+	Tue, 17 Jul 2007 15:37:32 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:13263 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755291AbXGQThb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:37:07 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 17 Jul 2007 12:37:01 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Michael Kerrisk <mtk-manpages@gmx.net>,
-       Davi Arnaut <davi@haxent.com.br>
-Subject: [patch] make timerfd return a u64 and fix the __put_user
-Message-ID: <Pine.LNX.4.64.0707171225050.26781@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 17 Jul 2007 15:37:31 -0400
+Date: Tue, 17 Jul 2007 21:37:29 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Shawn Rutledge <shawn.t.rutledge@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: attempting to open a VT from elsewhere and take raw keyboard
+ input
+In-Reply-To: <d9a6586e0707170151r799ccff1gcd0a84e7f3524cd5@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0707172135110.27468@fbirervta.pbzchgretzou.qr>
+References: <d9a6586e0707170151r799ccff1gcd0a84e7f3524cd5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Davi fixed a missing cast in the __put_user(), that was making timerfd 
-return a single byte instead of the full value.
-Talking with Michael about the timerfd man page, we think it'd be better 
-to use a u64 for the returned value, to align it with the eventfd 
-implementation.
+On Jul 17 2007 01:51, Shawn Rutledge wrote:
+>
+> I'm messing around with framebuffer graphics stuff and trying to write
+> a keyboard driver similar to the one in X, which will allow you to
+> start up the graphics system from any tty (not just a virtual
+> console),
+
+right, I can start X these days over SSH (either init5 or startx)
+
+> find an available VT, switch to that VT,
+
+X does that automatically ('regular' X, not considering Xdmcp or such)
+
+> and then take input from the physically attached keyboard rather
+> than necessarily
+
+X does that too.
 
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-
-- Davide
-
-
----
- fs/timerfd.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.mod/fs/timerfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/timerfd.c	2007-07-17 12:20:15.000000000 -0700
-+++ linux-2.6.mod/fs/timerfd.c	2007-07-17 12:21:09.000000000 -0700
-@@ -95,7 +95,7 @@
- {
- 	struct timerfd_ctx *ctx = file->private_data;
- 	ssize_t res;
--	u32 ticks = 0;
-+	u64 ticks = 0;
- 	DECLARE_WAITQUEUE(wait, current);
- 
- 	if (count < sizeof(ticks))
-@@ -130,7 +130,7 @@
- 			 * callback to avoid DoS attacks specifying a very
- 			 * short timer period.
- 			 */
--			ticks = (u32)
-+			ticks = (u64)
- 				hrtimer_forward(&ctx->tmr,
- 						hrtimer_cb_get_time(&ctx->tmr),
- 						ctx->tintv);
-@@ -140,7 +140,7 @@
- 	}
- 	spin_unlock_irq(&ctx->wqh.lock);
- 	if (ticks)
--		res = put_user(ticks, buf) ? -EFAULT: sizeof(ticks);
-+		res = put_user(ticks, (u64 __user *) buf) ? -EFAULT: sizeof(ticks);
- 	return res;
- }
- 
+	Jan
+-- 
