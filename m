@@ -1,66 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763601AbXGQIco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbXGQIgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763601AbXGQIco (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbXGQIcg
+	id S1761485AbXGQIgv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbXGQIgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:32:36 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35290 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754981AbXGQIcf (ORCPT
+	Tue, 17 Jul 2007 04:36:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42504 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753002AbXGQIgn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:32:35 -0400
-Date: Tue, 17 Jul 2007 10:31:56 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Domen Puncer <domen.puncer@telargo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] introduce __init_exit function annotation
-Message-ID: <20070717083156.GB3801@stusta.de>
-References: <20070717080248.GK4375@moe.telargo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070717080248.GK4375@moe.telargo.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 17 Jul 2007 04:36:43 -0400
+Date: Tue, 17 Jul 2007 01:36:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Lindsay Roberts" <lindsay.roberts.os@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, celinux-dev@tree.celinuxforum.org
+Subject: Re: [PATCH] fs: Add romfs version 2
+Message-Id: <20070717013635.d6d0b124.akpm@linux-foundation.org>
+In-Reply-To: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
+References: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
-> Introduce __init_exit, which is useful ie. for drivers that call
-> cleanup functions when they fail in __init functions.
-> 
-> 
-> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
-> ---
->  include/linux/init.h |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Index: work-powerpc.git/include/linux/init.h
-> ===================================================================
-> --- work-powerpc.git.orig/include/linux/init.h
-> +++ work-powerpc.git/include/linux/init.h
-> @@ -60,8 +60,10 @@
->  
->  #ifdef MODULE
->  #define __exit		__attribute__ ((__section__(".exit.text")))
-> +#define __init_exit
->  #else
->  #define __exit		__attribute_used__ __attribute__ ((__section__(".exit.text")))
-> +#define __init_exit	__init
->  #endif
->  
->  /* For assembly routines */
+On Fri, 13 Jul 2007 16:01:48 +1000 "Lindsay Roberts" <lindsay.roberts.os@gmail.com> wrote:
 
-This doesn't work on architectures like i386 where __exit code is
-discarded at runtime.
+> * Increases romfs partition size limit from 2GB to 4GB.
+> * Adds new derivative of romfs filesystem (rom2fs) with
+>   block aligned regular file data to bring performance
+>   parity with ext2/3. This is about 225% of the read
+>   speed of the existing romfs.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks.  I believe that the people on celinux-dev can help us to
+evaluate this work.
