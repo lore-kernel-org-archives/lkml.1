@@ -1,146 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934302AbXGQXNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbXGQXPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934302AbXGQXNu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 19:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757402AbXGQXNl
+	id S933859AbXGQXPi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 19:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760254AbXGQXPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 19:13:41 -0400
-Received: from mail.windriver.com ([147.11.1.11]:51136 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754947AbXGQXNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 19:13:40 -0400
-Date: Tue, 17 Jul 2007 16:12:29 -0700 (PDT)
-From: Jeremy Katz <jeremy.katz@windriver.com>
-X-X-Sender: jkatz@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [PATCH] posix-timer: fix deletion race
-In-Reply-To: <1184703427.12353.476.camel@chaos>
-Message-ID: <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
-References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain> 
- <1184662429.12353.426.camel@chaos>  <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
- <1184703427.12353.476.camel@chaos>
+	Tue, 17 Jul 2007 19:15:08 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51492 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754947AbXGQXPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 19:15:05 -0400
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 18 Jul 2007 01:15:04 +0200
+From: "Michael Kerrisk" <mtk-manpages@gmx.net>
+Message-ID: <20070717231504.257750@gmx.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-OriginalArrivalTime: 17 Jul 2007 23:12:29.0737 (UTC) FILETIME=[F296E190:01C7C8C7]
+Subject: Re: timerfd(2) draft man page plus questions
+To: Davide Libenzi <davidel@xmailserver.org>
+X-Authenticated: #24879014
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1+4rEMWtw247D6MYbvUDm5HVvOdvKE1cqMFRcCuwD
+ 5ULQ7WjcnSDUjo2ZUIBef+BQxkKzAG8fSQ3Q== 
+Content-Transfer-Encoding: 7bit
+X-GMX-UID: TH+qccYdbGInTN/pFmVnoB9vcmZ1ZtyF
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Thomas Gleixner wrote:
+Davide,
 
-> On Tue, 2007-07-17 at 11:39 -0700, Jeremy Katz wrote:
->> I tried the patch with my test case, but still see the issue.
->> Here's my explanation of the double free race:
->> CPU 0					CPU 1
->> sys_timer_delete():
->>  	lock_timer();
->>  	...
->>  	unlock_timer();			itimer_delete()
->>  	release_posix_timer():			spin_lock_irqsave(timer...)
->>  		...				...
->>  		sigqueue_free()			unlock_timer()
->>  		...				sigqueue_free()
->>  							BUG_ON(!(q->flags...
->
-> With 2.6.14 or with current mainline ?
+A further thought: if one added the extra argument to retrieve
+the previous timer settings then it might be desirable to
+permit:
 
-I haven't been keeping notes quite as studiously as I should have been, 
-but this just occurred with 2.6.22.1 + the hrt6 patch + your proposed fix:
+timerfd(ufd, 0, 0, NULL, &olditimerspec)
 
-------------[ cut here ]------------
-Kernel BUG at c0125987 [verbose debug info unavailable]
-invalid opcode: 0000 [#1]
-SMP
-Modules linked in:
-CPU:    0
-EIP:    0060:[<c0125987>]    Not tainted VLI
-EFLAGS: 00010246   (2.6.22-hrt1-WR1.4aq_cgl #1)
-EIP is at sigqueue_free+0x23/0x72
-eax: 00000000   ebx: f713a7d8   ecx: f79e25e0   edx: 00000202
-esi: f6f4fa1c   edi: 00000283   ebp: f7207e54   esp: f7207e4c
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process hrtm_test (pid: 19369, ti=f7207000 task=f729ea50 task.ti=f7207000)
-Stack: 00000202 f6f4fa1c f7207e64 c012c7ca f6f4fa1c f6f4fa24 f7207e78 
-c012d110
-        f77463c0 f77463fc 00000001 f7207e88 c012d14b f77463c0 f729ea50 
-f7207eb4
-        c011e57c f729eea4 00000006 f729ea50 f7207ea4 c01244e8 00000006 
-f77463c0
-Call Trace:
-  [<c0103504>] show_trace_log_lvl+0x1a/0x30
-  [<c01035bb>] show_stack_log_lvl+0x8d/0xaa
-  [<c01037f5>] show_registers+0x1cd/0x2cb
-  [<c0103a4a>] die+0x113/0x207
-  [<c0395cf5>] do_trap+0x8f/0xc6
-  [<c0103d35>] do_invalid_op+0x88/0x92
-  [<c0395ac2>] error_code+0x72/0x78
-  [<c012c7ca>] release_posix_timer+0x1b/0x7a
-  [<c012d110>] itimer_delete+0x9b/0xc0
-  [<c012d14b>] exit_itimers+0x16/0x21
-  [<c011e57c>] do_exit+0x300/0x3e8
-  [<c011e6b2>] do_group_exit+0x29/0x6f
-  [<c012643a>] get_signal_to_deliver+0x210/0x298
-  [<c010256d>] do_signal+0x5c/0x158
-  [<c01026a5>] do_notify_resume+0x3c/0x3f
-  [<c0102866>] work_notifysig+0x13/0x19
+to retrieve the time until next expiration without changing
+the timer settings.  Analogous functionality is provided by
+getitimer() and clock_gettime() in the historical API.
 
-> I doubt that this can happen, as itimer_delete() is only called, when
-> there are no more references to the shared sig struct. At this point no
-> other related thread can run sys_timer_delete().
+Cheers,
 
-I came to the above explanation after failing to find another path that 
-clears the SIGQUEUE_PREALLOC flag.  Some form of memory corruption could 
-be to blame.
+Michael
 
->> the timer fires during deletion:
->> CPU 0					CPU 1
->> sys_timer_delete():
->>  	lock_timer();
->>  	...
->>  	unlock_timer();			posix_timer_fn()
->>  	release_posix_timer():			spin_lock_irqsave(timer...)
->>  		...				...
->>  		sigqueue_free()			posix_timer_event()
->>  		...					...
->>  							send_sigqueue()
->>  								BUG_ON(!(q->flags
->>
->
-> I do not buy that either. In sys_timer_delete() the active timer is
-> canceled. If we can not cancel it then we retry until the timer callback
-> has been processed. This is even true for 2.6.14 (pre hrtimer).
->
->> --- linux-2.6.14-cgl.original/kernel/posix-timers.c	2007-07-11 16:06:47.000000000 -0700
->> +++ linux-2.6.14-cgl/kernel/posix-timers.c	2007-07-16 15:25:43.000000000 -0700
->> @@ -339,7 +339,9 @@ static int posix_timer_fn(void *data)
->>   	int si_private = 0;
->>   	int ret = HRTIMER_NORESTART;
->>
->> -	spin_lock_irqsave(&timr->it_lock, flags);
->> +	if(lock_timer(timr->it_id, &flags) == NULL) {
->> +		return ret;
->> +	}
->
-> This is wrong. You look at something which is not valid anymore, if your
-> theory is correct. You are just pampering over the real bug.
 
-Noticed right after I sent the patch out.  My goal was to validate and 
-lock the timer through a single interface, but itimer_delete() and 
-posix_timer_fn() currently recieve a k_itimer * instead of a timer_t.  I 
-should have reworked them.
+-------- Original-Nachricht --------
+Datum: Wed, 18 Jul 2007 00:35:56 +0200
+Von: "Michael Kerrisk" <mtk-manpages@gmx.net>
+An: Davide Libenzi <davidel@xmailserver.org>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org
+Betreff: Re: timerfd(2) draft man page plus questions
 
->> @@ -835,7 +844,9 @@ static inline void itimer_delete(struct
->>   	unsigned long flags;
->>
->>   retry_delete:
->> -	spin_lock_irqsave(&timer->it_lock, flags);
->> +	/* timer already deleted? */
->> +	if (lock_timer(timer->it_id, &flags) == NULL)
->> +		return;
->
-> Same here.
+> > > > 1. timer_settime() and setitimer() both permit the caller to obtain 
+> > > > the old value of the timer when modifying an existing timer.  Why 
+> > > > doesn't timerfd() provide this functionality?
+> > > 
+> > > I don't know ;) Would it be any useful?
+> > 
+> > Well given that the two older APIs both provide this
+> > functionality, it seems that it is desired in applications. It 
+> > is a shame that the new API doesn't have this.  It could be 
+> > added (I'm inclined to say, it should be): the only problem
+> > is that the syscall is now out in the wild, so a change at
+> > this point would not be ABI compatible.  However, it only just 
+> > got into the wild (and hasn't made it into glibc yet), so now
+> > would be a good time to fix it, if you are agreeable, and the
+> > kernel gatekeepers are prepared to tolerate the ABI change.
+> 
+> But the old status of the timer is the union of clickid, flags and utmr. 
+> So, in theory, the whole set should be returned back, forcing a pretty 
+> drastic API change.
 
-Thanks for the reply,
-Jeremy
+You have a point there.  The POSIX timer functions split these 
+things out:
+
+a) timer_create() creates a timer, and it there that the caller
+   specifies a clockid (which can't be changed for the life of
+   this timer).
+
+b) timer_settime() arms (starts) the timer, and it's there that
+   flags and timer value/interval are set.  Those settings can be
+   changed in a further call to timer_settime().  This call also 
+   returns the previous value/interval of the timer (but not the
+   flags).
+
+> IMHO, given that is not really clear what the real advantages would be in 
+> the API change, I'd rather prefer to leave the current one.
+
+Well, I think there is a clear advantage, as evidenced by the fact
+that all of the historical APIs do allow the previous timer 
+settings to be retrieved.  They did not do this for 
+nothing, and a design pattern such as:
+
+1. set timer to go of at time X
+2. modify timer to go off at earlier time Z; return previous 
+   timer settings (Z)
+3. When timer Z expires, restore timer Y
+
+is certainly useful sometimes.
+
+The question is whether there does need to be a "drastic" 
+API change:
+
+a) You could say that clockid is immutable (i.e., can only be
+   set if (ufd == -1)), which would eliminate the need
+   to return its previous value.  (This is effectively what
+   happens with a POSIX timer.)
+
+b) There is no need to return the previous flags setting: 
+   the POSIX timer functions (i.e., timer_settime()) do not 
+   do this. Instead, timer_settime() always returns the 
+   time until the next expiration would have occurred, 
+   even if the TIMER_ABSTIME flag was specified when
+   the timer was set.
+
+With these design assumptions, the only thing that would need 
+to be added would be an argument used to return the time
+until the previous timer would have expired + its interval.
+
+Cheers,
+
+Michael
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+
+Want to help with man page maintenance?  
+Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages , 
+read the HOWTOHELP file and grep the source 
+files for 'FIXME'.
+
