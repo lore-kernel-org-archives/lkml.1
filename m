@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935473AbXGQSHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935590AbXGQSIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935473AbXGQSHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934306AbXGQSHO
+	id S935590AbXGQSIY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759729AbXGQSIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:07:14 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:14022 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933947AbXGQSHL (ORCPT
+	Tue, 17 Jul 2007 14:08:06 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:17480 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbXGQSID (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:07:11 -0400
-From: Olaf Kirch <olaf.kirch@oracle.com>
-Organization: Oracle
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Date: Tue, 17 Jul 2007 20:06:10 +0200
-User-Agent: KMail/1.9.1
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-References: <20070716091236.GA10718@elte.hu> <200707171607.08644.olaf.kirch@oracle.com> <20070717165720.GA4386@elte.hu>
-In-Reply-To: <20070717165720.GA4386@elte.hu>
+	Tue, 17 Jul 2007 14:08:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAPOhnEarR7PD/2dsb2JhbAA
+X-IronPort-AV: i="4.16,546,1175497200"; 
+   d="scan'208"; a="183667915:sNHT30987531"
+To: linux-kernel@vger.kernel.org
+Cc: general@lists.openfabrics.org
+Subject: Re: [ofa-general] Further 2.6.23 merge plans...
+X-Message-Flag: Warning: May contain useful information
+References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 17 Jul 2007 11:07:59 -0700
+In-Reply-To: <adahco943ip.fsf@cisco.com> (Roland Dreier's message of "Thu, 12 Jul 2007 16:15:58 -0700")
+Message-ID: <adazm1urji8.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707172006.11664.olaf.kirch@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Jul 2007 18:07:59.0835 (UTC) FILETIME=[68E112B0:01C7C89D]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+ >  - Take a look at Sean's local SA caching patches.  I merged
+ >    everything else from Sean's tree, but I'm still undecided about
+ >    these.  I haven't read them carefully yet, but even aside from that
+ >    I don't have a good feeling about whether there's consensus about
+ >    this yet.  Any opinions about merging, for or against, would be
+ >    appreciated here.
 
-On Tuesday 17 July 2007 18:57, Ingo Molnar wrote:
-> i've done the patch below, but it did not change the timeouts nor did it 
-> solve the 'no network' problem. netconsole output hung earlier as well.
-Hm, pity.
-
-To rule out any e1000 problem, can you try the the following please,
-both with HZ=250 and HZ=1000?
-
-Olaf
--- 
-Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
-okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
----
----
- drivers/net/e1000/e1000_main.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-Index: build-2.6/drivers/net/e1000/e1000_main.c
-===================================================================
---- build-2.6.orig/drivers/net/e1000/e1000_main.c
-+++ build-2.6/drivers/net/e1000/e1000_main.c
-@@ -3871,10 +3871,17 @@ e1000_intr(int irq, void *data)
- 		adapter->total_rx_bytes = 0;
- 		adapter->total_rx_packets = 0;
- 		__netif_rx_schedule(netdev);
--	} else
-+	} else {
- 		/* this really should not happen! if it does it is basically a
- 		 * bug, but not a hard error, so enable ints and continue */
-+		static unsigned int been_here = 0;
-+
-+		been_here++;
-+		if (net_ratelimit())
-+			printk(KERN_NOTICE "e1000_intr and rx_sched set (%u); state=0x%lx\n",
-+					been_here, netdev->state);
- 		e1000_irq_enable(adapter);
-+	}
- #else
- 	/* Writing IMC and IMS is needed for 82547.
- 	 * Due to Hub Link bus being occupied, an interrupt
+Does anyone other than Sean have an opinion here?  If you want this
+feature, if you've tested it, if you don't think it's ready yet,
+whatever, please speak up -- I don't feel comfortable making a
+decision on my own here (although I will if I have to).
