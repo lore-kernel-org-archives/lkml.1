@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935515AbXGQTF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935401AbXGQTG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935515AbXGQTF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761318AbXGQTFr
+	id S935401AbXGQTG3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935538AbXGQTF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:05:47 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35983 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762155AbXGQTFr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:05:47 -0400
-Date: Tue, 17 Jul 2007 21:05:08 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Horst H. von Brand" <vonbrand@inf.utfsm.cl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       v9fs-developer@lists.sourceforge.net
-Subject: Re: [PATCH] fs/9p/v9fs.c: Delete unused p9_debug_level setting
-Message-ID: <20070717190508.GH3801@stusta.de>
-References: <11846967662438-git-send-email-vonbrand@inf.utfsm.cl> <11846967671229-git-send-email-vonbrand@inf.utfsm.cl>
+	Tue, 17 Jul 2007 15:05:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38655 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935528AbXGQTF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 15:05:56 -0400
+Date: Tue, 17 Jul 2007 21:05:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: Q: a bogus task_running() check in try_to_wake_up() ?
+Message-ID: <20070717190548.GB26283@elte.hu>
+References: <20070715153914.GA441@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <11846967671229-git-send-email-vonbrand@inf.utfsm.cl>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070715153914.GA441@tv-sign.ru>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 02:26:06PM -0400, Horst H. von Brand wrote:
-> From: Horst H. von Brand <vonbrand@inf.utfsm.cl>
+
+* Oleg Nesterov <oleg@tv-sign.ru> wrote:
+
+> try_to_wake_up:
+> 	
+> 	if (p->se.on_rq)
+> 		goto out_running;
 > 
-> Signed-off-by: Horst H. von Brand <vonbrand@inf.utfsm.cl>
-> ---
->  fs/9p/v9fs.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
+> 	...
 > 
-> diff --git a/fs/9p/v9fs.c b/fs/9p/v9fs.c
-> index 45c3598..72ad365 100644
-> --- a/fs/9p/v9fs.c
-> +++ b/fs/9p/v9fs.c
-> @@ -131,7 +131,6 @@ static void v9fs_parse_options(char *options, struct v9fs_session_info *v9ses)
->  		switch (token) {
->  		case Opt_debug:
->  			v9ses->debug = option;
-> -			p9_debug_level = option;
->  			break;
->  		case Opt_port:
->  			v9ses->port = option;
+> 	if (unlikely(task_running(rq, p)))
+> 		goto out_activate;
+> 
+> How it possible that rq->curr has on_rq == 0 ?
+> 
+> AFAICS, this can only happen if this task is rq->idle. But idle 
+> threads should not sleep, we have a special "scheduling from the idle 
+> thread!" check in schedule().
 
-It doesn't seem to be unused:
+it's also possible if an arch uses __ARCH_WANT_INTERRUPTS_ON_CTXSW, 
+right?
 
-$ grep -r p9_debug_level *
-fs/9p/v9fs.c:                   p9_debug_level = option;
-include/net/9p/9p.h:extern unsigned int p9_debug_level;
-include/net/9p/9p.h:    if ((p9_debug_level & level) == level) \
-net/9p/mod.c:unsigned int p9_debug_level = 0;   /* feature-rific global debug level  */
-net/9p/mod.c:EXPORT_SYMBOL(p9_debug_level);
-net/9p/mod.c:module_param_named(debug, p9_debug_level, uint, 0);
-net/9p/mux.c:           if ((p9_debug_level&P9_DEBUG_FCALL) == P9_DEBUG_FCALL) {
-net/9p/mux.c:   if ((p9_debug_level&P9_DEBUG_FCALL) == P9_DEBUG_FCALL) {
-net/9p/sysctl.c:                .data           = &p9_debug_level,
-$ 
+[ btw., we dont have a special "scheduling from the idle thread" check
+  in schedule() anymore, it's now in kernel/sched_idletask.c :-) ]
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
