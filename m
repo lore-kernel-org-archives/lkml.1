@@ -1,114 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764595AbXGQQkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932813AbXGQQkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764595AbXGQQkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXGQQkK
+	id S932813AbXGQQkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761163AbXGQQkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 12:40:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40588 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753103AbXGQQkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:40:08 -0400
-Message-ID: <469CF0CD.6060006@ce.jp.nec.com>
-Date: Tue, 17 Jul 2007 12:39:41 -0400
-From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Tue, 17 Jul 2007 12:40:21 -0400
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:16029 "EHLO
+	outbound5-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760392AbXGQQkS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 12:40:18 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <469CF0EC.9070002@am.sony.com>
+Date: Tue, 17 Jul 2007 09:40:12 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: Alasdair G Kergon <agk@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.23 PATCH 07/18] dm io: fix panic on large request
-References: <20070711205846.GY24114@agk.fab.redhat.com> <469CC11B.2020103@trash.net>
-In-Reply-To: <469CC11B.2020103@trash.net>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Olaf Hering <olaf@aepfle.de>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, Alessandro Rubini <rubini@vision.unipv.it>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: PS3 Storage Driver O_DIRECT issue
+References: <20070704132212.726923000@pademelon.sonytel.be>	<20070713122752.GA854@aepfle.de> <Pine.LNX.4.62.0707131532350.18802@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0707131532350.18802@pademelon.sonytel.be>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Jul 2007 16:40:12.0986 (UTC) FILETIME=[2597B1A0:01C7C891]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Patrick McHardy wrote:
-> Alasdair G Kergon wrote:
->> From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
->>
->> bio_alloc_bioset() will return NULL if 'num_vecs' is too large.
->> Use bio_get_nr_vecs() to get estimation of maximum number.
->>
->> Signed-off-by: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
->> Signed-off-by: Alasdair G Kergon <agk@redhat.com>
->>
->> ---
->>  drivers/md/dm-io.c |    5 ++++-
->>  1 files changed, 4 insertions(+), 1 deletion(-)
+Geert Uytterhoeven wrote:
+> On Fri, 13 Jul 2007, Olaf Hering wrote:
+>> This driver (or the generic PS3 code) has appearently problems with
+>> O_DIRECT. 
+>> glibc aborts parted because the malloc metadata get corrupted. While it
+>> is reproducible, the place where it crashes changes with every version
+>> of the debug attempt.
+>> I dont have a handle right now, all I know is that the metadata after a
+>> malloc area get overwritten with zeros.
+>> 
+>> 
+>> Can you have a look at this? 
+>> parted /dev/ps3da
+>> print (a few times)
 > 
-> 
-> This patch reproducibly oopses my box:
+> I can't seem to reproduce this with parted 1.7.1-5.1 (from Debian
+> etch/lenny/sid) and kernel 2.6.22-g77320894.
 
-Thanks for the report.
-But I'm not sure how the patch is related to the oops.
+Hi.
 
-The stack trace shows the oops occurred in dm-crypt,
-which doesn't use the part of the code modified by the patch
-(dm-io).
+I found this happens on Fedora 7:
 
-Are you using other dm modules such as dm-multipath, dm-mirror
-or dm-snapshot?
-If so, can you take the output of 'dmsetup table' and 'dmsetup ls'?
+[root@ps3-nfs ~]# uname -a
+Linux ps3-nfs 2.6.22-ps3-linux-dev-g4d898766-dirty #1 SMP Wed Jul 11 13:29:46 PDT 2007 ppc64 ppc64 ppc64 GNU/Linux
+[root@ps3-nfs ~]# parted --version
+parted (GNU parted) 1.8.6
 
-Do you have a reliable way to reproduce the oops which I can try?
+Here is the error message from parted:
 
-> 
-> [  126.754204] BUG: unable to handle kernel NULL pointer dereference at
-> virtual address 00000000
-> [  126.754326]  printing eip:
-> [  126.754369] c0141a67
-> [  126.754420] *pde = 00000000
-> [  126.754465] Oops: 0000 [#1]
-> [  126.754507] PREEMPT
-> [  126.754585] Modules linked in: [...]
-> 
-> 
-> [  126.758372] CPU:    0
-> [  126.758373] EIP:    0060:[<c0141a67>]    Not tainted VLI
-> [  126.758374] EFLAGS: 00010282   (2.6.22 #1)
-> [  126.758511] EIP is at mempool_free+0xe/0xc0
-> [  126.758558] eax: d39e65d0   ebx: 00000000   ecx: df2b9898   edx: 00000000
-> [  126.758605] esi: 00000000   edi: d39e65d0   ebp: d487d6d0   esp: df79fec0
-> [  126.758652] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-> [  126.758699] Process kcryptd/0 (pid: 3218, ti=df79f000 task=df2b9640
-> task.ti=df79f000)
-> [  126.758747] Stack: 00000000 00000000 d3835f80 00000000 e08b0923
-> e08a5f69 00000200 e0ad1080
-> [  126.759093]        dfb5ab40 d3835f80 e08b08c0 00000000 e08a5fb7
-> c01804d8 00000000 00000200
-> [  126.759439]        c520bc00 00000c00 d0b77438 d5754b00 df79ff5c
-> e08a515e d0b77444 d5754b00
-> [  126.759858] Call Trace:
-> [  126.759965]  [<e08b0923>] clone_endio+0x63/0xc0 [dm_mod]
-> [  126.760066]  [<e08a5f69>] crypt_convert+0x131/0x17f [dm_crypt]
-> [  126.760168]  [<e08b08c0>] clone_endio+0x0/0xc0 [dm_mod]
-> [  126.760264]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
-> [  126.760349]  [<c01804d8>] bio_endio+0x33/0x5d
-> [  126.760462]  [<e08a515e>] dec_pending+0x28/0x39 [dm_crypt]
-> [  126.760558]  [<e08a61e6>] kcryptd_do_work+0x22f/0x30f [dm_crypt]
-> [  126.760669]  [<c0112182>] update_stats_wait_end+0x7f/0xb2
-> [  126.760801]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
-> [  126.760888]  [<c012700e>] run_workqueue+0x84/0x179
-> [  126.760990]  [<c0127292>] worker_thread+0x0/0xf0
-> [  126.761074]  [<c012732f>] worker_thread+0x9d/0xf0
-> [  126.761160]  [<c012a360>] autoremove_wake_function+0x0/0x37
-> [  126.761256]  [<c0127292>] worker_thread+0x0/0xf0
-> [  126.761334]  [<c012a15c>] kthread+0x52/0x58
-> [  126.761411]  [<c012a10a>] kthread+0x0/0x58
-> [  126.761496]  [<c0104983>] kernel_thread_helper+0x7/0x14
-> [  126.761598]  =======================
-> [  126.761717] Code: 1c 00 89 f6 eb a9 b8 88 13 00 00 e8 b4 56 1c 00 8d
-> 74 26 00 eb d5 31 db e9 11 ff ff ff 57 56 53 83 ec 04 89 c7 89 d6 85 c0
-> 74 55 <8b> 02 39 42 04 7d 46 9c 58 90 8d b4 26 00 00 00 00 89 c3 fa 90
-> [  126.763964] EIP: [<c0141a67>] mempool_free+0xe/0xc0 SS:ESP 0068:df79fec0
-> 
+Command History:
+print
 
-Thanks,
--- 
-Jun'ichi Nomura, NEC Corporation of America
+Error: SEGV_MAPERR (Address not mapped to object)
+Backtrace has 20 calls on stack:
+  20: /usr/lib/libparted-1.8.so.6(ped_assert+0xb0) [0xfb7ea50]
+  19: parted [0x1000c6dc]
+  18: [0x100350]
+  17: [(nil)]
+  16: /lib/libc.so.6 [0xfdcfe64]
+  15: /lib/libc.so.6 [0xfdd0b34]
+  14: /lib/libc.so.6(__libc_memalign+0xec) [0xfdd1e1c]
+  13: /lib/libc.so.6(posix_memalign+0xbc) [0xfdd207c]
+  12: /usr/lib/libparted-1.8.so.6 [0xfb8f42c]
+  11: /usr/lib/libparted-1.8.so.6(ped_device_read+0x164) [0xfb7f5f4]
+  10: /usr/lib/libparted-1.8.so.6(ped_geometry_read+0x16c) [0xfb89a5c]
+  9: /usr/lib/libparted-1.8.so.6 [0xfba739c]
+  8: /usr/lib/libparted-1.8.so.6(ped_file_system_probe_specific+0x104) [0xfb80d04]
+  7: /usr/lib/libparted-1.8.so.6(ped_file_system_probe+0xec) [0xfb8134c]
+  6: /usr/lib/libparted-1.8.so.6 [0xfbbcc38]
+  5: /usr/lib/libparted-1.8.so.6 [0xfbbcfb4]
+  4: /usr/lib/libparted-1.8.so.6(ped_disk_new+0xc0) [0xfb88bf0]
+  3: parted [0x10006e00]
+  2: parted(command_run+0x1c) [0x10004d8c]
+  1: parted(interactive_mode+0x134) [0x1000e4b4]
+Aborted
+
+
