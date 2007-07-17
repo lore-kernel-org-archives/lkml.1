@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbXGQApg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbXGQAqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762539AbXGQApg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 20:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbXGQAp1
+	id S1763526AbXGQAqb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 20:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbXGQAqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 20:45:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:59553 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756312AbXGQApZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 20:45:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=LH+o99pxLxrLx+OD4+R31d+1vjZ+W4nAfplg04ICGsF4gyA9uFLxXeKR6mm6zMe4x+iZXmL3zAvMi2mESPfmbLmNSm8+LA52+WmtAb2z/BqR9COhC+YPD8iTv9+MHGMrCic4fwf1UU0hxczGVaEf/ioKjYMtaL6mjOQMVHCK3Vg=
-Message-ID: <469C10F6.3050008@googlemail.com>
-Date: Tue, 17 Jul 2007 02:44:38 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-References: <469BD9C8.4000808@googlemail.com>
-In-Reply-To: <469BD9C8.4000808@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	Mon, 16 Jul 2007 20:46:24 -0400
+Received: from ozlabs.org ([203.10.76.45]:33719 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751968AbXGQAqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 20:46:23 -0400
+Subject: Re: [Xen-devel] [patch 17/44] Add nosegneg capability to the
+	vsyscall page notes
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.com>,
+       Zachary Amsden <zach@vmware.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Andrew Morton <akpm@linux-foundation.com>,
+       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+In-Reply-To: <20070716232914.029797000@xensource.com>>
+References: <20070716231536.937393000@xensource.com> >
+	  <20070716232914.029797000@xensource.com>>
+Content-Type: text/plain
+Date: Tue, 17 Jul 2007 10:45:55 +1000
+Message-Id: <1184633155.5955.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Hello,
->
-> sdparm and hdparm are broken for me on git (
-> abce891a10559343d8ac9f79b46d78afdba63a40 )
->
->
-> ~$ sudo hdparm  /dev/sdc
->
-> /dev/sdc:
->  BLKROGET failed: Inappropriate ioctl for device
->  BLKRAGET failed: Inappropriate ioctl for device
->  BLKGETSIZE failed: Inappropriate ioctl for device
->
->
-> ~$ sudo sdparm  --all /dev/sdc
-> unable to access /dev/sdc, ATA disk?
->
->   
+On Mon, 2007-07-16 at 16:15 -0700, Jeremy Fitzhardinge wrote:
+> plain text document attachment (xen-vsyscall-note.patch)
+> Add the "nosegneg" fake capabilty to the vsyscall page notes. This is
+> used by the runtime linker to select a glibc version which then
+> disables negative-offset accesses to the thread-local segment via
+> %gs. These accesses require emulation in Xen (because segments are
+> truncated to protect the hypervisor address space) and avoiding them
+> provides a measurable performance boost.
 
-Well it is bsg , setting BLK_DEV_BSG=n fixed all this errors.
+Hmm, this is still unconditional?  Not that it causes any measurable
+slowdown when enabled, but ISTR discussing making this dynamic...
 
-Maybe a bit off topic but it depends on EXPERIMENTAL so why the the menu
-is not telling this ? and why the default is 'y' for it ?
-
-IMO everything depends on EXPERIMENTAL should
-
-1) Tell it is EXPERIMENTAL ( visible to the user in menu ) " Foo New
-stuff ( EXPERIMENTAL ) "
-2) Should not default to 'y' , is up to the users/admins to set
-EXPERIMENTAL things to Y/M , isn't it ?
-
-
-( PS: there are even defconfigs with EXPERIMENTAL things set to y but
-this is really off topic )
-
-
-Regards,
-
-Gabriel C
-
+Rusty.
 
 
