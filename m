@@ -1,2557 +1,901 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934961AbXGQSF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935474AbXGQSGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934961AbXGQSF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932315AbXGQSEz
+	id S935474AbXGQSGL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934476AbXGQSFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:04:55 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:46524 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758385AbXGQSEu (ORCPT
+	Tue, 17 Jul 2007 14:05:03 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:33769 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757991AbXGQSE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:04:50 -0400
-Date: Tue, 17 Jul 2007 20:05:50 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
+	Tue, 17 Jul 2007 14:04:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type;
+        b=E5NXZnF4W9IvhNgRXpxsY2YUAL4yiU1IbEPqzjpjk7KxBJ41h0V1zQNCI+yU75elj6rBlwVEPw0Cx4FT7vZApaB9OoHjf2xZJ2FN9PjYvCRVttFp1CSQOlLgHS3PC+NGFVAWaAh17tWGXwVLIxdfyx1NwF075teoQFVYPZnLWgY=
+Message-ID: <dda83e780707171104g10372341l7d2225f172153a6b@mail.gmail.com>
+Date: Tue, 17 Jul 2007 11:04:57 -0700
+From: "Bret Towe" <magnade@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Message-ID: <20070717180550.GA24759@enneenne.com>
+Subject: 2.6.22-git ppc build failure
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="bg08WKrSYDhXBjb5"
-Content-Disposition: inline
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH] LinuxPPS - definitive version
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_76543_23249936.1184695497560"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---bg08WKrSYDhXBjb5
-Content-Type: text/plain; charset=us-ascii
+------=_Part_76543_23249936.1184695497560
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hello,
+this is off my g4 mac mini
+latest git as of when this email was sent
+config file attached
 
-here my last patch for PPS support.
 
-In my opinion it should be ok for inclusion... please, let me know if
-something should be still changed.
+  CC      arch/powerpc/kernel/pci_32.o
+  CC      arch/powerpc/kernel/pci-common.o
+arch/powerpc/kernel/pci-common.c:160: error: conflicting types for
+'pcibios_add_platform_entries'
+include/linux/pci.h:889: error: previous declaration of
+'pcibios_add_platform_entries' was here
+make[2]: *** [arch/powerpc/kernel/pci-common.o] Error 1
+make[1]: *** [arch/powerpc/kernel] Error 2
 
-Rodolfo
+------=_Part_76543_23249936.1184695497560
+Content-Type: application/octet-stream; name=ppc-config
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f48ofpa0
+Content-Disposition: attachment; filename="ppc-config"
 
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
-
---bg08WKrSYDhXBjb5
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="ntp-pps-2.6.22.diff"
-
-diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
-new file mode 100644
-index 0000000..a2660a2
---- /dev/null
-+++ b/Documentation/pps/Makefile
-@@ -0,0 +1,27 @@
-+TARGETS = ppstest ppsctl
-+
-+CFLAGS += -Wall -O2 -D_GNU_SOURCE
-+CFLAGS += -I .
-+CFLAGS += -ggdb
-+
-+# -- Actions section ----------------------------------------------------------
-+
-+.PHONY : all depend dep
-+
-+all : .depend $(TARGETS)
-+
-+.depend depend dep :
-+	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
-+
-+ifeq (.depend,$(wildcard .depend))
-+include .depend
-+endif
-+
-+
-+# -- Clean section ------------------------------------------------------------
-+
-+.PHONY : clean
-+
-+clean :
-+	rm -f *.o *~ core .depend
-+	rm -f ${TARGETS}
-diff --git a/Documentation/pps/pps.txt b/Documentation/pps/pps.txt
-new file mode 100644
-index 0000000..0617ea4
---- /dev/null
-+++ b/Documentation/pps/pps.txt
-@@ -0,0 +1,211 @@
-+
-+			PPS - Pulse Per Second
-+			----------------------
-+
-+(C) Copyright 2007 Rodolfo Giometti <giometti@enneenne.com>
-+
-+This program is free software; you can redistribute it and/or modify
-+it under the terms of the GNU General Public License as published by
-+the Free Software Foundation; either version 2 of the License, or
-+(at your option) any later version.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+
-+
-+Overview
-+--------
-+
-+LinuxPPS provides a programming interface (API) to define into the
-+system several PPS sources.
-+
-+PPS means "pulse per second" and a PPS source is just a device which
-+provides a high precision signal each second so that an application
-+can use it to adjust system clock time.
-+
-+A PPS source can be connected to a serial port (usually to the Data
-+Carrier Detect pin) or to a parallel port (ACK-pin) or to a special
-+CPU's GPIOs (this is the common case in embedded systems) but in each
-+case when a new pulse comes the system must apply to it a timestamp
-+and record it for the userland.
-+
-+Common use is the combination of the NTPD as userland program with a
-+GPS receiver as PPS source to obtain a wallclock-time with
-+sub-millisecond synchronisation to UTC.
-+
-+
-+RFC considerations
-+------------------
-+
-+While implementing a PPS API as RFC 2783 defines and using an embedded
-+CPU GPIO-Pin as physical link to the signal, I encountered a deeper
-+problem:
-+
-+   At startup it needs a file descriptor as argument for the function
-+   time_pps_create().
-+
-+This implies that the source has a /dev/... entry. This assumption is
-+ok for the serial and parallel port, where you can do something
-+useful besides(!) the gathering of timestamps as it is the central
-+task for a PPS-API. But this assumption does not work for a single
-+purpose GPIO line. In this case even basic file-related functionality
-+(like read() and write()) makes no sense at all and should not be a
-+precondition for the use of a PPS-API.
-+
-+The problem can be simply solved if you change the original RFC 2783:
-+
-+    pps_handle_t type is an opaque __scalar type__ used to represent a
-+    PPS source within the API
-+
-+into a modified:
-+
-+   pps_handle_t type is an opaque __variable__ used to represent a PPS
-+   source within the API and programs should not access it directly to
-+   it due to its opacity.
-+
-+This change seems to be neglibile because even the original RFC 2783
-+does not encourage programs to check (read: use) the pps_handle_t
-+variable before calling the time_pps_*() functions, since each
-+function should do this job internally.
-+
-+If I intentionally separate the concept of "file descriptor" from the
-+concept of the "PPS source" I'm obliged to provide a solution to find
-+and register a PPS-source without using a file descriptor: it's done
-+by the functions time_pps_findsource() and time_pps_findpath() now.
-+
-+According to this current NTPD drivers' code should be modified as
-+follows:
-+
-++#ifdef PPS_HAVE_FINDPATH
-++      /* Get the PPS source's real name */
-++      fd = readlink(link, path, STRING_LEN-1);
-++      if (fd <= 0)
-++              strncpy(path, link, STRING_LEN);
-++      else
-++              path[fd] = '\0';
-++
-++      /* Try to find the source */
-++      fd = time_pps_findpath(path, STRING_LEN, id, STRING_LEN);
-++      if (fd < 0) {
-++              msyslog(LOG_ERR, "refclock: cannot find PPS source \"%s\" "
-++				"in the system", path);
-++              return 1;
-++      }
-++      msyslog(LOG_INFO, "refclock: found PPS source #%d \"%s\" on \"%s\"",
-++				     fd, path, id);
-++#endif   /* PPS_HAVE_FINDPATH */
-++
-++
-+       if (time_pps_create(fd, &pps_handle) < 0) {
-+-              pps_handle = 0;
-+               msyslog(LOG_ERR, "refclock: time_pps_create failed: %m");
-+       }
-+
-+
-+Coding example
-+--------------
-+
-+To register a PPS source into the kernel you should define a struct
-+pps_source_info_s as follow:
-+
-+    static struct pps_source_info_s pps_ktimer_info = {
-+            name         : "ktimer",
-+            path         : "",
-+            mode         : PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
-+			   PPS_ECHOASSERT | \
-+                           PPS_CANWAIT | PPS_TSFMT_TSPEC,
-+            echo         : pps_ktimer_echo,
-+    };
-+
-+and then calling the function pps_register_source() in your
-+intialization routine as follow:
-+
-+    source = pps_register_source(&pps_ktimer_info,
-+			PPS_CAPTUREASSERT|PPS_OFFSETASSERT,
-+			-1 /* is up to the system */);
-+
-+The pps_register_source() prototype is:
-+
-+  int pps_register_source(struct pps_source_info_s *info, int default_params,
-+				  int try_id)
-+
-+where "info" is a pointer to a structure that describes a particular
-+PPS source, "default_params" tells the system what the initial default
-+parameters for the device should be (is obvious that these parameters
-+must be a subset of ones defined into the struct
-+pps_source_info_s which describe the capabilities of the driver)
-+and "try_id" can be used to force a particular ID for your device into
-+the system (just use -1 if you wish the system chooses one for you).
-+
-+Once you have registered a new PPS source into the system you can
-+signal an assert event (for example in the interrupt handler routine)
-+just using:
-+
-+    pps_event(source, PPS_CAPTUREASSERT, ptr);
-+
-+The same function may also run the defined echo function
-+(pps_ktimer_echo(), passing to it the "ptr" pointer) if the user
-+asked for that... etc..
-+
-+Please see the file drivers/pps/clients/ktimer.c for an example code.
-+
-+
-+SYSFS support
-+-------------
-+
-+The SYSFS support is enabled by default if the SYSFS filesystem is
-+enabled in the kernel and it provides a new class:
-+
-+   $ ls /sys/class/pps/
-+   00/  01/  02/
-+
-+Every directory is the ID of a PPS sources defined into the system and
-+inside you find several files:
-+
-+    $ ls /sys/class/pps/00/
-+    assert	clear  echo  mode  name  path  subsystem@  uevent
-+
-+Inside each "assert" and "clear" file you can find the timestamp and a
-+sequence number:
-+
-+    $ cat /sys/class/pps/00/assert
-+    1170026870.983207967#8
-+
-+Where before the "#" is the timestamp in seconds and after it is the
-+sequence number. Other files are:
-+
-+* echo: reports if the PPS source has an echo function or not;
-+
-+* mode: reports available PPS functioning modes;
-+
-+* name: reports the PPS source's name;
-+
-+* path: reports the PPS source's device path, that is the device the
-+  PPS source is connected to (if it exists).
-+
-+
-+Testing the PPS support
-+-----------------------
-+
-+In order to test the PPS support even without specific hardware you can use
-+the ktimer driver (see the client subsection in the PPS configuration menu)
-+and the userland tools provided into Documentaion/pps/ directory.
-+
-+Once you have enabled the compilation of ktimer just modprobe it (if
-+not statically compiled):
-+
-+   # modprobe ktimer
-+
-+and the run ppstest as follow:
-+
-+   $ ./ppstest 
-+   found PPS source #0 "ktimer" on ""
-+   ok, found 1 source(s), now start fetching data...
-+   source 0 - assert 1183041017.838928410, sequence: 2 - clear  0.000000000, sequence: 0
-+   source 0 - assert 1183041018.839023954, sequence: 3 - clear  0.000000000, sequence: 0
-+
-+Please, note that to compile userland programs you need the file timepps.h
-+(see Documentaion/pps/).
-\ No newline at end of file
-diff --git a/Documentation/pps/ppsctl.c b/Documentation/pps/ppsctl.c
-new file mode 100644
-index 0000000..e6ab2b9
---- /dev/null
-+++ b/Documentation/pps/ppsctl.c
-@@ -0,0 +1,61 @@
-+#include <stdio.h>
-+#include <unistd.h>
-+#include <stdlib.h>
-+#include <errno.h>
-+#include <sys/ioctl.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <fcntl.h>
-+#include <string.h>
-+#include <linux/serial.h>
-+
-+void usage(char *name)
-+{
-+        fprintf(stderr, "usage: %s <ttyS> [enable|disable]\n", name);
-+
-+	exit(EXIT_FAILURE);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	int fd, ret;
-+	struct serial_struct  ss;
-+
-+	if (argc < 2)
-+		usage(argv[0]);
-+
-+        fd = open(argv[1], O_RDWR);
-+        if (fd < 0) {
-+                perror("open");
-+		exit(EXIT_FAILURE);
-+	}
-+
-+       	ret = ioctl(fd, TIOCGSERIAL, &ss);
-+	if (ret < 0 ) {
-+		perror("ioctl(TIOCGSERIAL)");
-+		exit(EXIT_FAILURE);
-+	}
-+
-+	if (argc < 3) {		/* just read PPS status */
-+		printf("PPS is %sabled\n",
-+			ss.flags & ASYNC_HARDPPS_CD ? "en" : "dis");
-+		exit(EXIT_SUCCESS);
-+	}
-+
-+	if (argv[2][0] == 'e' || argv[2][0] == '1')
-+		ss.flags |= ASYNC_HARDPPS_CD;
-+	else if (argv[2][0] == 'd' || argv[2][0] == '0')
-+		ss.flags &= ~ASYNC_HARDPPS_CD;
-+	else {
-+		fprintf(stderr, "invalid state argument \"%s\"\n", argv[2]);
-+		exit(EXIT_FAILURE);
-+	} 
-+
-+	ret = ioctl(fd, TIOCSSERIAL, &ss);
-+	if (ret < 0) {
-+		perror("ioctl(TIOCSSERIAL)");
-+		exit(EXIT_FAILURE);
-+	}
-+
-+        return 0;
-+}
-diff --git a/Documentation/pps/ppstest.c b/Documentation/pps/ppstest.c
-new file mode 100644
-index 0000000..efbe28f
---- /dev/null
-+++ b/Documentation/pps/ppstest.c
-@@ -0,0 +1,199 @@
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <string.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <fcntl.h>
-+
-+#include <timepps.h>
-+
-+#define STRING_LEN	PPS_MAX_NAME_LEN
-+
-+int find_source(int try_link, char *link, pps_handle_t *handle, int *avail_mode)
-+{
-+	int num = -1;
-+	char id[STRING_LEN] = "",		/* no ID string by default   */
-+	     path[STRING_LEN];
-+	pps_params_t params;
-+	int ret;
-+
-+	if (try_link) {
-+		printf("trying PPS source \"%s\"\n", link);
-+#ifdef PPS_HAVE_FINDPATH
-+		/* Get the PPS source's real name */
-+		time_pps_readlink(link, STRING_LEN, path, STRING_LEN);
-+
-+		/* Try to find the source by using the supplied "path" name */
-+		ret = time_pps_findpath(path, STRING_LEN, id, STRING_LEN);
-+		if (ret < 0)
-+			goto exit;
-+		num = ret;
-+#else
-+#warning "cannot use time_pps_findpath()"
-+		ret = -1;
-+#endif   /* PPS_HAVE_FINDPATH */
-+	}
-+
-+#ifdef PPS_HAVE_FINDSOURCE
-+	/* Try to find the source (by using "index = -1" we ask just
-+	 * for a generic source) */
-+	ret = time_pps_findsource(num, path, STRING_LEN, id, STRING_LEN);
-+#else
-+#warning "cannot use time_pps_findsource()"
-+	ret = -1;
-+#endif   /* PPS_HAVE_FINDSOURCE */
-+	if (ret < 0) {
-+exit:
-+		fprintf(stderr, "no available PPS source in the system\n");
-+		return -1;
-+	}
-+	num = ret;
-+	printf("found PPS source #%d \"%s\" on \"%s\"\n", num, id, path);
-+
-+	/* If "path" is not NULL we should *at least* open the pointed
-+	 * device in order to enable the interrupts generation.
-+	 * Note that this can be NOT enough anyway, infact you may need sending
-+	 * additional commands to your GPS antenna before it starts sending
-+	 * the PPS signal. */
-+	if (strlen(path)) {
-+		ret = open(path, O_RDWR);
-+		if (ret < 0) {
-+			fprintf(stderr, "cannot open \"%s\" (%m)\n", path);
-+			return -1;
-+		}
-+	}
-+
-+	/* Open the PPS source */
-+	ret = time_pps_create(num, handle);
-+	if (ret < 0) {
-+		fprintf(stderr, "cannot create a PPS source (%m)\n");
-+		return -1;
-+	}
-+
-+	/* Find out what features are supported */
-+	ret = time_pps_getcap(*handle, avail_mode);
-+	if (ret < 0) {
-+		fprintf(stderr, "cannot get capabilities (%m)\n");
-+		return -1;
-+	}
-+	if ((*avail_mode & PPS_CAPTUREASSERT) == 0) {
-+		fprintf(stderr, "cannot CAPTUREASSERT\n");
-+		return -1;
-+	}
-+	if ((*avail_mode & PPS_OFFSETASSERT) == 0) {
-+		fprintf(stderr, "cannot OFFSETASSERT\n");
-+		return -1;
-+	}
-+
-+	/* Capture assert timestamps, and compensate for a 675 nsec
-+	 * propagation delay */
-+	ret = time_pps_getparams(*handle, &params);
-+	if (ret < 0) {
-+		fprintf(stderr, "cannot get parameters (%m)\n");
-+		return -1;
-+	}
-+	params.assert_offset.tv_sec = 0;
-+	params.assert_offset.tv_nsec = 675;
-+	params.mode |= PPS_CAPTUREASSERT|PPS_OFFSETASSERT;
-+	ret = time_pps_setparams(*handle, &params);
-+	if (ret < 0) {
-+		fprintf(stderr, "cannot set parameters (%m)\n");
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+int fetch_source(int i, pps_handle_t *handle, int *avail_mode)
-+{
-+	struct timespec timeout;
-+	pps_info_t infobuf;
-+	int ret;
-+
-+	/* create a zero-valued timeout */
-+	timeout.tv_sec = 3;
-+	timeout.tv_nsec = 0;
-+
-+retry :
-+	if (*avail_mode&PPS_CANWAIT) {
-+		/* waits for the next event */
-+		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf, &timeout);
-+	}
-+	else {
-+		sleep(1);
-+		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf, &timeout);
-+	}
-+	if (ret < 0) {
-+		if (ret == -EINTR) {
-+			fprintf(stderr, "time_pps_fetch() got a signal!\n");
-+			goto retry;
-+		}
-+
-+		fprintf(stderr, "time_pps_fetch() error %d (%m)\n", ret);
-+		return -1;
-+	}
-+
-+	printf("source %d - "
-+	       "assert %ld.%09ld, sequence: %ld - "
-+	       "clear  %ld.%09ld, sequence: %ld\n",
-+	        i,
-+		infobuf.assert_timestamp.tv_sec,
-+		infobuf.assert_timestamp.tv_nsec,
-+		infobuf.assert_sequence,
-+		infobuf.clear_timestamp.tv_sec,
-+		infobuf.clear_timestamp.tv_nsec,
-+		infobuf.clear_sequence);
-+
-+	return 0;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	int num,
-+	    try_link = 0;			/* by default use findsource */
-+	char link[STRING_LEN] = "/dev/gps0";	/* just a default device */
-+	pps_handle_t handle[4];
-+	int avail_mode[4];
-+	int i = 0, ret;
-+
-+	if (argc == 1) {
-+		ret = find_source(try_link, link, &handle[0], &avail_mode[0]);
-+		if (ret < 0)
-+			exit(EXIT_FAILURE);
-+
-+		num = 1;
-+	}
-+	else {
-+		for (i = 1; i < argc && i <= 4; i++) {
-+			ret = sscanf(argv[i], "%d", &num);
-+			if (ret < 1) {
-+				try_link = ~0;
-+				strncpy(link, argv[i], STRING_LEN);
-+			}
-+	
-+			ret = find_source(try_link, link, &handle[i-1], &avail_mode[i-1]);
-+			if (ret < 0)
-+				exit(EXIT_FAILURE);
-+		}
-+
-+		num = i-1;
-+	}
-+
-+	printf("ok, found %d source(s), now start fetching data...\n", num);
-+
-+	/* loop, printing the most recent timestamp every second or so */
-+	while (1) {
-+		for (i = 0; i < num; i++) {
-+			ret = fetch_source(i, &handle[i], &avail_mode[i]);
-+			if (ret < 0 && errno != ETIMEDOUT)
-+				exit(EXIT_FAILURE);
-+		}
-+	}
-+
-+	for (; i >= 0; i--)
-+		time_pps_destroy(handle[i]);
-+
-+	return 0;
-+}
-diff --git a/Documentation/pps/timepps.h b/Documentation/pps/timepps.h
-new file mode 100644
-index 0000000..86850a1
---- /dev/null
-+++ b/Documentation/pps/timepps.h
-@@ -0,0 +1,236 @@
-+/*
-+ * timepps.h -- PPS API main header
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef _SYS_TIMEPPS_H_
-+#define _SYS_TIMEPPS_H_
-+
-+#include <sys/syscall.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <linux/pps.h>
-+
-+/*
-+ * New data structures
-+ */
-+
-+struct ntp_fp {
-+	unsigned int integral;
-+	unsigned int fractional;
-+};
-+
-+union pps_timeu {
-+	struct timespec tspec;
-+	struct ntp_fp ntpfp;
-+	unsigned long longpad[3];
-+};
-+
-+struct pps_info {
-+	unsigned long assert_sequence;	/* seq. num. of assert event */
-+	unsigned long clear_sequence;	/* seq. num. of clear event */
-+	union pps_timeu assert_tu;	/* time of assert event */
-+	union pps_timeu clear_tu;	/* time of clear event */
-+	int current_mode;		/* current mode bits */
-+};
-+
-+struct pps_params {
-+	int api_version;		/* API version # */
-+	int mode;			/* mode bits */
-+	union pps_timeu assert_off_tu;	/* offset compensation for assert */
-+	union pps_timeu clear_off_tu;	/* offset compensation for clear */
-+};
-+
-+typedef int pps_handle_t;		/* represents a PPS source */
-+typedef unsigned long pps_seq_t;	/* sequence number */
-+typedef struct ntp_fp ntp_fp_t;		/* NTP-compatible time stamp */
-+typedef union pps_timeu pps_timeu_t;	/* generic data type to represent time stamps */
-+typedef struct pps_info pps_info_t;	
-+typedef struct pps_params pps_params_t;
-+
-+#define assert_timestamp        assert_tu.tspec
-+#define clear_timestamp         clear_tu.tspec
-+
-+#define assert_timestamp_ntpfp  assert_tu.ntpfp
-+#define clear_timestamp_ntpfp   clear_tu.ntpfp
-+
-+#define assert_offset		assert_off_tu.tspec
-+#define clear_offset		clear_off_tu.tspec
-+
-+#define assert_offset_ntpfp     assert_off_tu.ntpfp
-+#define clear_offset_ntpfp      clear_off_tu.ntpfp
-+
-+/*
-+ * The PPS API
-+ */
-+
-+#define PPS_HAVE_FINDSOURCE	1
-+#define pps_min(a, b)		(a) < (b) ? a : b
-+int time_pps_findsource(int index, char *path, int pathlen, char *idstring, int idlen)
-+{
-+	struct pps_source_data_s data;
-+	int ret;
-+
-+	data.source = index;
-+
-+	ret = syscall(__NR_time_pps_cmd, PPS_CMD_FIND_SRC, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	strncpy(idstring, data.name, pps_min(idlen, PPS_MAX_NAME_LEN));
-+	strncpy(path, data.path, pps_min(pathlen, PPS_MAX_NAME_LEN));
-+
-+	return data.source;
-+}
-+
-+/* Defined iff PPS_HAVE_FINDPATH is defined */
-+void time_pps_readlink(char *link, int linklen, char *path, int pathlen)
-+{
-+	int i;
-+
-+	i = readlink(link, path, pathlen - 1);
-+	if (i <= 0) {
-+		/* "link" is not a valid symbolic so we directly use it */
-+		strncpy(path, link, linklen <= pathlen ? linklen : pathlen);
-+		return;
-+	}
-+
-+	/* Return the file name where "link" points to */
-+	path[i] = '\0';
-+}
-+
-+#define PPS_HAVE_FINDPATH	1
-+int time_pps_findpath(char *path, int pathlen, char *idstring, int idlen)
-+{
-+	struct pps_source_data_s data;
-+	int ret;
-+
-+	strncpy(data.path, path, pps_min(pathlen, PPS_MAX_NAME_LEN));
-+
-+	ret = syscall(__NR_time_pps_cmd, PPS_CMD_FIND_PATH, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	strncpy(idstring, data.name, pps_min(idlen, PPS_MAX_NAME_LEN));
-+
-+	return data.source;
-+}
-+
-+int time_pps_create(int source, pps_handle_t *handle)
-+{
-+	if (!handle) {
-+		errno = EINVAL;
-+		return -1;
-+	}
-+
-+	/* In LinuxPPS there are no differences between a PPS source and
-+	 * a PPS handle so we return the same value.
-+	 */
-+	*handle = source;
-+
-+	return 0;
-+}
-+
-+int time_pps_destroy(pps_handle_t handle)
-+{
-+	/* Nothing to destroy here */
-+
-+	return 0;
-+}
-+
-+int time_pps_getparams(pps_handle_t handle,
-+				pps_params_t *ppsparams)
-+{
-+	int ret;
-+	struct pps_kparams __ppsparams;
-+
-+	ret = syscall(__NR_time_pps_getparams, handle, &__ppsparams);
-+
-+	ppsparams->api_version = __ppsparams.api_version;
-+	ppsparams->mode = __ppsparams.mode;
-+	ppsparams->assert_off_tu.tspec.tv_sec = __ppsparams.assert_off_tu.sec;
-+	ppsparams->assert_off_tu.tspec.tv_nsec = __ppsparams.assert_off_tu.nsec;
-+	ppsparams->clear_off_tu.tspec.tv_sec = __ppsparams.clear_off_tu.sec;
-+	ppsparams->clear_off_tu.tspec.tv_nsec = __ppsparams.clear_off_tu.nsec;
-+
-+	return ret;
-+}
-+
-+int time_pps_setparams(pps_handle_t handle,
-+				const pps_params_t *ppsparams)
-+{
-+	struct pps_kparams __ppsparams;
-+
-+	__ppsparams.api_version = ppsparams->api_version;
-+	__ppsparams.mode = ppsparams->mode;
-+	__ppsparams.assert_off_tu.sec = ppsparams->assert_off_tu.tspec.tv_sec;
-+	__ppsparams.assert_off_tu.nsec = ppsparams->assert_off_tu.tspec.tv_nsec;
-+	__ppsparams.clear_off_tu.sec = ppsparams->clear_off_tu.tspec.tv_sec;
-+	__ppsparams.clear_off_tu.nsec = ppsparams->clear_off_tu.tspec.tv_nsec;
-+
-+	return syscall(__NR_time_pps_getparams, handle, &__ppsparams);
-+}
-+
-+/* Get capabilities for handle */
-+int time_pps_getcap(pps_handle_t handle, int *mode)
-+{
-+	return syscall(__NR_time_pps_getcap, handle, mode);
-+}
-+
-+int time_pps_fetch(pps_handle_t handle, const int tsformat,
-+				pps_info_t *ppsinfobuf,
-+				const struct timespec *timeout)
-+{
-+	struct pps_kinfo __ppsinfobuf;
-+	struct pps_ktime __timeout;
-+	int ret;
-+
-+	/* Sanity checks */
-+	if (tsformat != PPS_TSFMT_TSPEC) {
-+		errno = EINVAL;
-+		return -1;
-+	}
-+
-+	if (timeout) {
-+		__timeout.sec = timeout->tv_sec;
-+		__timeout.nsec = timeout->tv_nsec;
-+	}
-+
-+	ret = syscall(__NR_time_pps_fetch, handle, &__ppsinfobuf,
-+			timeout ? &__timeout : NULL);
-+
-+	ppsinfobuf->assert_sequence = __ppsinfobuf.assert_sequence;
-+	ppsinfobuf->clear_sequence = __ppsinfobuf.clear_sequence;
-+	ppsinfobuf->assert_tu.tspec.tv_sec = __ppsinfobuf.assert_tu.sec;
-+	ppsinfobuf->assert_tu.tspec.tv_nsec = __ppsinfobuf.assert_tu.nsec;
-+	ppsinfobuf->clear_tu.tspec.tv_sec = __ppsinfobuf.clear_tu.sec;
-+	ppsinfobuf->clear_tu.tspec.tv_nsec = __ppsinfobuf.clear_tu.nsec;
-+	ppsinfobuf->current_mode = __ppsinfobuf.current_mode;
-+
-+	return ret;
-+}
-+
-+int time_pps_kcbind(pps_handle_t handle, const int kernel_consumer,
-+				const int edge, const int tsformat)
-+{
-+	/* LinuxPPS doesn't implement kernel consumer feature */
-+	errno = EOPNOTSUPP;
-+	return -1;
-+}
-+
-+#endif   /* _SYS_TIMEPPS_H_ */
-diff --git a/MAINTAINERS b/MAINTAINERS
-index df40a4e..17e9a02 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2903,6 +2903,13 @@ P:	Michal Ostrowski
- M:	mostrows@speakeasy.net
- S:	Maintained
- 
-+PPS SUPPORT
-+P:	Rodolfo Giometti
-+M:	giometti@enneenne.com
-+W:	http://wiki.enneenne.com/index.php/LinuxPPS_support
-+L:	linuxpps@ml.enneenne.com
-+S:	Maintained
-+
- PREEMPTIBLE KERNEL
- P:	Robert Love
- M:	rml@tech9.net
-diff --git a/arch/i386/kernel/syscall_table.S b/arch/i386/kernel/syscall_table.S
-index bf6adce..f1bf4ff 100644
---- a/arch/i386/kernel/syscall_table.S
-+++ b/arch/i386/kernel/syscall_table.S
-@@ -323,3 +323,8 @@ ENTRY(sys_call_table)
- 	.long sys_signalfd
- 	.long sys_timerfd
- 	.long sys_eventfd
-+	.long sys_time_pps_cmd
-+	.long sys_time_pps_getparams	/* 325 */
-+	.long sys_time_pps_setparams
-+	.long sys_time_pps_getcap
-+	.long sys_time_pps_fetch
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 050323f..bb54cab 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -52,6 +52,8 @@ source "drivers/i2c/Kconfig"
- 
- source "drivers/spi/Kconfig"
- 
-+source "drivers/pps/Kconfig"
-+
- source "drivers/w1/Kconfig"
- 
- source "drivers/hwmon/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index adad2f3..985d495 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -60,6 +60,7 @@ obj-$(CONFIG_INPUT)		+= input/
- obj-$(CONFIG_I2O)		+= message/
- obj-$(CONFIG_RTC_LIB)		+= rtc/
- obj-y				+= i2c/
-+obj-$(CONFIG_PPS)		+= pps/
- obj-$(CONFIG_W1)		+= w1/
- obj-$(CONFIG_HWMON)		+= hwmon/
- obj-$(CONFIG_PHONE)		+= telephony/
-diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-index 62051f8..a50b336 100644
---- a/drivers/char/lp.c
-+++ b/drivers/char/lp.c
-@@ -746,6 +746,27 @@ static struct console lpcons = {
- 
- #endif /* console on line printer */
- 
-+/* Support for PPS signal on the line printer */
-+
-+#ifdef CONFIG_PPS_CLIENT_LP
-+
-+static void lp_pps_echo(int source, int event, void *data)
-+{
-+	struct parport *port = data;
-+	unsigned char status = parport_read_status(port);
-+
-+	/* echo event via SEL bit */
-+	parport_write_control(port,
-+		parport_read_control(port) | PARPORT_CONTROL_SELECT);
-+
-+	/* signal no event */
-+	if ((status & PARPORT_STATUS_ACK) != 0)
-+		parport_write_control(port,
-+			parport_read_control(port) & ~PARPORT_CONTROL_SELECT); 
-+}
-+
-+#endif
-+
- /* --- initialisation code ------------------------------------- */
- 
- static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
-@@ -817,6 +838,35 @@ static int lp_register(int nr, struct parport *port)
- 	}
- #endif
- 
-+#ifdef CONFIG_PPS_CLIENT_LP
-+	snprintf(port->pps_info.path, PPS_MAX_NAME_LEN, "/dev/lp%d", nr);
-+
-+	/* No PPS support if lp port has no IRQ line */
-+	if (port->irq != PARPORT_IRQ_NONE) {
-+		strncpy(port->pps_info.name, port->name, PPS_MAX_NAME_LEN);
-+
-+		port->pps_info.mode = PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
-+				PPS_ECHOASSERT | \
-+				PPS_CANWAIT | PPS_TSFMT_TSPEC;
-+
-+		port->pps_info.echo = lp_pps_echo;
-+
-+		port->pps_source = pps_register_source(&(port->pps_info),
-+				PPS_CAPTUREASSERT | PPS_OFFSETASSERT,
-+				-1 /* is up to the system */);
-+		if (port->pps_source < 0) 
-+			pps_err("cannot register PPS source \"%s\"",
-+					port->pps_info.path);	
-+		else
-+			pps_info("PPS source #%d \"%s\" added to the system",
-+					port->pps_source, port->pps_info.path);
-+	} else {
-+		port->pps_source = -1;
-+		pps_err("PPS support disabled due port \"%s\" is in polling mode",
-+			port->pps_info.path);
-+	}
-+#endif
-+
- 	return 0;
- }
- 
-@@ -860,6 +910,14 @@ static void lp_detach (struct parport *port)
- 		console_registered = NULL;
- 	}
- #endif /* CONFIG_LP_CONSOLE */
-+
-+#ifdef CONFIG_PPS_CLIENT_LP
-+	if (port->pps_source >= 0) {
-+		pps_unregister_source(&(port->pps_info));
-+		pps_dbg("PPS source #%d \"%s\" removed from the system",
-+			port->pps_source, port->pps_info.path);
-+	}
-+#endif
- }
- 
- static struct parport_driver lp_driver = {
-diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
-new file mode 100644
-index 0000000..1d16f14
---- /dev/null
-+++ b/drivers/pps/Kconfig
-@@ -0,0 +1,34 @@
-+#
-+# Character device configuration
-+#
-+
-+menu "PPS support"
-+
-+config PPS
-+	bool "PPS support"
-+	depends on EXPERIMENTAL
-+	---help---
-+	  PPS (Pulse Per Second) is a special pulse provided by some GPS
-+	  antennae. Userland can use it to get an high time reference.
-+
-+	  Some antennae's PPS signals are connected with the CD (Carrier
-+	  Detect) pin of the serial line they use to communicate with the
-+	  host. In this case use the SERIAL_LINE client support.
-+
-+	  Some antennae's PPS signals are connected with some special host
-+	  inputs so you have to enable the corresponding client support.
-+
-+	  This PPS support can also be built as a module.  If so, the module
-+	  will be called pps-core.
-+
-+config PPS_DEBUG
-+	bool "PPS debugging messages"
-+	depends on PPS 
-+	help
-+	  Say Y here if you want the PPS support to produce a bunch of debug
-+	  messages to the system log.  Select this if you are having a
-+	  problem with PPS support and want to see more of what is going on.
-+
-+source drivers/pps/clients/Kconfig
-+
-+endmenu
-diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
-new file mode 100644
-index 0000000..76101cd
---- /dev/null
-+++ b/drivers/pps/Makefile
-@@ -0,0 +1,7 @@
-+#
-+# Makefile for the PPS core.
-+#
-+
-+pps_core-objs			+= pps.o kapi.o sysfs.o
-+obj-$(CONFIG_PPS)		+= pps_core.o
-+obj-y				+= clients/
-diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
-new file mode 100644
-index 0000000..867df3a
---- /dev/null
-+++ b/drivers/pps/clients/Kconfig
-@@ -0,0 +1,30 @@
-+#
-+# LinuxPPS clients configuration
-+#
-+
-+if PPS
-+
-+comment "PPS clients support"
-+
-+config PPS_CLIENT_KTIMER
-+	tristate "Kernel timer client (Testing client, use for debug)"
-+	help
-+	  If you say yes here you get support for a PPS debugging client
-+	  which uses a kernel timer to generate the PPS signal.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called ktimer.o.
-+
-+config PPS_CLIENT_UART
-+	bool "UART serial support"
-+	help
-+	  If you say yes here you get support for a PPS source connected
-+	  with the CD (Carrier Detect) pin of your serial port.
-+
-+config PPS_CLIENT_LP
-+	bool "Parallel printer support"
-+	help
-+	  If you say yes here you get support for a PPS source connected
-+	  with the interrupt pin of your parallel port.
-+
-+endif
-diff --git a/drivers/pps/clients/Makefile b/drivers/pps/clients/Makefile
-new file mode 100644
-index 0000000..3ecca41
---- /dev/null
-+++ b/drivers/pps/clients/Makefile
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for miscellaneous I2C chip drivers.
-+#
-+
-+obj-$(CONFIG_PPS_CLIENT_KTIMER)	+= ktimer.o
-+
-diff --git a/drivers/pps/clients/ktimer.c b/drivers/pps/clients/ktimer.c
-new file mode 100644
-index 0000000..e9e5c47
---- /dev/null
-+++ b/drivers/pps/clients/ktimer.c
-@@ -0,0 +1,113 @@
-+/*
-+ * ktimer.c -- kernel timer test client
-+ *
-+ *
-+ * Copyright (C) 2005-2006   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/time.h>
-+#include <linux/timer.h>
-+
-+#include <linux/pps.h>
-+
-+/*
-+ * Global variables
-+ */
-+
-+static int source;
-+static struct timer_list ktimer;
-+
-+/*
-+ * The kernel timer
-+ */
-+
-+static void pps_ktimer_event(unsigned long ptr)
-+{
-+	pps_info("PPS event at %lu", jiffies);
-+
-+	pps_event(source, PPS_CAPTUREASSERT, NULL);
-+
-+	mod_timer(&ktimer, jiffies + HZ);
-+}
-+
-+/*
-+ * The echo function
-+ */
-+
-+static void pps_ktimer_echo(int source, int event, void *data)
-+{
-+	pps_info("echo %s %s for source %d",
-+		event & PPS_CAPTUREASSERT ? "assert" : "",
-+		event & PPS_CAPTURECLEAR ? "clear" : "",
-+		source);
-+}
-+
-+/*
-+ * The PPS info struct
-+ */
-+
-+static struct pps_source_info_s pps_ktimer_info = {
-+	name		: "ktimer",
-+	path		: "",
-+	mode		: PPS_CAPTUREASSERT|PPS_OFFSETASSERT|PPS_ECHOASSERT| \
-+			  PPS_CANWAIT|PPS_TSFMT_TSPEC,
-+	echo 		: pps_ktimer_echo,
-+};
-+
-+/*
-+ * Module staff
-+ */
-+
-+static void __exit pps_ktimer_exit(void)
-+{
-+	del_timer_sync(&ktimer);
-+	pps_unregister_source(&pps_ktimer_info);
-+
-+	pps_info("ktimer PPS source unregistered");
-+}
-+
-+static int __init pps_ktimer_init(void)
-+{
-+	int ret;
-+
-+	ret = pps_register_source(&pps_ktimer_info,
-+				PPS_CAPTUREASSERT|PPS_OFFSETASSERT,
-+				-1 /* is up to the system */);
-+	if (ret < 0) {
-+		pps_err("cannot register ktimer source");
-+		return ret;
-+	}
-+	source = ret;
-+
-+	setup_timer(&ktimer, pps_ktimer_event, 0);
-+	mod_timer(&ktimer, jiffies + HZ);
-+
-+	pps_info("ktimer PPS source registered at %d", source);
-+
-+	return  0;
-+}
-+
-+module_init(pps_ktimer_init);
-+module_exit(pps_ktimer_exit);
-+
-+MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
-+MODULE_DESCRIPTION("testing PPS source by using a kernel timer (just for debug)");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/pps/kapi.c b/drivers/pps/kapi.c
-new file mode 100644
-index 0000000..977aa14
---- /dev/null
-+++ b/drivers/pps/kapi.c
-@@ -0,0 +1,215 @@
-+/*
-+ * kapi.c -- kernel API
-+ *
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/time.h>
-+#include <linux/pps.h>
-+
-+/* 
-+ * Local functions
-+ */
-+
-+static void pps_add_offset(struct pps_ktime *ts, struct pps_ktime *offset)
-+{
-+	ts->nsec += offset->nsec;
-+	if (ts->nsec >= NSEC_PER_SEC) {
-+		ts->nsec -= NSEC_PER_SEC;
-+		ts->sec++;
-+	} else if (ts->nsec < 0) {
-+		ts->nsec += NSEC_PER_SEC;
-+		ts->sec--;
-+	}
-+	ts->sec += offset->sec;
-+}
-+
-+/*
-+ * Exported functions
-+ */
-+
-+int pps_register_source(struct pps_source_info_s *info, int default_params,
-+			int try_id)
-+{
-+	int i = -1, err = 0, ret;
-+
-+	if (mutex_lock_interruptible(&pps_mutex))
-+		return -EINTR;
-+
-+	if (try_id >= 0) {
-+		if (pps_is_allocated(try_id)) {
-+			pps_err("source id %d busy", try_id);
-+			err = -EBUSY;
-+			goto pps_register_source_exit;
-+		}
-+		i = try_id;
-+	} else {
-+		for (i = 0; i < PPS_MAX_SOURCES; i++)
-+			if (!pps_is_allocated(i))
-+				break;
-+		if (i >= PPS_MAX_SOURCES) {
-+			pps_err("no free source ids");
-+			err = -ENOMEM;
-+			goto pps_register_source_exit;
-+		}
-+	}
-+
-+	/* Sanity checks */
-+	if ((info->mode & default_params) != default_params) {
-+		pps_err("unsupported default parameters");
-+		err = -EINVAL;
-+		goto pps_register_source_exit;
-+	}
-+	if ((info->mode & (PPS_ECHOASSERT | PPS_ECHOCLEAR)) != 0 &&
-+			info->echo == NULL) {
-+		pps_err("echo function is not defined");
-+		err = -EINVAL;
-+		goto pps_register_source_exit;
-+	}
-+	if ((info->mode & (PPS_TSFMT_TSPEC | PPS_TSFMT_NTPFP)) == 0) {
-+		pps_err("unspecified time format");
-+		err = -EINVAL;
-+		goto pps_register_source_exit;
-+	}
-+
-+	/* Allocate the PPS source.
-+	 *
-+	 * Note that we should reset all fields BUT "info" one! */
-+	memset(&(pps_source[i].params), 0, sizeof(struct pps_kparams));
-+	pps_source[i].params.api_version = PPS_API_VERS;
-+	pps_source[i].params.mode = default_params;
-+	pps_source[i].assert_sequence = 0;
-+	pps_source[i].clear_sequence = 0;
-+	pps_source[i].current_mode = 0;
-+	pps_source[i].go = 0;
-+	init_waitqueue_head(&pps_source[i].queue);
-+
-+	/* Allocate the PPS source */
-+	pps_source[i].info = info;
-+
-+pps_register_source_exit :
-+	mutex_unlock(&pps_mutex);
-+
-+	if (err < 0)
-+		return err;
-+
-+	ret = pps_sysfs_create_source_entry(info, i);
-+	if (ret < 0)
-+		pps_err("unable to create sysfs entry for source %d", i);
-+
-+	return i;
-+}
-+EXPORT_SYMBOL(pps_register_source);
-+
-+void pps_unregister_source(struct pps_source_info_s *info)
-+{
-+	int i;
-+
-+	pps_sysfs_remove_source_entry(info);
-+
-+	if (mutex_lock_interruptible(&pps_mutex))
-+		return;
-+
-+	for (i = 0; i < PPS_MAX_SOURCES; i++)
-+		if (pps_is_allocated(i) && pps_source[i].info == info)
-+			break;
-+
-+	if (i >= PPS_MAX_SOURCES) {
-+		pps_err("warning! Try to unregister an unknow PPS source");
-+		goto pps_unregister_source_exit;
-+	}
-+
-+	/* Deallocate the PPS source */
-+	pps_source[i].info = &dummy_info; 
-+
-+pps_unregister_source_exit :
-+	mutex_unlock(&pps_mutex);
-+}
-+EXPORT_SYMBOL(pps_unregister_source);
-+
-+void pps_event(int source, int event, void *data)
-+{
-+	struct timespec __ts;
-+	struct pps_ktime ts;
-+
-+	/* First of all we get the time stamp... */
-+	getnstimeofday(&__ts);
-+
-+	/* ... and translate it to PPS time data struct */
-+	ts.sec = __ts.tv_sec;
-+	ts.nsec = __ts.tv_nsec;
-+
-+	if ((event & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR)) == 0 ) {
-+		pps_err("unknow event (%x) for source %d", event, source);
-+		return;
-+	}
-+
-+	/* We wish not using locks at all into this function... a possible
-+	 * solution is to check the "info" field against the pointer to
-+	 * "dummy_info".
-+	 * If "info" points to "dummy_info" we can return doing nothing since,
-+	 * even if a new PPS source is registered by another CPU we can
-+	 * safely not register current event.
-+	 * If "info" points to a valid PPS source's info data we can continue
-+	 * without problem since, even if current PPS source is deregistered
-+	 * by another CPU, we still continue writing data into a valid area
-+	 * (dummy_info).
-+	 */
-+	if (pps_source[source].info == &dummy_info)
-+		return;
-+
-+	/* Must call the echo function? */
-+	if ((pps_source[source].params.mode & (PPS_ECHOASSERT | PPS_ECHOCLEAR)))
-+		pps_source[source].info->echo(source, event, data);
-+
-+	/* Check the event */
-+	pps_source[source].current_mode = pps_source[source].params.mode;
-+	if (event & PPS_CAPTUREASSERT) {
-+		/* We have to add an offset? */
-+		if (pps_source[source].params.mode & PPS_OFFSETASSERT)
-+			pps_add_offset(&ts,
-+				&pps_source[source].params.assert_off_tu);
-+
-+		/* Save the time stamp */
-+		pps_source[source].assert_tu = ts;
-+		pps_source[source].assert_sequence++;
-+		pps_dbg("capture assert seq #%u for source %d", 
-+			pps_source[source].assert_sequence, source);
-+	}
-+	if (event & PPS_CAPTURECLEAR) {
-+		/* We have to add an offset? */
-+		if (pps_source[source].params.mode & PPS_OFFSETCLEAR)
-+			pps_add_offset(&ts,
-+				&pps_source[source].params.clear_off_tu);
-+
-+		/* Save the time stamp */
-+		pps_source[source].clear_tu = ts;
-+		pps_source[source].clear_sequence++;
-+		pps_dbg("capture clear seq #%u for source %d", 
-+			pps_source[source].clear_sequence, source);
-+	}
-+
-+	pps_source[source].go = ~0;
-+	wake_up_interruptible(&pps_source[source].queue);
-+}
-+EXPORT_SYMBOL(pps_event);
-diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
-new file mode 100644
-index 0000000..42b5e11
---- /dev/null
-+++ b/drivers/pps/pps.c
-@@ -0,0 +1,398 @@
-+/*
-+ * pps.c -- Main PPS support file
-+ *
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/version.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/linkage.h>
-+#include <linux/sched.h>
-+#include <linux/pps.h>
-+#include <asm/uaccess.h>
-+
-+/*
-+ * Global variables
-+ */
-+
-+struct pps_s pps_source[PPS_MAX_SOURCES];
-+DEFINE_MUTEX(pps_mutex);
-+
-+void dummy_echo(int source, int event, void *data) { }
-+struct pps_source_info_s dummy_info;	/* Dummy PPS info for unallocated
-+					   PPS sources */
-+
-+/*
-+ * Misc functions
-+ */
-+
-+static inline int pps_check_source(int source)
-+{
-+	return (source < 0 || !pps_is_allocated(source)) ? -EINVAL : 0;
-+}
-+
-+static int pps_find_source(int source)
-+{
-+	int i;
-+
-+	if (source >= 0) {
-+		if (source >= PPS_MAX_SOURCES || !pps_is_allocated(source))
-+			return -EINVAL;
-+		else
-+			return source;
-+	}
-+
-+	for (i = 0; i < PPS_MAX_SOURCES; i++)
-+		if (pps_is_allocated(i))
-+			break;
-+
-+	if (i >= PPS_MAX_SOURCES)
-+		return -EINVAL;
-+
-+	return i;
-+}
-+
-+static int pps_find_path(char *path)
-+{
-+	int i;
-+
-+	for (i = 0; i < PPS_MAX_SOURCES; i++)
-+		if (pps_is_allocated(i) &&
-+		    (strncmp(pps_source[i].info->path, path,
-+			     	PPS_MAX_NAME_LEN) == 0 ||
-+		     strncmp(pps_source[i].info->name, path,
-+			     	PPS_MAX_NAME_LEN) == 0))
-+			break;
-+
-+	if (i >= PPS_MAX_SOURCES)
-+		return -EINVAL;
-+
-+	return i;
-+}
-+
-+/*
-+ * PPS System Calls
-+ */
-+
-+asmlinkage long sys_time_pps_cmd(int cmd, void __user *arg)
-+{
-+	struct pps_source_data_s data;
-+	int ret = 0;
-+
-+	pps_dbg("%s: cmd %d", __FUNCTION__, cmd);
-+
-+	/* Sanity checks */
-+	if (_IOC_TYPE(cmd) != 'P')
-+		return -EOPNOTSUPP;
-+
-+	if (mutex_lock_interruptible(&pps_mutex))
-+		return -EINTR;
-+
-+	switch (cmd) {
-+	case PPS_CMD_FIND_SRC :
-+		ret = copy_from_user(&data, arg,
-+					sizeof(struct pps_source_data_s));
-+		if (ret) {
-+			ret = -EFAULT;
-+			goto sys_time_pps_cmd_exit;
-+		}
-+
-+		pps_dbg("PPS_CMD_FIND_SRC: source %d", data.source);
-+
-+		data.source = pps_find_source(data.source);
-+		if (data.source < 0) {
-+			pps_dbg("no PPS devices found");
-+			ret = -ENODEV;
-+			goto sys_time_pps_cmd_exit;
-+	 	}
-+
-+		break;
-+
-+	case PPS_CMD_FIND_PATH :
-+		ret = copy_from_user(&data, arg,
-+					sizeof(struct pps_source_data_s));
-+		if (ret) {
-+			ret = -EFAULT;
-+			goto sys_time_pps_cmd_exit;
-+		}
-+
-+		pps_dbg("PPS_CMD_FIND_PATH: path %s", data.path);
-+
-+		data.source = pps_find_path(data.path);
-+		if (data.source < 0) {
-+			pps_dbg("no PPS devices found");
-+			ret = -ENODEV;
-+			goto sys_time_pps_cmd_exit;
-+	 	}
-+
-+		break;
-+
-+	default :
-+		pps_err("invalid sys_time_pps_cmd %d", cmd);
-+		ret = -EOPNOTSUPP;
-+		goto sys_time_pps_cmd_exit;
-+	}
-+
-+	/* Found! So copy the info */
-+	strncpy(data.name, pps_source[data.source].info->name,
-+				PPS_MAX_NAME_LEN);
-+	strncpy(data.path, pps_source[data.source].info->path,
-+				PPS_MAX_NAME_LEN);
-+
-+	ret = copy_to_user(arg, &data, sizeof(struct pps_source_data_s));
-+	if (ret)
-+		ret = -EFAULT;
-+
-+sys_time_pps_cmd_exit:
-+	mutex_unlock(&pps_mutex);
-+
-+	return ret;
-+}
-+
-+asmlinkage long sys_time_pps_getparams(int source,
-+					struct pps_kparams __user *params)
-+{
-+	int ret = 0;
-+
-+	pps_dbg("%s: source %d", __FUNCTION__, source);
-+
-+	/* Sanity checks */
-+	if (!params)
-+		return -EINVAL;
-+
-+	if (mutex_lock_interruptible(&pps_mutex))
-+		return -EINTR;
-+
-+	ret = pps_check_source(source);
-+	if (ret < 0) {
-+		ret = -ENODEV;
-+		goto sys_time_pps_getparams_exit;
-+	}
-+
-+	/* Return current parameters */
-+	ret = copy_to_user(params, &pps_source[source].params,
-+						sizeof(struct pps_kparams));
-+	if (ret)
-+		ret = -EFAULT;
-+
-+sys_time_pps_getparams_exit:
-+	mutex_unlock(&pps_mutex);
-+
-+	return ret;
-+}
-+
-+asmlinkage long sys_time_pps_setparams(int source,
-+					const struct pps_kparams __user *params)
-+{
-+	int ret;
-+
-+	pps_dbg("%s: source %d", __FUNCTION__, source);
-+
-+	/* Check the capabilities */
-+	if (!capable(CAP_SYS_TIME))
-+		return -EPERM;
-+
-+	/* Sanity checks */
-+	if (!params)
-+		return -EINVAL;
-+	if ((params->mode & ~pps_source[source].info->mode) != 0) {
-+		pps_dbg("unsupported capabilities");
-+		return -EINVAL;
-+ 	}
-+	if ((params->mode & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR)) == 0) {
-+		pps_dbg("capture mode unspecified");
-+		return -EINVAL;
-+	}
-+
-+	if (mutex_lock_interruptible(&pps_mutex))
-+		return -EINTR;
-+
-+	ret = pps_check_source(source);
-+	if (ret < 0) {
-+		ret = -ENODEV;
-+		goto sys_time_pps_setparams_exit;
-+	}
-+
-+	/* Save the new parameters */
-+	ret = copy_from_user(&pps_source[source].params, params,
-+						sizeof(struct pps_kparams));
-+	if (ret) {
-+		ret = -EFAULT;
-+		goto sys_time_pps_setparams_exit;
-+	}
-+
-+	/* Restore the read only parameters */
-+	if ((params->mode & (PPS_TSFMT_TSPEC | PPS_TSFMT_NTPFP)) == 0) {
-+		/* section 3.3 of RFC 2783 interpreted */
-+		pps_dbg("time format unspecified");
-+		pps_source[source].params.mode |= PPS_TSFMT_TSPEC;
-+	}
-+	if (pps_source[source].info->mode & PPS_CANWAIT)
-+		pps_source[source].params.mode |= PPS_CANWAIT;
-+	pps_source[source].params.api_version = PPS_API_VERS;
-+
-+sys_time_pps_setparams_exit:
-+	mutex_unlock(&pps_mutex);
-+
-+	return ret;
-+}
-+
-+asmlinkage long sys_time_pps_getcap(int source, int __user *mode)
-+{
-+	int ret;
-+
-+	pps_dbg("%s: source %d", __FUNCTION__, source);
-+
-+	/* Sanity checks */
-+	if (!mode)
-+		return -EINVAL;
-+
-+	if (mutex_lock_interruptible(&pps_mutex))
-+		return -EINTR;
-+
-+	ret = pps_check_source(source);
-+	if (ret < 0) {
-+		ret = -ENODEV;
-+		goto sys_time_pps_getcap_exit;
-+	}
-+
-+	ret = put_user(pps_source[source].info->mode, mode);
-+
-+sys_time_pps_getcap_exit:
-+	mutex_unlock(&pps_mutex);
-+
-+	return ret;
-+}
-+
-+asmlinkage long sys_time_pps_fetch(int source, struct pps_kinfo __user *info, 
-+					const struct pps_ktime __user *timeout)
-+{
-+	unsigned long ticks;
-+	struct pps_kinfo pi;
-+	struct pps_ktime to;
-+	int ret;
-+
-+	pps_dbg("%s: source %d", __FUNCTION__, source);
-+
-+	if (!info)
-+		return -EINVAL;
-+
-+	if (mutex_lock_interruptible(&pps_mutex))
-+		return -EINTR;
-+
-+	ret = pps_check_source(source);
-+	if (ret < 0) {
-+		ret = -ENODEV;
-+		goto sys_time_pps_fetch_exit;
-+	}
-+
-+	pps_source[source].go = 0;
-+
-+ 	/* Manage the timeout */
-+	if (timeout) {
-+		ret = copy_from_user(&to, timeout, sizeof(struct pps_ktime));
-+		if (ret) {
-+			goto sys_time_pps_fetch_exit;
-+			ret = -EFAULT;
-+		}
-+		pps_dbg("timeout %lld.%09d", to.sec, to.nsec);
-+		ticks = to.sec * HZ;
-+		ticks += to.nsec / (NSEC_PER_SEC / HZ);
-+
-+		if (ticks != 0) {
-+			ret = wait_event_interruptible_timeout(
-+				pps_source[source].queue,
-+				pps_source[source].go, ticks);
-+  			if (ret == 0) {
-+				pps_dbg("timeout expired");
-+				ret = -ETIMEDOUT;
-+				goto sys_time_pps_fetch_exit;
-+			}
-+		}
-+ 	} else
-+		ret = wait_event_interruptible(pps_source[source].queue,
-+				pps_source[source].go);
-+
-+	/* Check for pending signals */
-+	if (ret == -ERESTARTSYS) {
-+		pps_dbg("pending signal caught");
-+		ret = -EINTR;
-+		goto sys_time_pps_fetch_exit;
-+	}
-+
-+	/* Return the fetched timestamp */
-+	pi.assert_sequence = pps_source[source].assert_sequence;
-+	pi.clear_sequence = pps_source[source].clear_sequence;
-+	pi.assert_tu = pps_source[source].assert_tu;
-+	pi.clear_tu = pps_source[source].clear_tu;
-+	pi.current_mode = pps_source[source].current_mode;
-+	ret = copy_to_user(info, &pi, sizeof(struct pps_kinfo));
-+	if (ret)
-+		ret = -EFAULT;
-+
-+sys_time_pps_fetch_exit:
-+	mutex_unlock(&pps_mutex);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Module staff
-+ */
-+
-+static void __exit pps_exit(void)
-+{
-+	pps_sysfs_unregister();
-+
-+	pps_info("LinuxPPS API ver. %d removed", PPS_API_VERS);
-+}
-+
-+static int __init pps_init(void)
-+{
-+	int i, ret;
-+
-+	/* Init pps_source info */
-+	dummy_info.echo = dummy_echo;
-+	for (i = 0; i < PPS_MAX_SOURCES; i++) {
-+		pps_source[i].info = &dummy_info;
-+		init_waitqueue_head(&pps_source[i].queue);
-+	}
-+
-+	/* Register to sysfs */
-+	ret = pps_sysfs_register();
-+	if (ret < 0) {
-+		pps_err("unable to register sysfs");
-+		return ret;
-+	}
-+
-+	pps_info("LinuxPPS API ver. %d registered", PPS_API_VERS);
-+	pps_info("Software ver. %s - Copyright 2005-2007 Rodolfo Giometti "
-+		"<giometti@linux.it>", PPS_VERSION);
-+
-+	return 0;
-+}
-+
-+subsys_initcall(pps_init);
-+module_exit(pps_exit);
-+
-+MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
-+MODULE_DESCRIPTION("LinuxPPS support (RFC 2783) - ver. " PPS_VERSION);
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/pps/sysfs.c b/drivers/pps/sysfs.c
-new file mode 100644
-index 0000000..e52dd8e
---- /dev/null
-+++ b/drivers/pps/sysfs.c
-@@ -0,0 +1,217 @@
-+/*
-+ * sysfs.c -- sysfs support
-+ *
-+ *
-+ * Copyright (C) 2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+
-+#include <linux/pps.h>
-+
-+/*
-+ * Private functions
-+ */
-+
-+static ssize_t pps_show_assert(struct class_device *cdev, char *buf)
-+{
-+	struct pps_s *dev = class_get_devdata(cdev);
-+
-+	return sprintf(buf, "%lld.%09d#%d\n",
-+			dev->assert_tu.sec, dev->assert_tu.nsec,
-+			dev->assert_sequence);
-+}
-+
-+static ssize_t pps_show_clear(struct class_device *cdev, char *buf)
-+{
-+	struct pps_s *dev = class_get_devdata(cdev);
-+
-+	return sprintf(buf, "%lld.%09d#%d\n",
-+			dev->clear_tu.sec, dev->clear_tu.nsec,
-+			dev->clear_sequence);
-+}
-+
-+static ssize_t pps_show_mode(struct class_device *cdev, char *buf)
-+{
-+	struct pps_source_info_s *info = to_pps_info(cdev);
-+
-+	return sprintf(buf, "%4x\n", info->mode);
-+}
-+
-+static ssize_t pps_show_echo(struct class_device *cdev, char *buf)
-+{
-+	struct pps_source_info_s *info = to_pps_info(cdev);
-+
-+	return sprintf(buf, "%d\n", !!info->echo);
-+}
-+
-+static ssize_t pps_show_name(struct class_device *cdev, char *buf)
-+{
-+	struct pps_source_info_s *info = to_pps_info(cdev);
-+
-+	return sprintf(buf, "%s\n", info->name);
-+}
-+
-+static ssize_t pps_show_path(struct class_device *cdev, char *buf)
-+{
-+	struct pps_source_info_s *info = to_pps_info(cdev);
-+
-+	return sprintf(buf, "%s\n", info->path);
-+}
-+
-+/*
-+ * Files definitions
-+ */
-+
-+#define DECLARE_INFO_ATTR(_name, _mode, _show, _store)			\
-+{									\
-+	.attr   = {							\
-+		.name = __stringify(_name),				\
-+		.mode = _mode, 						\
-+		.owner = THIS_MODULE,					\
-+	},								\
-+	.show   = _show,						\
-+	.store  = _store,						\
-+}
-+
-+static struct class_device_attribute pps_class_device_attributes[] = {
-+	DECLARE_INFO_ATTR(assert, 0444, pps_show_assert, NULL),
-+	DECLARE_INFO_ATTR(clear, 0444, pps_show_clear, NULL),
-+	DECLARE_INFO_ATTR(mode, 0444, pps_show_mode, NULL),
-+	DECLARE_INFO_ATTR(echo, 0444, pps_show_echo, NULL),
-+	DECLARE_INFO_ATTR(name, 0444, pps_show_name, NULL),
-+	DECLARE_INFO_ATTR(path, 0444, pps_show_path, NULL),
-+};
-+
-+/*
-+ * Class definitions
-+ */
-+
-+static void pps_class_release(struct class_device *cdev)
-+{
-+	/* Nop??? */
-+}
-+
-+static struct class pps_class = {
-+	.name = "pps",
-+	.release = pps_class_release,
-+};
-+
-+/*
-+ * Public functions
-+ */
-+
-+void pps_sysfs_remove_source_entry(struct pps_source_info_s *info)
-+{
-+	int i;
-+
-+	/* Sanity checks */
-+	if (info == NULL)
-+		return;
-+
-+	/* Delete info files */
-+	if (info->mode&PPS_CAPTUREASSERT)
-+		class_device_remove_file(&info->class_dev,
-+					&pps_class_device_attributes[0]);
-+
-+	if (info->mode&PPS_CAPTURECLEAR)
-+		class_device_remove_file(&info->class_dev,
-+					&pps_class_device_attributes[1]);
-+
-+	for (i = 2; i < ARRAY_SIZE(pps_class_device_attributes); i++)
-+		class_device_remove_file(&info->class_dev,
-+					&pps_class_device_attributes[i]);
-+
-+	/* Deregister the pps class */
-+	class_device_unregister(&info->class_dev);
-+}
-+
-+int pps_sysfs_create_source_entry(struct pps_source_info_s *info, int id)
-+{
-+	char buf[32];
-+	int i, ret;
-+
-+	/* Sanity checks */
-+	if (info == NULL || id >= PPS_MAX_SOURCES)
-+		return -EINVAL;
-+
-+	/* Create dir class device name */
-+	sprintf(buf, "%.02d", id);
-+
-+	/* Setup the class struct */
-+	memset(&info->class_dev, 0, sizeof(struct class_device));
-+	info->class_dev.class = &pps_class;
-+	strlcpy(info->class_dev.class_id, buf, KOBJ_NAME_LEN);
-+	class_set_devdata(&info->class_dev, &pps_source[id]);
-+
-+	/* Register the new class */
-+	ret = class_device_register(&info->class_dev);
-+	if (unlikely(ret))
-+		goto error_class_device_register;
-+
-+	/* Create info files */
-+
-+	/* Create file "assert" and "clear" according to source capability */
-+	if (info->mode & PPS_CAPTUREASSERT) {
-+		ret = class_device_create_file(&info->class_dev,
-+					&pps_class_device_attributes[0]);
-+		i = 0;
-+		if (unlikely(ret))
-+			goto error_class_device_create_file;
-+	}
-+	if (info->mode & PPS_CAPTURECLEAR) {
-+		ret = class_device_create_file(&info->class_dev,
-+					&pps_class_device_attributes[1]);
-+		i = 1;
-+		if (unlikely(ret))
-+			goto error_class_device_create_file;
-+	}
-+
-+	for (i = 2; i < ARRAY_SIZE(pps_class_device_attributes); i++) {
-+		ret = class_device_create_file(&info->class_dev,
-+					&pps_class_device_attributes[i]);
-+		if (unlikely(ret))
-+			goto error_class_device_create_file;
-+	}
-+
-+	return 0;
-+
-+error_class_device_create_file:
-+	while (--i >= 0)
-+		class_device_remove_file(&info->class_dev,
-+					&pps_class_device_attributes[i]);
-+
-+	class_device_unregister(&info->class_dev);
-+	/* Here the  release() method was already called */
-+
-+error_class_device_register:
-+
-+	return ret;
-+}
-+
-+void pps_sysfs_unregister(void)
-+{
-+	class_unregister(&pps_class);
-+}
-+
-+int pps_sysfs_register(void)
-+{
-+	return class_register(&pps_class);
-+}
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index c84dab0..0c9a307 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2101,6 +2101,8 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
- 		up->ier |= UART_IER_MSI;
- 	if (up->capabilities & UART_CAP_UUE)
- 		up->ier |= UART_IER_UUE | UART_IER_RTOIE;
-+	if (up->port.flags & UPF_HARDPPS_CD)
-+		up->ier |= UART_IER_MSI;	/* enable interrupts */
- 
- 	serial_out(up, UART_IER, up->ier);
- 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 326020f..4a9906f 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -33,6 +33,7 @@
- #include <linux/serial.h> /* for serial_state and serial_icounter_struct */
- #include <linux/delay.h>
- #include <linux/mutex.h>
-+#include <linux/pps.h>
- 
- #include <asm/irq.h>
- #include <asm/uaccess.h>
-@@ -633,6 +634,52 @@ static int uart_get_info(struct uart_state *state,
- 	return 0;
- }
- 
-+#ifdef CONFIG_PPS_CLIENT_UART
-+
-+static int
-+uart_register_pps_port(struct uart_state *state, struct uart_port *port)
-+{
-+	struct tty_driver *drv = port->info->tty->driver;
-+	int ret;
-+
-+	snprintf(state->pps_info.name, PPS_MAX_NAME_LEN, "%s%d",
-+		drv->driver_name, port->line);
-+	snprintf(state->pps_info.path, PPS_MAX_NAME_LEN, "/dev/%s%d",
-+		drv->name, port->line);
-+
-+	state->pps_info.mode = PPS_CAPTUREBOTH | \
-+			PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
-+			PPS_CANWAIT | PPS_TSFMT_TSPEC;
-+
-+	ret = pps_register_source(&state->pps_info, PPS_CAPTUREBOTH | \
-+				PPS_OFFSETASSERT | PPS_OFFSETCLEAR,
-+				-1 /* PPS ID is up to the system */);
-+	if (ret < 0) {
-+		pps_err("cannot register PPS source \"%s\"", state->pps_info.path);
-+		return ret;
-+	}
-+	port->pps_source = ret;
-+	pps_info("PPS source #%d \"%s\" added to the system ",
-+		port->pps_source, state->pps_info.path);
-+
-+	return 0;
-+}
-+
-+static void
-+uart_unregister_pps_port(struct uart_state *state, struct uart_port *port)
-+{
-+	pps_unregister_source(&state->pps_info);
-+	pps_dbg("PPS source #%d \"%s\" removed from the system",
-+	port->pps_source, state->pps_info.path);
-+}
-+
-+#else
-+
-+#define uart_register_pps_port(state, port)	do { } while (0)
-+#define uart_unregister_pps_port(state, port)	do { } while (0)
-+
-+#endif /* CONFIG_PPS_CLIENT_UART */
-+
- static int uart_set_info(struct uart_state *state,
- 			 struct serial_struct __user *newinfo)
- {
-@@ -807,11 +854,19 @@ static int uart_set_info(struct uart_state *state,
- 			(port->flags & UPF_LOW_LATENCY) ? 1 : 0;
- 
-  check_and_exit:
-+	/* PPS support enabled/disabled? */
-+	if ((old_flags & UPF_HARDPPS_CD) != (new_flags & UPF_HARDPPS_CD)) {
-+		if (new_flags & UPF_HARDPPS_CD)
-+			uart_register_pps_port(state, port);
-+		else	
-+			uart_unregister_pps_port(state, port);
-+	}
-+
- 	retval = 0;
- 	if (port->type == PORT_UNKNOWN)
- 		goto exit;
- 	if (state->info->flags & UIF_INITIALIZED) {
--		if (((old_flags ^ port->flags) & UPF_SPD_MASK) ||
-+		if (((old_flags ^ port->flags) & (UPF_SPD_MASK|UPF_HARDPPS_CD)) ||
- 		    old_custom_divisor != port->custom_divisor) {
- 			/*
- 			 * If they're setting up a custom divisor or speed,
-@@ -2100,6 +2155,12 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
- 		port->ops->config_port(port, flags);
- 	}
- 
-+	/*
-+ 	 * Add the PPS support for the current port.
-+ 	 */
-+	if (port->flags & UPF_HARDPPS_CD)
-+		uart_register_pps_port(state, port);
-+
- 	if (port->type != PORT_UNKNOWN) {
- 		unsigned long flags;
- 
-@@ -2349,6 +2410,12 @@ int uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
- 	mutex_unlock(&state->mutex);
- 
- 	/*
-+ 	 * Remove PPS support from the current port.
-+	 */
-+	if (port->flags & UPF_HARDPPS_CD)
-+		uart_unregister_pps_port(state, port);
-+
-+	/*
- 	 * Remove the devices from the tty layer
- 	 */
- 	tty_unregister_device(drv->tty_driver, port->line);
-diff --git a/include/asm-i386/unistd.h b/include/asm-i386/unistd.h
-index e84ace1..36746dc 100644
---- a/include/asm-i386/unistd.h
-+++ b/include/asm-i386/unistd.h
-@@ -329,10 +329,15 @@
- #define __NR_signalfd		321
- #define __NR_timerfd		322
- #define __NR_eventfd		323
-+#define __NR_time_pps_cmd	324
-+#define __NR_time_pps_getparams	325
-+#define __NR_time_pps_setparams	326
-+#define __NR_time_pps_getcap	327
-+#define __NR_time_pps_fetch	328
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 324
-+#define NR_syscalls 329
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index f317c27..a10d20a 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -293,6 +293,7 @@ unifdef-y += pmu.h
- unifdef-y += poll.h
- unifdef-y += ppp_defs.h
- unifdef-y += ppp-comp.h
-+unifdef-y += pps.h
- unifdef-y += ptrace.h
- unifdef-y += qnx4_fs.h
- unifdef-y += quota.h
-diff --git a/include/linux/parport.h b/include/linux/parport.h
-index 9cdd694..f53d9f4 100644
---- a/include/linux/parport.h
-+++ b/include/linux/parport.h
-@@ -100,6 +100,7 @@ typedef enum {
- #include <linux/proc_fs.h>
- #include <linux/spinlock.h>
- #include <linux/wait.h>
-+#include <linux/pps.h>
- #include <asm/system.h>
- #include <asm/ptrace.h>
- #include <asm/semaphore.h>
-@@ -327,6 +328,11 @@ struct parport {
- 
- 	struct list_head full_list;
- 	struct parport *slaves[3];
-+
-+#ifdef CONFIG_PPS_CLIENT_LP
-+	struct pps_source_info_s pps_info;
-+	int pps_source;		/* PPS source ID */
-+#endif
- };
- 
- #define DEFAULT_SPIN_TIME 500 /* us */
-@@ -517,6 +523,12 @@ extern int parport_daisy_select (struct parport *port, int daisy, int mode);
- /* Lowlevel drivers _can_ call this support function to handle irqs.  */
- static __inline__ void parport_generic_irq(int irq, struct parport *port)
- {
-+#ifdef CONFIG_PPS_CLIENT_LP
-+	pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
-+	pps_dbg("parport_pc: PPS assert event at %lu on source #%d",
-+		jiffies, port->pps_source);
-+#endif
-+
- 	parport_ieee1284_interrupt (irq, port);
- 	read_lock(&port->cad_lock);
- 	if (port->cad && port->cad->irq_func)
-diff --git a/include/linux/pps.h b/include/linux/pps.h
-new file mode 100644
-index 0000000..be32d16
---- /dev/null
-+++ b/include/linux/pps.h
-@@ -0,0 +1,207 @@
-+/*
-+ * pps.h -- PPS API kernel header.
-+ *
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#ifndef _PPS_H_
-+#define _PPS_H_
-+
-+/* Implementation note: the logical states ``assert'' and ``clear''
-+ * are implemented in terms of the chip register, i.e. ``assert''
-+ * means the bit is set.  */
-+
-+/*
-+ * 3.2 New data structures
-+ */
-+
-+#ifndef __KERNEL__
-+#include <asm/types.h>
-+#include <sys/time.h>
-+#else
-+#include <linux/time.h>
-+#endif
-+
-+#define PPS_API_VERS_2          2       /* LinuxPPS proposal, dated 2006-05 */
-+#define PPS_API_VERS            PPS_API_VERS_2
-+#define LINUXPSS_API            1       /* mark LinuxPPS API */
-+
-+#define PPS_MAX_NAME_LEN	32
-+
-+struct pps_ktime {
-+	__u64 sec;
-+	__u32 nsec;
-+};
-+
-+struct pps_kinfo {
-+	__u32 assert_sequence;		/* seq. num. of assert event */
-+	__u32 clear_sequence; 		/* seq. num. of clear event */
-+	struct pps_ktime assert_tu;	/* time of assert event */
-+	struct pps_ktime clear_tu;	/* time of clear event */
-+	int current_mode;		/* current mode bits */
-+};
-+
-+struct pps_kparams {
-+	int api_version;		/* API version # */
-+	int mode;			/* mode bits */
-+	struct pps_ktime assert_off_tu;	/* offset compensation for assert */
-+	struct pps_ktime clear_off_tu;	/* offset compensation for clear */
-+};
-+
-+/*
-+ * 3.3 Mode bit definitions
-+ */
-+
-+/* Device/implementation parameters */
-+#define PPS_CAPTUREASSERT	0x01	/* capture assert events */
-+#define PPS_CAPTURECLEAR	0x02	/* capture clear events */
-+#define PPS_CAPTUREBOTH		0x03	/* capture assert and clear events */
-+
-+#define PPS_OFFSETASSERT	0x10	/* apply compensation for assert ev. */
-+#define PPS_OFFSETCLEAR		0x20	/* apply compensation for clear ev. */
-+
-+#define PPS_CANWAIT		0x100	/* can we wait for an event? */
-+#define PPS_CANPOLL		0x200	/* bit reserved for future use */
-+
-+/* Kernel actions */
-+#define PPS_ECHOASSERT		0x40	/* feed back assert event to output */
-+#define PPS_ECHOCLEAR		0x80	/* feed back clear event to output */
-+
-+/* Timestamp formats */
-+#define PPS_TSFMT_TSPEC		0x1000	/* select timespec format */
-+#define PPS_TSFMT_NTPFP		0x2000	/* select NTP format */
-+
-+/*
-+ * 3.4.4 New functions: disciplining the kernel timebase
-+ */
-+
-+/* Kernel consumers */
-+#define PPS_KC_HARDPPS		0	/* hardpps() (or equivalent) */
-+#define PPS_KC_HARDPPS_PLL	1	/* hardpps() constrained to
-+					   use a phase-locked loop */
-+#define PPS_KC_HARDPPS_FLL	2	/* hardpps() constrained to
-+					use a frequency-locked loop */
-+/*
-+ * Here begins the implementation-specific part!
-+ */
-+
-+#include <linux/ioctl.h>
-+
-+struct pps_source_data_s {
-+	int source;
-+	char name[PPS_MAX_NAME_LEN];
-+	char path[PPS_MAX_NAME_LEN];
-+};
-+
-+#define PPS_CMD_FIND_SRC	_IOWR('P',  1, struct pps_source_data *)
-+#define PPS_CMD_FIND_PATH	_IOWR('P',  2, struct pps_source_data *)
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/device.h>
-+
-+/*
-+ * Misc macros
-+ */
-+
-+#define PPS_VERSION	"4.0.0-rc4"
-+
-+#ifdef CONFIG_PPS_DEBUG
-+#define pps_dbg(format, arg...) printk(KERN_DEBUG "%s: " format "\n" , \
-+	KBUILD_MODNAME , ## arg)
-+#else
-+#define pps_dbg(format, arg...) do {} while (0)
-+#endif
-+
-+#define pps_err(format, arg...) printk(KERN_ERR "%s: " format "\n" , \
-+	KBUILD_MODNAME , ## arg)
-+#define pps_info(format, arg...) printk(KERN_INFO "%s: " format "\n" , \
-+	KBUILD_MODNAME , ## arg)
-+
-+/*
-+ * Global defines
-+ */
-+
-+#define PPS_MAX_SOURCES		16
-+
-+/* The specific PPS source info */
-+struct pps_source_info_s {
-+	char name[PPS_MAX_NAME_LEN];		/* simbolic name */
-+	char path[PPS_MAX_NAME_LEN];		/* path of connected device */
-+	int mode;				/* PPS's allowed mode */
-+
-+	void (*echo)(int source, int event, void *data);/* the PPS echo function */
-+
-+	/* sysfs section */
-+	struct class_device class_dev;
-+};
-+
-+/* The main struct */
-+struct pps_s {
-+	struct pps_source_info_s *info;		/* PSS source info */
-+
-+	struct pps_kparams params;		/* PPS's current params */
-+
-+	volatile __u32 assert_sequence;		/* PPS' assert event seq # */
-+	volatile __u32 clear_sequence;		/* PPS' clear event seq # */
-+	volatile struct pps_ktime assert_tu;
-+	volatile struct pps_ktime clear_tu;
-+	int current_mode;			/* PPS mode at event time */
-+
-+	int go;					/* PPS event is arrived? */
-+	wait_queue_head_t queue;		/* PPS event queue */
-+};
-+
-+/*
-+ * Global variables
-+ */
-+
-+extern struct pps_s pps_source[PPS_MAX_SOURCES];
-+extern struct mutex pps_mutex;
-+extern struct pps_source_info_s dummy_info;
-+
-+/*
-+ * Global functions
-+ */
-+
-+static inline int pps_is_allocated(int source)
-+{
-+	return pps_source[source].info != &dummy_info;
-+}
-+
-+#define to_pps_info(obj) container_of((obj), struct pps_source_info_s, class_dev)
-+
-+/*
-+ * Exported functions
-+ */
-+
-+extern int pps_register_source(struct pps_source_info_s *info,
-+				int default_params, int try_id);
-+extern void pps_unregister_source(struct pps_source_info_s *info);
-+extern void pps_event(int source, int event, void *data);
-+
-+extern int pps_sysfs_create_source_entry(struct pps_source_info_s *info,
-+				int id);
-+extern void pps_sysfs_remove_source_entry(struct pps_source_info_s *info);
-+extern int pps_sysfs_register(void);
-+extern void pps_sysfs_unregister(void);
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _PPS_H_ */
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 7f2c99d..ba4503e 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -153,6 +153,7 @@
- #include <linux/tty.h>
- #include <linux/mutex.h>
- #include <linux/sysrq.h>
-+#include <linux/pps.h>
- 
- struct uart_port;
- struct uart_info;
-@@ -232,6 +233,9 @@ struct uart_port {
- 	unsigned char		regshift;		/* reg offset shift */
- 	unsigned char		iotype;			/* io access style */
- 	unsigned char		unused1;
-+#ifdef CONFIG_PPS_CLIENT_UART
-+	int			pps_source;		/* PPS source ID */
-+#endif
- 
- #define UPIO_PORT		(0)
- #define UPIO_HUB6		(1)
-@@ -276,7 +280,8 @@ struct uart_port {
- #define UPF_IOREMAP		((__force upf_t) (1 << 31))
- 
- #define UPF_CHANGE_MASK		((__force upf_t) (0x17fff))
--#define UPF_USR_MASK		((__force upf_t) (UPF_SPD_MASK|UPF_LOW_LATENCY))
-+#define UPF_USR_MASK		((__force upf_t) (UPF_SPD_MASK|UPF_LOW_LATENCY\
-+							|UPF_HARDPPS_CD))
- 
- 	unsigned int		mctrl;			/* current modem ctrl settings */
- 	unsigned int		timeout;		/* character-based timeout */
-@@ -308,6 +313,10 @@ struct uart_state {
- 	struct uart_info	*info;
- 	struct uart_port	*port;
- 
-+#ifdef CONFIG_PPS_CLIENT_UART
-+        struct pps_source_info_s pps_info;
-+#endif
-+
- 	struct mutex		mutex;
- };
- 
-@@ -472,13 +481,27 @@ uart_handle_dcd_change(struct uart_port *port, unsigned int status)
- {
- 	struct uart_info *info = port->info;
- 
--	port->icount.dcd++;
-+#ifdef CONFIG_PPS_CLIENT_UART
-+	struct tty_driver *drv = port->info->tty->driver;
- 
--#ifdef CONFIG_HARD_PPS
--	if ((port->flags & UPF_HARDPPS_CD) && status)
--		hardpps();
-+	if (port->flags & UPF_HARDPPS_CD) {
-+		if (status) {
-+			pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
-+			pps_dbg("%s%d: PPS assert event at %lu on source #%d",
-+				drv->driver_name, port->line,
-+				jiffies, port->pps_source);
-+		}
-+		else {
-+			pps_event(port->pps_source, PPS_CAPTURECLEAR, port);
-+			pps_dbg("%s%d: PPS clear event at %lu on source #%d",
-+				drv->driver_name, port->line,
-+				jiffies, port->pps_source);
-+		}
-+	}
- #endif
- 
-+	port->icount.dcd++;
-+
- 	if (info->flags & UIF_CHECK_CD) {
- 		if (status)
- 			wake_up_interruptible(&info->open_wait);
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 83d0ec1..bfc8899 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -65,6 +65,7 @@ struct getcpu_cache;
- #include <asm/signal.h>
- #include <linux/quota.h>
- #include <linux/key.h>
-+#include <linux/pps.h>
- 
- asmlinkage long sys_time(time_t __user *tloc);
- asmlinkage long sys_stime(time_t __user *tptr);
-@@ -611,6 +612,15 @@ asmlinkage long sys_timerfd(int ufd, int clockid, int flags,
- 			    const struct itimerspec __user *utmr);
- asmlinkage long sys_eventfd(unsigned int count);
- 
-+asmlinkage long sys_time_pps_cmd(int cmd, void __user *arg);
-+asmlinkage long sys_time_pps_getparams(int source,
-+				       struct pps_kparams __user *params);
-+asmlinkage long sys_time_pps_setparams(int source,
-+				       const struct pps_kparams __user *params);
-+asmlinkage long sys_time_pps_getcap(int source, int __user *mode);
-+asmlinkage long sys_time_pps_fetch(int source, struct pps_kinfo __user *info,
-+				       const struct pps_ktime __user *timeout);
-+
- int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
- 
- #endif
-diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-index 7e11e2c..e0fccc2 100644
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -148,3 +148,10 @@ cond_syscall(sys_timerfd);
- cond_syscall(compat_sys_signalfd);
- cond_syscall(compat_sys_timerfd);
- cond_syscall(sys_eventfd);
-+
-+/* PPS dependent */
-+cond_syscall(sys_time_pps_find);
-+cond_syscall(sys_time_pps_getparams);
-+cond_syscall(sys_time_pps_setparams);
-+cond_syscall(sys_time_pps_getcap);
-+cond_syscall(sys_time_pps_fetch);
-
---bg08WKrSYDhXBjb5--
+IwojIEF1dG9tYXRpY2FsbHkgZ2VuZXJhdGVkIG1ha2UgY29uZmlnOiBkb24ndCBlZGl0CiMgTGlu
+dXgga2VybmVsIHZlcnNpb246IDIuNi4yMi1naXQ4CiMgVHVlIEp1bCAxNyAxMDoyOTo0MiAyMDA3
+CiMKIyBDT05GSUdfUFBDNjQgaXMgbm90IHNldAoKIwojIFByb2Nlc3NvciBzdXBwb3J0CiMKQ09O
+RklHXzZ4eD15CiMgQ09ORklHX1BQQ184NXh4IGlzIG5vdCBzZXQKIyBDT05GSUdfUFBDXzh4eCBp
+cyBub3Qgc2V0CiMgQ09ORklHXzQweCBpcyBub3Qgc2V0CiMgQ09ORklHXzQ0eCBpcyBub3Qgc2V0
+CiMgQ09ORklHX0UyMDAgaXMgbm90IHNldApDT05GSUdfUFBDX0ZQVT15CkNPTkZJR19BTFRJVkVD
+PXkKQ09ORklHX1BQQ19TVERfTU1VPXkKQ09ORklHX1BQQ19TVERfTU1VXzMyPXkKIyBDT05GSUdf
+UFBDX01NX1NMSUNFUyBpcyBub3Qgc2V0CiMgQ09ORklHX1NNUCBpcyBub3Qgc2V0CkNPTkZJR19Q
+UEMzMj15CkNPTkZJR19QUENfTUVSR0U9eQpDT05GSUdfTU1VPXkKQ09ORklHX0dFTkVSSUNfSEFS
+RElSUVM9eQpDT05GSUdfSVJRX1BFUl9DUFU9eQpDT05GSUdfUldTRU1fWENIR0FERF9BTEdPUklU
+SE09eQpDT05GSUdfQVJDSF9IQVNfSUxPRzJfVTMyPXkKQ09ORklHX0dFTkVSSUNfSFdFSUdIVD15
+CkNPTkZJR19HRU5FUklDX0NBTElCUkFURV9ERUxBWT15CkNPTkZJR19HRU5FUklDX0ZJTkRfTkVY
+VF9CSVQ9eQojIENPTkZJR19BUkNIX05PX1ZJUlRfVE9fQlVTIGlzIG5vdCBzZXQKQ09ORklHX1BQ
+Qz15CkNPTkZJR19FQVJMWV9QUklOVEs9eQpDT05GSUdfR0VORVJJQ19OVlJBTT15CkNPTkZJR19T
+Q0hFRF9OT19OT19PTUlUX0ZSQU1FX1BPSU5URVI9eQpDT05GSUdfQVJDSF9NQVlfSEFWRV9QQ19G
+REM9eQpDT05GSUdfUFBDX09GPXkKQ09ORklHX1BQQ19VREJHXzE2NTUwPXkKIyBDT05GSUdfR0VO
+RVJJQ19UQlNZTkMgaXMgbm90IHNldApDT05GSUdfQVVESVRfQVJDSD15CkNPTkZJR19HRU5FUklD
+X0JVRz15CiMgQ09ORklHX0RFRkFVTFRfVUlNQUdFIGlzIG5vdCBzZXQKIyBDT05GSUdfUFBDX0RD
+Ul9OQVRJVkUgaXMgbm90IHNldAojIENPTkZJR19QUENfRENSX01NSU8gaXMgbm90IHNldApDT05G
+SUdfREVGQ09ORklHX0xJU1Q9Ii9saWIvbW9kdWxlcy8kVU5BTUVfUkVMRUFTRS8uY29uZmlnIgoK
+IwojIENvZGUgbWF0dXJpdHkgbGV2ZWwgb3B0aW9ucwojCkNPTkZJR19FWFBFUklNRU5UQUw9eQpD
+T05GSUdfQlJPS0VOX09OX1NNUD15CkNPTkZJR19JTklUX0VOVl9BUkdfTElNSVQ9MzIKCiMKIyBH
+ZW5lcmFsIHNldHVwCiMKQ09ORklHX0xPQ0FMVkVSU0lPTj0iIgojIENPTkZJR19MT0NBTFZFUlNJ
+T05fQVVUTyBpcyBub3Qgc2V0CkNPTkZJR19TV0FQPXkKQ09ORklHX1NZU1ZJUEM9eQpDT05GSUdf
+U1lTVklQQ19TWVNDVEw9eQpDT05GSUdfUE9TSVhfTVFVRVVFPXkKQ09ORklHX0JTRF9QUk9DRVNT
+X0FDQ1Q9eQpDT05GSUdfQlNEX1BST0NFU1NfQUNDVF9WMz15CiMgQ09ORklHX1RBU0tTVEFUUyBp
+cyBub3Qgc2V0CiMgQ09ORklHX1VTRVJfTlMgaXMgbm90IHNldApDT05GSUdfQVVESVQ9eQojIENP
+TkZJR19BVURJVFNZU0NBTEwgaXMgbm90IHNldAojIENPTkZJR19JS0NPTkZJRyBpcyBub3Qgc2V0
+CkNPTkZJR19MT0dfQlVGX1NISUZUPTE3CkNPTkZJR19TWVNGU19ERVBSRUNBVEVEPXkKQ09ORklH
+X1JFTEFZPXkKQ09ORklHX0JMS19ERVZfSU5JVFJEPXkKQ09ORklHX0lOSVRSQU1GU19TT1VSQ0U9
+IiIKIyBDT05GSUdfQ0NfT1BUSU1JWkVfRk9SX1NJWkUgaXMgbm90IHNldApDT05GSUdfU1lTQ1RM
+PXkKIyBDT05GSUdfRU1CRURERUQgaXMgbm90IHNldApDT05GSUdfU1lTQ1RMX1NZU0NBTEw9eQpD
+T05GSUdfS0FMTFNZTVM9eQpDT05GSUdfS0FMTFNZTVNfQUxMPXkKIyBDT05GSUdfS0FMTFNZTVNf
+RVhUUkFfUEFTUyBpcyBub3Qgc2V0CkNPTkZJR19IT1RQTFVHPXkKQ09ORklHX1BSSU5USz15CkNP
+TkZJR19CVUc9eQpDT05GSUdfRUxGX0NPUkU9eQpDT05GSUdfQkFTRV9GVUxMPXkKQ09ORklHX0ZV
+VEVYPXkKQ09ORklHX0FOT05fSU5PREVTPXkKQ09ORklHX0VQT0xMPXkKQ09ORklHX1NJR05BTEZE
+PXkKQ09ORklHX1RJTUVSRkQ9eQpDT05GSUdfRVZFTlRGRD15CkNPTkZJR19TSE1FTT15CkNPTkZJ
+R19WTV9FVkVOVF9DT1VOVEVSUz15CkNPTkZJR19TTFVCX0RFQlVHPXkKIyBDT05GSUdfU0xBQiBp
+cyBub3Qgc2V0CkNPTkZJR19TTFVCPXkKIyBDT05GSUdfU0xPQiBpcyBub3Qgc2V0CkNPTkZJR19S
+VF9NVVRFWEVTPXkKIyBDT05GSUdfVElOWV9TSE1FTSBpcyBub3Qgc2V0CkNPTkZJR19CQVNFX1NN
+QUxMPTAKQ09ORklHX01PRFVMRVM9eQpDT05GSUdfTU9EVUxFX1VOTE9BRD15CiMgQ09ORklHX01P
+RFVMRV9GT1JDRV9VTkxPQUQgaXMgbm90IHNldApDT05GSUdfTU9EVkVSU0lPTlM9eQpDT05GSUdf
+TU9EVUxFX1NSQ1ZFUlNJT05fQUxMPXkKQ09ORklHX0tNT0Q9eQpDT05GSUdfQkxPQ0s9eQojIENP
+TkZJR19MQkQgaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX0lPX1RSQUNFIGlzIG5vdCBzZXQK
+IyBDT05GSUdfTFNGIGlzIG5vdCBzZXQKCiMKIyBJTyBTY2hlZHVsZXJzCiMKQ09ORklHX0lPU0NI
+RURfTk9PUD15CkNPTkZJR19JT1NDSEVEX0FTPXkKQ09ORklHX0lPU0NIRURfREVBRExJTkU9eQpD
+T05GSUdfSU9TQ0hFRF9DRlE9eQojIENPTkZJR19ERUZBVUxUX0FTIGlzIG5vdCBzZXQKIyBDT05G
+SUdfREVGQVVMVF9ERUFETElORSBpcyBub3Qgc2V0CkNPTkZJR19ERUZBVUxUX0NGUT15CiMgQ09O
+RklHX0RFRkFVTFRfTk9PUCBpcyBub3Qgc2V0CkNPTkZJR19ERUZBVUxUX0lPU0NIRUQ9ImNmcSIK
+CiMKIyBQbGF0Zm9ybSBzdXBwb3J0CiMKQ09ORklHX1BQQ19NVUxUSVBMQVRGT1JNPXkKIyBDT05G
+SUdfRU1CRURERUQ2eHggaXMgbm90IHNldAojIENPTkZJR19QUENfODJ4eCBpcyBub3Qgc2V0CiMg
+Q09ORklHX1BQQ184M3h4IGlzIG5vdCBzZXQKIyBDT05GSUdfUFBDXzg2eHggaXMgbm90IHNldApD
+T05GSUdfQ0xBU1NJQzMyPXkKQ09ORklHX1BQQ19DSFJQPXkKQ09ORklHX1BQQ19NUEM1Mnh4PXkK
+Q09ORklHX1BQQ19NUEM1MjAwPXkKIyBDT05GSUdfUFBDX01QQzUyMDBfQlVHRklYIGlzIG5vdCBz
+ZXQKQ09ORklHX1BQQ19FRklLQT15CkNPTkZJR19QUENfTElURTUyMDA9eQpDT05GSUdfUFBDX1BN
+QUM9eQojIENPTkZJR19QUENfQ0VMTCBpcyBub3Qgc2V0CiMgQ09ORklHX1BQQ19DRUxMX05BVElW
+RSBpcyBub3Qgc2V0CiMgQ09ORklHX1BRMkFEUyBpcyBub3Qgc2V0CkNPTkZJR19QUENfTkFUSVZF
+PXkKIyBDT05GSUdfVURCR19SVEFTX0NPTlNPTEUgaXMgbm90IHNldApDT05GSUdfTVBJQz15CiMg
+Q09ORklHX01QSUNfV0VJUkQgaXMgbm90IHNldApDT05GSUdfUFBDX0k4MjU5PXkKQ09ORklHX1BQ
+Q19SVEFTPXkKIyBDT05GSUdfUlRBU19FUlJPUl9MT0dHSU5HIGlzIG5vdCBzZXQKQ09ORklHX1JU
+QVNfUFJPQz15CiMgQ09ORklHX01NSU9fTlZSQU0gaXMgbm90IHNldApDT05GSUdfUFBDX01QQzEw
+Nj15CiMgQ09ORklHX1BQQ185NzBfTkFQIGlzIG5vdCBzZXQKIyBDT05GSUdfUFBDX0lORElSRUNU
+X0lPIGlzIG5vdCBzZXQKIyBDT05GSUdfR0VORVJJQ19JT01BUCBpcyBub3Qgc2V0CkNPTkZJR19D
+UFVfRlJFUT15CkNPTkZJR19DUFVfRlJFUV9UQUJMRT1tCkNPTkZJR19DUFVfRlJFUV9ERUJVRz15
+CkNPTkZJR19DUFVfRlJFUV9TVEFUPW0KQ09ORklHX0NQVV9GUkVRX1NUQVRfREVUQUlMUz15CkNP
+TkZJR19DUFVfRlJFUV9ERUZBVUxUX0dPVl9QRVJGT1JNQU5DRT15CiMgQ09ORklHX0NQVV9GUkVR
+X0RFRkFVTFRfR09WX1VTRVJTUEFDRSBpcyBub3Qgc2V0CkNPTkZJR19DUFVfRlJFUV9HT1ZfUEVS
+Rk9STUFOQ0U9eQpDT05GSUdfQ1BVX0ZSRVFfR09WX1BPV0VSU0FWRT1tCkNPTkZJR19DUFVfRlJF
+UV9HT1ZfVVNFUlNQQUNFPW0KQ09ORklHX0NQVV9GUkVRX0dPVl9PTkRFTUFORD1tCkNPTkZJR19D
+UFVfRlJFUV9HT1ZfQ09OU0VSVkFUSVZFPW0KCiMKIyBDUFUgRnJlcXVlbmN5IGRyaXZlcnMKIwoj
+IENPTkZJR19DUFVfRlJFUV9QTUFDIGlzIG5vdCBzZXQKIyBDT05GSUdfUFBDNjAxX1NZTkNfRklY
+IGlzIG5vdCBzZXQKQ09ORklHX1RBVT15CiMgQ09ORklHX1RBVV9JTlQgaXMgbm90IHNldAojIENP
+TkZJR19UQVVfQVZFUkFHRSBpcyBub3Qgc2V0CiMgQ09ORklHX0NQTTIgaXMgbm90IHNldAoKIwoj
+IEtlcm5lbCBvcHRpb25zCiMKQ09ORklHX0hJR0hNRU09eQojIENPTkZJR19IWl8xMDAgaXMgbm90
+IHNldAojIENPTkZJR19IWl8yNTAgaXMgbm90IHNldApDT05GSUdfSFpfMzAwPXkKIyBDT05GSUdf
+SFpfMTAwMCBpcyBub3Qgc2V0CkNPTkZJR19IWj0zMDAKIyBDT05GSUdfUFJFRU1QVF9OT05FIGlz
+IG5vdCBzZXQKQ09ORklHX1BSRUVNUFRfVk9MVU5UQVJZPXkKIyBDT05GSUdfUFJFRU1QVCBpcyBu
+b3Qgc2V0CkNPTkZJR19CSU5GTVRfRUxGPXkKQ09ORklHX0JJTkZNVF9NSVNDPW0KQ09ORklHX0FS
+Q0hfRU5BQkxFX01FTU9SWV9IT1RQTFVHPXkKQ09ORklHX0tFWEVDPXkKQ09ORklHX0FSQ0hfRkxB
+VE1FTV9FTkFCTEU9eQpDT05GSUdfQVJDSF9QT1BVTEFURVNfTk9ERV9NQVA9eQpDT05GSUdfU0VM
+RUNUX01FTU9SWV9NT0RFTD15CkNPTkZJR19GTEFUTUVNX01BTlVBTD15CiMgQ09ORklHX0RJU0NP
+TlRJR01FTV9NQU5VQUwgaXMgbm90IHNldAojIENPTkZJR19TUEFSU0VNRU1fTUFOVUFMIGlzIG5v
+dCBzZXQKQ09ORklHX0ZMQVRNRU09eQpDT05GSUdfRkxBVF9OT0RFX01FTV9NQVA9eQojIENPTkZJ
+R19TUEFSU0VNRU1fU1RBVElDIGlzIG5vdCBzZXQKQ09ORklHX1NQTElUX1BUTE9DS19DUFVTPTQK
+Q09ORklHX1JFU09VUkNFU182NEJJVD15CkNPTkZJR19aT05FX0RNQV9GTEFHPTEKQ09ORklHX1ZJ
+UlRfVE9fQlVTPXkKQ09ORklHX1BST0NfREVWSUNFVFJFRT15CiMgQ09ORklHX0NNRExJTkVfQk9P
+TCBpcyBub3Qgc2V0CkNPTkZJR19QTT15CkNPTkZJR19QTV9MRUdBQ1k9eQojIENPTkZJR19QTV9E
+RUJVRyBpcyBub3Qgc2V0CkNPTkZJR19QTV9TWVNGU19ERVBSRUNBVEVEPXkKQ09ORklHX1NPRlRX
+QVJFX1NVU1BFTkQ9eQpDT05GSUdfUE1fU1REX1BBUlRJVElPTj0iIgpDT05GSUdfU0VDQ09NUD15
+CiMgQ09ORklHX1dBTlRfREVWSUNFX1RSRUUgaXMgbm90IHNldApDT05GSUdfSVNBX0RNQV9BUEk9
+eQoKIwojIEJ1cyBvcHRpb25zCiMKIyBDT05GSUdfSVNBIGlzIG5vdCBzZXQKQ09ORklHX1pPTkVf
+RE1BPXkKQ09ORklHX0dFTkVSSUNfSVNBX0RNQT15CkNPTkZJR19QUENfSU5ESVJFQ1RfUENJPXkK
+IyBDT05GSUdfUFBDX0lORElSRUNUX1BDSV9CRSBpcyBub3Qgc2V0CkNPTkZJR19GU0xfU09DPXkK
+Q09ORklHX1BDST15CkNPTkZJR19QQ0lfRE9NQUlOUz15CkNPTkZJR19QQ0lfU1lTQ0FMTD15CiMg
+Q09ORklHX1BDSUVQT1JUQlVTIGlzIG5vdCBzZXQKQ09ORklHX0FSQ0hfU1VQUE9SVFNfTVNJPXkK
+Q09ORklHX1BDSV9NU0k9eQojIENPTkZJR19QQ0lfREVCVUcgaXMgbm90IHNldAoKIwojIFBDQ0FS
+RCAoUENNQ0lBL0NhcmRCdXMpIHN1cHBvcnQKIwojIENPTkZJR19QQ0NBUkQgaXMgbm90IHNldAoj
+IENPTkZJR19IT1RQTFVHX1BDSSBpcyBub3Qgc2V0CgojCiMgQWR2YW5jZWQgc2V0dXAKIwojIENP
+TkZJR19BRFZBTkNFRF9PUFRJT05TIGlzIG5vdCBzZXQKCiMKIyBEZWZhdWx0IHNldHRpbmdzIGZv
+ciBhZHZhbmNlZCBjb25maWd1cmF0aW9uIG9wdGlvbnMgYXJlIHVzZWQKIwpDT05GSUdfSElHSE1F
+TV9TVEFSVD0weGZlMDAwMDAwCkNPTkZJR19MT1dNRU1fU0laRT0weDMwMDAwMDAwCkNPTkZJR19L
+RVJORUxfU1RBUlQ9MHhjMDAwMDAwMApDT05GSUdfVEFTS19TSVpFPTB4ODAwMDAwMDAKQ09ORklH
+X0JPT1RfTE9BRD0weDAwODAwMDAwCgojCiMgTmV0d29ya2luZwojCkNPTkZJR19ORVQ9eQoKIwoj
+IE5ldHdvcmtpbmcgb3B0aW9ucwojCkNPTkZJR19QQUNLRVQ9bQpDT05GSUdfUEFDS0VUX01NQVA9
+eQpDT05GSUdfVU5JWD15CkNPTkZJR19YRlJNPXkKQ09ORklHX1hGUk1fVVNFUj1tCiMgQ09ORklH
+X1hGUk1fU1VCX1BPTElDWSBpcyBub3Qgc2V0CiMgQ09ORklHX1hGUk1fTUlHUkFURSBpcyBub3Qg
+c2V0CkNPTkZJR19ORVRfS0VZPW0KIyBDT05GSUdfTkVUX0tFWV9NSUdSQVRFIGlzIG5vdCBzZXQK
+Q09ORklHX0lORVQ9eQpDT05GSUdfSVBfTVVMVElDQVNUPXkKQ09ORklHX0lQX0FEVkFOQ0VEX1JP
+VVRFUj15CkNPTkZJR19BU0tfSVBfRklCX0hBU0g9eQojIENPTkZJR19JUF9GSUJfVFJJRSBpcyBu
+b3Qgc2V0CkNPTkZJR19JUF9GSUJfSEFTSD15CkNPTkZJR19JUF9NVUxUSVBMRV9UQUJMRVM9eQpD
+T05GSUdfSVBfUk9VVEVfTVVMVElQQVRIPXkKQ09ORklHX0lQX1JPVVRFX1ZFUkJPU0U9eQojIENP
+TkZJR19JUF9QTlAgaXMgbm90IHNldApDT05GSUdfTkVUX0lQSVA9bQpDT05GSUdfTkVUX0lQR1JF
+PW0KQ09ORklHX05FVF9JUEdSRV9CUk9BRENBU1Q9eQpDT05GSUdfSVBfTVJPVVRFPXkKQ09ORklH
+X0lQX1BJTVNNX1YxPXkKQ09ORklHX0lQX1BJTVNNX1YyPXkKIyBDT05GSUdfQVJQRCBpcyBub3Qg
+c2V0CkNPTkZJR19TWU5fQ09PS0lFUz15CkNPTkZJR19JTkVUX0FIPW0KQ09ORklHX0lORVRfRVNQ
+PW0KQ09ORklHX0lORVRfSVBDT01QPW0KQ09ORklHX0lORVRfWEZSTV9UVU5ORUw9bQpDT05GSUdf
+SU5FVF9UVU5ORUw9bQpDT05GSUdfSU5FVF9YRlJNX01PREVfVFJBTlNQT1JUPW0KQ09ORklHX0lO
+RVRfWEZSTV9NT0RFX1RVTk5FTD1tCkNPTkZJR19JTkVUX1hGUk1fTU9ERV9CRUVUPW0KQ09ORklH
+X0lORVRfRElBRz15CkNPTkZJR19JTkVUX1RDUF9ESUFHPXkKIyBDT05GSUdfVENQX0NPTkdfQURW
+QU5DRUQgaXMgbm90IHNldApDT05GSUdfVENQX0NPTkdfQ1VCSUM9eQpDT05GSUdfREVGQVVMVF9U
+Q1BfQ09ORz0iY3ViaWMiCkNPTkZJR19UQ1BfTUQ1U0lHPXkKIyBDT05GSUdfSVBfVlMgaXMgbm90
+IHNldApDT05GSUdfSVBWNj1tCkNPTkZJR19JUFY2X1BSSVZBQ1k9eQojIENPTkZJR19JUFY2X1JP
+VVRFUl9QUkVGIGlzIG5vdCBzZXQKIyBDT05GSUdfSVBWNl9PUFRJTUlTVElDX0RBRCBpcyBub3Qg
+c2V0CkNPTkZJR19JTkVUNl9BSD1tCkNPTkZJR19JTkVUNl9FU1A9bQpDT05GSUdfSU5FVDZfSVBD
+T01QPW0KIyBDT05GSUdfSVBWNl9NSVA2IGlzIG5vdCBzZXQKQ09ORklHX0lORVQ2X1hGUk1fVFVO
+TkVMPW0KQ09ORklHX0lORVQ2X1RVTk5FTD1tCkNPTkZJR19JTkVUNl9YRlJNX01PREVfVFJBTlNQ
+T1JUPW0KQ09ORklHX0lORVQ2X1hGUk1fTU9ERV9UVU5ORUw9bQpDT05GSUdfSU5FVDZfWEZSTV9N
+T0RFX0JFRVQ9bQpDT05GSUdfSU5FVDZfWEZSTV9NT0RFX1JPVVRFT1BUSU1JWkFUSU9OPW0KQ09O
+RklHX0lQVjZfU0lUPW0KQ09ORklHX0lQVjZfVFVOTkVMPW0KIyBDT05GSUdfSVBWNl9NVUxUSVBM
+RV9UQUJMRVMgaXMgbm90IHNldAojIENPTkZJR19ORVRMQUJFTCBpcyBub3Qgc2V0CkNPTkZJR19O
+RVRXT1JLX1NFQ01BUks9eQpDT05GSUdfTkVURklMVEVSPXkKIyBDT05GSUdfTkVURklMVEVSX0RF
+QlVHIGlzIG5vdCBzZXQKQ09ORklHX0JSSURHRV9ORVRGSUxURVI9eQoKIwojIENvcmUgTmV0Zmls
+dGVyIENvbmZpZ3VyYXRpb24KIwpDT05GSUdfTkVURklMVEVSX05FVExJTks9bQpDT05GSUdfTkVU
+RklMVEVSX05FVExJTktfUVVFVUU9bQpDT05GSUdfTkVURklMVEVSX05FVExJTktfTE9HPW0KQ09O
+RklHX05GX0NPTk5UUkFDS19FTkFCTEVEPW0KQ09ORklHX05GX0NPTk5UUkFDSz1tCkNPTkZJR19O
+Rl9DVF9BQ0NUPXkKQ09ORklHX05GX0NPTk5UUkFDS19NQVJLPXkKQ09ORklHX05GX0NPTk5UUkFD
+S19TRUNNQVJLPXkKQ09ORklHX05GX0NPTk5UUkFDS19FVkVOVFM9eQpDT05GSUdfTkZfQ1RfUFJP
+VE9fR1JFPW0KQ09ORklHX05GX0NUX1BST1RPX1NDVFA9bQojIENPTkZJR19ORl9DVF9QUk9UT19V
+RFBMSVRFIGlzIG5vdCBzZXQKQ09ORklHX05GX0NPTk5UUkFDS19BTUFOREE9bQpDT05GSUdfTkZf
+Q09OTlRSQUNLX0ZUUD1tCkNPTkZJR19ORl9DT05OVFJBQ0tfSDMyMz1tCkNPTkZJR19ORl9DT05O
+VFJBQ0tfSVJDPW0KQ09ORklHX05GX0NPTk5UUkFDS19ORVRCSU9TX05TPW0KQ09ORklHX05GX0NP
+Tk5UUkFDS19QUFRQPW0KIyBDT05GSUdfTkZfQ09OTlRSQUNLX1NBTkUgaXMgbm90IHNldApDT05G
+SUdfTkZfQ09OTlRSQUNLX1NJUD1tCkNPTkZJR19ORl9DT05OVFJBQ0tfVEZUUD1tCkNPTkZJR19O
+Rl9DVF9ORVRMSU5LPW0KQ09ORklHX05FVEZJTFRFUl9YVEFCTEVTPW0KQ09ORklHX05FVEZJTFRF
+Ul9YVF9UQVJHRVRfQ0xBU1NJRlk9bQojIENPTkZJR19ORVRGSUxURVJfWFRfVEFSR0VUX0NPTk5N
+QVJLIGlzIG5vdCBzZXQKQ09ORklHX05FVEZJTFRFUl9YVF9UQVJHRVRfRFNDUD1tCkNPTkZJR19O
+RVRGSUxURVJfWFRfVEFSR0VUX01BUks9bQpDT05GSUdfTkVURklMVEVSX1hUX1RBUkdFVF9ORlFV
+RVVFPW0KQ09ORklHX05FVEZJTFRFUl9YVF9UQVJHRVRfTkZMT0c9bQojIENPTkZJR19ORVRGSUxU
+RVJfWFRfVEFSR0VUX05PVFJBQ0sgaXMgbm90IHNldApDT05GSUdfTkVURklMVEVSX1hUX1RBUkdF
+VF9UUkFDRT1tCkNPTkZJR19ORVRGSUxURVJfWFRfVEFSR0VUX1NFQ01BUks9bQpDT05GSUdfTkVU
+RklMVEVSX1hUX1RBUkdFVF9DT05OU0VDTUFSSz1tCiMgQ09ORklHX05FVEZJTFRFUl9YVF9UQVJH
+RVRfVENQTVNTIGlzIG5vdCBzZXQKQ09ORklHX05FVEZJTFRFUl9YVF9NQVRDSF9DT01NRU5UPW0K
+Q09ORklHX05FVEZJTFRFUl9YVF9NQVRDSF9DT05OQllURVM9bQpDT05GSUdfTkVURklMVEVSX1hU
+X01BVENIX0NPTk5MSU1JVD1tCkNPTkZJR19ORVRGSUxURVJfWFRfTUFUQ0hfQ09OTk1BUks9bQpD
+T05GSUdfTkVURklMVEVSX1hUX01BVENIX0NPTk5UUkFDSz1tCkNPTkZJR19ORVRGSUxURVJfWFRf
+TUFUQ0hfRENDUD1tCkNPTkZJR19ORVRGSUxURVJfWFRfTUFUQ0hfRFNDUD1tCkNPTkZJR19ORVRG
+SUxURVJfWFRfTUFUQ0hfRVNQPW0KQ09ORklHX05FVEZJTFRFUl9YVF9NQVRDSF9IRUxQRVI9bQpD
+T05GSUdfTkVURklMVEVSX1hUX01BVENIX0xFTkdUSD1tCkNPTkZJR19ORVRGSUxURVJfWFRfTUFU
+Q0hfTElNSVQ9bQpDT05GSUdfTkVURklMVEVSX1hUX01BVENIX01BQz1tCkNPTkZJR19ORVRGSUxU
+RVJfWFRfTUFUQ0hfTUFSSz1tCkNPTkZJR19ORVRGSUxURVJfWFRfTUFUQ0hfUE9MSUNZPW0KQ09O
+RklHX05FVEZJTFRFUl9YVF9NQVRDSF9NVUxUSVBPUlQ9bQpDT05GSUdfTkVURklMVEVSX1hUX01B
+VENIX1BIWVNERVY9bQpDT05GSUdfTkVURklMVEVSX1hUX01BVENIX1BLVFRZUEU9bQpDT05GSUdf
+TkVURklMVEVSX1hUX01BVENIX1FVT1RBPW0KQ09ORklHX05FVEZJTFRFUl9YVF9NQVRDSF9SRUFM
+TT1tCkNPTkZJR19ORVRGSUxURVJfWFRfTUFUQ0hfU0NUUD1tCkNPTkZJR19ORVRGSUxURVJfWFRf
+TUFUQ0hfU1RBVEU9bQpDT05GSUdfTkVURklMVEVSX1hUX01BVENIX1NUQVRJU1RJQz1tCkNPTkZJ
+R19ORVRGSUxURVJfWFRfTUFUQ0hfU1RSSU5HPW0KQ09ORklHX05FVEZJTFRFUl9YVF9NQVRDSF9U
+Q1BNU1M9bQpDT05GSUdfTkVURklMVEVSX1hUX01BVENIX1UzMj1tCkNPTkZJR19ORVRGSUxURVJf
+WFRfTUFUQ0hfSEFTSExJTUlUPW0KCiMKIyBJUDogTmV0ZmlsdGVyIENvbmZpZ3VyYXRpb24KIwpD
+T05GSUdfTkZfQ09OTlRSQUNLX0lQVjQ9bQpDT05GSUdfTkZfQ09OTlRSQUNLX1BST0NfQ09NUEFU
+PXkKQ09ORklHX0lQX05GX1FVRVVFPW0KQ09ORklHX0lQX05GX0lQVEFCTEVTPW0KQ09ORklHX0lQ
+X05GX01BVENIX0lQUkFOR0U9bQpDT05GSUdfSVBfTkZfTUFUQ0hfVE9TPW0KQ09ORklHX0lQX05G
+X01BVENIX1JFQ0VOVD1tCkNPTkZJR19JUF9ORl9NQVRDSF9FQ049bQpDT05GSUdfSVBfTkZfTUFU
+Q0hfQUg9bQpDT05GSUdfSVBfTkZfTUFUQ0hfVFRMPW0KQ09ORklHX0lQX05GX01BVENIX09XTkVS
+PW0KQ09ORklHX0lQX05GX01BVENIX0FERFJUWVBFPW0KQ09ORklHX0lQX05GX0ZJTFRFUj1tCkNP
+TkZJR19JUF9ORl9UQVJHRVRfUkVKRUNUPW0KQ09ORklHX0lQX05GX1RBUkdFVF9MT0c9bQpDT05G
+SUdfSVBfTkZfVEFSR0VUX1VMT0c9bQpDT05GSUdfTkZfTkFUPW0KQ09ORklHX05GX05BVF9ORUVE
+RUQ9eQpDT05GSUdfSVBfTkZfVEFSR0VUX01BU1FVRVJBREU9bQpDT05GSUdfSVBfTkZfVEFSR0VU
+X1JFRElSRUNUPW0KQ09ORklHX0lQX05GX1RBUkdFVF9ORVRNQVA9bQpDT05GSUdfSVBfTkZfVEFS
+R0VUX1NBTUU9bQpDT05GSUdfTkZfTkFUX1NOTVBfQkFTSUM9bQpDT05GSUdfTkZfTkFUX1BST1RP
+X0dSRT1tCkNPTkZJR19ORl9OQVRfRlRQPW0KQ09ORklHX05GX05BVF9JUkM9bQpDT05GSUdfTkZf
+TkFUX1RGVFA9bQpDT05GSUdfTkZfTkFUX0FNQU5EQT1tCkNPTkZJR19ORl9OQVRfUFBUUD1tCkNP
+TkZJR19ORl9OQVRfSDMyMz1tCkNPTkZJR19ORl9OQVRfU0lQPW0KQ09ORklHX0lQX05GX01BTkdM
+RT1tCkNPTkZJR19JUF9ORl9UQVJHRVRfVE9TPW0KQ09ORklHX0lQX05GX1RBUkdFVF9FQ049bQpD
+T05GSUdfSVBfTkZfVEFSR0VUX1RUTD1tCkNPTkZJR19JUF9ORl9UQVJHRVRfQ0xVU1RFUklQPW0K
+Q09ORklHX0lQX05GX1JBVz1tCkNPTkZJR19JUF9ORl9BUlBUQUJMRVM9bQpDT05GSUdfSVBfTkZf
+QVJQRklMVEVSPW0KQ09ORklHX0lQX05GX0FSUF9NQU5HTEU9bQoKIwojIElQdjY6IE5ldGZpbHRl
+ciBDb25maWd1cmF0aW9uIChFWFBFUklNRU5UQUwpCiMKQ09ORklHX05GX0NPTk5UUkFDS19JUFY2
+PW0KQ09ORklHX0lQNl9ORl9RVUVVRT1tCkNPTkZJR19JUDZfTkZfSVBUQUJMRVM9bQpDT05GSUdf
+SVA2X05GX01BVENIX1JUPW0KQ09ORklHX0lQNl9ORl9NQVRDSF9PUFRTPW0KQ09ORklHX0lQNl9O
+Rl9NQVRDSF9GUkFHPW0KQ09ORklHX0lQNl9ORl9NQVRDSF9ITD1tCkNPTkZJR19JUDZfTkZfTUFU
+Q0hfT1dORVI9bQpDT05GSUdfSVA2X05GX01BVENIX0lQVjZIRUFERVI9bQpDT05GSUdfSVA2X05G
+X01BVENIX0FIPW0KIyBDT05GSUdfSVA2X05GX01BVENIX01IIGlzIG5vdCBzZXQKQ09ORklHX0lQ
+Nl9ORl9NQVRDSF9FVUk2ND1tCkNPTkZJR19JUDZfTkZfRklMVEVSPW0KQ09ORklHX0lQNl9ORl9U
+QVJHRVRfTE9HPW0KQ09ORklHX0lQNl9ORl9UQVJHRVRfUkVKRUNUPW0KQ09ORklHX0lQNl9ORl9N
+QU5HTEU9bQpDT05GSUdfSVA2X05GX1RBUkdFVF9ITD1tCkNPTkZJR19JUDZfTkZfUkFXPW0KCiMK
+IyBCcmlkZ2U6IE5ldGZpbHRlciBDb25maWd1cmF0aW9uCiMKQ09ORklHX0JSSURHRV9ORl9FQlRB
+QkxFUz1tCkNPTkZJR19CUklER0VfRUJUX0JST1VURT1tCkNPTkZJR19CUklER0VfRUJUX1RfRklM
+VEVSPW0KQ09ORklHX0JSSURHRV9FQlRfVF9OQVQ9bQpDT05GSUdfQlJJREdFX0VCVF84MDJfMz1t
+CkNPTkZJR19CUklER0VfRUJUX0FNT05HPW0KQ09ORklHX0JSSURHRV9FQlRfQVJQPW0KQ09ORklH
+X0JSSURHRV9FQlRfSVA9bQpDT05GSUdfQlJJREdFX0VCVF9MSU1JVD1tCkNPTkZJR19CUklER0Vf
+RUJUX01BUks9bQpDT05GSUdfQlJJREdFX0VCVF9QS1RUWVBFPW0KQ09ORklHX0JSSURHRV9FQlRf
+U1RQPW0KQ09ORklHX0JSSURHRV9FQlRfVkxBTj1tCkNPTkZJR19CUklER0VfRUJUX0FSUFJFUExZ
+PW0KQ09ORklHX0JSSURHRV9FQlRfRE5BVD1tCkNPTkZJR19CUklER0VfRUJUX01BUktfVD1tCkNP
+TkZJR19CUklER0VfRUJUX1JFRElSRUNUPW0KQ09ORklHX0JSSURHRV9FQlRfU05BVD1tCkNPTkZJ
+R19CUklER0VfRUJUX0xPRz1tCkNPTkZJR19CUklER0VfRUJUX1VMT0c9bQojIENPTkZJR19JUF9E
+Q0NQIGlzIG5vdCBzZXQKQ09ORklHX0lQX1NDVFA9bQojIENPTkZJR19TQ1RQX0RCR19NU0cgaXMg
+bm90IHNldAojIENPTkZJR19TQ1RQX0RCR19PQkpDTlQgaXMgbm90IHNldAojIENPTkZJR19TQ1RQ
+X0hNQUNfTk9ORSBpcyBub3Qgc2V0CiMgQ09ORklHX1NDVFBfSE1BQ19TSEExIGlzIG5vdCBzZXQK
+Q09ORklHX1NDVFBfSE1BQ19NRDU9eQojIENPTkZJR19USVBDIGlzIG5vdCBzZXQKIyBDT05GSUdf
+QVRNIGlzIG5vdCBzZXQKQ09ORklHX0JSSURHRT1tCkNPTkZJR19WTEFOXzgwMjFRPW0KIyBDT05G
+SUdfREVDTkVUIGlzIG5vdCBzZXQKQ09ORklHX0xMQz1tCkNPTkZJR19MTEMyPW0KIyBDT05GSUdf
+SVBYIGlzIG5vdCBzZXQKIyBDT05GSUdfQVRBTEsgaXMgbm90IHNldAojIENPTkZJR19YMjUgaXMg
+bm90IHNldAojIENPTkZJR19MQVBCIGlzIG5vdCBzZXQKIyBDT05GSUdfRUNPTkVUIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfV0FOX1JPVVRFUiBpcyBub3Qgc2V0CgojCiMgUW9TIGFuZC9vciBmYWlyIHF1
+ZXVlaW5nCiMKQ09ORklHX05FVF9TQ0hFRD15CkNPTkZJR19ORVRfU0NIX0ZJRk89eQoKIwojIFF1
+ZXVlaW5nL1NjaGVkdWxpbmcKIwpDT05GSUdfTkVUX1NDSF9DQlE9bQpDT05GSUdfTkVUX1NDSF9I
+VEI9bQpDT05GSUdfTkVUX1NDSF9IRlNDPW0KQ09ORklHX05FVF9TQ0hfUFJJTz1tCkNPTkZJR19O
+RVRfU0NIX1JSPW0KQ09ORklHX05FVF9TQ0hfUkVEPW0KQ09ORklHX05FVF9TQ0hfU0ZRPW0KQ09O
+RklHX05FVF9TQ0hfVEVRTD1tCkNPTkZJR19ORVRfU0NIX1RCRj1tCkNPTkZJR19ORVRfU0NIX0dS
+RUQ9bQpDT05GSUdfTkVUX1NDSF9EU01BUks9bQpDT05GSUdfTkVUX1NDSF9ORVRFTT1tCkNPTkZJ
+R19ORVRfU0NIX0lOR1JFU1M9bQoKIwojIENsYXNzaWZpY2F0aW9uCiMKQ09ORklHX05FVF9DTFM9
+eQpDT05GSUdfTkVUX0NMU19CQVNJQz1tCkNPTkZJR19ORVRfQ0xTX1RDSU5ERVg9bQpDT05GSUdf
+TkVUX0NMU19ST1VURTQ9bQpDT05GSUdfTkVUX0NMU19ST1VURT15CkNPTkZJR19ORVRfQ0xTX0ZX
+PW0KQ09ORklHX05FVF9DTFNfVTMyPW0KIyBDT05GSUdfQ0xTX1UzMl9QRVJGIGlzIG5vdCBzZXQK
+Q09ORklHX0NMU19VMzJfTUFSSz15CkNPTkZJR19ORVRfQ0xTX1JTVlA9bQpDT05GSUdfTkVUX0NM
+U19SU1ZQNj1tCkNPTkZJR19ORVRfRU1BVENIPXkKQ09ORklHX05FVF9FTUFUQ0hfU1RBQ0s9MzIK
+Q09ORklHX05FVF9FTUFUQ0hfQ01QPW0KQ09ORklHX05FVF9FTUFUQ0hfTkJZVEU9bQpDT05GSUdf
+TkVUX0VNQVRDSF9VMzI9bQpDT05GSUdfTkVUX0VNQVRDSF9NRVRBPW0KQ09ORklHX05FVF9FTUFU
+Q0hfVEVYVD1tCkNPTkZJR19ORVRfQ0xTX0FDVD15CkNPTkZJR19ORVRfQUNUX1BPTElDRT15CkNP
+TkZJR19ORVRfQUNUX0dBQ1Q9bQpDT05GSUdfR0FDVF9QUk9CPXkKQ09ORklHX05FVF9BQ1RfTUlS
+UkVEPW0KQ09ORklHX05FVF9BQ1RfSVBUPW0KQ09ORklHX05FVF9BQ1RfUEVESVQ9bQpDT05GSUdf
+TkVUX0FDVF9TSU1QPW0KQ09ORklHX05FVF9DTFNfUE9MSUNFPXkKIyBDT05GSUdfTkVUX0NMU19J
+TkQgaXMgbm90IHNldAoKIwojIE5ldHdvcmsgdGVzdGluZwojCkNPTkZJR19ORVRfUEtUR0VOPW0K
+IyBDT05GSUdfSEFNUkFESU8gaXMgbm90IHNldAojIENPTkZJR19JUkRBIGlzIG5vdCBzZXQKIyBD
+T05GSUdfQlQgaXMgbm90IHNldApDT05GSUdfQUZfUlhSUEM9bQojIENPTkZJR19BRl9SWFJQQ19E
+RUJVRyBpcyBub3Qgc2V0CiMgQ09ORklHX1JYS0FEIGlzIG5vdCBzZXQKQ09ORklHX0ZJQl9SVUxF
+Uz15CgojCiMgV2lyZWxlc3MKIwojIENPTkZJR19DRkc4MDIxMSBpcyBub3Qgc2V0CiMgQ09ORklH
+X1dJUkVMRVNTX0VYVCBpcyBub3Qgc2V0CiMgQ09ORklHX01BQzgwMjExIGlzIG5vdCBzZXQKIyBD
+T05GSUdfSUVFRTgwMjExIGlzIG5vdCBzZXQKIyBDT05GSUdfUkZLSUxMIGlzIG5vdCBzZXQKIyBD
+T05GSUdfTkVUXzlQIGlzIG5vdCBzZXQKCiMKIyBEZXZpY2UgRHJpdmVycwojCgojCiMgR2VuZXJp
+YyBEcml2ZXIgT3B0aW9ucwojCkNPTkZJR19TVEFOREFMT05FPXkKQ09ORklHX1BSRVZFTlRfRklS
+TVdBUkVfQlVJTEQ9eQpDT05GSUdfRldfTE9BREVSPXkKIyBDT05GSUdfREVCVUdfRFJJVkVSIGlz
+IG5vdCBzZXQKIyBDT05GSUdfREVCVUdfREVWUkVTIGlzIG5vdCBzZXQKIyBDT05GSUdfU1lTX0hZ
+UEVSVklTT1IgaXMgbm90IHNldApDT05GSUdfQ09OTkVDVE9SPW0KIyBDT05GSUdfTVREIGlzIG5v
+dCBzZXQKIyBDT05GSUdfUEFSUE9SVCBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWPXkKIyBDT05G
+SUdfQkxLX0RFVl9GRCBpcyBub3Qgc2V0CiMgQ09ORklHX01BQ19GTE9QUFkgaXMgbm90IHNldAoj
+IENPTkZJR19CTEtfQ1BRX0RBIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0NQUV9DSVNTX0RBIGlz
+IG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9EQUM5NjAgaXMgbm90IHNldAojIENPTkZJR19CTEtf
+REVWX1VNRU0gaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX0NPV19DT01NT04gaXMgbm90IHNl
+dApDT05GSUdfQkxLX0RFVl9MT09QPW0KQ09ORklHX0JMS19ERVZfQ1JZUFRPTE9PUD1tCkNPTkZJ
+R19CTEtfREVWX05CRD1tCiMgQ09ORklHX0JMS19ERVZfU1g4IGlzIG5vdCBzZXQKIyBDT05GSUdf
+QkxLX0RFVl9VQiBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX1JBTT15CkNPTkZJR19CTEtfREVW
+X1JBTV9DT1VOVD0xNgpDT05GSUdfQkxLX0RFVl9SQU1fU0laRT02NTUzNgpDT05GSUdfQkxLX0RF
+Vl9SQU1fQkxPQ0tTSVpFPTEwMjQKQ09ORklHX0NEUk9NX1BLVENEVkQ9bQpDT05GSUdfQ0RST01f
+UEtUQ0RWRF9CVUZGRVJTPTgKIyBDT05GSUdfQ0RST01fUEtUQ0RWRF9XQ0FDSEUgaXMgbm90IHNl
+dApDT05GSUdfQVRBX09WRVJfRVRIPW0KQ09ORklHX01JU0NfREVWSUNFUz15CiMgQ09ORklHX1BI
+QU5UT00gaXMgbm90IHNldAojIENPTkZJR19FRVBST01fOTNDWDYgaXMgbm90IHNldAojIENPTkZJ
+R19TR0lfSU9DNCBpcyBub3Qgc2V0CkNPTkZJR19USUZNX0NPUkU9bQpDT05GSUdfVElGTV83WFgx
+PW0KQ09ORklHX0lERT15CkNPTkZJR19CTEtfREVWX0lERT15CgojCiMgUGxlYXNlIHNlZSBEb2N1
+bWVudGF0aW9uL2lkZS50eHQgZm9yIGhlbHAvaW5mbyBvbiBJREUgZHJpdmVzCiMKIyBDT05GSUdf
+QkxLX0RFVl9JREVfU0FUQSBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX0lERURJU0s9bQojIENP
+TkZJR19JREVESVNLX01VTFRJX01PREUgaXMgbm90IHNldApDT05GSUdfQkxLX0RFVl9JREVDRD1t
+CkNPTkZJR19CTEtfREVWX0lERVRBUEU9bQpDT05GSUdfQkxLX0RFVl9JREVGTE9QUFk9bQpDT05G
+SUdfQkxLX0RFVl9JREVTQ1NJPW0KIyBDT05GSUdfSURFX1RBU0tfSU9DVEwgaXMgbm90IHNldAoj
+IENPTkZJR19JREVfUFJPQ19GUyBpcyBub3Qgc2V0CgojCiMgSURFIGNoaXBzZXQgc3VwcG9ydC9i
+dWdmaXhlcwojCiMgQ09ORklHX0lERV9HRU5FUklDIGlzIG5vdCBzZXQKQ09ORklHX0JMS19ERVZf
+SURFUENJPXkKQ09ORklHX0lERVBDSV9TSEFSRV9JUlE9eQpDT05GSUdfSURFUENJX1BDSUJVU19P
+UkRFUj15CiMgQ09ORklHX0JMS19ERVZfT0ZGQk9BUkQgaXMgbm90IHNldApDT05GSUdfQkxLX0RF
+Vl9HRU5FUklDPW0KIyBDT05GSUdfQkxLX0RFVl9PUFRJNjIxIGlzIG5vdCBzZXQKQ09ORklHX0JM
+S19ERVZfSURFRE1BX1BDST15CiMgQ09ORklHX0JMS19ERVZfSURFRE1BX0ZPUkNFRCBpcyBub3Qg
+c2V0CiMgQ09ORklHX0lERURNQV9PTkxZRElTSyBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX0FF
+QzYyWFg9bQojIENPTkZJR19CTEtfREVWX0FMSTE1WDMgaXMgbm90IHNldApDT05GSUdfQkxLX0RF
+Vl9BTUQ3NFhYPW0KQ09ORklHX0JMS19ERVZfQ01ENjRYPW0KIyBDT05GSUdfQkxLX0RFVl9UUklG
+TEVYIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9DWTgyQzY5MyBpcyBub3Qgc2V0CiMgQ09O
+RklHX0JMS19ERVZfQ1M1NTIwIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9DUzU1MzAgaXMg
+bm90IHNldApDT05GSUdfQkxLX0RFVl9IUFQzNFg9bQojIENPTkZJR19IUFQzNFhfQVVUT0RNQSBp
+cyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX0hQVDM2Nj1tCiMgQ09ORklHX0JMS19ERVZfSk1JQ1JP
+TiBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX1NDMTIwMD1tCkNPTkZJR19CTEtfREVWX1BJSVg9
+bQojIENPTkZJR19CTEtfREVWX0lUODIxMyBpcyBub3Qgc2V0CiMgQ09ORklHX0JMS19ERVZfSVQ4
+MjFYIGlzIG5vdCBzZXQKQ09ORklHX0JMS19ERVZfTlM4NzQxNT1tCkNPTkZJR19CTEtfREVWX1BE
+QzIwMlhYX09MRD1tCiMgQ09ORklHX1BEQzIwMlhYX0JVUlNUIGlzIG5vdCBzZXQKIyBDT05GSUdf
+QkxLX0RFVl9QREMyMDJYWF9ORVcgaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX1NWV0tTIGlz
+IG5vdCBzZXQKQ09ORklHX0JMS19ERVZfU0lJTUFHRT1tCiMgQ09ORklHX0JMS19ERVZfU0w4MkMx
+MDUgaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX1NMQzkwRTY2IGlzIG5vdCBzZXQKQ09ORklH
+X0JMS19ERVZfVFJNMjkwPW0KQ09ORklHX0JMS19ERVZfVklBODJDWFhYPW0KIyBDT05GSUdfQkxL
+X0RFVl9UQzg2QzAwMSBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX0lERV9QTUFDPXkKQ09ORklH
+X0JMS19ERVZfSURFX1BNQUNfQVRBMTAwRklSU1Q9eQpDT05GSUdfQkxLX0RFVl9JREVETUFfUE1B
+Qz15CiMgQ09ORklHX0lERV9BUk0gaXMgbm90IHNldApDT05GSUdfQkxLX0RFVl9JREVETUE9eQoj
+IENPTkZJR19JREVETUFfSVZCIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9IRCBpcyBub3Qg
+c2V0CgojCiMgU0NTSSBkZXZpY2Ugc3VwcG9ydAojCkNPTkZJR19SQUlEX0FUVFJTPW0KQ09ORklH
+X1NDU0k9bQpDT05GSUdfU0NTSV9ETUE9eQpDT05GSUdfU0NTSV9UR1Q9bQpDT05GSUdfU0NTSV9O
+RVRMSU5LPXkKQ09ORklHX1NDU0lfUFJPQ19GUz15CgojCiMgU0NTSSBzdXBwb3J0IHR5cGUgKGRp
+c2ssIHRhcGUsIENELVJPTSkKIwpDT05GSUdfQkxLX0RFVl9TRD1tCkNPTkZJR19DSFJfREVWX1NU
+PW0KQ09ORklHX0NIUl9ERVZfT1NTVD1tCkNPTkZJR19CTEtfREVWX1NSPW0KIyBDT05GSUdfQkxL
+X0RFVl9TUl9WRU5ET1IgaXMgbm90IHNldApDT05GSUdfQ0hSX0RFVl9TRz1tCkNPTkZJR19DSFJf
+REVWX1NDSD1tCgojCiMgU29tZSBTQ1NJIGRldmljZXMgKGUuZy4gQ0QganVrZWJveCkgc3VwcG9y
+dCBtdWx0aXBsZSBMVU5zCiMKQ09ORklHX1NDU0lfTVVMVElfTFVOPXkKIyBDT05GSUdfU0NTSV9D
+T05TVEFOVFMgaXMgbm90IHNldApDT05GSUdfU0NTSV9MT0dHSU5HPXkKQ09ORklHX1NDU0lfU0NB
+Tl9BU1lOQz15CkNPTkZJR19TQ1NJX1dBSVRfU0NBTj1tCgojCiMgU0NTSSBUcmFuc3BvcnRzCiMK
+Q09ORklHX1NDU0lfU1BJX0FUVFJTPW0KQ09ORklHX1NDU0lfRkNfQVRUUlM9bQpDT05GSUdfU0NT
+SV9JU0NTSV9BVFRSUz1tCkNPTkZJR19TQ1NJX1NBU19BVFRSUz1tCkNPTkZJR19TQ1NJX1NBU19M
+SUJTQVM9bQojIENPTkZJR19TQ1NJX1NBU19MSUJTQVNfREVCVUcgaXMgbm90IHNldAoKIwojIFND
+U0kgbG93LWxldmVsIGRyaXZlcnMKIwpDT05GSUdfSVNDU0lfVENQPW0KIyBDT05GSUdfQkxLX0RF
+Vl8zV19YWFhYX1JBSUQgaXMgbm90IHNldAojIENPTkZJR19TQ1NJXzNXXzlYWFggaXMgbm90IHNl
+dAojIENPTkZJR19TQ1NJX0FDQVJEIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9BQUNSQUlEIGlz
+IG5vdCBzZXQKIyBDT05GSUdfU0NTSV9BSUM3WFhYIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9B
+SUM3WFhYX09MRCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfQUlDNzlYWCBpcyBub3Qgc2V0CiMg
+Q09ORklHX1NDU0lfQUlDOTRYWCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfRFBUX0kyTyBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1NDU0lfQVJDTVNSIGlzIG5vdCBzZXQKIyBDT05GSUdfTUVHQVJBSURf
+TkVXR0VOIGlzIG5vdCBzZXQKIyBDT05GSUdfTUVHQVJBSURfTEVHQUNZIGlzIG5vdCBzZXQKIyBD
+T05GSUdfTUVHQVJBSURfU0FTIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9IUFRJT1AgaXMgbm90
+IHNldAojIENPTkZJR19TQ1NJX0JVU0xPR0lDIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9ETVgz
+MTkxRCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfRUFUQSBpcyBub3Qgc2V0CiMgQ09ORklHX1ND
+U0lfRlVUVVJFX0RPTUFJTiBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfR0RUSCBpcyBub3Qgc2V0
+CiMgQ09ORklHX1NDU0lfSVBTIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9JTklUSU8gaXMgbm90
+IHNldAojIENPTkZJR19TQ1NJX0lOSUExMDAgaXMgbm90IHNldAojIENPTkZJR19TQ1NJX1NURVgg
+aXMgbm90IHNldAojIENPTkZJR19TQ1NJX1NZTTUzQzhYWF8yIGlzIG5vdCBzZXQKIyBDT05GSUdf
+U0NTSV9JUFIgaXMgbm90IHNldAojIENPTkZJR19TQ1NJX1FMT0dJQ18xMjgwIGlzIG5vdCBzZXQK
+IyBDT05GSUdfU0NTSV9RTEFfRkMgaXMgbm90IHNldAojIENPTkZJR19TQ1NJX1FMQV9JU0NTSSBp
+cyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfTFBGQyBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfREMz
+OTV4IGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9EQzM5MFQgaXMgbm90IHNldAojIENPTkZJR19T
+Q1NJX05TUDMyIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9ERUJVRyBpcyBub3Qgc2V0CiMgQ09O
+RklHX1NDU0lfTUVTSCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfTUFDNTNDOTQgaXMgbm90IHNl
+dAojIENPTkZJR19TQ1NJX1NSUCBpcyBub3Qgc2V0CkNPTkZJR19BVEE9bQojIENPTkZJR19BVEFf
+Tk9OU1RBTkRBUkQgaXMgbm90IHNldApDT05GSUdfU0FUQV9BSENJPW0KQ09ORklHX1NBVEFfU1ZX
+PW0KQ09ORklHX0FUQV9QSUlYPW0KQ09ORklHX1NBVEFfTVY9bQpDT05GSUdfU0FUQV9OVj1tCkNP
+TkZJR19QRENfQURNQT1tCkNPTkZJR19TQVRBX1FTVE9SPW0KQ09ORklHX1NBVEFfUFJPTUlTRT1t
+CkNPTkZJR19TQVRBX1NYND1tCkNPTkZJR19TQVRBX1NJTD1tCkNPTkZJR19TQVRBX1NJTDI0PW0K
+Q09ORklHX1NBVEFfU0lTPW0KQ09ORklHX1NBVEFfVUxJPW0KQ09ORklHX1NBVEFfVklBPW0KQ09O
+RklHX1NBVEFfVklURVNTRT1tCiMgQ09ORklHX1NBVEFfSU5JQzE2MlggaXMgbm90IHNldAojIENP
+TkZJR19QQVRBX0FMSSBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfQU1EIGlzIG5vdCBzZXQKIyBD
+T05GSUdfUEFUQV9BUlRPUCBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfQVRJSVhQIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfUEFUQV9DTUQ2NDBfUENJIGlzIG5vdCBzZXQKIyBDT05GSUdfUEFUQV9DTUQ2
+NFggaXMgbm90IHNldApDT05GSUdfUEFUQV9DUzU1MjA9bQojIENPTkZJR19QQVRBX0NTNTUzMCBp
+cyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfQ1lQUkVTUyBpcyBub3Qgc2V0CkNPTkZJR19QQVRBX0VG
+QVI9bQpDT05GSUdfQVRBX0dFTkVSSUM9bQojIENPTkZJR19QQVRBX0hQVDM2NiBpcyBub3Qgc2V0
+CiMgQ09ORklHX1BBVEFfSFBUMzdYIGlzIG5vdCBzZXQKIyBDT05GSUdfUEFUQV9IUFQzWDJOIGlz
+IG5vdCBzZXQKIyBDT05GSUdfUEFUQV9IUFQzWDMgaXMgbm90IHNldApDT05GSUdfUEFUQV9JVDgy
+MVg9bQojIENPTkZJR19QQVRBX0lUODIxMyBpcyBub3Qgc2V0CkNPTkZJR19QQVRBX0pNSUNST049
+bQpDT05GSUdfUEFUQV9UUklGTEVYPW0KQ09ORklHX1BBVEFfTUFSVkVMTD1tCiMgQ09ORklHX1BB
+VEFfTVBDNTJ4eCBpcyBub3Qgc2V0CkNPTkZJR19QQVRBX01QSUlYPW0KQ09ORklHX1BBVEFfT0xE
+UElJWD1tCkNPTkZJR19QQVRBX05FVENFTEw9bQojIENPTkZJR19QQVRBX05TODc0MTAgaXMgbm90
+IHNldAojIENPTkZJR19QQVRBX09QVEkgaXMgbm90IHNldAojIENPTkZJR19QQVRBX09QVElETUEg
+aXMgbm90IHNldAojIENPTkZJR19QQVRBX1BEQ19PTEQgaXMgbm90IHNldAojIENPTkZJR19QQVRB
+X1JBRElTWVMgaXMgbm90IHNldApDT05GSUdfUEFUQV9SWjEwMDA9bQojIENPTkZJR19QQVRBX1ND
+MTIwMCBpcyBub3Qgc2V0CkNPTkZJR19QQVRBX1NFUlZFUldPUktTPW0KQ09ORklHX1BBVEFfUERD
+MjAyN1g9bQpDT05GSUdfUEFUQV9TSUw2ODA9bQpDT05GSUdfUEFUQV9TSVM9bQojIENPTkZJR19Q
+QVRBX1ZJQSBpcyBub3Qgc2V0CkNPTkZJR19QQVRBX1dJTkJPTkQ9bQoKIwojIE11bHRpLWRldmlj
+ZSBzdXBwb3J0IChSQUlEIGFuZCBMVk0pCiMKQ09ORklHX01EPXkKQ09ORklHX0JMS19ERVZfTUQ9
+bQpDT05GSUdfTURfTElORUFSPW0KQ09ORklHX01EX1JBSUQwPW0KQ09ORklHX01EX1JBSUQxPW0K
+Q09ORklHX01EX1JBSUQxMD1tCkNPTkZJR19NRF9SQUlENDU2PW0KQ09ORklHX01EX1JBSUQ1X1JF
+U0hBUEU9eQpDT05GSUdfTURfTVVMVElQQVRIPW0KQ09ORklHX01EX0ZBVUxUWT1tCkNPTkZJR19C
+TEtfREVWX0RNPW0KIyBDT05GSUdfRE1fREVCVUcgaXMgbm90IHNldApDT05GSUdfRE1fQ1JZUFQ9
+bQpDT05GSUdfRE1fU05BUFNIT1Q9bQpDT05GSUdfRE1fTUlSUk9SPW0KQ09ORklHX0RNX1pFUk89
+bQpDT05GSUdfRE1fTVVMVElQQVRIPW0KQ09ORklHX0RNX01VTFRJUEFUSF9FTUM9bQojIENPTkZJ
+R19ETV9NVUxUSVBBVEhfUkRBQyBpcyBub3Qgc2V0CiMgQ09ORklHX0RNX0RFTEFZIGlzIG5vdCBz
+ZXQKCiMKIyBGdXNpb24gTVBUIGRldmljZSBzdXBwb3J0CiMKIyBDT05GSUdfRlVTSU9OIGlzIG5v
+dCBzZXQKIyBDT05GSUdfRlVTSU9OX1NQSSBpcyBub3Qgc2V0CiMgQ09ORklHX0ZVU0lPTl9GQyBp
+cyBub3Qgc2V0CiMgQ09ORklHX0ZVU0lPTl9TQVMgaXMgbm90IHNldAoKIwojIElFRUUgMTM5NCAo
+RmlyZVdpcmUpIHN1cHBvcnQKIwojIENPTkZJR19GSVJFV0lSRSBpcyBub3Qgc2V0CkNPTkZJR19J
+RUVFMTM5ND1tCgojCiMgU3Vic3lzdGVtIE9wdGlvbnMKIwojIENPTkZJR19JRUVFMTM5NF9WRVJC
+T1NFREVCVUcgaXMgbm90IHNldAoKIwojIENvbnRyb2xsZXJzCiMKQ09ORklHX0lFRUUxMzk0X1BD
+SUxZTlg9bQpDT05GSUdfSUVFRTEzOTRfT0hDSTEzOTQ9bQoKIwojIFByb3RvY29scwojCkNPTkZJ
+R19JRUVFMTM5NF9WSURFTzEzOTQ9bQpDT05GSUdfSUVFRTEzOTRfU0JQMj1tCkNPTkZJR19JRUVF
+MTM5NF9FVEgxMzk0X1JPTV9FTlRSWT15CkNPTkZJR19JRUVFMTM5NF9FVEgxMzk0PW0KQ09ORklH
+X0lFRUUxMzk0X0RWMTM5ND1tCkNPTkZJR19JRUVFMTM5NF9SQVdJTz1tCkNPTkZJR19JMk89bQpD
+T05GSUdfSTJPX0xDVF9OT1RJRllfT05fQ0hBTkdFUz15CkNPTkZJR19JMk9fRVhUX0FEQVBURUM9
+eQpDT05GSUdfSTJPX0NPTkZJRz1tCkNPTkZJR19JMk9fQ09ORklHX09MRF9JT0NUTD15CkNPTkZJ
+R19JMk9fQlVTPW0KQ09ORklHX0kyT19CTE9DSz1tCkNPTkZJR19JMk9fU0NTST1tCkNPTkZJR19J
+Mk9fUFJPQz1tCkNPTkZJR19NQUNJTlRPU0hfRFJJVkVSUz15CiMgQ09ORklHX0FEQiBpcyBub3Qg
+c2V0CiMgQ09ORklHX0FEQl9DVURBIGlzIG5vdCBzZXQKQ09ORklHX0FEQl9QTVU9eQojIENPTkZJ
+R19BREJfUE1VX0xFRCBpcyBub3Qgc2V0CiMgQ09ORklHX1BNQUNfQVBNX0VNVSBpcyBub3Qgc2V0
+CiMgQ09ORklHX1BNQUNfTUVESUFCQVkgaXMgbm90IHNldAojIENPTkZJR19QTUFDX0JBQ0tMSUdI
+VCBpcyBub3Qgc2V0CiMgQ09ORklHX01BQ19FTVVNT1VTRUJUTiBpcyBub3Qgc2V0CiMgQ09ORklH
+X1RIRVJNX1dJTkRUVU5ORUwgaXMgbm90IHNldAojIENPTkZJR19USEVSTV9BRFQ3NDZYIGlzIG5v
+dCBzZXQKIyBDT05GSUdfV0lOREZBUk0gaXMgbm90IHNldAojIENPTkZJR19QTUFDX1JBQ0tNRVRF
+UiBpcyBub3Qgc2V0CkNPTkZJR19ORVRERVZJQ0VTPXkKIyBDT05GSUdfTkVUREVWSUNFU19NVUxU
+SVFVRVVFIGlzIG5vdCBzZXQKQ09ORklHX0lGQj1tCiMgQ09ORklHX0RVTU1ZIGlzIG5vdCBzZXQK
+Q09ORklHX0JPTkRJTkc9bQojIENPTkZJR19NQUNWTEFOIGlzIG5vdCBzZXQKIyBDT05GSUdfRVFV
+QUxJWkVSIGlzIG5vdCBzZXQKQ09ORklHX1RVTj1tCiMgQ09ORklHX0FSQ05FVCBpcyBub3Qgc2V0
+CkNPTkZJR19QSFlMSUI9bQoKIwojIE1JSSBQSFkgZGV2aWNlIGRyaXZlcnMKIwojIENPTkZJR19N
+QVJWRUxMX1BIWSBpcyBub3Qgc2V0CiMgQ09ORklHX0RBVklDT01fUEhZIGlzIG5vdCBzZXQKIyBD
+T05GSUdfUVNFTUlfUEhZIGlzIG5vdCBzZXQKIyBDT05GSUdfTFhUX1BIWSBpcyBub3Qgc2V0CiMg
+Q09ORklHX0NJQ0FEQV9QSFkgaXMgbm90IHNldAojIENPTkZJR19WSVRFU1NFX1BIWSBpcyBub3Qg
+c2V0CiMgQ09ORklHX1NNU0NfUEhZIGlzIG5vdCBzZXQKIyBDT05GSUdfQlJPQURDT01fUEhZIGlz
+IG5vdCBzZXQKIyBDT05GSUdfSUNQTFVTX1BIWSBpcyBub3Qgc2V0CkNPTkZJR19GSVhFRF9QSFk9
+bQpDT05GSUdfRklYRURfTUlJXzEwX0ZEWD15CkNPTkZJR19GSVhFRF9NSUlfMTAwX0ZEWD15CkNP
+TkZJR19ORVRfRVRIRVJORVQ9eQpDT05GSUdfTUlJPW0KIyBDT05GSUdfTUFDRSBpcyBub3Qgc2V0
+CiMgQ09ORklHX0JNQUMgaXMgbm90IHNldAojIENPTkZJR19IQVBQWU1FQUwgaXMgbm90IHNldApD
+T05GSUdfU1VOR0VNPW0KIyBDT05GSUdfQ0FTU0lOSSBpcyBub3Qgc2V0CiMgQ09ORklHX05FVF9W
+RU5ET1JfM0NPTSBpcyBub3Qgc2V0CiMgQ09ORklHX05FVF9UVUxJUCBpcyBub3Qgc2V0CiMgQ09O
+RklHX0hQMTAwIGlzIG5vdCBzZXQKIyBDT05GSUdfTkVUX1BDSSBpcyBub3Qgc2V0CiMgQ09ORklH
+X05FVERFVl8xMDAwIGlzIG5vdCBzZXQKIyBDT05GSUdfTkVUREVWXzEwMDAwIGlzIG5vdCBzZXQK
+IyBDT05GSUdfVFIgaXMgbm90IHNldAoKIwojIFdpcmVsZXNzIExBTgojCiMgQ09ORklHX1dMQU5f
+UFJFODAyMTEgaXMgbm90IHNldAojIENPTkZJR19XTEFOXzgwMjExIGlzIG5vdCBzZXQKCiMKIyBV
+U0IgTmV0d29yayBBZGFwdGVycwojCkNPTkZJR19VU0JfQ0FUQz1tCkNPTkZJR19VU0JfS0FXRVRI
+PW0KQ09ORklHX1VTQl9QRUdBU1VTPW0KQ09ORklHX1VTQl9SVEw4MTUwPW0KQ09ORklHX1VTQl9V
+U0JORVRfTUlJPW0KQ09ORklHX1VTQl9VU0JORVQ9bQpDT05GSUdfVVNCX05FVF9BWDg4MTdYPW0K
+Q09ORklHX1VTQl9ORVRfQ0RDRVRIRVI9bQojIENPTkZJR19VU0JfTkVUX0RNOTYwMSBpcyBub3Qg
+c2V0CkNPTkZJR19VU0JfTkVUX0dMNjIwQT1tCkNPTkZJR19VU0JfTkVUX05FVDEwODA9bQpDT05G
+SUdfVVNCX05FVF9QTFVTQj1tCkNPTkZJR19VU0JfTkVUX01DUzc4MzA9bQpDT05GSUdfVVNCX05F
+VF9STkRJU19IT1NUPW0KQ09ORklHX1VTQl9ORVRfQ0RDX1NVQlNFVD1tCkNPTkZJR19VU0JfQUxJ
+X001NjMyPXkKQ09ORklHX1VTQl9BTjI3MjA9eQpDT05GSUdfVVNCX0JFTEtJTj15CkNPTkZJR19V
+U0JfQVJNTElOVVg9eQpDT05GSUdfVVNCX0VQU09OMjg4OD15CiMgQ09ORklHX1VTQl9LQzIxOTAg
+aXMgbm90IHNldAojIENPTkZJR19VU0JfTkVUX1pBVVJVUyBpcyBub3Qgc2V0CiMgQ09ORklHX1dB
+TiBpcyBub3Qgc2V0CiMgQ09ORklHX0ZEREkgaXMgbm90IHNldAojIENPTkZJR19ISVBQSSBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1BQUCBpcyBub3Qgc2V0CiMgQ09ORklHX1NMSVAgaXMgbm90IHNldAoj
+IENPTkZJR19ORVRfRkMgaXMgbm90IHNldAojIENPTkZJR19TSEFQRVIgaXMgbm90IHNldApDT05G
+SUdfTkVUQ09OU09MRT1tCkNPTkZJR19ORVRQT0xMPXkKIyBDT05GSUdfTkVUUE9MTF9UUkFQIGlz
+IG5vdCBzZXQKQ09ORklHX05FVF9QT0xMX0NPTlRST0xMRVI9eQoKIwojIElTRE4gc3Vic3lzdGVt
+CiMKIyBDT05GSUdfSVNETiBpcyBub3Qgc2V0CiMgQ09ORklHX1BIT05FIGlzIG5vdCBzZXQKCiMK
+IyBJbnB1dCBkZXZpY2Ugc3VwcG9ydAojCkNPTkZJR19JTlBVVD15CkNPTkZJR19JTlBVVF9GRl9N
+RU1MRVNTPW0KIyBDT05GSUdfSU5QVVRfUE9MTERFViBpcyBub3Qgc2V0CgojCiMgVXNlcmxhbmQg
+aW50ZXJmYWNlcwojCkNPTkZJR19JTlBVVF9NT1VTRURFVj15CkNPTkZJR19JTlBVVF9NT1VTRURF
+Vl9QU0FVWD15CkNPTkZJR19JTlBVVF9NT1VTRURFVl9TQ1JFRU5fWD0xMDI0CkNPTkZJR19JTlBV
+VF9NT1VTRURFVl9TQ1JFRU5fWT03NjgKQ09ORklHX0lOUFVUX0pPWURFVj1tCkNPTkZJR19JTlBV
+VF9UU0RFVj1tCkNPTkZJR19JTlBVVF9UU0RFVl9TQ1JFRU5fWD0yNDAKQ09ORklHX0lOUFVUX1RT
+REVWX1NDUkVFTl9ZPTMyMApDT05GSUdfSU5QVVRfRVZERVY9bQpDT05GSUdfSU5QVVRfRVZCVUc9
+bQoKIwojIElucHV0IERldmljZSBEcml2ZXJzCiMKQ09ORklHX0lOUFVUX0tFWUJPQVJEPXkKQ09O
+RklHX0tFWUJPQVJEX0FUS0JEPXkKQ09ORklHX0tFWUJPQVJEX1NVTktCRD1tCkNPTkZJR19LRVlC
+T0FSRF9MS0tCRD1tCkNPTkZJR19LRVlCT0FSRF9YVEtCRD1tCkNPTkZJR19LRVlCT0FSRF9ORVdU
+T049bQpDT05GSUdfS0VZQk9BUkRfU1RPV0FXQVk9bQpDT05GSUdfSU5QVVRfTU9VU0U9eQpDT05G
+SUdfTU9VU0VfUFMyPW0KQ09ORklHX01PVVNFX1BTMl9BTFBTPXkKQ09ORklHX01PVVNFX1BTMl9M
+T0dJUFMyUFA9eQpDT05GSUdfTU9VU0VfUFMyX1NZTkFQVElDUz15CkNPTkZJR19NT1VTRV9QUzJf
+TElGRUJPT0s9eQpDT05GSUdfTU9VU0VfUFMyX1RSQUNLUE9JTlQ9eQojIENPTkZJR19NT1VTRV9Q
+UzJfVE9VQ0hLSVQgaXMgbm90IHNldApDT05GSUdfTU9VU0VfU0VSSUFMPW0KIyBDT05GSUdfTU9V
+U0VfQVBQTEVUT1VDSCBpcyBub3Qgc2V0CkNPTkZJR19NT1VTRV9WU1hYWEFBPW0KQ09ORklHX0lO
+UFVUX0pPWVNUSUNLPXkKQ09ORklHX0pPWVNUSUNLX0FOQUxPRz1tCkNPTkZJR19KT1lTVElDS19B
+M0Q9bQpDT05GSUdfSk9ZU1RJQ0tfQURJPW0KQ09ORklHX0pPWVNUSUNLX0NPQlJBPW0KQ09ORklH
+X0pPWVNUSUNLX0dGMks9bQpDT05GSUdfSk9ZU1RJQ0tfR1JJUD1tCkNPTkZJR19KT1lTVElDS19H
+UklQX01QPW0KQ09ORklHX0pPWVNUSUNLX0dVSUxMRU1PVD1tCkNPTkZJR19KT1lTVElDS19JTlRF
+UkFDVD1tCkNPTkZJR19KT1lTVElDS19TSURFV0lOREVSPW0KQ09ORklHX0pPWVNUSUNLX1RNREM9
+bQpDT05GSUdfSk9ZU1RJQ0tfSUZPUkNFPW0KQ09ORklHX0pPWVNUSUNLX0lGT1JDRV9VU0I9eQpD
+T05GSUdfSk9ZU1RJQ0tfSUZPUkNFXzIzMj15CkNPTkZJR19KT1lTVElDS19XQVJSSU9SPW0KQ09O
+RklHX0pPWVNUSUNLX01BR0VMTEFOPW0KQ09ORklHX0pPWVNUSUNLX1NQQUNFT1JCPW0KQ09ORklH
+X0pPWVNUSUNLX1NQQUNFQkFMTD1tCkNPTkZJR19KT1lTVElDS19TVElOR0VSPW0KQ09ORklHX0pP
+WVNUSUNLX1RXSURKT1k9bQpDT05GSUdfSk9ZU1RJQ0tfSk9ZRFVNUD1tCiMgQ09ORklHX0pPWVNU
+SUNLX1hQQUQgaXMgbm90IHNldAojIENPTkZJR19JTlBVVF9UQUJMRVQgaXMgbm90IHNldApDT05G
+SUdfSU5QVVRfVE9VQ0hTQ1JFRU49eQpDT05GSUdfVE9VQ0hTQ1JFRU5fQURTNzg0Nj1tCkNPTkZJ
+R19UT1VDSFNDUkVFTl9HVU5aRT1tCkNPTkZJR19UT1VDSFNDUkVFTl9FTE89bQpDT05GSUdfVE9V
+Q0hTQ1JFRU5fTVRPVUNIPW0KQ09ORklHX1RPVUNIU0NSRUVOX01LNzEyPW0KQ09ORklHX1RPVUNI
+U0NSRUVOX1BFTk1PVU5UPW0KQ09ORklHX1RPVUNIU0NSRUVOX1RPVUNIUklHSFQ9bQpDT05GSUdf
+VE9VQ0hTQ1JFRU5fVE9VQ0hXSU49bQpDT05GSUdfVE9VQ0hTQ1JFRU5fVUNCMTQwMD1tCiMgQ09O
+RklHX1RPVUNIU0NSRUVOX1VTQl9DT01QT1NJVEUgaXMgbm90IHNldApDT05GSUdfSU5QVVRfTUlT
+Qz15CkNPTkZJR19JTlBVVF9QQ1NQS1I9bQojIENPTkZJR19JTlBVVF9BVElfUkVNT1RFIGlzIG5v
+dCBzZXQKIyBDT05GSUdfSU5QVVRfQVRJX1JFTU9URTIgaXMgbm90IHNldAojIENPTkZJR19JTlBV
+VF9LRVlTUEFOX1JFTU9URSBpcyBub3Qgc2V0CiMgQ09ORklHX0lOUFVUX1BPV0VSTUFURSBpcyBu
+b3Qgc2V0CiMgQ09ORklHX0lOUFVUX1lFQUxJTksgaXMgbm90IHNldApDT05GSUdfSU5QVVRfVUlO
+UFVUPW0KCiMKIyBIYXJkd2FyZSBJL08gcG9ydHMKIwpDT05GSUdfU0VSSU89eQpDT05GSUdfU0VS
+SU9fSTgwNDI9eQpDT05GSUdfU0VSSU9fU0VSUE9SVD1tCkNPTkZJR19TRVJJT19QQ0lQUzI9bQpD
+T05GSUdfU0VSSU9fTElCUFMyPXkKQ09ORklHX1NFUklPX1JBVz1tCkNPTkZJR19HQU1FUE9SVD1t
+CkNPTkZJR19HQU1FUE9SVF9OUzU1OD1tCkNPTkZJR19HQU1FUE9SVF9MND1tCkNPTkZJR19HQU1F
+UE9SVF9FTVUxMEsxPW0KQ09ORklHX0dBTUVQT1JUX0ZNODAxPW0KCiMKIyBDaGFyYWN0ZXIgZGV2
+aWNlcwojCkNPTkZJR19WVD15CkNPTkZJR19WVF9DT05TT0xFPXkKQ09ORklHX0hXX0NPTlNPTEU9
+eQpDT05GSUdfVlRfSFdfQ09OU09MRV9CSU5ESU5HPXkKQ09ORklHX1NFUklBTF9OT05TVEFOREFS
+RD15CkNPTkZJR19DT01QVVRPTkU9bQpDT05GSUdfUk9DS0VUUE9SVD1tCkNPTkZJR19DWUNMQURF
+Uz1tCiMgQ09ORklHX0NZWl9JTlRSIGlzIG5vdCBzZXQKQ09ORklHX0RJR0lFUENBPW0KIyBDT05G
+SUdfTU9YQV9JTlRFTExJTyBpcyBub3Qgc2V0CiMgQ09ORklHX01PWEFfU01BUlRJTyBpcyBub3Qg
+c2V0CiMgQ09ORklHX01PWEFfU01BUlRJT19ORVcgaXMgbm90IHNldAojIENPTkZJR19JU0kgaXMg
+bm90IHNldAojIENPTkZJR19TWU5DTElOSyBpcyBub3Qgc2V0CiMgQ09ORklHX1NZTkNMSU5LTVAg
+aXMgbm90IHNldAojIENPTkZJR19TWU5DTElOS19HVCBpcyBub3Qgc2V0CiMgQ09ORklHX05fSERM
+QyBpcyBub3Qgc2V0CiMgQ09ORklHX1JJU0NPTTggaXMgbm90IHNldAojIENPTkZJR19TUEVDSUFM
+SVggaXMgbm90IHNldAojIENPTkZJR19TWCBpcyBub3Qgc2V0CiMgQ09ORklHX1JJTyBpcyBub3Qg
+c2V0CiMgQ09ORklHX1NUQUxEUlYgaXMgbm90IHNldAoKIwojIFNlcmlhbCBkcml2ZXJzCiMKQ09O
+RklHX1NFUklBTF84MjUwPW0KQ09ORklHX1NFUklBTF84MjUwX1BDST1tCkNPTkZJR19TRVJJQUxf
+ODI1MF9OUl9VQVJUUz00OApDT05GSUdfU0VSSUFMXzgyNTBfUlVOVElNRV9VQVJUUz00CkNPTkZJ
+R19TRVJJQUxfODI1MF9FWFRFTkRFRD15CkNPTkZJR19TRVJJQUxfODI1MF9NQU5ZX1BPUlRTPXkK
+Q09ORklHX1NFUklBTF84MjUwX1NIQVJFX0lSUT15CiMgQ09ORklHX1NFUklBTF84MjUwX0RFVEVD
+VF9JUlEgaXMgbm90IHNldApDT05GSUdfU0VSSUFMXzgyNTBfUlNBPXkKCiMKIyBOb24tODI1MCBz
+ZXJpYWwgcG9ydCBzdXBwb3J0CiMKQ09ORklHX1NFUklBTF9VQVJUTElURT1tCkNPTkZJR19TRVJJ
+QUxfQ09SRT1tCkNPTkZJR19TRVJJQUxfUE1BQ1pJTE9HPW0KQ09ORklHX1NFUklBTF9NUEM1Mnh4
+PW0KQ09ORklHX1NFUklBTF9KU009bQojIENPTkZJR19TRVJJQUxfT0ZfUExBVEZPUk0gaXMgbm90
+IHNldApDT05GSUdfVU5JWDk4X1BUWVM9eQpDT05GSUdfTEVHQUNZX1BUWVM9eQpDT05GSUdfTEVH
+QUNZX1BUWV9DT1VOVD0yNTYKQ09ORklHX0JSSVFfUEFORUw9bQojIENPTkZJR19IVkNfUlRBUyBp
+cyBub3Qgc2V0CkNPTkZJR19JUE1JX0hBTkRMRVI9bQojIENPTkZJR19JUE1JX1BBTklDX0VWRU5U
+IGlzIG5vdCBzZXQKQ09ORklHX0lQTUlfREVWSUNFX0lOVEVSRkFDRT1tCkNPTkZJR19JUE1JX1NJ
+PW0KQ09ORklHX0lQTUlfV0FUQ0hET0c9bQpDT05GSUdfSVBNSV9QT1dFUk9GRj1tCkNPTkZJR19X
+QVRDSERPRz15CiMgQ09ORklHX1dBVENIRE9HX05PV0FZT1VUIGlzIG5vdCBzZXQKCiMKIyBXYXRj
+aGRvZyBEZXZpY2UgRHJpdmVycwojCkNPTkZJR19TT0ZUX1dBVENIRE9HPW0KQ09ORklHX1dBVENI
+RE9HX1JUQVM9bQoKIwojIFBDSS1iYXNlZCBXYXRjaGRvZyBDYXJkcwojCkNPTkZJR19QQ0lQQ1dB
+VENIRE9HPW0KQ09ORklHX1dEVFBDST1tCkNPTkZJR19XRFRfNTAxX1BDST15CgojCiMgVVNCLWJh
+c2VkIFdhdGNoZG9nIENhcmRzCiMKQ09ORklHX1VTQlBDV0FUQ0hET0c9bQpDT05GSUdfSFdfUkFO
+RE9NPXkKQ09ORklHX05WUkFNPXkKQ09ORklHX0dFTl9SVEM9eQojIENPTkZJR19HRU5fUlRDX1gg
+aXMgbm90IHNldApDT05GSUdfUjM5NjQ9bQpDT05GSUdfQVBQTElDT009bQpDT05GSUdfQUdQPW0K
+Q09ORklHX0FHUF9VTklOT1JUSD1tCkNPTkZJR19EUk09bQojIENPTkZJR19EUk1fVERGWCBpcyBu
+b3Qgc2V0CkNPTkZJR19EUk1fUjEyOD1tCkNPTkZJR19EUk1fUkFERU9OPW0KIyBDT05GSUdfRFJN
+X01HQSBpcyBub3Qgc2V0CiMgQ09ORklHX0RSTV9TSVMgaXMgbm90IHNldAojIENPTkZJR19EUk1f
+VklBIGlzIG5vdCBzZXQKIyBDT05GSUdfRFJNX1NBVkFHRSBpcyBub3Qgc2V0CkNPTkZJR19SQVdf
+RFJJVkVSPW0KQ09ORklHX01BWF9SQVdfREVWUz0yNTYKIyBDT05GSUdfVENHX1RQTSBpcyBub3Qg
+c2V0CkNPTkZJR19ERVZQT1JUPXkKQ09ORklHX0kyQz15CkNPTkZJR19JMkNfQk9BUkRJTkZPPXkK
+Q09ORklHX0kyQ19DSEFSREVWPW0KCiMKIyBJMkMgQWxnb3JpdGhtcwojCkNPTkZJR19JMkNfQUxH
+T0JJVD15CkNPTkZJR19JMkNfQUxHT1BDRj1tCkNPTkZJR19JMkNfQUxHT1BDQT1tCgojCiMgSTJD
+IEhhcmR3YXJlIEJ1cyBzdXBwb3J0CiMKQ09ORklHX0kyQ19BTEkxNTM1PW0KQ09ORklHX0kyQ19B
+TEkxNTYzPW0KQ09ORklHX0kyQ19BTEkxNVgzPW0KQ09ORklHX0kyQ19BTUQ3NTY9bQpDT05GSUdf
+STJDX0FNRDc1Nl9TNDg4Mj1tCkNPTkZJR19JMkNfQU1EODExMT1tCkNPTkZJR19JMkNfSFlEUkE9
+bQpDT05GSUdfSTJDX0k4MDE9bQpDT05GSUdfSTJDX0k4MTA9bQpDT05GSUdfSTJDX1BJSVg0PW0K
+Q09ORklHX0kyQ19QT1dFUk1BQz15CkNPTkZJR19JMkNfTVBDPW0KQ09ORklHX0kyQ19ORk9SQ0Uy
+PW0KQ09ORklHX0kyQ19PQ09SRVM9bQpDT05GSUdfSTJDX1BBUlBPUlRfTElHSFQ9bQpDT05GSUdf
+STJDX1BST1NBVkFHRT1tCkNPTkZJR19JMkNfU0FWQUdFND1tCiMgQ09ORklHX0kyQ19TSU1URUMg
+aXMgbm90IHNldApDT05GSUdfSTJDX1NJUzU1OTU9bQpDT05GSUdfSTJDX1NJUzYzMD1tCkNPTkZJ
+R19JMkNfU0lTOTZYPW0KIyBDT05GSUdfSTJDX1RBT1NfRVZNIGlzIG5vdCBzZXQKQ09ORklHX0ky
+Q19TVFVCPW0KIyBDT05GSUdfSTJDX1RJTllfVVNCIGlzIG5vdCBzZXQKQ09ORklHX0kyQ19WSUE9
+bQpDT05GSUdfSTJDX1ZJQVBSTz1tCkNPTkZJR19JMkNfVk9PRE9PMz1tCgojCiMgTWlzY2VsbGFu
+ZW91cyBJMkMgQ2hpcCBzdXBwb3J0CiMKQ09ORklHX1NFTlNPUlNfRFMxMzM3PW0KQ09ORklHX1NF
+TlNPUlNfRFMxMzc0PW0KIyBDT05GSUdfRFMxNjgyIGlzIG5vdCBzZXQKQ09ORklHX1NFTlNPUlNf
+RUVQUk9NPW0KQ09ORklHX1NFTlNPUlNfUENGODU3ND1tCkNPTkZJR19TRU5TT1JTX1BDQTk1Mzk9
+bQpDT05GSUdfU0VOU09SU19QQ0Y4NTkxPW0KQ09ORklHX1NFTlNPUlNfTTQxVDAwPW0KQ09ORklH
+X1NFTlNPUlNfTUFYNjg3NT1tCiMgQ09ORklHX1NFTlNPUlNfVFNMMjU1MCBpcyBub3Qgc2V0CiMg
+Q09ORklHX0kyQ19ERUJVR19DT1JFIGlzIG5vdCBzZXQKIyBDT05GSUdfSTJDX0RFQlVHX0FMR08g
+aXMgbm90IHNldAojIENPTkZJR19JMkNfREVCVUdfQlVTIGlzIG5vdCBzZXQKIyBDT05GSUdfSTJD
+X0RFQlVHX0NISVAgaXMgbm90IHNldAoKIwojIFNQSSBzdXBwb3J0CiMKQ09ORklHX1NQST15CiMg
+Q09ORklHX1NQSV9ERUJVRyBpcyBub3Qgc2V0CkNPTkZJR19TUElfTUFTVEVSPXkKCiMKIyBTUEkg
+TWFzdGVyIENvbnRyb2xsZXIgRHJpdmVycwojCkNPTkZJR19TUElfQklUQkFORz1tCiMgQ09ORklH
+X1NQSV9NUEM1Mnh4X1BTQyBpcyBub3Qgc2V0CgojCiMgU1BJIFByb3RvY29sIE1hc3RlcnMKIwoj
+IENPTkZJR19TUElfQVQyNSBpcyBub3Qgc2V0CiMgQ09ORklHX1NQSV9TUElERVYgaXMgbm90IHNl
+dAojIENPTkZJR19XMSBpcyBub3Qgc2V0CkNPTkZJR19QT1dFUl9TVVBQTFk9eQojIENPTkZJR19Q
+T1dFUl9TVVBQTFlfREVCVUcgaXMgbm90IHNldAojIENPTkZJR19QREFfUE9XRVIgaXMgbm90IHNl
+dAojIENPTkZJR19CQVRURVJZX0RTMjc2MCBpcyBub3Qgc2V0CiMgQ09ORklHX0JBVFRFUllfUE1V
+IGlzIG5vdCBzZXQKIyBDT05GSUdfSFdNT04gaXMgbm90IHNldAoKIwojIE11bHRpZnVuY3Rpb24g
+ZGV2aWNlIGRyaXZlcnMKIwojIENPTkZJR19NRkRfU001MDEgaXMgbm90IHNldAoKIwojIE11bHRp
+bWVkaWEgZGV2aWNlcwojCiMgQ09ORklHX1ZJREVPX0RFViBpcyBub3Qgc2V0CiMgQ09ORklHX0RW
+Ql9DT1JFIGlzIG5vdCBzZXQKIyBDT05GSUdfREFCIGlzIG5vdCBzZXQKCiMKIyBHcmFwaGljcyBz
+dXBwb3J0CiMKQ09ORklHX0JBQ0tMSUdIVF9MQ0RfU1VQUE9SVD15CkNPTkZJR19CQUNLTElHSFRf
+Q0xBU1NfREVWSUNFPXkKQ09ORklHX0xDRF9DTEFTU19ERVZJQ0U9bQoKIwojIERpc3BsYXkgZGV2
+aWNlIHN1cHBvcnQKIwojIENPTkZJR19ESVNQTEFZX1NVUFBPUlQgaXMgbm90IHNldAojIENPTkZJ
+R19WR0FTVEFURSBpcyBub3Qgc2V0CkNPTkZJR19GQj15CkNPTkZJR19GSVJNV0FSRV9FRElEPXkK
+Q09ORklHX0ZCX0REQz15CkNPTkZJR19GQl9DRkJfRklMTFJFQ1Q9eQpDT05GSUdfRkJfQ0ZCX0NP
+UFlBUkVBPXkKQ09ORklHX0ZCX0NGQl9JTUFHRUJMSVQ9eQojIENPTkZJR19GQl9TWVNfRklMTFJF
+Q1QgaXMgbm90IHNldAojIENPTkZJR19GQl9TWVNfQ09QWUFSRUEgaXMgbm90IHNldAojIENPTkZJ
+R19GQl9TWVNfSU1BR0VCTElUIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfU1lTX0ZPUFMgaXMgbm90
+IHNldApDT05GSUdfRkJfREVGRVJSRURfSU89eQojIENPTkZJR19GQl9TVkdBTElCIGlzIG5vdCBz
+ZXQKQ09ORklHX0ZCX01BQ01PREVTPXkKQ09ORklHX0ZCX0JBQ0tMSUdIVD15CkNPTkZJR19GQl9N
+T0RFX0hFTFBFUlM9eQpDT05GSUdfRkJfVElMRUJMSVRUSU5HPXkKCiMKIyBGcmFtZSBidWZmZXIg
+aGFyZHdhcmUgZHJpdmVycwojCiMgQ09ORklHX0ZCX0NJUlJVUyBpcyBub3Qgc2V0CiMgQ09ORklH
+X0ZCX1BNMiBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX0NZQkVSMjAwMCBpcyBub3Qgc2V0CkNPTkZJ
+R19GQl9PRj15CkNPTkZJR19GQl9DT05UUk9MPXkKQ09ORklHX0ZCX1BMQVRJTlVNPXkKQ09ORklH
+X0ZCX1ZBTEtZUklFPXkKIyBDT05GSUdfRkJfQ1Q2NTU1MCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZC
+X0FTSUxJQU5UIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfSU1TVFQgaXMgbm90IHNldAojIENPTkZJ
+R19GQl9WR0ExNiBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1MxRDEzWFhYIGlzIG5vdCBzZXQKIyBD
+T05GSUdfRkJfTlZJRElBIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfUklWQSBpcyBub3Qgc2V0CiMg
+Q09ORklHX0ZCX01BVFJPWCBpcyBub3Qgc2V0CkNPTkZJR19GQl9SQURFT049eQpDT05GSUdfRkJf
+UkFERU9OX0kyQz15CkNPTkZJR19GQl9SQURFT05fQkFDS0xJR0hUPXkKIyBDT05GSUdfRkJfUkFE
+RU9OX0RFQlVHIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQVRZMTI4IGlzIG5vdCBzZXQKIyBDT05G
+SUdfRkJfQVRZIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfUzMgaXMgbm90IHNldAojIENPTkZJR19G
+Ql9TQVZBR0UgaXMgbm90IHNldAojIENPTkZJR19GQl9TSVMgaXMgbm90IHNldAojIENPTkZJR19G
+Ql9ORU9NQUdJQyBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX0tZUk8gaXMgbm90IHNldAojIENPTkZJ
+R19GQl8zREZYIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfVk9PRE9PMSBpcyBub3Qgc2V0CiMgQ09O
+RklHX0ZCX1ZUODYyMyBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1RSSURFTlQgaXMgbm90IHNldAoj
+IENPTkZJR19GQl9BUksgaXMgbm90IHNldAojIENPTkZJR19GQl9QTTMgaXMgbm90IHNldAojIENP
+TkZJR19GQl9JQk1fR1hUNDUwMCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1ZJUlRVQUwgaXMgbm90
+IHNldAoKIwojIENvbnNvbGUgZGlzcGxheSBkcml2ZXIgc3VwcG9ydAojCiMgQ09ORklHX1ZHQV9D
+T05TT0xFIGlzIG5vdCBzZXQKQ09ORklHX0RVTU1ZX0NPTlNPTEU9eQpDT05GSUdfRlJBTUVCVUZG
+RVJfQ09OU09MRT15CiMgQ09ORklHX0ZSQU1FQlVGRkVSX0NPTlNPTEVfUk9UQVRJT04gaXMgbm90
+IHNldAojIENPTkZJR19GT05UUyBpcyBub3Qgc2V0CkNPTkZJR19GT05UXzh4OD15CkNPTkZJR19G
+T05UXzh4MTY9eQojIENPTkZJR19MT0dPIGlzIG5vdCBzZXQKCiMKIyBTb3VuZAojCkNPTkZJR19T
+T1VORD1tCgojCiMgQWR2YW5jZWQgTGludXggU291bmQgQXJjaGl0ZWN0dXJlCiMKQ09ORklHX1NO
+RD1tCkNPTkZJR19TTkRfVElNRVI9bQpDT05GSUdfU05EX1BDTT1tCkNPTkZJR19TTkRfSFdERVA9
+bQpDT05GSUdfU05EX1JBV01JREk9bQpDT05GSUdfU05EX1NFUVVFTkNFUj1tCkNPTkZJR19TTkRf
+U0VRX0RVTU1ZPW0KQ09ORklHX1NORF9PU1NFTVVMPXkKQ09ORklHX1NORF9NSVhFUl9PU1M9bQpD
+T05GSUdfU05EX1BDTV9PU1M9bQpDT05GSUdfU05EX1BDTV9PU1NfUExVR0lOUz15CkNPTkZJR19T
+TkRfU0VRVUVOQ0VSX09TUz15CkNPTkZJR19TTkRfRFlOQU1JQ19NSU5PUlM9eQpDT05GSUdfU05E
+X1NVUFBPUlRfT0xEX0FQST15CkNPTkZJR19TTkRfVkVSQk9TRV9QUk9DRlM9eQojIENPTkZJR19T
+TkRfVkVSQk9TRV9QUklOVEsgaXMgbm90IHNldAojIENPTkZJR19TTkRfREVCVUcgaXMgbm90IHNl
+dAoKIwojIEdlbmVyaWMgZGV2aWNlcwojCkNPTkZJR19TTkRfTVBVNDAxX1VBUlQ9bQpDT05GSUdf
+U05EX0RVTU1ZPW0KQ09ORklHX1NORF9WSVJNSURJPW0KQ09ORklHX1NORF9NVFBBVj1tCkNPTkZJ
+R19TTkRfU0VSSUFMX1UxNjU1MD1tCkNPTkZJR19TTkRfTVBVNDAxPW0KCiMKIyBQQ0kgZGV2aWNl
+cwojCiMgQ09ORklHX1NORF9BRDE4ODkgaXMgbm90IHNldAojIENPTkZJR19TTkRfQUxTMzAwIGlz
+IG5vdCBzZXQKIyBDT05GSUdfU05EX0FMUzQwMDAgaXMgbm90IHNldAojIENPTkZJR19TTkRfQUxJ
+NTQ1MSBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9BVElJWFAgaXMgbm90IHNldAojIENPTkZJR19T
+TkRfQVRJSVhQX01PREVNIGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0FVODgxMCBpcyBub3Qgc2V0
+CiMgQ09ORklHX1NORF9BVTg4MjAgaXMgbm90IHNldAojIENPTkZJR19TTkRfQVU4ODMwIGlzIG5v
+dCBzZXQKIyBDT05GSUdfU05EX0FaVDMzMjggaXMgbm90IHNldAojIENPTkZJR19TTkRfQlQ4N1gg
+aXMgbm90IHNldAojIENPTkZJR19TTkRfQ0EwMTA2IGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0NN
+SVBDSSBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9DUzQyODEgaXMgbm90IHNldAojIENPTkZJR19T
+TkRfQ1M0NlhYIGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0RBUkxBMjAgaXMgbm90IHNldAojIENP
+TkZJR19TTkRfR0lOQTIwIGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0xBWUxBMjAgaXMgbm90IHNl
+dAojIENPTkZJR19TTkRfREFSTEEyNCBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9HSU5BMjQgaXMg
+bm90IHNldAojIENPTkZJR19TTkRfTEFZTEEyNCBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9NT05B
+IGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX01JQSBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9FQ0hP
+M0cgaXMgbm90IHNldAojIENPTkZJR19TTkRfSU5ESUdPIGlzIG5vdCBzZXQKIyBDT05GSUdfU05E
+X0lORElHT0lPIGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0lORElHT0RKIGlzIG5vdCBzZXQKIyBD
+T05GSUdfU05EX0VNVTEwSzEgaXMgbm90IHNldAojIENPTkZJR19TTkRfRU1VMTBLMVggaXMgbm90
+IHNldAojIENPTkZJR19TTkRfRU5TMTM3MCBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9FTlMxMzcx
+IGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0VTMTkzOCBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9F
+UzE5NjggaXMgbm90IHNldAojIENPTkZJR19TTkRfRk04MDEgaXMgbm90IHNldAojIENPTkZJR19T
+TkRfSERBX0lOVEVMIGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0hEU1AgaXMgbm90IHNldAojIENP
+TkZJR19TTkRfSERTUE0gaXMgbm90IHNldAojIENPTkZJR19TTkRfSUNFMTcxMiBpcyBub3Qgc2V0
+CiMgQ09ORklHX1NORF9JQ0UxNzI0IGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX0lOVEVMOFgwIGlz
+IG5vdCBzZXQKIyBDT05GSUdfU05EX0lOVEVMOFgwTSBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9L
+T1JHMTIxMiBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9NQUVTVFJPMyBpcyBub3Qgc2V0CiMgQ09O
+RklHX1NORF9NSVhBUlQgaXMgbm90IHNldAojIENPTkZJR19TTkRfTk0yNTYgaXMgbm90IHNldAoj
+IENPTkZJR19TTkRfUENYSFIgaXMgbm90IHNldAojIENPTkZJR19TTkRfUklQVElERSBpcyBub3Qg
+c2V0CiMgQ09ORklHX1NORF9STUUzMiBpcyBub3Qgc2V0CiMgQ09ORklHX1NORF9STUU5NiBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1NORF9STUU5NjUyIGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX1NPTklD
+VklCRVMgaXMgbm90IHNldAojIENPTkZJR19TTkRfVFJJREVOVCBpcyBub3Qgc2V0CiMgQ09ORklH
+X1NORF9WSUE4MlhYIGlzIG5vdCBzZXQKIyBDT05GSUdfU05EX1ZJQTgyWFhfTU9ERU0gaXMgbm90
+IHNldAojIENPTkZJR19TTkRfVlgyMjIgaXMgbm90IHNldAojIENPTkZJR19TTkRfWU1GUENJIGlz
+IG5vdCBzZXQKCiMKIyBBTFNBIFBvd2VyTWFjIGRldmljZXMKIwojIENPTkZJR19TTkRfUE9XRVJN
+QUMgaXMgbm90IHNldAoKIwojIEFwcGxlIE9uYm9hcmQgQXVkaW8gZHJpdmVyCiMKQ09ORklHX1NO
+RF9BT0E9bQpDT05GSUdfU05EX0FPQV9GQUJSSUNfTEFZT1VUPW0KQ09ORklHX1NORF9BT0FfT05Z
+WD1tCkNPTkZJR19TTkRfQU9BX1RBUz1tCkNPTkZJR19TTkRfQU9BX1RPT05JRT1tCkNPTkZJR19T
+TkRfQU9BX1NPVU5EQlVTPW0KQ09ORklHX1NORF9BT0FfU09VTkRCVVNfSTJTPW0KCiMKIyBVU0Ig
+ZGV2aWNlcwojCkNPTkZJR19TTkRfVVNCX0FVRElPPW0KQ09ORklHX1NORF9VU0JfVVNYMlk9bQpD
+T05GSUdfU05EX1VTQl9DQUlBUT1tCiMgQ09ORklHX1NORF9VU0JfQ0FJQVFfSU5QVVQgaXMgbm90
+IHNldAoKIwojIFN5c3RlbSBvbiBDaGlwIGF1ZGlvIHN1cHBvcnQKIwojIENPTkZJR19TTkRfU09D
+IGlzIG5vdCBzZXQKCiMKIyBPcGVuIFNvdW5kIFN5c3RlbQojCiMgQ09ORklHX1NPVU5EX1BSSU1F
+IGlzIG5vdCBzZXQKQ09ORklHX0FDOTdfQlVTPW0KQ09ORklHX0hJRF9TVVBQT1JUPXkKQ09ORklH
+X0hJRD1tCiMgQ09ORklHX0hJRF9ERUJVRyBpcyBub3Qgc2V0CgojCiMgVVNCIElucHV0IERldmlj
+ZXMKIwpDT05GSUdfVVNCX0hJRD1tCkNPTkZJR19VU0JfSElESU5QVVRfUE9XRVJCT09LPXkKIyBD
+T05GSUdfSElEX0ZGIGlzIG5vdCBzZXQKQ09ORklHX1VTQl9ISURERVY9eQoKIwojIFVTQiBISUQg
+Qm9vdCBQcm90b2NvbCBkcml2ZXJzCiMKQ09ORklHX1VTQl9LQkQ9bQpDT05GSUdfVVNCX01PVVNF
+PW0KQ09ORklHX1VTQl9TVVBQT1JUPXkKQ09ORklHX1VTQl9BUkNIX0hBU19IQ0Q9eQpDT05GSUdf
+VVNCX0FSQ0hfSEFTX09IQ0k9eQpDT05GSUdfVVNCX0FSQ0hfSEFTX0VIQ0k9eQpDT05GSUdfVVNC
+PW0KIyBDT05GSUdfVVNCX0RFQlVHIGlzIG5vdCBzZXQKCiMKIyBNaXNjZWxsYW5lb3VzIFVTQiBv
+cHRpb25zCiMKQ09ORklHX1VTQl9ERVZJQ0VGUz15CiMgQ09ORklHX1VTQl9ERVZJQ0VfQ0xBU1Mg
+aXMgbm90IHNldAojIENPTkZJR19VU0JfRFlOQU1JQ19NSU5PUlMgaXMgbm90IHNldApDT05GSUdf
+VVNCX1NVU1BFTkQ9eQojIENPTkZJR19VU0JfUEVSU0lTVCBpcyBub3Qgc2V0CiMgQ09ORklHX1VT
+Ql9PVEcgaXMgbm90IHNldAoKIwojIFVTQiBIb3N0IENvbnRyb2xsZXIgRHJpdmVycwojCkNPTkZJ
+R19VU0JfRUhDSV9IQ0Q9bQpDT05GSUdfVVNCX0VIQ0lfU1BMSVRfSVNPPXkKQ09ORklHX1VTQl9F
+SENJX1JPT1RfSFVCX1RUPXkKQ09ORklHX1VTQl9FSENJX1RUX05FV1NDSEVEPXkKQ09ORklHX1VT
+Ql9JU1AxMTZYX0hDRD1tCkNPTkZJR19VU0JfT0hDSV9IQ0Q9bQojIENPTkZJR19VU0JfT0hDSV9I
+Q0RfUFBDX1NPQyBpcyBub3Qgc2V0CkNPTkZJR19VU0JfT0hDSV9IQ0RfUFBDX09GPXkKQ09ORklH
+X1VTQl9PSENJX0hDRF9QUENfT0ZfQkU9eQojIENPTkZJR19VU0JfT0hDSV9IQ0RfUFBDX09GX0xF
+IGlzIG5vdCBzZXQKQ09ORklHX1VTQl9PSENJX0hDRF9QQ0k9eQpDT05GSUdfVVNCX09IQ0lfQklH
+X0VORElBTl9ERVNDPXkKQ09ORklHX1VTQl9PSENJX0JJR19FTkRJQU5fTU1JTz15CkNPTkZJR19V
+U0JfT0hDSV9MSVRUTEVfRU5ESUFOPXkKQ09ORklHX1VTQl9VSENJX0hDRD1tCkNPTkZJR19VU0Jf
+VTEzMl9IQ0Q9bQpDT05GSUdfVVNCX1NMODExX0hDRD1tCiMgQ09ORklHX1VTQl9SOEE2NjU5N19I
+Q0QgaXMgbm90IHNldAoKIwojIFVTQiBEZXZpY2UgQ2xhc3MgZHJpdmVycwojCkNPTkZJR19VU0Jf
+QUNNPW0KQ09ORklHX1VTQl9QUklOVEVSPW0KCiMKIyBOT1RFOiBVU0JfU1RPUkFHRSBlbmFibGVz
+IFNDU0ksIGFuZCAnU0NTSSBkaXNrIHN1cHBvcnQnCiMKCiMKIyBtYXkgYWxzbyBiZSBuZWVkZWQ7
+IHNlZSBVU0JfU1RPUkFHRSBIZWxwIGZvciBtb3JlIGluZm9ybWF0aW9uCiMKQ09ORklHX1VTQl9T
+VE9SQUdFPW0KIyBDT05GSUdfVVNCX1NUT1JBR0VfREVCVUcgaXMgbm90IHNldApDT05GSUdfVVNC
+X1NUT1JBR0VfREFUQUZBQj15CkNPTkZJR19VU0JfU1RPUkFHRV9GUkVFQ09NPXkKQ09ORklHX1VT
+Ql9TVE9SQUdFX0lTRDIwMD15CkNPTkZJR19VU0JfU1RPUkFHRV9EUENNPXkKQ09ORklHX1VTQl9T
+VE9SQUdFX1VTQkFUPXkKQ09ORklHX1VTQl9TVE9SQUdFX1NERFIwOT15CkNPTkZJR19VU0JfU1RP
+UkFHRV9TRERSNTU9eQpDT05GSUdfVVNCX1NUT1JBR0VfSlVNUFNIT1Q9eQpDT05GSUdfVVNCX1NU
+T1JBR0VfQUxBVURBPXkKQ09ORklHX1VTQl9TVE9SQUdFX0tBUk1BPXkKQ09ORklHX1VTQl9MSUJV
+U1VBTD15CgojCiMgVVNCIEltYWdpbmcgZGV2aWNlcwojCkNPTkZJR19VU0JfTURDODAwPW0KQ09O
+RklHX1VTQl9NSUNST1RFSz1tCkNPTkZJR19VU0JfTU9OPXkKCiMKIyBVU0IgcG9ydCBkcml2ZXJz
+CiMKCiMKIyBVU0IgU2VyaWFsIENvbnZlcnRlciBzdXBwb3J0CiMKQ09ORklHX1VTQl9TRVJJQUw9
+bQpDT05GSUdfVVNCX1NFUklBTF9HRU5FUklDPXkKQ09ORklHX1VTQl9TRVJJQUxfQUlSQ0FCTEU9
+bQpDT05GSUdfVVNCX1NFUklBTF9BSVJQUklNRT1tCkNPTkZJR19VU0JfU0VSSUFMX0FSSzMxMTY9
+bQpDT05GSUdfVVNCX1NFUklBTF9CRUxLSU49bQpDT05GSUdfVVNCX1NFUklBTF9XSElURUhFQVQ9
+bQpDT05GSUdfVVNCX1NFUklBTF9ESUdJX0FDQ0VMRVBPUlQ9bQpDT05GSUdfVVNCX1NFUklBTF9D
+UDIxMDE9bQpDT05GSUdfVVNCX1NFUklBTF9DWVBSRVNTX004PW0KQ09ORklHX1VTQl9TRVJJQUxf
+RU1QRUc9bQpDT05GSUdfVVNCX1NFUklBTF9GVERJX1NJTz1tCkNPTkZJR19VU0JfU0VSSUFMX0ZV
+TlNPRlQ9bQpDT05GSUdfVVNCX1NFUklBTF9WSVNPUj1tCkNPTkZJR19VU0JfU0VSSUFMX0lQQVE9
+bQpDT05GSUdfVVNCX1NFUklBTF9JUj1tCkNPTkZJR19VU0JfU0VSSUFMX0VER0VQT1JUPW0KQ09O
+RklHX1VTQl9TRVJJQUxfRURHRVBPUlRfVEk9bQpDT05GSUdfVVNCX1NFUklBTF9HQVJNSU49bQpD
+T05GSUdfVVNCX1NFUklBTF9JUFc9bQpDT05GSUdfVVNCX1NFUklBTF9LRVlTUEFOX1BEQT1tCkNP
+TkZJR19VU0JfU0VSSUFMX0tFWVNQQU49bQpDT05GSUdfVVNCX1NFUklBTF9LRVlTUEFOX01QUj15
+CkNPTkZJR19VU0JfU0VSSUFMX0tFWVNQQU5fVVNBMjg9eQpDT05GSUdfVVNCX1NFUklBTF9LRVlT
+UEFOX1VTQTI4WD15CkNPTkZJR19VU0JfU0VSSUFMX0tFWVNQQU5fVVNBMjhYQT15CkNPTkZJR19V
+U0JfU0VSSUFMX0tFWVNQQU5fVVNBMjhYQj15CkNPTkZJR19VU0JfU0VSSUFMX0tFWVNQQU5fVVNB
+MTk9eQpDT05GSUdfVVNCX1NFUklBTF9LRVlTUEFOX1VTQTE4WD15CkNPTkZJR19VU0JfU0VSSUFM
+X0tFWVNQQU5fVVNBMTlXPXkKQ09ORklHX1VTQl9TRVJJQUxfS0VZU1BBTl9VU0ExOVFXPXkKQ09O
+RklHX1VTQl9TRVJJQUxfS0VZU1BBTl9VU0ExOVFJPXkKQ09ORklHX1VTQl9TRVJJQUxfS0VZU1BB
+Tl9VU0E0OVc9eQpDT05GSUdfVVNCX1NFUklBTF9LRVlTUEFOX1VTQTQ5V0xDPXkKQ09ORklHX1VT
+Ql9TRVJJQUxfS0xTST1tCkNPTkZJR19VU0JfU0VSSUFMX0tPQklMX1NDVD1tCkNPTkZJR19VU0Jf
+U0VSSUFMX01DVF9VMjMyPW0KQ09ORklHX1VTQl9TRVJJQUxfTU9TNzcyMD1tCkNPTkZJR19VU0Jf
+U0VSSUFMX01PUzc4NDA9bQpDT05GSUdfVVNCX1NFUklBTF9OQVZNQU49bQpDT05GSUdfVVNCX1NF
+UklBTF9QTDIzMDM9bQojIENPTkZJR19VU0JfU0VSSUFMX09USTY4NTggaXMgbm90IHNldApDT05G
+SUdfVVNCX1NFUklBTF9IUDRYPW0KQ09ORklHX1VTQl9TRVJJQUxfU0FGRT1tCiMgQ09ORklHX1VT
+Ql9TRVJJQUxfU0FGRV9QQURERUQgaXMgbm90IHNldApDT05GSUdfVVNCX1NFUklBTF9TSUVSUkFX
+SVJFTEVTUz1tCkNPTkZJR19VU0JfU0VSSUFMX1RJPW0KQ09ORklHX1VTQl9TRVJJQUxfQ1lCRVJK
+QUNLPW0KQ09ORklHX1VTQl9TRVJJQUxfWElSQ09NPW0KQ09ORklHX1VTQl9TRVJJQUxfT1BUSU9O
+PW0KQ09ORklHX1VTQl9TRVJJQUxfT01OSU5FVD1tCkNPTkZJR19VU0JfU0VSSUFMX0RFQlVHPW0K
+Q09ORklHX1VTQl9FWlVTQj15CgojCiMgVVNCIE1pc2NlbGxhbmVvdXMgZHJpdmVycwojCkNPTkZJ
+R19VU0JfRU1JNjI9bQpDT05GSUdfVVNCX0VNSTI2PW0KQ09ORklHX1VTQl9BRFVUVVg9bQpDT05G
+SUdfVVNCX0FVRVJTV0FMRD1tCkNPTkZJR19VU0JfUklPNTAwPW0KQ09ORklHX1VTQl9MRUdPVE9X
+RVI9bQpDT05GSUdfVVNCX0xDRD1tCiMgQ09ORklHX1VTQl9CRVJSWV9DSEFSR0UgaXMgbm90IHNl
+dApDT05GSUdfVVNCX0xFRD1tCkNPTkZJR19VU0JfQ1lQUkVTU19DWTdDNjM9bQpDT05GSUdfVVNC
+X0NZVEhFUk09bQpDT05GSUdfVVNCX1BISURHRVQ9bQpDT05GSUdfVVNCX1BISURHRVRLSVQ9bQpD
+T05GSUdfVVNCX1BISURHRVRNT1RPUkNPTlRST0w9bQpDT05GSUdfVVNCX1BISURHRVRTRVJWTz1t
+CkNPTkZJR19VU0JfSURNT1VTRT1tCkNPTkZJR19VU0JfRlRESV9FTEFOPW0KQ09ORklHX1VTQl9B
+UFBMRURJU1BMQVk9bQpDT05GSUdfVVNCX1NJU1VTQlZHQT1tCiMgQ09ORklHX1VTQl9TSVNVU0JW
+R0FfQ09OIGlzIG5vdCBzZXQKQ09ORklHX1VTQl9MRD1tCkNPTkZJR19VU0JfVFJBTkNFVklCUkFU
+T1I9bQojIENPTkZJR19VU0JfSU9XQVJSSU9SIGlzIG5vdCBzZXQKQ09ORklHX1VTQl9URVNUPW0K
+CiMKIyBVU0IgRFNMIG1vZGVtIHN1cHBvcnQKIwoKIwojIFVTQiBHYWRnZXQgU3VwcG9ydAojCkNP
+TkZJR19VU0JfR0FER0VUPW0KIyBDT05GSUdfVVNCX0dBREdFVF9ERUJVRyBpcyBub3Qgc2V0CiMg
+Q09ORklHX1VTQl9HQURHRVRfREVCVUdfRklMRVMgaXMgbm90IHNldApDT05GSUdfVVNCX0dBREdF
+VF9TRUxFQ1RFRD15CiMgQ09ORklHX1VTQl9HQURHRVRfRlNMX1VTQjIgaXMgbm90IHNldApDT05G
+SUdfVVNCX0dBREdFVF9ORVQyMjgwPXkKQ09ORklHX1VTQl9ORVQyMjgwPW0KIyBDT05GSUdfVVNC
+X0dBREdFVF9QWEEyWFggaXMgbm90IHNldAojIENPTkZJR19VU0JfR0FER0VUX0dPS1UgaXMgbm90
+IHNldAojIENPTkZJR19VU0JfR0FER0VUX0xIN0E0MFggaXMgbm90IHNldAojIENPTkZJR19VU0Jf
+R0FER0VUX09NQVAgaXMgbm90IHNldAojIENPTkZJR19VU0JfR0FER0VUX1MzQzI0MTAgaXMgbm90
+IHNldAojIENPTkZJR19VU0JfR0FER0VUX0FUOTEgaXMgbm90IHNldAojIENPTkZJR19VU0JfR0FE
+R0VUX002NjU5MiBpcyBub3Qgc2V0CiMgQ09ORklHX1VTQl9HQURHRVRfRFVNTVlfSENEIGlzIG5v
+dCBzZXQKQ09ORklHX1VTQl9HQURHRVRfRFVBTFNQRUVEPXkKQ09ORklHX1VTQl9aRVJPPW0KQ09O
+RklHX1VTQl9FVEg9bQpDT05GSUdfVVNCX0VUSF9STkRJUz15CkNPTkZJR19VU0JfR0FER0VURlM9
+bQpDT05GSUdfVVNCX0ZJTEVfU1RPUkFHRT1tCiMgQ09ORklHX1VTQl9GSUxFX1NUT1JBR0VfVEVT
+VCBpcyBub3Qgc2V0CkNPTkZJR19VU0JfR19TRVJJQUw9bQpDT05GSUdfVVNCX01JRElfR0FER0VU
+PW0KQ09ORklHX01NQz1tCiMgQ09ORklHX01NQ19ERUJVRyBpcyBub3Qgc2V0CiMgQ09ORklHX01N
+Q19VTlNBRkVfUkVTVU1FIGlzIG5vdCBzZXQKCiMKIyBNTUMvU0QgQ2FyZCBEcml2ZXJzCiMKQ09O
+RklHX01NQ19CTE9DSz1tCkNPTkZJR19NTUNfQkxPQ0tfQk9VTkNFPXkKCiMKIyBNTUMvU0QgSG9z
+dCBDb250cm9sbGVyIERyaXZlcnMKIwpDT05GSUdfTU1DX1NESENJPW0KQ09ORklHX01NQ19XQlNE
+PW0KQ09ORklHX01NQ19USUZNX1NEPW0KCiMKIyBMRUQgZGV2aWNlcwojCkNPTkZJR19ORVdfTEVE
+Uz15CkNPTkZJR19MRURTX0NMQVNTPXkKCiMKIyBMRUQgZHJpdmVycwojCgojCiMgTEVEIFRyaWdn
+ZXJzCiMKIyBDT05GSUdfTEVEU19UUklHR0VSUyBpcyBub3Qgc2V0CiMgQ09ORklHX0lORklOSUJB
+TkQgaXMgbm90IHNldAoKIwojIFJlYWwgVGltZSBDbG9jawojCkNPTkZJR19SVENfTElCPW0KQ09O
+RklHX1JUQ19DTEFTUz1tCgojCiMgUlRDIGludGVyZmFjZXMKIwpDT05GSUdfUlRDX0lOVEZfU1lT
+RlM9eQpDT05GSUdfUlRDX0lOVEZfUFJPQz15CkNPTkZJR19SVENfSU5URl9ERVY9eQpDT05GSUdf
+UlRDX0lOVEZfREVWX1VJRV9FTVVMPXkKQ09ORklHX1JUQ19EUlZfVEVTVD1tCgojCiMgSTJDIFJU
+QyBkcml2ZXJzCiMKQ09ORklHX1JUQ19EUlZfRFMxMzA3PW0KQ09ORklHX1JUQ19EUlZfRFMxNjcy
+PW0KIyBDT05GSUdfUlRDX0RSVl9NQVg2OTAwIGlzIG5vdCBzZXQKQ09ORklHX1JUQ19EUlZfUlM1
+QzM3Mj1tCkNPTkZJR19SVENfRFJWX0lTTDEyMDg9bQpDT05GSUdfUlRDX0RSVl9YMTIwNT1tCkNP
+TkZJR19SVENfRFJWX1BDRjg1NjM9bQojIENPTkZJR19SVENfRFJWX1BDRjg1ODMgaXMgbm90IHNl
+dAoKIwojIFNQSSBSVEMgZHJpdmVycwojCkNPTkZJR19SVENfRFJWX1JTNUMzNDg9bQpDT05GSUdf
+UlRDX0RSVl9NQVg2OTAyPW0KCiMKIyBQbGF0Zm9ybSBSVEMgZHJpdmVycwojCiMgQ09ORklHX1JU
+Q19EUlZfQ01PUyBpcyBub3Qgc2V0CkNPTkZJR19SVENfRFJWX0RTMTU1Mz1tCkNPTkZJR19SVENf
+RFJWX0RTMTc0Mj1tCkNPTkZJR19SVENfRFJWX000OFQ4Nj1tCkNPTkZJR19SVENfRFJWX1YzMDIw
+PW0KCiMKIyBvbi1DUFUgUlRDIGRyaXZlcnMKIwoKIwojIERNQSBFbmdpbmUgc3VwcG9ydAojCkNP
+TkZJR19ETUFfRU5HSU5FPXkKCiMKIyBETUEgQ2xpZW50cwojCkNPTkZJR19ORVRfRE1BPXkKCiMK
+IyBETUEgRGV2aWNlcwojCkNPTkZJR19JTlRFTF9JT0FURE1BPW0KCiMKIyBGaWxlIHN5c3RlbXMK
+IwpDT05GSUdfRVhUMl9GUz1tCkNPTkZJR19FWFQyX0ZTX1hBVFRSPXkKQ09ORklHX0VYVDJfRlNf
+UE9TSVhfQUNMPXkKQ09ORklHX0VYVDJfRlNfU0VDVVJJVFk9eQojIENPTkZJR19FWFQyX0ZTX1hJ
+UCBpcyBub3Qgc2V0CkNPTkZJR19FWFQzX0ZTPW0KQ09ORklHX0VYVDNfRlNfWEFUVFI9eQpDT05G
+SUdfRVhUM19GU19QT1NJWF9BQ0w9eQpDT05GSUdfRVhUM19GU19TRUNVUklUWT15CiMgQ09ORklH
+X0VYVDRERVZfRlMgaXMgbm90IHNldApDT05GSUdfSkJEPW0KIyBDT05GSUdfSkJEX0RFQlVHIGlz
+IG5vdCBzZXQKQ09ORklHX0ZTX01CQ0FDSEU9bQpDT05GSUdfUkVJU0VSRlNfRlM9bQojIENPTkZJ
+R19SRUlTRVJGU19DSEVDSyBpcyBub3Qgc2V0CiMgQ09ORklHX1JFSVNFUkZTX1BST0NfSU5GTyBp
+cyBub3Qgc2V0CkNPTkZJR19SRUlTRVJGU19GU19YQVRUUj15CkNPTkZJR19SRUlTRVJGU19GU19Q
+T1NJWF9BQ0w9eQpDT05GSUdfUkVJU0VSRlNfRlNfU0VDVVJJVFk9eQojIENPTkZJR19KRlNfRlMg
+aXMgbm90IHNldApDT05GSUdfRlNfUE9TSVhfQUNMPXkKQ09ORklHX1hGU19GUz1tCkNPTkZJR19Y
+RlNfUVVPVEE9eQpDT05GSUdfWEZTX1NFQ1VSSVRZPXkKQ09ORklHX1hGU19QT1NJWF9BQ0w9eQpD
+T05GSUdfWEZTX1JUPXkKIyBDT05GSUdfR0ZTMl9GUyBpcyBub3Qgc2V0CiMgQ09ORklHX09DRlMy
+X0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfTUlOSVhfRlMgaXMgbm90IHNldApDT05GSUdfUk9NRlNf
+RlM9bQpDT05GSUdfSU5PVElGWT15CkNPTkZJR19JTk9USUZZX1VTRVI9eQojIENPTkZJR19RVU9U
+QSBpcyBub3Qgc2V0CkNPTkZJR19RVU9UQUNUTD15CkNPTkZJR19ETk9USUZZPXkKQ09ORklHX0FV
+VE9GU19GUz1tCkNPTkZJR19BVVRPRlM0X0ZTPW0KQ09ORklHX0ZVU0VfRlM9bQoKIwojIENELVJP
+TS9EVkQgRmlsZXN5c3RlbXMKIwpDT05GSUdfSVNPOTY2MF9GUz1tCkNPTkZJR19KT0xJRVQ9eQpD
+T05GSUdfWklTT0ZTPXkKQ09ORklHX1VERl9GUz1tCkNPTkZJR19VREZfTkxTPXkKCiMKIyBET1Mv
+RkFUL05UIEZpbGVzeXN0ZW1zCiMKQ09ORklHX0ZBVF9GUz1tCkNPTkZJR19NU0RPU19GUz1tCkNP
+TkZJR19WRkFUX0ZTPW0KQ09ORklHX0ZBVF9ERUZBVUxUX0NPREVQQUdFPTQzNwpDT05GSUdfRkFU
+X0RFRkFVTFRfSU9DSEFSU0VUPSJpc284ODU5LTEiCkNPTkZJR19OVEZTX0ZTPW0KIyBDT05GSUdf
+TlRGU19ERUJVRyBpcyBub3Qgc2V0CiMgQ09ORklHX05URlNfUlcgaXMgbm90IHNldAoKIwojIFBz
+ZXVkbyBmaWxlc3lzdGVtcwojCkNPTkZJR19QUk9DX0ZTPXkKQ09ORklHX1BST0NfS0NPUkU9eQpD
+T05GSUdfUFJPQ19TWVNDVEw9eQpDT05GSUdfU1lTRlM9eQpDT05GSUdfVE1QRlM9eQojIENPTkZJ
+R19UTVBGU19QT1NJWF9BQ0wgaXMgbm90IHNldAojIENPTkZJR19IVUdFVExCX1BBR0UgaXMgbm90
+IHNldApDT05GSUdfUkFNRlM9eQpDT05GSUdfQ09ORklHRlNfRlM9bQoKIwojIE1pc2NlbGxhbmVv
+dXMgZmlsZXN5c3RlbXMKIwojIENPTkZJR19BREZTX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfQUZG
+U19GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0VDUllQVF9GUyBpcyBub3Qgc2V0CkNPTkZJR19IRlNf
+RlM9bQpDT05GSUdfSEZTUExVU19GUz1tCiMgQ09ORklHX0JFRlNfRlMgaXMgbm90IHNldAojIENP
+TkZJR19CRlNfRlMgaXMgbm90IHNldAojIENPTkZJR19FRlNfRlMgaXMgbm90IHNldAojIENPTkZJ
+R19DUkFNRlMgaXMgbm90IHNldAojIENPTkZJR19WWEZTX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdf
+SFBGU19GUyBpcyBub3Qgc2V0CiMgQ09ORklHX1FOWDRGU19GUyBpcyBub3Qgc2V0CiMgQ09ORklH
+X1NZU1ZfRlMgaXMgbm90IHNldAojIENPTkZJR19VRlNfRlMgaXMgbm90IHNldAoKIwojIE5ldHdv
+cmsgRmlsZSBTeXN0ZW1zCiMKQ09ORklHX05GU19GUz1tCkNPTkZJR19ORlNfVjM9eQojIENPTkZJ
+R19ORlNfVjNfQUNMIGlzIG5vdCBzZXQKQ09ORklHX05GU19WND15CkNPTkZJR19ORlNfRElSRUNU
+SU89eQpDT05GSUdfTkZTRD1tCkNPTkZJR19ORlNEX1YzPXkKIyBDT05GSUdfTkZTRF9WM19BQ0wg
+aXMgbm90IHNldApDT05GSUdfTkZTRF9WND15CkNPTkZJR19ORlNEX1RDUD15CkNPTkZJR19MT0NL
+RD1tCkNPTkZJR19MT0NLRF9WND15CkNPTkZJR19FWFBPUlRGUz1tCkNPTkZJR19ORlNfQ09NTU9O
+PXkKQ09ORklHX1NVTlJQQz1tCkNPTkZJR19TVU5SUENfR1NTPW0KIyBDT05GSUdfU1VOUlBDX0JJ
+TkQzNCBpcyBub3Qgc2V0CkNPTkZJR19SUENTRUNfR1NTX0tSQjU9bQpDT05GSUdfUlBDU0VDX0dT
+U19TUEtNMz1tCkNPTkZJR19TTUJfRlM9bQojIENPTkZJR19TTUJfTkxTX0RFRkFVTFQgaXMgbm90
+IHNldApDT05GSUdfQ0lGUz1tCiMgQ09ORklHX0NJRlNfU1RBVFMgaXMgbm90IHNldAojIENPTkZJ
+R19DSUZTX1dFQUtfUFdfSEFTSCBpcyBub3Qgc2V0CiMgQ09ORklHX0NJRlNfWEFUVFIgaXMgbm90
+IHNldAojIENPTkZJR19DSUZTX0RFQlVHMiBpcyBub3Qgc2V0CiMgQ09ORklHX0NJRlNfRVhQRVJJ
+TUVOVEFMIGlzIG5vdCBzZXQKIyBDT05GSUdfTkNQX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfQ09E
+QV9GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0FGU19GUyBpcyBub3Qgc2V0CgojCiMgUGFydGl0aW9u
+IFR5cGVzCiMKQ09ORklHX1BBUlRJVElPTl9BRFZBTkNFRD15CkNPTkZJR19BQ09STl9QQVJUSVRJ
+T049eQojIENPTkZJR19BQ09STl9QQVJUSVRJT05fQ1VNQU5BIGlzIG5vdCBzZXQKIyBDT05GSUdf
+QUNPUk5fUEFSVElUSU9OX0VFU09YIGlzIG5vdCBzZXQKQ09ORklHX0FDT1JOX1BBUlRJVElPTl9J
+Q1M9eQojIENPTkZJR19BQ09STl9QQVJUSVRJT05fQURGUyBpcyBub3Qgc2V0CiMgQ09ORklHX0FD
+T1JOX1BBUlRJVElPTl9QT1dFUlRFQyBpcyBub3Qgc2V0CkNPTkZJR19BQ09STl9QQVJUSVRJT05f
+UklTQ0lYPXkKQ09ORklHX09TRl9QQVJUSVRJT049eQpDT05GSUdfQU1JR0FfUEFSVElUSU9OPXkK
+Q09ORklHX0FUQVJJX1BBUlRJVElPTj15CkNPTkZJR19NQUNfUEFSVElUSU9OPXkKQ09ORklHX01T
+RE9TX1BBUlRJVElPTj15CkNPTkZJR19CU0RfRElTS0xBQkVMPXkKQ09ORklHX01JTklYX1NVQlBB
+UlRJVElPTj15CkNPTkZJR19TT0xBUklTX1g4Nl9QQVJUSVRJT049eQpDT05GSUdfVU5JWFdBUkVf
+RElTS0xBQkVMPXkKQ09ORklHX0xETV9QQVJUSVRJT049eQojIENPTkZJR19MRE1fREVCVUcgaXMg
+bm90IHNldApDT05GSUdfU0dJX1BBUlRJVElPTj15CkNPTkZJR19VTFRSSVhfUEFSVElUSU9OPXkK
+Q09ORklHX1NVTl9QQVJUSVRJT049eQpDT05GSUdfS0FSTUFfUEFSVElUSU9OPXkKIyBDT05GSUdf
+RUZJX1BBUlRJVElPTiBpcyBub3Qgc2V0CiMgQ09ORklHX1NZU1Y2OF9QQVJUSVRJT04gaXMgbm90
+IHNldAoKIwojIE5hdGl2ZSBMYW5ndWFnZSBTdXBwb3J0CiMKQ09ORklHX05MUz15CkNPTkZJR19O
+TFNfREVGQVVMVD0idXRmOCIKQ09ORklHX05MU19DT0RFUEFHRV80Mzc9bQpDT05GSUdfTkxTX0NP
+REVQQUdFXzczNz1tCkNPTkZJR19OTFNfQ09ERVBBR0VfNzc1PW0KQ09ORklHX05MU19DT0RFUEFH
+RV84NTA9bQpDT05GSUdfTkxTX0NPREVQQUdFXzg1Mj1tCkNPTkZJR19OTFNfQ09ERVBBR0VfODU1
+PW0KQ09ORklHX05MU19DT0RFUEFHRV84NTc9bQpDT05GSUdfTkxTX0NPREVQQUdFXzg2MD1tCkNP
+TkZJR19OTFNfQ09ERVBBR0VfODYxPW0KQ09ORklHX05MU19DT0RFUEFHRV84NjI9bQpDT05GSUdf
+TkxTX0NPREVQQUdFXzg2Mz1tCkNPTkZJR19OTFNfQ09ERVBBR0VfODY0PW0KQ09ORklHX05MU19D
+T0RFUEFHRV84NjU9bQpDT05GSUdfTkxTX0NPREVQQUdFXzg2Nj1tCkNPTkZJR19OTFNfQ09ERVBB
+R0VfODY5PW0KQ09ORklHX05MU19DT0RFUEFHRV85MzY9bQpDT05GSUdfTkxTX0NPREVQQUdFXzk1
+MD1tCkNPTkZJR19OTFNfQ09ERVBBR0VfOTMyPW0KQ09ORklHX05MU19DT0RFUEFHRV85NDk9bQpD
+T05GSUdfTkxTX0NPREVQQUdFXzg3ND1tCkNPTkZJR19OTFNfSVNPODg1OV84PW0KQ09ORklHX05M
+U19DT0RFUEFHRV8xMjUwPW0KQ09ORklHX05MU19DT0RFUEFHRV8xMjUxPW0KQ09ORklHX05MU19B
+U0NJST1tCkNPTkZJR19OTFNfSVNPODg1OV8xPW0KQ09ORklHX05MU19JU084ODU5XzI9bQpDT05G
+SUdfTkxTX0lTTzg4NTlfMz1tCkNPTkZJR19OTFNfSVNPODg1OV80PW0KQ09ORklHX05MU19JU084
+ODU5XzU9bQpDT05GSUdfTkxTX0lTTzg4NTlfNj1tCkNPTkZJR19OTFNfSVNPODg1OV83PW0KQ09O
+RklHX05MU19JU084ODU5Xzk9bQpDT05GSUdfTkxTX0lTTzg4NTlfMTM9bQpDT05GSUdfTkxTX0lT
+Tzg4NTlfMTQ9bQpDT05GSUdfTkxTX0lTTzg4NTlfMTU9bQpDT05GSUdfTkxTX0tPSThfUj1tCkNP
+TkZJR19OTFNfS09JOF9VPW0KQ09ORklHX05MU19VVEY4PW0KCiMKIyBEaXN0cmlidXRlZCBMb2Nr
+IE1hbmFnZXIKIwpDT05GSUdfRExNPW0KIyBDT05GSUdfRExNX0RFQlVHIGlzIG5vdCBzZXQKIyBD
+T05GSUdfVUNDX1NMT1cgaXMgbm90IHNldAoKIwojIExpYnJhcnkgcm91dGluZXMKIwpDT05GSUdf
+QklUUkVWRVJTRT15CkNPTkZJR19DUkNfQ0NJVFQ9bQpDT05GSUdfQ1JDMTY9bQojIENPTkZJR19D
+UkNfSVRVX1QgaXMgbm90IHNldApDT05GSUdfQ1JDMzI9eQpDT05GSUdfTElCQ1JDMzJDPW0KQ09O
+RklHX1pMSUJfSU5GTEFURT1tCkNPTkZJR19aTElCX0RFRkxBVEU9bQpDT05GSUdfVEVYVFNFQVJD
+SD15CkNPTkZJR19URVhUU0VBUkNIX0tNUD1tCkNPTkZJR19URVhUU0VBUkNIX0JNPW0KQ09ORklH
+X1RFWFRTRUFSQ0hfRlNNPW0KQ09ORklHX1BMSVNUPXkKQ09ORklHX0hBU19JT01FTT15CkNPTkZJ
+R19IQVNfSU9QT1JUPXkKQ09ORklHX0hBU19ETUE9eQoKIwojIEluc3RydW1lbnRhdGlvbiBTdXBw
+b3J0CiMKQ09ORklHX1BST0ZJTElORz15CkNPTkZJR19PUFJPRklMRT1tCiMgQ09ORklHX0tQUk9C
+RVMgaXMgbm90IHNldAoKIwojIEtlcm5lbCBoYWNraW5nCiMKQ09ORklHX1BSSU5US19USU1FPXkK
+IyBDT05GSUdfRU5BQkxFX01VU1RfQ0hFQ0sgaXMgbm90IHNldApDT05GSUdfTUFHSUNfU1lTUlE9
+eQpDT05GSUdfVU5VU0VEX1NZTUJPTFM9eQpDT05GSUdfREVCVUdfRlM9eQojIENPTkZJR19IRUFE
+RVJTX0NIRUNLIGlzIG5vdCBzZXQKQ09ORklHX0RFQlVHX0tFUk5FTD15CiMgQ09ORklHX0RFQlVH
+X1NISVJRIGlzIG5vdCBzZXQKQ09ORklHX0RFVEVDVF9TT0ZUTE9DS1VQPXkKIyBDT05GSUdfU0NI
+RURfREVCVUcgaXMgbm90IHNldAojIENPTkZJR19TQ0hFRFNUQVRTIGlzIG5vdCBzZXQKQ09ORklH
+X1RJTUVSX1NUQVRTPXkKIyBDT05GSUdfU0xVQl9ERUJVR19PTiBpcyBub3Qgc2V0CiMgQ09ORklH
+X0RFQlVHX1JUX01VVEVYRVMgaXMgbm90IHNldAojIENPTkZJR19SVF9NVVRFWF9URVNURVIgaXMg
+bm90IHNldAojIENPTkZJR19ERUJVR19TUElOTE9DSyBpcyBub3Qgc2V0CiMgQ09ORklHX0RFQlVH
+X01VVEVYRVMgaXMgbm90IHNldAojIENPTkZJR19ERUJVR19TUElOTE9DS19TTEVFUCBpcyBub3Qg
+c2V0CiMgQ09ORklHX0RFQlVHX0xPQ0tJTkdfQVBJX1NFTEZURVNUUyBpcyBub3Qgc2V0CiMgQ09O
+RklHX0RFQlVHX0tPQkpFQ1QgaXMgbm90IHNldAojIENPTkZJR19ERUJVR19ISUdITUVNIGlzIG5v
+dCBzZXQKQ09ORklHX0RFQlVHX0JVR1ZFUkJPU0U9eQojIENPTkZJR19ERUJVR19JTkZPIGlzIG5v
+dCBzZXQKIyBDT05GSUdfREVCVUdfVk0gaXMgbm90IHNldAojIENPTkZJR19ERUJVR19MSVNUIGlz
+IG5vdCBzZXQKIyBDT05GSUdfRk9SQ0VEX0lOTElOSU5HIGlzIG5vdCBzZXQKIyBDT05GSUdfUkNV
+X1RPUlRVUkVfVEVTVCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZBVUxUX0lOSkVDVElPTiBpcyBub3Qg
+c2V0CiMgQ09ORklHX0RFQlVHX1NUQUNLT1ZFUkZMT1cgaXMgbm90IHNldAojIENPTkZJR19ERUJV
+R19TVEFDS19VU0FHRSBpcyBub3Qgc2V0CiMgQ09ORklHX0RFQlVHR0VSIGlzIG5vdCBzZXQKIyBD
+T05GSUdfQkRJX1NXSVRDSCBpcyBub3Qgc2V0CiMgQ09ORklHX0JPT1RYX1RFWFQgaXMgbm90IHNl
+dAojIENPTkZJR19QUENfRUFSTFlfREVCVUcgaXMgbm90IHNldAoKIwojIFNlY3VyaXR5IG9wdGlv
+bnMKIwpDT05GSUdfS0VZUz15CiMgQ09ORklHX0tFWVNfREVCVUdfUFJPQ19LRVlTIGlzIG5vdCBz
+ZXQKQ09ORklHX1NFQ1VSSVRZPXkKQ09ORklHX1NFQ1VSSVRZX05FVFdPUks9eQojIENPTkZJR19T
+RUNVUklUWV9ORVRXT1JLX1hGUk0gaXMgbm90IHNldApDT05GSUdfU0VDVVJJVFlfQ0FQQUJJTElU
+SUVTPW0KQ09ORklHX1NFQ1VSSVRZX1JPT1RQTFVHPW0KQ09ORklHX1NFQ1VSSVRZX1NFTElOVVg9
+eQpDT05GSUdfU0VDVVJJVFlfU0VMSU5VWF9CT09UUEFSQU09eQpDT05GSUdfU0VDVVJJVFlfU0VM
+SU5VWF9CT09UUEFSQU1fVkFMVUU9MApDT05GSUdfU0VDVVJJVFlfU0VMSU5VWF9ESVNBQkxFPXkK
+Q09ORklHX1NFQ1VSSVRZX1NFTElOVVhfREVWRUxPUD15CkNPTkZJR19TRUNVUklUWV9TRUxJTlVY
+X0FWQ19TVEFUUz15CkNPTkZJR19TRUNVUklUWV9TRUxJTlVYX0NIRUNLUkVRUFJPVF9WQUxVRT0x
+CiMgQ09ORklHX1NFQ1VSSVRZX1NFTElOVVhfRU5BQkxFX1NFQ01BUktfREVGQVVMVCBpcyBub3Qg
+c2V0CiMgQ09ORklHX1NFQ1VSSVRZX1NFTElOVVhfUE9MSUNZREJfVkVSU0lPTl9NQVggaXMgbm90
+IHNldApDT05GSUdfWE9SX0JMT0NLUz1tCkNPTkZJR19BU1lOQ19DT1JFPW0KQ09ORklHX0FTWU5D
+X01FTUNQWT1tCkNPTkZJR19BU1lOQ19YT1I9bQpDT05GSUdfQ1JZUFRPPXkKQ09ORklHX0NSWVBU
+T19BTEdBUEk9eQpDT05GSUdfQ1JZUFRPX0JMS0NJUEhFUj1tCkNPTkZJR19DUllQVE9fSEFTSD15
+CkNPTkZJR19DUllQVE9fTUFOQUdFUj15CkNPTkZJR19DUllQVE9fSE1BQz15CkNPTkZJR19DUllQ
+VE9fWENCQz1tCkNPTkZJR19DUllQVE9fTlVMTD1tCkNPTkZJR19DUllQVE9fTUQ0PW0KQ09ORklH
+X0NSWVBUT19NRDU9eQpDT05GSUdfQ1JZUFRPX1NIQTE9bQpDT05GSUdfQ1JZUFRPX1NIQTI1Nj1t
+CkNPTkZJR19DUllQVE9fU0hBNTEyPW0KQ09ORklHX0NSWVBUT19XUDUxMj1tCkNPTkZJR19DUllQ
+VE9fVEdSMTkyPW0KQ09ORklHX0NSWVBUT19HRjEyOE1VTD1tCkNPTkZJR19DUllQVE9fRUNCPW0K
+Q09ORklHX0NSWVBUT19DQkM9bQpDT05GSUdfQ1JZUFRPX1BDQkM9bQpDT05GSUdfQ1JZUFRPX0xS
+Vz1tCiMgQ09ORklHX0NSWVBUT19DUllQVEQgaXMgbm90IHNldApDT05GSUdfQ1JZUFRPX0RFUz1t
+CiMgQ09ORklHX0NSWVBUT19GQ1JZUFQgaXMgbm90IHNldApDT05GSUdfQ1JZUFRPX0JMT1dGSVNI
+PW0KQ09ORklHX0NSWVBUT19UV09GSVNIPW0KQ09ORklHX0NSWVBUT19UV09GSVNIX0NPTU1PTj1t
+CkNPTkZJR19DUllQVE9fU0VSUEVOVD1tCkNPTkZJR19DUllQVE9fQUVTPW0KQ09ORklHX0NSWVBU
+T19DQVNUNT1tCkNPTkZJR19DUllQVE9fQ0FTVDY9bQpDT05GSUdfQ1JZUFRPX1RFQT1tCkNPTkZJ
+R19DUllQVE9fQVJDND1tCkNPTkZJR19DUllQVE9fS0hBWkFEPW0KQ09ORklHX0NSWVBUT19BTlVC
+SVM9bQpDT05GSUdfQ1JZUFRPX0RFRkxBVEU9bQpDT05GSUdfQ1JZUFRPX01JQ0hBRUxfTUlDPW0K
+Q09ORklHX0NSWVBUT19DUkMzMkM9bQojIENPTkZJR19DUllQVE9fQ0FNRUxMSUEgaXMgbm90IHNl
+dApDT05GSUdfQ1JZUFRPX1RFU1Q9bQojIENPTkZJR19DUllQVE9fSFcgaXMgbm90IHNldAo=
+------=_Part_76543_23249936.1184695497560--
