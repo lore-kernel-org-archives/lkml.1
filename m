@@ -1,83 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932254AbXGQJWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbXGQJZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932254AbXGQJWg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 05:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbXGQJW3
+	id S1758083AbXGQJZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 05:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbXGQJZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 05:22:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36349 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752476AbXGQJW2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 05:22:28 -0400
-Date: Tue, 17 Jul 2007 02:15:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kirill Korotaev <dev@sw.ru>
-Cc: Pavel Emelianov <xemul@openvz.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [Devel] Re: [PATCH] Fix user struct leakage with locked IPC
- shem segment
-Message-Id: <20070717021505.3c6a384c.akpm@linux-foundation.org>
-In-Reply-To: <469C86EB.8090501@sw.ru>
-References: <469B636C.3060007@openvz.org>
-	<20070716151738.2f4b5cf4.akpm@linux-foundation.org>
-	<469C86EB.8090501@sw.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 17 Jul 2007 05:25:22 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:37189 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752458AbXGQJZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 05:25:21 -0400
+Date: Tue, 17 Jul 2007 05:25:17 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: linux-scsi@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] gdth: remove redundant PCI stuff
+Message-ID: <20070717092517.GA28201@havoc.gtf.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007 13:07:55 +0400 Kirill Korotaev <dev@sw.ru> wrote:
+This patch
 
-> Andrew Morton wrote:
-> > On Mon, 16 Jul 2007 16:24:12 +0400
-> > Pavel Emelianov <xemul@openvz.org> wrote:
-> > 
-> > 
-> >>When user locks an ipc shmem segmant with SHM_LOCK ctl and the
-> >>segment is already locked the shmem_lock() function returns 0. 
-> >>After this the subsequent code leaks the existing user struct:
-> > 
-> > 
-> > I'm curious.  For the past few months, people@openvz.org have discovered
-> > (and fixed) an ongoing stream of obscure but serious and quite
-> > long-standing bugs.
-> 
-> thanks a lot :@)
-> 
-> > How are you discovering these bugs?
-> 
-> Not sure what to answer :) Just trying to do our best.
+* removes struct members that duplicate pci_dev members
+* replaces ha->stype usage with ha->pdev->device usage where feasible
+* removes PCI IDs that are already in include/linux/pci_ids.h
 
-hm, OK, I was visualising some mysterious Russian bugfinding machine or
-something.
+I did this because I was bored.  If this interferes with Christoph's
+stuff in any way, feel free to ignore.  I thought it would be a good
+preparation for PCI hotplug API.  (or at the very least, proper pci_dev
+refcounting)
 
-Don't stop ;)
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
-> This bug was thought over by Pavel for about 3 month after a single
-> uid leak in container was detected by beancounters' kernel memory accounting...
-> 
-> >>== ipc/shm.c: sys_shmctl() ==
-> >>     ...
-> >>     err = shmem_lock(shp->shm_file, 1, user);
-> >>     if (!err) {
-> >>          shp->shm_perm.mode |= SHM_LOCKED;
-> >>          shp->mlock_user = user;
-> >>     }
-> >>     ...
-> >>==
-> >>
-> >>Other results of this are:
-> >>1. the new shp->mlock_user is not get-ed and will point to freed
-> >>   memory when the task dies.
-> > 
-> > 
-> > That sounds fairly serious - can this lead to memory corruption and crashes?
-> 
-> Yes it can. According to Pavel when the shmem segment is destroyed it
-> puts the mlock_user pointer, which can already be stalled.
+ drivers/scsi/gdth.c |   48 ++++++++++++++++++++++--------------------------
+ drivers/scsi/gdth.h |   45 +--------------------------------------------
+ 2 files changed, 23 insertions(+), 70 deletions(-)
 
-OK, thanks, I'll feed a copy in stable@kernel.org's direction.
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index d0b95ce..b0f5687 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -902,11 +902,6 @@ static void __init gdth_search_dev(gdth_pci_str *pcistr, ushort *cnt,
+             return;
+         /* GDT PCI controller found, resources are already in pdev */
+         pcistr[*cnt].pdev = pdev;
+-        pcistr[*cnt].vendor_id = vendor;
+-        pcistr[*cnt].device_id = device;
+-        pcistr[*cnt].subdevice_id = pdev->subsystem_device;
+-        pcistr[*cnt].bus = pdev->bus->number;
+-        pcistr[*cnt].device_fn = pdev->devfn;
+         pcistr[*cnt].irq = pdev->irq;
+         base0 = pci_resource_flags(pdev, 0);
+         base1 = pci_resource_flags(pdev, 1);
+@@ -926,7 +921,8 @@ static void __init gdth_search_dev(gdth_pci_str *pcistr, ushort *cnt,
+             pcistr[*cnt].io    = pci_resource_start(pdev, 1);
+         }
+         TRACE2(("Controller found at %d/%d, irq %d, dpmem 0x%lx\n",
+-                pcistr[*cnt].bus, PCI_SLOT(pcistr[*cnt].device_fn), 
++                pcistr[*cnt].pdev->bus->number,
++		PCI_SLOT(pcistr[*cnt].pdev->devfn), 
+                 pcistr[*cnt].irq, pcistr[*cnt].dpmem));
+         (*cnt)++;
+     }       
+@@ -946,20 +942,20 @@ static void __init gdth_sort_pci(gdth_pci_str *pcistr, int cnt)
+         changed = FALSE;
+         for (i = 0; i < cnt-1; ++i) {
+             if (!reverse_scan) {
+-                if ((pcistr[i].bus > pcistr[i+1].bus) ||
+-                    (pcistr[i].bus == pcistr[i+1].bus &&
+-                     PCI_SLOT(pcistr[i].device_fn) > 
+-                     PCI_SLOT(pcistr[i+1].device_fn))) {
++                if ((pcistr[i].pdev->bus->number > pcistr[i+1].pdev->bus->number) ||
++                    (pcistr[i].pdev->bus->number == pcistr[i+1].pdev->bus->number &&
++                     PCI_SLOT(pcistr[i].pdev->devfn) > 
++                     PCI_SLOT(pcistr[i+1].pdev->devfn))) {
+                     temp = pcistr[i];
+                     pcistr[i] = pcistr[i+1];
+                     pcistr[i+1] = temp;
+                     changed = TRUE;
+                 }
+             } else {
+-                if ((pcistr[i].bus < pcistr[i+1].bus) ||
+-                    (pcistr[i].bus == pcistr[i+1].bus &&
+-                     PCI_SLOT(pcistr[i].device_fn) < 
+-                     PCI_SLOT(pcistr[i+1].device_fn))) {
++                if ((pcistr[i].pdev->bus->number < pcistr[i+1].pdev->bus->number) ||
++                    (pcistr[i].pdev->bus->number == pcistr[i+1].pdev->bus->number &&
++                     PCI_SLOT(pcistr[i].pdev->devfn) < 
++                     PCI_SLOT(pcistr[i+1].pdev->devfn))) {
+                     temp = pcistr[i];
+                     pcistr[i] = pcistr[i+1];
+                     pcistr[i+1] = temp;
+@@ -1176,17 +1172,16 @@ static int __init gdth_init_pci(gdth_pci_str *pcistr,gdth_ha_str *ha)
+ 
+     TRACE(("gdth_init_pci()\n"));
+ 
+-    if (pcistr->vendor_id == PCI_VENDOR_ID_INTEL)
++    if (pcistr->pdev->vendor == PCI_VENDOR_ID_INTEL)
+         ha->oem_id = OEM_ID_INTEL;
+     else
+         ha->oem_id = OEM_ID_ICP;
+-    ha->brd_phys = (pcistr->bus << 8) | (pcistr->device_fn & 0xf8);
+-    ha->stype = (ulong32)pcistr->device_id;
+-    ha->subdevice_id = pcistr->subdevice_id;
++    ha->brd_phys = (pcistr->pdev->bus->number << 8) | (pcistr->pdev->devfn & 0xf8);
++    ha->stype = (ulong32)pcistr->pdev->device;
+     ha->irq = pcistr->irq;
+     ha->pdev = pcistr->pdev;
+     
+-    if (ha->stype <= PCI_DEVICE_ID_VORTEX_GDT6000B) {  /* GDT6000/B */
++    if (ha->pdev->device <= PCI_DEVICE_ID_VORTEX_GDT6000B) {  /* GDT6000/B */
+         TRACE2(("init_pci() dpmem %lx irq %d\n",pcistr->dpmem,ha->irq));
+         ha->brd = ioremap(pcistr->dpmem, sizeof(gdt6_dpram_str));
+         if (ha->brd == NULL) {
+@@ -1293,7 +1288,7 @@ static int __init gdth_init_pci(gdth_pci_str *pcistr,gdth_ha_str *ha)
+ 
+         ha->dma64_support = 0;
+ 
+-    } else if (ha->stype <= PCI_DEVICE_ID_VORTEX_GDT6555) { /* GDT6110, ... */
++    } else if (ha->pdev->device <= PCI_DEVICE_ID_VORTEX_GDT6555) { /* GDT6110, ... */
+         ha->plx = (gdt6c_plx_regs *)pcistr->io;
+         TRACE2(("init_pci_new() dpmem %lx irq %d\n",
+             pcistr->dpmem,ha->irq));
+@@ -4601,7 +4596,8 @@ static int __init gdth_detect(Scsi_Host_Template *shtp)
+         }
+         /* controller found and initialized */
+         printk("Configuring GDT-PCI HA at %d/%d IRQ %u\n",
+-               pcistr[ctr].bus,PCI_SLOT(pcistr[ctr].device_fn),ha->irq);
++               pcistr[ctr].pdev->bus->number,
++	       PCI_SLOT(pcistr[ctr].pdev->devfn), ha->irq);
+ 
+         if (request_irq(ha->irq, gdth_interrupt,
+                         IRQF_DISABLED|IRQF_SHARED, "gdth", ha))
+@@ -4637,7 +4633,7 @@ static int __init gdth_detect(Scsi_Host_Template *shtp)
+ #endif
+         ha->scratch_busy = FALSE;
+         ha->req_first = NULL;
+-        ha->tid_cnt = pcistr[ctr].device_id >= 0x200 ? MAXID : MAX_HDRIVES;
++        ha->tid_cnt = pcistr[ctr].pdev->device >= 0x200 ? MAXID : MAX_HDRIVES;
+         if (max_ids > 0 && max_ids < ha->tid_cnt)
+             ha->tid_cnt = max_ids;
+         for (i=0; i<GDTH_MAXCMDS; ++i)
+@@ -4810,7 +4806,7 @@ static const char *gdth_ctr_name(int hanum)
+     } else if (ha->type == GDT_ISA) {
+         return("GDT2000/2020");
+     } else if (ha->type == GDT_PCI) {
+-        switch (ha->stype) {
++        switch (ha->pdev->device) {
+           case PCI_DEVICE_ID_VORTEX_GDT60x0:
+             return("GDT6000/6020/6050");
+           case PCI_DEVICE_ID_VORTEX_GDT6000B:
+@@ -5448,12 +5444,12 @@ static int gdth_ioctl(struct inode *inode, struct file *filep,
+                 ctrt.type = 
+                     (ha->oem_id == OEM_ID_INTEL ? 0xfd : 0xfe);
+                 if (ha->stype >= 0x300)
+-                    ctrt.ext_type = 0x6000 | ha->subdevice_id;
++                    ctrt.ext_type = 0x6000 | ha->pdev->subsystem_device;
+                 else 
+                     ctrt.ext_type = 0x6000 | ha->stype;
+             }
+-            ctrt.device_id = ha->stype;
+-            ctrt.sub_device_id = ha->subdevice_id;
++            ctrt.device_id = ha->pdev->device;
++            ctrt.sub_device_id = ha->pdev->subsystem_device;
+         }
+         ctrt.info = ha->brd_phys;
+         ctrt.oem_id = ha->oem_id;
+diff --git a/drivers/scsi/gdth.h b/drivers/scsi/gdth.h
+index 8c29eaf..068017c 100644
+--- a/drivers/scsi/gdth.h
++++ b/drivers/scsi/gdth.h
+@@ -51,45 +51,8 @@
+ #define GDT2_ID         0x0120941c              /* GDT2000/2020 */
+ 
+ /* vendor ID, device IDs (PCI) */
+-/* these defines should already exist in <linux/pci.h> */
+-#ifndef PCI_VENDOR_ID_VORTEX
+-#define PCI_VENDOR_ID_VORTEX            0x1119  /* PCI controller vendor ID */
+-#endif
+-#ifndef PCI_VENDOR_ID_INTEL
+-#define PCI_VENDOR_ID_INTEL             0x8086  
+-#endif
++/* these defines should be moved to <linux/pci.h> */
+ 
+-#ifndef PCI_DEVICE_ID_VORTEX_GDT60x0
+-/* GDT_PCI */
+-#define PCI_DEVICE_ID_VORTEX_GDT60x0    0       /* GDT6000/6020/6050 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6000B   1       /* GDT6000B/6010 */
+-/* GDT_PCINEW */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x10    2       /* GDT6110/6510 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x20    3       /* GDT6120/6520 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6530    4       /* GDT6530 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6550    5       /* GDT6550 */
+-/* GDT_PCINEW, wide/ultra SCSI controllers */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x17    6       /* GDT6117/6517 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x27    7       /* GDT6127/6527 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6537    8       /* GDT6537 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6557    9       /* GDT6557/6557-ECC */
+-/* GDT_PCINEW, wide SCSI controllers */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x15    10      /* GDT6115/6515 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x25    11      /* GDT6125/6525 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6535    12      /* GDT6535 */
+-#define PCI_DEVICE_ID_VORTEX_GDT6555    13      /* GDT6555/6555-ECC */
+-#endif
+-
+-#ifndef PCI_DEVICE_ID_VORTEX_GDT6x17RP
+-/* GDT_MPR, RP series, wide/ultra SCSI */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x17RP  0x100   /* GDT6117RP/GDT6517RP */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x27RP  0x101   /* GDT6127RP/GDT6527RP */
+-#define PCI_DEVICE_ID_VORTEX_GDT6537RP  0x102   /* GDT6537RP */
+-#define PCI_DEVICE_ID_VORTEX_GDT6557RP  0x103   /* GDT6557RP */
+-/* GDT_MPR, RP series, narrow/ultra SCSI */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x11RP  0x104   /* GDT6111RP/GDT6511RP */
+-#define PCI_DEVICE_ID_VORTEX_GDT6x21RP  0x105   /* GDT6121RP/GDT6521RP */
+-#endif
+ #ifndef PCI_DEVICE_ID_VORTEX_GDT6x17RD
+ /* GDT_MPR, RD series, wide/ultra SCSI */
+ #define PCI_DEVICE_ID_VORTEX_GDT6x17RD  0x110   /* GDT6117RD/GDT6517RD */
+@@ -845,11 +808,6 @@ typedef struct {
+ /* PCI resources */
+ typedef struct {
+     struct pci_dev      *pdev;
+-    ushort              vendor_id;              /* vendor (ICP, Intel, ..) */
+-    ushort              device_id;              /* device ID (0,..,9) */
+-    ushort              subdevice_id;           /* sub device ID */
+-    unchar              bus;                    /* PCI bus */
+-    unchar              device_fn;              /* PCI device/function no. */
+     ulong               dpmem;                  /* DPRAM address */
+     ulong               io;                     /* IO address */
+     ulong               io_mm;                  /* IO address mem. mapped */
+@@ -862,7 +820,6 @@ typedef struct {
+     ushort              oem_id;                 /* OEM */
+     ushort              type;                   /* controller class */
+     ulong32             stype;                  /* subtype (PCI: device ID) */
+-    ushort              subdevice_id;           /* sub device ID (PCI) */
+     ushort              fw_vers;                /* firmware version */
+     ushort              cache_feat;             /* feat. cache serv. (s/g,..)*/
+     ushort              raw_feat;               /* feat. raw service (s/g,..)*/
