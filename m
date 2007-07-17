@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933646AbXGQQeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764938AbXGQQgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933646AbXGQQeq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbXGQQei
+	id S1764938AbXGQQgV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXGQQgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 12:34:38 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:39069 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753650AbXGQQeh (ORCPT
+	Tue, 17 Jul 2007 12:36:12 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41468 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754016AbXGQQgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:34:37 -0400
-Date: Tue, 17 Jul 2007 12:33:28 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       zippel@linux-m68k.org, jdike@karaya.com, alan@lxorguk.ukuu.org.uk,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: uninline check_signature()
-Message-ID: <20070717163328.GG7965@c2.user-mode-linux.org>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org> <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org> <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org> <20070716230307.GB12230@osiris.ibm.com> <Pine.LNX.4.64.0707171519300.10600@anakin>
+	Tue, 17 Jul 2007 12:36:11 -0400
+Date: Tue, 17 Jul 2007 12:35:08 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com, andrea@suse.de
+Subject: Re: [PATCH 06/17] lib: percpu_counter_init_irq
+Message-ID: <20070717163508.GB15421@filer.fsl.cs.sunysb.edu>
+References: <20070614215817.389524447@chello.nl> <20070614220446.724626895@chello.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707171519300.10600@anakin>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20070614220446.724626895@chello.nl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 03:22:16PM +0200, Geert Uytterhoeven wrote:
-> I saw this patch went in.
+On Thu, Jun 14, 2007 at 11:58:23PM +0200, Peter Zijlstra wrote:
+> provide a way to init percpu_counters that are supposed to be used from irq
+> safe contexts.
 > 
-> iomap_copy.o ues the raw I/O memory accessors, so it truly depends on
-> CONFIG_HAS_IOMEM.
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  include/linux/percpu_counter.h |    4 ++++
+>  lib/percpu_counter.c           |    8 ++++++++
+>  2 files changed, 12 insertions(+)
+> 
+> Index: linux-2.6/include/linux/percpu_counter.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/percpu_counter.h
+> +++ linux-2.6/include/linux/percpu_counter.h
+> @@ -31,6 +31,8 @@ struct percpu_counter {
+>  #endif
+>  
+>  void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+> +void percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
+> +
+>  void percpu_counter_destroy(struct percpu_counter *fbc);
+>  void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+>  void __percpu_counter_mod(struct percpu_counter *fbc, s32 amount, s32 batch);
+> @@ -89,6 +91,8 @@ static inline void percpu_counter_init(s
+>  	fbc->count = amount;
+>  }
+>  
+> +#define percpu_counter_init_irq percpu_counter_init
 
-This works for UML.
+Huh? I'm confused. You have prototypes for both, and now a #define?
 
-		Jeff
+Josef 'Jeff' Sipek.
 
 -- 
-Work email - jdike at linux dot intel dot com
+Hegh QaQ law'
+quvHa'ghach QaQ puS
