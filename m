@@ -1,87 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935456AbXGQUi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935991AbXGQUjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935456AbXGQUi2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbXGQUiU
+	id S935991AbXGQUjO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbXGQUi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:38:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50533 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754329AbXGQUiT (ORCPT
+	Tue, 17 Jul 2007 16:38:59 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39975 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbXGQUi6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:38:19 -0400
-Date: Tue, 17 Jul 2007 13:37:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Markus <lists4me@web.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Tue, 17 Jul 2007 16:38:58 -0400
+Date: Tue, 17 Jul 2007 21:38:53 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Dike <jdike@addtoit.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch] CFS scheduler, -v19
-In-Reply-To: <20070717200929.GA2426@elte.hu>
-Message-ID: <alpine.LFD.0.999.0707171329370.27353@woody.linux-foundation.org>
-References: <20070706173319.GA2356@elte.hu> <200707171506.37886.lists4me@web.de>
- <20070717170628.GA6002@elte.hu> <200707172142.42008.lists4me@web.de>
- <20070717200929.GA2426@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>, jdike@karaya.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: uninline check_signature()
+Message-ID: <20070717203853.GO21668@ftp.linux.org.uk>
+References: <200707161802.l6GI2tNp007390@hera.kernel.org> <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org> <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org> <20070716230307.GB12230@osiris.ibm.com> <Pine.LNX.4.64.0707171519300.10600@anakin> <20070717163328.GG7965@c2.user-mode-linux.org> <Pine.LNX.4.64.0707171842590.10600@anakin> <alpine.LFD.0.999.0707171102040.19166@woody.linux-foundation.org> <Pine.LNX.4.64.0707172225260.23024@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707172225260.23024@anakin>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 17 Jul 2007, Ingo Molnar wrote:
+On Tue, Jul 17, 2007 at 10:31:08PM +0200, Geert Uytterhoeven wrote:
+> And we'll all live with a check_signature() in our kernel, which is used
+> only by a few legacy drivers that depend on ISA || PCI...
 > 
-> i think the problem starts here:
-> 
->   11902 1184699865.141939 read(3, "", 32) = 0 <0.000007>
+> OR I'll have to disable HAS_IOMEM on m68k, and invent a new Kconfig
+> symbol for lots of other stuff that currently depends on HAS_IOMEM...
 
-Well, it's preceded by a poll() that says that it has a POLLHUP event, so 
-that socket would seem to have simply been closed from the other end. 
-There's also a huge amount of select() calls showing the same thing 
-(except since it's just the input side, you cannot tell that it's 
-POLLHUP).
-
-Don't ask me *why*, though. It's preceded by
-
-	..
-	11902 1184699848.615201 read(3, 0x7fffb5b9c8b0, 32) = -1 EAGAIN (Resource temporarily unavailable) <0.000009>
-	11902 1184699848.615252 poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, -1) = 1 <0.009307>
-	11902 1184699848.624614 read(3, "\1 \303!\0\0\0\0\4\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0b\340T\0\0\0\0\0", 32) = 32 <0.000011>
-
-.. got data ..
-
-	11902 1184699848.624710 ioctl(3, FIONREAD, [0]) = 0 <0.000009>
-	11902 1184699848.624762 ioctl(3, FIONREAD, [0]) = 0 <0.000048>
-
-.. ok, nothing more..
-
-	11902 1184699848.624866 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <16.495008>
-	11902 1184699865.119950 ioctl(3, FIONREAD, [0]) = 0 <0.000006>
-
-16+ seconds pass, now it's marked as readable, but returns zero bytes of 
-data: the other end closed it.
-
-Tons of unnecessary and stupid sequences of:
-
-	11902 1184699865.119988 select(10, [3 4 5 7 9], [], [], NULL) = 1 (in [3]) <0.000007>
-	11902 1184699865.120031 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
-	..
-
-and then finally:
-
-	...
-	11902 1184699865.141809 poll([{fd=3, events=POLLIN, revents=POLLIN|POLLHUP}], 1, 0) = 1 <0.000005>
-	11902 1184699865.141838 ioctl(3, FIONREAD, [0]) = 0 <0.000005>
-	11902 1184699865.141939 read(3, "", 32) = 0 <0.000007>
-
-ie now konqueror noticed that it was *really* closed, and read the EOF.
-
-But why does that happen? And why would the scheduler have *anything* to 
-do with this? No idea. Maybe timing. Maybe the time.c changes. Dunno.
-
-		Linus
+Actually...  Is there any reason why it's not simply
+	kmalloc
+	memcpy_fromio
+	memcmp
+on all targets?  Or just a variably-sized auto array, since we never
+do it for large stuff, IIRC...
