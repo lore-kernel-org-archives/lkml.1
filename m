@@ -1,95 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbXGQQKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934534AbXGQQLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933064AbXGQQKU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXGQQKE
+	id S934534AbXGQQLM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760843AbXGQQK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 12:10:04 -0400
-Received: from alnrmhc14.comcast.net ([206.18.177.54]:53026 "EHLO
-	alnrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753831AbXGQQKC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:10:02 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang\, Ying" <ying.huang@intel.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
-	<200707171640.39955.rjw@sisk.pl>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Tue, 17 Jul 2007 12:09:58 -0400
-In-Reply-To: <200707171640.39955.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Tue\, 17 Jul 2007 16\:40\:38 +0200")
-Message-ID: <87hco3ypt5.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
+	Tue, 17 Jul 2007 12:10:56 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:43158 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760179AbXGQQKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 12:10:54 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: trenn@suse.de
+Subject: Re: [PATCH] - Increase PNP_MAX_PORT. ACPI devices can have a lot IO resource declarations
+Date: Tue, 17 Jul 2007 09:49:47 -0600
+User-Agent: KMail/1.9.6
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>, Bernhard Walle <bwalle@suse.de>
+References: <1184595667.19959.312.camel@queen.suse.de>
+In-Reply-To: <1184595667.19959.312.camel@queen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707170949.47346.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Monday 16 July 2007 08:21:07 am Thomas Renninger wrote:
+> PNP0C02 devices normally have a lot more IO port declarations than
+> currently defined in PNP_MAX_PORT
 
-[snip]
+Yes.
 
-> I'm afraid of one thing, though.
+> I also wonder whether other limits like:
+>  #define PNP_MAX_MEM        4
+>  #define PNP_MAX_IRQ        2
+>  #define PNP_MAX_DMA        2
+> could get exceeded with pnpacpi?
 
-> If we create a framework without ACPI (well, ACPI needs to be enabled in the
-> kernel anyway for other reasons, like the ability to suspend to RAM) and then
-> it turns out that we have to add some ACPI hooks to it, that might be difficult
-> to do cleanly.
+Definitely.  I think the current limits come from the PNP ISA spec
+(sec 4.6).  I don't see similar limits in the PNPBIOS or ACPI specs,
+so ideally I think they should be dynamically allocated as you suggest.
 
-> Thus, it seems reasonable to think of the ACPI handling in advance.
+HPET devices often use more than two IRQs, so I worked up the following
+patch a while ago.  I didn't post it because Adam had plans for a better
+fix.  But I suspect he's otherwise occupied now :-)
 
-As far as I understand, ACPI support is only useful for hibernate to the
-extent that it allows some or all of the following features:
+It doesn't change PNP_MAX_PORT, so that would have to be updated.
 
- - possibly shows a nice looking "hibernate" LED
- - possibly allows the BIOS to show something about hibernate
- - possibly allows the lid or keyboard to "wake up" (turn on) the system
 
-Note that properly restoring device state (or even properly determining
-whether on external/mains power vs. battery) on resume is not something
-that should require special hibernate ACPI support, since it should be
-possible to make hibernate (and in general it will be the case that
-hibernate will) look exactly like a reboot to the BIOS/ACPI/devices.
-The problem that you mentioned on your system regarding power source
-information would seem to just be a problem with how ACPI is
-reinitialized after resuming from hibernation, which is not at all
-surprising since we know it (the use of driver calls for hibernate) is
-currently broken in many ways.
 
-It seems that enabling S4 mode should just be treated as a special
-shutdown mode, independent of hibernate.  In practice, it may likely
-only be useful in conjunction with hibernate, but there doesn't seem to
-be any reason it needs to be coupled.
 
-It would be useful to determine whether it is necessary to initialize
-ACPI specially after "resuming" from S4 mode, though, or whether they
-can be initialized normally (i.e. by a normal kernel for instance,
-completely unaware of hibernate).  If they can be initialized normally,
-then it seems that it is unnecessary to have any ACPI S4 mode support in
-the resume path, and it can merely exist as a special shutdown mode.
-Note that it seems a bit odd if ACPI can't be initialized normally after
-resume from S4 (and still work), since the "load image" kernel
-initializes everything normally before attempting to resume the
-hibernated system.
+PNP: increase number of resources devices can use
 
--- 
-Jeremy Maitin-Shepard
+PNPACPI and PNPBIOS devices can use more than 2 IRQs, so bump PNP_MAX_IRQ
+from 2 to 4.  For example, HPET devices can have up to 32 timers, each with
+an IRQ.  (Current HPETs typically have 3 timers.)
+
+Add ISAPNP_MAX_PORT, ISAPNP_MAX_MEM, ISAPNP_MAX_IRQ, and ISAPNP_MAX_DMA
+because ISAPNP does limit the number of resources a device can use.
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Index: work-mm1/drivers/pnp/isapnp/core.c
+===================================================================
+--- work-mm1.orig/drivers/pnp/isapnp/core.c	2005-08-09 10:07:45.000000000 -0600
++++ work-mm1/drivers/pnp/isapnp/core.c	2005-08-09 14:03:03.000000000 -0600
+@@ -950,28 +950,28 @@
+ 
+ 	dev->active = isapnp_read_byte(ISAPNP_CFG_ACTIVATE);
+ 	if (dev->active) {
+-		for (tmp = 0; tmp < PNP_MAX_PORT; tmp++) {
++		for (tmp = 0; tmp < ISAPNP_MAX_PORT; tmp++) {
+ 			ret = isapnp_read_word(ISAPNP_CFG_PORT + (tmp << 1));
+ 			if (!ret)
+ 				continue;
+ 			res->port_resource[tmp].start = ret;
+ 			res->port_resource[tmp].flags = IORESOURCE_IO;
+ 		}
+-		for (tmp = 0; tmp < PNP_MAX_MEM; tmp++) {
++		for (tmp = 0; tmp < ISAPNP_MAX_MEM; tmp++) {
+ 			ret = isapnp_read_word(ISAPNP_CFG_MEM + (tmp << 3)) << 8;
+ 			if (!ret)
+ 				continue;
+ 			res->mem_resource[tmp].start = ret;
+ 			res->mem_resource[tmp].flags = IORESOURCE_MEM;
+ 		}
+-		for (tmp = 0; tmp < PNP_MAX_IRQ; tmp++) {
++		for (tmp = 0; tmp < ISAPNP_MAX_IRQ; tmp++) {
+ 			ret = (isapnp_read_word(ISAPNP_CFG_IRQ + (tmp << 1)) >> 8);
+ 			if (!ret)
+ 				continue;
+ 			res->irq_resource[tmp].start = res->irq_resource[tmp].end = ret;
+ 			res->irq_resource[tmp].flags = IORESOURCE_IRQ;
+ 		}
+-		for (tmp = 0; tmp < PNP_MAX_DMA; tmp++) {
++		for (tmp = 0; tmp < ISAPNP_MAX_DMA; tmp++) {
+ 			ret = isapnp_read_byte(ISAPNP_CFG_DMA + tmp);
+ 			if (ret == 4)
+ 				continue;
+@@ -998,17 +998,17 @@
+ 
+ 	isapnp_cfg_begin(dev->card->number, dev->number);
+ 	dev->active = 1;
+-	for (tmp = 0; tmp < PNP_MAX_PORT && (res->port_resource[tmp].flags & (IORESOURCE_IO | IORESOURCE_UNSET)) == IORESOURCE_IO; tmp++)
++	for (tmp = 0; tmp < ISAPNP_MAX_PORT && (res->port_resource[tmp].flags & (IORESOURCE_IO | IORESOURCE_UNSET)) == IORESOURCE_IO; tmp++)
+ 		isapnp_write_word(ISAPNP_CFG_PORT+(tmp<<1), res->port_resource[tmp].start);
+-	for (tmp = 0; tmp < PNP_MAX_IRQ && (res->irq_resource[tmp].flags & (IORESOURCE_IRQ | IORESOURCE_UNSET)) == IORESOURCE_IRQ; tmp++) {
++	for (tmp = 0; tmp < ISAPNP_MAX_IRQ && (res->irq_resource[tmp].flags & (IORESOURCE_IRQ | IORESOURCE_UNSET)) == IORESOURCE_IRQ; tmp++) {
+ 		int irq = res->irq_resource[tmp].start;
+ 		if (irq == 2)
+ 			irq = 9;
+ 		isapnp_write_byte(ISAPNP_CFG_IRQ+(tmp<<1), irq);
+ 	}
+-	for (tmp = 0; tmp < PNP_MAX_DMA && (res->dma_resource[tmp].flags & (IORESOURCE_DMA | IORESOURCE_UNSET)) == IORESOURCE_DMA; tmp++)
++	for (tmp = 0; tmp < ISAPNP_MAX_DMA && (res->dma_resource[tmp].flags & (IORESOURCE_DMA | IORESOURCE_UNSET)) == IORESOURCE_DMA; tmp++)
+ 		isapnp_write_byte(ISAPNP_CFG_DMA+tmp, res->dma_resource[tmp].start);
+-	for (tmp = 0; tmp < PNP_MAX_MEM && (res->mem_resource[tmp].flags & (IORESOURCE_MEM | IORESOURCE_UNSET)) == IORESOURCE_MEM; tmp++)
++	for (tmp = 0; tmp < ISAPNP_MAX_MEM && (res->mem_resource[tmp].flags & (IORESOURCE_MEM | IORESOURCE_UNSET)) == IORESOURCE_MEM; tmp++)
+ 		isapnp_write_word(ISAPNP_CFG_MEM+(tmp<<3), (res->mem_resource[tmp].start >> 8) & 0xffff);
+ 	/* FIXME: We aren't handling 32bit mems properly here */
+ 	isapnp_activate(dev->number);
+Index: work-mm1/include/linux/isapnp.h
+===================================================================
+--- work-mm1.orig/include/linux/isapnp.h	2005-06-17 13:48:29.000000000 -0600
++++ work-mm1/include/linux/isapnp.h	2005-08-09 14:35:31.000000000 -0600
+@@ -24,6 +24,7 @@
+ 
+ #include <linux/config.h>
+ #include <linux/errno.h>
++#include <linux/kernel.h>
+ #include <linux/pnp.h>
+ 
+ /*
+@@ -36,6 +37,11 @@
+ #define ISAPNP_CFG_IRQ			0x70	/* 2 * word */
+ #define ISAPNP_CFG_DMA			0x74	/* 2 * byte */
+ 
++#define ISAPNP_MAX_PORT			min(8, PNP_MAX_PORT)
++#define ISAPNP_MAX_MEM			min(4, PNP_MAX_MEM)
++#define ISAPNP_MAX_IRQ			min(2, PNP_MAX_IRQ)
++#define ISAPNP_MAX_DMA			min(2, PNP_MAX_DMA)
++
+ /*
+  *
+  */
+Index: work-mm1/include/linux/pnp.h
+===================================================================
+--- work-mm1.orig/include/linux/pnp.h	2005-08-09 10:07:46.000000000 -0600
++++ work-mm1/include/linux/pnp.h	2005-08-09 14:01:08.000000000 -0600
+@@ -16,7 +16,7 @@
+ 
+ #define PNP_MAX_PORT		8
+ #define PNP_MAX_MEM		4
+-#define PNP_MAX_IRQ		2
++#define PNP_MAX_IRQ		4
+ #define PNP_MAX_DMA		2
+ #define PNP_NAME_LEN		50
+ 
+Index: work-mm1/drivers/pnp/pnpacpi/rsparser.c
+===================================================================
+--- work-mm1.orig/drivers/pnp/pnpacpi/rsparser.c	2005-08-09 10:07:45.000000000 -0600
++++ work-mm1/drivers/pnp/pnpacpi/rsparser.c	2005-08-09 14:29:59.000000000 -0600
+@@ -72,6 +72,10 @@
+ 	}
+ }
+ 
++/*
++ * ACPI doesn't limit the number of resources a device can use, so
++ * we can use the generic PNP limits (PNP_MAX_IRQ, etc).
++ */
+ static void
+ pnpacpi_parse_allocated_irqresource(struct pnp_resource_table * res, u32 gsi,
+ 	int edge_level, int active_high_low)
+Index: work-mm1/drivers/pnp/pnpbios/rsparser.c
+===================================================================
+--- work-mm1.orig/drivers/pnp/pnpbios/rsparser.c	2005-08-09 10:07:45.000000000 -0600
++++ work-mm1/drivers/pnp/pnpbios/rsparser.c	2005-08-09 14:29:37.000000000 -0600
+@@ -51,6 +51,10 @@
+  * Allocated Resources
+  */
+ 
++/*
++ * PNPBIOS doesn't limit the number of resources a device can use, so
++ * we can use the generic PNP limits (PNP_MAX_IRQ, etc).
++ */
+ static void
+ pnpbios_parse_allocated_irqresource(struct pnp_resource_table * res, int irq)
+ {
