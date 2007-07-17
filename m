@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbXGQHid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761795AbXGQHje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760251AbXGQHid (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXGQHiZ
+	id S1761795AbXGQHje (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbXGQHj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:38:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36855 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbXGQHiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:38:25 -0400
-Date: Tue, 17 Jul 2007 09:37:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Markus <lists4me@web.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v19
-Message-ID: <20070717073709.GA12465@elte.hu>
-References: <20070706173319.GA2356@elte.hu> <200707141711.25272.lists4me@web.de> <20070716094158.GA19491@elte.hu> <200707161959.17750.lists4me@web.de>
+	Tue, 17 Jul 2007 03:39:26 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:10813 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbXGQHjZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:39:25 -0400
+From: Olaf Kirch <olaf.kirch@oracle.com>
+Organization: Oracle
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Date: Tue, 17 Jul 2007 09:37:23 +0200
+User-Agent: KMail/1.9.1
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+References: <20070716091236.GA10718@elte.hu> <alpine.LFD.0.999.0707161425361.20061@woody.linux-foundation.org> <20070716.150825.66176632.davem@davemloft.net>
+In-Reply-To: <20070716.150825.66176632.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707161959.17750.lists4me@web.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200707170937.24430.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 17 July 2007 00:08, David Miller wrote:
+> Sure, but I thought it would be nice to give Olaf a day or two to
+> figure out what's going on rather than have the knee-jerk reaction to
+> just revert.
 
-* Markus <lists4me@web.de> wrote:
+Oh, reverting is fine with me. I'll just resubmit the patch.
 
-> The dmesg output is not differing in any interesting point (just some 
-> numbers, like raid-benchmark, some irqs or usb-numbers...)
-
-could you please send me the cfs-debug-info output nevertheless?
-
-> Nothing is printed for a disapeared app for me.
-> 
-> Is there anything more I can try?
-
-sure - could you start one of those apps via:
-
-	strace -ttt -TTT -o trace.log -f <app>
-
-and wait for it to "disappear"? Then compress the trace.log via bzip2 -9 
-(it's probably going to be a really large file) and send me it?
-
-	Ingo
+Olaf
+-- 
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
