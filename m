@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763716AbXGQGoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbXGQGpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763716AbXGQGoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 02:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbXGQGoL
+	id S1764101AbXGQGpQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 02:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbXGQGpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 02:44:11 -0400
-Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:38271 "EHLO
-	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756323AbXGQGoJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 02:44:09 -0400
-To: jens.axboe@oracle.com
-Cc: akpm@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: block/bsg.c
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20070717063810.GY5195@kernel.dk>
-References: <20070716165706.348f6bbf.akpm@linux-foundation.org>
-	<20070717063810.GY5195@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 17 Jul 2007 02:45:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:56709 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756173AbXGQGo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 02:44:59 -0400
+Message-ID: <469C6534.4010306@goop.org>
+Date: Mon, 16 Jul 2007 23:44:04 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       trivial@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH TRIVIAL] acpiphp_ibm: add missing \n
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070717154315E.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 17 Jul 2007 15:43:15 +0900
-X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: block/bsg.c
-Date: Tue, 17 Jul 2007 08:38:11 +0200
+Add missing \n to error in ibm_find_acpi_device.
 
-> On Mon, Jul 16 2007, Andrew Morton wrote:
-> > 
-> > A belated review (I've never seen this before and there it is in mainline)
-> > 
-> > > static char bsg_version[] = "block layer sg (bsg) 0.4";
-> > 
-> > `const' would be better.  That moves it into a write-protected memory section.
-> 
-> Agree
-> 
-> > > #define list_entry_bc(entry)	list_entry((entry), struct bsg_command, list)
-> > 
-> > This makes the code easier to write but harder to read.  We should optimise
-> > for readers.  Please open-code this at callsites.
-> > 
-> > Or at least convert it into a (commented) (possibly inlined) C function.
-> 
-> list_entry_to_bc(), then? The main objective is to save on typing, and
-> (just as important) make sure we don't bump over the 80 chars per line.
-> 
-> > > /*
-> > >  * just for testing
-> > >  */
-> > > #define BSG_MAJOR	(240)
-> > 
-> > What's this doing in mainline?  240 is a "reserved for local use" major. 
-> > This will cause collisions.  This code should be using dynamic major
-> > assignment.
-> 
-> Yeah, that's a big error on my part. Will get that fixed up right away.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Adrian Bunk <trivial@kernel.org>
 
-I've been testing the patchset to fix the issues that Andrew pointed
-out. I can send it soon.
+---
+ drivers/pci/hotplug/acpiphp_ibm.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Jens, have you already fixed some?
+===================================================================
+--- a/drivers/pci/hotplug/acpiphp_ibm.c
++++ b/drivers/pci/hotplug/acpiphp_ibm.c
+@@ -399,7 +399,7 @@ static acpi_status __init ibm_find_acpi_
+ 
+ 	status = acpi_get_object_info(handle, &info_buffer);
+ 	if (ACPI_FAILURE(status)) {
+-		err("%s:  Failed to get device information", __FUNCTION__);
++		err("%s:  Failed to get device information\n", __FUNCTION__);
+ 		return 0;
+ 	}
+ 	info.hardware_id.value[sizeof(info.hardware_id.value) - 1] = '\0';
+
+
