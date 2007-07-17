@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933427AbXGQIYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933098AbXGQIY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933427AbXGQIYD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933151AbXGQIXg
+	id S933098AbXGQIY1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933224AbXGQIXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 17 Jul 2007 04:23:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:63079 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932802AbXGQIXg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Jul 2007 04:23:36 -0400
-Received: from il.qumranet.com ([82.166.9.18]:56466 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932440AbXGQIXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:23:34 -0400
-Message-ID: <469C7C8D.1020600@qumranet.com>
-Date: Tue, 17 Jul 2007 11:23:41 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       KVM devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 3/3] KVM - add hypercall nr to kvm_run
-References: <20070716192447.GA16253@c2.user-mode-linux.org>
-In-Reply-To: <20070716192447.GA16253@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=A5QxXfMpNCf5To9hSWwC4eU6NoLNG+QAlY+Jr5Hz7IZEKerD7JS83XzY58/b5FboMCfx1s9ks2N7ycqlKnRUaYKeVGcvT12+a6Ko49E17Fxjqk8HhF2AyNhWwth9yRhMs2G6emIDFNAF8pravQNCLTrWe6LxP3deNA032bXjvg4=
+From: Denis Cheng <crquan@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, Denis Cheng <crquan@gmail.com>
+Subject: [PATCH 2/4] [NET] make non-global function __dev_addr_discard static
+Date: Tue, 17 Jul 2007 16:23:23 +0800
+Message-Id: <1184660618735-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.2.2
+In-Reply-To: <11846606051099-git-send-email-crquan@gmail.com>
+References: <11846606051099-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> Add the hypercall number to kvm_run and initialize it.  This might be
-> considered API-changing, so I kept it separate.
->
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> --
->  drivers/kvm/kvm_main.c |    1 +
->  include/linux/kvm.h    |    1 +
->  2 files changed, 2 insertions(+)
->
-> Index: kvm/drivers/kvm/kvm_main.c
-> ===================================================================
-> --- kvm.orig/drivers/kvm/kvm_main.c
-> +++ kvm/drivers/kvm/kvm_main.c
-> @@ -1361,6 +1361,7 @@ int kvm_hypercall(struct kvm_vcpu *vcpu,
->  	}
->  	switch (nr) {
->  	default:
-> +		run->hypercall.nr = nr;
->  		run->hypercall.args[0] = a0;
->  		run->hypercall.args[1] = a1;
->  		run->hypercall.args[2] = a2;
-> Index: kvm/include/linux/kvm.h
-> ===================================================================
-> --- kvm.orig/include/linux/kvm.h
-> +++ kvm/include/linux/kvm.h
-> @@ -106,6 +106,7 @@ struct kvm_run {
->  		} mmio;
->  		/* KVM_EXIT_HYPERCALL */
->  		struct {
-> +			__u64 nr;
->  			__u64 args[6];
->  			__u64 ret;
->  			__u32 longmode;
->   
+and remove its declaration in header file include/linux/netdevice.h
 
-It isn't API changing as the API could not be (and has not been) used.  
-We do need to add a padding element to the union to make sure additional 
-union members don't cause its size to change.
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ include/linux/netdevice.h |    1 -
+ net/core/dev.c            |    2 +-
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
-Quite sad that we got this far with such brokenness.
-
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 895cec2..b34975b 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1110,7 +1110,6 @@ extern int		dev_mc_sync(struct net_device *to, struct net_device *from);
+ extern void		dev_mc_unsync(struct net_device *to, struct net_device *from);
+ extern int 		__dev_addr_delete(struct dev_addr_list **list, int *count, void *addr, int alen, int all);
+ extern int		__dev_addr_add(struct dev_addr_list **list, int *count, void *addr, int alen, int newonly);
+-extern void		__dev_addr_discard(struct dev_addr_list **list);
+ extern void		dev_set_promiscuity(struct net_device *dev, int inc);
+ extern void		dev_set_allmulti(struct net_device *dev, int inc);
+ extern void		netdev_state_change(struct net_device *dev);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index b17f1bf..3ba63aa 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2715,7 +2715,7 @@ int __dev_addr_add(struct dev_addr_list **list, int *count,
+ 	return 0;
+ }
+ 
+-void __dev_addr_discard(struct dev_addr_list **list)
++static void __dev_addr_discard(struct dev_addr_list **list)
+ {
+ 	struct dev_addr_list *tmp;
+ 
 -- 
-error compiling committee.c: too many arguments to function
+1.5.2.2
 
