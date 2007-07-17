@@ -1,133 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933928AbXGQRqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933031AbXGQRsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933928AbXGQRqL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbXGQRp4
+	id S933031AbXGQRsQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758920AbXGQRsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:45:56 -0400
-Received: from holomorphy.com ([66.93.40.71]:58830 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759304AbXGQRpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:45:55 -0400
-Date: Tue, 17 Jul 2007 10:47:37 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-Message-ID: <20070717174737.GM6909@holomorphy.com>
-References: <20070706222651.GG5777@v2.random> <1183764801.10287.233.camel@localhost> <20070706235228.GL5777@v2.random>
-MIME-Version: 1.0
+	Tue, 17 Jul 2007 13:48:01 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:39593 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706AbXGQRsA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 13:48:00 -0400
+Date: Tue, 17 Jul 2007 10:47:57 -0700
+From: sukadev@us.ibm.com
+To: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, Herbert Poetzel <herbert@13thfloor.at>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] Move alloc_pid call to copy_process
+Message-ID: <20070717174757.GA11150@us.ibm.com>
+References: <20070715123600.GA210@tv-sign.ru> <20070716225411.GH25053@us.ibm.com> <20070717133430.GA214@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070706235228.GL5777@v2.random>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070717133430.GA214@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 07, 2007 at 01:52:28AM +0200, Andrea Arcangeli wrote:
-> BTW, in a parallel thread (the thread where I've been suggested to
-> post this), Rik rightfully mentioned Bill once also tried to get this
-> working and basically asked for the differences. I don't know exactly
-> what Bill did, I only remember well the major reason he did it. Below
-> I add some more comment on the Bill, taken from my answer to Rik:
+Oleg Nesterov [oleg@tv-sign.ru] wrote:
+| On 07/16, sukadev@us.ibm.com wrote:
+| >
+| > Oleg Nesterov [oleg@tv-sign.ru] wrote:
+| > | 
+| > | Could you please give more details why we need this change?
+| > 
+| > Well, with multiple pid namespaces, we may need to allocate a new
+| > 'struct pid_namespace' if the CLONE_NEWPID flag is specified. And
+| > as a part of initializing this pid_namespace, we need the 'task_struct'
+| > that will be the reaper of the new pid namespace.
+| > 
+| > And this task_struct is allocated in copy_process(). So we could
+| > still alloc_pid() in do_fork(), as we are doing currently and set
+| > the reaper of the new pid_namespace later in copy_process(). But
+| > that seemed to complicate error handling and add checks again in
+| > copy_process() for the CLONE_NEWPID.
+| 
+| OK, thanks.
+| 
+| > 
+| > | Even if we really need this, can't we do these checks in copy_process() ?
+| > 
+| > We could and I did have a check in copy_process() in one of my earlier
+| > versions to Containers@ list.  We thought it cluttered copy_process() a
+| > bit.
+| 
+| Yes, but having the "pid == &init_struct_pid" in free_pid() is imho worse,
+| 
+| >  	container_exit(p, container_callbacks_done);
+| >  	delayacct_tsk_free(p);
+| > +	free_pid(pid);
+| > +bad_fork_put_binfmt_module:
+| > [...snip...]
+| > @@ -206,6 +206,10 @@ fastcall void free_pid(struct pid *pid)
+| >  	/* We can be called with write_lock_irq(&tasklist_lock) held */
+| >  	unsigned long flags;
+| >  
+| > +	/* check this here to keep copy_process() cleaner */
+| > +	if (unlikely(pid == &init_struct_pid))
+| > +		return;
+| > +
+| 
+| Wouldn't it better if copy_process()'s error path does
+| 
+| 	if (pid != &init_struct_pid)
+| 		free_pid(pid);
+| 
+| instead? OK, "cleaner" is a matter of taste, but from the perfomance POV
+| this would be better, even if not noticable.
 
-I got it working. It merely bitrotted faster than I could maintain it.
+Agree. I realized it too late last night. Here is a modified patch
+(this checks init_struct_pid in both places now for better consistency)
 
+Subject: [PATCH 5/5] Move alloc_pid call to copy_process
 
-On Sat, Jul 07, 2007 at 01:52:28AM +0200, Andrea Arcangeli wrote:
-> Right, I almost forgot he also tried enlarging the PAGE_SIZE at some
-> point, back then it was for the 32bit systems with 64G of ram, to
-> reduce the mem_map array, something my patch achieves too btw.
+From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 
-It was done for the occasion of the first publicly-announced boot of
-Linux on a 64GB x86-32 machine.
+Move alloc_pid() into copy_process(). This will keep all pid and pid
+namespace code together and simplify error handling when we support
+multiple pid namespaces.
 
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 
-On Sat, Jul 07, 2007 at 01:52:28AM +0200, Andrea Arcangeli wrote:
-> I thought his approach was of the old type, not backwards compatible,
-> the one we also thought for amd64, and I seem to remember he was
-> trying to solve the backwards compatibility issue without much
-> success.
+Cc: Pavel Emelianov <xemul@openvz.org>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Dave Hansen <haveblue@us.ibm.com>
+Cc: Serge Hallyn <serue@us.ibm.com>
+Cc: Herbert Poetzel <herbert@13thfloor.at>
+---
+ kernel/fork.c |   19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
-It was not of the old type. It followed Hugh's strategy, which made
-it fully backward-compatible. The only deficits in terms of success
-were performance, maintenance, and attracting any sort of audience.
-The only tester besides myself was literally Zwane.
-
-
-On Sat, Jul 07, 2007 at 01:52:28AM +0200, Andrea Arcangeli wrote:
-> But really I'm unsure how Bill could achieve anything backwards
-> compatible back then without anon-vma... anon-vma is the enabler. I
-> remember he worked on enlarging the PAGE_SIZE back then, but I don't
-> recall him exposing HARD_PAGE_SIZE to the common code either (actually
-> I never seen his code so I can't be sure of this). Even if he had pte
-> chains back then, reaching the pte wasn't enough and I doubt he could
-> unwalk the pagetable tree from pte up to pmd up to pgd/mm, up to vma
-> to read the vm_pgoff that btw was meaningless back then for the anon
-> vmas ;).
-
-It was exposed to the common code as MMUPAGE_SIZE. Significant pte
-vectoring code in the core was involved, as well as partial page
-distribution policies, mmap()/mprotect() et al handling splitting
-across physical page boundaries, and the like. When done wrong,
-applications such as /sbin/init didn't run. It was all there, though
-Hugh's earlier implementation was far superior.
-
-pte_chains didn't make things anywhere near as awkward as highpte.
-pte_chains didn't really care so much how large an area a struct
-page tracked. highpte OTOH needed more effort, though I don't recall
-specifically why anymore.
-
-My long-dead code should be at:
-
-	ftp://ftp.kernel.org/pub/linux/kernel/people/wli/vm/pgcl/
-
-dmesg's from 64GB x86-32 machines are also in that directory, dating
-from March 2003.
-
-
-On Sat, Jul 07, 2007 at 01:52:28AM +0200, Andrea Arcangeli wrote:
-> Things are very complex, but I think it's possible by doing proper
-> math on vm_pgoff, vm_start/vm_end and address, just with that 4 things
-> we should have enough info to know which parts of each page to map in
-> which pte, and that's all we need to solve it. At the second mprotect
-> of 4k over the same 8k page will get two vmas queued in the same
-> anon-vma. So we check both vmas and looking at the vm_pgoff(hardpage
-> units)+(((address-vm_start)&~PAGE_MASK)>>HARD_PAGE_SHIFT we should be
-> able to tell if the ptes behind the vma need to be updated and if the
-> second vma can be merged back.
-> The idea to make it work is to synchronously map all the ptes for all
-> indexes covered by each page as long as they're in the range
-> vm_start>>HARD_PAGE_SHIFT to vm_end >> HARD_PAGE_SHIFT. We should
-> threat a page fault like a multiple page fault. Then when you mprotect
-> or mremap you already know which ptes are mapped and that you need to
-> unmap/update by looking the start/end hard-page-indexes, and you also
-> have to always check all vmas that could possibly map that page, if
-> the page cross the vm_start/vm_end boundary.
-
-Hugh had this all worked out in 2001. I explored some alternatives in
-the design space, but they didn't perform as well as the original.
-It's best to refer to his original patch for reference as it's far
-cleaner, though in principle one should be able to find machines where
-the late 2.5.x patches I did will run. It was never exposed to a very
-broad variety of systems, so I can't vouch for much beyond NUMA-Q and
-ThinkPad and whatever Zwane booted it on.
-
-
-On Sat, Jul 07, 2007 at 01:52:28AM +0200, Andrea Arcangeli wrote:
-> Easy definitely not, but feasible I hope yes because I couldn't think
-> of a case where we can't figure out which part of the page to map in
-> which pte. I wish I had it implemented before posting because then I
-> would be 100% sure it was feasible ;).
-> Now if somebody here can think of a case where we can't know where to
-> map which part of the page in which pte, then *that* would be very
-> interesting and it could save some wasted development effort. Unless
-> this happens, I guess I can keep trying to make it work, hopefully now
-> with some help.
-
-You may rest assured that it's technically feasible. It's been done.
-The larger obstacles to all this are nontechnical.
-
-
--- wli
+Index: lx26-22-rc6-mm1a/kernel/fork.c
+===================================================================
+--- lx26-22-rc6-mm1a.orig/kernel/fork.c	2007-07-16 12:55:13.000000000 -0700
++++ lx26-22-rc6-mm1a/kernel/fork.c	2007-07-17 10:08:12.000000000 -0700
+@@ -1029,6 +1029,12 @@ static struct task_struct *copy_process(
+ 	if (p->binfmt && !try_module_get(p->binfmt->module))
+ 		goto bad_fork_cleanup_put_domain;
+ 
++	if (pid != &init_struct_pid) {
++		pid = alloc_pid();
++		if (!pid)
++			goto bad_fork_put_binfmt_module;
++	}
++
+ 	p->did_exec = 0;
+ 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
+ 	copy_flags(clone_flags, p);
+@@ -1316,6 +1322,9 @@ bad_fork_cleanup_container:
+ #endif
+ 	container_exit(p, container_callbacks_done);
+ 	delayacct_tsk_free(p);
++	if (pid != &init_struct_pid)
++		free_pid(pid);
++bad_fork_put_binfmt_module:
+ 	if (p->binfmt)
+ 		module_put(p->binfmt->module);
+ bad_fork_cleanup_put_domain:
+@@ -1380,19 +1389,16 @@ long do_fork(unsigned long clone_flags,
+ {
+ 	struct task_struct *p;
+ 	int trace = 0;
+-	struct pid *pid = alloc_pid();
+ 	long nr;
+ 
+-	if (!pid)
+-		return -EAGAIN;
+-	nr = pid->nr;
+ 	if (unlikely(current->ptrace)) {
+ 		trace = fork_traceflag (clone_flags);
+ 		if (trace)
+ 			clone_flags |= CLONE_PTRACE;
+ 	}
+ 
+-	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, pid);
++	p = copy_process(clone_flags, stack_start, regs, stack_size,
++			parent_tidptr, child_tidptr, NULL);
+ 	/*
+ 	 * Do this prior waking up the new thread - the thread pointer
+ 	 * might get invalid after that point, if the thread exits quickly.
+@@ -1400,6 +1406,8 @@ long do_fork(unsigned long clone_flags,
+ 	if (!IS_ERR(p)) {
+ 		struct completion vfork;
+ 
++		nr = pid_nr(task_pid(p));
++
+ 		if (clone_flags & CLONE_VFORK) {
+ 			p->vfork_done = &vfork;
+ 			init_completion(&vfork);
+@@ -1433,7 +1441,6 @@ long do_fork(unsigned long clone_flags,
+ 			}
+ 		}
+ 	} else {
+-		free_pid(pid);
+ 		nr = PTR_ERR(p);
+ 	}
+ 	return nr;
