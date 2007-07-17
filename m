@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbXGQRue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934379AbXGQRvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933970AbXGQRue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756701AbXGQRu1
+	id S934379AbXGQRvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbXGQRvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:50:27 -0400
-Received: from stinky.trash.net ([213.144.137.162]:49741 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755349AbXGQRu1 (ORCPT
+	Tue, 17 Jul 2007 13:51:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42069 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759515AbXGQRvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:50:27 -0400
-Message-ID: <469D0159.1010506@trash.net>
-Date: Tue, 17 Jul 2007 19:50:17 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Tue, 17 Jul 2007 13:51:08 -0400
+Date: Tue, 17 Jul 2007 10:49:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Olaf Kirch <olaf.kirch@oracle.com>, Jarek Poplawski <jarkao2@o2.pl>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+In-Reply-To: <20070717085748.GA32114@elte.hu>
+Message-ID: <alpine.LFD.0.999.0707171047200.19166@woody.linux-foundation.org>
+References: <20070716091236.GA10718@elte.hu> <20070717061458.GB1640@ff.dom.local>
+ <200707170955.38536.olaf.kirch@oracle.com> <200707171028.36451.olaf.kirch@oracle.com>
+ <20070717085748.GA32114@elte.hu>
 MIME-Version: 1.0
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-CC: Alasdair G Kergon <agk@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.23 PATCH 07/18] dm io: fix panic on large request
-References: <20070711205846.GY24114@agk.fab.redhat.com> <469CC11B.2020103@trash.net> <469CF0CD.6060006@ce.jp.nec.com>
-In-Reply-To: <469CF0CD.6060006@ce.jp.nec.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jun'ichi Nomura wrote:
->>>From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
->>>
->>>bio_alloc_bioset() will return NULL if 'num_vecs' is too large.
->>>Use bio_get_nr_vecs() to get estimation of maximum number.
->>>
->>>Signed-off-by: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
->>>Signed-off-by: Alasdair G Kergon <agk@redhat.com>
->>>
->>
->>This patch reproducibly oopses my box:
+
+
+On Tue, 17 Jul 2007, Ingo Molnar wrote:
 > 
-> 
-> Thanks for the report.
-> But I'm not sure how the patch is related to the oops.
-> 
-> The stack trace shows the oops occurred in dm-crypt,
-> which doesn't use the part of the code modified by the patch
-> (dm-io).
+> i've got a new observation: changing CONFIG_HZ from 250 to 1000 makes 
+> the problem go away. So it's somehow also related to jiffies.
 
+No, I suspect it's just related to timing: you need to hit that window 
+when the LIST_FROZEN bit is set, and since it was so reliable for you 
+before (and others didn't see it), your timing probably happened to hit it 
+exactly. And changing HZ probably just changed some timeout or softirq 
+getting called, and you didn't hit the bug any more.
 
-I tried reverting the individual patches until it stopped oopsing,
-it may have been by luck. I'll try if I can break it again by
-reverting the revert.
-
-> Are you using other dm modules such as dm-multipath, dm-mirror
-> or dm-snapshot?
-> If so, can you take the output of 'dmsetup table' and 'dmsetup ls'?
-
-
-No other modules.
-
-> Do you have a reliable way to reproduce the oops which I can try?
-
-
-"/etc/init.d/cryptdisk start" (debian) on a luks partition triggered
-it for me.
-
+		Linus
