@@ -1,44 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936055AbXGQUtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbXGQUui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936055AbXGQUtu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936350AbXGQUpu
+	id S1760097AbXGQUui (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936336AbXGQUqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:45:50 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:51008 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936372AbXGQUpr (ORCPT
+	Tue, 17 Jul 2007 16:46:07 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:33441
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934825AbXGQUqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:45:47 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAKLHnEarR7PD/2dsb2JhbAA
-X-IronPort-AV: i="4.16,547,1175497200"; 
-   d="scan'208"; a="183751104:sNHT24373665"
-To: leininger2@llnl.gov
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Further 2.6.23 merge plans...
-X-Message-Flag: Warning: May contain useful information
-References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
-	<adazm1urji8.fsf@cisco.com> <1184704987.7702.106.camel@hyperion>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 17 Jul 2007 13:45:42 -0700
-In-Reply-To: <1184704987.7702.106.camel@hyperion> (Matt Leininger's message of "Tue, 17 Jul 2007 13:43:07 -0700")
-Message-ID: <adatzs2pxmx.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Tue, 17 Jul 2007 16:46:05 -0400
+Date: Tue, 17 Jul 2007 13:34:24 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+In-Reply-To: <200707172217.01890.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.64.0707171328450.2467@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
+ <200707172217.01890.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Jul 2007 20:45:42.0995 (UTC) FILETIME=[715CB230:01C7C8B3]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- >      I would like to see these features moved upstream.  DOE funded this
- > work as part of the items we see needing on our large scale IB
- > deployment (both present and future).  So from at least one big customer
- > perspective we see this as useful.  
+On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
 
-Does your reference to "present deployment" mean you are running this
-code now?
+> On Tuesday, 17 July 2007 20:32, Alan Stern wrote:
+>
+>> I'm still not entirely clear on how "suspend-to-both" ought to be
+>> handled.  Presumably it will start off as a normal hibernation.  But
+>> instead of shutting down, wouldn't the kexec'd kernel return to the
+>> original kernel?
+>
+> No, I think the image-saving kernel should suspend.  Then, on resume the
+> platform will go back to it and it will jump back to the hibernated kernel.
+>
+>> After all, the original kernel knows about all the devices and can put them
+>> into a low-power state, while the kexec'd kernel might not have sufficient
+>> information.
+>
+> That's correct, but ...
+>
+>> But what about the freezer?  The original reason for using kexec was to
+>> avoid the need for the freezer.  With no freezer, while the original
+>> kernel is busy powering down its devices, user tasks will be free to
+>> carry out I/O -- which will make the memory snapshot inconsistent with
+>> the on-disk data structures.
+>
+> ... we can't return to the hibernated kernel unless we are going to cancel the
+> hibernation.
 
- - R.
+this is where we disagree.
+
+why not? if all that the hibernated kernel does is to suspend-to-ram and 
+makes no changes to disks or TCP connections anything that it does do 
+would be lost if power were to fail and you instead did a restore from 
+disk.
+
+there is only a problem if something takes place that would prevent the 
+restore-from-disk from working. if this is done in a non-ACPI way that 
+will work across a power cycle you don't have to worry about the hardware 
+state not matching anyway.
+
+> That's why I think that for the suspend-to-both the image-saving kernel will
+> need to support the same set of devices as the hibernated kernel.
+
+suspend-to-both doesn't really make sense if the suspend-to-disk portion 
+is useing the ACPI S4 mode.
+
+if you don't run out of power you will restore-from-ram
+
+if you do run out of power the restore-from-disk won't work either becouse 
+devices are not in the right ACPI states.
+
+David Lang
