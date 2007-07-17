@@ -1,38 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764054AbXGQLdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760519AbXGQLiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764054AbXGQLdv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 07:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXGQLdo
+	id S1760519AbXGQLiA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 07:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXGQLhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 07:33:44 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:21747 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752495AbXGQLdn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 07:33:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=sw9WCkYflta/nuVHnckAAqM6im+N0biHNQRsRQsxneJF5E1fVYcvy308cfhuYRi2YQ2PUp36QdM8PrhKjTv28URu1dsxu4S7bYJ+N1VmYuVDLLrkZXVAa2liQoHqn6drTPYzwJ/nj4ikKQVo0tnhJiH8TqCAX6xUNT6CDurJCfo=
-Message-ID: <a9e22dff0707170433r5c5ee72avacdf7d12994bf8ad@mail.gmail.com>
-Date: Tue, 17 Jul 2007 14:33:41 +0300
-From: "Ni@m" <niam.niam@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: ck1 patches for 2.6.22 and 2.6.20
+	Tue, 17 Jul 2007 07:37:52 -0400
+Received: from mail.suse.de ([195.135.220.2]:47826 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752412AbXGQLhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 07:37:51 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Aaron Durbin <adurbin@google.com>
+Subject: Re: [PATCH] x86_64: Make ACPI the default reset option
+Date: Tue, 17 Jul 2007 13:32:31 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+References: <20070716180221.GA5370@google.com>
+In-Reply-To: <20070716180221.GA5370@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200707171332.31519.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-I'm not happy with 2.6.22 stability so I want to stay on 2.6.20.
+On Monday 16 July 2007 20:02:21 Aaron Durbin wrote:
+> 
+> Make ACPI be the default reset method for x86_64. If the reset mechanism fails
+> using ACPI, it will default to using the keyboard controller.
 
-Does -ck1 patches for 2.6.22 and 2.6.20 make the same job? Or it's
-better to backport -ck1 for 2.6.22 to 2.6.20?
+Again why? 
 
-Thanks for your time!
+You really can't just throw out these patches without any explanation.
 
-Best regards,
-Dmitry Milinevsky.
+
+-Andi
