@@ -1,110 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760759AbXGQROq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933515AbXGQRRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760759AbXGQROq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759618AbXGQROP
+	id S933515AbXGQRRA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756957AbXGQRQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:14:15 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46234
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758191AbXGQRON (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:14:13 -0400
-Date: Tue, 17 Jul 2007 10:06:12 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <200707171802.30903.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
- <200707171640.39955.rjw@sisk.pl> <Pine.LNX.4.64.0707170824570.19248@asgard.lang.hm>
- <200707171802.30903.rjw@sisk.pl>
+	Tue, 17 Jul 2007 13:16:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38357 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753673AbXGQRQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 13:16:52 -0400
+Date: Tue, 17 Jul 2007 19:16:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ian Kent <raven@themaw.net>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Bill Davidsen <davidsen@tmr.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] CFS scheduler, -v19
+Message-ID: <20070717171643.GB7905@elte.hu>
+References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com> <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu> <1184648474.3188.33.camel@raven.themaw.net> <20070717074537.GA13539@elte.hu> <1184671021.3188.51.camel@raven.themaw.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184671021.3188.51.camel@raven.themaw.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
 
-> On Tuesday, 17 July 2007 17:29, david@lang.hm wrote:
->> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
->>
->>> On Tuesday, 17 July 2007 16:15, Alan Stern wrote:
->>>> On Mon, 16 Jul 2007 david@lang.hm wrote:
->>>>
->>>>>> I agree, it would be good to have a non-ACPI-specific hibernation mode,
->>>>>> something which would look to ACPI like a normal shutdown.  But I'm not
->>>>>> so sure this is possible.
->>>>>
->>>>> why would it not be possible?
->>>>
->>>>> I can't think of anything much more frustrating then thinking that I
->>>>> suspended a system and then discovering that becouse the battery went dead
->>>>> (a complete power loss) that the system wouldn't boot up properly. to me
->>>>> this would be a fairly common condition (when I'm mobile I use the machine
->>>>> until I am out of battery, then stop and it may be a long time (days)
->>>>> before I can charge the thing up again) this would not be a reliable
->>>>> suspend as far as I'm concerned.
->>>>>
->>>>> for suspend-to-ram you have to worry about ACPI states and what you are
->>>>> doing with them, for suspend-to-disk you can ignore them and completely
->>>>> power the system off instead.
->>>>
->>>> If the only problem with doing this would be lack of wakeup support
->>>> then I'm all for it.  There must be a lot of people who would like
->>>> their computers to hibernate with power drain as close to 0 as possible
->>>> and who don't care about remote wakeup.  In fact they might even prefer
->>>> not to have wakeup support, so the computer doesn't resume at
->>>> unexpected times.
->>>
->>> I'm afraid of one thing, though.
->>>
->>> If we create a framework without ACPI (well, ACPI needs to be enabled in the
->>> kernel anyway for other reasons, like the ability to suspend to RAM) and then
->>> it turns out that we have to add some ACPI hooks to it, that might be difficult
->>> to do cleanly.
->>
->> doing suspend-to-ram should be orthoginal to doing hibernate-to-disk. some
->> people will want both, some won't.
->>
->> at the moment kexec doesn't work with ACPI, that is a limitation that
->> should be fixed, but makeing it able to work with ACPI enabled doesn't
->> mean that it needs to be changed to depend on ACPI and it especially
->> doesn't mean that it should pick up the limitations of the existing ACPI
->> based hibernation approaches.
->>
->> if there is no ACPI on the system it should work, if ther is ACPI on the
->> system it should still work.
->>
->>> Thus, it seems reasonable to think of the ACPI handling in advance.
->>
->> but don't become dependant on ACPI.
->
-> Not dependent, but with the possibility of ACPI support taken into account.
->
-> Arguably you can create a framework that, for example, will not allow the user
-> to adjust the size of the image, but then adding such a functionality may
-> require you to change the entire design.  Same thing with ACPI.
->
-> I would rather avoid such pitfalls, if I could.
+* Ian Kent <raven@themaw.net> wrote:
 
-Ok, what is it that you think ACPI fundamentally changes in this process?
+> > ah! It passes in a low-res time source into a high-res time interface 
+> > (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to 
+> > time(NULL) + 2, or change it to:
+> > 
+> > 	gettimeofday(&wait, NULL);
+> > 	wait.tv_sec++;
+> 
+> OK, I'm with you, hi-res timer.
+> But even so, how is the time in the past after adding a second.
+> 
+> Is it because I'm not setting tv_nsec when it's close to a second 
+> boundary, and hence your recommendation above?
 
-keep in mind that we are not makeing the assumption that the hardware 
-will remain powered (even a little bit), or the assumption that nothing 
-else will run on the hardware (eliminating any possibility that the 
-hardware is in a known ACPI state)
+yeah, it looks a bit suspicious: you create a +1 second timeout out of a 
+1 second resolution timesource. I dont yet understand the failure mode 
+though that results in that looping and in the 30% CPU time use - do you 
+understand it perhaps? (and automount is still functional while this is 
+happening, correct?)
 
-David Lang
+	Ingo
