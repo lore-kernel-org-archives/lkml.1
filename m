@@ -1,92 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759361AbXGQFBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbXGQFT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759361AbXGQFBa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 01:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbXGQFBW
+	id S1757673AbXGQFT0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 01:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbXGQFTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 01:01:22 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52892 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752756AbXGQFBV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 01:01:21 -0400
-X-Sasl-enc: Aaip6O26jofDuZX69SirS4QgYMrw72hw26IBOhVJlRZi 1184648480
-Subject: Re: [patch] CFS scheduler, -v19
-From: Ian Kent <raven@themaw.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Bill Davidsen <davidsen@tmr.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20070716215541.GA27171@elte.hu>
-References: <20070706173319.GA2356@elte.hu>
-	 <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com>
-	 <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com>
-	 <469BE462.9030004@redhat.com>  <20070716215541.GA27171@elte.hu>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 13:01:14 +0800
-Message-Id: <1184648474.3188.33.camel@raven.themaw.net>
+	Tue, 17 Jul 2007 01:19:18 -0400
+Received: from 1wt.eu ([62.212.114.60]:3353 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753545AbXGQFTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 01:19:17 -0400
+Date: Tue, 17 Jul 2007 07:16:48 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Tony Borras <tonyb@sysdev.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.4.35 tree abandoned/delayed?
+Message-ID: <20070717051646.GD943@1wt.eu>
+References: <20070716133025.55327074.tonyb@sysdev.org> <20070716163047.55a21e6c.tonyb@sysdev.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070716163047.55a21e6c.tonyb@sysdev.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-16 at 23:55 +0200, Ingo Molnar wrote:
-> * Chuck Ebbert <cebbert@redhat.com> wrote:
-> 
-> > On 07/13/2007 05:19 PM, Bill Davidsen wrote:
-> > > 
-> > > I should really go back to 2.6.21.6, 2.6.22 has many bizarre behaviors
-> > > with FC6. Automount starts taking 30% of CPU (unused at the moment)
-> > 
-> > Can you confirm whether CFS is involved, i.e. does it spin like that 
-> > even without the CFS patch applied?
-> 
-> hmmm .... could you take out the kernel/time.c (sys_time()) changes from 
-> the CFS patch, does that solve the automount issue? If yes, could 
-> someone take a look at automount and check whether it makes use of 
-> time(2) and whether it combines it with finer grained time sources?
+Hi Tony,
 
-Yes it does and I have two reported bugs so far.
+On Mon, Jul 16, 2007 at 04:30:47PM -0800, Tony Borras wrote:
+> I did get the current 'pre' set of 2.4.35 (circa early
+> June) patches and applied to 2.4.34.5.  After fixing a goto
+> mislable in one of the patches (dont remember if it was one of
+> the patch-2.4.34.? or patch-2.4.35.pre5), managed to build a
+> vmlinuz-2.4.35 successfully.
 
-In several places I have code similar to:
+could you please report what the problem was, in case it's not fixed
+yet ?
 
-wait.tv_sec = time(NULL) + 1;
-wait.tv_nsec = 0;
+> Just wondered whether to expect an abandonded tree, in which
+> case I will fly with this 2.4.35 build or should wait for its
+> eventual release.
+ 
+No it's not abandonned at all !!!
 
-signaled = 0;
-while (!signaled) {
-        status = pthread_cond_timedwait(&cond, &mutex, &wait);
-       if (status) {
-             if (status == ETIMEDOUT)
-                  break;
-             fatal(status);
-      }
-}
+The difficulty with 2.4 is to get user feedback on patches. While in 2.6,
+there are hundreds or thousands of testers for every release, in 2.4,
+I have to wait longer after every release in order to start collecting
+problem reports, or confirmation of fixes. People using it in production
+generally cannot reboot a machine in the evening just to try a patch.
+Also, subsystem maintainers have less time to spend on it and are
+themselves slowed down by the slow feedback process.
 
-lead to automount spinning with strace output a bit like:
+That's merely why I maintain a parallel 2.4.34.X stable branch. I thought
+I could release one version every 6 months, but I think that this delay
+will probably slightly increase after 2.4.35, we'll see.
 
-futex(0x80034b60, FUTEX_WAKE, 1)  = 0
-clock_gettime(CLOCK_REALTIME, {1184593936, 130925919}) = 0
-time(NULL)                        = 1184593935
-futex(0x80034b60, FUTEX_WAKE, 1)  = 0
-clock_gettime(CLOCK_REALTIME, {1184593936, 131160876}) = 0
-time(NULL)                        = 1184593935
-futex(0x80034b60, FUTEX_WAKE, 1)  = 0
-clock_gettime(CLOCK_REALTIME, {1184593936, 131377080}) = 0
-time(NULL)                        = 1184593935
-futex(0x80034b60, FUTEX_WAKE, 1)  = 0
-clock_gettime(CLOCK_REALTIME, {1184593936, 131593297}) = 0
-time(NULL)                        = 1184593935
-futex(0x80034b60, FUTEX_WAKE, 1)  = 0
-clock_gettime(CLOCK_REALTIME, {1184593936, 131871792}) = 0
+I still have a few patches to merge, and I expect to be able to work on
+them next week-end, then release -rc1, which I expect to be the only -rc
+before -final (which will probably not be true as in every -rc).
 
-There should be something like:
-
-futex(0x5555557868c4, FUTEX_WAIT, 5321099, {0, 998091311}) = -1 ETIMEDOUT (Connection timed out)
-
-in there I think.
-
-Ian
-
+Thanks,
+Willy
 
