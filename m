@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbXGQHqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbXGQHq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761077AbXGQHqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbXGQHpu
+	id S1758394AbXGQHq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbXGQHqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:45:50 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40509 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbXGQHpt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:45:49 -0400
-Date: Tue, 17 Jul 2007 08:45:46 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kirill Kuvaldin <kuvkir@epsmu.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH] isofs: mounting to regular file may succeed
-Message-ID: <20070717074546.GM21668@ftp.linux.org.uk>
-References: <20070713234721.GG4536@zetta.epsmu.com> <20070717000407.4c854ec8.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Tue, 17 Jul 2007 03:46:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45518 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754782AbXGQHqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:46:16 -0400
+Date: Tue, 17 Jul 2007 09:45:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ian Kent <raven@themaw.net>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Bill Davidsen <davidsen@tmr.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] CFS scheduler, -v19
+Message-ID: <20070717074537.GA13539@elte.hu>
+References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com> <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu> <1184648474.3188.33.camel@raven.themaw.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070717000407.4c854ec8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <1184648474.3188.33.camel@raven.themaw.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 12:04:07AM -0700, Andrew Morton wrote:
 
-> I don't think any (all?) other filesystems perform checks like this.
-> Is this something which can/should be performed at the VFS level?
+* Ian Kent <raven@themaw.net> wrote:
 
-	I don't see why we _should_ check that; VFS checks that we don't
-turn directory into non-directory and vice versa, same as for binding.
-There is no reason why fs driver could not give you a single-node filesystem
-with root being e.g. a block device node.  You could mount it on any
-non-directory and get a block device seen there, etc.
+> Yes it does and I have two reported bugs so far.
+> 
+> In several places I have code similar to:
+> 
+> wait.tv_sec = time(NULL) + 1;
+> wait.tv_nsec = 0;
+> 
+> signaled = 0;
+> while (!signaled) {
+>         status = pthread_cond_timedwait(&cond, &mutex, &wait);
+>        if (status) {
+>              if (status == ETIMEDOUT)
+>                   break;
+>              fatal(status);
+>       }
+> }
 
-	IOW, if filesystem driver considers fs image it's working from
-as invalid, it's up to filesystem driver.  _What_ is considered invalid
-depends on fs type; what the driver cares to report as dubious is, again,
-up to driver.  If isofs wants to warn about an ISO image that definitely
-violates ISO9660, it's isofs decision.  VFS will work with it as long
-as fs driver does...
+ah! It passes in a low-res time source into a high-res time interface 
+(pthread_cond_timedwait()). Could you change the time(NULL) + 1 to 
+time(NULL) + 2, or change it to:
+
+	gettimeofday(&wait, NULL);
+	wait.tv_sec++;
+
+does this solve the spinning?
+
+i'm wondering how widespread this is. If automount is the only app doing 
+this then _maybe_ we could get away with it by changing automount?
+
+	Ingo
