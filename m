@@ -1,141 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936578AbXGQVpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936958AbXGQVqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936578AbXGQVpv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 17:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbXGQVpn
+	id S936958AbXGQVqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 17:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764700AbXGQVqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 17:45:43 -0400
-Received: from 1wt.eu ([62.212.114.60]:3435 "EHLO 1wt.eu"
+	Tue, 17 Jul 2007 17:46:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50630 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754512AbXGQVpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 17:45:42 -0400
-Date: Tue, 17 Jul 2007 23:44:41 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1754329AbXGQVqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 17:46:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: david@lang.hm
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 23:54:17 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v19
-Message-ID: <20070717214441.GA20208@1wt.eu>
-References: <20070706173319.GA2356@elte.hu> <20070708174612.GA4035@1wt.eu> <20070709223950.GA29653@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org> <871wf6g1q1.fsf@jbms.ath.cx> <Pine.LNX.4.64.0707171423280.2467@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707171423280.2467@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070709223950.GA29653@elte.hu>
-User-Agent: Mutt/1.5.11
+Message-Id: <200707172354.18738.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-
-sorry for the long delay, I've spent a week doing non-kernel work.
-
-On Tue, Jul 10, 2007 at 12:39:50AM +0200, Ingo Molnar wrote:
+On Tuesday, 17 July 2007 23:27, david@lang.hm wrote:
+> On Tue, 17 Jul 2007, Jeremy Maitin-Shepard wrote:
 > 
-> * Willy Tarreau <w@1wt.eu> wrote:
+> > david@lang.hm writes:
+> >
+> > [snip]
+> >
+> >>> How do you guarantee that no tasks are scheduled when you get back to the
+> >>> hibernated kernel?
+> >
+> >> just don't schedule any userspace tasks. all you need to do is to execute the
+> >> ACPI sleep functions. you normally do that after stopping userspace
+> >> anyway.
+> >
+> > What does "stopping userspace" mean?  You already said it does not mean
+> > disabling interrupts.  But using the freezer is also not an option,
+> > since the avoidance of that is the main reason for the kexec approach in
+> > the first place.
 > 
-> > > The biggest user-visible change in -v19 is reworked sleeper 
-> > > fairness: it's similar in behavior to -v18 but works more 
-> > > consistently across nice levels. Fork-happy workloads (like kernel 
-> > > builds) should behave better as well. There are also a handful of 
-> > > speedups: unsigned math, 32-bit speedups, O(1) task pickup, 
-> > > debloating and other micro-optimizations.
-> > 
-> > Interestingly, I also noticed the possibility of O(1) task pickup when 
-> > playing with v18, but did not detect any noticeable improvement with 
-> > it. Of course, it depends on the workload and I probably didn't 
-> > perform the most relevant tests.
+> just don't schedule any non-kernel threads.
 > 
-> yeah - it's a small tweak. CFS is O(31) in sleep/wakeup so it's now all 
-> a big O(1) family again :)
-
-Yes, that's what I tried to explain to a guy once : what I like with log(N)
-algos is that even with N very large, log(N) is always small, and it's
-sometimes faster to perform log(N) fast operations than 1 slow operation.
-That's also why I don't care about balanced trees : my unbalanced trees may
-hold 32 levels for 32 carefully chosen values, while balanced trees will
-have 5 levels (worst difference between both). If I can insert and delete
-a node 6 times faster, I always win. And quite frankly, I'm not interested
-at the 32 entries case in a tree :-)
-
-> > V19 works very well here on 2.6.20.14. I could start 32k busy loops at 
-> > nice +19 (I exhausted the 32k pids limit), and could still perform 
-> > normal operations. I noticed that 'vmstat' scans all the pid entries 
-> > under /proc, which takes ages to collect data before displaying a 
-> > line. Obviously, the system sometimes shows some short latencies, but 
-> > not much more than what you get from and SSH through a remote DSL 
-> > connection.
+> remember that the normal shutdown/suspend procedure is (from another 
+> related thread)
 > 
-> great! I did not try to push it this far, yet.
-
-Well, I borrowed two 1GB sticks because I discovered that one of my 512MB
-had one defect bit. It was finally an opportunity for me to push the test
-this far.
-
-> > Here's a vmstat 1 output :
-> > 
-> >  r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
-> > 32437  0  0      0 809724    488   6196    0    0     1     0  135     0 24 72 4
-> > 32436  0  0      0 811336    488   6196    0    0     0     0  717     0 78 22 0
+> > >>sys_reboot(LINUX_REBOOT_CMD_KEXEC)
+> > >>     kernel_kexec
+> > >>         kernel_restart_prepare
+> > >>             device_shutdown
+> > >>         machine_shutdown
+> > >>         machine_kexec
 > 
-> crazy :-)
-
-indeed :-)
-
-> > Amusingly, I started mpg123 during this test and it skipped quite a 
-> > bit. After setting all tasks to SCHED_IDLE, it did not skip anymore. 
-> > All this seems to behave like one could expect.
+> I'm just saying that instead of going back to the normal operation of the 
+> kernel you just go directly to the new shutdown routine instead.
 > 
-> yeah. It behaves better than i expected in fact - 32K tasks is pushing 
-> things quite a bit. (we've got a 32K PID limit for example)
-
-Yes, and in fact, I suspect that we still have an O(N) or O(N^2) pid
-allocation algo somewhere (I did not look at the code), because forking
-was very very slow when reaching those numbers. I'll possibly check this
-when I have some spare time, because it reminds me a trivial source port
-ring allocator I wrote a few years ago which was O(1). With 32k pids, it
-will only require 64kB RAM for the whole system, and we may even optimize
-it to spread CPUs entry points in order to nearly always avoid lock
-contention.
-
-> > I also started 30k processes distributed in 130 groups of 234 chained 
-> > by pipes in which one byte is passed. I get an average of 8000 in the 
-> > run queue. The context switch rate is very low and sometimes even null 
-> > in this test, maybe some of them are starving, I really do not know :
-> > 
-> >  r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
-> > 7752  0  1      0 656892    244   4196    0    0     0     0  725     0 16 84  0
+> > [snip]
+> >
+> >>> Well, not exactly.  If your battery runs out of power while you're suspended,
+> >>> but you have the image saved, it's still better to restore from the image,
+> >> even
+> >>> if something may not work correctly after the restore, than to risk a loss of
+> >>> data.
+> >
+> >> if things don't work correctly you are still risking the loss of data, the user
+> >> just doesn't know it.
+> >
+> > It should be possible on any system to do a hibernate followed by a
+> > shutdown (and then resume properly, without any problems).  Thus, for
+> > handling suspend to both, you resume as if the system had been shutdown,
+> > rather than resuming as if the system came from S4.
 > 
-> hm, could you profile this? We could have some bottleneck somewhere 
-> (likely not in the scheduler) with that many tasks being runnable. [ 
-> With CFS you can actually run a profiler under this workload ;-) ]
+> I agree with this, but according to Rafael if the "hibernated" image is 
+> assuming that the devices were put into low-power mode by ACPI and you 
+> boot up instead the system doesn't work right.
 
-I may probably try some time later (not this week-end, I have some 2.4 to
-work on).
+That's correct, some devices don't work right, but these are not disks.  They
+usually are devices closely related to the platform, like the embedded
+controller.
 
-> > In my tree, I have replaced the rbtree with the ebtree we talked 
-> > about, but it did not bring any performance boost because, eventhough 
-> > insert() and delete() are faster, the scheduler is already quite good 
-> > at avoiding them as much as possible, mostly relying on rb_next() 
-> > which has the same cost in both trees. All in all, the only variations 
-> > I noticed were caused by cacheline alignment when I tried to reorder 
-> > fields in the eb_node. So I will stop my experimentations here since I 
-> > don't see any more room for improvement.
-> 
-> well, just a little bit of improvement would be nice to have too :)
+Greetings,
+Rafael
 
-Yes but I prefer to merge it where it really bring something (I'll have a
-look at epoll, I noticed epollctl() was 30% slower under 2.6 with an rbtree
-as it is under 2.4 with a hash). Then people will tell me "you're completely
-dumb, you could have improved it that way!" and then, once it's optimized to
-be always faster than the rbtree, we can switch CFS to it again ;-)
 
-> 	Ingo
-
-Cheers,
-Willy
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
