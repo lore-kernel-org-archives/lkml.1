@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763479AbXGQNHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763517AbXGQNK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763479AbXGQNHX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 09:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXGQNHK
+	id S1763517AbXGQNK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 09:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbXGQNKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 09:07:10 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:57074 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbXGQNHI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 09:07:08 -0400
-From: Markus <lists4me@web.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v19
-Date: Tue, 17 Jul 2007 15:06:37 +0200
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-References: <20070706173319.GA2356@elte.hu> <200707161959.17750.lists4me@web.de> <20070717073709.GA12465@elte.hu>
-In-Reply-To: <20070717073709.GA12465@elte.hu>
-MIME-Version: 1.0
+	Tue, 17 Jul 2007 09:10:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55903 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbXGQNKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 09:10:17 -0400
+Date: Tue, 17 Jul 2007 15:10:14 +0200
+From: Karel Zak <kzak@redhat.com>
+To: List util-linux-ng <util-linux-ng@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng 2.13-rc2
+Message-ID: <20070717131014.GA28982@petra.dvoda.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707171506.37886.lists4me@web.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX192ckHsitqprwFoFaNrKbo1tAKASf44ItpFSuN+
-	Bo7Z6+Ib8crzH2gllGAXN0+NEiQuJVDR0SR1QwbZdTRL/J3ck3
-	MS2ZPsnXI=
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> could you please send me the cfs-debug-info output nevertheless?
-private mail (4,9K)
-
-> > Nothing is printed for a disapeared app for me.
-> > 
-> > Is there anything more I can try?
-> 
-> sure - could you start one of those apps via:
-> 
-> 	strace -ttt -TTT -o trace.log -f <app>
-> 
-> and wait for it to "disappear"? Then compress the trace.log via 
-bzip2 -9 
-> (it's probably going to be a really large file) and send me it?
-private mail, aswell (187K)
-
-When attachments are allowed, I can resend them on the list as well (or 
-just ask me...)
 
 
-To answer a private mail: I do not use any kernel-module thats not part 
-of the official kernel!
-And of course nothing proprietary
-# cat /proc/sys/kernel/tainted
-0
+The second util-linux-ng 2.13 release candidate is available at
 
-I used gcc-4.1.2 (glibc-2.5-r4) to build the kernels. (Its a amd64 
-system, quite stable so far.)
-
-Programs that "disappeared" are most graphical, because others I have 
-not noticed so far... also [1] might be caused by this...
-amarok, kdesktop, whole X, konqueror, konsole but also gtk-apps
+    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
 
 
-   Markus
+v2.13-rc2 changelog:
+~~~~~~~~~~~~~~~~~~~
+
+readprofile:
+    - also search for __stext in readprofile  [Mike Frysinger]
+build-sys:
+    - remove libtool  [Karel Zak]
+cal:
+    - add test code  [Karel Zak]
+fdisk:
+    - check returns in fdisk from partition changes  [Mike Frysinger]
+    - do not complain about regular files  [H. Peter Anvin]
+    - when generating a DOS disk label, give it an ID  [H. Peter Anvin]
+login-utils:
+    - remove deprecated sigsetmask() from wall  [Karel Zak]
+    - remove unwanted newlines from wall  [Karel Zak, Matthias Koenig]
+lomount.c:
+    - don't use mlockall if CRYPT_NONE [Masatake YAMATO]
+misc-util:
+    - new rtcwake command [Bernhard Walle]
+mount:
+    - add acl option documentation for ext3 and reiserfs [Matthias Koenig]
+schedutils:
+    - fix chrt docs and pid=0 usage [Matthias Koenig]
+    - prefer SYS_ioprio_{set,get} from glibc to hardcoded version [Karel Zak]
+sys-utils:
+    - add arch(1) back to the official tree (see ReleaseNotes
+            for more details)  [Karel Zak]
+whereis:
+    - add lib64 paths  [Karel Zak]
 
 
-[1] http://lkml.org/lkml/2007/07/14/64
+ Feedback and bug reports, as always, are welcomed.
+
+    Karel
+
+-- 
+ Karel Zak  <kzak@redhat.com>
