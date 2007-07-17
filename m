@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933632AbXGQPB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933699AbXGQPE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933632AbXGQPB6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 11:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXGQPBv
+	id S933699AbXGQPE5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 11:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXGQPEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 11:01:51 -0400
-Received: from qb-out-0506.google.com ([72.14.204.236]:28170 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752393AbXGQPBu (ORCPT
+	Tue, 17 Jul 2007 11:04:49 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:32858 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbXGQPEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 11:01:50 -0400
+	Tue, 17 Jul 2007 11:04:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=C0KenE3ZaLnQqNJDzWJy74GQL71hVbCel+5fu/6XlKFLV/oVhNfnb1ZD3Mrf/ASyR9FMQLyRgqNODMT+QXSB1Y6WQINjD+vmuCUAEx3vjUycl/IbnymWtV/AfUdYZqsKnSZNDuJD4kuo/ehKHt5ko22nLKzsB+T9kbGeAjYxWEo=
-Message-ID: <d120d5000707170801u27e11936h9546bd36da7a1162@mail.gmail.com>
-Date: Tue, 17 Jul 2007 11:01:48 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Soeren Sonnenburg" <kernel@nn7.de>
-Subject: Re: [PATCH] appletouch powersaving - please apply for 2.6.23-rc1
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-usb-devel@lists.sourceforge.net,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>,
-       "Nicolas Boichat" <nicolas@boichat.ch>,
-       "Michael Hanselmann" <linux-kernel@hansmi.ch>,
-       "Peter Osterlund" <petero2@telia.com>,
-       "Frank Arnold" <frank@scirocco-5v-turbo.de>,
-       "Stelian Pop" <stelian@popies.net>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Greg Kroah-Hartman" <greg@kroah.com>
-In-Reply-To: <1184656218.14051.43.camel@localhost>
+        b=sbPX8fZWipxlnAh8sUA9JPvN27X9nKZpsPfwyFnUyZ+pQ8rqqN7YEYcWZt87PMK9n4hnbEwe6HeyHcwBC58/VbkVO7B53KLnamiB2IVxR9jZCijOhhoROKdomiXl14z/FDpZ2W0ys5iDZ1jWbEIijD3MthKBBRTxOagj5gdtFWw=
+Message-ID: <dcf706c60707170804p3fecc7c9q26ddec60fd9e59b3@mail.gmail.com>
+Date: Tue, 17 Jul 2007 17:04:47 +0200
+From: "Sasa Ostrouska" <casaxa@gmail.com>
+To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+Subject: Re: VESAFB CUSTOM RESOLUTION
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <469CD54A.4040003@mandic.com.br>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1184656218.14051.43.camel@localhost>
+References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
+	 <469CD54A.4040003@mandic.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On 7/17/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
+On 7/17/07, Renato S. Yamane <renatoyamane@mandic.com.br> wrote:
+> Sasa Ostrouska escreveu:
+> > I want to ask one question about a custom resolution in the console.
+> > I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
+> > 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
+> > ugly as I get a border of about 2-3cm on one the sides of the screen.
+> > So is there a way that I set the 1280x800 resolution at boot time ?
 >
->  err_free_buffer:
-> @@ -656,6 +699,7 @@ static void atp_disconnect(struct usb_interface *iface)
+> Use vga=866 to set 1280x800 in boot time.
+> In Documentation/fb/vesafb.txt is commented only 1280x1024, but in same
+> man page is commented that you can read /Documentation/svga.txt and in
+> this document you can find this:
 >
->        usb_set_intfdata(iface, NULL);
->        if (dev) {
-> +               cancel_work_sync(&dev->work);
->                usb_kill_urb(dev->urb);
->                input_unregister_device(dev->input);
->                usb_buffer_free(dev->udev, dev->datalen,
+> ** Short intro for the impatient: Just use vga=ask for the first time,
+> ** enter `scan' on the video mode prompt, pick the mode you want to use,
+> ** remember its mode ID (the four-digit hexadecimal number) and then
+> ** set the vga parameter to this number (converted to decimal first).
+>
+> Regards,
+> Renato S. Yamane
 >
 
-This should go into atp_close() and I think you need to do
-cancel_work_sync after calling usb_kill_urb() otherwise you risk it
-being submitted while you gettingto kill the urb.
+Many many thanks for your quick answers, I will try those solutions.
 
-How many boxes did you try this patch on?
-
--- 
-Dmitry
+Rgds
+Sasa
