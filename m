@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765945AbXGQHJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932519AbXGQHJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765945AbXGQHJR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762734AbXGQHIi
+	id S932519AbXGQHJi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765666AbXGQHJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:08:38 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:36859 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757864AbXGQHIe (ORCPT
+	Tue, 17 Jul 2007 03:09:03 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:33682 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765777AbXGQHJA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:08:34 -0400
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: block/bsg.c
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20070717065940.GZ5195@kernel.dk>
-References: <20070717063810.GY5195@kernel.dk>
-	<20070717154315E.fujita.tomonori@lab.ntt.co.jp>
-	<20070717065940.GZ5195@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 17 Jul 2007 03:09:00 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Joseph Fannin <jfannin@gmail.com>
+Subject: Re: Hibernating To Swap Considered Harmful
+Date: Tue, 17 Jul 2007 09:10:41 +0200
+User-Agent: KMail/1.9.7
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, david@lang.hm,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <200707121453.49616.rjw@sisk.pl> <200707170744.08191.oliver@neukum.org> <20070717062803.GA9069@nineveh.local>
+In-Reply-To: <20070717062803.GA9069@nineveh.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070717160816K.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 17 Jul 2007 16:08:16 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Content-Disposition: inline
+Message-Id: <200707170910.41971.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: block/bsg.c
-Date: Tue, 17 Jul 2007 08:59:40 +0200
-
-> On Tue, Jul 17 2007, FUJITA Tomonori wrote:
-> > From: Jens Axboe <jens.axboe@oracle.com>
-> > Subject: Re: block/bsg.c
-> > Date: Tue, 17 Jul 2007 08:38:11 +0200
-> > 
-> > > On Mon, Jul 16 2007, Andrew Morton wrote:
-> > > > 
-> > > > A belated review (I've never seen this before and there it is in mainline)
-> > > > 
-> > > > > static char bsg_version[] = "block layer sg (bsg) 0.4";
-> > > > 
-> > > > `const' would be better.  That moves it into a write-protected memory section.
-> > > 
-> > > Agree
-> > > 
-> > > > > #define list_entry_bc(entry)	list_entry((entry), struct bsg_command, list)
-> > > > 
-> > > > This makes the code easier to write but harder to read.  We should optimise
-> > > > for readers.  Please open-code this at callsites.
-> > > > 
-> > > > Or at least convert it into a (commented) (possibly inlined) C function.
-> > > 
-> > > list_entry_to_bc(), then? The main objective is to save on typing, and
-> > > (just as important) make sure we don't bump over the 80 chars per line.
-> > > 
-> > > > > /*
-> > > > >  * just for testing
-> > > > >  */
-> > > > > #define BSG_MAJOR	(240)
-> > > > 
-> > > > What's this doing in mainline?  240 is a "reserved for local use" major. 
-> > > > This will cause collisions.  This code should be using dynamic major
-> > > > assignment.
-> > > 
-> > > Yeah, that's a big error on my part. Will get that fixed up right away.
-> > 
-> > I've been testing the patchset to fix the issues that Andrew pointed
-> > out. I can send it soon.
-> > 
-> > Jens, have you already fixed some?
+Am Dienstag 17 Juli 2007 schrieb Joseph Fannin:
+> On Tue, Jul 17, 2007 at 07:44:07AM +0200, Oliver Neukum wrote:
+> >
+> > If yoi want to go the kexec route to hibernation, the dumping kernel
+> > would need to mount the filesystem to write to a file. Therefore the
+> > suspending kernel would need to sync to disk and lock that file.
 > 
-> I already pushed some of the changes locally, just the idr change is
-> missing. See the #bsg branch:
+> If the file is preallocated, that's not a problem, as there's no need
+> to touch filesystem metadata.  There'd need to be some channel to pass
+
+The suspending and the resuming kernel need to touch metadata.
+The kernel writing the image does not need to touch it.
+You need to make sure that the metadata on disk is in a state that
+allows the resuming kernel to find the file.
+
+> the disk blocks that are for writing the image, but that's not going
+> to be nearly as complicated as passing the current swap data
+> structures from the previous kernel.
+
+You'd need to pass just a bitmap of the swap space. Or you go the
+easiest way and use a dedicated partition.
+ 
+> There's no reason to have that file open in the original kernel --
+> it should be root-owned (it's full of privledged data) and probably
+> mode 000.
 > 
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=bsg
+> root is free to "dd if=/dev/random of=/dev/mem".  Root owned
+> daemons which do bad things are bugs.
+> 
+> Again, supporting swap files (*which is not optional*) requires the
+> very same support.
 
-I see.
+Why would you need to support swap files?
 
-
-> I'll ask for that to get pulled, and can I then assume that you will
-> look after bsg from now on?
-
-I'm happy to do that.
+	Regards
+		Oliver
