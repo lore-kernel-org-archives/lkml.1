@@ -1,88 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbXGQUui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934492AbXGQUvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760097AbXGQUui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936336AbXGQUqH
+	id S934492AbXGQUvF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936455AbXGQUrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:46:07 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:33441
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934825AbXGQUqF (ORCPT
+	Tue, 17 Jul 2007 16:47:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:40274 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964791AbXGQUrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:46:05 -0400
-Date: Tue, 17 Jul 2007 13:34:24 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <200707172217.01890.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0707171328450.2467@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
- <200707172217.01890.rjw@sisk.pl>
+	Tue, 17 Jul 2007 16:47:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tWtFsj/pCteV+yZNwsotQilEYEo9OBCAnt6+pt+YjmvaZlC/bQU6oqpSdgtSVQo5RaRgu5NfQsUJbHWA7GfA8rEwfE/Q0EwmIkw5z++XNs+6hIVv26lXP4WQIb8PDxb1xRFa3d2xdxFzvd8kBI1UmGAWO7rrcmBKKvvwLmKfkfY=
+Message-ID: <6bffcb0e0707171347p3d7b57a2o2631c415d31c4aa2@mail.gmail.com>
+Date: Tue, 17 Jul 2007 22:47:08 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Giacomo Catenazzi" <cate@cateee.net>
+Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <469D1D5E.8050609@cateee.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <469D1D5E.8050609@cateee.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
+Hi,
 
-> On Tuesday, 17 July 2007 20:32, Alan Stern wrote:
+On 17/07/07, Giacomo Catenazzi <cate@cateee.net> wrote:
+> Hello,
 >
->> I'm still not entirely clear on how "suspend-to-both" ought to be
->> handled.  Presumably it will start off as a normal hibernation.  But
->> instead of shutting down, wouldn't the kexec'd kernel return to the
->> original kernel?
+> last git changes to git give me the following error (repead very quickly):
 >
-> No, I think the image-saving kernel should suspend.  Then, on resume the
-> platform will go back to it and it will jump back to the hibernated kernel.
+> sector 14657019, nr/cmr 0/0
+> bio f7b59280, biotail f7b59280, buffer 0000000, date 0000000, len 36
+> ide_do_rw_disk-bad command: dev hda: type 2, flags 104c8
 >
->> After all, the original kernel knows about all the devices and can put them
->> into a low-power state, while the kexec'd kernel might not have sufficient
->> information.
+> [note: manually copied]
 >
-> That's correct, but ...
 >
->> But what about the freezer?  The original reason for using kexec was to
->> avoid the need for the freezer.  With no freezer, while the original
->> kernel is busy powering down its devices, user tasks will be free to
->> carry out I/O -- which will make the memory snapshot inconsistent with
->> the on-disk data structures.
+> I tried bisect:
 >
-> ... we can't return to the hibernated kernel unless we are going to cancel the
-> hibernation.
+>
+> cate@catee:~/kernel/6,v2.6/linux-2.6$ git bisect log
+> # bad: [a5fcaa210626a79465321e344c91a6a7dc3881fa] Merge branch
+> 'drm-patches' of
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
+> # good: [8f41958bdd577731f7411c9605cfaa9db6766809] Merge
+> git://git.infradead.org/battery-2.6
+> git-bisect start 'a5fcaa21' '8f41958b'
+> # good: [02b2318e07f98a7cdf7089a4457a8d62424aa824] Merge branch 'master'
+> of master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6
+> git-bisect good 02b2318e07f98a7cdf7089a4457a8d62424aa824
+> # good: [f716a425c15ebadf60286cd4fb60d1d6f46e3cf9] [POWERPC] VIOTAPE:
+> Use designated initializers for fops member structures.
+> git-bisect good f716a425c15ebadf60286cd4fb60d1d6f46e3cf9
+> # good: [14dc5249728ff699b1ca4dac01ad416a350a147a] Merge branch
+> 'for-linus' of git://git.kernel.dk/data/git/linux-2.6-block
+> git-bisect good 14dc5249728ff699b1ca4dac01ad416a350a147a
+> # good: [c2dc1ad582196208a2f990eb0230eb922046c684] Merge branch
+> 'drm-patches' of
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
+> git-bisect good c2dc1ad582196208a2f990eb0230eb922046c684
+> # good: [c5e3ae8823693b260ce1f217adca8add1bc0b3de] forcedeth bug fix:
+> realtek phy
+> git-bisect good c5e3ae8823693b260ce1f217adca8add1bc0b3de
+> # good: [70584578ab3e940ac9d7820f268f9adc9884e407] [POWERPC] Check for
+> NULL ppc_md.init_IRQ() before calling
+> git-bisect good 70584578ab3e940ac9d7820f268f9adc9884e407
+> # good: [bf22f6fe2d72b4d7e9035be8ceb340414cf490e3] Merge branch
+> 'for-2.6.23' into merge
+> git-bisect good bf22f6fe2d72b4d7e9035be8ceb340414cf490e3
+> # bad: [f798634d806615bee27d1b83479034087a02aa0f] [SERIAL] SUNHV: Fix
+> jerky console on LDOM guests.
+> git-bisect bad f798634d806615bee27d1b83479034087a02aa0f
+> # bad: [29417b899a77aaba1c060f5e123db4f50006f58a] Make BLK_DEV_BSG
+> depend strictly on SCSI=y
+> git-bisect bad 29417b899a77aaba1c060f5e123db4f50006f58a
+>
+> but last changeset don't compile (and it doesn't seem relevant).
 
-this is where we disagree.
+Please read Linux Kernel Tester's Guide - 4.5 Binary searching with
+the help of git-bisect
+"git-reset --hard" hint.
 
-why not? if all that the hibernated kernel does is to suspend-to-ram and 
-makes no changes to disks or TCP connections anything that it does do 
-would be lost if power were to fail and you instead did a restore from 
-disk.
+http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf
 
-there is only a problem if something takes place that would prevent the 
-restore-from-disk from working. if this is done in a non-ACPI way that 
-will work across a power cycle you don't have to worry about the hardware 
-state not matching anyway.
+>
+> ciao
+>         cate
 
-> That's why I think that for the suspend-to-both the image-saving kernel will
-> need to support the same set of devices as the hibernated kernel.
+Regards,
+Michal
 
-suspend-to-both doesn't really make sense if the suspend-to-disk portion 
-is useing the ACPI S4 mode.
-
-if you don't run out of power you will restore-from-ram
-
-if you do run out of power the restore-from-disk won't work either becouse 
-devices are not in the right ACPI states.
-
-David Lang
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
