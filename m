@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762160AbXGQFhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759361AbXGQFmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762160AbXGQFhz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 01:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbXGQFhq
+	id S1759361AbXGQFmd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 01:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXGQFm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 01:37:46 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:34036 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753218AbXGQFhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 01:37:45 -0400
-Date: Tue, 17 Jul 2007 07:46:39 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, olaf.kirch@oracle.com,
-       davem@davemloft.net
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070717054639.GA1640@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 17 Jul 2007 01:42:26 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:35926 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752300AbXGQFmZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 01:42:25 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Joseph Fannin <jfannin@gmail.com>
+Subject: Re: Hibernating To Swap Considered Harmful
+Date: Tue, 17 Jul 2007 07:44:07 +0200
+User-Agent: KMail/1.9.7
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, david@lang.hm,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <200707121453.49616.rjw@sisk.pl> <87odig1idx.fsf@jbms.ath.cx> <20070717001239.GB20082@nineveh.local>
+In-Reply-To: <20070717001239.GB20082@nineveh.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070716091236.GA10718@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200707170744.08191.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16-07-2007 11:12, Ingo Molnar wrote:
-> current -git broke my main testbox. No TCP/IP networking to/from the box 
-> and e1000 would time out in xmit:
+Am Dienstag 17 Juli 2007 schrieb Joseph Fannin:
+> Why are all these workarounds preferred, instead of proper suspend
+> support for swap files?
 > 
->  NETDEV WATCHDOG: eth0: transmit timed out
->  e1000: eth0: e1000_clean_tx_irq: Detected Tx Unit Hang
-...
+> IOW, what reasons are there to *not* support swap files, other than the
+> hit-and-miss Linux suspend support?
 
-Olaf, I think this error can trigger in this place:
+If yoi want to go the kexec route to hibernation, the dumping kernel
+would need to mount the filesystem to write to a file. Therefore the
+suspending kernel would need to sync to disk and lock that file.
 
-> static void net_rx_action(struct softirq_action *h)
-> {
->         struct softnet_data *queue = &__get_cpu_var(softnet_data);
->         unsigned long start_time = jiffies;
->         int budget = netdev_budget;
->         void *have;
-> 
->         local_irq_disable();
-> 
->         while (!list_empty(&queue->poll_list)) {
->                 struct net_device *dev;
-> 
->                 if (budget <= 0 || jiffies - start_time > 1)
->                         goto softnet_break;
-> 
->                 local_irq_enable();
-> 
->                 dev = list_entry(queue->poll_list.next,
->                                  struct net_device, poll_list);
->                 have = netpoll_poll_lock(dev);
-> 
->                 if (dev->quota <= 0 || dev->poll(dev, &budget)) {
+	Regards
+		Oliver
 
-If after poll_napi dev->quota <= 0 dev->poll is not run and
-__LINK_STATE_RX_SCHED bit (plus dev->poll_list) stays uncleared.
-
-Regards,
-Jarek P.
