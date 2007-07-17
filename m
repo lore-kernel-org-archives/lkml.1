@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761425AbXGQDZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbXGQDsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761425AbXGQDZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 23:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbXGQDZs
+	id S1758714AbXGQDsw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 23:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbXGQDsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 23:25:48 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4807 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756672AbXGQDZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 23:25:48 -0400
-Date: Tue, 17 Jul 2007 05:20:28 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: Matt Mackall <mpm@selenic.com>, James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-In-Reply-To: <Pine.LNX.4.64.0707170047230.1817@scrub.home>
-Message-ID: <Pine.LNX.4.64.0707170437110.1818@scrub.home>
-References: <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
- <Pine.LNX.4.64.0707161331570.1817@scrub.home> <20070716121246.GA17880@elte.hu>
- <Pine.LNX.4.64.0707161427100.1817@scrub.home> <20070716134036.GA1533@elte.hu>
- <Pine.LNX.4.64.0707161548000.1817@scrub.home> <20070716203117.GC11166@waste.org>
- <20070716211851.GB18661@elte.hu> <Pine.LNX.4.64.0707162351030.1817@scrub.home>
- <20070716222909.GA30906@elte.hu> <Pine.LNX.4.64.0707170047230.1817@scrub.home>
+	Mon, 16 Jul 2007 23:48:43 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:50907 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbXGQDsm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 23:48:42 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAGTYm0arR7PD/2dsb2JhbAA
+X-IronPort-AV: i="4.16,544,1175497200"; 
+   d="scan'208"; a="183238208:sNHT28258389"
+To: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 01/10] IB/ehca: Support for multiple event queues
+X-Message-Flag: Warning: May contain useful information
+References: <OF2377E85C.B05BDE94-ONC125731A.006E64A7-C125731A.00714F9E@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 16 Jul 2007 20:48:40 -0700
+In-Reply-To: <OF2377E85C.B05BDE94-ONC125731A.006E64A7-C125731A.00714F9E@de.ibm.com> (Hoang-Nam Nguyen's message of "Mon, 16 Jul 2007 22:37:44 +0200")
+Message-ID: <ada1wf7vgfb.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Jul 2007 03:48:41.0253 (UTC) FILETIME=[5D91CD50:01C7C825]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+ > No, I've no figures to provide here. The background of this dist_eqs
+ > option is actually to allow us testing across all event queues
+ > without to change the testcases resp consumers to use certain
+ > event queue number. Thus, I should comment it as EXPERIMENTAL?
 
-On Tue, 17 Jul 2007, I wrote:
+Seems like it's just development/testing code that shouldn't escape
+into the wild?
 
-> Playing around with some other nice levels, confirms the theory that 
-> something is a little off, so I'm quite correct at saying that the ratio 
-> _should_ be 1:10.
+ > > I think I would rather hold off on multiple EQs for this merge window
+ > > and plan on having something really solid and thought-out for 2.6.24.
 
-Rechecking everything there was actually a small error in my test program, 
-so the ratio should be at 1:20. Sorry about that mistake.
-Nice level 19 shows the largest artifacts, as that level only gets a 
-single tick, so the ratio is often 1:HZ/10 (except for 1000HZ where it's 
-5:100). Nevertheless it's still true that in general nice levels were 
-independent of HZ (that's all I wanted to say a couple of mails ago).
+ > Fair enough. However why don't let us gather experience with this
+ > feature now? Should we remove dist_eqs option for more consistency?
 
-Ingo, you can start now gloating, but contrary to you I have no problems 
-with admitting mistakes and apologizing for them. The point is just that 
-I'm reacting better to factual arguments instead of flames (and I think 
-it's not just me), so I'm pretty sure I'm still correct about this:
+As I said I definitely think the dist_eqs switch doesn't sound like
+something we want to expose to people.
 
-> OTOH you are the one who is wrong about me (again). :-(
-
-bye, Roman
+With that said I still am not sure about putting the multiple EQs
+feature in this release.  All the infrastructure is there to make
+experimenting with it fairly painless (just the low-level driver needs
+to change), and I still haven't seen much code using the feature or
+even any anecdotal information about the performance impact.
