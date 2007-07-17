@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762886AbXGQPAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933632AbXGQPB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762886AbXGQPAz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 11:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXGQPAs
+	id S933632AbXGQPB6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 11:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXGQPBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 11:00:48 -0400
-Received: from www.osadl.org ([213.239.205.134]:60980 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752393AbXGQPAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 11:00:47 -0400
-Subject: Re: [patch-mm 14/33] x86_64: Consolidate tsc calibration
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <200707171451.23668.ak@suse.de>
-References: <20070715155510.341941668@inhelltoy.tec.linutronix.de>
-	 <20070715155541.282543247@inhelltoy.tec.linutronix.de>
-	 <200707171451.23668.ak@suse.de>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 17:00:43 +0200
-Message-Id: <1184684443.12353.435.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Tue, 17 Jul 2007 11:01:51 -0400
+Received: from qb-out-0506.google.com ([72.14.204.236]:28170 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752393AbXGQPBu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 11:01:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=C0KenE3ZaLnQqNJDzWJy74GQL71hVbCel+5fu/6XlKFLV/oVhNfnb1ZD3Mrf/ASyR9FMQLyRgqNODMT+QXSB1Y6WQINjD+vmuCUAEx3vjUycl/IbnymWtV/AfUdYZqsKnSZNDuJD4kuo/ehKHt5ko22nLKzsB+T9kbGeAjYxWEo=
+Message-ID: <d120d5000707170801u27e11936h9546bd36da7a1162@mail.gmail.com>
+Date: Tue, 17 Jul 2007 11:01:48 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Soeren Sonnenburg" <kernel@nn7.de>
+Subject: Re: [PATCH] appletouch powersaving - please apply for 2.6.23-rc1
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-usb-devel@lists.sourceforge.net,
+       "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "Nicolas Boichat" <nicolas@boichat.ch>,
+       "Michael Hanselmann" <linux-kernel@hansmi.ch>,
+       "Peter Osterlund" <petero2@telia.com>,
+       "Frank Arnold" <frank@scirocco-5v-turbo.de>,
+       "Stelian Pop" <stelian@popies.net>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Greg Kroah-Hartman" <greg@kroah.com>
+In-Reply-To: <1184656218.14051.43.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1184656218.14051.43.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 14:51 +0200, Andi Kleen wrote:
-> On Sunday 15 July 2007 18:10:55 Thomas Gleixner wrote:
-> > Move the TSC calibration code to tsc.c. Reimplement it so the
-> > pm timer can be used as a reference as well.
-> 
-> Why is the pm timer better than the PIT for this? 
-> 
-> I've had mixed success with the pmtimer too.
+Hi,
 
-I had more consistent results on i386 with pmtimer than with the PIT
+On 7/17/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
+>
+>  err_free_buffer:
+> @@ -656,6 +699,7 @@ static void atp_disconnect(struct usb_interface *iface)
+>
+>        usb_set_intfdata(iface, NULL);
+>        if (dev) {
+> +               cancel_work_sync(&dev->work);
+>                usb_kill_urb(dev->urb);
+>                input_unregister_device(dev->input);
+>                usb_buffer_free(dev->udev, dev->datalen,
+>
 
-> >
-> > Index: linux-2.6.22-rc6-mm/include/asm-i386/tsc.h
-> > ===================================================================
-> > --- linux-2.6.22-rc6-mm.orig/include/asm-i386/tsc.h	2007-07-15 17:26:45.000000000 +0200
-> > +++ linux-2.6.22-rc6-mm/include/asm-i386/tsc.h	2007-07-15 17:34:42.000000000 +0200
-> > @@ -71,4 +71,8 @@ extern void init_tsc_clocksource(void);
-> >  extern void check_tsc_sync_source(int cpu);
-> >  extern void check_tsc_sync_target(void);
-> >  
-> > +#ifdef CONFIG_X86_64
-> > +extern void tsc_calibrate(void);
-> > +#endif
-> 
-> The ifdef shouldn't be needed?
+This should go into atp_close() and I think you need to do
+cancel_work_sync after calling usb_kill_urb() otherwise you risk it
+being submitted while you gettingto kill the urb.
 
-Yep. It can go.
+How many boxes did you try this patch on?
 
-	tglx
-
-
+-- 
+Dmitry
