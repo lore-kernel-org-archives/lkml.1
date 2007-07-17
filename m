@@ -1,104 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbXGQNWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759153AbXGQNW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756941AbXGQNWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 09:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXGQNWW
+	id S1759153AbXGQNW5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 09:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXGQNWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 09:22:22 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:53629 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbXGQNWW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 09:22:22 -0400
-Date: Tue, 17 Jul 2007 15:22:16 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       zippel@linux-m68k.org, jdike@karaya.com, alan@lxorguk.ukuu.org.uk,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: uninline check_signature()
-In-Reply-To: <20070716230307.GB12230@osiris.ibm.com>
-Message-ID: <Pine.LNX.4.64.0707171519300.10600@anakin>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org>
- <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
- <20070716230307.GB12230@osiris.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Jul 2007 09:22:46 -0400
+Received: from il.qumranet.com ([82.166.9.18]:43817 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753192AbXGQNWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 09:22:45 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: KVM: Late fixes for the 2.6.23 merge window
+Date: Tue, 17 Jul 2007 16:22:49 +0300
+Message-Id: <11846785722851-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Heiko Carstens wrote:
-> On Mon, Jul 16, 2007 at 03:35:34PM -0700, Linus Torvalds wrote:
-> > On Mon, 16 Jul 2007, Andrew Morton wrote:
-> > > 
-> > > No, no revert, please.  If the architecture doesn't support readb() then we
-> > > need some reliable way of working that out within Kconfig.
-> > 
-> > Isn't that CONFIG_HAS_IOMEM?
-> 
-> That was my understanding as well considering commits  
-> 5ea8176994003483a18c8fed580901e2125f8a83 and  
-> 23db764d3db5a4bb1e104ad9310e5dc18e4ffa1b  
->   
-> so the patch below should be correct... Geert, Roman?
-> 
-> Subject: [PATCH] Make check_signature() depend on CONFIG_HAS_IOMEM
-> 
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> check_signature() uses readb() and therefore should only be build on
-> CONFIG_HAS_IOMEM.
-> 
-> Otherwise breaks s390:
-> lib/check_signature.c: In function `check_signature':
-> lib/check_signature.c:19: error: implicit declaration of function `readb'
-> 
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> ---
->  lib/Makefile |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6/lib/Makefile
-> ===================================================================
-> --- linux-2.6.orig/lib/Makefile
-> +++ linux-2.6/lib/Makefile
-> @@ -13,7 +13,7 @@ lib-$(CONFIG_SMP) += cpumask.o
->  lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
->  
->  obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
-> -	 bust_spinlocks.o hexdump.o check_signature.o
-> +	 bust_spinlocks.o hexdump.o
->  
->  ifeq ($(CONFIG_DEBUG_KOBJECT),y)
->  CFLAGS_kobject.o += -DDEBUG
-> @@ -21,7 +21,7 @@ CFLAGS_kobject_uevent.o += -DDEBUG
->  endif
->  
->  obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
-> -obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
-> +obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o check_signature.o
->  obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
->  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
->  lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
+A trio of issues were discovered and fixed while bringing up smp guests:
 
-I saw this patch went in.
+- An nx huge page table shadow could alias a real mode shadow page table,
+  causing the real mode page to be treated as not executable.  For certain
+  newer Linux kernels, this caused kvm to spin on the smp trampoline.
 
-iomap_copy.o ues the raw I/O memory accessors, so it truly depends on
-CONFIG_HAS_IOMEM.
+  This is not an smp issue per se, but only triggered in that scenario.
 
-check_signature.o depends on ISA/PCI I/O memory, not on generic I/O
-memory.
+- The memory slot and memory alias manipulation functions were not handled
+  properly in guest smp.  This causes hangs starting X.  With the patch
+  applied, Linux can boot into graphical mode.
 
-Gr{oetje,eeting}s,
+- Windows apparently uses rdmsr and wrmsr on its trampoline, so we need to
+  add these instructions to the x86 emulator.
 
-						Geert
+With these three patches atop the previously submitted patchset, guest smp
+is fully operational.  Kernel build on 2-way smp is 40% faster than on a up
+guest.  Expect significant performance improvements from in-kernel apic and
+from further tuning.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Please review -- comments welcome.
