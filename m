@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932334AbXGQHLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764527AbXGQHSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932334AbXGQHLc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759946AbXGQHLW
+	id S1764527AbXGQHSO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbXGQHSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:11:22 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:18405 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757802AbXGQHLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:11:21 -0400
-Date: Tue, 17 Jul 2007 09:10:45 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
+	Tue, 17 Jul 2007 03:18:03 -0400
+Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:53284 "EHLO
+	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756181AbXGQHSB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:18:01 -0400
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Subject: Re: block/bsg.c
-Message-ID: <20070717071045.GD5195@kernel.dk>
-References: <20070717063810.GY5195@kernel.dk> <20070717154315E.fujita.tomonori@lab.ntt.co.jp> <20070717065940.GZ5195@kernel.dk> <20070717160816K.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070717160816K.fujita.tomonori@lab.ntt.co.jp>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20070717071045.GD5195@kernel.dk>
+References: <20070717065940.GZ5195@kernel.dk>
+	<20070717160816K.fujita.tomonori@lab.ntt.co.jp>
+	<20070717071045.GD5195@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070717161720V.fujita.tomonori@lab.ntt.co.jp>
+Date: Tue, 17 Jul 2007 16:17:20 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17 2007, FUJITA Tomonori wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Subject: Re: block/bsg.c
-> Date: Tue, 17 Jul 2007 08:59:40 +0200
-> 
-> > On Tue, Jul 17 2007, FUJITA Tomonori wrote:
-> > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > Subject: Re: block/bsg.c
-> > > Date: Tue, 17 Jul 2007 08:38:11 +0200
-> > > 
-> > > > On Mon, Jul 16 2007, Andrew Morton wrote:
-> > > > > 
-> > > > > A belated review (I've never seen this before and there it is in mainline)
-> > > > > 
-> > > > > > static char bsg_version[] = "block layer sg (bsg) 0.4";
-> > > > > 
-> > > > > `const' would be better.  That moves it into a write-protected memory section.
-> > > > 
-> > > > Agree
-> > > > 
-> > > > > > #define list_entry_bc(entry)	list_entry((entry), struct bsg_command, list)
-> > > > > 
-> > > > > This makes the code easier to write but harder to read.  We should optimise
-> > > > > for readers.  Please open-code this at callsites.
-> > > > > 
-> > > > > Or at least convert it into a (commented) (possibly inlined) C function.
-> > > > 
-> > > > list_entry_to_bc(), then? The main objective is to save on typing, and
-> > > > (just as important) make sure we don't bump over the 80 chars per line.
-> > > > 
-> > > > > > /*
-> > > > > >  * just for testing
-> > > > > >  */
-> > > > > > #define BSG_MAJOR	(240)
-> > > > > 
-> > > > > What's this doing in mainline?  240 is a "reserved for local use" major. 
-> > > > > This will cause collisions.  This code should be using dynamic major
-> > > > > assignment.
-> > > > 
-> > > > Yeah, that's a big error on my part. Will get that fixed up right away.
-> > > 
-> > > I've been testing the patchset to fix the issues that Andrew pointed
-> > > out. I can send it soon.
-> > > 
-> > > Jens, have you already fixed some?
+From: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: block/bsg.c
+Date: Tue, 17 Jul 2007 09:10:45 +0200
+
+> On Tue, Jul 17 2007, FUJITA Tomonori wrote:
+> > From: Jens Axboe <jens.axboe@oracle.com>
+> > Subject: Re: block/bsg.c
+> > Date: Tue, 17 Jul 2007 08:59:40 +0200
 > > 
-> > I already pushed some of the changes locally, just the idr change is
-> > missing. See the #bsg branch:
+> > > On Tue, Jul 17 2007, FUJITA Tomonori wrote:
+> > > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > > Subject: Re: block/bsg.c
+> > > > Date: Tue, 17 Jul 2007 08:38:11 +0200
+> > > > 
+> > > > > On Mon, Jul 16 2007, Andrew Morton wrote:
+> > > > > > 
+> > > > > > A belated review (I've never seen this before and there it is in mainline)
+> > > > > > 
+> > > > > > > static char bsg_version[] = "block layer sg (bsg) 0.4";
+> > > > > > 
+> > > > > > `const' would be better.  That moves it into a write-protected memory section.
+> > > > > 
+> > > > > Agree
+> > > > > 
+> > > > > > > #define list_entry_bc(entry)	list_entry((entry), struct bsg_command, list)
+> > > > > > 
+> > > > > > This makes the code easier to write but harder to read.  We should optimise
+> > > > > > for readers.  Please open-code this at callsites.
+> > > > > > 
+> > > > > > Or at least convert it into a (commented) (possibly inlined) C function.
+> > > > > 
+> > > > > list_entry_to_bc(), then? The main objective is to save on typing, and
+> > > > > (just as important) make sure we don't bump over the 80 chars per line.
+> > > > > 
+> > > > > > > /*
+> > > > > > >  * just for testing
+> > > > > > >  */
+> > > > > > > #define BSG_MAJOR	(240)
+> > > > > > 
+> > > > > > What's this doing in mainline?  240 is a "reserved for local use" major. 
+> > > > > > This will cause collisions.  This code should be using dynamic major
+> > > > > > assignment.
+> > > > > 
+> > > > > Yeah, that's a big error on my part. Will get that fixed up right away.
+> > > > 
+> > > > I've been testing the patchset to fix the issues that Andrew pointed
+> > > > out. I can send it soon.
+> > > > 
+> > > > Jens, have you already fixed some?
+> > > 
+> > > I already pushed some of the changes locally, just the idr change is
+> > > missing. See the #bsg branch:
+> > > 
+> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=bsg
 > > 
-> > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=bsg
+> > I see.
 > 
-> I see.
+> Since Linus is happily snoring by now, could you test and see if the
+> tree works for you?
 
-Since Linus is happily snoring by now, could you test and see if the
-tree works for you?
-
-> > I'll ask for that to get pulled, and can I then assume that you will
-> > look after bsg from now on?
-> 
-> I'm happy to do that.
-
-Great!
-
--- 
-Jens Axboe
-
+Yeah, I'll do and send patches later if necessary.
