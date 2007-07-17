@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936278AbXGQW61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936543AbXGQXCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936278AbXGQW61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 18:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbXGQW6S
+	id S936543AbXGQXCV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 19:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936314AbXGQXB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 18:58:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33536 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757894AbXGQW6R (ORCPT
+	Tue, 17 Jul 2007 19:01:56 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:46730 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934048AbXGQXBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 18:58:17 -0400
-Date: Tue, 17 Jul 2007 15:57:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Giacomo Catenazzi <cate@cateee.net>,
+	Tue, 17 Jul 2007 19:01:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ue7h+RKP9dccBKdPIi0EQDjZuBWB16e6fWaH/uHiQmce+VzXOK9Ac21LkdDURQZUlcA4kPpKLkIHzElDQc4bzjLzFDJQ3pTVWnEGLa8U9E3QglRHUrzL62VMPipCMDVZ+7tFTYfe1BAuh+SavhOwX/jU3OUkwy4d+F4pogsYtA4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
+Date: Wed, 18 Jul 2007 01:14:56 +0200
+User-Agent: KMail/1.9.6
+Cc: Giacomo Catenazzi <cate@cateee.net>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jens Axboe <jens.axboe@oracle.com>, akpm@linux-foundation.org
-Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
-In-Reply-To: <200707180045.03352.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.0.999.0707171550010.27353@woody.linux-foundation.org>
-References: <469D1D5E.8050609@cateee.net> <200707172320.12141.bzolnier@gmail.com>
- <alpine.LFD.0.999.0707171417560.27353@woody.linux-foundation.org>
- <200707180045.03352.bzolnier@gmail.com>
+References: <469D1D5E.8050609@cateee.net> <200707180045.03352.bzolnier@gmail.com> <alpine.LFD.0.999.0707171535170.27353@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707171535170.27353@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707180114.56942.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-[ Got back to this after thinking about it some more .. ]
-
-On Wed, 18 Jul 2007, Bartlomiej Zolnierkiewicz wrote:
+On Wednesday 18 July 2007, Linus Torvalds wrote:
 > 
-> For now it should be sufficient to revert ide.c chunks of
+> On Wed, 18 Jul 2007, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > The new generic SG layer is CONFIG_SCSI=y "generic" in the current tree.
 > 
-> commit 3d6392cfbd7dc11f23058e3493683afab4ac13a3
+> Yeah. I know, I already talked to Jens about it - in order to be generic, 
+> the BSG stuff really does end up having to be able to stand on its own, 
+> since not everybody wants/needs the whole SCSI layer.
 
-Come to think about this, doesn't the old code trigger this problem too, 
-if you use CDROMEJECT or CDROMCLOSETRAY on a IDE disk (as opposed to an 
-IDE CD-ROM)?
+bsg looks really promising and it would be great if we can use it also
+for IDE driver.
 
-But I'll revert that part of it for now, and at least this issue won't be 
-anything new. In the meantime, BSG has also gotten some other fixes, most 
-notably about them the fact that it's not marked default any more, and 
-properly warning about its EXPERIMENTAL status..
+> > > obviously the older SCSI-ioctl layer) it should "just work".
+> > 
+> > Agreed but IDE driver has never claimed to have full SAT layer and
+> > full SCSI-ioctl layer support has been provided only for ide-cd.
+> 
+> I agree, and understand why it happened, but hope that maybe it can be 
+> improved in the future, or at least the error returned earlier so that the 
+> request will never even hit the ATA device at all if the IDE layer cannot 
+> then handle it.
 
-		Linus
+This is _exactly_ how these requests were handled before commit
+3d6392cfbd7dc11f23058e3493683afab4ac13a3.
+
+Reverting ide.c chunks is a safe solution for now (no SG_IO and friends
+for ide-floppy but this is how it was before this commit).
+
+Thanks,
+Bart
