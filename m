@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934936AbXGQUyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964853AbXGQUzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934936AbXGQUyl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936267AbXGQUyR
+	id S964853AbXGQUzJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757606AbXGQUys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:54:17 -0400
-Received: from sccrmhc11.comcast.net ([63.240.77.81]:48087 "EHLO
-	sccrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935417AbXGQUyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:54:16 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: david@lang.hm
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang\, Ying" <ying.huang@intel.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
-	<200707172217.01890.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707171328450.2467@asgard.lang.hm>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Tue, 17 Jul 2007 16:54:08 -0400
-In-Reply-To: <Pine.LNX.4.64.0707171328450.2467@asgard.lang.hm>
-	(david@lang.hm's message of "Tue\, 17 Jul 2007 13\:34\:24 -0700 \(PDT\)")
-Message-ID: <87fy3mg39r.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 17 Jul 2007 16:54:48 -0400
+Received: from nspiron-1.llnl.gov ([128.115.41.81]:18796 "EHLO smtp.llnl.gov"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936278AbXGQUyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 16:54:47 -0400
+X-Greylist: delayed 717 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jul 2007 16:54:47 EDT
+X-Attachments: 
+X-IronPort-AV: i="4.16,547,1175497200"; 
+   d="scan'208"; a="30761308:sNHT2191777690"
+Subject: Re: [ofa-general] Further 2.6.23 merge plans...
+From: Matt Leininger <leininger2@llnl.gov>
+Reply-To: leininger2@llnl.gov
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+In-Reply-To: <adazm1urji8.fsf@cisco.com>
+References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
+	 <adazm1urji8.fsf@cisco.com>
 Content-Type: text/plain
+Organization: Lawrence Livermore National Laboratory
+Date: Tue, 17 Jul 2007 13:43:07 -0700
+Message-Id: <1184704987.7702.106.camel@hyperion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm writes:
+On Tue, 2007-07-17 at 11:07 -0700, Roland Dreier wrote:
+> >  - Take a look at Sean's local SA caching patches.  I merged
+>  >    everything else from Sean's tree, but I'm still undecided about
+>  >    these.  I haven't read them carefully yet, but even aside from that
+>  >    I don't have a good feeling about whether there's consensus about
+>  >    this yet.  Any opinions about merging, for or against, would be
+>  >    appreciated here.
+> 
+> Does anyone other than Sean have an opinion here?  If you want this
+> feature, if you've tested it, if you don't think it's ready yet,
+> whatever, please speak up -- I don't feel comfortable making a
+> decision on my own here (although I will if I have to).
+  
+  Roland,
+ 
+     I would like to see these features moved upstream.  DOE funded this
+work as part of the items we see needing on our large scale IB
+deployment (both present and future).  So from at least one big customer
+perspective we see this as useful.  
 
-[snip]
+    I'll let others comment on specific code/implementation issues.
 
-> this is where we disagree.
+  Thanks,
 
-> why not? if all that the hibernated kernel does is to suspend-to-ram and makes
-> no changes to disks or TCP connections anything that it does do would be lost if
-> power were to fail and you instead did a restore from disk.
+	- Matt
 
-It would be okay to switch the "hibernated" kernel in order to
-e.g. initiate a suspend to ram provided that everything is done
-atomically with interrupts off, for instance.  It is not clear, though,
-that it is possible to suspend to ram atomically like that.
-
-There is also the question of what state the devices will be in when
-switching back from the "save image" kernel to the "hibernated" kernel.
-
-[snip]
+> _______________________________________________
+> general mailing list
+> general@lists.openfabrics.org
+> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+> 
+> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
 
 -- 
-Jeremy Maitin-Shepard
+Matt Leininger, Ph.D.
+Lawrence Livermore National Laboratory
+leininger2@llnl.gov
+V 925-422-4110
