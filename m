@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933651AbXGQPMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934258AbXGQPN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933651AbXGQPMl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 11:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXGQPMe
+	id S934258AbXGQPN1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 11:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXGQPNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 11:12:34 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:45563 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752338AbXGQPMd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 11:12:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:User-Agent:MIME-Version:Content-Disposition:Cc:Date:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=WIPZh8nXWJhFbu2MomGa9yw59dXvJpt/kO2RkkXEbBmHJd6FcbiDsO6aief80QdoJOfE4p5FtmaS7Rofmd+iIWEexT5tu8UfUWvmxmdT9ZO7k1aLTNxZgVyrd6t1Tk1OKTqmg9hqJq53oqlpSMeQC7sFlH45cuOWgvaKsSg6KnM=  ;
-X-YMail-OSG: kN3TgZcVM1lemSqXhdHd62IB4jxiggTQjuc1KaXVP4hsQPDztIMNANp3BC1hOFHnc2Ae1UoNjA--
-From: David Brownell <david-b@pacbell.net>
-To: bcrl@kvack.org
-Subject: [RESEND patch 2.6.22-rc2-git] AIO sparse fix (type of ki_flags)
-User-Agent: KMail/1.9.6
-MIME-Version: 1.0
+	Tue, 17 Jul 2007 11:13:19 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:45853 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754202AbXGQPNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 11:13:19 -0400
+Date: Tue, 17 Jul 2007 17:14:32 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Domen Puncer <domen.puncer@telargo.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] introduce __init_exit function annotation
+Message-ID: <20070717151432.GA25939@uranus.ravnborg.org>
+References: <20070717080248.GK4375@moe.telargo.com> <20070717130230.GB24780@uranus.ravnborg.org> <s5htzs3ulpf.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Date: Tue, 17 Jul 2007 07:03:57 -0700
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707170703.57917.david-b@pacbell.net>
+In-Reply-To: <s5htzs3ulpf.wl%tiwai@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix type issue reported by latest 'sparse':  kiocb.ki_flags should
-be "unsigned long" (not "long"), to match bitop type signature.
+On Tue, Jul 17, 2007 at 04:52:12PM +0200, Takashi Iwai wrote:
+> At Tue, 17 Jul 2007 15:02:30 +0200,
+> Sam Ravnborg wrote:
+> > 
+> > On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
+> > > Introduce __init_exit, which is useful ie. for drivers that call
+> > > cleanup functions when they fail in __init functions.
+> > 
+> > This is wrong.
+> > On arm (just one example of several) the __exit section are discarded
+> > at buildtime so any reference from __init to __exit will cause the
+> > linker to error out.
+> 
+> Hmm, from what I see, it adds __init to the function.  There is no
+> reference to __exit.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- include/linux/aio.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The cleanup functions are marked __exit in the referenced case.
 
---- h4.orig/include/linux/aio.h	2007-05-19 11:40:45.000000000 -0700
-+++ h4/include/linux/aio.h	2007-05-25 19:23:34.000000000 -0700
-@@ -86,7 +86,7 @@ struct kioctx;
-  */
- struct kiocb {
- 	struct list_head	ki_run_list;
--	long			ki_flags;
-+	unsigned long		ki_flags;
- 	int			ki_users;
- 	unsigned		ki_key;		/* id of this request */
- 
+	Sam
