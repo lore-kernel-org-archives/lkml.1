@@ -1,60 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbXGQLML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762956AbXGQLNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbXGQLML (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 07:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbXGQLL6
+	id S1762956AbXGQLNT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 07:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXGQLNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 07:11:58 -0400
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2907 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752342AbXGQLL6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 07:11:58 -0400
-Date: Tue, 17 Jul 2007 13:12:55 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Tejun Heo <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sysfs root link count broken in 2.6.22-git5
-Message-ID: <20070717131255.71b7e72e@hyperion.delvare>
-In-Reply-To: <20070717034844.GB11602@suse.de>
-References: <20070715124232.4e371bf9@hyperion.delvare>
-	<20070717034844.GB11602@suse.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 17 Jul 2007 07:13:12 -0400
+Received: from ns2.suse.de ([195.135.220.15]:54728 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754579AbXGQLNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 07:13:11 -0400
+From: Neil Brown <neilb@suse.de>
+To: David CHANIAL <david.ml@euro-web.fr>
+Date: Tue, 17 Jul 2007 21:13:08 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18076.42052.961808.528867@notabene.brown>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
+In-Reply-To: message from David CHANIAL on Monday July 16
+References: <200707160638.15750.david.ml@euro-web.fr>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
-
-On Mon, 16 Jul 2007 20:48:44 -0700, Greg KH wrote:
-> On Sun, Jul 15, 2007 at 12:42:32PM +0200, Jean Delvare wrote:
-> > I'm running 2.6.22-git5 and noticed that the link count of the sysfs
-> > root is broken:
-> > 
-> > $ ls -ld /sys
-> > drwxr-xr-x 2 root root 0 Jul 15 12:27 /sys
-> > 
-> > sysfs is mounted, the link count should be 11, and is with kernel
-> > 2.6.22.1. find(1) complains about the bad link count.
+On Monday July 16, david.ml@euro-web.fr wrote:
+> Hi,
 > 
-> I suggest updating your version of find(1), I get no such complaint
-> with:
-> 	$ find --version
-> 	GNU find version 4.3.8
-> 	Built using GNU gnulib version 2007-05-26
-> 	Features enabled: D_TYPE O_NOFOLLOW(enabled) LEAF_OPTIMISATION FTS() CBO(level=0)
+> I'm not sure is the good place to poste that, and if not - please excuse me.
+
+This is the correct place to post this, thanks.
+
 > 
-> What are you using?
+> I was running nfs server v2 since a year on one server, there is few days, i 
+> have update my kernel to 2.6.21.3 with support of nfsv3 server.
+> 
+> Somes times per days i have somes crash as below, needing i reboot the server 
+> to nfs re-become up.
+> 
+> ************
+> BUG: unable to handle kernel NULL pointer dereference at virtual address 
+> 00000004
+  ^^^^^^^^
 
-$ find --version
-GNU find version 4.2.28
-Features enabled: D_TYPE O_NOFOLLOW(enabled) LEAF_OPTIMISATION
+This says that it tried to access memory at address '4'.  There is no
+memory there, so it caused the BUG.
 
-This is the standard version in openSuse 10.2. But how does it matter?
-sysfs is broken, not find(1). Don't you see the sysfs root link count
-at 2 as I do? This needs to be fixed.
 
--- 
-Jean Delvare
+>  printing eip:
+> c01e7279
+> *pde = 09ecc001
+> Oops: 0000 [#1]
+> SMP
+> CPU:    0
+> EIP:    0060:[<c01e7279>]    Not tainted VLI
+> EFLAGS: 00010246   (2.6.21.3-sdf88-core #9)
+                              ^^^^^^^^^^^
+
+What is "-sdf88-core" ?? Are there any extra patches that we should
+know about?
+
+
+> EIP is at encode_fsid+0x67/0x89
+
+This is presumably where the illegal access happened.
+
+> eax: e5bde8c0   ebx: f7593404   ecx: 00000000   edx: 00000006
+> esi: dc569048   edi: f75934ec   ebp: f7593404   esp: f75f1f18
+
+Memory accesses are (almost) always relative to the value in some
+register.  Of these registers, the most likely is ecx, with edx a
+vague possibility.
+
+> Code: e2 08 09 d1 09 c1 eb 10 8b 83 88 00 00 00 8b 40 30 89 c3 89 c1 c1 fb 1f 
+> 89 d8 0f c8 89 06 89 c8 eb 1e 
+
+Unfortunately "ksymoops" does seem to decode this into something quite
+useful enough.  Normally one of the numbers has <> around it.  Are you
+should you copied the number across exactly?
+
+This code decodes as:
+   0:   e2 08                     loop   a <_EIP+0xa>
+   2:   09 d1                     or     %edx,%ecx
+   4:   09 c1                     or     %eax,%ecx
+   6:   eb 10                     jmp    18 <_EIP+0x18>
+   8:   8b 83 88 00 00 00         mov    0x88(%ebx),%eax
+   e:   8b 40 30                  mov    0x30(%eax),%eax
+  11:   89 c3                     mov    %eax,%ebx
+ ....
+
+ From the 'jmp' onwards, that is what I would expect to see in
+ encode_fsid.  The code before there doesn't make a lot of sense, so
+ it is hard to pinpoint exactly there the error is.
+
+ In any case, there is no place in encode_fsid where an offset of 4
+ from any register is indexed, nor an offset of -2.
+ So either there is something wrong with the decoding and displaying
+ of this information, or there is something very wrong with your
+ hardware.
+
+ I would suggest:
+   1/ if possible, run memtest86 on the machine for a while, to make
+      sure there isn't a problem with the memory.
+   2/ If the problem happens again, post another report with all the
+      "oops" information again.  Maybe the next time it will be slightly
+      different and will make more sense in some way.
+
+NeilBrown
+
