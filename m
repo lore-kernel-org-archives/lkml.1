@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762807AbXGQTdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbXGQTeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762807AbXGQTdk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763908AbXGQTdW
+	id S1760282AbXGQTeG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964801AbXGQTda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:33:22 -0400
-Received: from mx2.suse.de ([195.135.220.15]:58977 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935800AbXGQTdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:33:21 -0400
-Date: Tue, 17 Jul 2007 21:33:08 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-Message-ID: <20070717193308.GD25301@v2.random>
-References: <20070706222651.GG5777@v2.random> <1183764801.10287.233.camel@localhost> <20070706235228.GL5777@v2.random> <20070717174737.GM6909@holomorphy.com>
+	Tue, 17 Jul 2007 15:33:30 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:55311 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964790AbXGQTd2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 15:33:28 -0400
+Date: Tue, 17 Jul 2007 14:33:27 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       containers@lists.osdl.org, Cedric Le Goater <clg@fr.ibm.com>
+Subject: [PATCH 1/1] user namespace: fix copy_user_ns return value
+Message-ID: <20070717193327.GA9101@sergelap.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070717174737.GM6909@holomorphy.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 10:47:37AM -0700, William Lee Irwin III wrote:
-> You may rest assured that it's technically feasible. It's been done.
-> The larger obstacles to all this are nontechnical.
+>From 32f86740d27ef77160e438cd7dc4fcd5df159dd0 Mon Sep 17 00:00:00 2001
+From: Serge E. Hallyn <serue@us.ibm.com>
+Date: Tue, 17 Jul 2007 15:28:17 -0400
+Subject: [PATCH 1/1] user namespace: fix copy_user_ns return value
 
-Back then there was no variable order page size proposal, no slub,
-generally nothing of that kind.
+When a CONFIG_USER_NS=n and a user tries to unshare some
+namespace other than the user namespace, the dummy
+copy_user_ns returns NULL rather than the old_ns.  This
+value then gets assigned to task->nsproxy->user_ns, so
+that a subsequent setuid, which uses task->nsproxy->user_ns,
+causes a NULL pointer deref.
 
-I think these days it worth to get it working again and solve the
-technical obstacles once more time. Then we should plug into it a
-pagecache logic to handle small files. That means if the soft page
-size is 64k, we should kmalloc 32k of pagecache if the file is < 64k
-but >= 32k, or kmalloc 16k if the file is < 32k but >= 16k, etc...
+Fix this by returning old_ns.
 
-Down to 32bytes if we memcpy the 32bytes away to a 64k page, and we
-disable the logic the moment somebody attempts to mmap the "kmalloced"
-pagecache (which I think it's a lot simpler than trying to mmap a
-kmalloced 4k naturally aligned object into userland). I wouldn't call
-it tail packing, it's more a fine-granular pagecache with the already
-available kmalloc granularities. That will maximize pagecache
-utilization with read syscall for hg/git compared to current 2.6.22
-plus memory will be allocated faster in 64k chunks etc... Ideally it
-should be possible to disable the finer-granular-kmalloc-pagecache on
-the big irons with lots of memory and only working with big files.
+I believe this is a bug both in -mm and mainline.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ include/linux/user_namespace.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
+index bb32057..1101b0c 100644
+--- a/include/linux/user_namespace.h
++++ b/include/linux/user_namespace.h
+@@ -49,7 +49,7 @@ static inline struct user_namespace *copy_user_ns(int flags,
+ 	if (flags & CLONE_NEWUSER)
+ 		return ERR_PTR(-EINVAL);
+ 
+-	return NULL;
++	return old_ns;
+ }
+ 
+ static inline void put_user_ns(struct user_namespace *ns)
+-- 
+1.5.1.1.GIT
+
