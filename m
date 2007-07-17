@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763369AbXGQJQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbXGQJVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763369AbXGQJQd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 05:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbXGQJQ0
+	id S1761851AbXGQJVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 05:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXGQJVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 05:16:26 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33467 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbXGQJQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 05:16:25 -0400
-Date: Tue, 17 Jul 2007 11:17:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-Subject: Re: [KBUILD] Whitelist references from __dbe_table to .init
-Message-ID: <20070717091738.GB19679@uranus.ravnborg.org>
-References: <20070710081632.GA10559@linux-mips.org>
+	Tue, 17 Jul 2007 05:21:05 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:60324 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750732AbXGQJVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 05:21:04 -0400
+Date: Tue, 17 Jul 2007 11:29:58 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Olaf Kirch <olaf.kirch@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Message-ID: <20070717092958.GB2049@ff.dom.local>
+References: <20070716091236.GA10718@elte.hu> <20070717061458.GB1640@ff.dom.local> <200707170955.38536.olaf.kirch@oracle.com> <200707171028.36451.olaf.kirch@oracle.com> <20070717085748.GA32114@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070710081632.GA10559@linux-mips.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070717085748.GA32114@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 10, 2007 at 09:16:32AM +0100, Ralf Baechle wrote:
-> This is needed on MIPS where the same mechanism as get_user() is used to
-> intercept bus error exceptions for some hardware probes.  Without this
-> patch modpost will throw spurious warnings:
+On Tue, Jul 17, 2007 at 10:57:48AM +0200, Ingo Molnar wrote:
 > 
->   LD      vmlinux
->   SYSMAP  System.map
->   SYSMAP  .tmp_System.map
->   MODPOST vmlinux
-> WARNING: arch/mips/sgi-ip22/built-in.o(__dbe_table+0x0): Section mismatch: reference to .init.text:
+> Olaf,
+> 
+> i've got a new observation: changing CONFIG_HZ from 250 to 1000 makes 
+> the problem go away. So it's somehow also related to jiffies.
 
-Applied,
+IMHO it could be related with __LINK_STATE_RX_SCHED beeing set
+too long e.g. between two softirqs. So, it could be really
+a matter of timing out - not necessarily permanent error state.
 
-	Sam
+Jarek P.
