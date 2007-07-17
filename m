@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbXGQMLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752310AbXGQML5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbXGQMLk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 08:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXGQMLa
+	id S1752310AbXGQML5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 08:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbXGQMLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 08:11:30 -0400
-Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:2137 "EHLO
-	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbXGQML3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 08:11:29 -0400
-X-Greylist: delayed 426 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jul 2007 08:11:28 EDT
-Message-ID: <4194.194.196.35.3.1184673826.squirrel@webmail.xs4all.nl>
-In-Reply-To: <20070717114741.GC25083@localhost.sw.ru>
-References: <20070717114741.GC25083@localhost.sw.ru>
-Date: Tue, 17 Jul 2007 14:03:46 +0200 (CEST)
-Subject: Re: [PATCH] ivtv: don't recompile needlessly
-From: "Hans Verkuil" <hverkuil@xs4all.nl>
-To: "Alexey Dobriyan" <adobriyan@sw.ru>
-Cc: akpm@osdl.org, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org, hverkuil@xs4all.nl
-User-Agent: SquirrelMail/1.4.8
+	Tue, 17 Jul 2007 08:11:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43503 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752093AbXGQMLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 08:11:45 -0400
+Date: Tue, 17 Jul 2007 14:11:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [patch] softlockup: make asm/irq_regs.h available on every platform
+Message-ID: <20070717121139.GA13276@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Driver prints 3l33t banner including kernel version.
-> Could we _please_ never do this in future.
+Subject: core: make asm/irq_regs.h available on every platform
+From: Ingo Molnar <mingo@elte.hu>
 
-Thanks for reporting this. This was a leftover from when the driver was
-standalone. I've merged this patch in my repository and will push it
-upstream.
+the softlockup detector would like to use get_irq_regs(), so generalize 
+the availability on every Linux architecture.
 
-Regards,
+(it is fine for an architecture to always return NULL to get_irq_regs(), 
+which it does by default.)
 
-        Hans
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-arm26/irq_regs.h |    1 +
+ include/asm-cris/irq_regs.h  |    1 +
+ include/asm-ppc/irq_regs.h   |    1 +
+ include/asm-v850/irq_regs.h  |    1 +
+ 4 files changed, 4 insertions(+)
 
->
-> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-> ---
->
->  drivers/media/video/ivtv/ivtv-driver.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> --- a/drivers/media/video/ivtv/ivtv-driver.c
-> +++ b/drivers/media/video/ivtv/ivtv-driver.c
-> @@ -56,7 +56,6 @@
->  #include "ivtv-gpio.h"
->  #include "ivtv-yuv.h"
->
-> -#include <linux/vermagic.h>
->  #include <media/tveeprom.h>
->  #include <media/v4l2-chip-ident.h>
->
-> @@ -1315,7 +1314,7 @@ static struct pci_driver ivtv_pci_driver = {
->  static int module_start(void)
->  {
->  	printk(KERN_INFO "ivtv:  ==================== START INIT IVTV
-> ====================\n");
-> -	printk(KERN_INFO "ivtv:  version %s (" VERMAGIC_STRING ") loading\n",
-> IVTV_VERSION);
-> +	printk(KERN_INFO "ivtv:  version %s loading\n", IVTV_VERSION);
->
->  	memset(ivtv_cards, 0, sizeof(ivtv_cards));
->
->
->
-
-
+Index: linux/include/asm-arm26/irq_regs.h
+===================================================================
+--- /dev/null
++++ linux/include/asm-arm26/irq_regs.h
+@@ -0,0 +1 @@
++#include <asm-generic/irq_regs.h>
+Index: linux/include/asm-cris/irq_regs.h
+===================================================================
+--- /dev/null
++++ linux/include/asm-cris/irq_regs.h
+@@ -0,0 +1 @@
++#include <asm-generic/irq_regs.h>
+Index: linux/include/asm-ppc/irq_regs.h
+===================================================================
+--- /dev/null
++++ linux/include/asm-ppc/irq_regs.h
+@@ -0,0 +1 @@
++#include <asm-generic/irq_regs.h>
+Index: linux/include/asm-v850/irq_regs.h
+===================================================================
+--- /dev/null
++++ linux/include/asm-v850/irq_regs.h
+@@ -0,0 +1 @@
++#include <asm-generic/irq_regs.h>
