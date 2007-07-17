@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935456AbXGQSMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933901AbXGQSM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935456AbXGQSMN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758459AbXGQSL6
+	id S933901AbXGQSM0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935532AbXGQSMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:11:58 -0400
-Received: from v32413.1blu.de ([88.84.155.73]:44697 "EHLO mail.lenk.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756426AbXGQSL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:11:57 -0400
-X-Greylist: delayed 1242 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jul 2007 14:11:57 EDT
-From: Frank Lichtenheld <frank@lichtenheld.de>
-To: perex@suse.cz
-Cc: torvalds@linux-foundation.org, trivial@kernel.org,
-       linux-kernel@vger.kernel.org, Frank Lichtenheld <frank@lichtenheld.de>
-Subject: [PATCH] mixart: Add missing vmalloc.h include
-Date: Tue, 17 Jul 2007 19:50:53 +0200
-Message-Id: <11846946531651-git-send-email-frank@lichtenheld.de>
-X-Mailer: git-send-email 1.5.2.GIT
-Content-Type: text/plain; charset=utf-8
+	Tue, 17 Jul 2007 14:12:16 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:36419 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935455AbXGQSMP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 14:12:15 -0400
+Message-ID: <469D066B.6050606@linux.vnet.ibm.com>
+Date: Tue, 17 Jul 2007 23:41:55 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: =?windows-1252?Q?=22Paul_=28=3F=3F=29_Menage=22?= 
+	<menage@google.com>
+CC: dhaval@linux.vnet.ibm.com, Pavel Emelianov <xemul@sw.ru>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Paul Jackson <pj@sgi.com>, Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Containers: css_put() dilemma
+References: <469BBE00.8000709@linux.vnet.ibm.com> <6599ad830707161203o7f148c75p52e77d4be3ace487@mail.gmail.com> <469C2792.6050009@linux.vnet.ibm.com> <6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com> <20070717070031.GA22410@linux.vnet.ibm.com> <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com> <469C99D1.7090807@linux.vnet.ibm.com> <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com> <469CFF2B.1080702@linux.vnet.ibm.com> <6599ad830707171044u38c0a940r12d2bc80b475ead4@mail.gmail.com>
+In-Reply-To: <6599ad830707171044u38c0a940r12d2bc80b475ead4@mail.gmail.com>
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes the following build error:
-  CC      sound/pci/mixart/mixart_hwdep.o
-sound/pci/mixart/mixart_hwdep.c: In function ‘mixart_hwdep_dsp_load’:
-sound/pci/mixart/mixart_hwdep.c:610: error: implicit declaration of function ‘vmalloc’
-sound/pci/mixart/mixart_hwdep.c:617: error: implicit declaration of function ‘vfree’
+Paul (??) Menage wrote:
+> On 7/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>
+>> That sounds correct. I wonder now if the solution should be some form
+>> of delegation for deletion of unreferenced containers (HINT: work queue
+>> or kernel threads).
+> 
+> What a great idea. In fact, that's exactly what the release agent
+> patch already does.
 
-Signed-off-by: Frank Lichtenheld <frank@lichtenheld.de>
----
- sound/pci/mixart/mixart_hwdep.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+:-) I should have seen that. I am a little lost thinking that
+container_rmdir() and the release agent check_for_release() work
+without too much knowledge of each other. BTW, what are the semantics
+of css_put() is it expected to free the container/run the release agent
+when the reference count of the container_subsys_state drops to zero?
+ 
 
-  Against linus' tree from today
-
-diff --git a/sound/pci/mixart/mixart_hwdep.c b/sound/pci/mixart/mixart_hwdep.c
-index 1d9232d..170781a 100644
---- a/sound/pci/mixart/mixart_hwdep.c
-+++ b/sound/pci/mixart/mixart_hwdep.c
-@@ -24,6 +24,7 @@
- #include <linux/interrupt.h>
- #include <linux/pci.h>
- #include <linux/firmware.h>
-+#include <linux/vmalloc.h>
- #include <asm/io.h>
- #include <sound/core.h>
- #include "mixart.h"
 -- 
-1.5.1.2
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
