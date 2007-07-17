@@ -1,57 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765396AbXGQNME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbXGQNQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765396AbXGQNME (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 09:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXGQNLz
+	id S1755538AbXGQNQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 09:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXGQNQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 09:11:55 -0400
-Received: from smtp19.orange.fr ([80.12.242.17]:56546 "EHLO smtp19.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbXGQNLy convert rfc822-to-8bit (ORCPT
+	Tue, 17 Jul 2007 09:16:16 -0400
+Received: from stinky.trash.net ([213.144.137.162]:44394 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbXGQNQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 09:11:54 -0400
-X-ME-UUID: 20070717131152912.DEDB51C000A2@mwinf1912.orange.fr
-From: David CHANIAL <david.ml@euro-web.fr>
-Organization: Euro Web
-To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
-Date: Tue, 17 Jul 2007 15:11:43 +0200
-User-Agent: KMail/1.9.5
-Cc: Neil Brown <neilb@suse.de>
-References: <200707160638.15750.david.ml@euro-web.fr> <18076.42052.961808.528867@notabene.brown>
-In-Reply-To: <18076.42052.961808.528867@notabene.brown>
+	Tue, 17 Jul 2007 09:16:15 -0400
+Message-ID: <469CC11B.2020103@trash.net>
+Date: Tue, 17 Jul 2007 15:16:11 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707171511.43621.david.ml@euro-web.fr>
+To: Alasdair G Kergon <agk@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Subject: Re: [2.6.23 PATCH 07/18] dm io: fix panic on large request
+References: <20070711205846.GY24114@agk.fab.redhat.com>
+In-Reply-To: <20070711205846.GY24114@agk.fab.redhat.com>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mardi 17 juillet 2007 13:13, Neil Brown a écrit :
-> What is "-sdf88-core" ?? Are there any extra patches that we should
-> know about?
+Alasdair G Kergon wrote:
+> From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+> 
+> bio_alloc_bioset() will return NULL if 'num_vecs' is too large.
+> Use bio_get_nr_vecs() to get estimation of maximum number.
+> 
+> Signed-off-by: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+> Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+> 
+> ---
+>  drivers/md/dm-io.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletion(-)
 
-I have upgraded to 2.6.22.1-sdf90-intel
--sdf90 is a set of a configuration with one little patch :
-	http://www.ssi.bg/~ja/#hidden
 
-intel or core juste say for wich CPU it was compiled (the previous 
-kernel "core" was named-error, the kernel really was for a intel (and not 
-core2) cpu)
+This patch reproducibly oopses my box:
+
+[  126.754204] BUG: unable to handle kernel NULL pointer dereference at
+virtual address 00000000
+[  126.754326]  printing eip:
+[  126.754369] c0141a67
+[  126.754420] *pde = 00000000
+[  126.754465] Oops: 0000 [#1]
+[  126.754507] PREEMPT
+[  126.754585] Modules linked in: [...]
 
 
->    1/ if possible, run memtest86 on the machine for a while, to make
->       sure there isn't a problem with the memory.
->    2/ If the problem happens again, post another report with all the
->       "oops" information again.  Maybe the next time it will be slightly
->       different and will make more sense in some way.
-
-Since the kernel update, no crash anymore - for the moment -.
-If it re-crash i will floow this advices.
-
-Thanks Niel,
--- 
-David
-
+[  126.758372] CPU:    0
+[  126.758373] EIP:    0060:[<c0141a67>]    Not tainted VLI
+[  126.758374] EFLAGS: 00010282   (2.6.22 #1)
+[  126.758511] EIP is at mempool_free+0xe/0xc0
+[  126.758558] eax: d39e65d0   ebx: 00000000   ecx: df2b9898   edx: 00000000
+[  126.758605] esi: 00000000   edi: d39e65d0   ebp: d487d6d0   esp: df79fec0
+[  126.758652] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
+[  126.758699] Process kcryptd/0 (pid: 3218, ti=df79f000 task=df2b9640
+task.ti=df79f000)
+[  126.758747] Stack: 00000000 00000000 d3835f80 00000000 e08b0923
+e08a5f69 00000200 e0ad1080
+[  126.759093]        dfb5ab40 d3835f80 e08b08c0 00000000 e08a5fb7
+c01804d8 00000000 00000200
+[  126.759439]        c520bc00 00000c00 d0b77438 d5754b00 df79ff5c
+e08a515e d0b77444 d5754b00
+[  126.759858] Call Trace:
+[  126.759965]  [<e08b0923>] clone_endio+0x63/0xc0 [dm_mod]
+[  126.760066]  [<e08a5f69>] crypt_convert+0x131/0x17f [dm_crypt]
+[  126.760168]  [<e08b08c0>] clone_endio+0x0/0xc0 [dm_mod]
+[  126.760264]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
+[  126.760349]  [<c01804d8>] bio_endio+0x33/0x5d
+[  126.760462]  [<e08a515e>] dec_pending+0x28/0x39 [dm_crypt]
+[  126.760558]  [<e08a61e6>] kcryptd_do_work+0x22f/0x30f [dm_crypt]
+[  126.760669]  [<c0112182>] update_stats_wait_end+0x7f/0xb2
+[  126.760801]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
+[  126.760888]  [<c012700e>] run_workqueue+0x84/0x179
+[  126.760990]  [<c0127292>] worker_thread+0x0/0xf0
+[  126.761074]  [<c012732f>] worker_thread+0x9d/0xf0
+[  126.761160]  [<c012a360>] autoremove_wake_function+0x0/0x37
+[  126.761256]  [<c0127292>] worker_thread+0x0/0xf0
+[  126.761334]  [<c012a15c>] kthread+0x52/0x58
+[  126.761411]  [<c012a10a>] kthread+0x0/0x58
+[  126.761496]  [<c0104983>] kernel_thread_helper+0x7/0x14
+[  126.761598]  =======================
+[  126.761717] Code: 1c 00 89 f6 eb a9 b8 88 13 00 00 e8 b4 56 1c 00 8d
+74 26 00 eb d5 31 db e9 11 ff ff ff 57 56 53 83 ec 04 89 c7 89 d6 85 c0
+74 55 <8b> 02 39 42 04 7d 46 9c 58 90 8d b4 26 00 00 00 00 89 c3 fa 90
+[  126.763964] EIP: [<c0141a67>] mempool_free+0xe/0xc0 SS:ESP 0068:df79fec0
