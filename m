@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933042AbXGQO35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764914AbXGQObp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933042AbXGQO35 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbXGQO3r
+	id S1764914AbXGQObp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXGQObi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:29:47 -0400
-Received: from gw.goop.org ([64.81.55.164]:52951 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755070AbXGQO3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 10:29:45 -0400
-Message-ID: <469CD222.1030202@goop.org>
-Date: Tue, 17 Jul 2007 07:28:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Tue, 17 Jul 2007 10:31:38 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:64840 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbXGQObg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 10:31:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hY4x++YyM/ni6/zgnTQ9X6qyvqdoqqF+U2cl0Mgj1A4LuHEsE2bTII7drPrVagEAcHCuP1v7LBiaUDuv1c3/PMYhDrbAsdLNQ4aevY1thVI4bMHNMIP5xVv04q0nptyHyVY05GkR25w/l0jmUTc0XbtPyyO/woYO+HiVthCyA1M=
+Message-ID: <9a8748490707170731m28e86e92nf486ba7ae8e6e838@mail.gmail.com>
+Date: Tue, 17 Jul 2007 16:31:34 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Sasa Ostrouska" <casaxa@gmail.com>
+Subject: Re: VESAFB CUSTOM RESOLUTION
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Linus Torvalds <torvalds@linux-foundation.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>, netdev@vger.kernel.org
-Subject: Re: [patch 37/44] xen: add virtual network device driver
-References: <20070716231536.937393000@xensource.com>	<20070716232916.472694000@xensource.com> <20070717094511.795beb69@oldman>
-In-Reply-To: <20070717094511.795beb69@oldman>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
->> +struct netfront_info {
->> +	struct list_head list;
->> +	struct net_device *netdev;
->> +
->> +	struct net_device_stats stats;
->>     
+On 17/07/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
+> Hi ,
 >
-> There is now a net_device_stats element inside net_device on
-> 2.6.21 or later.
->   
-
-Ah, OK.  Should I just do a s/stats/netdev->stats/?  Is there a generic
-get_stats routine as well?
-
->> +
->> +	struct xen_netif_tx_front_ring tx;
->> +	struct xen_netif_rx_front_ring rx;
->> +
->> +	spinlock_t   tx_lock;
->> +	spinlock_t   rx_lock;
->>     
+> I want to ask one question about a custom resolution in the console.
+> I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
+> 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
+> ugly as I get a border of about 2-3cm on one the sides of the screen.
+> So is there a way that I set the 1280x800 resolution at boot time ?
 >
-> It might be a performance advantage to reorder/align these
-> structure elements to put transmit hot elements together, and
-> put tx and rx on different cache lines?
->   
+See these documents:
+ Documentation/fb/vesafb.txt
+ Documentation/fb/fbcon.txt
+ Documentation/svga.txt
+ Documentation/i386/boot.txt
+ Documentation/kernel-parameters.txt
 
-Oh, right.  I'd been meaning to look at that layout more closely.
+Have you tried something like this?
+ vga=0x360 video=vesafb:mtrr,1280x800-16@72
 
-Thanks,
-    J
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
