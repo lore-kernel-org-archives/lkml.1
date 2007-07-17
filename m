@@ -1,87 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935362AbXGQPub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763032AbXGQPzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935362AbXGQPub (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 11:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935250AbXGQPuL
+	id S1763032AbXGQPzK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 11:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbXGQPy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 11:50:11 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:26550 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933653AbXGQPuI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 11:50:08 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=eYlztXLjCb9cSNQBsP8x9WRfv2bMcNf3PP9d7zZMTsIQMI2lHki5E0fitvN0DcB5C
-	l27okqiYLhjwOcKR0dKig==
-Message-ID: <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
-Date: Tue, 17 Jul 2007 08:49:51 -0700
-From: "=?ISO-2022-JP?B?UGF1bCAoGyRCSnVOXBsoQikgTWVuYWdl?=" 
-	<menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Containers: css_put() dilemma
-Cc: dhaval@linux.vnet.ibm.com, "Pavel Emelianov" <xemul@sw.ru>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Paul Jackson" <pj@sgi.com>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <469C99D1.7090807@linux.vnet.ibm.com>
+	Tue, 17 Jul 2007 11:54:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48869 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752289AbXGQPy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 11:54:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: david@lang.hm
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 18:02:29 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org> <200707171640.39955.rjw@sisk.pl> <Pine.LNX.4.64.0707170824570.19248@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707170824570.19248@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <469BBE00.8000709@linux.vnet.ibm.com>
-	 <6599ad830707161203o7f148c75p52e77d4be3ace487@mail.gmail.com>
-	 <469C2792.6050009@linux.vnet.ibm.com>
-	 <6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com>
-	 <20070717070031.GA22410@linux.vnet.ibm.com>
-	 <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com>
-	 <469C99D1.7090807@linux.vnet.ibm.com>
+Message-Id: <200707171802.30903.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> Paul (??) Menage wrote:
-> > On 7/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >> >
-> >> > >                mutex_lock(&container_mutex);
-> >> > >                set_bit(CONT_RELEASABLE, &cont->flags);
-> >> > >-               if (atomic_dec_and_test(&css->refcnt)) {
-> >> > >-                       check_for_release(cont);
-> >> > >-               }
-> >> > >+               check_for_release(cont);
-> >> > >                mutex_unlock(&container_mutex);
-> >> > >
+On Tuesday, 17 July 2007 17:29, david@lang.hm wrote:
+> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
+> 
+> > On Tuesday, 17 July 2007 16:15, Alan Stern wrote:
+> >> On Mon, 16 Jul 2007 david@lang.hm wrote:
+> >>
+> >>>> I agree, it would be good to have a non-ACPI-specific hibernation mode,
+> >>>> something which would look to ACPI like a normal shutdown.  But I'm not
+> >>>> so sure this is possible.
+> >>>
+> >>> why would it not be possible?
+> >>
+> >>> I can't think of anything much more frustrating then thinking that I
+> >>> suspended a system and then discovering that becouse the battery went dead
+> >>> (a complete power loss) that the system wouldn't boot up properly. to me
+> >>> this would be a fairly common condition (when I'm mobile I use the machine
+> >>> until I am out of battery, then stop and it may be a long time (days)
+> >>> before I can charge the thing up again) this would not be a reliable
+> >>> suspend as far as I'm concerned.
+> >>>
+> >>> for suspend-to-ram you have to worry about ACPI states and what you are
+> >>> doing with them, for suspend-to-disk you can ignore them and completely
+> >>> power the system off instead.
+> >>
+> >> If the only problem with doing this would be lack of wakeup support
+> >> then I'm all for it.  There must be a lot of people who would like
+> >> their computers to hibernate with power drain as close to 0 as possible
+> >> and who don't care about remote wakeup.  In fact they might even prefer
+> >> not to have wakeup support, so the computer doesn't resume at
+> >> unexpected times.
 > >
-> > I think that this isn't safe as it stands, without a synchronize_rcu()
-> > in container_diput() prior to the kfree(). Also, it will break if
-> > anyone tries to use a release agent on a hierarchy that has your
-> > memory controller bound to it.
+> > I'm afraid of one thing, though.
 > >
->
->
-> Isn't the code functionally the same as before? We still do atomic_test_and_dec()
-> as before. We still set_bit() CONT_RELEASABLE, we take the container_mutex
-> and check_for_release(). I am not sure I understand what changed?
+> > If we create a framework without ACPI (well, ACPI needs to be enabled in the
+> > kernel anyway for other reasons, like the ability to suspend to RAM) and then
+> > it turns out that we have to add some ACPI hooks to it, that might be difficult
+> > to do cleanly.
+> 
+> doing suspend-to-ram should be orthoginal to doing hibernate-to-disk. some 
+> people will want both, some won't.
+> 
+> at the moment kexec doesn't work with ACPI, that is a limitation that 
+> should be fixed, but makeing it able to work with ACPI enabled doesn't 
+> mean that it needs to be changed to depend on ACPI and it especially 
+> doesn't mean that it should pick up the limitations of the existing ACPI 
+> based hibernation approaches.
+> 
+> if there is no ACPI on the system it should work, if ther is ACPI on the 
+> system it should still work.
+> 
+> > Thus, it seems reasonable to think of the ACPI handling in advance.
+> 
+> but don't become dependant on ACPI.
 
-Because as soon as you do the atomic_dec_and_test() on css->refcnt and
-the refcnt hits zero, then theoretically someone other thread (that
-already holds container_mutex) could check that the refcount is zero
-and free the container structure.
+Not dependent, but with the possibility of ACPI support taken into account.
 
-Adding a synchronize_rcu in container_diput() guarantees that the
-container structure won't be freed while someone may still be
-accessing it.
+Arguably you can create a framework that, for example, will not allow the user
+to adjust the size of the image, but then adding such a functionality may
+require you to change the entire design.  Same thing with ACPI.
 
->
-> Could you please elaborate as to why using a release agent is broken
-> when the memory controller is attached to it?
+I would rather avoid such pitfalls, if I could.
 
-Because then it will try to take container_mutex in css_put() if it
-drops the last reference to a container, which is the thing that you
-said you had to avoid since you called css_put() in contexts that
-couldn't sleep.
+Greetings,
+Rafael
 
-Paul
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
