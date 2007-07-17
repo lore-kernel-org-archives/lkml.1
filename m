@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763196AbXGQLj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765636AbXGQLjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763196AbXGQLj2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 07:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbXGQLjU
+	id S1765636AbXGQLjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 07:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbXGQLjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 07:39:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47684 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752412AbXGQLjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 07:39:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Tue, 17 Jul 2007 13:46:51 +0200
-User-Agent: KMail/1.9.5
-Cc: "Huang, Ying" <ying.huang@intel.com>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <1184167831.12556.13.camel@caritas-dev.intel.com> <200707161740.26703.rjw@sisk.pl> <Pine.LNX.4.64.0707162112180.19248@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707162112180.19248@asgard.lang.hm>
+	Tue, 17 Jul 2007 07:39:22 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:24467 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756078AbXGQLjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 07:39:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rb2+g5fqLFThBpgUEdEnyhjyrBjAHSz0+F7hkITbLuaJikETQ+IGeyvaTdDTxkBeIV5RrXJ0AyUXNO3n0nITaNFkvShRNirplLEC/l4+8e3Qf3TXUaJsm1I1zbmJy2cJnOjPP1cVdwNZNpplxZMEEMbj5xImJOsyRW+mXpXTLPs=
+Message-ID: <9a8748490707170439y5f9f2a54s98c02f31d9dae86@mail.gmail.com>
+Date: Tue, 17 Jul 2007 13:39:20 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Ingo Freund" <linux-kernel-news@e-dict.net>
+Subject: Re: howto create partitions bigger than 2TB
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <469CA5B4.5080106@e-dict.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707171346.52542.rjw@sisk.pl>
+References: <4697760E.4070803@e-dict.net> <46980232.4080500@zytor.com>
+	 <469CA5B4.5080106@e-dict.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 17 July 2007 06:18, david@lang.hm wrote:
-> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
-> 
-> > On Monday, 16 July 2007 16:42, Huang, Ying wrote:
-> >> On Mon, 2007-07-16 at 14:17 +0200, Rafael J. Wysocki wrote:
-> >>>> is this  a matter of running some test to find out, or is this a question
-> >>>> for the kexec implemantors?
-> >>>
-> >>> Actually, I'd like someone to tell me. ;-)
-> >>>
-> >>> I've browsed the kexec code, but haven't found anything related to the devices
-> >>> in it.  Perhaps I didn't know where to look ...
+On 17/07/07, Ingo Freund <linux-kernel-news@e-dict.net> wrote:
+> On 14.07.2007 00:52, H. Peter Anvin wrote (please find the answer below the original text):
+> > Ingo Freund wrote:
+> >> Hi
 > >>
-> >> There are two stages for kexec. For "normal" kexec, first the
-> >> sys_kexe_load is called to load the kernel image, then
-> >> sys_reboot(LINUX_REBOOT_CMD_KEXEC) is called to boot the new kernel.
-> >
-> > OK, thanks.  This is the information that I was missing.
-> >
-> >> The call chain is as follow:
+> >> I've got a RAID5 (driver aacraid for an ICP9047MA) with four
+> >> 750GB hdds which provides a 2.25TB sized device.
+> >> None of the until now used tools will work with that device.
+> >> fdisk complains about missing cylinder count.
+> >> cfdisk misses the device size.
+> >> parted shows the right device size but only creates a partion
+> >> with 51GB.
+> >> What am I supposed to do to work with this device?
+> >> Which fs can handle it?
+> >> (CONFIG LARGE BLOCK is on)
+> >> We are talking about a 32Bit machine with vanilla kernel 2.6.21.5.
 > >>
-> >> sys_reboot(LINUX_REBOOT_CMD_KEXEC)
-> >>     kernel_kexec
-> >>         kernel_restart_prepare
-> >>             device_shutdown
-> >>         machine_shutdown
-> >>         machine_kexec
-> >>
-> >> In device_shutdown, the dev->bus->shutdown or dev->driver->shutdown of
-> >> every device is called to put device in quiescent state. In
-> >> machine_kexec, the new kernel is booted.
 > >
-> > Yes.
+> > You have to use GPT partitions instead of DOS partitions (although you
+> > may have to leave your /boot as an DOS partitions, this is supposed to
+> > be possible as the two partitioning schemes are designed to coexist, but
+> > I don't think parted has support for it yet.)
 > >
-> >> So, for normal kexec, there is no code path for device state saving and
-> >> restoring.
-> >
-> > Exactly.
-> >
-> >> State of device can be restore after shutdown? I don't think so.
-> >
-> > No, it can't, but we need something like this for hibernation and
-> > device_shutdown() is not appropriate for this purpose IMO.
-> 
-> is the only reason that device_shutdown() is not appropriate the amount of 
-> time it takes to shutdown some devices and then start them up again? (I'm 
-> specificly thinking of drive spin down/up as an example)
+>
+> This is the solution (for use as a data container on a backup machine):
+>
+> parted /dev/sdb:
+> (parted) mklabel gpt
+> (parted) mkpart p 0 100%
+> (parted) quit
+> mkreiserfs /dev/sdb1
+> ...and all seems to work.
+>
 
-Not only that.  You also need to save some driver data so that it can restore
-the devices state from before the hibernation.  [Say you have a task blocked
-on the driver's mutex in .read().  In that case you'd want the .read() to be
-carried out after the restore in the same way in which it would have been
-caried out if the hibernation hadn't occur.]
-
-> if so, it is probably worth implementing a demo with the long times 
-> involved to hash out any other problems, and then implemnt shortcuts to 
-> avoid the device_shutdown only where the time involved is excessive.
-
-I think that device_shutdown() is just inappropriate, because in principle
-it doesn't allow you to save any information related to the device state
-before hibernation that may be needed after the restore.
-
-> so, exactly where in the process above does the memory map need to be 
-> created? is this in the machine_shutdown step or would it need to be in 
-> the machine_kexec step?
-
-I would do in in the machine_kexec step.
-
-Greetings,
-Rafael
-
+Why not simply
+mkreiserfs /dev/sdb
+and forget about partitions entirely?
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
