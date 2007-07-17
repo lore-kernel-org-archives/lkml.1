@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934312AbXGQTWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934859AbXGQTY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934312AbXGQTWr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbXGQTWk
+	id S934859AbXGQTY7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXGQTYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:22:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35371 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753224AbXGQTWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:22:40 -0400
-Date: Tue, 17 Jul 2007 21:22:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] kernel/sched.c: remove 2 unused exports
-Message-ID: <20070717192233.GG26283@elte.hu>
-References: <20070712235211.GS3492@stusta.de>
+	Tue, 17 Jul 2007 15:24:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59392 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752162AbXGQTYu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 15:24:50 -0400
+Date: Tue, 17 Jul 2007 12:24:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Simmons <jsimmons@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux console project <linuxconsole-dev@lists.sourceforge.net>
+Subject: Re: [PATCH] Use tty_schedule in VT code. 
+In-Reply-To: <Pine.LNX.4.64.0707171933180.6721@pentafluge.infradead.org>
+Message-ID: <alpine.LFD.0.999.0707171222060.27353@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0707171933180.6721@pentafluge.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070712235211.GS3492@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Adrian Bunk <bunk@stusta.de> wrote:
+[ Alan added to participants list, since he's in charge of tty code ]
 
-> This patch removes the following unused exports:
-> - EXPORT_SYMBOL(cond_resched_softirq);
-> - EXPORT_SYMBOL_GPL(__wake_up_sync);
+On Tue, 17 Jul 2007, James Simmons wrote:
+> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+> index de37ebc..34894e5 100644
+> --- a/drivers/char/tty_io.c
+> +++ b/drivers/char/tty_io.c
+> @@ -559,7 +559,7 @@ void tty_schedule_flip(struct tty_struct *tty)
+>  	if (tty->buf.tail != NULL)
+>  		tty->buf.tail->commit = tty->buf.tail->used;
+>  	spin_unlock_irqrestore(&tty->buf.lock, flags);
+> -	schedule_delayed_work(&tty->buf.work, 1);
+> +	schedule_delayed_work(&tty->buf.work, 0);
 
-these are there for API completeness - their counterparts are exported.
+Is there any real reason for this?
 
-	Ingo
+I think that patch is bogus. Either it should stay at 1, or the whole work 
+should be a non-scheduled one instead.
+
+Do we really need to handle it asap for the console, or is it ok to wait 
+for the next tick, like the regular tty case used to?
+
+And if we need to handle it asap, why the "delayed"?
+
+		Linus
