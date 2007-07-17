@@ -1,128 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbXGQEpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761235AbXGQEsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752735AbXGQEpX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 00:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXGQEo4
+	id S1761235AbXGQEsz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 00:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbXGQEss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 00:44:56 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46964
+	Tue, 17 Jul 2007 00:48:48 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:44805
 	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbXGQEoz (ORCPT
+	with ESMTP id S1752170AbXGQEsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 00:44:55 -0400
-Date: Mon, 16 Jul 2007 21:28:13 -0700 (PDT)
+	Tue, 17 Jul 2007 00:48:47 -0400
+Date: Mon, 16 Jul 2007 21:37:15 -0700 (PDT)
 From: david@lang.hm
 X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jim Crilly <jim@why.dont.jablowme.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Al Boldi <a1426z@gawab.com>
+cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        "Huang, Ying" <ying.huang@intel.com>,
        Jeremy Maitin-Shepard <jbms@cmu.edu>,
        Kyle Moffett <mrmacman_g4@mac.com>,
        Nigel Cunningham <nigel@nigel.suspend2.net>,
        Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
+       pm list <linux-pm@lists.linux-foundation.org>
 Subject: Re: Hibernation considerations
-In-Reply-To: <200707161729.16440.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0707162119500.19248@asgard.lang.hm>
-References: <200707151433.34625.rjw@sisk.pl> <200707161406.28539.rjw@sisk.pl>
- <20070716123849.GC14212@grifter.jdc.home> <200707161729.16440.rjw@sisk.pl>
+In-Reply-To: <200707161951.35225.a1426z@gawab.com>
+Message-ID: <Pine.LNX.4.64.0707162134040.19248@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707161045520.3410-100000@iolanthe.rowland.org>
+ <200707161951.35225.a1426z@gawab.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+On Mon, 16 Jul 2007, Al Boldi wrote:
 
-> On Monday, 16 July 2007 14:38, Jim Crilly wrote:
->> On 07/16/07 02:06:27PM +0200, Rafael J. Wysocki wrote:
->>> On Monday, 16 July 2007 01:49, david@lang.hm wrote:
->>>> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
->>>>
->>>>> On Monday, 16 July 2007 00:42, david@lang.hm wrote:
->>>>>> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
->>>>>>
->>>>>>> On Sunday, 15 July 2007 22:13, david@lang.hm wrote:
->>>>>>>> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
->>>>>>>>
->>>>>>>>>    The ACPI specification requires us to invoke some global ACPI methods
->>>>>>>>>    during the hibernation and during the restore.  Moreover, the ordering of
->>>>>>>>>    code related to these ACPI methods may not be arbitrary (eg. some of
->>>>>>>>>    them have to be executed after devices are put into low power states etc.).
->>>>>>>>
->>>>>>>> for a pure hibernate mode, you will be powering off the box after saving
->>>>>>>> the suspend image. why are there any special ACPI modes involved?
->>>>>>>
->>>>>>> Because, for example, on my machine the status of power supply (present
->>>>>>> vs not present) is not updated correctly after the restore if ACPI callbacks
->>>>>>> aren't used during the hibernation.  That's just experience and it's in line
->>>>>>> with the ACPI spec.
->>>>>>
->>>>>> so if a machine is actually powered off the /dev/suspend process won't
->>>>>> work?
->>>>>
->>>>> No, it sort of works as usual, but after the restore the platform is not in the
->>>>> correct state.
->>>>
->>>> this is not hibernate as I and many others are thinking of it.
->>>>
->>>> hibernate as we are thinking would work on basicly any hardware, including
->>>> things with no ACPI or power savings support. and the system could be in
->>>> hibernate mode for any time period.
->>>>
->>>> for that matter, after a system is put into hibernate mode the system
->>>> could be completely disassembled and any components replaced and the
->>>> system would work after a resume (assuming you still have access to the
->>>> suspend image)
->>>
->>> Well, this is not how ACPI defines the S4 sleep state.  If the system is in
->>> S4, that corresponds to our hibernation, you are _not_ allowed to disassemble
->>> it.
->>>
->>> I've just done an experiment on my test desktop.  I had enabled suspend support
->>> in the CMOS setup and afterwards I made Linux hibernate in the "platform" mode.
->>> Then, when the system was powred on, the BIOS showed me a nice "Resume from
->>> hibernation" screen that is not normally displayed during boot.  This clearly
->>> means that some information has been preserved by the platform across the
->>> hibernate/restore cycle.  We are supposed to handle that.
->>>
+> Alan Stern wrote:
+>> On Mon, 16 Jul 2007, Al Boldi wrote:
+>>> From a kexec'd hibernation kernel pov, both S3 and S4 look conceptually
+>>> exactly the same.  The only difference is, in S3 the memory is in memory
+>>> and in S4 the memory is on storage.  All device handling is exactly the
+>>> same, so if there is a problem with device handling between the kexec'd
+>>> hibernation kernel and the normal kernel, then that would have made
+>>> itself visible.
 >>
->> What I believe he's getting at is that Linux hibernation shouldn't be tied
->> to any ACPI states. Yes, when available and working most people will want
->> to enter ACPI S4 but we should still have the option of doing a normal
->> poweroff. With the latter method it would look just like regular power off/on
->> cycle to the firmware. And that would definitely be useful for things like
->> working around buggy ACPI implementations or supporting platforms that don't
->> do ACPI at all. That is the difference between the platform and shutdown
->> options in /sys/power/disk, isn't it?
+>> You have contradicted yourself.  "In S3 the memory is in memory and in
+>> S4 the memory is on storage".  How does the memory get onto storage?
+>> The kexec'd hibernation kernel writes it there.  To do so it accesses a
+>> storage device.
+>>
+>> Consequently the device handling _cannot_ be exactly the same in S3 and
+>> S4.
 >
-> Yes, but this is not my point.
+> Ok, you should have read this in the context of suspending/resuming from/to
+> the normal kernel, and in that case they are exactly the same, i.e. kexec -e
+> for suspend and kexec -j for resume.
 >
-> The point is that there are systems that _require_ the ACPI handling to work
-> correctly after the restore and we need to that _that_ into consideration.
->
-> IOW, there are poeple for whom the non-ACPI framework won't work as expected.
+> BTW, it would be really helpful if people would actually try the kexec
+> hibernation patches, as this may yield a much more constructive discussion.
 
-why would the type of hibernate that I'm talking about (power off, not S4 
-mode) not work on a box that has ACPI?
+I would love to, but so far I don't see the nessasary pieces
 
-you are saying that it wouldn't work right after a restore, but that's 
-only if the restored image is expecting to have it's devices in ACPI sleep 
-modes. my answer is "don't do that then" S4 mode does not save power 
-compared to powering off, and when doing a hibernate you should be 
-prepared to run out of battery before you wake up, which would then look 
-like a power-on
+once I kexec to the new kernel, how can it find out what pages of memory 
+(and swap) need to be saved?
 
-the S4 mode sounds like a deeper version of suspend-to-ram, with all of 
-the limitations of STR becouse you still require power continuously and 
-must remain in complete control of the machine.
+If i knew that then I could write a trivial perl program to save those 
+pages with the appropriate headers to make a suspend file.
 
-if you want to do a suspend to S4 mode, go for it, but we need to have a 
-different name for that then for the suspend-to-disk-and-poer-off mode 
-that I thought was hibernate
+however, I'm now being told that that suspend file won't work if the 
+machine is actually powered off, so there's a need to something more for 
+the wake-up side of things as well.
 
 David Lang
