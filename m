@@ -1,185 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762380AbXGQILi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933038AbXGQIND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762380AbXGQILi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764143AbXGQIKt
+	id S933038AbXGQIND (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:13:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757862AbXGQIMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:10:49 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56461 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759287AbXGQIKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:10:41 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX19ggEhqXw9g0FObicsw1z/G/WWnOTS1YkknreEA+j
-	pKfNTcteppwyP2
-Message-ID: <469C6F81.7070600@gmx.net>
-Date: Tue, 17 Jul 2007 09:28:01 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Tue, 17 Jul 2007 04:12:47 -0400
+Received: from il.qumranet.com ([82.166.9.18]:43916 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754681AbXGQIMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 04:12:46 -0400
+Message-ID: <469C7A05.2070205@qumranet.com>
+Date: Tue, 17 Jul 2007 11:12:53 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: timerfd read only gets single byte?
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Dike <jdike@addtoit.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       KVM devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: [PATCH 1/3] KVM - Add missing kvm_run initializations
+References: <20070716192446.GA16243@c2.user-mode-linux.org>
+In-Reply-To: <20070716192446.GA16243@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Davide,
+Jeff Dike wrote:
+> There are a bunch of missing initializations of run->exit_reason and
+> associated data.
+>
+> kvm_hypercall wasn't setting exit_reason at all.
+>
+> When exit_reason is KVM_EXIT_MMIO, the mmio data isn't initialized.  I
+> don't know what it should be, so I just stuck a FIXME in there.
+>
+> There were some missing initializations of hardware_exit_reason with
+> KVM_EXIT_UNKNOWN, so I added those.  One case had exit_reason = 0,
+> which I changed to KVM_EXIT_UNKNOWN.
+>
+> I did a pass over all of the return 0 paths in the exit handler
+> callbacks, so this should cover everything.
+>
+> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+> --
+>  drivers/kvm/kvm_main.c |    3 +++
+>  drivers/kvm/svm.c      |    3 +++
+>  drivers/kvm/vmx.c      |    4 +++-
+>  3 files changed, 9 insertions(+), 1 deletion(-)
+>
+> Index: kvm/drivers/kvm/kvm_main.c
+> ===================================================================
+> --- kvm.orig/drivers/kvm/kvm_main.c
+> +++ kvm/drivers/kvm/kvm_main.c
+> @@ -1370,6 +1370,7 @@ int kvm_hypercall(struct kvm_vcpu *vcpu,
+>  		run->hypercall.ret = ret;
+>  		run->hypercall.longmode = is_long_mode(vcpu);
+>  		kvm_arch_ops->decache_regs(vcpu);
+> +		run->exit_reason = KVM_EXIT_HYPERCALL;
+>  		return 0;
+>  	}
+>   
 
-While writing a test program to incorporate into the timerfd.2 man page, I
-think I've found a bug.  It looks like only the least significant byte of
-ticks is being returned from read(2), even though I am providing a 4 byte
-buffer.
+Aye. (And: aiiieee)
 
-The test program takes 3 command line arguments:
+>  	vcpu->regs[VCPU_REGS_RAX] = ret;
+> @@ -1928,6 +1929,8 @@ static int kvm_vcpu_ioctl_run(struct kvm
+>  		if (r == EMULATE_DO_MMIO) {
+>  			/*
+>  			 * Read-modify-write.  Back to userspace.
+> +			 *
+> +			 * FIXME - kvm_run->mmio not initialized
+>  			 */
+>  			kvm_run->exit_reason = KVM_EXIT_MMIO;
+>  			r = 0;
+>   
 
-1) seconds for the initial expiration
-2) seconds for the timer interval
-3) number of timer expirations to catch before terminating
+I believe that emulate_instruction will set run->mmio if it returns 
+EMULATE_DO_MMIO.
 
-I tried running this program and suspending it for a few minutes, to see if
-I could get a large overrun value.  When I do this on 2.6.22-rc4 (the built
-kernel I have to hand), I see the following:
+> Index: kvm/drivers/kvm/svm.c
+> ===================================================================
+> --- kvm.orig/drivers/kvm/svm.c
+> +++ kvm/drivers/kvm/svm.c
+> @@ -929,6 +929,7 @@ static int pf_interception(struct kvm_vc
+>  		return 1;
+>  	case EMULATE_DO_MMIO:
+>  		++vcpu->stat.mmio_exits;
+> +		/* FIXME - kvm_run->mmio not initialized */
+>  		kvm_run->exit_reason = KVM_EXIT_MMIO;
+>   
 
-============
-$ ./timerfd_demo 1 1 500
-0.000: timer started
-1.005: read: 1; total=1
-2.005: read: 1; total=2
-3.005: read: 1; total=3
-4.005: read: 1; total=4
-5.006: read: 1; total=5
-^Z
-[1]+  Stopped                 ./timerfd_demo 1 1 500
-$ date
-Tue Jul 17 09:18:11 CEST 2007
-$ date
-Tue Jul 17 09:23:40 CEST 2007
-$ fg
-./timerfd_demo 1 1 500
-339.769: read: 78; total=83
-340.004: read: 1; total=84
-341.004: read: 1; total=85
-^C
-==============
+Ditto.
 
-The after bringing the program back into the foreground, I would have
-expected to get an overrun count of 334 or thereabouts, but it looks as
-though I'm only getting the least significant byte from read(2).
+The rest are all good.
 
-Cheers,
-
-Michael
-
-
-/* Link with -lrt */
-
-#define _GNU_SOURCE
-#include <sys/syscall.h>
-#include <unistd.h>
-#include <time.h>
-#if defined(__i386__)
-#define __NR_timerfd 322
-#endif
-
-static int
-timerfd(int ufd, int clockid, int flags, struct itimerspec *utmr) {
-    return syscall(__NR_timerfd, ufd, clockid, flags, utmr);
-}
-
-#define TFD_TIMER_ABSTIME (1 << 0)
-
-////////////////////////////////////////////////////////////
-
-// #include <sys/timerfd.h>
-#include <time.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>     /* Definition of uint32_t */
-
-#define die(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
-static void
-print_elapsed_time(void)
-{
-    static struct timespec start;
-    struct timespec curr;
-    static int first_call = 1;
-    int secs, nsecs;
-
-    if (first_call) {
-        first_call = 0;
-        if (clock_gettime(CLOCK_MONOTONIC, &start) == -1)
-            die("clock_gettime");
-    }
-
-    if (clock_gettime(CLOCK_MONOTONIC, &curr) == -1)
-        die("clock_gettime");
-
-    secs = curr.tv_sec - start.tv_sec;
-    nsecs = curr.tv_nsec - start.tv_nsec;
-    if (nsecs < 0) {
-        secs--;
-        nsecs += 1000000000;
-    }
-    printf("%d.%03d: ", secs, (nsecs + 500000) / 1000000);
-}
-
-int
-main(int argc, char *argv[])
-{
-    struct itimerspec utmr;
-    int max_exp, tot_exp, tfd;
-    struct timespec now;
-    uint32_t exp;
-    ssize_t s;
-
-    if ((argc != 2) && (argc != 4)) {
-        fprintf(stderr, "%s init-secs [interval-secs max-exp]\n",
-                argv[0]);
-        exit(EXIT_FAILURE);
-    }
-
-    if (clock_gettime(CLOCK_REALTIME, &now) == -1)
-        die("clock_gettime");
-
-    /* Create a CLOCK_REALTIME absolute timer with initial
-       expiration and interval as specified in command line */
-
-    utmr.it_value.tv_sec = now.tv_sec + atoi(argv[1]);
-    utmr.it_value.tv_nsec = now.tv_nsec;
-    if (argc == 2) {
-        utmr.it_interval.tv_sec = 0;
-        max_exp = 1;
-    } else {
-        utmr.it_interval.tv_sec = atoi(argv[2]);
-        max_exp = atoi(argv[3]);
-    }
-    utmr.it_interval.tv_nsec = 0;
-
-    tfd = timerfd(-1, CLOCK_REALTIME, TFD_TIMER_ABSTIME, &utmr);
-    if (tfd == -1)
-        die("timerfd");
-
-    print_elapsed_time();
-    printf("timer started\n");
-
-    exp = 0; // ????? Without this initialization, the results from
-             // read() are strange; it appears that read() is only
-             // returning one byte of tick information, not four.
-    for (tot_exp = 0; tot_exp < max_exp;) {
-        s = read(tfd, &exp, sizeof(uint32_t));
-        if (s != sizeof(uint32_t))
-            die("read");
-
-        tot_exp += exp;
-        print_elapsed_time();
-        printf("read: %u; total=%d\n", exp, tot_exp);
-    }
-
-    exit(EXIT_SUCCESS);
-}
+-- 
+error compiling committee.c: too many arguments to function
 
