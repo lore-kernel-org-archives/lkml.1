@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765668AbXGQBCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbXGQBGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765668AbXGQBCw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 21:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762654AbXGQBCU
+	id S932704AbXGQBGI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 21:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932190AbXGQBFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 21:02:20 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:15833 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760117AbXGQBCR (ORCPT
+	Mon, 16 Jul 2007 21:05:45 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:38453 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760740AbXGQBFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 21:02:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=MMAJ7l4e+UOhRQ1oJ2a/WRvXxg50OP6r6DO0x95hXPDcP9dZKQ1TQuriI7eO7yRiTHBsSpGlg9PhUodMGl34BMTadKdtQgs5YJcu+F3eBnT4tXndxdlORJq2GbmvD88c5Scp3qQ6FZYXlk+ZfolxSqVUwaRzWrCqPuaU7xj61WY=
-Message-ID: <469C14E9.5070909@googlemail.com>
-Date: Tue, 17 Jul 2007 03:01:29 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
-MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: block/bsg.c
-References: <20070716165706.348f6bbf.akpm@linux-foundation.org> <a781481a0707161752v3dcb794cvc9b9c2f8812def57@mail.gmail.com>
-In-Reply-To: <a781481a0707161752v3dcb794cvc9b9c2f8812def57@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Jul 2007 21:05:43 -0400
+Date: Mon, 16 Jul 2007 19:07:36 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sata_nv: 2.6.22 is not fixed, but certainly improved
+In-reply-to: <fa.9GsXANcxdaaxd0tpVuOSy0KKiew@ifi.uio.no>
+To: Charles Shannon Hendrix <shannon@widomaker.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <469C1658.4070204@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.9GsXANcxdaaxd0tpVuOSy0KKiew@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> On 7/17/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->   
->
-> CONFIG_BLK_DEV_BSG=y
-> CONFIG_SCSI=m
->
-> block/built-in.o: In function `bsg_init':
-> block/bsg.c:1097: undefined reference to `scsi_register_interface'
-> make: *** [.tmp_vmlinux1] Error 1
->
-> on latest -git.
->   
+Charles Shannon Hendrix wrote:
+> I just compiled 2.6.22.1 on my Kubuntu 7.0.4 system.
+> 
+> As before, I get errors using my Seagate SATA drives, and setting adma=0
+> fixes the problem.  I've posted the exact error/reset messages several times
+> before.
+> 
+> However, I would like to note that it happens far less often with 2.6.22.1
+> than it did with 2.6.21.
+> 
+> The history on my own machine is like this:
+> 
+> 	2.6.19	perfect, but of course no ADMA/NCQ
+> 	2.6.20	horrible, with hard resets starting immediately upon
+> 		boot, and taking 15 minutes to finally disable NCQ
+> 	2.6.21	bad resets, but they only occured ever 10-30 minutes,
+> 		NCQ never disabled
+> 	2 6.22	resets infrequent, they are soft resets, and much
+> 		quicker than before (i.e. less interruption of my usage)
+> 		NCQ is never disabled
+> 
+> I have no idea why I might be seeing a gradual reduction in the severity of
+> the problem, but it seems worth noting.
+> 
+> I want to point it out in case it means something to anyone working on
+> the kernel, especially the SATA code and drivers.
+> 
+> In the last 4 hours of use, I've seen a single reset.
+> 
+> On all previous kernels under the same load, I'd already have seen several of
+> them, or with 2.6.20, a constant stream of them.
 
-Should be fixed by this commit :
+Can you post the output you got from the reset on 2.6.22?
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=29417b899a77aaba1c060f5e123db4f50006f58a
-
-> Satyam
->
->   
-
-Gabriel
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
