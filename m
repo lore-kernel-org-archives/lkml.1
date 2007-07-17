@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934354AbXGQWom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934698AbXGQWtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934354AbXGQWom (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 18:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbXGQWof
+	id S934698AbXGQWtU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 18:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbXGQWtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 18:44:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48788 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756370AbXGQWoe (ORCPT
+	Tue, 17 Jul 2007 18:49:13 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:49430
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756370AbXGQWtM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 18:44:34 -0400
-Date: Tue, 17 Jul 2007 15:38:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Giacomo Catenazzi <cate@cateee.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, akpm@linux-foundation.org
-Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
-In-Reply-To: <200707180045.03352.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.0.999.0707171535170.27353@woody.linux-foundation.org>
-References: <469D1D5E.8050609@cateee.net> <200707172320.12141.bzolnier@gmail.com>
- <alpine.LFD.0.999.0707171417560.27353@woody.linux-foundation.org>
- <200707180045.03352.bzolnier@gmail.com>
+	Tue, 17 Jul 2007 18:49:12 -0400
+Date: Tue, 17 Jul 2007 15:37:07 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+In-Reply-To: <Pine.LNX.4.44L0.0707171835560.8690-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.64.0707171535350.2467@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707171835560.8690-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 17 Jul 2007, Alan Stern wrote:
 
+> On Tue, 17 Jul 2007 david@lang.hm wrote:
+>
+>>> But what about the freezer?  The original reason for using kexec was to
+>>> avoid the need for the freezer.  With no freezer, while the original
+>>> kernel is busy powering down its devices, user tasks will be free to
+>>> carry out I/O -- which will make the memory snapshot inconsistent with
+>>> the on-disk data structures.
+>>
+>> no, user tasks just don't get scheduled during shutdown.
+>
+> But a user task may be holding a lock which is needed for putting some
+> device into low-power mode.  It can't release that lock if it doesn't
+> get scheduled.
 
-On Wed, 18 Jul 2007, Bartlomiej Zolnierkiewicz wrote:
-> 
-> The new generic SG layer is CONFIG_SCSI=y "generic" in the current tree.
+then you can't suspend that box. if you schedule it, it could get another 
+lock (or another process gets another lock)
 
-Yeah. I know, I already talked to Jens about it - in order to be generic, 
-the BSG stuff really does end up having to be able to stand on its own, 
-since not everybody wants/needs the whole SCSI layer.
+if you can't power down or put hardware into low-power mode without the 
+approval of userspace, you are in serious trouble.
 
-> > obviously the older SCSI-ioctl layer) it should "just work".
-> 
-> Agreed but IDE driver has never claimed to have full SAT layer and
-> full SCSI-ioctl layer support has been provided only for ide-cd.
-
-I agree, and understand why it happened, but hope that maybe it can be 
-improved in the future, or at least the error returned earlier so that the 
-request will never even hit the ATA device at all if the IDE layer cannot 
-then handle it.
-
-> For now it should be sufficient to revert ide.c chunks of
-> 
-> commit 3d6392cfbd7dc11f23058e3493683afab4ac13a3
-
-Jens?
-
-		Linus
+David Lang
