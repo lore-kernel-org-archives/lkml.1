@@ -1,86 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbXGQSQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935914AbXGQSQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758758AbXGQSQQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763406AbXGQSP7
+	id S935914AbXGQSQf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763406AbXGQSQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:15:59 -0400
-Received: from kukmak.uni-mb.si ([164.8.100.3]:48336 "EHLO kukmak.uni-mb.si"
+	Tue, 17 Jul 2007 14:16:23 -0400
+Received: from nn7.de ([85.214.94.156]:49104 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758385AbXGQSP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:15:57 -0400
-X-Greylist: delayed 1625 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jul 2007 14:15:56 EDT
-Date: Tue, 17 Jul 2007 19:48:40 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] introduce __init_exit function annotation
-Message-ID: <20070717174840.GN2400@nd47.coderock.org>
-References: <20070717080248.GK4375@moe.telargo.com> <20070717130230.GB24780@uranus.ravnborg.org> <s5htzs3ulpf.wl%tiwai@suse.de> <20070717151432.GA25939@uranus.ravnborg.org> <s5hodibukle.wl%tiwai@suse.de> <20070717153236.GB25939@uranus.ravnborg.org> <s5hir8jujhc.wl%tiwai@suse.de>
+	id S935860AbXGQSQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 14:16:22 -0400
+Subject: Re: [PATCH] appletouch powersaving - please apply for 2.6.23-rc1
+	take #3
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-usb-devel@lists.sourceforge.net,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Nicolas Boichat <nicolas@boichat.ch>,
+       Michael Hanselmann <linux-kernel@hansmi.ch>,
+       Peter Osterlund <petero2@telia.com>,
+       Frank Arnold <frank@scirocco-5v-turbo.de>,
+       Stelian Pop <stelian@popies.net>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Greg Kroah-Hartman <greg@kroah.com>
+In-Reply-To: <d120d5000707170801u27e11936h9546bd36da7a1162@mail.gmail.com>
+References: <1184656218.14051.43.camel@localhost>
+	 <d120d5000707170801u27e11936h9546bd36da7a1162@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="=-3iIqw4oSVkuVWbDcAuui"
+Date: Tue, 17 Jul 2007 20:16:19 +0200
+Message-Id: <1184696179.6161.18.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hir8jujhc.wl%tiwai@suse.de>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/07/07 17:40 +0200, Takashi Iwai wrote:
-> At Tue, 17 Jul 2007 17:32:36 +0200,
-> Sam Ravnborg wrote:
-> > 
-> > On Tue, Jul 17, 2007 at 05:16:13PM +0200, Takashi Iwai wrote:
-> > > At Tue, 17 Jul 2007 17:14:32 +0200,
-> > > Sam Ravnborg wrote:
-> > > > 
-> > > > On Tue, Jul 17, 2007 at 04:52:12PM +0200, Takashi Iwai wrote:
-> > > > > At Tue, 17 Jul 2007 15:02:30 +0200,
-> > > > > Sam Ravnborg wrote:
-> > > > > > 
-> > > > > > On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
-> > > > > > > Introduce __init_exit, which is useful ie. for drivers that call
-> > > > > > > cleanup functions when they fail in __init functions.
-> > > > > > 
-> > > > > > This is wrong.
-> > > > > > On arm (just one example of several) the __exit section are discarded
-> > > > > > at buildtime so any reference from __init to __exit will cause the
-> > > > > > linker to error out.
-> > > > > 
-> > > > > Hmm, from what I see, it adds __init to the function.  There is no
-> > > > > reference to __exit.
-> > > > 
-> > > > The cleanup functions are marked __exit in the referenced case.
-> > > 
-> > > My understanding is that it's the very purpose of this patch --
-> > > change the mark from __exit to __init_exit for such clean-up
-> > > functions.
-> > 
-> > And that is wrong.
-> 
-> You misunderstood.  What I meant is the case like this:
-> 
-> static void __init_exit cleanup()
-> {
-> 	...
-> }
-> 
-> static void __init foo_init()
-> {
-> 	if (error)
-> 		cleanup();
-> }
-> 
-> static void __exit foo_exit()
-> {
-> 	cleanup();
-> }
 
-Uh, yes, this, or just __init_exit foo_exit() as in Sam's example.
-It seemed obvious to me, sorry.
+--=-3iIqw4oSVkuVWbDcAuui
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
+On Tue, 2007-07-17 at 11:01 -0400, Dmitry Torokhov wrote:
+> Hi,
 > 
-> Currently, there is no proper way to mark cleanup().  Neither __init,
-> __exit, __devinit nor __devexit can be used there.
+> On 7/17/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
+> >
+> >  err_free_buffer:
+> > @@ -656,6 +699,7 @@ static void atp_disconnect(struct usb_interface *iface)
+> >
+> >        usb_set_intfdata(iface, NULL);
+> >        if (dev) {
+> > +               cancel_work_sync(&dev->work);
+> >                usb_kill_urb(dev->urb);
+> >                input_unregister_device(dev->input);
+> >                usb_buffer_free(dev->udev, dev->datalen,
+> >
 > 
-> 
-> Takashi
+> This should go into atp_close() and I think you need to do
+> cancel_work_sync after calling usb_kill_urb() otherwise you risk it
+> being submitted while you gettingto kill the urb.
+
+good catch. modified patch accordingly+attached.
+
+> How many boxes did you try this patch on?
+
+Mine plus 1 other. However please note that Matthews patch has been
+(which is what this patch is based on) is in the mactel-patches
+repository for quite some time now and that the not-yet-cleanup up
+variant of this patch was posted to mactel-devel...
+
+So the modeswitch part should work...
+
+Soeren
+-- 
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
+
+--=-3iIqw4oSVkuVWbDcAuui
+Content-Disposition: attachment; filename=appletouch3.patch
+Content-Type: text/x-patch; name=appletouch3.patch; charset=ISO-8859-15
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW5wdXQvbW91c2UvYXBwbGV0b3VjaC5jIGIvZHJpdmVycy9p
+bnB1dC9tb3VzZS9hcHBsZXRvdWNoLmMNCmluZGV4IGUzMjE1MjYuLjdmMTgwZjcgMTAwNjQ0DQot
+LS0gYS9kcml2ZXJzL2lucHV0L21vdXNlL2FwcGxldG91Y2guYw0KKysrIGIvZHJpdmVycy9pbnB1
+dC9tb3VzZS9hcHBsZXRvdWNoLmMNCkBAIC0xNTUsNiArMTU1LDggQEAgc3RydWN0IGF0cCB7DQog
+CWludAkJCXh5X2FjY1tBVFBfWFNFTlNPUlMgKyBBVFBfWVNFTlNPUlNdOw0KIAlpbnQJCQlvdmVy
+Zmxvd3dhcm47CS8qIG92ZXJmbG93IHdhcm5pbmcgcHJpbnRlZD8gKi8NCiAJaW50CQkJZGF0YWxl
+bjsJLyogc2l6ZSBvZiBhbiBVU0IgdXJiIHRyYW5zZmVyICovDQorCWludAkJCWlkbGVjb3VudDsg
+ICAgICAvKiBudW1iZXIgb2YgZW1wdHkgcGFja2V0cyAqLw0KKwlzdHJ1Y3Qgd29ya19zdHJ1Y3Qg
+ICAgICB3b3JrOw0KIH07DQogDQogI2RlZmluZSBkYmdfZHVtcChtc2csIHRhYikgXA0KQEAgLTIw
+OCw2ICsyMTAsNjMgQEAgc3RhdGljIGlubGluZSBpbnQgYXRwX2lzX2dleXNlcl8zKHN0cnVjdCBh
+dHAgKmRldikNCiAJCShwcm9kdWN0SWQgPT0gR0VZU0VSNF9KSVNfUFJPRFVDVF9JRCk7DQogfQ0K
+IA0KKy8qDQorICogQnkgZGVmYXVsdCBHZXlzZXIgMyBkZXZpY2Ugc2VuZHMgc3RhbmRhcmQgVVNC
+IEhJRCBtb3VzZQ0KKyAqIHBhY2tldHMgKFJlcG9ydCBJRCAyKS4gVGhpcyBjb2RlIGNoYW5nZXMg
+ZGV2aWNlIG1vZGUsIHNvIGl0DQorICogc2VuZHMgcmF3IHNlbnNvciByZXBvcnRzIChSZXBvcnQg
+SUQgNSkuDQorICovDQorc3RhdGljIGludCBhdHBfZ2V5c2VyM19pbml0KHN0cnVjdCB1c2JfZGV2
+aWNlICp1ZGV2KQ0KK3sNCisJY2hhciBkYXRhWzhdOw0KKwlpbnQgc2l6ZTsNCisJaW50IGk7DQor
+DQorCXNpemUgPSB1c2JfY29udHJvbF9tc2codWRldiwgdXNiX3JjdmN0cmxwaXBlKHVkZXYsIDAp
+LA0KKwkJCQlBVFBfR0VZU0VSM19NT0RFX1JFQURfUkVRVUVTVF9JRCwNCisJCQkJVVNCX0RJUl9J
+TiB8IFVTQl9UWVBFX0NMQVNTIHwgVVNCX1JFQ0lQX0lOVEVSRkFDRSwNCisJCQkJQVRQX0dFWVNF
+UjNfTU9ERV9SRVFVRVNUX1ZBTFVFLA0KKwkJCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfSU5E
+RVgsICZkYXRhLCA4LCA1MDAwKTsNCisNCisJaWYgKHNpemUgIT0gOCkgew0KKwkJcHJpbnRrKCJh
+cHBsZXRvdWNoIGF0cF9nZXlzZXIzX2luaXQgUkVBRCBlcnJvclxuIik7DQorCQlmb3IgKGk9MDsg
+aTw4OyBpKyspDQorCQkJcHJpbnRrKCJhcHBsZXRvdWNoWyVkXTogJWRcbiIsIGksIChpbnQpIGRh
+dGFbaV0pOw0KKw0KKwkJZXJyKCJDb3VsZCBub3QgZG8gbW9kZSByZWFkIHJlcXVlc3QgZnJvbSBk
+ZXZpY2UiDQorCQkgICAgIiAoR2V5c2VyIDMgbW9kZSkiKTsNCisJCXJldHVybiAtRUlPOw0KKwl9
+DQorDQorCS8qIEFwcGx5IHRoZSBtb2RlIHN3aXRjaCAqLw0KKwlkYXRhWzBdID0gQVRQX0dFWVNF
+UjNfTU9ERV9WRU5ET1JfVkFMVUU7DQorDQorCXNpemUgPSB1c2JfY29udHJvbF9tc2codWRldiwg
+dXNiX3NuZGN0cmxwaXBlKHVkZXYsIDApLA0KKwkJCQlBVFBfR0VZU0VSM19NT0RFX1dSSVRFX1JF
+UVVFU1RfSUQsDQorCQkJCVVTQl9ESVJfT1VUIHwgVVNCX1RZUEVfQ0xBU1MgfCBVU0JfUkVDSVBf
+SU5URVJGQUNFLA0KKwkJCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfVkFMVUUsDQorCQkJCUFU
+UF9HRVlTRVIzX01PREVfUkVRVUVTVF9JTkRFWCwgJmRhdGEsIDgsIDUwMDApOw0KKw0KKwlpZiAo
+c2l6ZSAhPSA4KSB7DQorCQlwcmludGsoImFwcGxldG91Y2ggYXRwX2dleXNlcjNfaW5pdCBXUklU
+RSBlcnJvclxuIik7DQorCQlmb3IgKGk9MDsgaTw4OyBpKyspDQorCQkJcHJpbnRrKCJhcHBsZXRv
+dWNoWyVkXTogJWRcbiIsIGksIChpbnQpIGRhdGFbaV0pOw0KKwkJZXJyKCJDb3VsZCBub3QgZG8g
+bW9kZSB3cml0ZSByZXF1ZXN0IHRvIGRldmljZSINCisJCSAgICAiIChHZXlzZXIgMyBtb2RlKSIp
+Ow0KKwkJcmV0dXJuIC1FSU87DQorCX0NCisJcmV0dXJuIDA7DQorfQ0KKw0KKy8qIFJlaW5pdGlh
+bGlzZSB0aGUgZGV2aWNlIGlmIGl0J3MgYSBnZXlzZXIgMyAqLw0KK3N0YXRpYyB2b2lkIGF0cF9y
+ZWluaXQoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKQ0KK3sNCisJc3RydWN0IGF0cCAqZGV2ID0g
+Y29udGFpbmVyX29mKHdvcmssIHN0cnVjdCBhdHAsIHdvcmspOw0KKwlzdHJ1Y3QgdXNiX2Rldmlj
+ZSAqdWRldiA9IGRldi0+dWRldjsNCisNCisJZGV2LT5pZGxlY291bnQgPSAwOw0KKwlhdHBfZ2V5
+c2VyM19pbml0KHVkZXYpOw0KK30NCisNCiBzdGF0aWMgaW50IGF0cF9jYWxjdWxhdGVfYWJzKGlu
+dCAqeHlfc2Vuc29ycywgaW50IG5iX3NlbnNvcnMsIGludCBmYWN0LA0KIAkJCSAgICAgaW50ICp6
+LCBpbnQgKmZpbmdlcnMpDQogew0KQEAgLTQ0OSwxMSArNTA4LDIxIEBAIHN0YXRpYyB2b2lkIGF0
+cF9jb21wbGV0ZShzdHJ1Y3QgdXJiKiB1cmIpDQogDQogCQkvKiByZXNldCB0aGUgYWNjdW11bGF0
+b3Igb24gcmVsZWFzZSAqLw0KIAkJbWVtc2V0KGRldi0+eHlfYWNjLCAwLCBzaXplb2YoZGV2LT54
+eV9hY2MpKTsNCi0JfQ0KIA0KLQlpbnB1dF9yZXBvcnRfa2V5KGRldi0+aW5wdXQsIEJUTl9MRUZU
+LA0KLQkJCSAhIWRldi0+ZGF0YVtkZXYtPmRhdGFsZW4gLSAxXSk7DQorCQkvKiBHZXlzZXIgMyB3
+aWxsIGNvbnRpbnVlIHRvIHNlbmQgcGFja2V0cyBjb250aW51YWxseSBhZnRlcg0KKwkJICAgdGhl
+IGZpcnN0IHRvdWNoIHVubGVzcyByZWluaXRpYWxpc2VkLiBEbyBzbyBpZiBpdCdzIGJlZW4NCisJ
+CSAgIGlkbGUgZm9yIGEgd2hpbGUgaW4gb3JkZXIgdG8gYXZvaWQgd2FraW5nIHRoZSBrZXJuZWwg
+dXANCisJCSAgIHNldmVyYWwgaHVuZHJlZCB0aW1lcyBhIHNlY29uZCAqLw0KKwkJaWYgKGF0cF9p
+c19nZXlzZXJfMyhkZXYpKSB7DQorCQkJZGV2LT5pZGxlY291bnQrKzsNCisJCQlpZiAoZGV2LT5p
+ZGxlY291bnQgPT0gMTApIHsNCisJCQkJZGV2LT52YWxpZD0wOw0KKwkJCQlzY2hlZHVsZV93b3Jr
+ICgmZGV2LT53b3JrKTsNCisJCQl9DQorCQl9DQorCX0NCiANCisJaW5wdXRfcmVwb3J0X2tleShk
+ZXYtPmlucHV0LCBCVE5fTEVGVCwgZGV2LT5kYXRhW2Rldi0+ZGF0YWxlbi0xXSAmIDEpOw0KIAlp
+bnB1dF9zeW5jKGRldi0+aW5wdXQpOw0KIA0KIGV4aXQ6DQpAQCAtNDgwLDYgKzU0OSw3IEBAIHN0
+YXRpYyB2b2lkIGF0cF9jbG9zZShzdHJ1Y3QgaW5wdXRfZGV2ICppbnB1dCkNCiAJc3RydWN0IGF0
+cCAqZGV2ID0gaW5wdXRfZ2V0X2RydmRhdGEoaW5wdXQpOw0KIA0KIAl1c2Jfa2lsbF91cmIoZGV2
+LT51cmIpOw0KKwljYW5jZWxfd29ya19zeW5jKCZkZXYtPndvcmspOw0KIAlkZXYtPm9wZW4gPSAw
+Ow0KIH0NCiANCkBAIC01MjgsNDAgKzU5OCwxMCBAQCBzdGF0aWMgaW50IGF0cF9wcm9iZShzdHJ1
+Y3QgdXNiX2ludGVyZmFjZSAqaWZhY2UsIGNvbnN0IHN0cnVjdCB1c2JfZGV2aWNlX2lkICppZA0K
+IAkJZGV2LT5kYXRhbGVuID0gODE7DQogDQogCWlmIChhdHBfaXNfZ2V5c2VyXzMoZGV2KSkgew0K
+LQkJLyoNCi0JCSAqIEJ5IGRlZmF1bHQgR2V5c2VyIDMgZGV2aWNlIHNlbmRzIHN0YW5kYXJkIFVT
+QiBISUQgbW91c2UNCi0JCSAqIHBhY2tldHMgKFJlcG9ydCBJRCAyKS4gVGhpcyBjb2RlIGNoYW5n
+ZXMgZGV2aWNlIG1vZGUsIHNvIGl0DQotCQkgKiBzZW5kcyByYXcgc2Vuc29yIHJlcG9ydHMgKFJl
+cG9ydCBJRCA1KS4NCi0JCSAqLw0KLQkJY2hhciBkYXRhWzhdOw0KLQkJaW50IHNpemU7DQotDQot
+CQlzaXplID0gdXNiX2NvbnRyb2xfbXNnKHVkZXYsIHVzYl9yY3ZjdHJscGlwZSh1ZGV2LCAwKSwN
+Ci0JCQlBVFBfR0VZU0VSM19NT0RFX1JFQURfUkVRVUVTVF9JRCwNCi0JCQlVU0JfRElSX0lOIHwg
+VVNCX1RZUEVfQ0xBU1MgfCBVU0JfUkVDSVBfSU5URVJGQUNFLA0KLQkJCUFUUF9HRVlTRVIzX01P
+REVfUkVRVUVTVF9WQUxVRSwNCi0JCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfSU5ERVgsICZk
+YXRhLCA4LCA1MDAwKTsNCi0NCi0JCWlmIChzaXplICE9IDgpIHsNCi0JCQllcnIoIkNvdWxkIG5v
+dCBkbyBtb2RlIHJlYWQgcmVxdWVzdCBmcm9tIGRldmljZSINCi0JCQkJCQkJIiAoR2V5c2VyIDMg
+bW9kZSkiKTsNCisJCS8qIHN3aXRjaCB0byByYXcgc2Vuc29yIG1vZGUgKi8NCisJCWlmIChhdHBf
+Z2V5c2VyM19pbml0KHVkZXYpKQ0KIAkJCWdvdG8gZXJyX2ZyZWVfZGV2czsNCi0JCX0NCi0NCi0J
+CS8qIEFwcGx5IHRoZSBtb2RlIHN3aXRjaCAqLw0KLQkJZGF0YVswXSA9IEFUUF9HRVlTRVIzX01P
+REVfVkVORE9SX1ZBTFVFOw0KLQ0KLQkJc2l6ZSA9IHVzYl9jb250cm9sX21zZyh1ZGV2LCB1c2Jf
+c25kY3RybHBpcGUodWRldiwgMCksDQotCQkJQVRQX0dFWVNFUjNfTU9ERV9XUklURV9SRVFVRVNU
+X0lELA0KLQkJCVVTQl9ESVJfT1VUIHwgVVNCX1RZUEVfQ0xBU1MgfCBVU0JfUkVDSVBfSU5URVJG
+QUNFLA0KLQkJCUFUUF9HRVlTRVIzX01PREVfUkVRVUVTVF9WQUxVRSwNCi0JCQlBVFBfR0VZU0VS
+M19NT0RFX1JFUVVFU1RfSU5ERVgsICZkYXRhLCA4LCA1MDAwKTsNCiANCi0JCWlmIChzaXplICE9
+IDgpIHsNCi0JCQllcnIoIkNvdWxkIG5vdCBkbyBtb2RlIHdyaXRlIHJlcXVlc3QgdG8gZGV2aWNl
+Ig0KLQkJCQkJCQkiIChHZXlzZXIgMyBtb2RlKSIpOw0KLQkJCWdvdG8gZXJyX2ZyZWVfZGV2czsN
+Ci0JCX0NCiAJCXByaW50aygiYXBwbGV0b3VjaCBHZXlzZXIgMyBpbml0ZWQuXG4iKTsNCiAJfQ0K
+IA0KQEAgLTYzNiw2ICs2NzYsOCBAQCBzdGF0aWMgaW50IGF0cF9wcm9iZShzdHJ1Y3QgdXNiX2lu
+dGVyZmFjZSAqaWZhY2UsIGNvbnN0IHN0cnVjdCB1c2JfZGV2aWNlX2lkICppZA0KIAkvKiBzYXZl
+IG91ciBkYXRhIHBvaW50ZXIgaW4gdGhpcyBpbnRlcmZhY2UgZGV2aWNlICovDQogCXVzYl9zZXRf
+aW50ZmRhdGEoaWZhY2UsIGRldik7DQogDQorCUlOSVRfV09SSygmZGV2LT53b3JrLCBhdHBfcmVp
+bml0KTsNCisNCiAJcmV0dXJuIDA7DQogDQogIGVycl9mcmVlX2J1ZmZlcjoNCi==
+
+
+--=-3iIqw4oSVkuVWbDcAuui--
