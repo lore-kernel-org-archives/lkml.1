@@ -1,41 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933209AbXGQHz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932622AbXGQH5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933209AbXGQHz2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXGQHzQ
+	id S932622AbXGQH5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbXGQH5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:55:16 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:39875 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbXGQHzP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:55:15 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <469C75D8.4000809@s5r6.in-berlin.de>
-Date: Tue, 17 Jul 2007 09:55:04 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Tue, 17 Jul 2007 03:57:14 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:21155 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754339AbXGQH5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:57:13 -0400
+Date: Tue, 17 Jul 2007 09:56:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, ak@suse.de
+Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg
+	helpers
+Message-ID: <20070717075637.GH5195@kernel.dk>
+References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792681830-git-send-email-jens.axboe@oracle.com> <20070716130608.4d096e29.akpm@linux-foundation.org> <20070716201002.GQ5195@kernel.dk> <20070716133427.e212b753.akpm@linux-foundation.org> <20070717070217.GB5195@kernel.dk>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>
-Subject: Re: how about bringing Documentation/feature-removal-schedule.txt
- up to date?
-References: <Pine.LNX.4.64.0707160759080.17044@localhost.localdomain>	<469BCAB2.5060909@s5r6.in-berlin.de> <20070717083432.5463e8d4@hyperion.delvare>
-In-Reply-To: <20070717083432.5463e8d4@hyperion.delvare>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070717070217.GB5195@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> This one took more time than expected,
+On Tue, Jul 17 2007, Jens Axboe wrote:
+> On Mon, Jul 16 2007, Andrew Morton wrote:
+> > On Mon, 16 Jul 2007 22:10:03 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Mon, Jul 16 2007, Andrew Morton wrote:
+> > > > On Mon, 16 Jul 2007 11:47:23 +0200
+> > > > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > 
+> > > > > This prepares x86-64 for sg chaining support.
+> > > > > 
+> > > > > Additional improvements/fixups for pci-gart from
+> > > > > Benny Halevy <bhalevy@panasas.com>
+> > > > > 
+> > > > > Cc: ak@suse.de
+> > > > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > > > ---
+> > > > >  arch/x86_64/kernel/pci-calgary.c |   25 ++++++++------
+> > > > >  arch/x86_64/kernel/pci-gart.c    |   63 ++++++++++++++++++++-----------------
+> > > > >  arch/x86_64/kernel/pci-nommu.c   |    5 ++-
+> > > > >  3 files changed, 51 insertions(+), 42 deletions(-)
+> > > > 
+> > > > This causes fairly extensive destruction of 2.6.23 changes which are
+> > > > pending in Andi's tree.
+> > > > 
+> > > > I shall drop the block tree until a) Andi has merged the pending Calgary
+> > > > changes and b) the block tree has been fixed up to account for those (and
+> > > > other) changes.
+> > > > 
+> > > > Really, this was the perfectly worst time possible to go tromping all over
+> > > > everyone else's trees.
+> > > 
+> > > Well, that's a bit hard for me to know, all I can do is push my stuff to
+> > > for-akpm so that it gets -mm exposure. If I don't, then you are yelling
+> > > at me as well :-)
+> > 
+> > It is to be expected that there will be conflicts when making large-scale
+> > changes like this while there is 25MB of unmerged diff sitting out in 50
+> > different trees.  Doing it around the -rc1 time would be better.
+> > 
+> > Even better would be not doing it at all: add the necessary stuff into the
+> > block core and then send the followup work to the relevant maintainers. ie:
+> > standard practice.
+> 
+> I'll do that. Most of the stuff is trivial, but the x86-64 iommu changes
+> are probably the most tricky and invasive of them all.
 
-These words sound strangely familiar, as if I often said them myself.
-Can't be.
+OK, this is what I did:
+
+Split the set into 3, in the following order:
+
+CORE -> DRIVERS -> ARCH
+
+So that's 3 branches, core is based off master, drivers off core, and
+arch off drivers. I'll push core+drivers into #for-akpm for testing,
+then the arch bits will stay undisturbed until acked by maintainers.
+
 -- 
-Stefan Richter
--=====-=-=== -=== =---=
-http://arcgraph.de/sr/
+Jens Axboe
+
