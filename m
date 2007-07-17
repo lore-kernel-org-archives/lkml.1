@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934482AbXGQS45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935239AbXGQTA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934482AbXGQS45 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758379AbXGQS4t
+	id S935239AbXGQTA3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933852AbXGQS7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:56:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45262 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754404AbXGQS4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:56:48 -0400
-Date: Tue, 17 Jul 2007 20:56:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070717185602.GA25271@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <200707172006.11664.olaf.kirch@oracle.com> <20070717181857.GA16918@elte.hu> <200707172034.20581.olaf.kirch@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707172034.20581.olaf.kirch@oracle.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 17 Jul 2007 14:59:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37425 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933785AbXGQS7r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 14:59:47 -0400
+Date: Tue, 17 Jul 2007 11:58:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Joe Jin <joe.jin@oracle.com>, bill.irwin@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-Id: <20070717115849.9f5e435c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707171818080.19489@blonde.wat.veritas.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+	<20070712221842.f5e47065.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707171558470.26771@blonde.wat.veritas.com>
+	<20070717093228.3a3638aa.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707171818080.19489@blonde.wat.veritas.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 17 Jul 2007 18:26:14 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
 
-* Olaf Kirch <olaf.kirch@oracle.com> wrote:
-
-> On Tuesday 17 July 2007 20:18, Ingo Molnar wrote:
-> > (one is HZ=100, the other HZ=1000. HZ=100 produces a hung network just 
-> > like HZ=250.)
+> On Tue, 17 Jul 2007, Andrew Morton wrote:
+> > On Tue, 17 Jul 2007 16:04:54 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
+> > > On Thu, 12 Jul 2007, Andrew Morton wrote:
+> > > > 
+> > > > It'd be much better to fix the race within alloc_fresh_huge_page().  That
+> > > > function is pretty pathetic.
+> > > > 
+> > > > Something like this?
+> > > > 
+> > > > --- a/mm/hugetlb.c~a
+> > > > +++ a/mm/hugetlb.c
+> > > > @@ -105,13 +105,20 @@ static void free_huge_page(struct page *
+> > > >  
+> > > >  static int alloc_fresh_huge_page(void)
+> > > >  {
+> > > > -	static int nid = 0;
+> > > > +	static int prev_nid;
+> > > > +	static DEFINE_SPINLOCK(nid_lock);
+> > > >  	struct page *page;
+> > > > -	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> > > > -					HUGETLB_PAGE_ORDER);
+> > > > -	nid = next_node(nid, node_online_map);
+> > > > +	int nid;
+> > > > +
+> > > > +	spin_lock(&nid_lock);
+> > > > +	nid = next_node(prev_nid, node_online_map);
+> > > >  	if (nid == MAX_NUMNODES)
+> > > >  		nid = first_node(node_online_map);
+> > > > +	prev_nid = nid;
+> > > > +	spin_unlock(&nid_lock);
+> > > > +
+> > > > +	page = alloc_pages_node(nid, htlb_alloc_mask|__GFP_COMP|__GFP_NOWARN,
+> > > > +					HUGETLB_PAGE_ORDER);
+> > > >  	if (page) {
+> > > >  		set_compound_page_dtor(page, free_huge_page);
+> > > >  		spin_lock(&hugetlb_lock);
+> > > 
+> > > Now that it's gone into the tree, I look at it and wonder, does your
+> > > nid_lock really serve any purpose?  We're just doing a simple assignment
+> > > to prev_nid, and it doesn't matter if occasionally two racers choose the
+> > > same node, and there's no protection here against a node being offlined
+> > > before the alloc_pages_node anyway (unsupported? I'm ignorant).
 > > 
-> > no 'rx_sched set' messages in either case. Network still hung for 
-> > HZ=100, and is working for HZ=1000.
+> > umm, actually, yes, the code as it happens to be structured does mean that
+> > ther is no longer a way in which a race can cause us to pass MAX_NUMNODES
+> > into alloc_pages_node().
+> > 
+> > Or not.  We can call next_node(MAX_NUMNODES, node_online_map) in that race
+> > window, with perhaps bad results.
+> > 
+> > I think I like the lock ;)
 > 
-> Is this from dmesg or the netconsole output? I don't see any Tx Unit 
-> Hang messages from e1000 or netdev watchdog messages present in your 
-> earlier dmesg logs. So maybe these messages are there, but never get 
-> logged?
+> I hate to waste your time, but I'm still puzzled.  Wasn't the race fixed
+> by your changeover from use of "static int nid" throughout, to setting
+> local "int nid" from "static int prev_nid", working with nid, then
+> setting prev_nid from nid at the end?  What does the lock add to that?
+> 
 
-i logged these not via netconsole but via logging on over the console 
-and using dmesg, so it should include everything. in the 100hz case the 
-following seems to show the anomaly:
+There are still minor races without the lock - two CPUs will allocate
+from the first node, and prev_nid can occasionally go backwards.
 
-  NETDEV WATCHDOG: eth0: transmit timed out
+I agree that they are sufficiently minor that we could remove the lock.
 
-indeed it's not followed by the e1000 messages. (perhaps i didnt wait 
-long enough to reboot the box - i zapped it after a minute of uptime)
 
-	Ingo
