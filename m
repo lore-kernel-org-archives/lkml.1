@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934063AbXGQP3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934243AbXGQPba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934063AbXGQP3V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 11:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbXGQP3E
+	id S934243AbXGQPba (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 11:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXGQPbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 11:29:04 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:38610 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbXGQP3C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 11:29:02 -0400
-Date: Tue, 17 Jul 2007 11:28:59 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: guilt@josefsipek.net
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org, brandon@ifup.org
-Subject: [ANNOUNCE] Guilt v0.26
-Message-ID: <20070717152859.GA12247@filer.fsl.cs.sunysb.edu>
+	Tue, 17 Jul 2007 11:31:24 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:58271 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753591AbXGQPbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 11:31:23 -0400
+Date: Tue, 17 Jul 2007 17:32:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Domen Puncer <domen.puncer@telargo.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] introduce __init_exit function annotation
+Message-ID: <20070717153236.GB25939@uranus.ravnborg.org>
+References: <20070717080248.GK4375@moe.telargo.com> <20070717130230.GB24780@uranus.ravnborg.org> <s5htzs3ulpf.wl%tiwai@suse.de> <20070717151432.GA25939@uranus.ravnborg.org> <s5hodibukle.wl%tiwai@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <s5hodibukle.wl%tiwai@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guilt v0.26 is available for download (once it mirrors out on kernel.org).
+On Tue, Jul 17, 2007 at 05:16:13PM +0200, Takashi Iwai wrote:
+> At Tue, 17 Jul 2007 17:14:32 +0200,
+> Sam Ravnborg wrote:
+> > 
+> > On Tue, Jul 17, 2007 at 04:52:12PM +0200, Takashi Iwai wrote:
+> > > At Tue, 17 Jul 2007 15:02:30 +0200,
+> > > Sam Ravnborg wrote:
+> > > > 
+> > > > On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
+> > > > > Introduce __init_exit, which is useful ie. for drivers that call
+> > > > > cleanup functions when they fail in __init functions.
+> > > > 
+> > > > This is wrong.
+> > > > On arm (just one example of several) the __exit section are discarded
+> > > > at buildtime so any reference from __init to __exit will cause the
+> > > > linker to error out.
+> > > 
+> > > Hmm, from what I see, it adds __init to the function.  There is no
+> > > reference to __exit.
+> > 
+> > The cleanup functions are marked __exit in the referenced case.
+> 
+> My understanding is that it's the very purpose of this patch --
+> change the mark from __exit to __init_exit for such clean-up
+> functions.
 
-Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
-queues-like functionality and interface to git.
+And that is wrong.
+See following example:
 
-Tarballs:
-http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
+static void __init foo_init()
+{
+	if (error)
+		foo_exit();
+}
 
-Git repo:
-git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
+static void __exit foo_exit()
+{
+}
 
+If foo_init is annotated with __init_exit then in the build-in case it
+become __init and there is a reference to a non existing function because
+functions marked __exit are discarded during link or run-time (depending on arch).
 
-Although there was a v0.26-rc1 release, I never announced it so the
-following summary includes all the changes since v0.25. Unfortunately, it
-took two months to get this release out. I promise to get back to the 2-3
-week release cycle.
+If foo_exit() are marked __init_exit then it becomes __init in the non-module case
+which seems coorrect. If this is the intention of the patch then it should
+be OK but then this intention should be spelled out.
 
-The major change since v0.25 (contributed by Pierre Habouzit) is that Guilt
-no longer depends on bash. Other than that, there have been a number of bug
-fixes, as well several new commands and options:
-
-	branch		Branch the repository & patch series
-	diff		Output a diff against the top-most applied patch
-	fold -k		Keep patch file
-	graph		Generate dot(1) patch dependecy graph
-	new -f		Force new patch creation
-	refresh --git	Detect renames & copies
-	series -g	Start gitk on the applied patches
-
-Additionally, Guilt now knows how to:
-
-	Grab Cc: lines from the patch descriptions for patchbomb
-	Strip 'Subject: ' from the first line of patch description
-
-All in all, quite a number of changes, so it is possible that I forgot to
-mention something. For more details, check the change list below, or the git
-repository near you :)
-
-As always, patches, and other feedback is welcome.
-
-Josef "Jeff" Sipek.
-
-------------
-Changes since v0.25:
-
-Josef 'Jeff' Sipek (20):
-      graph: generate a dot(1) dependency graph of patches
-      graph: Remove graph cache after command terminates
-      new: Added new option, -f to force new patch creation
-      refresh: Added --git option to generate more git friendly diff
-      new: current working dir should not be displayed
-      export: Create subdirectories before copying the patch files
-      series: Added -g option to start gitk
-      refresh: Reintroduce the --git option that got accidentally dropped
-      guilt: added -V/--version option to display only the version number
-      fold: Added -k option to keep patch file
-      Guilt v0.26-rc1
-      guilt: Strip "^Subject: " from first line of patch message
-      Docs/Requirements: sh is now required instead of bash
-      branch: new command to create a new branch with duplicated patches directory
-      Docs: A begining of a Features file
-      graph: Fixed graph generation
-      patchbomb: Grab additional Cc info from '^Cc:' lines in patch desc
-      patchbomb: Remove leftover debug code
-      diff: Create a diff against the top-most applied patch
-      Guilt v0.26
-
-Pierre Habouzit (8):
-      Add a guilt-export(1) command to export a guilt series to quilt.
-      guilt(1): Obvious bashisms fixed.
-      guilt(1): simplifications...
-      guilt(1): reimplement push_patch, using a subshell to avoid locals.
-      Remove bashisms - easy commands
-      guilt-status(1): Remove bashisms.
-      Remove last bashisms from remaining commands.
-      Regression test suite needs bash, that's OK.
-
-Theodore Ts'o (1):
-      Fix guilt to work correctly even if the refs are packed
+	Sam
