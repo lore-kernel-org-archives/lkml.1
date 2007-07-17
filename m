@@ -1,113 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933838AbXGQVY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbXGQVZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933838AbXGQVY1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 17:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXGQVYS
+	id S1761993AbXGQVZe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 17:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbXGQVZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 17:24:18 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:42766
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755125AbXGQVYR (ORCPT
+	Tue, 17 Jul 2007 17:25:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51798 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752646AbXGQVZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 17:24:17 -0400
-Date: Tue, 17 Jul 2007 14:17:35 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <200707172323.51702.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0707171414370.2467@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
- <200707172217.01890.rjw@sisk.pl> <Pine.LNX.4.64.0707171328450.2467@asgard.lang.hm>
- <200707172323.51702.rjw@sisk.pl>
+	Tue, 17 Jul 2007 17:25:23 -0400
+Date: Tue, 17 Jul 2007 14:24:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Giacomo Catenazzi <cate@cateee.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, akpm@linux-foundation.org
+Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
+In-Reply-To: <200707172320.12141.bzolnier@gmail.com>
+Message-ID: <alpine.LFD.0.999.0707171417560.27353@woody.linux-foundation.org>
+References: <469D1D5E.8050609@cateee.net>
+ <200707172320.12141.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
 
-> On Tuesday, 17 July 2007 22:34, david@lang.hm wrote:
->> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
->>
->>> On Tuesday, 17 July 2007 20:32, Alan Stern wrote:
->>>
->>>> I'm still not entirely clear on how "suspend-to-both" ought to be
->>>> handled.  Presumably it will start off as a normal hibernation.  But
->>>> instead of shutting down, wouldn't the kexec'd kernel return to the
->>>> original kernel?
->>>
->>> No, I think the image-saving kernel should suspend.  Then, on resume the
->>> platform will go back to it and it will jump back to the hibernated kernel.
->>>
->>>> After all, the original kernel knows about all the devices and can put them
->>>> into a low-power state, while the kexec'd kernel might not have sufficient
->>>> information.
->>>
->>> That's correct, but ...
->>>
->>>> But what about the freezer?  The original reason for using kexec was to
->>>> avoid the need for the freezer.  With no freezer, while the original
->>>> kernel is busy powering down its devices, user tasks will be free to
->>>> carry out I/O -- which will make the memory snapshot inconsistent with
->>>> the on-disk data structures.
->>>
->>> ... we can't return to the hibernated kernel unless we are going to cancel the
->>> hibernation.
->>
->> this is where we disagree.
->>
->> why not? if all that the hibernated kernel does is to suspend-to-ram and
->> makes no changes to disks or TCP connections anything that it does do
->> would be lost if power were to fail and you instead did a restore from
->> disk.
->
-> How do you guarantee that no tasks are scheduled when you get back to the
-> hibernated kernel?
 
-just don't schedule any userspace tasks. all you need to do is to execute 
-the ACPI sleep functions. you normally do that after stopping userspace 
-anyway.
+On Tue, 17 Jul 2007, Bartlomiej Zolnierkiewicz wrote:
+> 
+> ide-disk driver and type 2 (REQ_TYPE_BLOCK_PC) requests don't mix well
+> 
+> Probably some dumb application is sending packet commands without
+> checking the device type...
 
->> there is only a problem if something takes place that would prevent the
->> restore-from-disk from working. if this is done in a non-ACPI way that
->> will work across a power cycle you don't have to worry about the hardware
->> state not matching anyway.
->>
->>> That's why I think that for the suspend-to-both the image-saving kernel will
->>> need to support the same set of devices as the hibernated kernel.
->>
->> suspend-to-both doesn't really make sense if the suspend-to-disk portion
->> is useing the ACPI S4 mode.
->
-> Well, not exactly.  If your battery runs out of power while you're suspended,
-> but you have the image saved, it's still better to restore from the image, even
-> if something may not work correctly after the restore, than to risk a loss of
-> data.
+Ok, we should definitely try to just translate the things, and instead of 
+having user apps that have to know about the (generally not very 
+interesting) differences between IDE and SCSI command set, and when the 
+IDE driver gets a SCSI request (whether from the new generic SG layer or 
+obviously the older SCSI-ioctl layer) it should "just work".
 
-if things don't work correctly you are still risking the loss of data, the 
-user just doesn't know it.
+So I object to that "dumb application" statement. It's the kernel that has 
+traditionally been dumb in not smoothing over the differences between 
+devices well enough.
 
->> if you don't run out of power you will restore-from-ram
->>
->> if you do run out of power the restore-from-disk won't work either becouse
->> devices are not in the right ACPI states.
->
-> See above.
->
-> Greetings,
-> Rafael
->
->
->
+We shouldn't _need_ to have applications care. They should be able to just 
+use regular SCSI commands, and if the device cannot handle a 10-byte read 
+command, the kernel should have translated that into a 6-byte one (for 
+example) rather than the application having to know about idiotic small 
+differences like that.
+
+That said, I dunno how to fix this particular one, and the IDE driver is 
+singularly unhelpful in actually talking about *what* the command tried to 
+be.
+
+			Linus
