@@ -1,92 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964799AbXGQVkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936487AbXGQVlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964799AbXGQVkK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 17:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbXGQVj5
+	id S936487AbXGQVlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 17:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbXGQVk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 17:39:57 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:53582
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755964AbXGQVj4 (ORCPT
+	Tue, 17 Jul 2007 17:40:58 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44164
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754512AbXGQVk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 17:39:56 -0400
-Date: Tue, 17 Jul 2007 14:27:14 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <871wf6g1q1.fsf@jbms.ath.cx>
-Message-ID: <Pine.LNX.4.64.0707171423280.2467@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
- <200707172217.01890.rjw@sisk.pl> <Pine.LNX.4.64.0707171328450.2467@asgard.lang.hm>
- <200707172323.51702.rjw@sisk.pl> <Pine.LNX.4.64.0707171414370.2467@asgard.lang.hm>
- <871wf6g1q1.fsf@jbms.ath.cx>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 17 Jul 2007 17:40:57 -0400
+Date: Tue, 17 Jul 2007 14:40:42 -0700 (PDT)
+Message-Id: <20070717.144042.41636155.davem@davemloft.net>
+To: viro@ftp.linux.org.uk
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       avi@qumranet.com
+Subject: Re: [PATCH] smp_call_function_single() should be a macro on UP
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070717212946.GP21668@ftp.linux.org.uk>
+References: <20070717212946.GP21668@ftp.linux.org.uk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Jeremy Maitin-Shepard wrote:
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Tue, 17 Jul 2007 22:29:46 +0100
 
-> david@lang.hm writes:
->
-> [snip]
->
->>> How do you guarantee that no tasks are scheduled when you get back to the
->>> hibernated kernel?
->
->> just don't schedule any userspace tasks. all you need to do is to execute the
->> ACPI sleep functions. you normally do that after stopping userspace
->> anyway.
->
-> What does "stopping userspace" mean?  You already said it does not mean
-> disabling interrupts.  But using the freezer is also not an option,
-> since the avoidance of that is the main reason for the kexec approach in
-> the first place.
+> ... or we end up with header include order problems from hell.
+> E.g. on m68k this is 100% fatal - local_irq_enable() there
+> wants preempt_count(), which wants task_struct fields, which
+> we won't have when we are in smp.h pulled from sched.h.
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-just don't schedule any non-kernel threads.
+Acked-by: David S. Miller <davem@davemloft.net>
 
-remember that the normal shutdown/suspend procedure is (from another 
-related thread)
+I was going to fix the sparc64/UP build fallout by
+adding linux/kernel.h include to linux/smp.h but that
+definitely would not handle this m68k case at all.
 
-> >>sys_reboot(LINUX_REBOOT_CMD_KEXEC)
-> >>     kernel_kexec
-> >>         kernel_restart_prepare
-> >>             device_shutdown
-> >>         machine_shutdown
-> >>         machine_kexec
-
-I'm just saying that instead of going back to the normal operation of the 
-kernel you just go directly to the new shutdown routine instead.
-
-> [snip]
->
->>> Well, not exactly.  If your battery runs out of power while you're suspended,
->>> but you have the image saved, it's still better to restore from the image,
->> even
->>> if something may not work correctly after the restore, than to risk a loss of
->>> data.
->
->> if things don't work correctly you are still risking the loss of data, the user
->> just doesn't know it.
->
-> It should be possible on any system to do a hibernate followed by a
-> shutdown (and then resume properly, without any problems).  Thus, for
-> handling suspend to both, you resume as if the system had been shutdown,
-> rather than resuming as if the system came from S4.
-
-I agree with this, but according to Rafael if the "hibernated" image is 
-assuming that the devices were put into low-power mode by ACPI and you 
-boot up instead the system doesn't work right.
-
-David Lang
