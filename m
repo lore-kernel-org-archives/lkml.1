@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935120AbXGQSTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765490AbXGQS0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935120AbXGQSTq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759240AbXGQSTi
+	id S1765490AbXGQS0a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbXGQS0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:19:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36077 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758758AbXGQSTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:19:37 -0400
-Date: Tue, 17 Jul 2007 20:18:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070717181857.GA16918@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <200707171607.08644.olaf.kirch@oracle.com> <20070717165720.GA4386@elte.hu> <200707172006.11664.olaf.kirch@oracle.com>
+	Tue, 17 Jul 2007 14:26:21 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:28091 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753729AbXGQS0V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 14:26:21 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=YeYEPB+Galdm9AplPnKhouCFyWmQb4dJx2pWyeBEaLLB5Rl7z5qiBmd3qYu9a4IF6
+	pNHSL2Zf/oVIvOq3LwNdg==
+Message-ID: <6599ad830707171126o7c431277p84f532d0122a8a98@mail.gmail.com>
+Date: Tue, 17 Jul 2007 11:26:03 -0700
+From: "=?ISO-2022-JP?B?UGF1bCAoGyRCSnVOXBsoQikgTWVuYWdl?=" 
+	<menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Containers: css_put() dilemma
+Cc: dhaval@linux.vnet.ibm.com, "Pavel Emelianov" <xemul@sw.ru>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Paul Jackson" <pj@sgi.com>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <469D066B.6050606@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707172006.11664.olaf.kirch@oracle.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <469BBE00.8000709@linux.vnet.ibm.com>
+	 <469C2792.6050009@linux.vnet.ibm.com>
+	 <6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com>
+	 <20070717070031.GA22410@linux.vnet.ibm.com>
+	 <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com>
+	 <469C99D1.7090807@linux.vnet.ibm.com>
+	 <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
+	 <469CFF2B.1080702@linux.vnet.ibm.com>
+	 <6599ad830707171044u38c0a940r12d2bc80b475ead4@mail.gmail.com>
+	 <469D066B.6050606@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 7/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> without too much knowledge of each other. BTW, what are the semantics
+> of css_put() is it expected to free the container/run the release agent
+> when the reference count of the container_subsys_state drops to zero?
+>
 
-* Olaf Kirch <olaf.kirch@oracle.com> wrote:
+If you css_put() the last reference on a subsystem state object and
+the associated container is marked as notify_on_release, then
+check_for_release() is called which does a more full check of whether
+the container is releasable. If it is, a workqueue task is scheduled
+to run the userspace release agent, which can then do anything it
+wants, including potentially deleting the empty container.
 
-> Hi Ingo,
-> 
-> On Tuesday 17 July 2007 18:57, Ingo Molnar wrote:
-> > i've done the patch below, but it did not change the timeouts nor did it 
-> > solve the 'no network' problem. netconsole output hung earlier as well.
-> Hm, pity.
-> 
-> To rule out any e1000 problem, can you try the the following please, 
-> both with HZ=250 and HZ=1000?
-
-done, find the logs here:
-
- http://redhat.com/~mingo/misc/100hz.log
- http://redhat.com/~mingo/misc/1000hz.log
-
-(one is HZ=100, the other HZ=1000. HZ=100 produces a hung network just 
-like HZ=250.)
-
-no 'rx_sched set' messages in either case. Network still hung for 
-HZ=100, and is working for HZ=1000.
-
-	Ingo
+Paul
