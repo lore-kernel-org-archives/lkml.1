@@ -1,150 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932663AbXGQSyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933852AbXGQSz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932663AbXGQSyP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757082AbXGQSx6
+	id S933852AbXGQSz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbXGQSzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:53:58 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:59623 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756013AbXGQSx5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:53:57 -0400
-Subject: Re: block/bsg.c
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20070717101928.GK5195@kernel.dk>
-References: <20070717065940.GZ5195@kernel.dk>
-	 <20070717160816K.fujita.tomonori@lab.ntt.co.jp>
-	 <20070717071045.GD5195@kernel.dk>
-	 <20070717190705T.fujita.tomonori@lab.ntt.co.jp>
-	 <20070717101928.GK5195@kernel.dk>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 13:53:54 -0500
-Message-Id: <1184698434.3378.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Tue, 17 Jul 2007 14:55:21 -0400
+Received: from mga03.intel.com ([143.182.124.21]:54210 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754840AbXGQSzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 14:55:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,547,1175497200"; 
+   d="scan'208";a="251600343"
+Message-ID: <469D1093.9070801@intel.com>
+Date: Tue, 17 Jul 2007 11:55:15 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+MIME-Version: 1.0
+To: William Montgomery <william@opinicus.com>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+Subject: Re: e100 PCI bridge problem
+References: <4697B85B.4040902@opinicus.com>	<m33azrt5a6.fsf@maximus.localdomain> <46995998.70706@opinicus.com> <m3d4yuczqw.fsf@maximus.localdomain> <469D0A81.3000001@opinicus.com>
+In-Reply-To: <469D0A81.3000001@opinicus.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Jul 2007 18:55:15.0582 (UTC) FILETIME=[031DB9E0:01C7C8A4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 12:19 +0200, Jens Axboe wrote:
-> > > Since Linus is happily snoring by now, could you test and see if the
-> > > tree works for you?
-> > 
-> > It works for me. I'll submit some minor patches against your bsg
-> > branch to scsi-ml. Can you push them together?
+William Montgomery wrote:
+> Krzysztof Halasa wrote:
 > 
-> Certainly, I'll pull them into the bsg branch.
+>> William Montgomery <william@opinicus.com> writes:
+>>
+>>  
+>>
+>>> I am using a PCI analyzer and it shows the bus in an idle state after
+>>> the lockup.  The PCI transactions just prior to the lockup show a
+>>> couple of interrupts from the card which appear to be handled
+>>> correctly.  Anything I should be looking for in particular?
+>>>    
+>>>
+>> I'd try to check with other machine using "secondary" bus slot.
+>> BTW: Are you able to analyze the "primary" bus transactions while
+>> using the card in "secondary" bus? Perhaps there is something
+>> wrong in front of the motherboard bridge?
+>>
+>>  
+>>
+> I am able to analyze the primary bus while the using the card in the 
+> secondary and I see a very interesting thing on lockup - the primary 
+> side appears to be stuck on a read access to the memory mapped control 
+> regs of the LAN chip (82559) in what appears to be infinite target 
+> retries to the same address.  Unfortunately I havent been able to 
+> capture what occurs just prior to this happening.  This is quite 
+> different from what I capture on the secondary side; which is an idle bus
+> 
+> I have posted the lspci -vv listing below...
+> 
+>> A broken motherboard may be hard to diagnose, unfortunately.
+>>
+>> Can you post something like "lspci -vv" taken on both machines?
+>>  
+>>
+> Here is the lspci -vv on the machine with lockups (edited for brevity):
+> 
+> 00:00.0 Host bridge: Intel Corp. 82845G/GL[Brookdale-G]/GE/PE DRAM 
+> Controller/Ho
+>         Subsystem: Intel Corp. 82845G/GL[Brookdale-G]/GE/PE DRAM 
+> Controller/Host
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
+> ParErr- Step
+>         Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
+> <TAbort-
+>         Latency: 0
+>         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=64M]
+>         Capabilities: [e4] #09 [1105]
+> 00:1e.0 PCI bridge: Intel Corp. 82801BA/CA/DB/EB/ER Hub interface to PCI 
+> Bridge (rev 82) (prog-if 00 [Normal decode])
+>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
+> ParErr- Stepping- SERR+ FastB2B-
+>         Status: Cap- 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
+> <TAbort- <MAbort- >SERR- <PERR+
 
-While you're at it, here's a patch to separate BSG and SCSI again (so
-SCSI can be built modular).  The way I did it was simply to move the
-SCSI specific logic into SCSI.  When you come up with a generic way to
-register the bsg requiring drivers, then we can move it out again.
-
-James
-
-diff --git a/block/Kconfig b/block/Kconfig
-index 6597b60..3468d75 100644
---- a/block/Kconfig
-+++ b/block/Kconfig
-@@ -53,7 +53,7 @@ endif # BLOCK
- 
- config BLK_DEV_BSG
- 	bool "Block layer SG support"
--	depends on (SCSI=y) && EXPERIMENTAL
-+	depends on EXPERIMENTAL
- 	default y
- 	---help---
- 	Saying Y here will enable generic SG (SCSI generic) v4
-diff --git a/block/bsg.c b/block/bsg.c
-index 576933f..1d9e6f7 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -1030,29 +1030,6 @@ err:
- }
- EXPORT_SYMBOL_GPL(bsg_register_queue);
- 
--static int bsg_add(struct class_device *cl_dev, struct class_interface *cl_intf)
--{
--	int ret;
--	struct scsi_device *sdp = to_scsi_device(cl_dev->dev);
--	struct request_queue *rq = sdp->request_queue;
--
--	if (rq->kobj.parent)
--		ret = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
--	else
--		ret = bsg_register_queue(rq, kobject_name(&sdp->sdev_gendev.kobj));
--	return ret;
--}
--
--static void bsg_remove(struct class_device *cl_dev, struct class_interface *cl_intf)
--{
--	bsg_unregister_queue(to_scsi_device(cl_dev->dev)->request_queue);
--}
--
--static struct class_interface bsg_intf = {
--	.add	= bsg_add,
--	.remove	= bsg_remove,
--};
--
- static struct cdev bsg_cdev = {
- 	.kobj   = {.name = "bsg", },
- 	.owner  = THIS_MODULE,
-@@ -1094,15 +1071,6 @@ static int __init bsg_init(void)
- 		return ret;
- 	}
- 
--	ret = scsi_register_interface(&bsg_intf);
--	if (ret) {
--		printk(KERN_ERR "bsg: failed register scsi interface %d\n", ret);
--		kmem_cache_destroy(bsg_cmd_cachep);
--		class_destroy(bsg_class);
--		unregister_chrdev(BSG_MAJOR, "bsg");
--		return ret;
--	}
--
- 	printk(KERN_INFO "%s loaded\n", bsg_version);
- 	return 0;
- }
-diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index ed72086..fcbe94c 100644
---- a/drivers/scsi/scsi_sysfs.c
-+++ b/drivers/scsi/scsi_sysfs.c
-@@ -714,6 +714,7 @@ static int attr_add(struct device *dev, struct device_attribute *attr)
- int scsi_sysfs_add_sdev(struct scsi_device *sdev)
- {
- 	int error, i;
-+	struct request_queue *rq = sdev->request_queue;
- 
- 	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
- 		return error;
-@@ -733,6 +734,16 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
- 	/* take a reference for the sdev_classdev; this is
- 	 * released by the sdev_class .release */
- 	get_device(&sdev->sdev_gendev);
-+
-+	if (rq->kobj.parent)
-+		error = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
-+	else
-+		error = bsg_register_queue(rq, kobject_name(&sdev->sdev_gendev.kobj));
-+	if (error) {
-+		sdev_printk(KERN_INFO, sdev, "Failed to register bsg queue\n");
-+		goto out;
-+	}
-+
- 	if (sdev->host->hostt->sdev_attrs) {
- 		for (i = 0; sdev->host->hostt->sdev_attrs[i]; i++) {
- 			error = attr_add(&sdev->sdev_gendev,
-@@ -779,6 +790,7 @@ void __scsi_remove_device(struct scsi_device *sdev)
- 	if (scsi_device_set_state(sdev, SDEV_CANCEL) != 0)
- 		return;
- 
-+	bsg_unregister_queue(sdev->request_queue);
- 	class_device_unregister(&sdev->sdev_classdev);
- 	transport_remove_device(dev);
- 	device_del(dev);
+PERR+ set... not good - this certainly will cause major issues
 
 
+Auke
