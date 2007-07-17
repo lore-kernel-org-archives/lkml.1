@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbXGQAqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763684AbXGQAsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763526AbXGQAqb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 20:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbXGQAqY
+	id S1763684AbXGQAsN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 20:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbXGQAr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 20:46:24 -0400
-Received: from ozlabs.org ([203.10.76.45]:33719 "EHLO ozlabs.org"
+	Mon, 16 Jul 2007 20:47:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38213 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751968AbXGQAqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 20:46:23 -0400
-Subject: Re: [Xen-devel] [patch 17/44] Add nosegneg capability to the
-	vsyscall page notes
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.com>,
-       Zachary Amsden <zach@vmware.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Andrew Morton <akpm@linux-foundation.com>,
-       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-In-Reply-To: <20070716232914.029797000@xensource.com>>
-References: <20070716231536.937393000@xensource.com> >
-	  <20070716232914.029797000@xensource.com>>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 10:45:55 +1000
-Message-Id: <1184633155.5955.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1755443AbXGQAr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 20:47:57 -0400
+Message-ID: <469C11B1.8000302@garzik.org>
+Date: Mon, 16 Jul 2007 20:47:45 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: block/bsg.c
+References: <20070716165706.348f6bbf.akpm@linux-foundation.org>
+In-Reply-To: <20070716165706.348f6bbf.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-16 at 16:15 -0700, Jeremy Fitzhardinge wrote:
-> plain text document attachment (xen-vsyscall-note.patch)
-> Add the "nosegneg" fake capabilty to the vsyscall page notes. This is
-> used by the runtime linker to select a glibc version which then
-> disables negative-offset accesses to the thread-local segment via
-> %gs. These accesses require emulation in Xen (because segments are
-> truncated to protect the hypervisor address space) and avoiding them
-> provides a measurable performance boost.
+Andrew Morton wrote:
+> The modern way of shutting up gcc is uninitialized_var().
 
-Hmm, this is still unconditional?  Not that it causes any measurable
-slowdown when enabled, but ISTR discussing making this dynamic...
 
-Rusty.
+Should I convert my misc-2.6.git#gccbug repository over to this, and 
+push upstream?
+
+#gccbug branch is a set of places where I have verified that the 
+variable is indeed initialized, even though gcc complains it may not be.
+
+	Jeff
 
 
