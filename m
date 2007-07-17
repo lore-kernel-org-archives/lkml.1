@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935576AbXGQT1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933427AbXGQTay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935576AbXGQT1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759741AbXGQT1I
+	id S933427AbXGQTay (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757662AbXGQTar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:27:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50693 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757304AbXGQT1H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:27:07 -0400
-Message-ID: <469D17C9.9010509@zytor.com>
-Date: Tue, 17 Jul 2007 12:26:01 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 17 Jul 2007 15:30:47 -0400
+Received: from waste.org ([66.93.16.53]:37286 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757360AbXGQTaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 15:30:46 -0400
+Date: Tue, 17 Jul 2007 14:30:28 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org,
+       torvalds@transmeta.com
+Subject: Re: Patches for REALLY TINY 386 kernels
+Message-ID: <20070717193028.GF11166@waste.org>
+References: <469A8AED.7070207@nerdgrounds.com> <Pine.LNX.4.64.0707171240040.686@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: caglar@pardus.org.tr, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
-References: <11846910642166-git-send-email-avi@qumranet.com> <200707172139.09131.caglar@pardus.org.tr> <469D1317.1050202@zytor.com> <alpine.LFD.0.999.0707171212070.27353@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707171212070.27353@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707171240040.686@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Tue, Jul 17, 2007 at 12:59:03PM +0200, Jan Engelhardt wrote:
 > 
-> Actually, I think the *real* solution would be:
+> On Jul 15 2007 14:00, Jonathan Campbell wrote:
+> >
+> > These patches were written against the vanilla 2.6.21.1 kernel. They will have
+> > no effect UNLESS you make menuconfig and explicitly enable them there.
+> >
+> >
+> inline patches...
 > 
->  - add a X86_HAS_CMPXCHG8B config option, and set it for the appropriate 
->    CPU selection (P6 and up, or whatever the rule is)
+> >+config X86_DONT_CPUID
+> >+	bool "Disable CPUID support"
+> >+	depends on M386 || M486
 > 
->  - make KVM depend on it
-> 
->  - make KVM and HIGHMEM64 _select_ another config option, namely the 
->    NEEDS_CMPXCHG8B
-> 
-> and then we make the cpufeatures code check the CMPXCHG bit only if the 
-> NEEDS_CMPXCHG8B thing is set. That gives us the best of all worlds.
-> 
-> Because there is no point in checking whether the CPU supports it if the 
-> kernel doesn't _need_ it. Especially since we know that some CPU's lie 
-> about it due to old NT bugs.
-> 
+> I think this should not depend on any model.
+> Depend on x86 at best.
 
-Yes.  This is probably also true for other CPU feature options, at least
-in the abstract (i.e. it may not apply to any of the current options).
+Indeed.
+ 
+> 	depends on X86
+> 
+> >+	default n
+> 
+> And perhaps it would be helpful to invert it, like the other options, i.e.:
+> 
+> config X86_CPUID
+> 	bool "Enable CPUID support" if X86 && EMBEDDED
+> 	default y
 
-	-hpa
+Definitely.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
