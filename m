@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbXGQIwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933155AbXGQIxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933005AbXGQIwU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbXGQIwA
+	id S933155AbXGQIxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXGQIxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:52:00 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:18686 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758046AbXGQIv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:51:59 -0400
-Date: Tue, 17 Jul 2007 10:51:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, ak@suse.de
-Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg
-	helpers
-Message-ID: <20070717085123.GI5195@kernel.dk>
-References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792681830-git-send-email-jens.axboe@oracle.com> <20070716130608.4d096e29.akpm@linux-foundation.org> <20070716201002.GQ5195@kernel.dk> <20070716133427.e212b753.akpm@linux-foundation.org> <20070716220812.GL4902@rhun.haifa.ibm.com> <20070717073858.GG5195@kernel.dk> <20070717084939.GO4902@rhun.haifa.ibm.com>
+	Tue, 17 Jul 2007 04:53:35 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:38187 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbXGQIxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 04:53:34 -0400
+Date: Tue, 17 Jul 2007 10:53:32 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       zippel@linux-m68k.org, jdike@karaya.com, alan@lxorguk.ukuu.org.uk,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: uninline check_signature()
+In-Reply-To: <Pine.LNX.4.64.0707171049080.10600@anakin>
+Message-ID: <Pine.LNX.4.64.0707171052470.10600@anakin>
+References: <200707161802.l6GI2tNp007390@hera.kernel.org>
+ <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
+ <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707171049080.10600@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070717084939.GO4902@rhun.haifa.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17 2007, Muli Ben-Yehuda wrote:
-> On Tue, Jul 17, 2007 at 09:38:59AM +0200, Jens Axboe wrote:
-> 
-> > On Tue, Jul 17 2007, Muli Ben-Yehuda wrote:
-> 
-> > > The Xen and Calgary bits are mutually exclusive, so hopefully (a)
-> > > will not be held up on account of the Xen merge (or for any other
-> > > reason... CalIOC2 machines which are out there won't boot without
-> > > it if CONFIG_CALGARY_IOMMU is enabled).
+On Tue, 17 Jul 2007, Geert Uytterhoeven wrote:
+> On Mon, 16 Jul 2007, Linus Torvalds wrote:
+> > On Mon, 16 Jul 2007, Andrew Morton wrote:
+> > > No, no revert, please.  If the architecture doesn't support readb() then we
+> > > need some reliable way of working that out within Kconfig.
 > > 
-> > Do you have any comments for the patch to calgary (the mail you are
-> > replying to)?
+> > Isn't that CONFIG_HAS_IOMEM?
 > 
-> It looks ok, I just didn't want to ACK it before testing (I'm paranoid
-> that way).
+> No, having memory mapped I/O doesn't mean you have PCI.
+> How to access memory mapped I/O depends on the bus behind the device.
 
-That's certainly understandable! Can you mail me an ack once you've had
-a chance to test it?
+Like I said before:
 
--- 
-Jens Axboe
+| Just make check_signature() depend on ISA || PCI (and maybe || X86_32).
 
+It's used by only a handful of legacy drivers.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
