@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761202AbXGQA6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763064AbXGQA6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761202AbXGQA6Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 20:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbXGQA6Q
+	id S1763064AbXGQA6p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 20:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXGQA6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 20:58:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38292 "EHLO mail.dvmed.net"
+	Mon, 16 Jul 2007 20:58:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:53982 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752822AbXGQA6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 20:58:15 -0400
-Message-ID: <469C1423.3090908@garzik.org>
-Date: Mon, 16 Jul 2007 20:58:11 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1753000AbXGQA6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 20:58:34 -0400
+Message-ID: <469C13FE.6050606@goop.org>
+Date: Mon, 16 Jul 2007 17:57:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: block/bsg.c
-References: <20070716165706.348f6bbf.akpm@linux-foundation.org>	<469C11B1.8000302@garzik.org> <20070716175347.bea345dd.akpm@linux-foundation.org>
-In-Reply-To: <20070716175347.bea345dd.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Linus Torvalds <torvalds@linux-foundation.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Bj?rn Steinbrink <B.Steinbrink@gmx.de>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.com>
+Subject: Re: [Xen-devel] [patch 03/44] usermodehelper: split setup from	execution
+References: <20070716231536.937393000@xensource.com> >	  <20070716232912.409821000@xensource.com>> <1184632870.5955.26.camel@localhost.localdomain>
+In-Reply-To: <1184632870.5955.26.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 16 Jul 2007 20:47:45 -0400 Jeff Garzik <jeff@garzik.org> wrote:
-> 
->> Andrew Morton wrote:
->>> The modern way of shutting up gcc is uninitialized_var().
->>
->> Should I convert my misc-2.6.git#gccbug repository over to this, and 
->> push upstream?
-> 
-> Opinions differ (a bit) but personally I think the benefit of fixing the
-> warnings outweighs the risk that these suppressions will later hide a real
-> bug.
+Rusty Russell wrote:
+> The patch seems fine, but the names are awkward.  They've always been
+> awkward (it's *userspace* helper, not *usermode* helper), but this just
+> shines a bright light on them.
+>
+> So how about:
+>
+> 	call_usermodehelper_setup -> create_userspace_helper
+> 	call_usermodehelper_<SET_EXTRA_STATE> -> userspace_helper_...
+> 	call_usermodehelper_exec -> run_userspace_helper
+>
+> I can do that as a separate patch if you prefer (but it'd be nice to
+> have it in the same merge window so the interface only churns once).
 
-Tooting my own horn, but, anything in #gccbug I consider to be verified 
-to -not- be hiding a real bug.  Human-verified not machine-verified, of 
-course, so it's imperfect.  But at least it's been reviewed and 
-considered carefully.
+I don't have any particular objection, but I think it would be nicer if
+they had a common prefix so that they're obviously related, and you can
+easily infer the lifetime of the info structure.
 
-I'll look into "tarting up" #gccbug for upstream...  I had missed the 
-introduction of uninitialized_var(), which was the genesis for this line 
-of questioning.
-
-	Jeff
-
-
+    J
