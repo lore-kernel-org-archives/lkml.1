@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763740AbXGQOIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932262AbXGQOI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763740AbXGQOIl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 10:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761446AbXGQOHx
+	id S932262AbXGQOI6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 10:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbXGQOHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 10:07:53 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35907 "EHLO pasmtpB.tele.dk"
+	Tue, 17 Jul 2007 10:07:54 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:35911 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753584AbXGQOHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760801AbXGQOHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Jul 2007 10:07:49 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kernel@vger.kernel.org
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 02/33] kbuild: New 'cc-fullversion' macro
-Date: Tue, 17 Jul 2007 16:08:31 +0200
-Message-Id: <11846813432423-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 05/33] kbuild: avoid environment to set variables used by kbuild
+Date: Tue, 17 Jul 2007 16:08:34 +0200
+Message-Id: <11846813432300-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11846813423231-git-send-email-sam@ravnborg.org>
-References: 20070717140622.GA25846@uranus.ravnborg.org <11846813423231-git-send-email-sam@ravnborg.org>
+In-Reply-To: <11846813433593-git-send-email-sam@ravnborg.org>
+References: 20070717140622.GA25846@uranus.ravnborg.org <11846813423231-git-send-email-sam@ravnborg.org> <11846813432423-git-send-email-sam@ravnborg.org> <1184681343138-git-send-email-sam@ravnborg.org> <11846813433593-git-send-email-sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Segher Boessenkool <segher@kernel.crashing.org>
+A few of the variables used by kbuild has fixed naming.
+Make sure we do not pick up random values from the environment.
 
-Prints a six-digit string including the GCC patchlevel.  Also fix
-the 'usage' comment for cc-version.
-
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/Kbuild.include |    7 ++++++-
- scripts/gcc-version.sh |   15 ++++++++++++---
- 2 files changed, 18 insertions(+), 4 deletions(-)
+ scripts/Makefile.build |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-index 06c1a37..677bc6c 100644
---- a/scripts/Kbuild.include
-+++ b/scripts/Kbuild.include
-@@ -100,9 +100,14 @@ cc-option-align = $(subst -functions=0,,\
- 	$(call cc-option,-falign-functions=0,-malign-functions=0))
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index a525112..3f7b451 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -7,6 +7,22 @@ src := $(obj)
+ PHONY := __build
+ __build:
  
- # cc-version
--# Usage gcc-ver := $(call cc-version,$(CC))
-+# Usage gcc-ver := $(call cc-version)
- cc-version = $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-version.sh $(CC))
- 
-+# cc-fullversion
-+# Usage gcc-ver := $(call cc-fullversion)
-+cc-fullversion = $(shell $(CONFIG_SHELL) \
-+	$(srctree)/scripts/gcc-version.sh -p $(CC))
++# Init all relevant variables used in kbuild files so
++# 1) they have correct type
++# 2) they do not inherit any value from the environment
++obj-y :=
++obj-m :=
++lib-y :=
++lib-m :=
++always :=
++targets :=
++subdir-y :=
++subdir-m :=
++EXTRA_AFLAGS   :=
++EXTRA_CFLAGS   :=
++EXTRA_CPPFLAGS :=
++EXTRA_LDFLAGS  :=
 +
- # cc-ifversion
- # Usage:  EXTRA_CFLAGS += $(call cc-ifversion, -lt, 0402, -O1)
- cc-ifversion = $(shell [ $(call cc-version, $(CC)) $(1) $(2) ] && echo $(3))
-diff --git a/scripts/gcc-version.sh b/scripts/gcc-version.sh
-index bb4fbea..8a1d187 100644
---- a/scripts/gcc-version.sh
-+++ b/scripts/gcc-version.sh
-@@ -1,14 +1,23 @@
- #!/bin/sh
- #
--# gcc-version gcc-command
-+# gcc-version [-p] gcc-command
- #
- # Prints the gcc version of `gcc-command' in a canonical 4-digit form
- # such as `0295' for gcc-2.95, `0303' for gcc-3.3, etc.
- #
-+# With the -p option, prints the patchlevel as well, for example `029503' for
-+# gcc-2.95.3, `030301' for gcc-3.3.1, etc.
-+#
-+
-+if [ $1 = "-p" ] ; then with_patchlevel=1; shift; fi
+ # Read .config if it exist, otherwise ignore
+ -include include/config/auto.conf
  
- compiler="$*"
- 
- MAJOR=$(echo __GNUC__ | $compiler -E -xc - | tail -n 1)
- MINOR=$(echo __GNUC_MINOR__ | $compiler -E -xc - | tail -n 1)
--printf "%02d%02d\\n" $MAJOR $MINOR
--
-+if [ "x$with_patchlevel" != "x" ] ; then
-+	PATCHLEVEL=$(echo __GNUC_PATCHLEVEL__ | $compiler -E -xc - | tail -n 1)
-+	printf "%02d%02d%02d\\n" $MAJOR $MINOR $PATCHLEVEL
-+else
-+	printf "%02d%02d\\n" $MAJOR $MINOR
-+fi
 -- 
 1.5.0.6
 
