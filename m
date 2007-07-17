@@ -1,100 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933337AbXGQURT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765477AbXGQUXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933337AbXGQURT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbXGQURL
+	id S1765477AbXGQUXU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbXGQUXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:17:11 -0400
-Received: from www.osadl.org ([213.239.205.134]:54182 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755213AbXGQURK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:17:10 -0400
-Subject: Re: [PATCH] posix-timer: fix deletion race
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeremy Katz <jeremy.katz@windriver.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Stable Team <stable@kernel.org>
-In-Reply-To: <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
-References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain>
-	 <1184662429.12353.426.camel@chaos>
-	 <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 22:17:07 +0200
-Message-Id: <1184703427.12353.476.camel@chaos>
+	Tue, 17 Jul 2007 16:23:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44806 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757146AbXGQUXH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 16:23:07 -0400
+Date: Tue, 17 Jul 2007 13:22:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: block/bsg.c
+Message-Id: <20070717132233.ed11362c.akpm@linux-foundation.org>
+In-Reply-To: <20070717121821.3212cd60.akpm@linux-foundation.org>
+References: <20070716165706.348f6bbf.akpm@linux-foundation.org>
+	<20070717063810.GY5195@kernel.dk>
+	<20070717121821.3212cd60.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 11:39 -0700, Jeremy Katz wrote:
-> I tried the patch with my test case, but still see the issue.
-> Here's my explanation of the double free race:
-> CPU 0					CPU 1
-> sys_timer_delete():
->  	lock_timer();
->  	...
->  	unlock_timer();			itimer_delete()
->  	release_posix_timer():			spin_lock_irqsave(timer...)
->  		...				...
->  		sigqueue_free()			unlock_timer()
->  		...				sigqueue_free()
->  							BUG_ON(!(q->flags...
+On Tue, 17 Jul 2007 12:18:21 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-With 2.6.14 or with current mainline ?
-
-I doubt that this can happen, as itimer_delete() is only called, when
-there are no more references to the shared sig struct. At this point no
-other related thread can run sys_timer_delete(). 
-
-If this happens, then something else is completely broken.
-
-> the timer fires during deletion:
-> CPU 0					CPU 1
-> sys_timer_delete():
->  	lock_timer();
->  	...
->  	unlock_timer();			posix_timer_fn()
->  	release_posix_timer():			spin_lock_irqsave(timer...)
->  		...				...
->  		sigqueue_free()			posix_timer_event()
->  		...					...
->  							send_sigqueue()
->  								BUG_ON(!(q->flags
+> On Tue, 17 Jul 2007 08:38:11 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-
-I do not buy that either. In sys_timer_delete() the active timer is
-canceled. If we can not cancel it then we retry until the timer callback
-has been processed. This is even true for 2.6.14 (pre hrtimer).
-
-> --- linux-2.6.14-cgl.original/kernel/posix-timers.c	2007-07-11 16:06:47.000000000 -0700
-> +++ linux-2.6.14-cgl/kernel/posix-timers.c	2007-07-16 15:25:43.000000000 -0700
-> @@ -339,7 +339,9 @@ static int posix_timer_fn(void *data)
->   	int si_private = 0;
->   	int ret = HRTIMER_NORESTART;
+> > > In terms of presentation: this code hit the tree as base patch plus what
+> > > appear to be 20 bugfixes, none of which are really interesting or relevant
+> > > to mainline.  Personally I think it would be nicer if all that out-of-tree
+> > > development work was cleaned up and the new code goes in as a single hit.
+> > > 
+> > > This makes it a lot easier to find out "wtf does this code all do".  One
+> > > finds the first commit and reads the changlog.  But this algorithm yields:
+> > > 
+> > >     bsg: support for full generic block layer SG v3
+> > > 
+> > > which is not helpful.
+> > 
+> > I agree, I did consider rebasing the merging all patches into a single
+> > commit prior to submission. In retrospect that would have been better,
+> > the bug fixes commits prior to inclusion is not that interesting.
 > 
-> -	spin_lock_irqsave(&timr->it_lock, flags);
-> +	if(lock_timer(timr->it_id, &flags) == NULL) {
-> +		return ret;
-> +	}
-
-This is wrong. You look at something which is not valid anymore, if your
-theory is correct. You are just pampering over the real bug.
-
-> @@ -835,7 +844,9 @@ static inline void itimer_delete(struct
->   	unsigned long flags;
+> I'm doing a git-bisect and....
 > 
->   retry_delete:
-> -	spin_lock_irqsave(&timer->it_lock, flags);
-> +	/* timer already deleted? */
-> +	if (lock_timer(timer->it_id, &flags) == NULL)
-> +		return;
+> block/bsg.c: In function 'bsg_register_queue':
+> block/bsg.c:1014: error: 'struct kobject' has no member named 'dentry'
+> 
+> That's easily fixable in config, but it's another reason for doing
+> that consolidation prior to merging.
 
-Same here.
+So this rather painful and compiler-errorful bisection session ended up at:
 
-Can you reproduce the problem against mainline + my patch applied ?
+commit 3d6392cfbd7dc11f23058e3493683afab4ac13a3
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Mon Jul 9 12:38:05 2007 +0200
 
-	tglx
+    bsg: support for full generic block layer SG v3                                 
 
+
+What is happening is that my old dual-PIII IDE-PIIX box running
+hacked-about FC1 is locking up early in initscripts, just after "Finding
+module dependencies".
+
+Config is http://userweb.kernel.org/~akpm/config-vmm.txt with CONFIG_SCSI=n.
+
+Occasionally I'll get an NMI watchdog timeout, but it's a rather
+uninteresting one: the stack trace just points up into the idle task.
+
+This:
+
+--- a/drivers/ide/ide.c~a
++++ a/drivers/ide/ide.c
+@@ -1052,9 +1052,9 @@ int generic_ide_ioctl(ide_drive_t *drive
+ 	int err, (*setfunc)(ide_drive_t *, int);
+ 	u8 *val;
+ 
+-	err = scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+-	if (err != -ENOTTY)
+-		return err;
++//	err = scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
++//	if (err != -ENOTTY)
++//		return err;
+ 
+ 	switch (cmd) {
+ 	case HDIO_GET_32BIT:	    val = &drive->io_32bit;	 goto read_val;
+_
+
+fixes it.
+
+
+I added this:
+
+--- a/drivers/ide/ide.c~a
++++ a/drivers/ide/ide.c
+@@ -1052,7 +1052,9 @@ int generic_ide_ioctl(ide_drive_t *drive
+ 	int err, (*setfunc)(ide_drive_t *, int);
+ 	u8 *val;
+ 
++	printk("%s: cmd=%d\n", __FUNCTION__, cmd);
+ 	err = scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
++	printk("%s: err=%d\n", __FUNCTION__, err);
+ 	if (err != -ENOTTY)
+ 		return err;
+ 
+_
+
+
+and got:
+
+default.hotplug used greatest stack depth: 6448 bytes left
+hotplug used greatest stack depth: 6396 bytes left
+hotplug used greatest stack depth: 5540 bytes left
+EXT3 FS on hdc2, internal journal
+Adding 1020116k swap on /dev/hdc3.  Priority:-1 extents:1 across:1020116k
+generic_ide_ioctl: cmd=21382
+generic_ide_ioctl: err=0
+generic_ide_ioctl: cmd=1
+program scsi_unique_id is using a deprecated SCSI ioctl, please convert it to SG_IO
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+<20000 lines removed>
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+ide_do_rw_disk - bad command: dev hdc: type=2, flags=104c8
+
+sector 1515870810, nr/cnr 0/0
+bio f73714f8, biotail f73714f8, buffer 00000000, data 00000000, len 96
+cdb: 12 01 80 00 60 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 
+
+
+and there it all stopped.
 
