@@ -1,121 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbXGQRR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbXGQRSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbXGQRR0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758883AbXGQRRO
+	id S933051AbXGQRSu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbXGQRSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:17:14 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:38722 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759618AbXGQRRL (ORCPT
+	Tue, 17 Jul 2007 13:18:43 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:34911 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758312AbXGQRSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:17:11 -0400
-Date: Tue, 17 Jul 2007 10:03:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patch] fix the softlockup watchdog to actually work
-Message-Id: <20070717100300.821650f5.randy.dunlap@oracle.com>
-In-Reply-To: <20070717154934.GA24231@elte.hu>
-References: <20070717114453.GA8212@elte.hu>
-	<469CCF8F.4010107@goop.org>
-	<20070717154934.GA24231@elte.hu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 17 Jul 2007 13:18:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dG2WrgfbV/vVzuCEDc5cvBs63WvlEoPE4XIneD6e2T2egqCvrKKjapDanbZACA3WBBjworys1khgMQ+2prAGHRiSQLjmathufvXTXPhhGR4wdTDqkz6u9GkrDpMfpcE0rqmnUA0mnjvge/lLCE8i8UbG8DJlQMx0MThppWVHB2I=
+Message-ID: <961aa3350707171018i58a47b7asb4a92e1bcd146adf@mail.gmail.com>
+Date: Wed, 18 Jul 2007 02:18:41 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: ego@in.ibm.com
+Subject: Re: [PATCH 4/10] cpu: deliver CPU_UP_CANCELED only to NOTIFY_OKed callbacks with CPU_UP_PREPARE
+Cc: linux-kernel@vger.kernel.org, "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Dmitriy Zavin" <dmitriyz@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Andi Kleen" <andi@firstfloor.org>, "Ashok Raj" <ashok.raj@intel.com>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, heiko.carstens@de.ibm.com,
+       kiran@scalex86.org, clameter@sgi.com,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20070717082331.GA12231@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20070716134855.GA1858@APFDCB5C> <20070716135347.GD2040@APFDCB5C>
+	 <20070717082331.GA12231@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007 17:49:34 +0200 Ingo Molnar wrote:
+> > So it is natural to deliver CPU_UP_CANCELED event only to the functions
+> > that have returned NOTIFY_OK with CPU_UP_PREPARE event and not to call
+> > the function that have returned NOTIFY_BAD. This is what this patch is doing.
+>
+> Yes, this makes sense.
 
-> 
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > Ingo Molnar wrote:
-> > > Subject: softlockup: fix Xen bogosity
-> > > From: Ingo Molnar <mingo@elte.hu>
-> > >
-> > > this Xen related commit:
-> > >   
-> > 
-> > Well, not just Xen.  It relates to any virtual environment: kvm, 
-> > lguest, vmi, xen...  (Not that they all implement a measure of 
-> > unstolen time.)
-> > 
-> > How about a more descriptive patch title, along the lines of 
-> > "softlockup watchdog: fix rate limiting"?
-> 
-> uhm, the problem was that it did not work _at all_, not something about 
-> 'rate limiting'. Yes, i got quite a bit grumpy when i found this, 
-> because you completely broke the softlockup watchdog via a pretty 
-> intrusive commit and you apparently didnt even do a minimal check 
-> whether its functionality was preserved! Updated patch for Andrew/Linus 
-> and for -stable attached.
-> 
-> 	Ingo
-> 
-> ----------------------------->
-> Subject: fix the softlockup watchdog to actually work
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> this Xen related commit:
-> 
->    commit 966812dc98e6a7fcdf759cbfa0efab77500a8868
->    Author: Jeremy Fitzhardinge <jeremy@goop.org>
->    Date:   Tue May 8 00:28:02 2007 -0700
-> 
->        Ignore stolen time in the softlockup watchdog
-> 
-> broke the softlockup watchdog to never report any lockups. (!)
-> 
-> print_timestamp defaults to 0, this makes the following condition
-> always true:
-> 
-> 	if (print_timestamp < (touch_timestamp + 1) ||
-> 
-> and we'll in essence never report soft lockups.
-> 
-> apparently the functionality of the soft lockup watchdog was never
-> actually tested with that patch applied ...
-> 
-> [this is -stable material too.]
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/softlockup.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> Index: linux/kernel/softlockup.c
-> ===================================================================
-> --- linux.orig/kernel/softlockup.c
-> +++ linux/kernel/softlockup.c
-> @@ -79,10 +79,11 @@ void softlockup_tick(void)
->  	print_timestamp = per_cpu(print_timestamp, this_cpu);
->  
->  	/* report at most once a second */
-> -	if (print_timestamp < (touch_timestamp + 1) ||
-> -		did_panic ||
-> -			!per_cpu(watchdog_task, this_cpu))
-> +	if ((print_timestamp >= touch_timestamp &&
-> +			print_timestamp < (touch_timestamp + 1)) ||
-> +			did_panic || !per_cpu(watchdog_task, this_cpu)) {
->  		return;
-> +	}
->  
->  	/* do not print during early bootup: */
->  	if (unlikely(system_state != SYSTEM_RUNNING)) {
+Thank you for making sure of it.
 
-patch contains unneeded braces { }.
+>[...] However, it might break slab.
+> If I am not mistaken, slab code initializes multiple objects in
+> CPU_UP_PREPARE and relies on the CPU_UP_CANCELLED to destroy the
+> objects which successfully got initialized before the some object's
+> initialization went bad.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+My testing machine is ordinary dual core non numa box. So it might not
+trigger the problem that you are warried about under heavy slab alloc
+failure injection.
+
+At first glance I couln't find the problem in cpu hottplug code in slab.c yet,
+but found some memory leak path. (it doesn't break slab though)
+
+Index: 2.6-git/mm/slab.c
+===================================================================
+--- 2.6-git.orig/mm/slab.c
++++ 2.6-git/mm/slab.c
+@@ -1221,13 +1221,18 @@ static int __cpuinit cpuup_callback(stru
+ 				shared = alloc_arraycache(node,
+ 					cachep->shared * cachep->batchcount,
+ 					0xbaadf00d);
+-				if (!shared)
++				if (!shared) {
++					kfree(nc);
+ 					goto bad;
++				}
+ 			}
+ 			if (use_alien_caches) {
+                                 alien = alloc_alien_cache(node, cachep->limit);
+-                                if (!alien)
+-                                        goto bad;
++                                if (!alien) {
++					kfree(shared);
++					kfree(nc);
++					goto bad;
++				}
+                         }
+ 			cachep->array[cpu] = nc;
+ 			l3 = cachep->nodelists[node];
