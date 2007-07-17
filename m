@@ -1,117 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbXGQBpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbXGQBrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761356AbXGQBpO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 21:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbXGQBpB
+	id S1763732AbXGQBrh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 21:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757197AbXGQBr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 21:45:01 -0400
-Received: from smtpq3.tilbu1.nb.home.nl ([213.51.146.202]:48951 "EHLO
-	smtpq3.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754318AbXGQBpA (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 21:45:00 -0400
-Message-ID: <469C1EE0.1090808@gmail.com>
-Date: Tue, 17 Jul 2007 03:44:00 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Mon, 16 Jul 2007 21:47:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39037 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756081AbXGQBr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 21:47:26 -0400
+Message-ID: <469C1FA9.3090809@garzik.org>
+Date: Mon, 16 Jul 2007 21:47:21 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: pomac@vapor.com, Linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [BUG] AS io-scheduler.
-References: <1184512821.10630.26.camel@localhost> <469B9D6B.60101@redhat.com>
-In-Reply-To: <469B9D6B.60101@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: block/bsg.c
+References: <20070716165706.348f6bbf.akpm@linux-foundation.org>	<469C11B1.8000302@garzik.org>	<20070716175347.bea345dd.akpm@linux-foundation.org>	<469C1423.3090908@garzik.org> <20070716180908.e15325bd.akpm@linux-foundation.org>
+In-Reply-To: <20070716180908.e15325bd.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/16/2007 06:31 PM, Chuck Ebbert wrote:
+hrm.  uninitialized_var(x) does not silence the warning, on my compiler:
 
->> BUG: unable to handle kernel paging request at virtual address ea86ac54
->>  printing eip:
->> c022dfec
->> *pde = 00000000
->> Oops: 0000 [#1]
->> Modules linked in: eeprom i2c_viapro vt8231 i2c_isa skge
->> CPU:    0
->> EIP:    0060:[<c022dfec>]    Not tainted VLI
->> EFLAGS: 00010082   (2.6.22.1 #26)
->> EIP is at as_can_break_anticipation+0xc/0x190
->> eax: dfcdaba0   ebx: dfcdaba0   ecx: 0035ff95   edx: cb296844
->> esi: cb296844   edi: dfcdaba0   ebp: 00000000   esp: ceff6a70
->> ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
->> Process rsync (pid: 1667, ti=ceff6000 task=d59cf5b0 task.ti=ceff6000)
->> Stack: cb296844 00000001 cb296844 dfcdaba0 00000000 c022efc8 cb296844
->> 00000000 
->>        dfcffb9c c0227a76 dfcffb9c 00000000 c016e96e cb296844 00000000
->> dfcffb9c 
->>        00000000 c022af64 00000000 dfcffb9c 00000008 00000000 08ff6b30
->> c04d1ec0 
->> Call Trace:
->>  [<c022efc8>] as_add_request+0xa8/0xc0
->>  [<c0227a76>] elv_insert+0xa6/0x150
->>  [<c016e96e>] bio_phys_segments+0xe/0x20
->>  [<c022af64>] __make_request+0x384/0x490
->>  [<c02add1e>] ide_do_request+0x6ee/0x890
->>  [<c02294ab>] generic_make_request+0x18b/0x1c0
->>  [<c022b596>] submit_bio+0xa6/0xb0
->>  [<c013b7b8>] mempool_alloc+0x28/0xa0
->>  [<c016bb66>] __find_get_block+0xf6/0x130
->>  [<c016e0bc>] bio_alloc_bioset+0x8c/0xf0
->>  [<c016b647>] submit_bh+0xb7/0xe0
->>  [<c016c1f8>] ll_rw_block+0x78/0x90
->>  [<c019c85d>] search_by_key+0xdd/0xd20
->>  [<c016c201>] ll_rw_block+0x81/0x90
->>  [<c011f190>] irq_exit+0x40/0x60
->>  [<c01066e4>] do_IRQ+0x94/0xb0
->>  [<c0104bc3>] common_interrupt+0x23/0x30
->>  [<c018beca>] reiserfs_read_locked_inode+0x6a/0x490
->>  [<c018e580>] reiserfs_find_actor+0x0/0x20
->>  [<c018c33b>] reiserfs_iget+0x4b/0x80
->>  [<c018e570>] reiserfs_init_locked_inode+0x0/0x10
->>  [<c0189824>] reiserfs_lookup+0xa4/0xf0
->>  [<c0157b03>] do_lookup+0xa3/0x140
->>  [<c0159265>] __link_path_walk+0x615/0xa20
->>  [<c0168a18>] __mark_inode_dirty+0x28/0x150
->>  [<c01631c1>] mntput_no_expire+0x11/0x50
->>  [<c01596b2>] link_path_walk+0x42/0xb0
->>  [<c0159960>] do_path_lookup+0x130/0x150
->>  [<c015a190>] __user_walk_fd+0x30/0x50
->>  [<c0154766>] vfs_lstat_fd+0x16/0x40
->>  [<c01547df>] sys_lstat64+0xf/0x30
->>  [<c0103c42>] syscall_call+0x7/0xb
->>  =======================
-> 
-> static int as_can_break_anticipation(struct as_data *ad, struct request *rq)
-> {
->         struct io_context *ioc;
->         struct as_io_context *aic;
-> 
->         ioc = ad->io_context;  <======== ad is bogus
->         BUG_ON(!ioc);
-> 
-> 
-> Call chain is:
-> 
-> 	as_add_request
-> 	as_update_rq:
-> 	        if (ad->antic_status == ANTIC_WAIT_REQ
->         	                || ad->antic_status == ANTIC_WAIT_NEXT) {
->                 	if (as_can_break_anticipation(ad, rq))
->                         	as_antic_stop(ad);
->         	}
-> 
-> 
-> So somehow 'ad' became invalid between the time ad->antic_status was
-> checked and as_can_break_anticipation() tried to access ad->io_context?
+[jgarzik@pretzel misc-2.6]$ rpm -q gcc
+gcc-4.1.2-13.fc6
 
-Is this similar to:
+@@ -1358,6 +1358,8 @@ udf_load_partition(struct super_block *sb, 
+kernel_lb_addr
+                         {
+                                 kernel_lb_addr ino;
 
-http://lkml.org/lkml/2007/6/4/50
++ 
+uninitialized_var(ino.partitionReferenceNum);
++
+                                 if (!UDF_SB_LASTBLOCK(sb))
 
-?
+still yields
 
-Rene.
+fs/udf/super.c: In function ‘udf_fill_super’:
+fs/udf/super.c:1359: warning: ‘ino.partitionReferenceNum’ may be used 
+uninitialized in this function
+
+
