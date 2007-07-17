@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934393AbXGQRxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765192AbXGQRx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934393AbXGQRxG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756701AbXGQRwz
+	id S1765192AbXGQRx0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933038AbXGQRxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:52:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:57333 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753935AbXGQRwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:52:54 -0400
-Message-ID: <469D01BE.7070204@goop.org>
-Date: Tue, 17 Jul 2007 10:51:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Tue, 17 Jul 2007 13:53:00 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:54856 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765016AbXGQRw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 13:52:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CACeenEarR7PE/2dsb2JhbAA
+X-IronPort-AV: i="4.16,546,1175497200"; 
+   d="scan'208"; a="167023261:sNHT28557918"
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 01/10] IB/ehca: Support for multiple event queues
+X-Message-Flag: Warning: May contain useful information
+References: <OF2377E85C.B05BDE94-ONC125731A.006E64A7-C125731A.00714F9E@de.ibm.com>
+	<ada1wf7vgfb.fsf@cisco.com> <20070717043740.GB8527@mellanox.co.il>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 17 Jul 2007 10:52:55 -0700
+In-Reply-To: <20070717043740.GB8527@mellanox.co.il> (Michael S. Tsirkin's message of "Tue, 17 Jul 2007 07:37:40 +0300")
+Message-ID: <adalkdesyrs.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: john.blackwood@ccur.com, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Roland McGrath <roland@redhat.com>, bugsy@ccur.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH] Reading the VDSO area - i386
-References: <469CECFE.6060408@ccur.com> <469CF2BC.3000306@goop.org> <200707171948.42054.ak@suse.de>
-In-Reply-To: <200707171948.42054.ak@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Jul 2007 17:52:55.0386 (UTC) FILETIME=[4DC91BA0:01C7C89B]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Tuesday 17 July 2007 18:47:56 Jeremy Fitzhardinge wrote:
->   
->> John Blackwood wrote:
->>     
->>> I was doing some tests that attempt to read the VDSO area of a
->>> task through either the /proc/pid/mem or ptrace(PTRACE_PEEKTEXT,
->>> ...) interfaces, and it seems that when the CONFIG_COMPAT_VDSO kernel
->>> parameter is enabled, we can no longer successfully read the VDSO area
->>> on i386 kernels.
->>>       
->> Thanks.  Someone else noticed this recently, and posted a near-identical
->> patch.  But I can't seem to find it right now...
->>
->> Andrew, Andi: do you remember something like this passing by?
->>     
->
-> Yes it was from Jan Beulich.
->   
+ > Here's some anecdotal evidence :)
+ > http://lists.openfabrics.org/pipermail/general/2007-May/035758.html
 
-Ah, yes.  For some reason I can't find it in my archives.  Do you have
-it queued up?
+Right, but then we went on to say that we probably want to use
+multiple vectors to separate out multiple HCA ports rather than
+send/sreceive on the same port.  And the current IPoIB implementation
+of having that second CQ seems suboptimal anyway, since it seems to
+leave us susceptible to the interrupt overload that NAPI was supposed
+to solve.
 
-    J
+At a higher level, I'm left wondering why nobody talked about multiple
+EQs during the last months of the 2.6.22 process and now all of a
+sudden it becomes urgent in the last few days of the 2.6.23 merge
+window.  That's not really how I like to merge features....
 
+ - R.
