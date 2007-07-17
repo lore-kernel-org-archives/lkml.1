@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbXGQIQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbXGQIRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933351AbXGQIQJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 04:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbXGQIPx
+	id S932154AbXGQIRt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 04:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXGQIRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 04:15:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59753 "EHLO mx3.mail.elte.hu"
+	Tue, 17 Jul 2007 04:17:37 -0400
+Received: from ns2.suse.de ([195.135.220.15]:44384 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755232AbXGQIPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 04:15:51 -0400
-Date: Tue, 17 Jul 2007 10:15:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: npiggin@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch] sched: fix newly idle load balance in case of SMT
-Message-ID: <20070717081542.GB17234@elte.hu>
-References: <20070716235214.GD3318@linux-os.sc.intel.com>
+	id S1752244AbXGQIRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 04:17:34 -0400
+Date: Tue, 17 Jul 2007 10:17:24 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070717081724.GA16853@suse.de>
+Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
+	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+References: <20070710120243.GA10121@hmsendeavour.rdu.redhat.com> <20070713200533oomichi@mail.jp.nec.com> <20070713131550.GB10985@suse.de> <20070716041918.GA11390@in.ibm.com> <20070716115707.GA29923@suse.de> <20070717035055.GA4869@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070716235214.GD3318@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070717035055.GA4869@in.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
-
-> In the presence of SMT, newly idle balance was never happening for 
-> multi-core and SMP domains(even when both the logical siblings are 
-> idle).
+* Vivek Goyal <vgoyal@in.ibm.com> [2007-07-17 05:50]:
 > 
-> If thread 0 is already idle and when thread 1 is about to go to idle, 
-> newly idle load balance always think that one of the threads is not 
-> idle and skips doing the newly idle load balance for multi-core and 
-> SMP domains.
-> 
-> This is because of the idle_cpu() macro, which checks if the current 
-> process on a cpu is an idle process. But this is not the case for the 
-> thread doing the load_balance_newidle().
-> 
-> Fix this by using runqueue's nr_running field instead of idle_cpu(). 
-> And also skip the logic of 'only one idle cpu in the group will be 
-> doing load balancing' during newly idle case.
+> Thinking more about it. These config variables are accessible in user
+> space in first kernel through sysconf() interface. In that case kexec
+> can pack required config variables into an ELF note and kernel does not
+> have to intervene.
 
-ah, indeed - good catch! I've checked the other uses of idle_cpu() and 
-those seem to be fine. I've added your patch to my queue.
+That's a good point. So we'd only need to aggree on a format for all
+this information. I think the makedumpfile format is quite good --
+instead of inventing another new format.
 
-	Ingo
+
+Thanks,
+   Bernhard
