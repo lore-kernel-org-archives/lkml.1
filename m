@@ -1,90 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934288AbXGQQro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933910AbXGQQtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934288AbXGQQro (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 12:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbXGQQrd
+	id S933910AbXGQQtD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 12:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbXGQQsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 12:47:33 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57628 "EHLO pasmtpB.tele.dk"
+	Tue, 17 Jul 2007 12:48:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:58639 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754978AbXGQQrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 12:47:32 -0400
-Date: Tue, 17 Jul 2007 18:48:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Domen Puncer <domen.puncer@telargo.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] introduce __init_exit function annotation
-Message-ID: <20070717164846.GB26953@uranus.ravnborg.org>
-References: <20070717080248.GK4375@moe.telargo.com> <20070717130230.GB24780@uranus.ravnborg.org> <s5htzs3ulpf.wl%tiwai@suse.de> <20070717151432.GA25939@uranus.ravnborg.org> <s5hodibukle.wl%tiwai@suse.de> <20070717153236.GB25939@uranus.ravnborg.org> <s5hir8jujhc.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hir8jujhc.wl%tiwai@suse.de>
-User-Agent: Mutt/1.4.2.1i
+	id S1756946AbXGQQsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 12:48:51 -0400
+Message-ID: <469CF2BC.3000306@goop.org>
+Date: Tue, 17 Jul 2007 09:47:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: john.blackwood@ccur.com
+CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Andi Kleen <ak@suse.de>, Roland McGrath <roland@redhat.com>,
+       bugsy@ccur.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Reading the VDSO area - i386
+References: <469CECFE.6060408@ccur.com>
+In-Reply-To: <469CECFE.6060408@ccur.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 05:40:15PM +0200, Takashi Iwai wrote:
-> At Tue, 17 Jul 2007 17:32:36 +0200,
-> Sam Ravnborg wrote:
-> > 
-> > On Tue, Jul 17, 2007 at 05:16:13PM +0200, Takashi Iwai wrote:
-> > > At Tue, 17 Jul 2007 17:14:32 +0200,
-> > > Sam Ravnborg wrote:
-> > > > 
-> > > > On Tue, Jul 17, 2007 at 04:52:12PM +0200, Takashi Iwai wrote:
-> > > > > At Tue, 17 Jul 2007 15:02:30 +0200,
-> > > > > Sam Ravnborg wrote:
-> > > > > > 
-> > > > > > On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
-> > > > > > > Introduce __init_exit, which is useful ie. for drivers that call
-> > > > > > > cleanup functions when they fail in __init functions.
-> > > > > > 
-> > > > > > This is wrong.
-> > > > > > On arm (just one example of several) the __exit section are discarded
-> > > > > > at buildtime so any reference from __init to __exit will cause the
-> > > > > > linker to error out.
-> > > > > 
-> > > > > Hmm, from what I see, it adds __init to the function.  There is no
-> > > > > reference to __exit.
-> > > > 
-> > > > The cleanup functions are marked __exit in the referenced case.
-> > > 
-> > > My understanding is that it's the very purpose of this patch --
-> > > change the mark from __exit to __init_exit for such clean-up
-> > > functions.
-> > 
-> > And that is wrong.
-> 
-> You misunderstood.  What I meant is the case like this:
-> 
-> static void __init_exit cleanup()
-> {
-> 	...
-> }
-> 
-> static void __init foo_init()
-> {
-> 	if (error)
-> 		cleanup();
-> }
-> 
-> static void __exit foo_exit()
-> {
-> 	cleanup();
-> }
-> 
-> Currently, there is no proper way to mark cleanup().  Neither __init,
-> __exit, __devinit nor __devexit can be used there.
+John Blackwood wrote:
+> I was doing some tests that attempt to read the VDSO area of a
+> task through either the /proc/pid/mem or ptrace(PTRACE_PEEKTEXT,
+> ...) interfaces, and it seems that when the CONFIG_COMPAT_VDSO kernel
+> parameter is enabled, we can no longer successfully read the VDSO area
+> on i386 kernels.
 
-Then you get the annotation sorted out so cleanup() get discarded in the
-built-in case. But you leave no room for automated tools to detect this.
+Thanks.  Someone else noticed this recently, and posted a near-identical
+patch.  But I can't seem to find it right now...
 
-If this is really necessary (and I daught) then a specific section should be
-dedicated for this usage.
+Andrew, Andi: do you remember something like this passing by?
 
-We have lot of issues with current __init/__exit, __devinit/__devexit, __cpuint/__cpuexit
-and introducing more of the kind does not help it.
-So even if it saves a few bytes in some odd cases the added complaxity is IMHO not worth it.
-
-	Sam
+    J
