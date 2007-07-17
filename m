@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXGQBKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933011AbXGQBMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933103AbXGQBKh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 21:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932656AbXGQBKS
+	id S933011AbXGQBMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 21:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbXGQBMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 21:10:18 -0400
-Received: from ozlabs.org ([203.10.76.45]:58498 "EHLO ozlabs.org"
+	Mon, 16 Jul 2007 21:12:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38780 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933006AbXGQBKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 21:10:17 -0400
-Subject: Re: maps2-move-the-page-walker-code-to-lib.patch
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070713204817.GA3529@uranus.ravnborg.org>
-References: <1183873796.6005.269.camel@localhost.localdomain>
-	 <20070709202217.GS11115@waste.org>
-	 <1184033195.6005.439.camel@localhost.localdomain>
-	 <20070713204817.GA3529@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Tue, 17 Jul 2007 11:09:57 +1000
-Message-Id: <1184634597.5955.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1752928AbXGQBMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 21:12:33 -0400
+Message-ID: <469C177A.3080002@garzik.org>
+Date: Mon, 16 Jul 2007 21:12:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: block/bsg.c
+References: <20070716165706.348f6bbf.akpm@linux-foundation.org>	<469C11B1.8000302@garzik.org>	<20070716175347.bea345dd.akpm@linux-foundation.org>	<469C1423.3090908@garzik.org> <20070716180908.e15325bd.akpm@linux-foundation.org>
+In-Reply-To: <20070716180908.e15325bd.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-13 at 22:48 +0200, Sam Ravnborg wrote:
-> On Tue, Jul 10, 2007 at 12:06:35PM +1000, Rusty Russell wrote:
-> > On Mon, 2007-07-09 at 15:22 -0500, Matt Mackall wrote:
-> > > On Sun, Jul 08, 2007 at 03:49:56PM +1000, Rusty Russell wrote:
-> > > > Matt wrote:
-> > > > > This lets it get shared outside of proc/ and linked in only when needed.
-> > > > 
-> > > > Erk, this really belongs in the mm dir.  You can use "lib-y +=
-> > > > pagewalk.o" there, and it seems to work as well as doing it in lib.
-> > > 
-> > > Are you sure? I tested that a few months ago and it didn't work for
-> > > me. I seem to recall it wanted a chunk of makefile surgery.
-> > 
-> > Well, I tested here and it worked unless I screwed something (producing
-> > lib.a in mm/ and linking it in).  And when I turned off all the CONFIG
-> > options which required it, the symbols disappeared from the vmlinux...
-> 
-> I think you had some additional change somewhere...
-> kbuild will only look for lib.a files (produced from all files
-> listed with lib-y _except_ files listed with obj-y too).
+Andrew Morton wrote:
+> Yup, but the concern (from Al, iirc) was that someone could change the code
+> later on, add a new bug and have that bug hidden by the unneeded
+> initialisation.
 
-You're right: mm/lib.a gets built, but not linked in.  Sorry for the
-false report...
+True.
 
-Rusty.
+That's why #gccbug went the safe route, took the cost of extra 
+instructions, and initialized it to zero.
+
+
+> uninitialized_var() has the advantage that it generates no code, whereas "=
+> 0" often adds instructions.  Plus of course it is self-documenting, greppable-for
+> and centrally alterable.
+
+Agreed.
+
+	Jeff
+
 
