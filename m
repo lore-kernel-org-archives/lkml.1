@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933949AbXGQSeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbXGQSfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933949AbXGQSeZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 14:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbXGQSeR
+	id S934247AbXGQSfq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 14:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbXGQSfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 14:34:17 -0400
-Received: from inti.inf.utfsm.cl ([200.1.21.155]:43636 "EHLO inti.inf.utfsm.cl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754404AbXGQSeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 14:34:17 -0400
-X-Greylist: delayed 493 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jul 2007 14:34:16 EDT
-From: "Horst H. von Brand" <vonbrand@inf.utfsm.cl>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: v9fs-developer@lists.sourceforge.net,
-       "Horst H. von Brand" <vonbrand@inf.utfsm.cl>
-Subject: [PATCH] fs/9p/v9fs.c: Delete unused p9_debug_level setting
-Date: Tue, 17 Jul 2007 14:26:06 -0400
-Message-Id: <11846967671229-git-send-email-vonbrand@inf.utfsm.cl>
-X-Mailer: git-send-email 1.5.2.3
-In-Reply-To: <11846967662438-git-send-email-vonbrand@inf.utfsm.cl>
-References: <11846967662438-git-send-email-vonbrand@inf.utfsm.cl>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0rc6 (inti.inf.utfsm.cl [0.0.0.0]); Tue, 17 Jul 2007 14:25:52 -0400 (CLT)
+	Tue, 17 Jul 2007 14:35:38 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34186 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754473AbXGQSfh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 14:35:37 -0400
+From: Olaf Kirch <olaf.kirch@oracle.com>
+Organization: Oracle
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Date: Tue, 17 Jul 2007 20:34:19 +0200
+User-Agent: KMail/1.9.1
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+References: <20070716091236.GA10718@elte.hu> <200707172006.11664.olaf.kirch@oracle.com> <20070717181857.GA16918@elte.hu>
+In-Reply-To: <20070717181857.GA16918@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707172034.20581.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Horst H. von Brand <vonbrand@inf.utfsm.cl>
+On Tuesday 17 July 2007 20:18, Ingo Molnar wrote:
+> (one is HZ=100, the other HZ=1000. HZ=100 produces a hung network just 
+> like HZ=250.)
+> 
+> no 'rx_sched set' messages in either case. Network still hung for 
+> HZ=100, and is working for HZ=1000.
 
-Signed-off-by: Horst H. von Brand <vonbrand@inf.utfsm.cl>
----
- fs/9p/v9fs.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Is this from dmesg or the netconsole output? I don't see any Tx Unit
+Hang messages from e1000 or netdev watchdog messages present in your
+earlier dmesg logs. So maybe these messages are there, but never
+get logged?
 
-diff --git a/fs/9p/v9fs.c b/fs/9p/v9fs.c
-index 45c3598..72ad365 100644
---- a/fs/9p/v9fs.c
-+++ b/fs/9p/v9fs.c
-@@ -131,7 +131,6 @@ static void v9fs_parse_options(char *options, struct v9fs_session_info *v9ses)
- 		switch (token) {
- 		case Opt_debug:
- 			v9ses->debug = option;
--			p9_debug_level = option;
- 			break;
- 		case Opt_port:
- 			v9ses->port = option;
+Olaf
 -- 
-1.5.2.3
-
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
