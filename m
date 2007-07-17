@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbXGQU3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXGQUaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761511AbXGQU3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 16:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbXGQU3f
+	id S1762011AbXGQUaH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 16:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765934AbXGQU3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 16:29:35 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:50307
+	Tue, 17 Jul 2007 16:29:49 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:50318
 	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754377AbXGQU3e (ORCPT
+	with ESMTP id S1764176AbXGQU3r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 16:29:34 -0400
-Message-ID: <469D35B1.5050905@microgate.com>
-Date: Tue, 17 Jul 2007 15:33:37 -0600
+	Tue, 17 Jul 2007 16:29:47 -0400
+Message-ID: <469D2810.9080109@microgate.com>
+Date: Tue, 17 Jul 2007 14:35:28 -0600
 From: Paul Fulghum <paulkf@microgate.com>
 User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: James Simmons <jsimmons@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: James Simmons <jsimmons@infradead.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux console project <linuxconsole-dev@lists.sourceforge.net>
 Subject: Re: [PATCH] Use tty_schedule in VT code.
-References: <Pine.LNX.4.64.0707171933180.6721@pentafluge.infradead.org> <alpine.LFD.0.999.0707171222060.27353@woody.linux-foundation.org> <469D2810.9080109@microgate.com> <alpine.LFD.0.999.0707171243220.27353@woody.linux-foundation.org> <Pine.LNX.4.64.0707172050180.9131@pentafluge.infradead.org> <469D2F67.40305@microgate.com> <Pine.LNX.4.64.0707172104050.9131@pentafluge.infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0707172104050.9131@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0707171933180.6721@pentafluge.infradead.org> <alpine.LFD.0.999.0707171222060.27353@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707171222060.27353@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Simmons wrote:
-> The low_latency is used by the drivers in the case where its 
-> not in a interrupt context. Well we are trusting the drivers.
-> Now if it is true what you said then tty_flip_buffer_push has
-> a bug. Looking at several drivers including serial devices
-> they set the low_latency flag.
-
-The generic serial driver (8250) is the one that was
-dead locking when that code originally existed.
-It was setting low_latency and calling from interrupt context.
-
->> And the initial schedule has no reason to add the extra delay.
+Linus Torvalds wrote:
+>> -	schedule_delayed_work(&tty->buf.work, 1);
+>> +	schedule_delayed_work(&tty->buf.work, 0);
 > 
-> So do you support a non delay work queue as well?
+> Is there any real reason for this?
+> 
+> I think that patch is bogus. Either it should stay at 1, or the whole work 
+> should be a non-scheduled one instead.
+> 
+> Do we really need to handle it asap for the console, or is it ok to wait 
+> for the next tick, like the regular tty case used to?
+> 
+> And if we need to handle it asap, why the "delayed"?
 
-No, the delay work must be used for flush_to_ldisc()
-so it makes no sense to define two different work queues
-(one delayed and one not) for the same work.
-
-I support your patch.
-
-The current stuff works and your patch works.
-With your patch, you actually reduce initial
-latency for processing receive data.
-
-Whichever way everyone else wants to go.
-
+The scheduling is to move the processing out of interrupt context.
+The receive data is often extracted from the hardware
+at interrupt time and then queued for processing.
 
 -- 
 Paul Fulghum
