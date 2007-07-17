@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765636AbXGQLjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765515AbXGQLk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765636AbXGQLjl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 07:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbXGQLjW
+	id S1765515AbXGQLk0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 07:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbXGQLkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 07:39:22 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:24467 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756078AbXGQLjV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 07:39:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rb2+g5fqLFThBpgUEdEnyhjyrBjAHSz0+F7hkITbLuaJikETQ+IGeyvaTdDTxkBeIV5RrXJ0AyUXNO3n0nITaNFkvShRNirplLEC/l4+8e3Qf3TXUaJsm1I1zbmJy2cJnOjPP1cVdwNZNpplxZMEEMbj5xImJOsyRW+mXpXTLPs=
-Message-ID: <9a8748490707170439y5f9f2a54s98c02f31d9dae86@mail.gmail.com>
-Date: Tue, 17 Jul 2007 13:39:20 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Ingo Freund" <linux-kernel-news@e-dict.net>
-Subject: Re: howto create partitions bigger than 2TB
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <469CA5B4.5080106@e-dict.net>
+	Tue, 17 Jul 2007 07:40:11 -0400
+Received: from haxent.com ([65.99.219.155]:1635 "EHLO haxent.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756882AbXGQLkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 07:40:09 -0400
+X-Greylist: delayed 522 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jul 2007 07:40:09 EDT
+Message-ID: <469CA887.1080801@haxent.com.br>
+Date: Tue, 17 Jul 2007 08:31:19 -0300
+From: Davi Arnaut <davi@haxent.com.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: timerfd read only gets single byte?
+References: <469C6F81.7070600@gmx.net> <750c918d0707170424v5e4187dducb1dcaeea5ad9db7@mail.gmail.com>
+In-Reply-To: <750c918d0707170424v5e4187dducb1dcaeea5ad9db7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4697760E.4070803@e-dict.net> <46980232.4080500@zytor.com>
-	 <469CA5B4.5080106@e-dict.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/07/07, Ingo Freund <linux-kernel-news@e-dict.net> wrote:
-> On 14.07.2007 00:52, H. Peter Anvin wrote (please find the answer below the original text):
-> > Ingo Freund wrote:
-> >> Hi
-> >>
-> >> I've got a RAID5 (driver aacraid for an ICP9047MA) with four
-> >> 750GB hdds which provides a 2.25TB sized device.
-> >> None of the until now used tools will work with that device.
-> >> fdisk complains about missing cylinder count.
-> >> cfdisk misses the device size.
-> >> parted shows the right device size but only creates a partion
-> >> with 51GB.
-> >> What am I supposed to do to work with this device?
-> >> Which fs can handle it?
-> >> (CONFIG LARGE BLOCK is on)
-> >> We are talking about a 32Bit machine with vanilla kernel 2.6.21.5.
-> >>
-> >
-> > You have to use GPT partitions instead of DOS partitions (although you
-> > may have to leave your /boot as an DOS partitions, this is supposed to
-> > be possible as the two partitioning schemes are designed to coexist, but
-> > I don't think parted has support for it yet.)
-> >
->
-> This is the solution (for use as a data container on a backup machine):
->
-> parted /dev/sdb:
-> (parted) mklabel gpt
-> (parted) mkpart p 0 100%
-> (parted) quit
-> mkreiserfs /dev/sdb1
-> ...and all seems to work.
->
+Michael Kerrisk wrote:
+ >
+> Hi Davide,
+> 
+> While writing a test program to incorporate into the timerfd.2 man page, I
+> think I've found a bug.  It looks like only the least significant byte of
+> ticks is being returned from read(2), even though I am providing a 4 byte
+> buffer.
+> 
+> The test program takes 3 command line arguments:
+> 
+> 1) seconds for the initial expiration
+> 2) seconds for the timer interval
+> 3) number of timer expirations to catch before terminating
+> 
+> I tried running this program and suspending it for a few minutes, to see if
+> I could get a large overrun value.  When I do this on 2.6.22-rc4 (the built
+> kernel I have to hand), I see the following:
+> 
+> ============
+> $ ./timerfd_demo 1 1 500
+> 0.000: timer started
+> 1.005: read: 1; total=1
+> 2.005: read: 1; total=2
+> 3.005: read: 1; total=3
+> 4.005: read: 1; total=4
+> 5.006: read: 1; total=5
+> ^Z
+> [1]+  Stopped                 ./timerfd_demo 1 1 500
+> $ date
+> Tue Jul 17 09:18:11 CEST 2007
+> $ date
+> Tue Jul 17 09:23:40 CEST 2007
+> $ fg
+> ./timerfd_demo 1 1 500
+> 339.769: read: 78; total=83
+> 340.004: read: 1; total=84
+> 341.004: read: 1; total=85
+> ^C
+> ==============
+> 
+> The after bringing the program back into the foreground, I would have
+> expected to get an overrun count of 334 or thereabouts, but it looks as
+> though I'm only getting the least significant byte from read(2).
+> 
+> Cheers,
+> 
+> Michael
+> 
+> [...]
 
-Why not simply
-mkreiserfs /dev/sdb
-and forget about partitions entirely?
+put_user copies sizeof(*ptr) bytes to user space.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Signed-off-by: Davi Arnaut <davi@haxent.com.br
+
+
+diff --git a/fs/timerfd.c b/fs/timerfd.c
+index af9eca5..e9f73f5 100644
+--- a/fs/timerfd.c
++++ b/fs/timerfd.c
+@@ -140,7 +140,8 @@ static ssize_t timerfd_read(struct file *file, char
+__user *buf, size_t count,
+ 	}
+ 	spin_unlock_irq(&ctx->wqh.lock);
+ 	if (ticks)
+-		res = put_user(ticks, buf) ? -EFAULT: sizeof(ticks);
++		res = put_user(ticks, ((u32 __user *)buf)) ? -EFAULT :
++							      sizeof(ticks);
+ 	return res;
+ }
+
