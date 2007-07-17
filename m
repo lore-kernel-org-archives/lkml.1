@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934829AbXGQR6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbXGQR6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934829AbXGQR6O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760724AbXGQR57
+	id S933718AbXGQR6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933391AbXGQR6B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:57:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53368 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758091AbXGQR56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:57:58 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Reading the VDSO area - i386
-Date: Tue, 17 Jul 2007 19:57:53 +0200
-User-Agent: KMail/1.9.6
-Cc: john.blackwood@ccur.com, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Roland McGrath <roland@redhat.com>, bugsy@ccur.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>
-References: <469CECFE.6060408@ccur.com> <200707171948.42054.ak@suse.de> <469D01BE.7070204@goop.org>
-In-Reply-To: <469D01BE.7070204@goop.org>
+	Tue, 17 Jul 2007 13:58:01 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:39950 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765192AbXGQR6A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 13:58:00 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=F/bW0F9HTPwg+kqmo39UFRJ1zO7E1HzpcDR1n6ECv0KwhdAKmoy1pgri6yzesUp/i
+	ZhFFRyZc1xaAFXhwSE3Qg==
+Message-ID: <6599ad830707171057x54ad9e8ay94bd23b7086d2efe@mail.gmail.com>
+Date: Tue, 17 Jul 2007 10:57:49 -0700
+From: "=?ISO-2022-JP?B?UGF1bCAoGyRCSnVOXBsoQikgTWVuYWdl?=" 
+	<menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: Containers: css_put() dilemma
+Cc: balbir@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com, xemul@sw.ru,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20070717105509.95d72b35.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707171957.54221.ak@suse.de>
+References: <469BBE00.8000709@linux.vnet.ibm.com>
+	 <469C2792.6050009@linux.vnet.ibm.com>
+	 <6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com>
+	 <20070717070031.GA22410@linux.vnet.ibm.com>
+	 <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com>
+	 <469C99D1.7090807@linux.vnet.ibm.com>
+	 <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
+	 <469CFF2B.1080702@linux.vnet.ibm.com>
+	 <6599ad830707171044u38c0a940r12d2bc80b475ead4@mail.gmail.com>
+	 <20070717105509.95d72b35.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 7/17/07, Paul Jackson <pj@sgi.com> wrote:
+> Paul M wrote:
+> > In fact, that's exactly what the release agent
+> > patch already does.
+>
+> I'm feeling lazy ;)  What's the Subject of that
+> patch, for my easy searching?
 
-> 
-> Ah, yes.  For some reason I can't find it in my archives.  Do you have
-> it queued up?
+"Support for automatic userspace release agents"
 
-Yes
-
--Andi
+Paul
