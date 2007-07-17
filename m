@@ -1,35 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760510AbXGQMdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764289AbXGQMdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760510AbXGQMdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 08:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbXGQMd0
+	id S1764289AbXGQMdy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 08:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbXGQMdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 08:33:26 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:36915 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752377AbXGQMdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 08:33:25 -0400
-Date: Tue, 17 Jul 2007 14:34:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
+	Tue, 17 Jul 2007 08:33:44 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2983 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755659AbXGQMdn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 08:33:43 -0400
+Date: Tue, 17 Jul 2007 20:33:36 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
 To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] Makefile: use -fno-optimize-sibling-calls unconditionally
-Message-ID: <20070717123439.GA24780@uranus.ravnborg.org>
-References: <20070713041847.GZ3492@stusta.de>
+Cc: davem@davemloft.net, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/crypto/Kconfig: hardware drivers shouldn't "default m"
+Message-ID: <20070717123336.GA7211@gondor.apana.org.au>
+References: <20070715100013.GI3565@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070713041847.GZ3492@stusta.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070715100013.GI3565@stusta.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 13, 2007 at 06:18:47AM +0200, Adrian Bunk wrote:
-> We don't have to check for -fno-optimize-sibling-calls since even
-> gcc 3.2 supports it.
+On Sun, Jul 15, 2007 at 12:00:13PM +0200, Adrian Bunk wrote:
+> Hardware drivers shouldn't default to m.
 > 
 > Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Applied,
+Applied.
 
-	Sam
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
