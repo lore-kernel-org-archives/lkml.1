@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936205AbXGQVh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936480AbXGQVie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936205AbXGQVh4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 17:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759114AbXGQVhK
+	id S936480AbXGQVie (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 17:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934048AbXGQVhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 17:37:10 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:58770 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757919AbXGQVhE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 17:37:04 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=WmN5Ona9UNDRELUn9gWJP4qQPdfTC7gttCA8WnubmEKSaxNsgPsMZc6aw7/1xTYDw
-	MO/GBvH+s1HkXs5M2zgdQ==
-Message-ID: <469D3670.9020609@google.com>
-Date: Tue, 17 Jul 2007 14:36:48 -0700
-From: Ethan Solomita <solo@google.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Tue, 17 Jul 2007 17:37:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50565 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936090AbXGQVhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 17:37:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 23:45:42 +0200
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang\, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0707171414370.2467@asgard.lang.hm> <871wf6g1q1.fsf@jbms.ath.cx>
+In-Reply-To: <871wf6g1q1.fsf@jbms.ath.cx>
 MIME-Version: 1.0
-To: Ethan Solomita <solo@google.com>
-CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@google.com>, Christoph Lameter <clameter@sgi.com>
-Subject: [PATCH 5/6] cpuset write vm writeout
-References: <469D3342.3080405@google.com>
-In-Reply-To: <469D3342.3080405@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707172345.43574.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Throttle VM writeout in a cpuset aware way
+On Tuesday, 17 July 2007 23:27, Jeremy Maitin-Shepard wrote:
+> david@lang.hm writes:
+> 
+> [snip]
+> 
+> >> How do you guarantee that no tasks are scheduled when you get back to the
+> >> hibernated kernel?
+> 
+> > just don't schedule any userspace tasks. all you need to do is to execute the
+> > ACPI sleep functions. you normally do that after stopping userspace
+> > anyway.
+> 
+> What does "stopping userspace" mean?  You already said it does not mean
+> disabling interrupts.  But using the freezer is also not an option,
+> since the avoidance of that is the main reason for the kexec approach in
+> the first place.
+> 
+> [snip]
+> 
+> >> Well, not exactly.  If your battery runs out of power while you're suspended,
+> >> but you have the image saved, it's still better to restore from the image,
+> > even
+> >> if something may not work correctly after the restore, than to risk a loss of
+> >> data.
+> 
+> > if things don't work correctly you are still risking the loss of data, the user
+> > just doesn't know it.
+> 
+> It should be possible on any system to do a hibernate followed by a
+> shutdown (and then resume properly, without any problems).  Thus, for
+> handling suspend to both, you resume as if the system had been shutdown,
+> rather than resuming as if the system came from S4.
 
-This bases the vm throttling from the reclaim path on the dirty ratio
-of the cpuset. Note that a cpuset is only effective if shrink_zone is called
-from direct reclaim.
+Exactly.
 
-kswapd has a cpuset context that includes the whole machine. VM throttling
-will only work during synchrononous reclaim and not  from kswapd.
+Greetings,
+Rafael
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Acked-by: Ethan Solomita <solo@google.com>
 
----
-
-Patch against 2.6.22-rc6-mm1
-
-diff -uprN -X 0/Documentation/dontdiff 4/include/linux/writeback.h 5/include/linux/writeback.h
---- 4/include/linux/writeback.h	2007-07-11 21:16:25.000000000 -0700
-+++ 5/include/linux/writeback.h	2007-07-11 21:16:50.000000000 -0700
-@@ -95,7 +95,7 @@ static inline void inode_sync_wait(struc
- int wakeup_pdflush(long nr_pages, nodemask_t *nodes);
- void laptop_io_completion(void);
- void laptop_sync_completion(void);
--void throttle_vm_writeout(gfp_t gfp_mask);
-+void throttle_vm_writeout(nodemask_t *nodes,gfp_t gfp_mask);
- 
- /* These are exported to sysctl. */
- extern int dirty_background_ratio;
-diff -uprN -X 0/Documentation/dontdiff 4/mm/page-writeback.c 5/mm/page-writeback.c
---- 4/mm/page-writeback.c	2007-07-16 18:31:13.000000000 -0700
-+++ 5/mm/page-writeback.c	2007-07-16 18:32:08.000000000 -0700
-@@ -384,7 +384,7 @@ void balance_dirty_pages_ratelimited_nr(
- }
- EXPORT_SYMBOL(balance_dirty_pages_ratelimited_nr);
- 
--void throttle_vm_writeout(gfp_t gfp_mask)
-+void throttle_vm_writeout(nodemask_t *nodes, gfp_t gfp_mask)
- {
- 	struct dirty_limits dl;
- 
-@@ -399,7 +399,7 @@ void throttle_vm_writeout(gfp_t gfp_mask
- 	}
- 
- 	for ( ; ; ) {
--		get_dirty_limits(&dl, NULL, &node_online_map);
-+		get_dirty_limits(&dl, NULL, nodes);
- 
- 		/*
- 		 * Boost the allowable dirty threshold a bit for page
-diff -uprN -X 0/Documentation/dontdiff 4/mm/vmscan.c 5/mm/vmscan.c
---- 4/mm/vmscan.c	2007-07-11 21:16:26.000000000 -0700
-+++ 5/mm/vmscan.c	2007-07-11 21:16:50.000000000 -0700
-@@ -1064,7 +1064,7 @@ static unsigned long shrink_zone(int pri
- 		}
- 	}
- 
--	throttle_vm_writeout(sc->gfp_mask);
-+	throttle_vm_writeout(&cpuset_current_mems_allowed, sc->gfp_mask);
- 
- 	atomic_dec(&zone->reclaim_in_progress);
- 	return nr_reclaimed;
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
