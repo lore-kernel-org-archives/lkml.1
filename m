@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761795AbXGQHje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbXGQHjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761795AbXGQHje (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 03:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbXGQHj0
+	id S1755001AbXGQHjt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 03:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762563AbXGQHjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 03:39:26 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:10813 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752131AbXGQHjZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 03:39:25 -0400
-From: Olaf Kirch <olaf.kirch@oracle.com>
-Organization: Oracle
-To: David Miller <davem@davemloft.net>
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Date: Tue, 17 Jul 2007 09:37:23 +0200
-User-Agent: KMail/1.9.1
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-References: <20070716091236.GA10718@elte.hu> <alpine.LFD.0.999.0707161425361.20061@woody.linux-foundation.org> <20070716.150825.66176632.davem@davemloft.net>
-In-Reply-To: <20070716.150825.66176632.davem@davemloft.net>
+	Tue, 17 Jul 2007 03:39:37 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:14613 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762027AbXGQHjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 03:39:35 -0400
+Date: Tue, 17 Jul 2007 09:38:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, ak@suse.de
+Subject: Re: [PATCH 09/33] x86-64: update iommu/dma mapping functions to sg
+	helpers
+Message-ID: <20070717073858.GG5195@kernel.dk>
+References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792681830-git-send-email-jens.axboe@oracle.com> <20070716130608.4d096e29.akpm@linux-foundation.org> <20070716201002.GQ5195@kernel.dk> <20070716133427.e212b753.akpm@linux-foundation.org> <20070716220812.GL4902@rhun.haifa.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707170937.24430.olaf.kirch@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20070716220812.GL4902@rhun.haifa.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 July 2007 00:08, David Miller wrote:
-> Sure, but I thought it would be nice to give Olaf a day or two to
-> figure out what's going on rather than have the knee-jerk reaction to
-> just revert.
+On Tue, Jul 17 2007, Muli Ben-Yehuda wrote:
+> On Mon, Jul 16, 2007 at 01:34:27PM -0700, Andrew Morton wrote:
+> 
+> > > I'll keep rebasing sglist and the other branches I pull into for-akpm,
+> > > so you can just re-enable the for-akpm pull when the a) is true.
+> > 
+> > Andi's tree is very out of date and is about to be damaged (to what
+> > extent I don't yet know) by a xen merge.  I don't know if a) is
+> > going to happen.
+> 
+> The Xen and Calgary bits are mutually exclusive, so hopefully (a) will
+> not be held up on account of the Xen merge (or for any other
+> reason... CalIOC2 machines which are out there won't boot without it
+> if CONFIG_CALGARY_IOMMU is enabled).
 
-Oh, reverting is fine with me. I'll just resubmit the patch.
+Do you have any comments for the patch to calgary (the mail you are
+replying to)?
 
-Olaf
 -- 
-Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
-okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
+Jens Axboe
+
