@@ -1,99 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935982AbXGQTwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936118AbXGQTwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935982AbXGQTwR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758524AbXGQTwF
+	id S936118AbXGQTwf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933252AbXGQTwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:52:05 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:44495 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbXGQTwB (ORCPT
+	Tue, 17 Jul 2007 15:52:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:31938 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765275AbXGQTwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:52:01 -0400
-From: Markus <lists4me@web.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v19
-Date: Tue, 17 Jul 2007 21:42:41 +0200
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20070706173319.GA2356@elte.hu> <200707171506.37886.lists4me@web.de> <20070717170628.GA6002@elte.hu>
-In-Reply-To: <20070717170628.GA6002@elte.hu>
+	Tue, 17 Jul 2007 15:52:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DAeFKh9lQmx67JpSxikFQwQE02GNaRSvmn+t0sFkOqt2xY2xXVVT+8M2Q9le7C8a3HIVRXvnrUhG++i9YMbjr5H0BfLe2x3sfJigpo9lFmKKnvJw8JvtPdA7+m9R7dFXZhxAd9cK0FNDFl3/ofyJ7zPTUE9/yPJF/2IEFRINSls=
+Message-ID: <d120d5000707171252j501a25f5v56beae0c11462cb9@mail.gmail.com>
+Date: Tue, 17 Jul 2007 15:52:07 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Christoph Pfister" <christophpfister@gmail.com>
+Subject: Re: keyboard stopped working after de9ce703c6b807b1dfef5942df4f2fadd0fdb67a
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200707172101.06878.christophpfister@gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707172142.42008.lists4me@web.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/mo2HbS4/Qjs6yQqW/9XMT3BQKcEPwDBpeoxSN
-	+G5ufthnc0/Ae4tDIbMv1xwc7tR43LSPT6V57wXtHLuPZh+io8
-	ag+1AHRjc=
+Content-Disposition: inline
+References: <200707132249.26106.christophpfister@gmail.com>
+	 <200707132304.30795.christophpfister@gmail.com>
+	 <d120d5000707160749r1084ab4ex8d2c4e89e6134d41@mail.gmail.com>
+	 <200707172101.06878.christophpfister@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 9173  1184675906.194424 ioctl(1, SNDCTL_TMR_TIMEBASE or TCGETS, 
-0x7fff341af5c0)
-> = -1 ENOTTY (Inappropriate ioctl for device) <0.000006>
-> 9173  1184675906.194463 ioctl(2, SNDCTL_TMR_TIMEBASE or TCGETS, 
-0x7fff341af5c0)
-> = -1 ENOTTY (Inappropriate ioctl for device) <0.000004>
-> 
-> ? Are those -ENOTTY results normal?
-Yes, I see it on any kernel.
- 
-> 9173  1184675906.155015 write(2, "In file 
-kernel/qpixmap_x11.cpp, "..., 56) = 56 <0.000006>
-> 9173  1184675906.155052 write(2, "QImage::convertDepth: Image is 
-a"..., 44) = 44 <0.000004>
-> 9173  1184675906.155169 gettimeofday({1184675906, 155179}, NULL) = 0 
-<0.000006>
-> 9173  1184675906.155249 write(11, "close(6f1c2f7):about:konqueror\n", 
-31) = 31 <0.000032>
-> 
-> i think konqueror tried to say something here about an image problem?
-Well, yes:
-In file kernel/qpixmap_x11.cpp, line 633: Out of memory
-QImage::convertDepth: Image is a null image
-In file kernel/qpixmap_x11.cpp, line 633: Out of memory
-QImage::convertDepth: Image is a null image
-In file kernel/qpixmap_x11.cpp, line 633: Out of memory
-QImage::convertDepth: Image is a null image
-In file kernel/qpixmap_x11.cpp, line 633: Out of memory
-QImage::convertDepth: Image is a null image
-konqueror: Fatal IO error: client killed
+Hi Christoph,
 
-And no, my 2 GB of RAM are not full:
-$ free -m
-             total       used       free     shared    buffers     
-cached
-Mem:          2012       1077        935          0         22        
-441
--/+ buffers/cache:        612       1400
-Swap:         2070          0       2070
+On 7/17/07, Christoph Pfister <christophpfister@gmail.com> wrote:
+>
+> Yep, attached (cold reboot, not pressing any keys, 2.6.21).
+>
 
-> could you perhaps upload the strace to some webpage so that others can 
-> take a look too?
-hm, I dont have any webspace...
+Ok, I see. You don't use PS/2 mouse and so BIOS told us that mouse is
+absent and reassigned IRQ12 to EHCI controller. However we do not
+listen to BIOS on i386 (for historucal reasons) and process with
+registering AUX port... Now IRQ12 is shared between AUX port and EHCI
+and the keyboard controller is unhappy wehereas before (with polling
+timer) it would release IRQ12 and close port...
 
-> it might also be good to add "-s 1000" to the strace command, so that 
-we 
-> can see the full messages that konqueror tried to log to some other 
-> task, i.e.:
-> 
->   strace -s 1000 -ttt -TTT -o trace.log -f <app>
-> 
-> and perhaps try to do a 'comparison' trace.normal.log as well, with 
-> konqueror having no problems.
-I now made some new strace logs:
-- konq crash 251K
-- Konq without crash on cfs 302K
-- konq without crash on non-cfs 248K
+Does your keyboard start working if you boot with i8042.noaux?
 
-
-   Markus
+-- 
+Dmitry
