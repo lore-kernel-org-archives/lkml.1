@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934829AbXGQRxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934957AbXGQRyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934829AbXGQRxy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 13:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761033AbXGQRxp
+	id S934957AbXGQRyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 13:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762909AbXGQRxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 13:53:45 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57035 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760940AbXGQRxo (ORCPT
+	Tue, 17 Jul 2007 13:53:53 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:55870 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934793AbXGQRxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 13:53:44 -0400
-Date: Tue, 17 Jul 2007 10:53:41 -0700
-From: Paul Jackson <pj@sgi.com>
-To: balbir@linux.vnet.ibm.com
-Cc: menage@google.com, dhaval@linux.vnet.ibm.com, xemul@sw.ru,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       akpm@linux-foundation.org
-Subject: Re: Containers: css_put() dilemma
-Message-Id: <20070717105341.9e51cc79.pj@sgi.com>
-In-Reply-To: <469CFF2B.1080702@linux.vnet.ibm.com>
-References: <469BBE00.8000709@linux.vnet.ibm.com>
-	<6599ad830707161203o7f148c75p52e77d4be3ace487@mail.gmail.com>
-	<469C2792.6050009@linux.vnet.ibm.com>
-	<6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com>
-	<20070717070031.GA22410@linux.vnet.ibm.com>
-	<6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com>
-	<469C99D1.7090807@linux.vnet.ibm.com>
-	<6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
-	<469CFF2B.1080702@linux.vnet.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jul 2007 13:53:51 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CACeenEarR7PE/2dsb2JhbAA
+X-IronPort-AV: i="4.16,546,1175497200"; 
+   d="scan'208"; a="167023593:sNHT105814989"
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: Further 2.6.23 merge plans...
+X-Message-Flag: Warning: May contain useful information
+References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
+	<20070713054711.GA21709@mellanox.co.il> <adar6nc2mt4.fsf@cisco.com>
+	<20070714175425.GA17597@mellanox.co.il> <adabqecxpte.fsf@cisco.com>
+	<20070716200540.GA8527@mellanox.co.il>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 17 Jul 2007 10:53:50 -0700
+In-Reply-To: <20070716200540.GA8527@mellanox.co.il> (Michael S. Tsirkin's message of "Mon, 16 Jul 2007 23:05:40 +0300")
+Message-ID: <adahco2syq9.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Jul 2007 17:53:50.0745 (UTC) FILETIME=[6EC83890:01C7C89B]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That sounds correct. I wonder now if the solution should be some form
-> of delegation for deletion of unreferenced containers (HINT: work queue
-> or kernel threads).
+ > Well, the only issue I recall is about the # of EQs we want to allocate.
+ > Was there something else?
 
-At least for cpusets (the mother of all containers), notify on release
-is part of the user visible API of cpusets.  The kernel does not remove
-cpusets; it runs a user program, /sbin/cpuset_release_agent.  That
-program might choose to rmdir the cpuset directory, and/or do other
-actions, like notify a batch scheduler that one of its cpusets was
-released.
+Yes, some ideas about how applications should pick which EQ to use.
+And how to handle CPU affinity.  And whether we want to try to do
+something NUMA-aware.
 
-That API is not as sacrosanct as some, but it is working, and I wouldn't
-want to break it without good reason.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+ - R.
