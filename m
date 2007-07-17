@@ -1,164 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbXGQM7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761026AbXGQNBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756941AbXGQM7t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 08:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXGQM66
+	id S1761026AbXGQNBZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 09:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbXGQNBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 08:58:58 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:56773 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbXGQM64 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 08:58:56 -0400
-Message-Id: <20070717125420.414566000@sipsolutions.net>
-References: <20070717125316.755595000@sipsolutions.net>
-User-Agent: quilt/0.46-1
-Date: Tue, 17 Jul 2007 14:53:17 +0200
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH (resend) 1/2] workqueue: debug flushing deadlocks with
-	lockdep
-Content-Disposition: inline; filename=workqueue-debug-1.patch
+	Tue, 17 Jul 2007 09:01:17 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54798 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751622AbXGQNBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 09:01:17 -0400
+Date: Tue, 17 Jul 2007 15:02:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Domen Puncer <domen.puncer@telargo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] introduce __init_exit function annotation
+Message-ID: <20070717130230.GB24780@uranus.ravnborg.org>
+References: <20070717080248.GK4375@moe.telargo.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070717080248.GK4375@moe.telargo.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the following scenario:
+On Tue, Jul 17, 2007 at 10:02:48AM +0200, Domen Puncer wrote:
+> Introduce __init_exit, which is useful ie. for drivers that call
+> cleanup functions when they fail in __init functions.
 
-code path 1:
-  my_function() -> lock(L1); ...; flush_workqueue(); ...
+This is wrong.
+On arm (just one example of several) the __exit section are discarded
+at buildtime so any reference from __init to __exit will cause the
+linker to error out.
 
-code path 2:
-  run_workqueue() -> my_work() -> ...; lock(L1); ...
+The real solution is only to declare functiones used solely during
+exit as __exit.
+The whole point of using __exit is to tell that this can be safely
+dropped when built-in because it is not used then.
 
-you can get a deadlock when my_work() is queued or running
-but my_function() has acquired L1 already.
-
-This patch adds a pseudo-lock to each workqueue to make lockdep
-warn about this scenario.
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Oleg Nesterov <oleg@tv-sign.ru>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
----
- include/linux/workqueue.h |   20 +++++++++++++++++---
- kernel/workqueue.c        |   20 +++++++++++++++++---
- 2 files changed, 34 insertions(+), 6 deletions(-)
-
---- wireless-dev.orig/kernel/workqueue.c	2007-07-17 13:45:31.170964463 +0200
-+++ wireless-dev/kernel/workqueue.c	2007-07-17 14:52:07.980964463 +0200
-@@ -32,6 +32,7 @@
- #include <linux/freezer.h>
- #include <linux/kallsyms.h>
- #include <linux/debug_locks.h>
-+#include <linux/lockdep.h>
- 
- /*
-  * The per-CPU workqueue (if single thread, we always use the first
-@@ -61,6 +62,9 @@ struct workqueue_struct {
- 	const char *name;
- 	int singlethread;
- 	int freezeable;		/* Freeze threads during suspend */
-+#ifdef CONFIG_LOCKDEP
-+	struct lockdep_map lockdep_map;
-+#endif
- };
- 
- /* All the per-cpu workqueues on the system, for hotplug cpu to add/remove
-@@ -257,7 +261,9 @@ static void run_workqueue(struct cpu_wor
- 
- 		BUG_ON(get_wq_data(work) != cwq);
- 		work_clear_pending(work);
-+		lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
- 		f(work);
-+		lock_release(&cwq->wq->lockdep_map, 1, _THIS_IP_);
- 
- 		if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
- 			printk(KERN_ERR "BUG: workqueue leaked lock or atomic: "
-@@ -376,6 +382,8 @@ void fastcall flush_workqueue(struct wor
- 	int cpu;
- 
- 	might_sleep();
-+	lock_acquire(&wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
-+	lock_release(&wq->lockdep_map, 1, _THIS_IP_);
- 	for_each_cpu_mask(cpu, *cpu_map)
- 		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
- }
-@@ -695,8 +703,10 @@ static void start_workqueue_thread(struc
- 	}
- }
- 
--struct workqueue_struct *__create_workqueue(const char *name,
--					    int singlethread, int freezeable)
-+struct workqueue_struct *__create_workqueue_key(const char *name,
-+						int singlethread,
-+						int freezeable,
-+						struct lock_class_key *key)
- {
- 	struct workqueue_struct *wq;
- 	struct cpu_workqueue_struct *cwq;
-@@ -713,6 +723,7 @@ struct workqueue_struct *__create_workqu
- 	}
- 
- 	wq->name = name;
-+	lockdep_init_map(&wq->lockdep_map, name, key, 0);
- 	wq->singlethread = singlethread;
- 	wq->freezeable = freezeable;
- 	INIT_LIST_HEAD(&wq->list);
-@@ -741,7 +752,7 @@ struct workqueue_struct *__create_workqu
- 	}
- 	return wq;
- }
--EXPORT_SYMBOL_GPL(__create_workqueue);
-+EXPORT_SYMBOL_GPL(__create_workqueue_key);
- 
- static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
- {
-@@ -752,6 +763,9 @@ static void cleanup_workqueue_thread(str
- 	if (cwq->thread == NULL)
- 		return;
- 
-+	lock_acquire(&cwq->wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
-+	lock_release(&cwq->wq->lockdep_map, 1, _THIS_IP_);
-+
- 	/*
- 	 * If the caller is CPU_DEAD the single flush_cpu_workqueue()
- 	 * is not enough, a concurrent flush_workqueue() can insert a
---- wireless-dev.orig/include/linux/workqueue.h	2007-07-17 13:45:29.920964463 +0200
-+++ wireless-dev/include/linux/workqueue.h	2007-07-17 14:52:07.890964463 +0200
-@@ -118,9 +118,23 @@ struct execute_work {
- 	clear_bit(WORK_STRUCT_PENDING, work_data_bits(work))
- 
- 
--extern struct workqueue_struct *__create_workqueue(const char *name,
--						    int singlethread,
--						    int freezeable);
-+extern struct workqueue_struct *
-+__create_workqueue_key(const char *name, int singlethread,
-+		       int freezeable, struct lock_class_key *key);
-+
-+#ifdef CONFIG_LOCKDEP
-+#define __create_workqueue(name, singlethread, freezeable)	\
-+({								\
-+	static struct lock_class_key __key;			\
-+								\
-+	__create_workqueue_key((name), (singlethread),		\
-+			       (freezeable), &__key);		\
-+})
-+#else
-+#define __create_workqueue(name, singlethread, freezeable)	\
-+	__create_workqueue_key((name), (singlethread), (freezeable), NULL)
-+#endif
-+
- #define create_workqueue(name) __create_workqueue((name), 0, 0)
- #define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
- #define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
-
--- 
-
+	Sam
