@@ -1,132 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbXGQAYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762046AbXGQA1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759747AbXGQAYt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jul 2007 20:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXGQAYi
+	id S1762046AbXGQA1x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jul 2007 20:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbXGQA1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jul 2007 20:24:38 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:54590 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbXGQAYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jul 2007 20:24:37 -0400
-Subject: Re: [EXT4 set 5][PATCH 1/1] expand inode i_extra_isize to support
-	features in larger inode
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andreas Dilger <adilger@clusterfs.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <20070717000633.GX5992@schatzie.adilger.int>
-References: <1183275482.4010.133.camel@localhost.localdomain>
-	 <20070710163247.5c8bfa3f.akpm@linux-foundation.org>
-	 <20070713020529.1486491f.akpm@linux-foundation.org>
-	 <1184629924.3836.5.camel@localhost.localdomain>
-	 <20070717000633.GX5992@schatzie.adilger.int>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 16 Jul 2007 17:24:36 -0700
-Message-Id: <1184631876.3836.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Mon, 16 Jul 2007 20:27:45 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:57081 "EHLO
+	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751802AbXGQA1o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jul 2007 20:27:44 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <469C0DF8.8080107@am.sony.com>
+Date: Mon, 16 Jul 2007 17:31:52 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: Rob Landley <rob@landley.net>
+CC: Adrian Bunk <bunk@stusta.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, gh@us.ibm.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, joe@perches.com,
+       auke-jan.h.kok@intel.com, hansendc@us.ibm.com, davem@davemloft.net,
+       Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-doc@vger.kernel.org
+Subject: Re: Documentation of kernel messages (Summary)
+References: <1181747217.29512.9.camel@localhost.localdomain> <200707091248.24994.rob@landley.net> <20070709183309.GH3492@stusta.de> <200707101225.32843.rob@landley.net>
+In-Reply-To: <200707101225.32843.rob@landley.net>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Jul 2007 00:27:39.0820 (UTC) FILETIME=[48652EC0:01C7C809]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-16 at 18:06 -0600, Andreas Dilger wrote:
-> On Jul 16, 2007  16:52 -0700, Mingming Cao wrote:
-> > I am not sure why we need GFP_KERNEL flag here. I think we should use
-> > GFP_NOFS instead. The following patch use the GFP_NOFS flag, as well as
-> > fixing memory leak issue introduced by the ext4 expand inode extra isize
-> > patch.
-> > 
-> > Fixing memory allocation issue with expand inode extra isize patch.
-> > 
-> > - use GFP_NOFS instead of GFP_KERNEL flag for memory allocation
-> > - use kzalloc instead of kmalloc
-> 
-> This doesn't need kzalloc() for buffer and b_entry_name, since they are
-> immediately overwritten by memcpy().
-> 
-ok.
-> > - fix memory leak in the success case, at the end of while loop.
-> >  			goto cleanup;
-> > @@ -1302,7 +1302,15 @@ retry:
-> >  		error = ext4_xattr_block_set(handle, inode, &i, bs);
-> >  		if (error)
-> >  			goto cleanup;
-> > +		kfree(b_entry_name);
-> > +		kfree(buffer);
-> > +		brelse(is->iloc.bh);
-> > +		kfree(is);
-> > +		kfree(bs);
-> > +		brelse(bh);
-> >  	}
-> > +	up_write(&EXT4_I(inode)->xattr_sem);
-> > +        return 0;
-> >  
-> >  cleanup:
-> >  	kfree(b_entry_name);
-> 
-> I don't think you should have brelse(bh) inside the loop, since it is
-> allocated before the loop starts.
-> 
-Ahh right. thanks.
+Rob Landley wrote:
+> If you go to http://kernel.org/doc/ols you should find, nicely split up, all 
+> the OLS papers from 2002-2007.  
 
-Updated fix.
+Oooh!  That's nice!  I didn't notice the "nicely split up" part earlier.
+Any chance we can get the original docbook inputs that OLS uses
+for paper submissions?  Have you asked Andrew or Craig about this?
 
-Fixing memory allocation issue with expand inode extra isize patch.
+Also, it would be nice to correlate the talk names with the individual
+PDFs.  Do you want me to solicit inside CELF for a volunteer for this?
+We'd probably produce a wiki page of links, based on your
+list.txt file and the proceedings index.
+ -- Tim
 
-- use GFP_NOFS instead of GFP_KERNEL to prevent fs reenter
-- fix memory leak in the success case, at the end of while loop.
-
-
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
----
- fs/ext4/xattr.c |   16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.22/fs/ext4/xattr.c
-===================================================================
---- linux-2.6.22.orig/fs/ext4/xattr.c	2007-07-16 17:21:14.000000000 -0700
-+++ linux-2.6.22/fs/ext4/xattr.c	2007-07-16 17:22:25.000000000 -0700
-@@ -1204,8 +1204,8 @@ retry:
- 		unsigned int shift_bytes; /* No. of bytes to shift EAs by? */
- 		unsigned int min_total_size = ~0U;
- 
--		is = kzalloc(sizeof(struct ext4_xattr_ibody_find), GFP_KERNEL);
--		bs = kzalloc(sizeof(struct ext4_xattr_block_find), GFP_KERNEL);
-+		is = kzalloc(sizeof(struct ext4_xattr_ibody_find), GFP_NOFS);
-+		bs = kzalloc(sizeof(struct ext4_xattr_block_find), GFP_NOFS);
- 		if (!is || !bs) {
- 			error = -ENOMEM;
- 			goto cleanup;
-@@ -1251,8 +1251,8 @@ retry:
- 		size = le32_to_cpu(entry->e_value_size);
- 		entry_size = EXT4_XATTR_LEN(entry->e_name_len);
- 		i.name_index = entry->e_name_index,
--		buffer = kmalloc(EXT4_XATTR_SIZE(size), GFP_KERNEL);
--		b_entry_name = kmalloc(entry->e_name_len + 1, GFP_KERNEL);
-+		buffer = kmalloc(EXT4_XATTR_SIZE(size), GFP_NOFS);
-+		b_entry_name = kmalloc(entry->e_name_len + 1, GFP_NOFS);
- 		if (!buffer || !b_entry_name) {
- 			error = -ENOMEM;
- 			goto cleanup;
-@@ -1302,7 +1302,15 @@ retry:
- 		error = ext4_xattr_block_set(handle, inode, &i, bs);
- 		if (error)
- 			goto cleanup;
-+		kfree(b_entry_name);
-+		kfree(buffer);
-+		brelse(is->iloc.bh);
-+		kfree(is);
-+		kfree(bs);
- 	}
-+	brelse(bh);
-+	up_write(&EXT4_I(inode)->xattr_sem);
-+       return 0;
- 
- cleanup:
- 	kfree(b_entry_name);
-
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
