@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934548AbXGQTHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935704AbXGQTIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934548AbXGQTHR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 15:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760442AbXGQTG7
+	id S935704AbXGQTIy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 15:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760442AbXGQTIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 15:06:59 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52337 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759654AbXGQTG6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 15:06:58 -0400
-Message-ID: <469D1317.1050202@zytor.com>
-Date: Tue, 17 Jul 2007 12:05:59 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: caglar@pardus.org.tr
-CC: Avi Kivity <avi@qumranet.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
-References: <11846910642166-git-send-email-avi@qumranet.com> <200707172139.09131.caglar@pardus.org.tr>
-In-Reply-To: <200707172139.09131.caglar@pardus.org.tr>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 17 Jul 2007 15:08:44 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:36116 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753729AbXGQTIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 15:08:41 -0400
+Subject: Re: [EXT4 set 3][PATCH 1/1] ext4 nanosecond timestamp
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Kalpak Shah <kalpak@clusterfs.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <1184666370.7063.13.camel@garfield.linsyssoft.com>
+References: <1183275416.4010.125.camel@localhost.localdomain>
+	 <20070710163027.1bf7e94e.akpm@linux-foundation.org>
+	 <1184633395.3836.24.camel@localhost.localdomain>
+	 <1184666370.7063.13.camel@garfield.linsyssoft.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Tue, 17 Jul 2007 12:08:43 -0700
+Message-Id: <1184699323.3820.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-S.Çağlar Onur wrote:
+On Tue, 2007-07-17 at 15:29 +0530, Kalpak Shah wrote:
+> On Mon, 2007-07-16 at 17:49 -0700, Mingming Cao wrote:
+> > On Tue, 2007-07-10 at 16:30 -0700, Andrew Morton wrote:
+> > > On Sun, 01 Jul 2007 03:36:56 -0400
+> > > Mingming Cao <cmm@us.ibm.com> wrote:
+> > > > +static inline __le32 ext4_encode_extra_time(struct timespec *time)
+> > > > +{
+> > > > +       return cpu_to_le32((sizeof(time->tv_sec) > 4 ?
+> > > > +			   time->tv_sec >> 32 : 0) |
+> > > > +			   ((time->tv_nsec << 2) & EXT4_NSEC_MASK));
+> > > > +}
+> > > > +
+> > > > +static inline void ext4_decode_extra_time(struct timespec *time, __le32 extra)
+> > > > +{
+> > > > +       if (sizeof(time->tv_sec) > 4)
+> > > > +	       time->tv_sec |= (__u64)(le32_to_cpu(extra) & EXT4_EPOCH_MASK)
+> > > > +			       << 32;
+> > > > +       time->tv_nsec = (le32_to_cpu(extra) & EXT4_NSEC_MASK) >> 2;
+> > > > +}
+> > > 
+> > > Consider uninlining these functions.
+> > > 
+> > I got compile warining after apply Kalpal's update nanosecond patch,
+> > which makes these two function inline. It complains these functions are
+> > defined but not used. It's being used only in the following
+> > micros(EXT4_INODE_SET_XTIME etc).  So if the .c file included the
+> > ext4_fs.h but not using the micros, the compile will think these two
+> > functions are not used.
 > 
-> If i'm not wrong X86_CMPXCHG64 depends on CONFIG_X86_PAE which depends on 
-> HIGHMEM64 and again if i'm not wrong this means distributions who wants to 
-> provide KVM must enable CONFIG_X86_PAE and CONFIG_HIGHMEM64G from now on?
+> The compile warnings were introduced because the functions were
+> uninlined. So we can either keep these functions inlined or consider
+> adding a "__used" attribute to these two functions. 
 > 
+okay for now I keep these functions inlined. 
 
-X86_PAE should depend on X86_CMPXCHG64, not the other way around.
-
-I asked Andi Kleen about this on IRC, and he said:
-
-<freitag> the reason was that i didn't want to hack everybody's magic
-MSRs into the old verify_cpu.S
-
-verify_cpu.S is dead on i386 (replaced by arch/i386/boot/cpucheck.c)
-which does have the flags enable MSR tweaks; it is still being used for
-APs on x86-64.  However, in the meantime it should be safe to remove
-this dependency from i386.
-
-	-hpa
+> Thanks,
+> Kalpak.
+> 
 
