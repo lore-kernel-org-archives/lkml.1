@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbXGQEXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbXGQE1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487AbXGQEXS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 00:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXGQEXG
+	id S1755661AbXGQE1k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 00:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbXGQE1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 00:23:06 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41855 "EHLO gaimboi.tmr.com"
+	Tue, 17 Jul 2007 00:27:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57582 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750914AbXGQEXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 00:23:05 -0400
-Message-ID: <469C4418.4090207@tmr.com>
-Date: Tue, 17 Jul 2007 00:22:48 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1751689AbXGQE1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 00:27:32 -0400
+Date: Mon, 16 Jul 2007 23:27:10 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Greg KH <greg@kroah.com>
+cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] PCI: Move prototypes for pci_bus_find_capability to
+ include/linux/pci.h
+In-Reply-To: <20070713062756.GG24317@kroah.com>
+Message-ID: <Pine.LNX.4.64.0707162325560.5295@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0707130015550.1975@blarg.am.freescale.net>
+ <20070713053303.GB17039@kroah.com> <9A567C91-1DE7-46CC-91A0-58D498B8248B@kernel.crashing.org>
+ <20070713060511.GA23618@kroah.com> <Pine.LNX.4.64.0707130108490.25195@gate.crashing.org>
+ <20070713062756.GG24317@kroah.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ian Kent <raven@themaw.net>
-Subject: Re: [patch] CFS scheduler, -v19
-References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com> <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu>
-In-Reply-To: <20070716215541.GA27171@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Chuck Ebbert <cebbert@redhat.com> wrote:
->
->   
->> On 07/13/2007 05:19 PM, Bill Davidsen wrote:
->>     
->>> I should really go back to 2.6.21.6, 2.6.22 has many bizarre behaviors
->>> with FC6. Automount starts taking 30% of CPU (unused at the moment)
->>>       
->> Can you confirm whether CFS is involved, i.e. does it spin like that 
->> even without the CFS patch applied?
->>     
->
->   
-I will try that, but not until Tuesday night. I've been here too long 
-today and have an out-of-state meeting tomorrow. I'll take a look after 
-dinner. Note that the latest 2.6.21 with cfs-v19 doesn't have any 
-problems of any nature, other than suspend to RAM not working, and I may 
-have the config wrong. Runs really well otherwise, but I'll test drive 
-2.6.22 w/o the patch.
+We need pci_bus_find_capability() in some arch/powerpc code so move
+the prototype into a header accessible to it.
 
-> hmmm .... could you take out the kernel/time.c (sys_time()) changes from 
-> the CFS patch, does that solve the automount issue? If yes, could 
-> someone take a look at automount and check whether it makes use of 
-> time(2) and whether it combines it with finer grained time sources?
->
->   
-Will do.
+Also kill the duplicate prototype for pci_bus_alloc_resource().
 
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+
+Here's a version that just moves the prototype I need for arch/powerpc and
+kills the duplicate.
+
+ drivers/pci/pci.h   |    8 +-------
+ include/linux/pci.h |    3 +++
+ 2 files changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 3fec13d..835875d 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -6,12 +6,7 @@ extern int pci_uevent(struct device *dev, char **envp, int num_envp,
+ extern int pci_create_sysfs_dev_files(struct pci_dev *pdev);
+ extern void pci_remove_sysfs_dev_files(struct pci_dev *pdev);
+ extern void pci_cleanup_rom(struct pci_dev *dev);
+-extern int pci_bus_alloc_resource(struct pci_bus *bus, struct resource *res,
+-				  resource_size_t size, resource_size_t align,
+-				  resource_size_t min, unsigned int type_mask,
+-				  void (*alignf)(void *, struct resource *,
+-					      resource_size_t, resource_size_t),
+-				  void *alignf_data);
++
+ /* Firmware callbacks */
+ extern int (*platform_pci_choose_state)(struct pci_dev *dev, pm_message_t state);
+ extern int (*platform_pci_set_power_state)(struct pci_dev *dev, pci_power_t state);
+@@ -36,7 +31,6 @@ static inline int pci_proc_detach_bus(struct pci_bus *bus) { return 0; }
+
+ /* Functions for PCI Hotplug drivers to use */
+ extern unsigned int pci_do_scan_bus(struct pci_bus *bus);
+-extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
+
+ extern void pci_remove_legacy_files(struct pci_bus *bus);
+
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 5e84f2e..8a689ef 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -577,6 +577,9 @@ int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
+ int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
+
++/* Functions for PCI Hotplug drivers to use */
++int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
++
+ /* Helper functions for low-level code (drivers/pci/setup-[bus,res].c) */
+ void pci_bus_assign_resources(struct pci_bus *bus);
+ void pci_bus_size_bridges(struct pci_bus *bus);
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+1.5.2.2
 
