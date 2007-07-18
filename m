@@ -1,45 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbXGRGw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764729AbXGRGyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761180AbXGRGw6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 02:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXGRGwv
+	id S1764729AbXGRGyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXGRGyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 02:52:51 -0400
-Received: from fwil.voltaire.com ([193.47.165.2]:53081 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751319AbXGRGwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 02:52:50 -0400
-X-Greylist: delayed 978 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jul 2007 02:52:50 EDT
-Message-ID: <469DB4E1.6080200@voltaire.com>
-Date: Wed, 18 Jul 2007 09:36:17 +0300
-From: Or Gerlitz <ogerlitz@voltaire.com>
-User-Agent: Thunderbird 1.4.1 (Windows/20051006)
+	Wed, 18 Jul 2007 02:54:16 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:59504 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751725AbXGRGyP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 02:54:15 -0400
+Date: Wed, 18 Jul 2007 12:24:04 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Dmitriy Zavin <dmitriyz@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>, Ashok Raj <ashok.raj@intel.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, heiko.carstens@de.ibm.com,
+       kiran@scalex86.org, clameter@sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/10] cpu: deliver CPU_UP_CANCELED only to NOTIFY_OKed callbacks with CPU_UP_PREPARE
+Message-ID: <20070718065404.GA1982@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070716134855.GA1858@APFDCB5C> <20070716135347.GD2040@APFDCB5C> <20070717082331.GA12231@in.ibm.com> <961aa3350707171018i58a47b7asb4a92e1bcd146adf@mail.gmail.com>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: leininger2@llnl.gov, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Further 2.6.23 merge plans...
-References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>	<adazm1urji8.fsf@cisco.com> <1184704987.7702.106.camel@hyperion> <adatzs2pxmx.fsf@cisco.com>
-In-Reply-To: <adatzs2pxmx.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jul 2007 06:36:27.0167 (UTC) FILETIME=[F7BC22F0:01C7C905]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <961aa3350707171018i58a47b7asb4a92e1bcd146adf@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  >      I would like to see these features moved upstream.  DOE funded this
->  > work as part of the items we see needing on our large scale IB
->  > deployment (both present and future).  So from at least one big customer
->  > perspective we see this as useful.  
+Hi!
+On Wed, Jul 18, 2007 at 02:18:41AM +0900, Akinobu Mita wrote:
+> >> So it is natural to deliver CPU_UP_CANCELED event only to the functions
+> >> that have returned NOTIFY_OK with CPU_UP_PREPARE event and not to call
+> >> the function that have returned NOTIFY_BAD. This is what this patch is 
+> >doing.
+> >
+> >Yes, this makes sense.
 > 
-> Does your reference to "present deployment" mean you are running this
-> code now?
+> Thank you for making sure of it.
+> 
+> >[...] However, it might break slab.
+> >If I am not mistaken, slab code initializes multiple objects in
+> >CPU_UP_PREPARE and relies on the CPU_UP_CANCELLED to destroy the
+> >objects which successfully got initialized before the some object's
+> >initialization went bad.
+> 
+> My testing machine is ordinary dual core non numa box. So it might not
+> trigger the problem that you are warried about under heavy slab alloc
+> failure injection.
+> 
+> At first glance I couln't find the problem in cpu hottplug code in slab.c 
+> yet,
+> but found some memory leak path. (it doesn't break slab though)
 
-Indeed, my understanding is that the DOE uses an Open MPI device (I 
-think its called PTE) which is implemented directly over libibverbs and 
-hence no path queries are issued at all, if this is indeed the case, for 
-them its more of a "for-the-future" thing.
+That's what I meant. I shouldn't have used the word "break" :-)
+In case of slab, freeing up of resources on an error during CPU_UP_PREPARE,
+is currently handled in CPU_UP_CANCELLED.
 
-Or.
+But, like you reasoned out, it makes more sense for such a subsystem
+to free up all the correctly allocated resources before sending a
+NOTIFY_BAD, rather than handling it in CPU_UP_CANCELLED. And slab 
+needed that fix, which you've provided, before we send the notification
+to (nr_calls - 1) callers.
 
+So could you add this patch to series? 
+
+Thanks and Regards
+gautham.
+> 
+> Index: 2.6-git/mm/slab.c
+> ===================================================================
+> --- 2.6-git.orig/mm/slab.c
+> +++ 2.6-git/mm/slab.c
+> @@ -1221,13 +1221,18 @@ static int __cpuinit cpuup_callback(stru
+> 				shared = alloc_arraycache(node,
+> 					cachep->shared * cachep->batchcount,
+> 					0xbaadf00d);
+> -				if (!shared)
+> +				if (!shared) {
+> +					kfree(nc);
+> 					goto bad;
+> +				}
+> 			}
+> 			if (use_alien_caches) {
+>                                 alien = alloc_alien_cache(node, 
+>                                 cachep->limit);
+> -                                if (!alien)
+> -                                        goto bad;
+> +                                if (!alien) {
+> +					kfree(shared);
+> +					kfree(nc);
+> +					goto bad;
+> +				}
+>                         }
+> 			cachep->array[cpu] = nc;
+> 			l3 = cachep->nodelists[node];
+
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
