@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760870AbXGRUqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933339AbXGRUt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760870AbXGRUqd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 16:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbXGRUqX
+	id S933339AbXGRUt1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 16:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbXGRUtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 16:46:23 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:51258 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756776AbXGRUqV (ORCPT
+	Wed, 18 Jul 2007 16:49:16 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:46185 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754765AbXGRUtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 16:46:21 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 18 Jul 2007 16:44:00 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Gabriel C <crazy@pimpmylinux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Wed, 18 Jul 2007 16:49:15 -0400
+Message-ID: <469E7C82.5020400@pimpmylinux.org>
+Date: Wed, 18 Jul 2007 22:48:02 +0200
+From: Gabriel C <crazy@pimpmylinux.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        netdev@vger.kernel.org
 Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-In-Reply-To: <20070718134012.cde2f956.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0707181640100.14940@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
- <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
- <20070718134012.cde2f956.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Randy Dunlap wrote:
+Robert P. J. Day wrote:
+> On Wed, 18 Jul 2007, Gabriel C wrote:
+> 
+>> Everything 'depends on' EXPERIMENTAL should be marked as such,
+>> visible in the menus.
+> 
+> rather than add all that extraneous dreck to the Kconfig files, i
+> *really* wish folks would give serious thought to my earlier
+> suggestion about a "maturity level" attribute that could be used to
+> not only add a parenthesized maturity level during display, but could
+> also be used to activate/deactivate entire levels in one operation.
+> 
+> there's no point adding all that redundant content when it can all be
+> done automatically.
 
-> On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
->
-> > On Wed, 18 Jul 2007, Gabriel C wrote:
-> >
-> > > Everything 'depends on' EXPERIMENTAL should be marked as such,
-> > > visible in the menus.
-> >
-> > rather than add all that extraneous dreck to the Kconfig files, i
-> > *really* wish folks would give serious thought to my earlier
-> > suggestion about a "maturity level" attribute that could be used to
-> > not only add a parenthesized maturity level during display, but could
-> > also be used to activate/deactivate entire levels in one operation.
-> >
-> > there's no point adding all that redundant content when it can all be
-> > done automatically.
->
-> I like it.  Are there any kconfig patches to support this plan?
 
-once upon a time, i'd proposed just adding a couple new "config"
-entries, but i eventually decided that a better approach would be
-to define a whole new Kconfig directive, as in:
+I don't know what your suggestion was , I'm sorry.
 
-config FUBAR
-	maturity EXPERIMENTAL (or DEPRECATED or OBSOLETE or ...)
+It may be for sure a good idea to add all this maturity levels
+automatically but for now such an thing does not exists.
 
-that would require extra processing in the parser, but it would allow
-the "maturity" attribute to be used for all sorts of new and wacky
-things, such as automatically displaying it at the end of a config
-selection, or deselecting everything OBSOLETE in a build, etc.
+> 
+> rday
 
-how hard would it be to add processing like that to the Kconfig
-infrastructure?
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Gabriel
