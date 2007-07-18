@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934474AbXGRWi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934687AbXGRWkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934474AbXGRWi4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 18:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762240AbXGRWib
+	id S934687AbXGRWkW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 18:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758105AbXGRWj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:38:31 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56377 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761606AbXGRWia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:38:30 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <469E9635.3060102@s5r6.in-berlin.de>
-Date: Thu, 19 Jul 2007 00:37:41 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Wed, 18 Jul 2007 18:39:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33163 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759667AbXGRWj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 18:39:57 -0400
+Message-ID: <469E96B8.3010708@garzik.org>
+Date: Wed, 18 Jul 2007 18:39:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-Subject: [GIT PULL] FireWire updates (repost)
-References: <tkrat.f5ba2b840fcda9e5@s5r6.in-berlin.de> <469E93AF.3080202@s5r6.in-berlin.de>
-In-Reply-To: <469E93AF.3080202@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Thomas Klein <osstklei@de.ibm.com>
+CC: Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <ossthema@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [PATCH] eHEA: Fix bonding support
+References: <200707181734.09278.osstklei@de.ibm.com>
+In-Reply-To: <200707181734.09278.osstklei@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems my posting from half an hour ago got lost somehow.  Another try,
-same message:  Linus, please pull from the for-linus branch at
+Thomas Klein wrote:
+> The driver didn't allow an interface's MAC address to be modified if the
+> respective interface wasn't setup - a failing Hcall was the result. Thus
+> bonding wasn't usable. The fix moves the failing Hcall which was registering
+> a MAC address for the reception of BC packets in firmware from the port up
+> and down functions to the port resources setup functions. Additionally the
+> missing update of the last_rx member of the netdev structure was added.
+> 
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+> 
+> ---
+>  drivers/net/ehea/ehea.h      |    2 +-
+>  drivers/net/ehea/ehea_main.c |   37 +++++++++++++++++++------------------
+>  2 files changed, 20 insertions(+), 19 deletions(-)
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+applied
 
-to receive the following few fixes and a SCSI API update for the
-FireWire subsystem.
 
- drivers/firewire/fw-ohci.c        |    3 ++-
- drivers/firewire/fw-sbp2.c        |   16 +++++++---------
- drivers/firewire/fw-transaction.c |    9 +++------
- drivers/firewire/fw-transaction.h |    4 ++++
- 4 files changed, 16 insertions(+), 16 deletions(-)
-
-Stefan Richter (5):
-      firewire: fw-ohci: flush MMIO write before msleep
-      firewire: fw-ohci: fix "scheduling while atomic"
-      firewire: remove bogus check in fw_core_handle_request
-      firewire: fix memory leak of fw_request instances
-      firewire: fw-sbp2: convert to new SCSI data buffer accessors
--- 
-Stefan Richter
--=====-=-=== -=== =--==
-http://arcgraph.de/sr/
