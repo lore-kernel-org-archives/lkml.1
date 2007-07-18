@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752319AbXGRFze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760409AbXGRF4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752319AbXGRFze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 01:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbXGRFz0
+	id S1760409AbXGRF4p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 01:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXGRF4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 01:55:26 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:42285 "EHLO havoc.gtf.org"
+	Wed, 18 Jul 2007 01:56:38 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:38589 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751224AbXGRFzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 01:55:25 -0400
-Date: Wed, 18 Jul 2007 01:55:24 -0400
+	id S1750773AbXGRF4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 01:56:37 -0400
+Date: Wed, 18 Jul 2007 01:56:35 -0400
 From: Jeff Garzik <jeff@garzik.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, adaplas@gmail.com,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: [PATCH 2/3] drivers/video/aty/radeon_base: fix
-	radeonfb_pci_register() err handling
-Message-ID: <20070718055524.GA5748@havoc.gtf.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ak@suse.de
+Subject: [PATCH 3/3] x86-64: make flush_tlb_kernel_range() a static inline
+	function
+Message-ID: <20070718055635.GB5748@havoc.gtf.org>
 References: <20070718055348.GA5734@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20070718055348.GA5734@havoc.gtf.org>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,67 +30,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 The following change was checked into 'warnings' branch of
 git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
-commit 61470a24062de01853fb922ec4a81dcd1c0ba1d0
+commit b1c9131343597967d8fcc042f59e4ed36ea2855f
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Wed Jul 18 01:43:05 2007 -0400
+Date:   Wed Jul 18 01:47:39 2007 -0400
 
-    drivers/video/aty/radeon_base: fix radeonfb_pci_register() err handling
+    [X86-64] make flush_tlb_kernel_range() a static inline function
     
-    * silence warnings by handling failure of sysfs_create_bin_file()
+    On x86-64, without this change, the following warning is emitted
     
-    * fix leak-on-error if register_framebuffer() fails, and sysfs is active
+    mm/vmalloc.c: In function ‘unmap_kernel_range’:
+    mm/vmalloc.c:75: warning: unused variable ‘start’
+    
+    because, x86-64, flush_tlb_kernel_range(start,end) evaluates down to
+    flush_tlb_all(void) in a macro.
+    
+    Avoid this warning by implementing x86-64's flush_tlb_kernel_range() as
+    a type-safe static inline, rather than a macro.
     
     Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
- drivers/video/aty/radeon_base.c |   23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+ include/asm-x86_64/tlbflush.h |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-61470a24062de01853fb922ec4a81dcd1c0ba1d0
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 47ca62f..5a5458b 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -2326,10 +2326,16 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	radeon_check_modes(rinfo, mode_option);
+b1c9131343597967d8fcc042f59e4ed36ea2855f
+diff --git a/include/asm-x86_64/tlbflush.h b/include/asm-x86_64/tlbflush.h
+index 8516225..a82464c 100644
+--- a/include/asm-x86_64/tlbflush.h
++++ b/include/asm-x86_64/tlbflush.h
+@@ -92,7 +92,11 @@ static inline void flush_tlb_range(struct vm_area_struct * vma, unsigned long st
  
- 	/* Register some sysfs stuff (should be done better) */
--	if (rinfo->mon1_EDID)
--		sysfs_create_bin_file(&rinfo->pdev->dev.kobj, &edid1_attr);
--	if (rinfo->mon2_EDID)
--		sysfs_create_bin_file(&rinfo->pdev->dev.kobj, &edid2_attr);
-+	if (rinfo->mon1_EDID) {
-+		ret = sysfs_create_bin_file(&rinfo->pdev->dev.kobj,&edid1_attr);
-+		if (ret)
-+			goto err_unmap_fb;
-+	}
-+	if (rinfo->mon2_EDID) {
-+		ret = sysfs_create_bin_file(&rinfo->pdev->dev.kobj,&edid2_attr);
-+		if (ret)
-+			goto err_free_mon1;
-+	}
+ #endif
  
- 	/* save current mode regs before we switch into the new one
- 	 * so we can restore this upon __exit
-@@ -2353,7 +2359,7 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	if (ret < 0) {
- 		printk (KERN_ERR "radeonfb (%s): could not register framebuffer\n",
- 			pci_name(rinfo->pdev));
--		goto err_unmap_fb;
-+		goto err_free_mon2;
- 	}
+-#define flush_tlb_kernel_range(start, end) flush_tlb_all()
++static inline void flush_tlb_kernel_range(unsigned long start,
++					  unsigned long end)
++{
++	flush_tlb_all();
++}
  
- #ifdef CONFIG_MTRR
-@@ -2372,6 +2378,13 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	RTRACE("radeonfb_pci_register END\n");
- 
- 	return 0;
-+
-+err_free_mon2:
-+	if (rinfo->mon2_EDID)
-+		sysfs_remove_bin_file(&rinfo->pdev->dev.kobj, &edid2_attr);
-+err_free_mon1:
-+	if (rinfo->mon1_EDID)
-+		sysfs_remove_bin_file(&rinfo->pdev->dev.kobj, &edid1_attr);
- err_unmap_fb:
- 	iounmap(rinfo->fb_base);
- err_unmap_rom:
+ static inline void flush_tlb_pgtables(struct mm_struct *mm,
+ 				      unsigned long start, unsigned long end)
