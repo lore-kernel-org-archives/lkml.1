@@ -1,101 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbXGRSiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935783AbXGRSiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761660AbXGRSiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 14:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXGRSiG
+	id S935783AbXGRSiv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 14:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760246AbXGRSim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 14:38:06 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37550 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751599AbXGRSiF (ORCPT
+	Wed, 18 Jul 2007 14:38:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38716 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757984AbXGRSil (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 14:38:05 -0400
-Date: Wed, 18 Jul 2007 20:37:27 +0200
-From: Adrian Bunk <bunk@stusta.de>
+	Wed, 18 Jul 2007 14:38:41 -0400
+Date: Wed, 18 Jul 2007 20:38:40 +0200
+From: Andi Kleen <andi@firstfloor.org>
 To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: 2.6.22-git* regression: Kconfig prompts without help text
-Message-ID: <20070718183727.GL3801@stusta.de>
-References: <469BBDAD.2010908@s5r6.in-berlin.de> <Pine.LNX.4.64.0707181634100.5385@fbirervta.pbzchgretzou.qr> <20070718094119.4a26ae03.randy.dunlap@oracle.com> <Pine.LNX.4.64.0707181916410.5385@fbirervta.pbzchgretzou.qr> <20070718103456.cf32bf78.randy.dunlap@oracle.com> <Pine.LNX.4.64.0707181954190.5385@fbirervta.pbzchgretzou.qr> <469E5629.4020409@oracle.com> <Pine.LNX.4.64.0707182031130.5385@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org,
+       torvalds@transmeta.com
+Subject: Re: Patches for REALLY TINY 386 kernels
+Message-ID: <20070718183840.GC3898@one.firstfloor.org>
+References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com> <20070718182021.GA3898@one.firstfloor.org> <Pine.LNX.4.64.0707182024231.5385@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707182031130.5385@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <Pine.LNX.4.64.0707182024231.5385@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 08:33:27PM +0200, Jan Engelhardt wrote:
+On Wed, Jul 18, 2007 at 08:29:27PM +0200, Jan Engelhardt wrote:
 > 
-> On Jul 18 2007 11:04, Randy Dunlap wrote:
-> >> > I have no idea where it came from.  (not me)
+> On Jul 18 2007 20:20, Andi Kleen wrote:
 > >> 
-> >> It was akpm:
-> >> http://linux.bkbits.net:8080/linux-2.6/Documentation/CodingStyle?PAGE=diffs&REV=1.5
+> >> Well, how big the vmlinux file is matters if it doesn't fit in memory
+> >> with enough time to get to the phase where it is dumping the init
+> >> sections.  
 > >
-> > I think that would only make sense if "---help---" is used (like you did)
-> > instead of the plain "help" string.
-> >
-> > In the case of "---help---", it's OK with me not to be indented by 2 more
-> > spaces.
+> >If you don't have enough memory for a few tens of KB of init sections
+> >you're very unlikely to have enough memory for user space.
 > 
-> ===
-> 
-> kconf also accepts "---help---" besides the usual "help" keyword.
-> If it is used, I think we can omit the extra spaces, because the
-> dashes are visible enough a sash.
+> If the code was not too hackish, I would not buy that.
+> Routers for example can run -- minus the userspace utilities required to set
+> things up -- "without" userspace.
 
+They still need memory for packets and other data structures. 
+Without having enough memory to queue packets and keep the routing cache you cannot do 
+any useful routing.
 
-Nope, the majority of "---help---" users don't omit the spaces - and it's 
-more readable with them.
-
-
-> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-> 
-> ---
->  Documentation/CodingStyle |   13 ++++++-------
->  1 file changed, 6 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6.23/Documentation/CodingStyle
-> ===================================================================
-> --- linux-2.6.23.orig/Documentation/CodingStyle
-> +++ linux-2.6.23/Documentation/CodingStyle
-> @@ -511,17 +511,16 @@ remember: "indent" is not a fix for bad 
->  
->  For all of the Kconfig* configuration files throughout the source tree,
->  the indentation is somewhat different.  Lines under a "config" definition
-> -are indented with one tab, while help text is indented an additional two
-> -spaces.  Example:
-> +are indented with one tab. Example:
->  
->  config AUDIT
->  	bool "Auditing support"
->  	depends on NET
-> -	help
-> -	  Enable auditing infrastructure that can be used with another
-> -	  kernel subsystem, such as SELinux (which requires this for
-> -	  logging of avc messages output).  Does not do system-call
-> -	  auditing without CONFIG_AUDITSYSCALL.
-> +	---help---
-> +	Enable auditing infrastructure that can be used with another
-> +	kernel subsystem, such as SELinux (which requires this for
-> +	logging of avc messages output).  Does not do system-call
-> +	auditing without CONFIG_AUDITSYSCALL.
->  
->  Features that might still be considered unstable should be defined as
->  dependent on "EXPERIMENTAL":
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-Andi
