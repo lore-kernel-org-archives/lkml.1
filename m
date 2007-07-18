@@ -1,166 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965247AbXGRXsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936731AbXGRXux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965247AbXGRXsA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937618AbXGRXpG
+	id S936731AbXGRXux (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbXGRXum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:45:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51887 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S937708AbXGRXpB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:45:01 -0400
-Date: Wed, 18 Jul 2007 16:43:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
-Message-Id: <20070718164351.a92ec032.akpm@linux-foundation.org>
-In-Reply-To: <20070716162206.529280000@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.529280000@pademelon.sonytel.be>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jul 2007 19:50:42 -0400
+Received: from ns.suse.de ([195.135.220.2]:59582 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752188AbXGRXul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:50:41 -0400
+Date: Thu, 19 Jul 2007 01:50:35 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
+Message-ID: <20070718235035.GB29728@v2.random>
+References: <20070706222651.GG5777@v2.random> <1183764801.10287.233.camel@localhost> <20070706235228.GL5777@v2.random> <20070717174737.GM6909@holomorphy.com> <20070717193308.GD25301@v2.random> <20070718133222.GM11781@holomorphy.com> <469E410C.50302@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469E410C.50302@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007 18:15:41 +0200
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Wed, Jul 18, 2007 at 06:34:20PM +0200, Rene Herman wrote:
+> It says that highmem is not an issue due to no such thing as highmem even 
+> existing on the machines with support for larger hard pagesizes, but this 
+> wouldn't hold for soft pages. Sort of went "damn" in an x86 context upon 
+> reading that.
 
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> 
-> Add a BD/DVD/CD-ROM Storage Driver for the PS3:
->   - Implemented as a SCSI device driver
->   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
->     doesn't support scatter-gather
-> 
-> --- /dev/null
-> +++ b/drivers/scsi/ps3rom.c
-> @@ -0,0 +1,538 @@
-> +/*
-> + * PS3 BD/DVD/CD-ROM Storage Driver
-> + *
-> + * Copyright (C) 2007 Sony Computer Entertainment Inc.
-> + * Copyright 2007 Sony Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; version 2 of the License.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along
-> + * with this program; if not, write to the Free Software Foundation, Inc.,
-> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-> + */
-> +
-> +#include <linux/cdrom.h>
-> +#include <linux/highmem.h>
-> +
-> +#include <scsi/scsi.h>
-> +#include <scsi/scsi_cmnd.h>
-> +#include <scsi/scsi_dbg.h>
-> +#include <scsi/scsi_device.h>
-> +#include <scsi/scsi_host.h>
-> +
-> +#include <asm/lv1call.h>
-> +#include <asm/ps3stor.h>
-> +
-> +
-> +#define DEVICE_NAME			"ps3rom"
-> +
-> +#define BOUNCE_SIZE			(64*1024)
-> +
-> +#define PS3ROM_MAX_SECTORS		(BOUNCE_SIZE / CD_FRAMESIZE)
-> +
-> +
-> +struct ps3rom_private {
-> +	struct ps3_storage_device *dev;
-> +	struct scsi_cmnd *curr_cmd;
-> +};
-> +#define ps3rom_priv(dev)	((dev)->sbd.core.driver_data)
-> +
+Correct, but I'm not really sure if it worth worrying about x86
+missing this, furthermore it would still be possible to enable it on
+the very x86 low end (with regular 4k page size) that may worry to use
+up to the last byte of ram as cache for tiny files. To me using
+kmalloc for this looks quite ideal.
 
-Someone should invent a keyboard which delivers an electric shock when the
-operator types "#define".   In the meanwhile, I get to do the honours.
-
-Please don't implement in a macro anything which can be implemented in C.
-
-> +
-> +#define LV1_STORAGE_SEND_ATAPI_COMMAND	(1)
-> +
-> +struct lv1_atapi_cmnd_block {
-> +	u8	pkt[32];	/* packet command block           */
-> +	u32	pktlen;		/* should be 12 for ATAPI 8020    */
-> +	u32	blocks;
-> +	u32	block_size;
-> +	u32	proto;		/* transfer mode                  */
-> +	u32	in_out;		/* transfer direction             */
-> +	u64	buffer;		/* parameter except command block */
-> +	u32	arglen;		/* length above                   */
-> +};
-> +
-> +enum lv1_atapi_proto {
-> +	NON_DATA_PROTO     = 0,
-> +	PIO_DATA_IN_PROTO  = 1,
-> +	PIO_DATA_OUT_PROTO = 2,
-> +	DMA_PROTO = 3
-> +};
-> +
->
-> ...
->
-> +/*
-> + * copy data from device into scatter/gather buffer
-> + */
-> +static int fill_from_dev_buffer(struct scsi_cmnd *cmd, const void *buf)
-> +{
-> +	int k, req_len, act_len, len, active;
-> +	void *kaddr;
-> +	struct scatterlist *sgpnt;
-> +	unsigned int buflen;
-> +
-> +	buflen = cmd->request_bufflen;
-> +	if (!buflen)
-> +		return 0;
-> +
-> +	if (!cmd->request_buffer)
-> +		return -1;
-> +
-> +	sgpnt = cmd->request_buffer;
-> +	active = 1;
-> +	for (k = 0, req_len = 0, act_len = 0; k < cmd->use_sg; ++k, ++sgpnt) {
-> +		if (active) {
-> +			kaddr = kmap_atomic(sgpnt->page, KM_IRQ0);
-> +			if (!kaddr)
-> +				return -1;
-
-kmap_atomic() cannot fail.  On i386, at least.  If it can fail on any other
-arch then we have a biiiiig problem.  (Multiple instances of this)
-
-> +			len = sgpnt->length;
-> +			if ((req_len + len) > buflen) {
-> +				active = 0;
-> +				len = buflen - req_len;
-> +			}
-> +			memcpy(kaddr + sgpnt->offset, buf + req_len, len);
-> +			flush_kernel_dcache_page(sgpnt->page);
-> +			kunmap_atomic(kaddr, KM_IRQ0);
-> +			act_len += len;
-> +		}
-> +		req_len += sgpnt->length;
-> +	}
-> +	cmd->resid = req_len - act_len;
-> +	return 0;
-> +}
-> +
-
+Thanks.
