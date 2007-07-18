@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762473AbXGRJSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761986AbXGRJTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762473AbXGRJSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 05:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXGRJRw
+	id S1761986AbXGRJTT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 05:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbXGRJTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 05:17:52 -0400
-Received: from mx.fr.bfs.de ([194.95.226.137]:53207 "EHLO mail.fr.bfs.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751251AbXGRJRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 05:17:51 -0400
-X-Greylist: delayed 1852 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jul 2007 05:17:51 EDT
-Message-ID: <469DD37C.8050200@bfs.de>
-Date: Wed, 18 Jul 2007 10:46:52 +0200
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 18 Jul 2007 05:19:11 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:57453 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751251AbXGRJTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 05:19:10 -0400
+Message-ID: <469DDAE0.4010106@rfo.atmel.com>
+Date: Wed, 18 Jul 2007 11:18:24 +0200
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: crash with 2.6.21 BUG:ll_rw_blk.c
-Content-Type: text/plain; charset=UTF-8
+To: "Antonino A. Daplas" <adaplas@gmail.com>,
+       linux-fbdev-devel@lists.sourceforge.net
+CC: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] atmel_lcdfb: Use spare bits in 32bpp mode as alpha channel
+References: <11826149894079-git-send-email-hskinnemoen@atmel.com>
+In-Reply-To: <11826149894079-git-send-email-hskinnemoen@atmel.com>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
 Content-Transfer-Encoding: 7bit
+X-ESAFE-STATUS: Mail clean
+X-ESAFE-DETAILS: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi list,
-i managed to crash 2.6.21 at boottime with
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-IPI Shortcut mode
-BUG: atblock/ll_rw_blc.c 1566 blk_remove_plug()
+Set var->transp.offset and var->transp.length in 32bpp mode to
+indicate that the 8 otherwise unused bits can be used for
+transparency.
+
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+---
+  drivers/video/atmel_lcdfb.c |    5 ++++-
+  1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index a05491f..bb361ab 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -221,8 +221,11 @@ static int atmel_lcdfb_check_var(struct 
+fb_var_screeninfo *var,
+  		var->blue.offset = 10;
+  		var->red.length = var->green.length = var->blue.length = 5;
+  		break;
+-	case 24:
+  	case 32:
++		var->transp.offset = 24;
++		var->transp.length = 8;
++		/* fall through */
++	case 24:
+  		var->red.offset = 0;
+  		var->green.offset = 8;
+  		var->blue.offset = 16;
 
 
-system: acer Notebook TM620
-
-does anyone care or is 2.6.21 already done ?
-
-re,
- wh
