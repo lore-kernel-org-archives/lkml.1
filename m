@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764142AbXGRWtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764280AbXGRWuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764142AbXGRWtR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 18:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbXGRWtB
+	id S1764280AbXGRWuf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 18:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbXGRWuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:49:01 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:55500 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbXGRWtA (ORCPT
+	Wed, 18 Jul 2007 18:50:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:42096 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164AbXGRWuV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:49:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=kl8q0DDhWfDI1N2xplwWo/X/4A0SwAZevlsEqJsmw2HW3Su960u0V9/qbH8dokKZ9jMxBM53+ROwX2cyQwuiSyAQZfUaIPIqAT2x7nD1255Gq7Ie9C9lmRg9Qwj9tEjZGLA+dQDH3wiQb0wlJrWJmdmYeYs+XD8/FecQYY744TQ=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][ACPI] Fix acpi_ev_pci_config_region_setup() to avoid memory leak
-Date: Thu, 19 Jul 2007 00:48:03 +0200
-User-Agent: KMail/1.9.7
-Cc: robert.moore@intel.com, len.brown@intel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com
+	Wed, 18 Jul 2007 18:50:21 -0400
+Message-ID: <469E9918.8040907@zytor.com>
+Date: Wed, 18 Jul 2007 15:50:00 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Rob Landley <rob@landley.net>
+CC: Jan Engelhardt <jengelh@computergmbh.de>, Bodo Eggert <7eggert@gmx.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][Patch] Allow not mounting a root fs
+References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <Pine.LNX.4.64.0707072312380.1536@fbirervta.pbzchgretzou.qr> <469002EB.7030902@zytor.com> <200707181751.10276.rob@landley.net>
+In-Reply-To: <200707181751.10276.rob@landley.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707190048.03992.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Rob Landley wrote:
+> 
+> Out of curiosity, do you know which setup?  I know that it won't actually swap 
+> anything out yet because no swap is mounted, but I thought that mounting 
+> tmpfs and doing a swapon afterwards was ok...
+> 
 
-In drivers/acpi/events/evrgnini.c::acpi_ev_pci_config_region_setup() 
-there is a memory leak.
-We may return at "if (!pci_device_node)" without freeing storage 
-previously allocated and assigned to 'pci_id'.
-This patch fixes the leak by freeing the allocated storage in this 
-case.
+Nope, I just know that the "obvious" way to do it crashes the kernel
+horribly.  It looks based on the patchsets that have flown about
+recently as it's mostly a matter of initializing the icache.
 
-Compile tested only...
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/acpi/events/evrgnini.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/acpi/events/evrgnini.c b/drivers/acpi/events/evrgnini.c
-index 400d90f..10f378b 100644
---- a/drivers/acpi/events/evrgnini.c
-+++ b/drivers/acpi/events/evrgnini.c
-@@ -284,6 +284,7 @@ acpi_ev_pci_config_region_setup(acpi_handle handle,
- 	}
- 
- 	if (!pci_device_node) {
-+		kfree(pci_id);
- 		return_ACPI_STATUS(AE_AML_OPERAND_TYPE);
- 	}
- 
-
-
+	-hpa
