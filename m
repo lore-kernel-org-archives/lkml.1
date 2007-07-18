@@ -1,123 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932477AbXGRGel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764899AbXGRGgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932477AbXGRGel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 02:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764338AbXGRGeZ
+	id S1764899AbXGRGgU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXGRGgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 02:34:25 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:13836 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764036AbXGRGeY (ORCPT
+	Wed, 18 Jul 2007 02:36:08 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:5497 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbXGRGgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 02:34:24 -0400
-Date: Wed, 18 Jul 2007 14:32:14 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Joe Jin <joe.jin@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, bill.irwin@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
-Message-ID: <20070718063214.GA26481@joejin-pc.cn.oracle.com>
-References: <20070712221842.f5e47065.akpm@linux-foundation.org> <Pine.LNX.4.64.0707171558470.26771@blonde.wat.veritas.com> <20070717093228.3a3638aa.akpm@linux-foundation.org> <Pine.LNX.4.64.0707171818080.19489@blonde.wat.veritas.com> <20070717115849.9f5e435c.akpm@linux-foundation.org> <Pine.LNX.4.64.0707172044001.5286@blonde.wat.veritas.com> <20070717130118.bc78d31a.akpm@linux-foundation.org> <Pine.LNX.4.64.0707172133400.9010@blonde.wat.veritas.com> <20070718014027.GA23559@joejin-pc.cn.oracle.com> <Pine.LNX.4.64.0707180521470.18593@blonde.wat.veritas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 18 Jul 2007 02:36:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rT1YpPX5XjA0MuLI3Wt5FrfpOBuE79YVopx7/fuuCBPd6VW/+dC55l52Sa+zlVKnd+S2fO6W8wPzIcKoX2uYuTXHPvRxOu1z9f+nVCTLk+jDlQmdsMCa1KYVk3c+CR6wiTFeg+TnPS3bUmDkLpzIYCw1L9NnvoGj2jkZnlArevc=
+Message-ID: <dcf706c60707172336u38cb87c4ia77cc4dbe9b38a56@mail.gmail.com>
+Date: Wed, 18 Jul 2007 08:36:05 +0200
+From: "Sasa Ostrouska" <casaxa@gmail.com>
+To: "Daniel Drake" <dsd@gentoo.org>
+Subject: Re: VESAFB CUSTOM RESOLUTION
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <469D71FB.5070408@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707180521470.18593@blonde.wat.veritas.com>
-User-Agent: Mutt/1.4.2.2i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
+	 <469D71FB.5070408@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 7/18/07, Daniel Drake <dsd@gentoo.org> wrote:
+> Sasa Ostrouska wrote:
+> > I want to ask one question about a custom resolution in the console.
+> > I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
+> > 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
+> > ugly as I get a border of about 2-3cm on one the sides of the screen.
+> > So is there a way that I set the 1280x800 resolution at boot time ?
+>
+> I don't think vesafb can do what you want. However, uvesafb probably can.
+>
+> http://dev.gentoo.org/~spock/projects/uvesafb/
+>
+> Daniel
 
-On 2007-07-18 05:49, Hugh Dickins wrote:
-> On Wed, 18 Jul 2007, Joe Jin wrote:
-> > 
-> > With your patch, I have reproduced the panic:
-> 
-> That is... surprising to me.  (I hadn't been able to reproduce it with
-> or without the patches: maybe I just need to try harder.)  Please post
-> your gcc --version, and the disassembly (objdump -d) output for
-> alloc_fresh_huge_page.
-> 
+Daniel you seem to be right, as till now, no one of those solutions
+for me worked, I always end up or with a non recognised option or a
+small square 640x480 pixels where I see the console. I need to try
+still the vbetest thing what Mr. Daplas proposed.
 
-It will easy to reproduce, just run following scripts on *2* difference
-terminal at the same time, I think you will hit it in a short time.
+In any case this laptop has an screen of 16:10 aspect ratio and I
+belive would be good
+to have those modes in the vesafb driver.
 
-#!/bin/bash
-while : ; do
-        echo 1000000000000 > /proc/sys/vm/nr_hugepages
-        echo 1 > /proc/sys/vm/nr_hugepages
-        echo 10000000000000000000 > /proc/sys/vm/nr_hugepages
-        echo 0 > /proc/sys/vm/nr_hugepages
-done
-
-# gcc --version
-gcc (GCC) 4.1.1 20070105 (Red Hat 4.1.1-52)
-Copyright (C) 2006 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-------------------------------------------------------------------------------------------------------------------------
-Disassembly alloc_fresh_huge_page with gdb:
-
-0xffffffff810719cf <alloc_fresh_huge_page+0>:   mov    3651606(%rip),%r8d        # 0xffffffff813ed1ec <prev_nid.16422>
-0xffffffff810719d6 <alloc_fresh_huge_page+7>:   mov    2841027(%rip),%rdi        # 0xffffffff813273a0 <node_online_map>
-0xffffffff810719dd <alloc_fresh_huge_page+14>:  mov    $0x3f,%eax
-0xffffffff810719e2 <alloc_fresh_huge_page+19>:  push   %rbx
-0xffffffff810719e3 <alloc_fresh_huge_page+20>:  lea    0x1(%r8),%esi
-0xffffffff810719e7 <alloc_fresh_huge_page+24>:  sub    %r8d,%eax
-0xffffffff810719ea <alloc_fresh_huge_page+27>:  mov    %rdi,%rdx
-0xffffffff810719ed <alloc_fresh_huge_page+30>:  cltq   
-0xffffffff810719ef <alloc_fresh_huge_page+32>:  mov    %sil,%cl
-0xffffffff810719f2 <alloc_fresh_huge_page+35>:  shr    %cl,%rdx
-0xffffffff810719f5 <alloc_fresh_huge_page+38>:  bsf    %rdx,%rcx
-0xffffffff810719f9 <alloc_fresh_huge_page+42>:  cmove  %rax,%rcx
-0xffffffff810719fd <alloc_fresh_huge_page+46>:  lea    (%rsi,%rcx,1),%ecx
-0xffffffff81071a00 <alloc_fresh_huge_page+49>:  mov    $0x40,%eax
-0xffffffff81071a05 <alloc_fresh_huge_page+54>:  cmp    $0x40,%ecx
-0xffffffff81071a08 <alloc_fresh_huge_page+57>:  cmovg  %eax,%ecx
-0xffffffff81071a0b <alloc_fresh_huge_page+60>:  cmp    $0x40,%ecx
-0xffffffff81071a0e <alloc_fresh_huge_page+63>:  mov    %ecx,3651540(%rip)        # 0xffffffff813ed1e8 <nid.16423>
-0xffffffff81071a14 <alloc_fresh_huge_page+69>:  jne    0xffffffff81071a2f <alloc_fresh_huge_page+96>
-0xffffffff81071a16 <alloc_fresh_huge_page+71>:  mov    $0x40,%eax
-0xffffffff81071a1b <alloc_fresh_huge_page+76>:  bsf    %rdi,%rdx
-0xffffffff81071a1f <alloc_fresh_huge_page+80>:  cmove  %rax,%rdx
-0xffffffff81071a23 <alloc_fresh_huge_page+84>:  cmp    $0x40,%edx
-0xffffffff81071a26 <alloc_fresh_huge_page+87>:  cmovle %edx,%ecx
-0xffffffff81071a29 <alloc_fresh_huge_page+90>:  mov    %ecx,3651513(%rip)        # 0xffffffff813ed1e8 <nid.16423>
-0xffffffff81071a2f <alloc_fresh_huge_page+96>:  mov    3651507(%rip),%eax        # 0xffffffff813ed1e8 <nid.16423>
-0xffffffff81071a35 <alloc_fresh_huge_page+102>: test   %eax,%eax
-0xffffffff81071a37 <alloc_fresh_huge_page+104>: mov    %eax,3651503(%rip)        # 0xffffffff813ed1ec <prev_nid.16422>
-0xffffffff81071a3d <alloc_fresh_huge_page+110>: jns    0xffffffff81071a47 <alloc_fresh_huge_page+120>
-0xffffffff81071a3f <alloc_fresh_huge_page+112>: mov    %gs:0x30,%eax
-0xffffffff81071a47 <alloc_fresh_huge_page+120>: cltq   
-0xffffffff81071a49 <alloc_fresh_huge_page+122>: mov    $0x9,%esi
-0xffffffff81071a4e <alloc_fresh_huge_page+127>: mov    $0x242d2,%edi
-0xffffffff81071a53 <alloc_fresh_huge_page+132>: mov    0xffffffff813260e0(,%rax,8),%rdx
-0xffffffff81071a5b <alloc_fresh_huge_page+140>: add    $0x1860,%rdx
-0xffffffff81071a62 <alloc_fresh_huge_page+147>: callq  0xffffffff8105d4b8 <__alloc_pages>
-0xffffffff81071a67 <alloc_fresh_huge_page+152>: mov    %rax,%rbx
-0xffffffff81071a6a <alloc_fresh_huge_page+155>: xor    %eax,%eax
-0xffffffff81071a6c <alloc_fresh_huge_page+157>: test   %rbx,%rbx
-0xffffffff81071a6f <alloc_fresh_huge_page+160>: je     0xffffffff81071ab4 <alloc_fresh_huge_page+229>
-0xffffffff81071a71 <alloc_fresh_huge_page+162>: movq   $0xffffffff81072a02,0x60(%rbx)
-0xffffffff81071a79 <alloc_fresh_huge_page+170>: mov    $0xffffffff812e6c68,%rdi
-0xffffffff81071a80 <alloc_fresh_huge_page+177>: callq  0xffffffff81217952 <_spin_lock>
-0xffffffff81071a85 <alloc_fresh_huge_page+182>: incq   3651428(%rip)        # 0xffffffff813ed1f0 <nr_huge_pages>
-0xffffffff81071a8c <alloc_fresh_huge_page+189>: mov    (%rbx),%rax
-0xffffffff81071a8f <alloc_fresh_huge_page+192>: shr    $0x2d,%rax
-0xffffffff81071a93 <alloc_fresh_huge_page+196>: and    $0x3f,%eax
-0xffffffff81071a96 <alloc_fresh_huge_page+199>: incl   0xffffffff813ed620(,%rax,4)
-0xffffffff81071a9d <alloc_fresh_huge_page+206>: movl   $0x1,2576833(%rip)        # 0xffffffff812e6c68 <hugetlb_lock>
-0xffffffff81071aa7 <alloc_fresh_huge_page+216>: mov    %rbx,%rdi
-0xffffffff81071aaa <alloc_fresh_huge_page+219>: callq  0xffffffff8105f9cc <put_page>
-0xffffffff81071aaf <alloc_fresh_huge_page+224>: mov    $0x1,%eax
-0xffffffff81071ab4 <alloc_fresh_huge_page+229>: pop    %rbx
-0xffffffff81071ab5 <alloc_fresh_huge_page+230>: retq   
-
-
-Thanks,
-Joe
+Rgds
+Sasa
