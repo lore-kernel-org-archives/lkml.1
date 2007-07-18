@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764964AbXGRRJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933902AbXGRROh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764964AbXGRRJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 13:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760467AbXGRRJm
+	id S933902AbXGRROh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 13:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760671AbXGRRO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 13:09:42 -0400
-Received: from mis011.exch011.intermedia.net ([64.78.21.10]:35555 "EHLO
-	mis011.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755508AbXGRRJl convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 13:09:41 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 18 Jul 2007 13:14:29 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:53599 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760570AbXGRRO2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 13:14:28 -0400
+Message-ID: <469E4A70.1000306@grupopie.com>
+Date: Wed, 18 Jul 2007 18:14:24 +0100
+From: Rui Santos <rsantos@grupopie.com>
+Organization: GrupoPIE, Portugal SA
+User-Agent: Thunderbird 2.0.0.4 (X11/20070613)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [kvm-devel] [RFC] Deferred interrupt handling.
-Date: Wed, 18 Jul 2007 10:09:37 -0700
-Message-ID: <64F9B87B6B770947A9F8391472E032160CC16D06@ehost011-8.exch011.intermedia.net>
-In-Reply-To: <469E43D5.70802@qumranet.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [kvm-devel] [RFC] Deferred interrupt handling.
-Thread-Index: AcfJWyiCg5C5xl4RQ/CXA99/RSDu1wAAuEOw
-References: <005901c7c921$79c006c0$6d401440$@com>	<20070718123040.615795b7@the-village.bc.nu>	<64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net> <20070718174736.0baf6d0e@the-village.bc.nu> <469E43D5.70802@qumranet.com>
-From: "Dor Laor" <dor.laor@qumranet.com>
-To: "Avi Kivity" <avi@qumranet.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: <kvm-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 18 Jul 2007 17:09:40.0232 (UTC) FILETIME=[6D5DC880:01C7C95E]
+To: koan <koan00@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Slow Soft-RAID 5 performance
+References: <64d833020707180707i1bbbbcbao783e33a2487c9e2b@mail.gmail.com>
+In-Reply-To: <64d833020707180707i1bbbbcbao783e33a2487c9e2b@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Alan Cox wrote:
->>> What if we will force the specific device to the end of the list.
->Once
->>> IRQ_NONE was returned by the other devices, we will mask the irq,
->>> forward the irq to the guest, issue a timer for 1msec. Motivation:
->>> 1msec is long enough for the guest to ack the irq + host unmask the
->irq
->>>
->>
->> It makes no difference. The deadlock isn't fixable by timing hacks.
->> Consider the following sequence
->>
->>
->> 	Guest0	-	blocked on I/O
->>
->> 	IRQ14 from your hardware
->> 		Block IRQ14
->> 		Sent to guest (guest is blocked)
->>
->> 	IRQ14 from hard disk
->> 		Ignored (as blocked)
->>
+koan wrote:
+> How did you create the ext3 filesystem?
 
+The chunk_size is at 256KB, ext3 block size is 4k. I believe the correct
+option that should be passed trough to --stride is 64.
+Am I correct ?
 
-But now the timer will pop and the hard disk will get its irq.
-The guest will be released right after.
+I've also tested ( after sending my first report ) with xfs.
+I've also increases readahead to 65535 on all HD's
+I've also increases the stripe_cache_size to 16384.
 
->> 	Deadlock
->>
+I can now get ~100MB/sec...
+
 >
->IMO the only reasonable solution is to disallow interrupt forwarding
->with shared irqs.  If someone later comes up with a bright idea, we can
->implement it.  Otherwise the problem will solve itself with hardware
->moving to msi.
+> Did you use the appropriate --stride option as noted here:
+> http://tldp.org/HOWTO/Software-RAID-HOWTO-5.html (#5.11)
+> -
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
 >
 
-I though of that but the problem is that we'd like to use it with
-current hardware
-devices that are shared.
-:(
