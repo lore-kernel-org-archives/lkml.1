@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764116AbXGRF7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbXGRGGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764116AbXGRF7f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 01:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXGRF7Z
+	id S1757108AbXGRGGN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbXGRGGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 01:59:25 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34929
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762696AbXGRF7Y convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 01:59:24 -0400
-Message-Id: <469DC8B8.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 18 Jul 2007 07:00:56 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [PATCH] x86: make SMP locks handling interact properly
-	with CONFIG_DEBUG_RODATA (2nd try)
-References: <468B5B54.76E4.0078.0@novell.com>
- <200707171954.34541.ak@suse.de>
-In-Reply-To: <200707171954.34541.ak@suse.de>
+	Wed, 18 Jul 2007 02:06:03 -0400
+Received: from www.osadl.org ([213.239.205.134]:49077 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751260AbXGRGGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 02:06:01 -0400
+Subject: Re: [PATCH] posix-timer: fix deletion race
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jeremy Katz <jeremy.katz@windriver.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Stable Team <stable@kernel.org>
+In-Reply-To: <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
+References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain>
+	 <1184662429.12353.426.camel@chaos>
+	 <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
+	 <1184703427.12353.476.camel@chaos>
+	 <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
+	 <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 08:05:55 +0200
+Message-Id: <1184738755.12353.481.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>  void alternatives_smp_module_del(struct module *mod)
->>  {
->>  	struct smp_alt_module *item;
->> -	unsigned long flags;
->>  
->>  	if (smp_alt_once || noreplace_smp)
->>  		return;
->>  
->> -	spin_lock_irqsave(&smp_alt, flags);
->> +	spin_lock(&smp_alt);
->
->Unrelated change?  Why? Should probably be separate patch.
+On Tue, 2007-07-17 at 16:58 -0700, Jeremy Katz wrote:
 
-Absolutely not: You can't call change_page_attr(), or more precisely
-global_flush_tlb(), with interrupts disabled. And since interrupt disabling
-is unneeded here afaics, I simply changed the calls instead of inventing
-some ugly workaround.
+> Scratch that.  I had infrastructure problems, and ended up using the wrong 
+> build.
 
-I'll do the other adjustments you asked for, but it'll be only in about three
-weeks from now...
+> EFLAGS: 00010246   (2.6.22.1-WR1.4aq_cgl #2)
 
-Jan
+Hmm. Are there any other patches on that kernel ?
+
+Is there a chance that you can whip up a test program which is not
+secret sauce ?
+
+Also can you please enable CONFIG_PROVE_LOCKING, which might catch any
+locking problem, which might be related to this.
+
+	tglx
+
 
