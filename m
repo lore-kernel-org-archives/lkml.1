@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762254AbXGRPYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbXGRPYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762254AbXGRPYB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 11:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbXGRPXw
+	id S932225AbXGRPYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 11:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758001AbXGRPYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 11:23:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44653 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754333AbXGRPXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 11:23:51 -0400
-Message-ID: <469E305D.8060003@redhat.com>
-Date: Wed, 18 Jul 2007 11:23:09 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Wed, 18 Jul 2007 11:24:31 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52946 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758182AbXGRPYa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 11:24:30 -0400
+Date: Wed, 18 Jul 2007 17:24:29 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Greg KH <greg@kroah.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] stacked ifs (was Re: [PATCH 02/12] handle multiple
+ network paths to AoE device)
+In-Reply-To: <20070717000151.GA5982@kroah.com>
+Message-ID: <Pine.LNX.4.64.0707181721410.5385@fbirervta.pbzchgretzou.qr>
+References: <1d8423c28c48a6d26516cdc707dbcdf015a4e347.1182883861.git.ecashin@coraid.com>
+ <60bd316bfa72fb225cefad39569999e583f4f72e.1182883861.git.ecashin@coraid.com>
+ <20070702212949.5a1a1a31.akpm@linux-foundation.org> <20070716221744.GM18477@coraid.com>
+ <20070716153155.8a63c15d.akpm@linux-foundation.org> <20070717000151.GA5982@kroah.com>
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: Alasdair G Kergon <agk@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: Re: [2.6.23 PATCH 07/18] dm io: fix panic on large request
-References: <20070711205846.GY24114@agk.fab.redhat.com> <469CC11B.2020103@trash.net>
-In-Reply-To: <469CC11B.2020103@trash.net>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/17/2007 09:16 AM, Patrick McHardy wrote:
-> Alasdair G Kergon wrote:
->> From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
->>
->> bio_alloc_bioset() will return NULL if 'num_vecs' is too large.
->> Use bio_get_nr_vecs() to get estimation of maximum number.
->>
->> Signed-off-by: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
->> Signed-off-by: Alasdair G Kergon <agk@redhat.com>
->>
->> ---
->>  drivers/md/dm-io.c |    5 ++++-
->>  1 files changed, 4 insertions(+), 1 deletion(-)
-> 
-> 
-> This patch reproducibly oopses my box:
-> 
-> [  126.754204] BUG: unable to handle kernel NULL pointer dereference at
-> virtual address 00000000
-> [  126.754326]  printing eip:
-> [  126.754369] c0141a67
-> [  126.754420] *pde = 00000000
-> [  126.754465] Oops: 0000 [#1]
-> [  126.754507] PREEMPT
-> [  126.754585] Modules linked in: [...]
-> 
-> 
-> [  126.758372] CPU:    0
-> [  126.758373] EIP:    0060:[<c0141a67>]    Not tainted VLI
-> [  126.758374] EFLAGS: 00010282   (2.6.22 #1)
-> [  126.758511] EIP is at mempool_free+0xe/0xc0
-> [  126.758558] eax: d39e65d0   ebx: 00000000   ecx: df2b9898   edx: 00000000
-> [  126.758605] esi: 00000000   edi: d39e65d0   ebp: d487d6d0   esp: df79fec0
-> [  126.758652] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-> [  126.758699] Process kcryptd/0 (pid: 3218, ti=df79f000 task=df2b9640
-> task.ti=df79f000)
-> [  126.758747] Stack: 00000000 00000000 d3835f80 00000000 e08b0923
-> e08a5f69 00000200 e0ad1080
-> [  126.759093]        dfb5ab40 d3835f80 e08b08c0 00000000 e08a5fb7
-> c01804d8 00000000 00000200
-> [  126.759439]        c520bc00 00000c00 d0b77438 d5754b00 df79ff5c
-> e08a515e d0b77444 d5754b00
-> [  126.759858] Call Trace:
-> [  126.759965]  [<e08b0923>] clone_endio+0x63/0xc0 [dm_mod]
-> [  126.760066]  [<e08a5f69>] crypt_convert+0x131/0x17f [dm_crypt]
-> [  126.760168]  [<e08b08c0>] clone_endio+0x0/0xc0 [dm_mod]
-> [  126.760264]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
-> [  126.760349]  [<c01804d8>] bio_endio+0x33/0x5d
-> [  126.760462]  [<e08a515e>] dec_pending+0x28/0x39 [dm_crypt]
-> [  126.760558]  [<e08a61e6>] kcryptd_do_work+0x22f/0x30f [dm_crypt]
-> [  126.760669]  [<c0112182>] update_stats_wait_end+0x7f/0xb2
-> [  126.760801]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
-> [  126.760888]  [<c012700e>] run_workqueue+0x84/0x179
-> [  126.760990]  [<c0127292>] worker_thread+0x0/0xf0
-> [  126.761074]  [<c012732f>] worker_thread+0x9d/0xf0
-> [  126.761160]  [<c012a360>] autoremove_wake_function+0x0/0x37
-> [  126.761256]  [<c0127292>] worker_thread+0x0/0xf0
-> [  126.761334]  [<c012a15c>] kthread+0x52/0x58
-> [  126.761411]  [<c012a10a>] kthread+0x0/0x58
-> [  126.761496]  [<c0104983>] kernel_thread_helper+0x7/0x14
-> [  126.761598]  =======================
-> [  126.761717] Code: 1c 00 89 f6 eb a9 b8 88 13 00 00 e8 b4 56 1c 00 8d
-> 74 26 00 eb d5 31 db e9 11 ff ff ff 57 56 53 83 ec 04 89 c7 89 d6 85 c0
-> 74 55 <8b> 02 39 42 04 7d 46 9c 58 90 8d b4 26 00 00 00 00 89 c3 fa 90
 
-mempool_free() was called with a NULL pool. That can't be good.
+On Jul 16 2007 17:01, Greg KH wrote:
+>> 
+>> > > ugh.  Do this:
+>> > > 
+>> > > 	do {
+>> > > 		if (t == d->htgt)
+>> > > 			continue;
+>> > > 		if (!(*t)->ifp->nd)
+>> > > 			continue;
+>> > > 		if ((*t)->nout >= (*t)->maxout)
+>> > > 			continue;
+>> > > 			
+>> > > 		<stuff>
+>> > > 	} while (++t ...)
+>> > 
+>> > Do you think the "stacked ifs" in the first version above could be
+>> > accepted as a convenient extension to the K&R-based conventions in
+>> > Documentation/CodingStyle?
+>> 
+>> Maybe.  I don't recall seeing any kernel code which uses that convention:
+>> everyone uses &&.  So personally I'd prefer to see kernel code stick to the
+>> one convention, given that there is not, afacit, any significant advantage
+>> to the alternative one.
+>
+>I agree, let's stick with the convention we already have and use
+>instead.
+
+Yup. Either the "do this" (see above) or the "&&" variant, though, the latter
+can become quite nested or long.
+
+[ In fact, if you have
+  void function(struct something *arg)
+  {
+  	if (arg != NULL) {
+  		lots_of_code;
+  	}
+  }
+  it is perhaps better to write as
+  {
+  	if (arg == NULL)
+  		return;
+  	lots_of_code;
+  }
+  since that reduces the indent by at least one. ]
+
+
+	Jan
+-- 
