@@ -1,61 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbXGRVFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbXGRVHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759417AbXGRVFG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 17:05:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbXGRVEy
+	id S1752292AbXGRVHp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 17:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbXGRVHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 17:04:54 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44459 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbXGRVEx (ORCPT
+	Wed, 18 Jul 2007 17:07:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:49140 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292AbXGRVHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 17:04:53 -0400
-Date: Wed, 18 Jul 2007 23:04:52 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
-Subject: Re: Patches for REALLY TINY 386 kernels
-Message-ID: <20070718210452.GG3898@one.firstfloor.org>
-References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com> <20070718194137.GG11166@waste.org> <20070718201043.GF3898@one.firstfloor.org> <469E7709.9070801@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 18 Jul 2007 17:07:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=Iz4u6CXnJCVsqci9VcY0KR7P/K4Vs6vc7OXjJGCFgAw+CMhT01vNnkBzlEkO2DYT+RSxtY8WsCaZ5ZNfj+DrRxFdEnxKMzhyEuTQUQKFLzxTJj8rz1P/sV2vQbwo04kRSgtl9oVGza8APoesmI/Cn3zHbMtme8ESjBP3iA/PQnQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: James Bottomley <James.Bottomley@steeleye.com>
+Subject: Re: block/bsg.c
+Date: Wed, 18 Jul 2007 22:32:58 +0200
+User-Agent: KMail/1.9.6
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+References: <20070716165706.348f6bbf.akpm@linux-foundation.org> <200707180243.13368.bzolnier@gmail.com> <1184767917.3464.13.camel@localhost.localdomain>
+In-Reply-To: <1184767917.3464.13.camel@localhost.localdomain>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <469E7709.9070801@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200707182232.58961.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 01:24:41PM -0700, H. Peter Anvin wrote:
-> Andi Kleen wrote:
-> > I was waiting for someone to make that "point" ...
-> > 
-> >> Every byte you can shave off the compressed kernel image is another
-> >> byte you can use for userspace on your FLASH.
-> > 
-> > Now let's see if that 1MB 386 contains any flash at all. Guesses?  
-> > 
+
+Hi,
+
+On Wednesday 18 July 2007, James Bottomley wrote:
+> On Wed, 2007-07-18 at 02:43 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > [ James, please remeber to cc: linux-ide on IDE patches, thanks. ]
 > 
-> CPUID is hardly something you want to give up for modern embedded stuff.
->  I haven't seen any new embedded stuff using anything less than a 586,
-> and even those are disappearing quickly in favor of Geode and VIA.
+> Blame Andrew ... I assumed he'd be reporting the problem to the relevant
+> lists, so I just did a reply all ...
+
+No need to blame anybody, especially since it seems that one more person
+forgot about adding linux-ide ML.  ;)
+
+> > On Wednesday 18 July 2007, Jeff Garzik wrote:
+> > > James Bottomley wrote:
+> > > > @@ -1052,9 +1054,10 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
+> > > >  	int err, (*setfunc)(ide_drive_t *, int);
+> > > >  	u8 *val;
+> > > >  
+> > > > -	err = scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+> > > > -	if (err != -ENOTTY)
+> > > > -		return err;
+> > > > +	switch (cmd) {
+> > > > +	case SG_IO:
+> > > > +		return scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+> > > > +	}
+> > > >  
+> > > >  	switch (cmd) {
+> > > >  	case HDIO_GET_32BIT:	    val = &drive->io_32bit;	 goto read_val;
+> > > 
+> > > 
+> > > At that point you might as well use an 'if'.
+> > > 
+> > > But overall -- agreed.  ACK.
+> > 
+> > James/Jeff thanks for following the issue but NAK. ;)
+> > 
+> > Causes regression wrt ide-floppy CDROMEJECT/CDROMCLOSETRAY support when
+> > compared to 2.6.22 and SG_IO is not supported by ide-{disk,scsi,tape}.
 > 
-> However, compressed size reductions as an abstract thing is useful for
-> this market.  Just not these particular ones.  The first thing to get
-> there is probably an LZMA-based compressor instead of gzip.
+> Well ... that was why I put the case statement in ... I was sure there
+> would be other ioctls I missed.
 
-That would need more memory again.
+The thing is that ide-{disk,scsi,tape} really don't support
+REQ_TYPE_BLOCK_PC type requests so ide.c::generic_ide_ioctl()
+is not the best place to add handling of SG_IO.
 
-Better just write less bloated code. Perhaps mandatory bloatometer
-runs during -rc*s for kernels with minimal config with public code pig shame lists
-similar to the regression lists are useful. Anyone volunteering?
+Patch attached.
 
-I suspect there is also much more low hanging fruit of this around.
+> > Luckily Linus has already fixed the issue properly.
+> 
+> Actually, no, that's just a reversion.  I think we need the attached to
+> complete all of this.
+> 
+> > BTW cmd == 1 IOCTL is not defined/used by IDE driver.
+> 
+> Andrew's trace clearly shows that something is sending cmd == 1 down, so
 
-I don't think eliminating cpuid is a step forward though; that's
-just madness.
+I still haven't got the trace.  Andrew, please (re)send it in PM, thanks.
 
-I killed about 20k in a i386 defconfig kernel in my upcomming patchkit
-(and add some other code instead, but not much) so I'm coming out well currently.
+> I'm nearly positive at one time this was a legitimate ioctl for IDE.
 
--Andi
+Could be...
+
+> Anyway it's probably time to kill this deprecated ioctl in SCSI.
+
+Fully agreed.
+
+Thanks,
+Bart
+
+
+[PATCH] ide: add support for SCSI ioctls to ide-floppy
+
+Now that ide-floppy supports SG_IO we can add support for SCSI ioctls
+(except deprecated SCSI_IOCTL_SEND_COMMAND and legacy CDROM_SEND_PACKET
+ones - we can add them later iff really needed).
+
+While at it remove handling of CDROMEJECT and CDROMCLOSETRAY ioctls from
+generic_ide_ioctl():
+
+- This prevents ide-{disk,tape,scsi} device drivers from obtaining
+  REQ_TYPE_BLOCK_PC type requests which are currently unsupported by
+  these drivers and which are potentially harmful (as reported by Andrew).
+
+- There is no functionality loss since aforementioned ioctls will now be
+  handled by idefloppy_ioctl()->scsi_cmd_ioctl() (for devices using
+  ide-floppy driver) and by idecd_ioctl->cdrom_ioctl()->scsi_cmd_ioctl()
+  (for devices using ide-cd driver).
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: James Bottomley <James.Bottomley@steeleye.com>
+Cc: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/ide/ide-floppy.c |   18 +++++++++++++++++-
+ drivers/ide/ide.c        |    4 ----
+ 2 files changed, 17 insertions(+), 5 deletions(-)
+
+Index: b/drivers/ide/ide-floppy.c
+===================================================================
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -99,6 +99,8 @@
+ #include <linux/bitops.h>
+ #include <linux/mutex.h>
+ 
++#include <scsi/scsi_ioctl.h>
++
+ #include <asm/byteorder.h>
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+@@ -2099,7 +2101,21 @@ static int idefloppy_ioctl(struct inode 
+ 	case IDEFLOPPY_IOCTL_FORMAT_GET_PROGRESS:
+ 		return idefloppy_get_format_progress(drive, argp);
+ 	}
+-	return generic_ide_ioctl(drive, file, bdev, cmd, arg);
++
++	/*
++	 * skip SCSI_IOCTL_SEND_COMMAND (deprecated)
++	 * and CDROM_SEND_PACKET (legacy) ioctls
++	 */
++	if (cmd != CDROM_SEND_PACKET && cmd != SCSI_IOCTL_SEND_COMMAND)
++		err = scsi_cmd_ioctl(file, bdev->bd_disk->queue,
++					bdev->bd_disk, cmd, argp);
++	else
++		err = -ENOTTY;
++
++	if (err == -ENOTTY)
++		err = generic_ide_ioctl(drive, file, bdev, cmd, arg);
++
++	return err;
+ }
+ 
+ static int idefloppy_media_changed(struct gendisk *disk)
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -1171,10 +1171,6 @@ int generic_ide_ioctl(ide_drive_t *drive
+ 			return 0;
+ 		}
+ 
+-		case CDROMEJECT:
+-		case CDROMCLOSETRAY:
+-			return scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+-
+ 		case HDIO_GET_BUSSTATE:
+ 			if (!capable(CAP_SYS_ADMIN))
+ 				return -EACCES;
