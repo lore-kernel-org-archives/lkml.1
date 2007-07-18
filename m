@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbXGRXBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935835AbXGRXAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758105AbXGRXBQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761541AbXGRW7N
+	id S935835AbXGRXAp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763712AbXGRW6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:59:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38493 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933786AbXGRW7K (ORCPT
+	Wed, 18 Jul 2007 18:58:13 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:23349 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763950AbXGRW6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:59:10 -0400
-Date: Wed, 18 Jul 2007 15:57:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-usb-devel@lists.sourceforge.net,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nicolas Boichat <nicolas@boichat.ch>,
-       Michael Hanselmann <linux-kernel@hansmi.ch>,
-       Peter Osterlund <petero2@telia.com>,
-       Frank Arnold <frank@scirocco-5v-turbo.de>,
-       Stelian Pop <stelian@popies.net>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: [PATCH] appletouch powersaving - please apply for 2.6.23-rc1
-Message-Id: <20070718155758.072db90d.akpm@linux-foundation.org>
-In-Reply-To: <1184656218.14051.43.camel@localhost>
-References: <1184656218.14051.43.camel@localhost>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Jul 2007 18:58:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=GubuyFo0f2Nh22X4K15hOKQJgGLA0hDXS1qvQ64nlOFaBlNigiKbsyvsfvFs1FJ6Fv46tXDXqnBSat6KIy8k9C5ZHcHo1Fr1bwu6k7a0B2FyrQ2JWK8OoJoo+MVgASMYVo5qOEbSI9l1VfPJp8L9JFN2VsKcMfBYnOQyHB8XpeQ=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Corey Minyard <minyard@mvista.com>
+Subject: [PATCH][IPMI] Fix mem leak in try_init_dmi() code
+Date: Thu, 19 Jul 2007 00:57:15 +0200
+User-Agent: KMail/1.9.7
+Cc: Christian Krafft <krafft@de.ibm.com>,
+       openipmi-developer@lists.sourceforge.net, minyard@wf-rch.cirr.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707190057.16051.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007 09:10:18 +0200
-Soeren Sonnenburg <kernel@nn7.de> wrote:
+Hi there,
 
-> the attached minimally intrusive patch is based on Matthew Garret's
-> patch 'Make appletouch shut up when it has nothing to say' patches (e.g.
-> http://lkml.org/lkml/2007/5/13/117): Matthews description follows /
-> second paragraph lists my additional changes.
-> 
-> The appletouch geyser3 devices found in the Intel Macs (and possibly some later 
-> PPC ones?) send a constant stream of packets after the first touch. This 
-> results in the kernel waking up around once every couple of milliseconds 
-> to process them, making it almost impossible to spend any significant 
-> period of time in C3 state on a dynamic HZ kernel. Sending the mode 
-> initialization code makes the device shut up until it's touched again. 
-> This patch does so after receiving 10 packets with no interesting 
-> content.
-> 
-> In addition it now empties the work queue via cancel_work_sync on module
-> exit, keeps all error checking and only reports BTN_LEFT presses if bit
-> 1 in the status byte (last byte in packet) is set. This fixes the random
-> left clicks issue. Furthermore it invalidates touchpad data before the
-> mode switch, which fixes the touchpad runs amok issue.
+If we ever hit the "default:" case in the switch in try_init_dmi(), 
+then we'll leak the storage allocated with kzalloc() and assigned 
+to 'info'. 
 
-Please feed this through scripts/checkpatch.pl and consider addressing
-all the things which it reports.
+Note: patch has been compile tested only.
+
+Please consider merging upstream :-)
+
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ drivers/char/ipmi/ipmi_si_intf.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c 
+b/drivers/char/ipmi/ipmi_si_intf.c
+index 4edfdda..96d2f9e 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -2050,6 +2050,7 @@ static __devinit void try_init_dmi(struct dmi_ipmi_data 
+*ipmi_data)
+ 		info->si_type = SI_BT;
+ 		break;
+ 	default:
++		kfree(info);
+ 		return;
+ 	}
+ 
+
+
