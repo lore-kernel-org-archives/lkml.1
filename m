@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933930AbXGRVJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762446AbXGRVJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933930AbXGRVJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 17:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759638AbXGRVHc
+	id S1762446AbXGRVJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 17:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbXGRVIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 17:07:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:48497 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755874AbXGRVHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 17:07:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=qd/bzKlSuGVUjHdAhGCimInkW+HxKEscNFz4AttbzA+pWGyNzYCEBGDNxnrh1wOOiiKpbQSZIWVGfc2hUjuPEq7N6jr1YEfWR79ocfzZQC3BOmemcaWqQmVwlmR3ecyzH3Kj9FKCvNN3FMGE3xGLmVei8VXXgtQAw80gJoRC78Y=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 24/33] ide-scsi: sg chaining support
-Date: Wed, 18 Jul 2007 23:03:50 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-References: <11845792671245-git-send-email-jens.axboe@oracle.com> <11845792681555-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <11845792681555-git-send-email-jens.axboe@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707182303.50396.bzolnier@gmail.com>
+	Wed, 18 Jul 2007 17:08:06 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:54055 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754608AbXGRVIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 17:08:04 -0400
+Subject: ia64 build failure from recent diskquota patch
+From: Doug Chapman <doug.chapman@hp.com>
+To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       vtaras@openvz.org
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 18 Jul 2007 17:03:19 -0400
+Message-Id: <1184792599.3026.19.camel@deimos.americas.hpqcorp.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 July 2007, Jens Axboe wrote:
-> Cc: bzolnier@gmail.com
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+The commit: b716395e2b8e450e294537de0c91476ded2f0395 introduces a build
+failure on ia64.
 
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+  CC      fs/quota.o
+fs/quota.c:396: error: expected specifier-qualifier-list before ‘compat_u64’
+fs/quota.c:409: error: expected specifier-qualifier-list before ‘compat_u64’
+fs/quota.c:420: error: expected specifier-qualifier-list before ‘compat_uint_t’
+
+.... more related errors ....
+
+
+The type compat_u64 on ia64 is defined if CONFIG_COMPAT is defined
+(which is rare these days on ia64)  So, it appears we are missing
+an #ifdef CONFIG_COMPAT somewhere in fs/quota.c.  I will leave that
+up to the original author to determine where.
+
+
+- Doug
+
+
