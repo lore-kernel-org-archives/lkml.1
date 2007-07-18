@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933263AbXGRPnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933471AbXGRPny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933263AbXGRPnV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 11:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759432AbXGRPnL
+	id S933471AbXGRPny (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 11:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759432AbXGRPnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 11:43:11 -0400
-Received: from mail.novatech-llc.com ([64.126.95.172]:65317 "EHLO
-	SERVER1.novatech.novatech-llc.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759388AbXGRPnK (ORCPT
+	Wed, 18 Jul 2007 11:43:46 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:38898 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759528AbXGRPnp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 11:43:10 -0400
-X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jul 2007 11:43:10 EDT
-Thread-Index: AcfJUaJrzFrci7gNQRqqqFp+hxTJyg==
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
-Importance: normal
-Content-Class: urn:content-classes:message
-Message-ID: <469E332C.7050603@novatech-llc.com>
-Date: Wed, 18 Jul 2007 10:35:08 -0500
-From: "George McCollister" <georgem@novatech-llc.com>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Wed, 18 Jul 2007 11:43:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=noR8cGx8RxXyRj7tz3aey03f4WQbwVq9CS59DNP6vQGcVFlpICFvp7QedALxwUMFnf9NXzU3O4NH2UGRTxNrwhiSPCyi8HjCjAcXNJVS275vz6reNHK+XRcjG+H7b066rVxNIiBfwL5vjeOg3yRsKralqQjaNRSmCxa+ePn489Q=
+Message-ID: <469E352A.90909@gmail.com>
+Date: Thu, 19 Jul 2007 00:43:38 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: <linux-kernel@vger.kernel.org>
-Subject: setserial -> serial_core / 8250 interaction
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Gabriel C <nix.or.die@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, gregkh@suse.de,
+       miles.lane@gmail.com
+Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure
+ path
+References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>	 <469B61C8.8010902@googlemail.com>	 <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>	 <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com>	 <469BC2D6.5090008@googlemail.com> <469BC34C.4080107@googlemail.com>	 <20070718071445.GI23568@htj.dyndns.org>	 <a781481a0707180748j4760ab8bo237c1abc02feb593@mail.gmail.com>	 <469E2A68.6010307@gmail.com> <a781481a0707180816r478d2512v953036a1e4145a72@mail.gmail.com>
+In-Reply-To: <a781481a0707180816r478d2512v953036a1e4145a72@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jul 2007 15:38:05.0720 (UTC) FILETIME=[A261C980:01C7C951]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've recently found (using 2.6.21.4) that configuring a serial ports
-(ST16654) which use the 8250 driver using setserial results in the
-UART's FIFOs being disabled (unless you specify autoconfig).
+Satyam Sharma wrote:
+>> Well, I dunno.  Probably my taste just sucks.  Please feel free to
+>> submit patches and/or suggest better ideas.
+> 
+> OK, for example:
+> 
+> sysfs_find_dirent() -- to check for -EEXIST -- should be called
+> *before* we create the new dentry for the to-be-created symlink
+> in the first place. [ It's weird to grab a reference on the target
+> for ourselves (and in fact even allocate the new dirent for the
+> to-be-created symlink) and /then/ check for erroneous usage,
+> and then go about undoing all that we should never have done
+> at all. ] So this test could, and should, be made earlier, IMHO.
 
-The problem is that setserial doesn't fill out xmit_fifo_size when
-calling TIOCSSERIAL to set the port type. There doesn't appear to be any
-provision to set the port type and have 8250 use the default fifo_size
-value for the selected FIFO from uart_config.
+Locking.  Otherwise, why would the code look like that in the first place?
 
-The result is that fifo_size remains 0 and the fifo is disabled. So, I
-believe that anyone using setserial to configure a serial port (unless
-autoconfig is used) will have very poor serial port performance (I did,
-thats how I ran across this).
+> And some similar others ... so attached (sorry, Gmail web
+> interface) please find an attempt to make sysfs_create_link look
+> a trifle more like what it should look like, IMHO. The code cleanup
+> also leads to fewer LOC, smaller kernel image (lesser by 308 bytes),
+> and even speeding up the no-error common case of this function,
+> apart from the obvious readability benefits ... it's diffed on _top_ of
+> your bugfix here, but not the other patch. [ Compile-tested only. ]
 
-I haven't been able to think of a cure all solution without introducing
-some pretty nasty changes. You could argue that setserial should set
-xmit_fifo_size, but it seems unnecessary to require a user level program
-to have knowledge of the FIFO sizes for all of the different UARTS. I'm
-going to change my copy of 8250.c to always use fifo_size from
-uart_config, but some people may not find this acceptable.
+Compounded if-else vs. flattened if () with common error path is pretty
+much matter of being accustomed to.  I prefer the latter because it
+scales better (less nesting and less need for extra intelligence as
+error case grows).  As I'm already used to it, it's also easier on my
+eyes.  So, unless you have more to offer, I'm not really sure whether
+the patch improves the situation noticeably.
 
-Maybe I'm missing something here, but I wanted to bring it up in case
-its actually affecting other people.
-
-I'm not subscribed to the list so if you reply please CC to my address.
-
-Regards,
-George McCollister
-
-
-This message is for the designated recipient only and may contain
-privileged, proprietary, or otherwise private information.  If you have
-received it in error, please notify the sender immediately and delete
-the original.  Any other use of the email by you is prohibited.
-
-
-This message is for the designated recipient only and may contain
-privileged, proprietary, or otherwise private information.  If you have
-received it in error, please notify the sender immediately and delete
-the original.  Any other use of the email by you is prohibited.
+-- 
+tejun
