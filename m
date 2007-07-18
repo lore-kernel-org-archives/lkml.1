@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbXGRQXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933912AbXGRQ2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933781AbXGRQXX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 12:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXGRQXO
+	id S933912AbXGRQ2c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 12:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932777AbXGRQ2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 12:23:14 -0400
-Received: from [192.102.209.1] ([192.102.209.1]:45014 "EHLO
-	laptopd505.fenrus.org" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756508AbXGRQXN (ORCPT
+	Wed, 18 Jul 2007 12:28:23 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:54189 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932931AbXGRQ2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 12:23:13 -0400
-X-Greylist: delayed 3083 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jul 2007 12:23:12 EDT
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: James Morris <jmorris@namei.org>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-In-Reply-To: <Line.LNX.4.64.0707141233490.26711@d.namei>
-References: <Line.LNX.4.64.0707141233490.26711@d.namei>
-Content-Type: text/plain
+	Wed, 18 Jul 2007 12:28:23 -0400
+Message-ID: <469E3FA2.7060408@codemonkey.ws>
+Date: Wed, 18 Jul 2007 11:28:18 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Jeff Dike <jdike@addtoit.com>
+CC: Avi Kivity <avi@qumranet.com>, KVM devel <kvm-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] [PATCH 3/3] KVM - add hypercall nr to kvm_run
+References: <20070716192447.GA16253@c2.user-mode-linux.org> <469C7C8D.1020600@qumranet.com> <469CCF17.3020709@codemonkey.ws> <20070717160710.GC7965@c2.user-mode-linux.org>
+In-Reply-To: <20070717160710.GC7965@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 18 Jul 2007 08:28:12 -0700
-Message-Id: <1184772492.2688.2.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-14 at 12:37 -0400, James Morris wrote:
-> Convert LSM into a static interface, as the ability to unload a security
-> module is not required by in-tree users and potentially complicates the
-> overall security architecture.
-> 
-> Needlessly exported LSM symbols have been unexported, to help reduce API
-> abuse.
-> 
-> Parameters for the capability and root_plug modules are now specified
-> at boot.
-> 
-> The SECURITY_FRAMEWORK_VERSION macro has also been removed.
-> 
-> Signed-off-by: James Morris <jmorris@namei.org>
+Jeff Dike wrote:
+> On Tue, Jul 17, 2007 at 09:15:51AM -0500, Anthony Liguori wrote:
+>   
+>> I'm planning on breaking this interface again since the new hypercall 
+>> API only takes 4 arguments instead of 6.
+>>     
+>
+> Is anything written anywhere about this hypercall interface?
+>   
 
+I've posted patches.  I'll post more in the near future since we decided 
+to make some rather drastic changes.  With the new patchset, guest's 
+will use vmcall directly with a couple bytes of padding.  The hypervisor 
+may or may not patch the calling site to use something different (like 
+vmmcall).
 
-This is a good cleanup since modular LSM modules just aren't working,
-and prepares for the option of removing the runtime overhead of LSM
-altogether for selected configs... that is going to be a big step
-forward to make SELinux and any other model be more acceptable for
-people who care about performance.
+> The thing which would make me happy (which the current code comes
+> close to) is for the guest to be able to pass out Linux system calls
+> with VMCALL.
+>   
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+Within the kernel right (VMCALL is only usable in ring 1).  Is it 
+terribly important to be able to pass through the syscall arguments in 
+registers verses packing them in a data structure and passing a pointer 
+to that structure?
+
+Regards,
+
+Anthony Liguori
+
+> 				Jeff
+>
+>   
+
