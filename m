@@ -1,99 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764265AbXGROJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764634AbXGROKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764265AbXGROJb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbXGROJY
+	id S1764634AbXGROKb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbXGROKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:09:24 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:33339 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753863AbXGROJX (ORCPT
+	Wed, 18 Jul 2007 10:10:15 -0400
+Received: from anchor-post-33.mail.demon.net ([194.217.242.91]:2843 "EHLO
+	anchor-post-33.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756935AbXGROKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:09:23 -0400
-To: vgoyal@in.ibm.com
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Bernhard Walle <bwalle@suse.de>, Dan Aloni <da-x@monatomic.org>,
-       Neil Horman <nhorman@redhat.com>
-Subject: Re: Determine version of kernel that produced vmcore
-In-reply-to: <20070716123633.GA10920@in.ibm.com>
-Message-Id: <20070718230740oomichi@mail.jp.nec.com>
-References: <20070716123633.GA10920@in.ibm.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:5W0000
-From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Date: Wed, 18 Jul 2007 23:07:40 +0900
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jul 2007 10:10:14 -0400
+Date: Wed, 18 Jul 2007 15:09:41 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: "David S. Miller" <davem@davemloft.net>, wli@holomorphy.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, sparclinux@vger.kernel.org
+Subject: Re: [PATCH] Mark sparc and sparc64 as not having virt_to_bus
+In-Reply-To: <20070718144140.3b4fd82e.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.61.0707181458390.2120@mtfhpc.demon.co.uk>
+References: <20070718144140.3b4fd82e.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi All,
 
-Hi,
+Currently, sun4c (and sun4m) do NOT support the FDC driver as a module.
+I did look at it but decided there were better issues to resolve at the 
+time.
 
-2007/07/16 18:06:33 +0530, Vivek Goyal <vgoyal@in.ibm.com> wrote:
->On Mon, Jul 16, 2007 at 02:28:54PM +0200, Bernhard Walle wrote:
->> * Vivek Goyal <vgoyal@in.ibm.com> [2007-07-16 14:25]:
->> > 
->> > Ok. Now there seems to be two ways for accessing such info.
->> > - Through global variables
->> > - Export through ELF notes.
->> > 
->> > Personally, I like the approach taken by Dan Aloni of exporting required
->> > info through ELF notes. That seems to be more standard in the sense we 
->> > are not dependent on somebody removing above variable tomorrow.
->> > 
->> > Dan, are you planning to put the modified patch for discussions on LKML?
->> 
->> You mean the proposal with the makedumpfile-compatible ELF note?
->> Although I like that idea, I think Ken'ichi Ohmichi was against it.
->> 
+A fix for this issue would either envolve a lot of work moving the low 
+level assembly interrupt handler from arch/sparc/kernel/entry.S to the 
+floppy driver module, or the exporting of a number of variables and 
+functions used by the handler so that they can be picked up by the floppy 
+driver module.
+
+Moving the low level handeler would be better from the point of view of 
+modular code.
+
+Regards
+ 	Mark Fortescue.
+
+On Wed, 18 Jul 2007, Stephen Rothwell wrote:
+
 >
->Yes, makedumpfile compatible ELF note one. Ken'ichi did not like the idea
->too much, but I am not sure we discussed his objections in detail. I had
->also responded with a mail with some of the advantages of ELF note based
->approach. No response on that.
-
-Sorry for my delayed response, I took a short vacation.
-
-I'm not against with the proposal adding PT_NOTE segment to /proc/vmcore.
-I don't like only point that adds the necessary information list
-(some symbols, structures, etc.) for makedumpfile to kernel code.
-
-The content of mkdfinfo file has been increasing whenever adding
-features and correcting bugs. The content is increasing even now.
-And, the feature addition is done not only for new kernels but also
-for old upstream kernels. When the content of mkdfinfo file is taken 
-into the kernel and fixed, the feature addition in the future is
-remarkably limited. So makedumpfile needs mkdfinfo file outside of
-the kernel.
-
-I propose the solution including Dan's, Vivek's and Bernhard's opinions.
-How about the following sequence for distributors ?
-(It is not necessary to rebuild 2nd-kernel initrd even if 1st-kernel changes.
- A new option "--mkdfinfo" is added to kexec command.)
-
-* On the kernel building system
-  1. Create the kernel files.
-     # cd linux-2.6.xx
-     # make
-  2. Create the mkdfinfo file from the vmlinux.
-     # makedumpfile -g mkdfinfo-2.6.xx -x vmlinux
-     (OSRELEASE is taken from the vmlinux.)
-  3. Pack the kernel package with the kernel files and the mkdfinfo file.
-
-* On each system
-  4. Preload 2nd-kernel and the mkdfinfo file.
-     # kexec -p vmlinux-kdump --mkdfinfo=mkdfinfo-2.6.xx ...
-     - 2nd-kernel is preloaded.
-     - 1st-kernel's PAGESIZE is taken by sysconf().
-     - The mkdfinfo file and the above PAGESIZE is preloaded
-       into /proc/vmcore's PT_NOTE segment.
-  5. Panic happens, and the system switchs to 2nd-kernel.
-  6. Create a filtered dump file.
-     # makedumpfile -cd31 /proc/vmcore dumpfile
-     (User doesn't need to specify the mkdfinfo file, because the
-      contents of the mkdfinfo file is included into /proc/vmcore.)
-
-
-Thanks
-Ken'ichi Ohmichi
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+> arch/sparc/Kconfig       |    3 +++
+> arch/sparc64/Kconfig     |    3 +++
+> include/asm-sparc64/io.h |    5 -----
+> 3 files changed, 6 insertions(+), 5 deletions(-)
+>
+> This is part of a rash attempt to make allmodconfig builds work for sparc
+> and sparc64 :-)
+>
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+>
+> diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+> index 73df711..603d83a 100644
+> --- a/arch/sparc/Kconfig
+> +++ b/arch/sparc/Kconfig
+> @@ -21,6 +21,9 @@ config GENERIC_ISA_DMA
+> 	bool
+> 	default y
+>
+> +config ARCH_NO_VIRT_TO_BUS
+> +	def_bool y
+> +
+> source "init/Kconfig"
+>
+> menu "General machine setup"
+> diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+> index b84b6af..df6ee71 100644
+> --- a/arch/sparc64/Kconfig
+> +++ b/arch/sparc64/Kconfig
+> @@ -62,6 +62,9 @@ config AUDIT_ARCH
+> 	bool
+> 	default y
+>
+> +config ARCH_NO_VIRT_TO_BUS
+> +	def_bool y
+> +
+> choice
+> 	prompt "Kernel page size"
+> 	default SPARC64_PAGE_SIZE_8KB
+> diff --git a/include/asm-sparc64/io.h b/include/asm-sparc64/io.h
+> index ad595b6..9565a89 100644
+> --- a/include/asm-sparc64/io.h
+> +++ b/include/asm-sparc64/io.h
+> @@ -14,11 +14,6 @@
+> #define __SLOW_DOWN_IO	do { } while (0)
+> #define SLOW_DOWN_IO	do { } while (0)
+>
+> -extern unsigned long virt_to_bus_not_defined_use_pci_map(volatile void *addr);
+> -#define virt_to_bus virt_to_bus_not_defined_use_pci_map
+> -extern unsigned long bus_to_virt_not_defined_use_pci_map(volatile void *addr);
+> -#define bus_to_virt bus_to_virt_not_defined_use_pci_map
+> -
+> /* BIO layer definitions. */
+> extern unsigned long kern_base, kern_size;
+> #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
+> -- 
+> 1.5.2.3
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
