@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764899AbXGRGgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932157AbXGRGjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764899AbXGRGgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 02:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXGRGgI
+	id S932157AbXGRGjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXGRGjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 02:36:08 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:5497 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbXGRGgG (ORCPT
+	Wed, 18 Jul 2007 02:39:05 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:27453 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752342AbXGRGjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 02:36:06 -0400
+	Wed, 18 Jul 2007 02:39:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rT1YpPX5XjA0MuLI3Wt5FrfpOBuE79YVopx7/fuuCBPd6VW/+dC55l52Sa+zlVKnd+S2fO6W8wPzIcKoX2uYuTXHPvRxOu1z9f+nVCTLk+jDlQmdsMCa1KYVk3c+CR6wiTFeg+TnPS3bUmDkLpzIYCw1L9NnvoGj2jkZnlArevc=
-Message-ID: <dcf706c60707172336u38cb87c4ia77cc4dbe9b38a56@mail.gmail.com>
-Date: Wed, 18 Jul 2007 08:36:05 +0200
-From: "Sasa Ostrouska" <casaxa@gmail.com>
-To: "Daniel Drake" <dsd@gentoo.org>
-Subject: Re: VESAFB CUSTOM RESOLUTION
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <469D71FB.5070408@gentoo.org>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=qkoZe6jhz8XTR1XtA77XP042+6bZ+cnF1tLFR4NQ8yxvovqURLbeieSKZ4pReqNB1uYGFs4EZI64iZh1JFSFU61/ZvHIwYtcvKG1YhMdqeL9ixHmOYm0ubzGq3MotcUeBT2xjNlRe3VJyhBNF4po6wEiw37VuuDHfaNthMfdAhc=
+Message-ID: <2c0942db0707172339o2e4950e0p17cd0f9b631e5311@mail.gmail.com>
+Date: Tue, 17 Jul 2007 23:39:00 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+Cc: "Rene Herman" <rene.herman@gmail.com>, "Bodo Eggert" <7eggert@gmx.de>,
+       "Matt Mackall" <mpm@selenic.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <20070718011436.2438dea6@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
-	 <469D71FB.5070408@gentoo.org>
+References: <8FO1e-2jW-35@gated-at.bofh.it> <469A5D7C.5010904@gmail.com>
+	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
+	 <469BF104.1040703@gmail.com>
+	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
+	 <20070716235438.1bdd0722@the-village.bc.nu>
+	 <2c0942db0707161553u5d55724u82424b3ffbbd79f7@mail.gmail.com>
+	 <469BF9A8.20306@gmail.com>
+	 <2c0942db0707161615g4bdf825ar51464ba564a823e2@mail.gmail.com>
+	 <20070718011436.2438dea6@the-village.bc.nu>
+X-Google-Sender-Auth: d930913fbdcf3589
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/18/07, Daniel Drake <dsd@gentoo.org> wrote:
-> Sasa Ostrouska wrote:
-> > I want to ask one question about a custom resolution in the console.
-> > I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
-> > 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
-> > ugly as I get a border of about 2-3cm on one the sides of the screen.
-> > So is there a way that I set the 1280x800 resolution at boot time ?
+On 7/17/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Mon, 16 Jul 2007 16:15:28 -0700
+> "Ray Lee" <ray-lk@madrabbit.org> wrote:
+> > Heh :-). No, it's not a question of trust. First and foremost, it's
+> > that there are still users who say that they can crash a current
+> > 4k+interrupt stacks kernel, while the 8k without interrupt stacks is
+> > fine.
 >
-> I don't think vesafb can do what you want. However, uvesafb probably can.
->
-> http://dev.gentoo.org/~spock/projects/uvesafb/
->
-> Daniel
+> You forgot "most of the time".
 
-Daniel you seem to be right, as till now, no one of those solutions
-for me worked, I always end up or with a non recognised option or a
-small square 640x480 pixels where I see the console. I need to try
-still the vbetest thing what Mr. Daplas proposed.
+Yeah, fair enough.
 
-In any case this laptop has an screen of 16:10 aspect ratio and I
-belive would be good
-to have those modes in the vesafb driver.
+> Its statistically less likely, which
+> merely means its evilly hard to debug
 
-Rgds
-Sasa
+Not being able to debug the cases that occur (and the fact that
+they're rare, as you're pointing out) is as much of a problem as the
+crashes themselves. 8k + IRQ stacks with a warning when 4k of process
+stack is exceeded would seem like a reasonable first step to making 4k
+a palatable default.
+
+Ray
