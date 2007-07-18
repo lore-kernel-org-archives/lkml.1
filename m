@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935717AbXGRXM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935850AbXGRXPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935717AbXGRXM6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbXGRXMv
+	id S935850AbXGRXPO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759419AbXGRXO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:12:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:35671 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755866AbXGRXMu (ORCPT
+	Wed, 18 Jul 2007 19:14:59 -0400
+Received: from smtp151.iad.emailsrvr.com ([207.97.245.151]:55751 "EHLO
+	smtp151.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756195AbXGRXO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:12:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=EE6/YzcS4z5E/RixNtKmlFeBf1LvaGzRB200kx3DwaQtUtkAw9zuH8sOllDLAgK2wm/qjG8vCYNOCkopw0Q5MWD2RrFCs2hfUZLoEzUxK0389/aY+jOp/gJY313okZvWz9QIf44PCxgkZ7FwksXxotOwdBkLSYmnPhJ4dKF+CkI=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Memory leak in tpm_ascii_bios_measurements_open() fix.
-Date: Thu, 19 Jul 2007 01:11:54 +0200
-User-Agent: KMail/1.9.7
-Cc: Seiji Munetoh <munetoh@jp.ibm.com>, Stefan Berger <stefanb@us.ibm.com>,
-       Reiner Sailer <sailer@watson.ibm.com>, Kylene Hall <kjhall@us.ibm.com>,
-       jesper.juhl@gmail.com
+	Wed, 18 Jul 2007 19:14:59 -0400
+Message-ID: <469E9E98.4000003@gentoo.org>
+Date: Wed, 18 Jul 2007 19:13:28 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Steve French <smfrench@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: -mm breaks and merging maintainer git trees with mainline
+References: <524f69650707181309w42d665c9ua49179b9d7e0a6b1@mail.gmail.com>
+In-Reply-To: <524f69650707181309w42d665c9ua49179b9d7e0a6b1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707190111.55097.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ehlo,
+Steve French wrote:
+> What is the currently recommended procedure for merging a maintainer
+> tree with mainline in order to reorder all of the fixes in the
+> maintainer tree, after the changes in the linux-2.6. tree (to make the
+> eventual merge from Linus easier)?
+> 
+> In this particular case, the
+> http://git.kernel.org/?p=linux/kernel/git/sfrench/cifs-2.6.git tree
+> has a few dozen changesets that are not in its parent yet (and the
+> cifs-2.6.git is at 2.6.22-rc5 level)
+> (http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git) but
+> mainline now has fixes which affect the same directory as the
+> maintainer tree maintains.
 
-Coverity found a memory leak in tpm_ascii_bios_measurements_open().
+I think you can do:
 
-If "read_log(log)" fails, then we may leak 'log' and 
-'log->bios_event_log'.
+git checkout origin
+git pull
+git checkout master
+git rebase origin
 
-This patch should fix it, but please double check it. I don't know 
-this code very well and the patch has only been compile tested.
+In general, people seem to keep "from-linus" branches which they never 
+modify. I guess they only ever pull linus into there, and then rebase 
+their customised branch-of-choice (master, in your case) on top of that 
+one in order to keep up-to-date.
 
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/char/tpm/tpm_bios.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/char/tpm/tpm_bios.c b/drivers/char/tpm/tpm_bios.c
-index 4eba32b..4b26ce4 100644
---- a/drivers/char/tpm/tpm_bios.c
-+++ b/drivers/char/tpm/tpm_bios.c
-@@ -427,7 +427,7 @@ static int tpm_ascii_bios_measurements_open(struct inode *inode,
- 		return -ENOMEM;
- 
- 	if ((err = read_log(log)))
--		return err;
-+		goto out_free;
- 
- 	/* now register seq file */
- 	err = seq_open(file, &tpm_ascii_b_measurments_seqops);
-@@ -435,10 +435,15 @@ static int tpm_ascii_bios_measurements_open(struct inode *inode,
- 		seq = file->private_data;
- 		seq->private = log;
- 	} else {
--		kfree(log->bios_event_log);
--		kfree(log);
-+		goto out_free;
- 	}
-+
-+out:
- 	return err;
-+out_free:
-+	kfree(log->bios_event_log);
-+	kfree(log);
-+	goto out;
- }
- 
- const struct file_operations tpm_ascii_bios_measurements_ops = {
-
-
+Daniel
