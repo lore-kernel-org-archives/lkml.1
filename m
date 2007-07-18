@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbXGRDQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbXGRDXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763277AbXGRDQf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 23:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXGRDQ0
+	id S1763277AbXGRDXu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 23:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbXGRDXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 23:16:26 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:32423 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752630AbXGRDQZ (ORCPT
+	Tue, 17 Jul 2007 23:23:40 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:44719 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbXGRDXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 23:16:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M4hThtxDL5gi5eTDV4eFtw7wogkt0DivsTqW4E0IM6dMDZG3u+M7ewUhazx30EcUzj2h/XV3KQec7hY6l0//+Uihy8gBu9p8bJYG8WzG6d7hqQ3czFpeHPxZT7Ihb5YsF/iVz4h86GwWef8NpwLjjMJ3AnPxLFLSf/o8yR8gdzI=
-Message-ID: <8734b7880707172016v530ce775p108910f7baf9de8e@mail.gmail.com>
-Date: Wed, 18 Jul 2007 13:16:24 +1000
-From: "Lindsay Roberts" <lindsay.roberts.os@gmail.com>
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: [PATCH] fs: Add romfs version 2
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, celinux-dev@tree.celinuxforum.org
-In-Reply-To: <20070717192100.GE11166@waste.org>
+	Tue, 17 Jul 2007 23:23:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAHMknUarR7O6/2dsb2JhbAA
+X-IronPort-AV: i="4.16,548,1175497200"; 
+   d="scan'208"; a="504286534:sNHT27300232"
+To: "Or Gerlitz" <or.gerlitz@gmail.com>
+Cc: "Sean Hefty" <mshefty@ichips.intel.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Further 2.6.23 merge plans...
+X-Message-Flag: Warning: May contain useful information
+References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
+	<4696D1F3.2040507@ichips.intel.com>
+	<15ddcffd0707172020j5b68fcb2v7d3ca77863998020@mail.gmail.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 17 Jul 2007 20:23:38 -0700
+In-Reply-To: <15ddcffd0707172020j5b68fcb2v7d3ca77863998020@mail.gmail.com> (Or Gerlitz's message of "Wed, 18 Jul 2007 06:20:15 +0300")
+Message-ID: <adaabtuo0n9.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
-	 <20070717013635.d6d0b124.akpm@linux-foundation.org>
-	 <20070717192100.GE11166@waste.org>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 18 Jul 2007 03:23:38.0524 (UTC) FILETIME=[08494DC0:01C7C8EB]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/18/07, Matt Mackall <mpm@selenic.com> wrote:
-> > > * Adds new derivative of romfs filesystem (rom2fs) with
-> > >   block aligned regular file data to bring performance
-> > >   parity with ext2/3. This is about 225% of the read
-> > >   speed of the existing romfs.
->
-> Doesn't that make these filesystems much bigger? By, on average, .5k
-> per file? Or, if I'm understanding things correctly, ~1k?
+ > > But to be fair, it will be difficult to enable both QoS and local PR
+ > > caching.  To me, this would be the strongest reason against using it.
+ > > However, QoS places additional burden on the SA, which will make scaling
+ > > even more challenging.
+ > 
+ > my understanding is that the local sa does a path-query where all the fields
+ > except for the SGID are wildcard-ed. This means we expect the result to be a
+ > table of all the paths from this port to every other port on the fabrics for
+ > every pkey which this port is a member of etc, correct?
+ > 
+ > How do you plug here  the QoS concept of SID in the path query? are you
+ > expecting the SA to realize what are all the services for which this port is
+ > a "member"? does the proposed definision for QoS management at the SA
+ > defines "services per gids" isn't it "what SL to user per Service"?
 
-Yes, my experience has been that it has been almost chillingly close
-to .5k per regular file increase in partition size. I know in
-applications in which size is utterly critical this may be slightly
-unattractive, but in cases where romfs is chosen for its byte
-reproducibility and read-only nature the size/performance tradeoff is
-fairly advantageous.
+Or, thanks for rescuing this post.
+
+I think this is an important question.  If we merge the local SA
+stuff, then are we creating a problem for dealing with QoS?  Are we
+going to have to revert the local SA stuff once the QoS stuff is
+available?  Or is there at least a sketch of a plan on how to handle
+this?
+
+ - R.
