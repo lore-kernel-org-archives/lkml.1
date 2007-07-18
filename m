@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764682AbXGRTQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbXGRTZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764682AbXGRTQt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 15:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbXGRTQl
+	id S1763269AbXGRTZb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 15:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbXGRTZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 15:16:41 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:58628 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752808AbXGRTQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 15:16:40 -0400
-Date: Wed, 18 Jul 2007 21:16:31 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
-Subject: [GIT PULL] AVR32 update
-Message-ID: <20070718211631.1652e400@dhcp-255-175.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Jul 2007 15:25:22 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:41500 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754174AbXGRTZV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 15:25:21 -0400
+Message-ID: <469E691D.3050305@codemonkey.ws>
+Date: Wed, 18 Jul 2007 14:25:17 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Jeff Dike <jdike@addtoit.com>
+CC: Avi Kivity <avi@qumranet.com>, KVM devel <kvm-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] [PATCH 3/3] KVM - add hypercall nr to kvm_run
+References: <20070716192447.GA16253@c2.user-mode-linux.org> <469C7C8D.1020600@qumranet.com> <469CCF17.3020709@codemonkey.ws> <20070717160710.GC7965@c2.user-mode-linux.org> <469E3FA2.7060408@codemonkey.ws> <20070718174104.GA8655@c2.user-mode-linux.org>
+In-Reply-To: <20070718174104.GA8655@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Jeff Dike wrote:
+> On Wed, Jul 18, 2007 at 11:28:18AM -0500, Anthony Liguori wrote:
+>   
+>> Within the kernel right (VMCALL is only usable in ring 1).  
+>>     
+>
+> Yup.
+>
+>   
+>> Is it 
+>> terribly important to be able to pass through the syscall arguments in 
+>> registers verses packing them in a data structure and passing a pointer 
+>> to that structure?
+>>     
+>
+> An arg block would be fine, too.
+>   
 
-Please pull
+Okay, then you should be pretty well insulated against the changing 
+hypercall stuff since you only need one hypercall NR and can use a one 
+argument hypercall.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git for-linus
+Regards,
 
-to receive the following updates.
+Anthony Liguori
 
-David Brownell (2):
-      [AVR32] faster avr32 unaligned access
-      [AVR32] Make STK1000 mux settings configurable
+> 				Jeff
+>
+>   
 
-Haavard Skinnemoen (5):
-      [AVR32] Split SM device into PM, RTC, WDT and EIC
-      [AVR32] Remove optimization of unaligned word loads
-      [AVR32] Fix build error in parse_tag_rdimg()
-      [AVR32] Fix atomic_add_unless() and atomic_sub_unless()
-      [AVR32] Initialize phy_mask for both macb devices
-
-Hans-Christian Egtvedt (3):
-      [AVR32] CPU frequency scaling for AT32AP
-      [AVR32] Add Atmel SSC driver platform device to AT32AP architecture
-      [AVR32] Wire up SSC platform device 0 as TX on ATSTK1000 board
-
-Kristoffer Nyborg Gregertsen (1):
-      [AVR32] Don't wire up macb0 unless SW6 is in default position
-
-Robert P. J. Day (1):
-      [AVR32] Correct misspelled CONFIG_BLK_DEV_INITRD variable.
-
- arch/avr32/Kconfig                      |   25 +++
- arch/avr32/boards/atstk1000/Kconfig     |   53 +++++
- arch/avr32/boards/atstk1000/atstk1002.c |   50 ++++-
- arch/avr32/kernel/setup.c               |    4 +-
- arch/avr32/mach-at32ap/Makefile         |    1 +
- arch/avr32/mach-at32ap/at32ap.c         |   31 ---
- arch/avr32/mach-at32ap/at32ap7000.c     |  340 +++++++++++++++++++++++--------
- arch/avr32/mach-at32ap/cpufreq.c        |  112 ++++++++++
- arch/avr32/mach-at32ap/extint.c         |  200 ++++++++++++------
- arch/avr32/mach-at32ap/pm.h             |  112 ++++++++++
- arch/avr32/mach-at32ap/sm.h             |  242 ----------------------
- include/asm-avr32/arch-at32ap/board.h   |   14 ++
- include/asm-avr32/arch-at32ap/sm.h      |   27 ---
- include/asm-avr32/atomic.h              |    4 +-
- include/asm-avr32/unaligned.h           |   15 +-
- 15 files changed, 751 insertions(+), 479 deletions(-)
- create mode 100644 arch/avr32/boards/atstk1000/Kconfig
- create mode 100644 arch/avr32/mach-at32ap/cpufreq.c
- create mode 100644 arch/avr32/mach-at32ap/pm.h
- delete mode 100644 arch/avr32/mach-at32ap/sm.h
- delete mode 100644 include/asm-avr32/arch-at32ap/sm.h
