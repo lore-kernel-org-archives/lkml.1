@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbXGRVKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934003AbXGRVMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762775AbXGRVKf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 17:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934377AbXGRVJo
+	id S934003AbXGRVMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 17:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbXGRVMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 17:09:44 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37714 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934263AbXGRVJm (ORCPT
+	Wed, 18 Jul 2007 17:12:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:53567 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754707AbXGRVMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 17:09:42 -0400
-Date: Wed, 18 Jul 2007 23:09:03 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Gabriel C <crazy@pimpmylinux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-Message-ID: <20070718210903.GM3801@stusta.de>
-References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org> <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+	Wed, 18 Jul 2007 17:12:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=SIADFMS90eDGwI8XEffpssAmvS3YoeQkvW2bN+gQ79oLfIZ8ljl3GXfUTE4XkDtLo/wZF9D55ZHSFeqYkS3KdhgfTfOnq1Co9JEiNRSJbpRfL9EbwSpaAynUpfmw0J5J0avtq+IWB5zoFFTJbzZIxJlnveFqVFI4wRzBiAvz5Eo=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Fix a use after free bug in kernel->userspace relay file support
+Date: Wed, 18 Jul 2007 23:11:10 +0200
+User-Agent: KMail/1.9.7
+Cc: Tom Zanussi <zanussi@us.ibm.com>, Karim Yaghmour <karim@opersys.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Paul Mundt <lethal@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200707182311.10538.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 04:51:33PM -0400, Robert P. J. Day wrote:
-> On Wed, 18 Jul 2007, Jeff Garzik wrote:
-> 
-> > Randy Dunlap wrote:
-> > > On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
-> > > > there's no point adding all that redundant content when it can all be
-> > > > done automatically.
-> > >
-> > > I like it.  Are there any kconfig patches to support this plan?
-> >
-> > Speaking specifically to adding 'EXPERIMENTAL', I distinctly
-> > remember at some point in the past the config system was smart
-> > enough to print " (EXPERIMENTAL)" if that entry depended on
-> > CONFIG_EXPERIMENTAL.
-> >
-> > We should head in that direction.
-> 
-> there's one point i want to re-iterate.  i'd prefer to see
-> EXPERIMENTAL stop being a dependency, as in:
-> 
->   depends on SNAFU && FUBAR && EXPERIMENTAL
-> 
-> "EXPERIMENTAL" is not a dependency in the true sense of the word -- it
-> is more of an attribute, and i think it would far more sense to see
-> entries like:
-> 
->   depends on SNAFU && FUBAR
->   maturity EXPERIMENTAL
+Hi,
 
-Plus some special case in the kconfig code that you can somewhere select 
-the maturity levels you want to use (currently it's a normal option 
-kconfig doesn't have to know anything about).
+Coverity spotted what looks like a real possible case of using a 
+variable after it has been freed.
+The problem is in kernel/relay.c::relay_open_buf()
 
-Remind me, would there be any big advantage after such a change besides
-being able to automatically print " (EXPERIMENTAL)" at the end of 
-the prompt?
+If the code hits "goto free_buf;" it ends up in this code :
 
-> sure, it's more work, but i think the cost is worth it in terms of
-> flexibility (particularly if *i'm* not the one doing the work. :-)
+  free_buf:
+    	relay_destroy_buf(buf);	<--- calls kfree() on 'buf'.
+  free_name:
+   	kfree(tmpname);
+  end:
+  	return buf;		<-- use after free of 'buf'.
 
-If you are not doing it, noone might do it.
-And discusing improvements noone will implement is somehow pointless...
+I read through the callers and they all handle a NULL return 
+from this function as an error (and hitting the 'free_buf' label 
+only happens on failure to chan->cb->create_buf_file(), so that 
+looks like a clear error to me). 
 
-> rday
+The patch simply sets 'buf' to NULL after the call to 
+relay_destroy_buf(buf); - as far as I can see that should take 
+care of the problem.
 
-cu
-Adrian
+The patch also corrects a reference to a documentation file while 
+I was at it.
 
--- 
+Warning: I don't know this code at all and I've only read through 
+it quickly to try and work out what to do here, so I'd really 
+apreciate it if someone who actually knows how this code should 
+behave could ACK or NACK the patch before it gets merged anywhere 
+since I did this pretty blind.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Patch has been compile tested only.
+
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+diff --git a/kernel/relay.c b/kernel/relay.c
+index a615a8f..c55e399 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -1,7 +1,7 @@
+ /*
+  * Public API and common code for kernel->userspace relay file support.
+  *
+- * See Documentation/filesystems/relayfs.txt for an overview of relayfs.
++ * See Documentation/filesystems/relay.txt for an overview.
+  *
+  * Copyright (C) 2002-2005 - Tom Zanussi (zanussi@us.ibm.com), IBM Corp
+  * Copyright (C) 1999-2005 - Karim Yaghmour (karim@opersys.com)
+@@ -427,6 +427,7 @@ static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
+ 
+ free_buf:
+  	relay_destroy_buf(buf);
++ 	buf = NULL;
+ free_name:
+  	kfree(tmpname);
+ end:
+
 
