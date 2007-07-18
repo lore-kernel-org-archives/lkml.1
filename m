@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936104AbXGRSSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935553AbXGRSUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936104AbXGRSSy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 14:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935823AbXGRSSd
+	id S935553AbXGRSUa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 14:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933631AbXGRSUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 14:18:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46962 "EHLO
+	Wed, 18 Jul 2007 14:20:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46968 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935799AbXGRSSb (ORCPT
+	with ESMTP id S933813AbXGRSUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 14:18:31 -0400
-Date: Wed, 18 Jul 2007 20:18:29 +0200
+	Wed, 18 Jul 2007 14:20:22 -0400
+Date: Wed, 18 Jul 2007 20:20:21 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, caglar@pardus.org.tr, andi@firstfloor.org
-Subject: Re: [PATCH] i386: Decouple PAE from CONFIG_CMPXCHG64
-Message-ID: <20070718181829.GA3848@one.firstfloor.org>
-References: <11847764879-git-send-email-avi@qumranet.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jonathan Campbell <jon@nerdgrounds.com>,
+       linux-kernel@vger.kernel.org, torvalds@transmeta.com
+Subject: Re: Patches for REALLY TINY 386 kernels
+Message-ID: <20070718182021.GA3898@one.firstfloor.org>
+References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <11847764879-git-send-email-avi@qumranet.com>
+In-Reply-To: <469E3806.4030804@zytor.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 07:34:47PM +0300, Avi Kivity wrote:
-> Commit 9d9bbd4d247a674deb43565582151acdc22e90d1 makes CONFIG_CMPXCHG64
-> dependent on CONFIG_HIGHMEM64G, but KVM guest SMP support now also
-> requires CMPXCHG64 while not being tied to PAE.  So the effect of that patch
-> is to disable KVM on non-PAE configs.
+On Wed, Jul 18, 2007 at 08:55:50AM -0700, H. Peter Anvin wrote:
+> Andi Kleen wrote:
+> > 
+> >> Already with these patches I can compile a zImage kernel that is 450kb
+> >> large (890kb decompressed)
+> > 
+> > The important part is not how big the vmlinux is, but how much
+> > memory is actually used after boot. 
+> > 
+> > I expect concentrating some of the dynamic data structures would
+> > be more fruitful in fact.
+> > 
 > 
-> Untangle those dependencies by:
->  - having KVM select CMPXCHG64
->  - having HIGHMEM64G select CMPXCHG64_REQUIRED, a variant that also
->    checks for the feature at early boot
-> 
-> No processors that support KVM exist that also do not support CMPXCHG64,
-> so no additional check is necessary.  This setup allows for a single kernel
-> that will boot on i486 and also support KVM if available.
+> Well, how big the vmlinux file is matters if it doesn't fit in memory
+> with enough time to get to the phase where it is dumping the init
+> sections.  
 
-The CONFIG should only control the early CPUID checks, which are needed for PAE
-kernels.
-
-But for something late like KVM the correct fix is really to drop
-the ifdefs around the macro and check boot_cpu_has() yourself.
+If you don't have enough memory for a few tens of KB of init sections
+you're very unlikely to have enough memory for user space.
 
 -Andi
