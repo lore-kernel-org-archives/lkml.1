@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbXGRFal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761067AbXGRFbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757949AbXGRFal (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 01:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbXGRFad
+	id S1761067AbXGRFbF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 01:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbXGRFaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 01:30:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:32844 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751497AbXGRFac (ORCPT
+	Wed, 18 Jul 2007 01:30:52 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:42279 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751640AbXGRFav (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 01:30:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=NstFsWP8fmqqJNZzYuYWpX3apCEKjMYZ2Ku2n9DgjTDCOpaLy5n4GK9A/2eHEtmiihO+IK2naFEbaKEanXGDycRTSn69qOtK1FxfhMEp0WnY8A2j0k9XGYL4LEeRaLogPH13YKLKdj2cKiBMD82uT4Xn4rtWwR4sDjraULstLeM=
-Date: Wed, 18 Jul 2007 14:30:28 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: Greg KH <gregkh@suse.de>, Jean Delvare <khali@linux-fr.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sysfs: make sysfs_init_inode() static
-Message-ID: <20070718053028.GH23568@htj.dyndns.org>
-References: <20070715124232.4e371bf9@hyperion.delvare> <20070717034844.GB11602@suse.de> <20070717131255.71b7e72e@hyperion.delvare> <20070717183652.GG9702@suse.de> <20070717230530.64d9a896@hyperion.delvare> <20070718052906.GG23568@htj.dyndns.org>
+	Wed, 18 Jul 2007 01:30:51 -0400
+Message-ID: <469DA57F.9050302@linux.vnet.ibm.com>
+Date: Wed, 18 Jul 2007 11:00:39 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070718052906.GG23568@htj.dyndns.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Paul (??) Menage" <menage@google.com>
+CC: balbir@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Pavel Emelianov <xemul@sw.ru>, Paul Jackson <pj@sgi.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Containers: css_put() dilemma
+References: <469BBE00.8000709@linux.vnet.ibm.com> <469C2792.6050009@linux.vnet.ibm.com> <6599ad830707161935n69776f1t98292fc9990f4766@mail.gmail.com> <20070717070031.GA22410@linux.vnet.ibm.com> <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com> <469C99D1.7090807@linux.vnet.ibm.com> <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com> <469CFF2B.1080702@linux.vnet.ibm.com> <6599ad830707171044u38c0a940r12d2bc80b475ead4@mail.gmail.com> <469D066B.6050606@linux.vnet.ibm.com> <6599ad830707171126o7c431277p84f532d0122a8a98@mail.gmail.com> <469D9728.2080701@linux.vnet.ibm.com>
+In-Reply-To: <469D9728.2080701@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With sysfs_fill_super() converted to use sysfs_get_inode(), there is
-no user of sysfs_init_inode() outside of fs/sysfs/inode.c.  Make it
-static.
+Balbir Singh wrote:
+> Paul (??) Menage wrote:
+>> On 7/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>> without too much knowledge of each other. BTW, what are the semantics
+>>> of css_put() is it expected to free the container/run the release agent
+>>> when the reference count of the container_subsys_state drops to zero?
+>>>
+>> If you css_put() the last reference on a subsystem state object and
+>> the associated container is marked as notify_on_release, then
+>> check_for_release() is called which does a more full check of whether
+>> the container is releasable. If it is, a workqueue task is scheduled
+>> to run the userspace release agent, which can then do anything it
+>> wants, including potentially deleting the empty container.
+>>
+> 
+> Ok.. so my problem still remains, how do I get a non-blocking atomic
+> reference increment/decrement routine, that would prevent my
+> container from being deleted?
+> 
+> I don't find cpusets using css_put(). I was hoping that we could
+> alter css_* would provide the functionality I need.
+> 
+> 
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/inode.c |    2 +-
- fs/sysfs/sysfs.h |    1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+Thinking out loud again, can we add can_destory() callbacks?
 
-Index: work/fs/sysfs/inode.c
-===================================================================
---- work.orig/fs/sysfs/inode.c
-+++ work/fs/sysfs/inode.c
-@@ -133,7 +133,7 @@ static inline void set_inode_attr(struct
-  */
- static struct lock_class_key sysfs_inode_imutex_key;
- 
--void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
-+static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
- {
- 	inode->i_blocks = 0;
- 	inode->i_mapping->a_ops = &sysfs_aops;
-Index: work/fs/sysfs/sysfs.h
-===================================================================
---- work.orig/fs/sysfs/sysfs.h
-+++ work/fs/sysfs/sysfs.h
-@@ -71,7 +71,6 @@ extern void sysfs_remove_one(struct sysf
- extern int sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
- 
- extern void sysfs_delete_inode(struct inode *inode);
--extern void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode);
- extern struct inode * sysfs_get_inode(struct sysfs_dirent *sd);
- extern void sysfs_instantiate(struct dentry *dentry, struct inode *inode);
- 
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
