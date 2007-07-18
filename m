@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbXGRKDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763295AbXGRKD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762824AbXGRKDU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 06:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbXGRKDI
+	id S1763295AbXGRKD7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 06:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXGRKDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 06:03:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33783
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754746AbXGRKDH (ORCPT
+	Wed, 18 Jul 2007 06:03:50 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:64258 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbXGRKDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 06:03:07 -0400
-Date: Wed, 18 Jul 2007 03:03:06 -0700 (PDT)
-Message-Id: <20070718.030306.50591269.davem@davemloft.net>
-To: crquan@gmail.com
-Cc: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
-       jmorris@namei.org, kaber@coreworks.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] [net/core] move dev_mc_discard from dev_mcast.c to
- dev.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <91b13c310707180259v547ba2b3wc901102d35760a50@mail.gmail.com>
-References: <11847264651509-git-send-email-crquan@gmail.com>
-	<20070718.021107.40833440.davem@davemloft.net>
-	<91b13c310707180259v547ba2b3wc901102d35760a50@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jul 2007 06:03:49 -0400
+Message-ID: <469DE555.10507@anagramm.de>
+Date: Wed, 18 Jul 2007 12:03:01 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel@vger.kernel.org,
+       Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 03/33] powerpc: Refuse to build 64-bit with GCC-4.2.0
+ and CONFIG_MODULES
+References: 20070717140622.GA25846@uranus.ravnborg.org <11846813423231-git-send-email-sam@ravnborg.org> <11846813432423-git-send-email-sam@ravnborg.org> <1184681343138-git-send-email-sam@ravnborg.org>
+In-Reply-To: <1184681343138-git-send-email-sam@ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX18QS5ocH1pC0/ERUpufEZpBSH5e3nRTPUgpKyR
+ xkMCKlksUNSyTYSlZ2RK53E83oFFM2gGQ74Hok8pztPvOyCRkT
+ qZ4djzgNtLhF8rdae03dA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "rae l" <crquan@gmail.com>
-Date: Wed, 18 Jul 2007 17:59:52 +0800
+Sam Ravnborg schrieb:
+> From: Segher Boessenkool <segher@kernel.crashing.org>
+> 
+> ...since this won't work (compiler bug, see <http://gcc.gnu.org/PR31490>).
 
-> And then the dev_mcast.c is now only 256 lines long(versus dev.c 4052 lines),
-> just left a few multicast related functions definition and "dev_mcast"
-> procfs code,
-> I have an idea to merge all code dev_mcast.c into dev.c, that would:
-> 
-> - remove two functions (__dev_addr_delete, __dev_set_rx_mode) from netdevice.h,
->   and then tag them static,
->   those two are also defined in dev.c and only called from dev_mcast.c,
-> 
-> - reducing one file would benefit the compilation process.
-> 
-> All in one word, I don't think the single file dev_mcast.c is needed anymore.
+The bug report says IA64 is broken, too. Please verify and extend the
+patch if possible...
 
-Agreed.
+gcc-4.2.1 will be released soon.
+
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
