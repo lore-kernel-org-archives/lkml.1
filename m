@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936315AbXGRTE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXGRTG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936315AbXGRTE3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 15:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935804AbXGRTDx
+	id S964868AbXGRTG5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 15:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXGRTGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 15:03:53 -0400
-Received: from mail.windriver.com ([147.11.1.11]:43820 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933014AbXGRTDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 15:03:50 -0400
-Date: Wed, 18 Jul 2007 12:02:45 -0700 (PDT)
-From: Jeremy Katz <jeremy.katz@windriver.com>
-X-X-Sender: jkatz@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [PATCH] posix-timer: fix deletion race
-In-Reply-To: <1184741938.12353.484.camel@chaos>
-Message-ID: <Pine.LNX.4.63.0707181159010.3157@localhost.localdomain>
-References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain> 
- <1184662429.12353.426.camel@chaos>  <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
-  <1184703427.12353.476.camel@chaos>  <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
-  <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain> 
- <1184738755.12353.481.camel@chaos> <1184741938.12353.484.camel@chaos>
+	Wed, 18 Jul 2007 15:06:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46783 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbXGRTGt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 15:06:49 -0400
+Message-ID: <469E6335.8010708@zytor.com>
+Date: Wed, 18 Jul 2007 12:00:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-OriginalArrivalTime: 18 Jul 2007 19:02:45.0072 (UTC) FILETIME=[39723500:01C7C96E]
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andi Kleen <andi@firstfloor.org>, Jonathan Campbell <jon@nerdgrounds.com>,
+       linux-kernel@vger.kernel.org, torvalds@transmeta.com
+Subject: Re: Patches for REALLY TINY 386 kernels
+References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com> <20070718183359.GK3801@stusta.de>
+In-Reply-To: <20070718183359.GK3801@stusta.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Thomas Gleixner wrote:
+Adrian Bunk wrote:
+> On Wed, Jul 18, 2007 at 08:55:50AM -0700, H. Peter Anvin wrote:
+>> Andi Kleen wrote:
+>>>> Already with these patches I can compile a zImage kernel that is 450kb
+>>>> large (890kb decompressed)
+>>> The important part is not how big the vmlinux is, but how much
+>>> memory is actually used after boot. 
+>>>
+>>> I expect concentrating some of the dynamic data structures would
+>>> be more fruitful in fact.
+>>>
+>> Well, how big the vmlinux file is matters if it doesn't fit in memory
+>> with enough time to get to the phase where it is dumping the init
+>> sections.  *If that is not the issue*, then axing stuff like CPUID is a
+>> major lose in terms of code maintainability for zero gain.
+> 
+> If this is an issue, then changing i386 back to discarding __exit code 
+> and data at linktime instead of runtime might make a bigger difference.
 
-> On Wed, 2007-07-18 at 08:05 +0200, Thomas Gleixner wrote:
->> On Tue, 2007-07-17 at 16:58 -0700, Jeremy Katz wrote:
->>
->>> EFLAGS: 00010246   (2.6.22.1-WR1.4aq_cgl #2)
->>
->> Hmm. Are there any other patches on that kernel ?
+What would really make a big difference would be to unspool the
+initramfs in such a way that it only requires O(1) instead off O(n)
+extra memory, by freeing memory as it decompresses and decodes the cpio
+ball.
 
-Just hrt6 and your proposed fix.  The build system I'm using appends the 
-WR1.4aq_cgl, but isn't patching anything.
-
->> Is there a chance that you can whip up a test program which is not
->> secret sauce ?
-
-I've taken a brief stab at it, but haven't produced anything successful 
-thus far.  Unfortunately, I don't even have complete source to the test 
-code, and the people that do have expressed an inability to release it due 
-to contractual obligations.
-
->> Also can you please enable CONFIG_PROVE_LOCKING, which might catch any
->> locking problem, which might be related to this.
->
-> Another test: Can you please disable CONFIG_SCHED_SMT to narrow it down
-> further ?
-
-I'll try both of these.
-
-Jeremy
+	-hpa
