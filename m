@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXGRAuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937046AbXGRAux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932780AbXGRAuZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 20:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757754AbXGRAuP
+	id S937046AbXGRAux (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 20:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760615AbXGRAui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 20:50:15 -0400
-Received: from waste.org ([66.93.16.53]:40847 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756730AbXGRAuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 20:50:13 -0400
-Date: Tue, 17 Jul 2007 19:49:21 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Paul Mundt <lethal@linux-sh.org>, Jan Engelhardt <jengelh@computergmbh.de>,
-       clameter@sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23 compile failure - slab/slob interspanking
-Message-ID: <20070718004921.GI11115@waste.org>
-References: <Pine.LNX.4.64.0707172148310.27468@fbirervta.pbzchgretzou.qr> <20070718001836.GA30154@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070718001836.GA30154@linux-sh.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 17 Jul 2007 20:50:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43590 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757754AbXGRAuh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 20:50:37 -0400
+Date: Tue, 17 Jul 2007 17:50:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Fix file locking
+Message-Id: <20070717175017.8b8a8976.akpm@linux-foundation.org>
+In-Reply-To: <20070717124732.22619.34179.stgit@warthog.cambridge.redhat.com>
+References: <20070717124732.22619.34179.stgit@warthog.cambridge.redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 09:18:36AM +0900, Paul Mundt wrote:
-> On Tue, Jul 17, 2007 at 10:00:08PM +0200, Jan Engelhardt wrote:
-> > 81cda6626178cd55297831296ba8ecedbfd8b52d is first bad commit
-> > commit 81cda6626178cd55297831296ba8ecedbfd8b52d
-> > Author: Christoph Lameter <clameter@sgi.com>
-> > Date:   Tue Jul 17 04:03:29 2007 -0700
-> > 
-> >     Slab allocators: Cleanup zeroing allocations
-> >     
-> >     It becomes now easy to support the zeroing allocs with generic inline
-> >     functions in slab.h.  Provide inline definitions to allow the continued use of
-> >     kzalloc, kmem_cache_zalloc etc but remove other definitions of zeroing
-> >     functions from the slab allocators and util.c.
-> >     
-> >     Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > 
-> This fixes it for me with your .config:
-> 
-> slob: Kill off duplicate kzalloc() definition.
-> 
-> With the slab zeroing allocations cleanups Christoph stubbed in a generic
-> kzalloc(), which was missed on SLOB. Follow the SLAB/SLUB changes and
-> kill off the __kzalloc() wrapper that SLOB was using.
+On Tue, 17 Jul 2007 13:47:32 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-Looks fine to me.
+> +	if (type == AFS_LOCK_READ &&
+> +	    vnode->flags & (1 << AFS_VNODE_READLOCKED)) {
 
-> Reported-by: Jan Engelhardt <jengelh@computergmbh.de>
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Here we use
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+	vnode->flags & (1 << foo)
 
--- 
-Mathematics is the supreme nostalgia of our time.
+> +		set_bit(AFS_VNODE_LOCKING, &vnode->flags);
+
+and elsewhere we use set_bit(foo, &vnode->flags) and clear_bit()
+
+This is a bit strange.  Does the open-coded bit-test have any performance
+benefit on any architecture?  Not on x86 at least, afaik.
+
+Please consider converting all that stuff to test_bit() sometime.  It sure
+would look a lot better.
+
