@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935825AbXGRSHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936031AbXGRSIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935825AbXGRSHr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 14:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbXGRSHi
+	id S936031AbXGRSIU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 14:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762792AbXGRSIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 14:07:38 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:19833 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754571AbXGRSHh (ORCPT
+	Wed, 18 Jul 2007 14:08:06 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:55704 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762621AbXGRSIE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 14:07:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FW9FnbYf9sUeS8a+42j9st03UWKIJjuK2/E36Pr2vESXBAmPDDHrxRZBI5CjVvw0NsjFIdNdP+3UP4MI0gClDMvHwGZX5DOu5fuWgyryZKSyU714AMs0RXcKCPpk8jf7godvZ1HMG429Jz19kZDTMai+dD4kxH4H3u06zEQeP5A=
-Message-ID: <64d833020707181107o705ff16ava129e91fcf68a8ef@mail.gmail.com>
-Date: Wed, 18 Jul 2007 14:07:36 -0400
-From: koan <koan00@gmail.com>
-To: "Rui Santos" <rsantos@grupopie.com>
-Subject: Re: Slow Soft-RAID 5 performance
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <469E4A70.1000306@grupopie.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <64d833020707180707i1bbbbcbao783e33a2487c9e2b@mail.gmail.com>
-	 <469E4A70.1000306@grupopie.com>
+	Wed, 18 Jul 2007 14:08:04 -0400
+Date: Wed, 18 Jul 2007 20:07:56 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: sunrpc-related Oops in latest git
+Message-ID: <20070718200756.761e2683@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <1184597534.11083.1.camel@heimdal.trondhjem.org>
+References: <20070715170523.2bed7110@dhcp-255-175.norway.atmel.com>
+	<1184597534.11083.1.camel@heimdal.trondhjem.org>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Are you sure about that chunk size? In you initial posting you show
-/proc/mdstat reporting:
+On Mon, 16 Jul 2007 10:52:14 -0400
+Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
 
-"md2 : active raid5 sdc3[2] sda3[0] sdb3[1]
-      780083968 blocks level 5, 128k chunk, algorithm 2 [3/3] [UUU]"
+> > Please let me know if there's anything I can do to help debug this.
+> > 
+> > Håvard  
+> 
+> So you are saying that if you revert this patch, and only this patch,
+> then it fixes nfsroot? (sorry, I tend not to trust git-bisect)
 
-Which would seem to state a 128K chunk, and thus with a 4k block size
-you would need a stride of 32.
+Well, what do you know. My atomics are broken.
 
+The patch below fixes it. I'll include it in my next pull request,
+which I'll send in a moment. Sorry to bother you about this.
 
+Håvard
 
-On 7/18/07, Rui Santos <rsantos@grupopie.com> wrote:
-> koan wrote:
-> > How did you create the ext3 filesystem?
->
-> The chunk_size is at 256KB, ext3 block size is 4k. I believe the correct
-> option that should be passed trough to --stride is 64.
-> Am I correct ?
->
-> I've also tested ( after sending my first report ) with xfs.
-> I've also increases readahead to 65535 on all HD's
-> I've also increases the stripe_cache_size to 16384.
->
-> I can now get ~100MB/sec...
->
-> >
-> > Did you use the appropriate --stride option as noted here:
-> > http://tldp.org/HOWTO/Software-RAID-HOWTO-5.html (#5.11)
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe
-> > linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-> >
-> >
->
->
+>From 0cb061fcc12ec7811fc7404fda54f9819d6560bd Mon Sep 17 00:00:00 2001
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Date: Wed, 18 Jul 2007 20:06:04 +0200
+Subject: [AVR32] Fix atomic_add_unless() and atomic_sub_unless()
+
+These functions depend on "result" being initalized to 0, but "result"
+is not included as an input constraint to the inline assembly block
+following its initialization, only as an output constraint. Thus gcc
+thinks it doesn't need to initialize it, so result ends up undefined
+if the "unless" condition is true.
+
+This fixes an oops in sunrpc where the faulty atomics caused
+rpciod_up() to not start the workqueue as it should.
+
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ include/asm-avr32/atomic.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/asm-avr32/atomic.h b/include/asm-avr32/atomic.h
+index b9c2548..7ef3862 100644
+--- a/include/asm-avr32/atomic.h
++++ b/include/asm-avr32/atomic.h
+@@ -101,7 +101,7 @@ static inline int atomic_sub_unless(atomic_t *v, int a, int u)
+ 		"	mov	%1, 1\n"
+ 		"1:"
+ 		: "=&r"(tmp), "=&r"(result), "=o"(v->counter)
+-		: "m"(v->counter), "rKs21"(a), "rKs21"(u)
++		: "m"(v->counter), "rKs21"(a), "rKs21"(u), "1"(result)
+ 		: "cc", "memory");
+ 
+ 	return result;
+@@ -137,7 +137,7 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ 			"	mov	%1, 1\n"
+ 			"1:"
+ 			: "=&r"(tmp), "=&r"(result), "=o"(v->counter)
+-			: "m"(v->counter), "r"(a), "ir"(u)
++			: "m"(v->counter), "r"(a), "ir"(u), "1"(result)
+ 			: "cc", "memory");
+ 	}
+ 
+-- 
+1.5.2.3
+
