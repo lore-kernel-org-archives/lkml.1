@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761806AbXGRNAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761806AbXGRNCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761806AbXGRNAq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 09:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbXGRNAh
+	id S1761806AbXGRNCr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 09:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757099AbXGRNCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 09:00:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54672 "EHLO mx3.mail.elte.hu"
+	Wed, 18 Jul 2007 09:02:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41630 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754491AbXGRNAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 09:00:36 -0400
-Date: Wed, 18 Jul 2007 14:59:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-Message-ID: <20070718125937.GA4099@elte.hu>
-References: <1184355835.12353.321.camel@chaos> <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu> <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu> <Pine.LNX.4.64.0707161331570.1817@scrub.home> <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org> <1184754430.20032.130.camel@twins> <Pine.LNX.4.64.0707181442340.1817@scrub.home> <1184763148.20032.135.camel@twins>
+	id S1754878AbXGRNCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 09:02:39 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Work around a possible compiler bug
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 18 Jul 2007 14:02:33 +0100
+Message-ID: <20070718130233.12173.76080.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184763148.20032.135.camel@twins>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Howells <dhowells@redhat.com>
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Work around a possible bug in the FRV compiler.
 
-> On Wed, 2007-07-18 at 14:45 +0200, Roman Zippel wrote:
-> > Hi,
-> > 
-> > On Wed, 18 Jul 2007, Peter Zijlstra wrote:
-> > 
-> > > I actually like the extra range, it allows for a much softer punch of
-> > > background tasks even on somewhat slower boxen.
-> > 
-> > The extra range is not really a problem, in 
-> > 
-> > http://www.ussg.iu.edu/hypermail/linux/kernel/0707.2/0850.html
-> > 
-> > I suggested how we can have both.
-> 
-> By breaking the UNIX model of nice levels. Not an option in my book.
+What appears to be happening is that gcc resolves the __builtin_constant_p()
+in kmalloc() to true, but then fails to reduce the therefore constant
+conditions in the if-statements it guards to constant results.
 
-yeah, that's pretty much out of question.
+When compiling with -O2 or -Os, one single spurious error crops up in
+cpuup_callback() in mm/slab.c.  This can be avoided by making the memsize
+variable const.
 
-	Ingo
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ arch/frv/Makefile |    2 +-
+ mm/slab.c         |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/frv/Makefile b/arch/frv/Makefile
+index 038e3a8..9bf7345 100644
+--- a/arch/frv/Makefile
++++ b/arch/frv/Makefile
+@@ -88,7 +88,7 @@ ASFLAGS		+= -mno-fdpic
+ # make sure the .S files get compiled with debug info
+ # and disable optimisations that are unhelpful whilst debugging
+ ifdef CONFIG_DEBUG_INFO
+-CFLAGS		+= -O1
++#CFLAGS		+= -O1
+ AFLAGS		+= -Wa,--gdwarf2
+ ASFLAGS		+= -Wa,--gdwarf2
+ endif
+diff --git a/mm/slab.c b/mm/slab.c
+index 96d30ee..88bc633 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -1163,7 +1163,7 @@ static int __cpuinit cpuup_callback(struct notifier_block *nfb,
+ 	struct kmem_cache *cachep;
+ 	struct kmem_list3 *l3 = NULL;
+ 	int node = cpu_to_node(cpu);
+-	int memsize = sizeof(struct kmem_list3);
++	const int memsize = sizeof(struct kmem_list3);
+ 
+ 	switch (action) {
+ 	case CPU_LOCK_ACQUIRE:
+
