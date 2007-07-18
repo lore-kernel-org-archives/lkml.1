@@ -1,168 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933727AbXGRQEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933833AbXGRQF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933727AbXGRQEa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 12:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbXGRQEW
+	id S933833AbXGRQF0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 12:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932869AbXGRQFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 12:04:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52899 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760121AbXGRQEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 12:04:20 -0400
-Date: Wed, 18 Jul 2007 18:02:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-Message-ID: <20070718160251.GA29043@elte.hu>
-References: <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu> <Pine.LNX.4.64.0707161331570.1817@scrub.home> <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org> <1184754430.20032.130.camel@twins> <Pine.LNX.4.64.0707181442340.1817@scrub.home> <1184763148.20032.135.camel@twins> <Pine.LNX.4.64.0707181506460.1817@scrub.home> <20070718134811.GA9227@elte.hu> <Pine.LNX.4.64.0707181558590.1817@scrub.home>
+	Wed, 18 Jul 2007 12:05:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45407 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932387AbXGRQFH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 12:05:07 -0400
+Date: Wed, 18 Jul 2007 09:03:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Ian Kent <raven@themaw.net>, Chuck Ebbert <cebbert@redhat.com>,
+       Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v19
+In-Reply-To: <20070717074537.GA13539@elte.hu>
+Message-ID: <alpine.LFD.0.999.0707180852540.27353@woody.linux-foundation.org>
+References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net>
+ <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com>
+ <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu>
+ <1184648474.3188.33.camel@raven.themaw.net>
+ <20070717074537.GA13539@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707181558590.1817@scrub.home>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Roman Zippel <zippel@linux-m68k.org> wrote:
 
-> > _changing_ it is an option within reason, and we've done it a couple 
-> > of times already in the past, and even within CFS (as Peter 
-> > correctly observed) we've been through a couple of iterations 
-> > already. And as i mentioned it before, the outer edge of nice levels 
-> > (+19, by far the most commonly used nice level) was inconsistent to 
-> > begin with: 3%, 5%, 9% of nice-0, depending on HZ.
+On Tue, 17 Jul 2007, Ingo Molnar wrote:
 > 
-> Why do you constantly stress level 19? Yes, that one is special, all 
-> other positive levels were already relatively consistent.
+> * Ian Kent <raven@themaw.net> wrote:
+> > 
+> > In several places I have code similar to:
+> > 
+> > wait.tv_sec = time(NULL) + 1;
+> > wait.tv_nsec = 0;
 
-i constantly stress it for the reason i mentioned a good number of 
-times: because it's by far the most commonly used (and complained about) 
-nice level. =B-)
+Ok, that definitely should work.
 
-but because you are asking, i'm glad to give you some first-hand 
-historic background about Linux nice levels (in case you are interested) 
-and the motivations behind their old and new implementations:
+Does the patch below help?
 
-nice levels were always so weak under Linux (just read Peter's report) 
-that people continuously bugged me about making nice +19 tasks use up 
-much less CPU time. Unfortunately that was not that easy to implement 
-(otherwise we'd have done it long ago) because nice level support was 
-historically coupled to timeslice length, and timeslice units were 
-driven by the HZ tick, so the smallest timeslice was 1/HZ.
+> ah! It passes in a low-res time source into a high-res time interface 
+> (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to 
+> time(NULL) + 2, or change it to:
+> 
+> 	gettimeofday(&wait, NULL);
+> 	wait.tv_sec++;
 
-In the O(1) scheduler (about 4 years ago) i changed negative nice levels 
-to be much stronger than they were before in 2.4 (and people were happy 
-about that change), and i also intentionally calibrated the linear 
-timeslice rule so that nice +19 level would be _exactly_ 1 jiffy. To 
-better understand it, the timeslice graph went like this (cheesy ASCII 
-art alert!):
+This is wrong. It's wrong for two reasons:
 
+ - it really shouldn't be needed. I don't think "time()" has to be 
+   *exactly* in sync, but I don't think it can be off by a third of a 
+   second or whatever (as the "30% CPU load" would seem to imply)
 
-                   A
-             \     | [timeslice length]
-              \    |
-               \   |
-                \  |
-                 \ |
-                  \|___100msecs
-                   |^ . _
-                   |      ^ . _
-                   |            ^ . _
- -*----------------------------------*-----> [nice level]
- -20               |                +19
-                   |
-                   |
+ - gettimeofday works on a timeval, pthread_cond_timedwait() works on a 
+   timespec.
 
-so that if someone wants to really renice tasks, +19 would give a much 
-bigger hit than the normal linear rule would do. (The solution of 
-changing the ABI to extend priorities was discarded early on.)
+So if it actually makes a difference, it makes a difference for the 
+*wrong* reason: the time is still totally nonsensical in the tv_nsec field 
+(because it actually got filled in with msecs!), but now the tv_sec field 
+is in sync, so it hides the bug.
 
-This approach worked to some degree for some time, but later on with 
-HZ=1000 it caused 1 jiffy to be 1 msec, which meant 0.1% CPU usage which 
-we felt to be a bit excessive. Excessive _not_ because it's too small of 
-a CPU utilization, but because it causes too frequent (once per 
-millisec) rescheduling. (and would thus trash the cache, etc. Remember, 
-this was 4-5 years ago when hardware was weaker and caches were smaller, 
-and people were running number crunching apps at nice +19.)
+Anyway, hopefully the patch below might help. But we probably should make 
+this whole thing a much more generic routine (ie we have our internal 
+"getnstimeofday()" that still is missing the second-overflow logic, and 
+that is quite possibly the one that triggers the "30% off" behaviour).
 
-So for HZ=1000 i changed nice +19 to 5msecs, because that felt like the 
-right minimal granularity - and this translates to 5% CPU utilization. 
-But the fundamental HZ-sensitive property for nice+19 still remained, 
-and i never got a single complaint about nice +19 being too _weak_ in 
-terms of CPU utilization, i only got complaints about it (still) being 
-way too _strong_.
+Ingo, I'd suggest:
+ - ger rid of "timespec_add_ns()", or at least make it return a return 
+   value for when it overflows.
+ - make all the people who overflow into tv_sec call a "fix_up_seconds()" 
+   thing that does the xtime overflow handling.
 
-To sum it up: i always wanted to make nice levels more consistent, but 
-within the constraints of HZ and jiffies and their nasty design level 
-coupling to timeslices and granularity it was not really viable.
+		Linus
 
-The second (less frequent but still periodically occuring) complaint 
-about Linux's nice level support was its assymetry around the origo 
-(which you can see demonstrated in the picture above), or more 
-accurately: the fact that nice level behavior depended on the _absolute_ 
-nice level as well, while the nice API itself is fundamentally 
-"relative":
+---
+Subject: time: make sure sys_gettimeofday() and sys_time() are in sync
+From: Ingo Molnar <mingo@elte.hu>
 
-   int nice(int inc);
+make sure sys_gettimeofday() and sys_time() results are coherent.
 
-   asmlinkage long sys_nice(int increment)
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/time/timekeeping.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-(the first one is the glibc API, the second one is the syscall API.) 
-Note that the 'inc' is relative to the current nice level. Tools like 
-bash's "nice" command mirror this relative API.
+Index: linux/kernel/time/timekeeping.c
+===================================================================
+--- linux.orig/kernel/time/timekeeping.c
++++ linux/kernel/time/timekeeping.c
+@@ -92,6 +92,19 @@ static inline void __get_realtime_clock_
+ 	} while (read_seqretry(&xtime_lock, seq));
+ 
+ 	timespec_add_ns(ts, nsecs);
++	/*
++	 * Make sure xtime.tv_sec [returned by sys_time()] always
++	 * follows the gettimeofday() result precisely. This
++	 * condition is extremely unlikely, it can hit at most
++	 * once per second:
++	 */
++	if (unlikely(xtime.tv_sec != ts->tv_sec)) {
++		unsigned long flags;
++
++		write_seqlock_irqsave(&xtime_lock, flags);
++		update_wall_time();
++		write_sequnlock_irqrestore(&xtime_lock, flags);
++	}
+ }
+ 
+ /**
 
-With the old scheduler, if you for example started a niced task with +1 
-and another task with +2, the CPU split between the two tasks would 
-depend on the nice level of the parent shell - if it was at nice -10 the 
-CPU split was different than if it was at +5 or +10.
-
-A third complaint against Linux's nice level support was that negative 
-nice levels were not 'punchy enough', so lots of people had to resort to 
-run audio (and other multimedia) apps under RT priorities such as 
-SCHED_FIFO. But this caused other problems: SCHED_FIFO is not starvation 
-proof, and a buggy SCHED_FIFO app can also lock up the system for good.
-
-CFS addresses all three types of complaints:
-
-To address the first complaint (of nice levels being not "punchy" 
-enough), i decoupled the scheduler from 'time slice' and HZ concepts 
-(and made granularity a separate concept from nice levels) and thus CFS 
-was able to implement better and more consistent nice +19 support: now 
-in CFS nice +19 tasks get a HZ-independent 1.5%, instead of the variable 
-3%-5%-9% range they got in the old scheduler.
-
-To address the second complaint (of nice levels not being consistent), i 
-made nice(1) have the same CPU utilization effect on tasks, regardless 
-of their absolute nice levels. So on CFS, running a nice +10 and a nice 
-+11 task has the same CPU utilization "split" between them as running a 
-nice -5 and a nice -4 task. (one will get 55% of the CPU, the other 
-45%.) That is why I changed nice levels to be "multiplicative" (or 
-exponential) - that way it does not matter which nice level you start 
-out from, the 'relative result' will always be the same.
-
-The third complaint (of negative nice levels not being "punchy" enough 
-and forcing audio apps to run under the more dangerous SCHED_FIFO 
-scheduling policy) is addressed by CFS almost automatically: stronger 
-negative nice levels are an automatic side-effect of the recalibrated 
-dynamic range of nice levels.
-
-Hope this helps,
-
-	Ingo
