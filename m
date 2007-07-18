@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763405AbXGRUuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762546AbXGRUxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763405AbXGRUuB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 16:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759081AbXGRUtq
+	id S1762546AbXGRUxt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 16:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbXGRUxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 16:49:46 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:40807 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759326AbXGRUtp (ORCPT
+	Wed, 18 Jul 2007 16:53:38 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:51510 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302AbXGRUxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 16:49:45 -0400
-Message-ID: <469E7D7D.6050007@oracle.com>
-Date: Wed, 18 Jul 2007 13:52:13 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
+	Wed, 18 Jul 2007 16:53:37 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Wed, 18 Jul 2007 16:51:33 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
 To: Jeff Garzik <jeff@garzik.org>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Gabriel C <crazy@pimpmylinux.org>,
+cc: Randy Dunlap <randy.dunlap@oracle.com>, Gabriel C <crazy@pimpmylinux.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        netdev@vger.kernel.org
 Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-References: <469E75AA.7040109@pimpmylinux.org>	<Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
 In-Reply-To: <469E7BE1.6090401@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-ID: <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+References: <469E75AA.7040109@pimpmylinux.org>
+ <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
+ <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
+On Wed, 18 Jul 2007, Jeff Garzik wrote:
+
 > Randy Dunlap wrote:
->> On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
->>> there's no point adding all that redundant content when it can all be
->>> done automatically.
->>
->> I like it.  Are there any kconfig patches to support this plan?
-> 
-> 
-> Speaking specifically to adding 'EXPERIMENTAL', I distinctly remember at 
-> some point in the past the config system was smart enough to print " 
-> (EXPERIMENTAL)" if that entry depended on CONFIG_EXPERIMENTAL.
-> 
+> > On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
+> > > there's no point adding all that redundant content when it can all be
+> > > done automatically.
+> >
+> > I like it.  Are there any kconfig patches to support this plan?
+>
+> Speaking specifically to adding 'EXPERIMENTAL', I distinctly
+> remember at some point in the past the config system was smart
+> enough to print " (EXPERIMENTAL)" if that entry depended on
+> CONFIG_EXPERIMENTAL.
+>
 > We should head in that direction.
-> 
-> I strongly NAK the original patch from Gabriel C in this thread -- it 
-> just adds too much redundant info.  Better to add it -once-, somewhere 
-> inside Kconfig system.
-> 
->     Jeff
-> 
-> 
 
-Yes, that's what Robert & I are referring to as well (AFAIK).
+there's one point i want to re-iterate.  i'd prefer to see
+EXPERIMENTAL stop being a dependency, as in:
 
+  depends on SNAFU && FUBAR && EXPERIMENTAL
+
+"EXPERIMENTAL" is not a dependency in the true sense of the word -- it
+is more of an attribute, and i think it would far more sense to see
+entries like:
+
+  depends on SNAFU && FUBAR
+  maturity EXPERIMENTAL
+
+sure, it's more work, but i think the cost is worth it in terms of
+flexibility (particularly if *i'm* not the one doing the work. :-)
+
+rday
 -- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
