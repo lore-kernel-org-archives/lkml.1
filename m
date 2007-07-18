@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbXGRIcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbXGRIgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756414AbXGRIcu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 04:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXGRIcg
+	id S1757396AbXGRIgj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 04:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXGRIgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 04:32:36 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:53478 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbXGRIcf (ORCPT
+	Wed, 18 Jul 2007 04:36:32 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41460 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbXGRIgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 04:32:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
-        b=ST4McsKaw3+gfw2n2oQUPMrUc+lQiBR0l3bnAM1PkTuGiY1NTPxjjW5UM1v3Lo6doJbcIOVn5K3scwLYFAOyRjlWPOeZ74gj3SGc7P52pXINz2jy6/NCJvGE0INcmmGqgkf6gi00KF5F18XWsHY51vKiSaYXf9obRQjeapU7zMo=
-Date: Wed, 18 Jul 2007 16:35:17 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: chexum@shadow.banki.hu
-Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       viro@zeniv.linux.org.uk, akpm@linux-foundation.org
-Subject: [Patch] fs/romfs/inode.c: trivial improvements
-Message-ID: <20070718083517.GA6179@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-Mime-Version: 1.0
+	Wed, 18 Jul 2007 04:36:31 -0400
+Date: Wed, 18 Jul 2007 01:36:00 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] drivers/base/core: improve device_add() error
+	handling, fix bugs
+Message-ID: <20070718083600.GA21650@kroah.com>
+References: <20070718055348.GA5734@havoc.gtf.org> <20070718101501.6af017bc@gondolin.boeblingen.de.ibm.com> <469DCC4A.9010001@garzik.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <469DCC4A.9010001@garzik.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 18, 2007 at 04:16:10AM -0400, Jeff Garzik wrote:
+>  Cornelia Huck wrote:
+> > On Wed, 18 Jul 2007 01:53:48 -0400,
+> > Jeff Garzik <jeff@garzik.org> wrote:
+> >> The following change was checked into 'warnings' branch of
+> >> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
+> >>
+> >> commit 5330916f5a11d8b7def46a6b3e14a831684032f5
+> >> Author: Jeff Garzik <jeff@garzik.org>
+> >> Date:   Wed Jul 18 01:41:29 2007 -0400
+> >>
+> >>     drivers/base/core: improve device_add() error handling, fix bugs
+> >>         * silence several warnings by handling sysfs_create_link() failure
+> >>         * re-order some operations in error handling, to precisely reverse
+> >>       the order of operations, i.e. unwind properly.
+> >>         Signed-off-by: Jeff Garzik <jeff@garzik.org>
+> >>
+> >>  drivers/base/core.c |   46 ++++++++++++++++++++++++++++++----------------
+> >>  1 file changed, 30 insertions(+), 16 deletions(-)
+> > Hm, what about driver-core-check-return-code-of-sysfs_create_link.patch
+> > (merged with ...-fix.patch) which has been in -mm for a while?
+> 
+>  No idea, I didn't check there.   If someone else has a better patch... 
+>  great!  Let's merge it :)
 
-1. There's no lists in fs/romfs/inode.c, so using list_entry is
-a bit confusing. Replace it with container_of.
+It's in my queue.
 
-2. It is unnecessary to cast the return value of kmem_cache_alloc,
-since it returns a void* pointer.
+Or it should be, hm, Cornelia, can you resend it, I seem to have dropped
+it :(
 
-This patch is against 2.6.22.1.
+thanks,
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-
----
- fs/romfs/inode.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.22.1/fs/romfs/inode.c
-===================================================================
---- linux-2.6.22.1.orig/fs/romfs/inode.c	2007-07-12 00:47:28.000000000 +0800
-+++ linux-2.6.22.1/fs/romfs/inode.c	2007-07-18 16:08:56.000000000 +0800
-@@ -92,7 +92,7 @@
- 
- static inline struct romfs_inode_info *ROMFS_I(struct inode *inode)
- {
--	return list_entry(inode, struct romfs_inode_info, vfs_inode);
-+	return container_of(inode, struct romfs_inode_info, vfs_inode);
- }
- 
- static __u32
-@@ -555,7 +555,7 @@
- static struct inode *romfs_alloc_inode(struct super_block *sb)
- {
- 	struct romfs_inode_info *ei;
--	ei = (struct romfs_inode_info *)kmem_cache_alloc(romfs_inode_cachep, GFP_KERNEL);
-+	ei = kmem_cache_alloc(romfs_inode_cachep, GFP_KERNEL);
- 	if (!ei)
- 		return NULL;
- 	return &ei->vfs_inode;
+greg k-h
