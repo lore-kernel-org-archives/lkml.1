@@ -1,28 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764310AbXGRXbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936819AbXGRXcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764310AbXGRXbk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762834AbXGRX1K
+	id S936819AbXGRXcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936249AbXGRX1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:27:10 -0400
-Received: from mail.suse.de ([195.135.220.2]:57460 "EHLO mx1.suse.de"
+	Wed, 18 Jul 2007 19:27:13 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57467 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936194AbXGRX1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:27:07 -0400
+	id S936125AbXGRX1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:27:11 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
-       Li Yang <leoli@freescale.com>, TripleX Chung <xxx.phy@gmail.com>,
-       Maggie Chen <chenqi@beyondsoft.com>,
-       WANG Cong <xiyou.wangcong@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       IKEDA Munehiro <m-ikeda@ds.jp.nec.com>,
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 11/14] HOWTO: Add the knwon_regression URI to the documentation
-Date: Wed, 18 Jul 2007 16:25:47 -0700
-Message-Id: <11848011924027-git-send-email-gregkh@suse.de>
+Subject: [PATCH 12/14] Driver core: check return code of sysfs_create_link()
+Date: Wed, 18 Jul 2007 16:25:48 -0700
+Message-Id: <11848011982615-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <1184801188568-git-send-email-gregkh@suse.de>
+In-Reply-To: <11848011924027-git-send-email-gregkh@suse.de>
 References: <20070718232400.GC4620@kroah.com>
  <11848011502972-git-send-email-gregkh@suse.de>
  <11848011551094-git-send-email-gregkh@suse.de>
@@ -34,40 +30,244 @@ References: <20070718232400.GC4620@kroah.com>
  <11848011802979-git-send-email-gregkh@suse.de>
  <11848011842017-git-send-email-gregkh@suse.de>
  <1184801188568-git-send-email-gregkh@suse.de>
+ <11848011924027-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-We should let everybody know about where the regression
-list is hosted. The more is known the more it is used.
+Check for return value of sysfs_create_link() in device_add() and
+device_rename().  Add helper functions device_add_class_symlinks() and
+device_remove_class_symlinks() to make the code easier to read.
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: Li Yang <leoli@freescale.com>
-Cc: TripleX Chung <xxx.phy@gmail.com>
-Cc: Maggie Chen <chenqi@beyondsoft.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-Cc: IKEDA Munehiro <m-ikeda@ds.jp.nec.com>
+[akpm@linux-foundation.org: fix unused var warnings]
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Acked-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/HOWTO |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/base/core.c |  145 +++++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 105 insertions(+), 40 deletions(-)
 
-diff --git a/Documentation/HOWTO b/Documentation/HOWTO
-index 98e2701..f8cc3f8 100644
---- a/Documentation/HOWTO
-+++ b/Documentation/HOWTO
-@@ -249,6 +249,9 @@ process is as follows:
-     release a new -rc kernel every week.
-   - Process continues until the kernel is considered "ready", the
-     process should last around 6 weeks.
-+  - A list of known regressions present in each -rc release is
-+    tracked at the following URI:
-+    http://kernelnewbies.org/known_regressions
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 91a0367..3599ab2 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -660,6 +660,82 @@ static int setup_parent(struct device *dev, struct device *parent)
+ 	return 0;
+ }
  
- It is worth mentioning what Andrew Morton wrote on the linux-kernel
- mailing list about kernel releases:
++static int device_add_class_symlinks(struct device *dev)
++{
++	int error;
++
++	if (!dev->class)
++		return 0;
++	error = sysfs_create_link(&dev->kobj, &dev->class->subsys.kobj,
++				  "subsystem");
++	if (error)
++		goto out;
++	/*
++	 * If this is not a "fake" compatible device, then create the
++	 * symlink from the class to the device.
++	 */
++	if (dev->kobj.parent != &dev->class->subsys.kobj) {
++		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
++					  dev->bus_id);
++		if (error)
++			goto out_subsys;
++	}
++	/* only bus-device parents get a "device"-link */
++	if (dev->parent && dev->parent->bus) {
++		error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
++					  "device");
++		if (error)
++			goto out_busid;
++#ifdef CONFIG_SYSFS_DEPRECATED
++		{
++			char * class_name = make_class_name(dev->class->name,
++								&dev->kobj);
++			if (class_name)
++				error = sysfs_create_link(&dev->parent->kobj,
++							&dev->kobj, class_name);
++			kfree(class_name);
++			if (error)
++				goto out_device;
++		}
++#endif
++	}
++	return 0;
++
++#ifdef CONFIG_SYSFS_DEPRECATED
++out_device:
++	if (dev->parent)
++		sysfs_remove_link(&dev->kobj, "device");
++#endif
++out_busid:
++	if (dev->kobj.parent != &dev->class->subsys.kobj)
++		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++out_subsys:
++	sysfs_remove_link(&dev->kobj, "subsystem");
++out:
++	return error;
++}
++
++static void device_remove_class_symlinks(struct device *dev)
++{
++	if (!dev->class)
++		return;
++	if (dev->parent) {
++#ifdef CONFIG_SYSFS_DEPRECATED
++		char *class_name;
++
++		class_name = make_class_name(dev->class->name, &dev->kobj);
++		if (class_name) {
++			sysfs_remove_link(&dev->parent->kobj, class_name);
++			kfree(class_name);
++		}
++#endif
++		sysfs_remove_link(&dev->kobj, "device");
++	}
++	if (dev->kobj.parent != &dev->class->subsys.kobj)
++		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++	sysfs_remove_link(&dev->kobj, "subsystem");
++}
++
+ /**
+  *	device_add - add device to device hierarchy.
+  *	@dev:	device.
+@@ -674,7 +750,6 @@ static int setup_parent(struct device *dev, struct device *parent)
+ int device_add(struct device *dev)
+ {
+ 	struct device *parent = NULL;
+-	char *class_name = NULL;
+ 	struct class_interface *class_intf;
+ 	int error = -EINVAL;
+ 
+@@ -714,27 +789,9 @@ int device_add(struct device *dev)
+ 			goto ueventattrError;
+ 	}
+ 
+-	if (dev->class) {
+-		sysfs_create_link(&dev->kobj, &dev->class->subsys.kobj,
+-				  "subsystem");
+-		/* If this is not a "fake" compatible device, then create the
+-		 * symlink from the class to the device. */
+-		if (dev->kobj.parent != &dev->class->subsys.kobj)
+-			sysfs_create_link(&dev->class->subsys.kobj,
+-					  &dev->kobj, dev->bus_id);
+-		if (parent) {
+-			sysfs_create_link(&dev->kobj, &dev->parent->kobj,
+-							"device");
+-#ifdef CONFIG_SYSFS_DEPRECATED
+-			class_name = make_class_name(dev->class->name,
+-							&dev->kobj);
+-			if (class_name)
+-				sysfs_create_link(&dev->parent->kobj,
+-						  &dev->kobj, class_name);
+-#endif
+-		}
+-	}
+-
++	error = device_add_class_symlinks(dev);
++	if (error)
++		goto SymlinkError;
+ 	error = device_add_attrs(dev);
+ 	if (error)
+ 		goto AttrsError;
+@@ -761,7 +818,6 @@ int device_add(struct device *dev)
+ 		up(&dev->class->sem);
+ 	}
+  Done:
+-	kfree(class_name);
+ 	put_device(dev);
+ 	return error;
+  BusError:
+@@ -772,6 +828,8 @@ int device_add(struct device *dev)
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	device_remove_attrs(dev);
+  AttrsError:
++	device_remove_class_symlinks(dev);
++ SymlinkError:
+ 	if (MAJOR(dev->devt))
+ 		device_remove_file(dev, &devt_attr);
+ 
+@@ -1156,7 +1214,7 @@ int device_rename(struct device *dev, char *new_name)
+ {
+ 	char *old_class_name = NULL;
+ 	char *new_class_name = NULL;
+-	char *old_symlink_name = NULL;
++	char *old_device_name = NULL;
+ 	int error;
+ 
+ 	dev = get_device(dev);
+@@ -1170,42 +1228,49 @@ int device_rename(struct device *dev, char *new_name)
+ 		old_class_name = make_class_name(dev->class->name, &dev->kobj);
+ #endif
+ 
+-	if (dev->class) {
+-		old_symlink_name = kmalloc(BUS_ID_SIZE, GFP_KERNEL);
+-		if (!old_symlink_name) {
+-			error = -ENOMEM;
+-			goto out_free_old_class;
+-		}
+-		strlcpy(old_symlink_name, dev->bus_id, BUS_ID_SIZE);
++	old_device_name = kmalloc(BUS_ID_SIZE, GFP_KERNEL);
++	if (!old_device_name) {
++		error = -ENOMEM;
++		goto out;
+ 	}
+-
++	strlcpy(old_device_name, dev->bus_id, BUS_ID_SIZE);
+ 	strlcpy(dev->bus_id, new_name, BUS_ID_SIZE);
+ 
+ 	error = kobject_rename(&dev->kobj, new_name);
++	if (error) {
++		strlcpy(dev->bus_id, old_device_name, BUS_ID_SIZE);
++		goto out;
++	}
+ 
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 	if (old_class_name) {
+ 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
+ 		if (new_class_name) {
+-			sysfs_create_link(&dev->parent->kobj, &dev->kobj,
+-					  new_class_name);
++			error = sysfs_create_link(&dev->parent->kobj,
++						  &dev->kobj, new_class_name);
++			if (error)
++				goto out;
+ 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
+ 		}
+ 	}
+ #endif
+ 
+ 	if (dev->class) {
+-		sysfs_remove_link(&dev->class->subsys.kobj,
+-				  old_symlink_name);
+-		sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+-				  dev->bus_id);
++		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
++		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
++					  dev->bus_id);
++		if (error) {
++			/* Uh... how to unravel this if restoring can fail? */
++			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
++				__FUNCTION__, error);
++		}
+ 	}
++out:
+ 	put_device(dev);
+ 
+ 	kfree(new_class_name);
+-	kfree(old_symlink_name);
+- out_free_old_class:
+ 	kfree(old_class_name);
++	kfree(old_device_name);
+ 
+ 	return error;
+ }
 -- 
 1.5.2.2
 
