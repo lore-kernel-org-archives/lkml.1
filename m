@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbXGRKL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761573AbXGRKSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763444AbXGRKL3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 06:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbXGRKLL
+	id S1761573AbXGRKSr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 06:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbXGRKSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 06:11:11 -0400
-Received: from stinky.trash.net ([213.144.137.162]:34307 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755905AbXGRKLJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 06:11:09 -0400
-Message-ID: <469DE724.2020000@trash.net>
-Date: Wed, 18 Jul 2007 12:10:44 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Wed, 18 Jul 2007 06:18:39 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:56532 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754016AbXGRKSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 06:18:38 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Avi Kivity <avi@qumranet.com>
+Subject: Re: [kvm-devel] [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
+Date: Wed, 18 Jul 2007 13:17:53 +0300
+User-Agent: KMail/1.9.7
+Cc: Anthony Liguori <anthony@codemonkey.ws>, kvm-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <11846910642166-git-send-email-avi@qumranet.com> <469DDEF7.7020107@qumranet.com> <200707181309.11900.caglar@pardus.org.tr>
+In-Reply-To: <200707181309.11900.caglar@pardus.org.tr>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: crquan@gmail.com, netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru,
-       pekkas@netcore.fi, jmorris@namei.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] [net/core] move dev_mc_discard from dev_mcast.c to
- dev.c
-References: <20070718.021107.40833440.davem@davemloft.net>	<91b13c310707180259v547ba2b3wc901102d35760a50@mail.gmail.com>	<469DE502.8070800@trash.net> <20070718.030440.124084796.davem@davemloft.net>
-In-Reply-To: <20070718.030440.124084796.davem@davemloft.net>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: multipart/signed;
+  boundary="nextPart9795801.R4KvOKOIbG";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707181317.53468.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Patrick McHardy <kaber@trash.net>
-> Date: Wed, 18 Jul 2007 12:01:38 +0200
-> 
-> 
->>rae l wrote:
->>
->>>All in one word, I don't think the single file dev_mcast.c is needed
->>>anymore.
->>
->>Agreed. But dev.c is growing larger and larger, maybe dev_addr.c?
->>Or dev_config.c, with some of the other device configuration functions?
-> 
-> 
-> I don't know, a sizable dev.c is inevitable, allows better refactoring
-> and consolidation.  And the be honest you're going to have to likely
-> touch things in dev.c whenever you make changes to dev_addr.c or
-> whatever you want to name it. :-)
+--nextPart9795801.R4KvOKOIbG
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Hi;
 
-You're probably right. Killing dev_mcast.c makes sense to me though.
+18 Tem 2007 =C3=87ar tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 y=
+azm=C4=B1=C5=9Ft=C4=B1:=20
+> http://cekirdek.pardus.org.tr/~caglar/kvm/netconsole_wo_apparmor is the
+> vanilla one's netconsole output, by the way without apparmor patchset
+> system not hard freezes.
+
+Ahhh netconsole cannot grab whole output, full log from kern.log follows [1]
+
+[1] http://cekirdek.pardus.org.tr/~caglar/kvm/kern.log
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart9795801.R4KvOKOIbG
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGnejRy7E6i0LKo6YRArDUAKCfnyq/Ub5UbPn+IDB+pMN0l+MrHwCgojpt
+urToyL+Tmq6cIo7damVU84E=
+=imvA
+-----END PGP SIGNATURE-----
+
+--nextPart9795801.R4KvOKOIbG--
