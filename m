@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbXGRK2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762887AbXGRK25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762137AbXGRK2G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 06:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXGRK1z
+	id S1762887AbXGRK25 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 06:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756324AbXGRK2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 06:27:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50351 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085AbXGRK1y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 06:27:54 -0400
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>,
-       James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
-References: <20070711211638.GE18767@one.firstfloor.org>
-	 <20070711214649.GK14435@v2.random>
-	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>
-	 <1184302024.6709.11.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0707131728070.1817@scrub.home>
-	 <1184355835.12353.321.camel@chaos> <469B0D9E.3030402@andrew.cmu.edu>
-	 <20070716070610.GA10907@elte.hu>
-	 <Pine.LNX.4.64.0707161213500.1817@scrub.home>
-	 <20070716112037.GA6895@elte.hu>
-	 <Pine.LNX.4.64.0707161331570.1817@scrub.home>
-	 <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 12:27:10 +0200
-Message-Id: <1184754430.20032.130.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jul 2007 06:28:48 -0400
+Received: from lucidpixels.com ([75.144.35.66]:42034 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753915AbXGRK2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 06:28:47 -0400
+Date: Wed, 18 Jul 2007 06:28:46 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Rui Santos <rsantos@grupopie.com>
+cc: Linux RAID <linux-raid@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Neil Brown <neilb@suse.de>
+Subject: Re: Slow Soft-RAID 5 performance
+In-Reply-To: <469DE3BB.9070604@grupopie.com>
+Message-ID: <Pine.LNX.4.64.0707180626481.7659@p34.internal.lan>
+References: <469DE3BB.9070604@grupopie.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-16 at 10:47 -0700, Linus Torvalds wrote:
-> 
-> On Mon, 16 Jul 2007, Roman Zippel wrote:
-> >
-> > To illustrate the problem a little different: a task with a nice level -20 
-> > got around 700% more cpu time (or 8 times more), now it gets 8500% more 
-> > cpu time (or 86.7 times more).
-> 
-> Ingo, that _does_ sound excessive. 
-> 
-> How about trying a much less aggressive nice-level (and preferably linear, 
-> not exponential)?
 
-I actually like the extra range, it allows for a much softer punch of
-background tasks even on somewhat slower boxen.
 
-I've been testing CFS on my 1200 MHz lappy for some time and a strongly
-niced kbuild leaves a very usable system. 
+On Wed, 18 Jul 2007, Rui Santos wrote:
 
-The old scheduler would leave the thing rather jumpy. And while CFS
-fully fixes the jumpyness, I just did a nice +13 (which should be
-equivalent to the old schedulers nice +19 for my HZ) and did a nice +19
-kbuild and I can definitely feel the difference between them.
+> Hi,
+>
+> I'm getting a strange slow performance behavior on a recently installed
+> Server. Here are the details:
+>
+> Server: Asus AS-TS500-E4A
+> Board: Asus DSBV-D (
+> http://uk.asus.com/products.aspx?l1=9&l2=39&l3=299&l4=0&model=1210&modelmenu=2
+> )
+> Hard Drives: 3x Seagate ST3400620AS (
+> http://www.seagate.com/ww/v/index.jsp?vgnextoid=8eff99f4fa74c010VgnVCM100000dd04090aRCRD&locale=en-US
+> )
+> I'm using the AHCI driver, although with ata_piix, the behavior is the
+> same. Here's some info about the AHCI controler:
+>
 
-Early CFS versions had an pretty aggressive nice range (0.1% for +19),
-and that has been toned down based on feedback. The current levels seem
-to work well, at least on my boxen.
+With three disks, if everything was perfect yeah 120MB/s writes.  When I 
+had started out with 4 raptors I was getting 164MB/s read and write.  By 
+default with no optimizations you will not get good speed.
 
-- Peter
+With no optimizations with 10 raptors I get 180-200MB/s, with 
+optimizations, 464MB/s write and 622MB/s read.
+
+1. Use XFS if you wan't speed.
+2. Use 128k, 256k or 1MiB chunk size.
+3. Use 8192k, 16384k stripe_cache_size.
+4. Use 65536 readahead size.
+
+These are only some of the optimizations I use.
+
+Justin.
 
