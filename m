@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763342AbXGRLKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760080AbXGRLRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763342AbXGRLKw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 07:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbXGRLKo
+	id S1760080AbXGRLRL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 07:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbXGRLQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 07:10:44 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:38496 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbXGRLKn (ORCPT
+	Wed, 18 Jul 2007 07:16:57 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:53407 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752088AbXGRLQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 07:10:43 -0400
-Date: Wed, 18 Jul 2007 12:10:17 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: david@lang.hm
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jim Crilly <jim@why.dont.jablowme.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Message-ID: <20070718111016.GA18716@srcf.ucam.org>
-References: <200707151433.34625.rjw@sisk.pl> <200707161406.28539.rjw@sisk.pl> <20070716123849.GC14212@grifter.jdc.home> <200707161729.16440.rjw@sisk.pl> <Pine.LNX.4.64.0707162119500.19248@asgard.lang.hm> <20070717104231.GA32486@srcf.ucam.org> <Pine.LNX.4.64.0707170818460.19248@asgard.lang.hm> <20070718021817.GA13502@srcf.ucam.org> <Pine.LNX.4.64.0707172053280.19248@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707172053280.19248@asgard.lang.hm>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: Hibernation considerations
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Wed, 18 Jul 2007 07:16:56 -0400
+Date: Wed, 18 Jul 2007 13:16:46 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, gregkh@suse.de,
+       miles.lane@gmail.com
+Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure
+ path
+Message-ID: <20070718131646.2c9cdab0@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070718071445.GI23568@htj.dyndns.org>
+References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>
+	<469A5C94.7030201@googlemail.com>
+	<a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>
+	<469A9D5D.10509@googlemail.com>
+	<469B61C8.8010902@googlemail.com>
+	<a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
+	<469BB7B8.3060002@gmail.com>
+	<469BB9CA.6090500@googlemail.com>
+	<469BC2D6.5090008@googlemail.com>
+	<469BC34C.4080107@googlemail.com>
+	<20070718071445.GI23568@htj.dyndns.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 08:54:24PM -0700, david@lang.hm wrote:
-> On Wed, 18 Jul 2007, Matthew Garrett wrote:
-> 
-> >On Tue, Jul 17, 2007 at 08:19:32AM -0700, david@lang.hm wrote:
-> >>On Tue, 17 Jul 2007, Matthew Garrett wrote:
-> >>>Powering off rather than using S4 means you lose most wakeup device
-> >>>support. That would be a functional regression compared to the current
-> >>>code.
-> >>
-> >>only if the kexec isn't able to initialize those devices.
-> >
-> >If you aren't using ACPI, you probably don't know how to.
-> 
-> the current kexec patch to allow you to move back to the original kernel 
-> requires ACPI be disabled to work.
+On Wed, 18 Jul 2007 16:14:45 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-Which means it isn't putting the hardware into S4, which means that you 
-don't get the platform wakeup events.
+> There is a subtle bug in sysfs_create_link() failure path.  When
+> symlink creation fails because there's already a node with the same
+> name, the target sysfs_dirent is put twice - once by failure path of
+> sysfs_create_link() and once more when the symlink is released.
+> 
+> Fix it by making only the symlink node responsible for putting
+> target_sd.
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+> Gabriel, Miles, please verify this fixes your problem.  Thanks.
+> 
+>  fs/sysfs/symlink.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+> index 2f86e04..d056e96 100644
+> --- a/fs/sysfs/symlink.c
+> +++ b/fs/sysfs/symlink.c
+> @@ -86,7 +86,9 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
+>  	sd = sysfs_new_dirent(name, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
+>  	if (!sd)
+>  		goto out_put;
+> +
+>  	sd->s_elem.symlink.target_sd = target_sd;
+> +	target_sd = NULL;	/* reference is now owned by the symlink */
+> 
+>  	sysfs_addrm_start(&acxt, parent_sd);
+> 
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+A subtle bug indeed. The patch looks sane to me.
+
+Reviewed-by: Cornelia Huck <cornelia.huck@de.ibm.com>
