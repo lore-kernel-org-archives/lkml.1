@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbXGRJca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762085AbXGRJc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbXGRJca (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 05:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbXGRJcW
+	id S1762085AbXGRJc4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 05:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbXGRJcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 05:32:22 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:54871 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751169AbXGRJcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 05:32:21 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [kvm-devel] [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
-Date: Wed, 18 Jul 2007 12:31:25 +0300
+	Wed, 18 Jul 2007 05:32:45 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:51778 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753366AbXGRJcn convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 05:32:43 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Organization: AMD
+To: "lkml List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] faking and fixing the NUMA SLIT
+Date: Wed, 18 Jul 2007 11:30:01 +0200
 User-Agent: KMail/1.9.7
-Cc: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <11846910642166-git-send-email-avi@qumranet.com> <200707180225.31160.caglar@pardus.org.tr> <469D52F4.8090909@codemonkey.ws>
-In-Reply-To: <469D52F4.8090909@codemonkey.ws>
+cc: gregkh@suse.de, "Andreas Kleen" <ak@suse.de>, lenb@kernel.org,
+       "Christoph Lameter" <clameter@sgi.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1555136.FSMSlFXkro";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707181231.35628.caglar@pardus.org.tr>
+Message-ID: <200707181130.01861.joachim.deguara@amd.com>
+X-OriginalArrivalTime: 18 Jul 2007 09:32:24.0968 (UTC)
+ FILETIME=[8CACB880:01C7C91E]
+X-WSS-ID: 6A8301A50X81901213-01-01
+Content-Disposition: inline
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1555136.FSMSlFXkro
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The problem with NUMA distances in the SLIT is that they are often wrong, oh 
+wait they aren't there at all because the BIOS didn't create a SLIT since 
+Windows does not use it.  If Linux does not find a slit it just says the 
+distance to local=10 and remote=20 according to ACPI spec.  The problem is 
+when we have a 4P system (or larger), there is generally one node where we 
+have two hops and its distance should be >20.
 
-Hi;
+Following are patches to first fake the SLIT in the ACPI code and then add 
+ability to write the distances from sysfs.
 
-18 Tem 2007 =C3=87ar tarihinde, Anthony Liguori =C5=9Funlar=C4=B1 yazm=C4=
-=B1=C5=9Ft=C4=B1:=20
-> Can you reproduce without the appArmor patchset?
+-Joachim
 
-If needed http://cekirdek.pardus.org.tr/~caglar/kvm/netconsole is the appAr=
-mor=20
-patchset included kernel's output captured with netconsole and yes i'll try=
-=20
-to reproduce same with vanilla one whenever i found some time :)
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart1555136.FSMSlFXkro
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGnd33y7E6i0LKo6YRAoW0AKCJaBZP7en6DwNQYNeeUowx+muNnQCfep9N
-uzJwc//eypYJW5MuGYGaXFE=
-=87Ne
------END PGP SIGNATURE-----
-
---nextPart1555136.FSMSlFXkro--
