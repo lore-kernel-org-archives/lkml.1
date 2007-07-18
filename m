@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbXGROMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764827AbXGROO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbXGROMS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759112AbXGROMB
+	id S1764827AbXGROO4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbXGROOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:12:01 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:37655 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753708AbXGROMA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:12:00 -0400
-Subject: Re: block/bsg.c
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <200707180243.13368.bzolnier@gmail.com>
-References: <20070716165706.348f6bbf.akpm@linux-foundation.org>
-	 <1184710755.3378.30.camel@localhost.localdomain>
-	 <469D52D1.1000803@garzik.org>  <200707180243.13368.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 09:11:57 -0500
-Message-Id: <1184767917.3464.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jul 2007 10:14:48 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1696 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759112AbXGROOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 10:14:47 -0400
+Date: Wed, 18 Jul 2007 16:14:26 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bruce <bruce@andrew.cmu.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+In-Reply-To: <20070718134811.GA9227@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707181558590.1817@scrub.home>
+References: <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu>
+ <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
+ <Pine.LNX.4.64.0707161331570.1817@scrub.home>
+ <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
+ <1184754430.20032.130.camel@twins> <Pine.LNX.4.64.0707181442340.1817@scrub.home>
+ <1184763148.20032.135.camel@twins> <Pine.LNX.4.64.0707181506460.1817@scrub.home>
+ <20070718134811.GA9227@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-18 at 02:43 +0200, Bartlomiej Zolnierkiewicz wrote:
-> [ James, please remeber to cc: linux-ide on IDE patches, thanks. ]
+Hi,
 
-Blame Andrew ... I assumed he'd be reporting the problem to the relevant
-lists, so I just did a reply all ...
+On Wed, 18 Jul 2007, Ingo Molnar wrote:
 
-> On Wednesday 18 July 2007, Jeff Garzik wrote:
-> > James Bottomley wrote:
-> > > @@ -1052,9 +1054,10 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
-> > >  	int err, (*setfunc)(ide_drive_t *, int);
-> > >  	u8 *val;
-> > >  
-> > > -	err = scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
-> > > -	if (err != -ENOTTY)
-> > > -		return err;
-> > > +	switch (cmd) {
-> > > +	case SG_IO:
-> > > +		return scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
-> > > +	}
-> > >  
-> > >  	switch (cmd) {
-> > >  	case HDIO_GET_32BIT:	    val = &drive->io_32bit;	 goto read_val;
-> > 
-> > 
-> > At that point you might as well use an 'if'.
-> > 
-> > But overall -- agreed.  ACK.
-> 
-> James/Jeff thanks for following the issue but NAK. ;)
-> 
-> Causes regression wrt ide-floppy CDROMEJECT/CDROMCLOSETRAY support when
-> compared to 2.6.22 and SG_IO is not supported by ide-{disk,scsi,tape}.
+> _changing_ it is an option within reason, and we've done it a couple of 
+> times already in the past, and even within CFS (as Peter correctly 
+> observed) we've been through a couple of iterations already. And as i 
+> mentioned it before, the outer edge of nice levels (+19, by far the most 
+> commonly used nice level) was inconsistent to begin with: 3%, 5%, 9% of 
+> nice-0, depending on HZ.
 
-Well ... that was why I put the case statement in ... I was sure there
-would be other ioctls I missed.
+Why do you constantly stress level 19? Yes, that one is special, all other 
+positive levels were already relatively consistent.
 
-> Luckily Linus has already fixed the issue properly.
+> So changing that to a consistent (and 
+> user-requested)
 
-Actually, no, that's just a reversion.  I think we need the attached to
-complete all of this.
+How old is CFS and how many users did it have so far? How many users has 
+the old scheduler, which will be exposed to the new one soon?
 
-> BTW cmd == 1 IOCTL is not defined/used by IDE driver.
+> 1.5% is a much smaller change than you seem to make it 
+> out to be.
 
-Andrew's trace clearly shows that something is sending cmd == 1 down, so
-I'm nearly positive at one time this was a legitimate ioctl for IDE.
-Anyway it's probably time to kill this deprecated ioctl in SCSI.
+The percentage levels are off by a factor of upto _seven_, sorry I fail 
+see how you can characterize this as "small".
 
-James
+> So by your standard we could never change the 
+> scheduler. (which your ultimate argument might be after all =B-)
 
-diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-index 077fb67..fe65473 100644
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -156,6 +156,7 @@
- #include <asm/uaccess.h>
- #include <asm/io.h>
- 
-+#include <scsi/sg.h>
- 
- /* default maximum number of failures */
- #define IDE_DEFAULT_MAX_FAILURES 	1
-@@ -1173,6 +1174,7 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
- 
- 		case CDROMEJECT:
- 		case CDROMCLOSETRAY:
-+		case SG_IO:
- 			return scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
- 
- 		case HDIO_GET_BUSSTATE:
+Careful, you make assertion about me, for which you have absolutely no 
+base, adding a smiley doesn't make this any funnier.
 
-
+bye, Roman
