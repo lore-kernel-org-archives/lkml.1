@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbXGRUQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760321AbXGRUSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759569AbXGRUQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 16:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXGRUQT
+	id S1760321AbXGRUSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 16:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXGRUSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 16:16:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39471 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752640AbXGRUQS (ORCPT
+	Wed, 18 Jul 2007 16:18:04 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:54722 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbXGRUSC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 16:16:18 -0400
-Date: Wed, 18 Jul 2007 13:15:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] isdn/sc: compile breakage re check_reset()
-Message-Id: <20070718131502.d54477ea.akpm@linux-foundation.org>
-In-Reply-To: <20070717103343.GA25083@localhost.sw.ru>
-References: <20070717103343.GA25083@localhost.sw.ru>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Jul 2007 16:18:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Cm4/k86bnQjlUb+ZwmJb4fqAHPIJofpPc/Q33eTpyYDgRdnw8MJdiJ5qiDsemNww8JEEB3NKcu1IKbBS3jg6tuKS7aBfWfgP7lYi3nFYkp2S3TqQOZdtcVe/1brVqBN/5AJsoZBVGIK4rkP2nZzBLVOXSGjSbQqPIw+4BU2G0ZE=
+Message-ID: <469E7599.4060608@gmail.com>
+Date: Wed, 18 Jul 2007 22:18:33 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH][RFC] Delete export of tty.h to userspace.
+References: <Pine.LNX.4.64.0707180520040.19434@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707180520040.19434@localhost.localdomain>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007 14:33:43 +0400
-Alexey Dobriyan <adobriyan@sw.ru> wrote:
-
-> There is check_reset() -- global function in drivers/isdn/sc/
-> There is check_reset -- variable holding module param in aacraid driver.
+Robert P. J. Day napsal(a):
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 > 
-> On allyesconfig they clash with:
+> ---
 > 
->   LD      drivers/built-in.o
-> drivers/isdn/built-in.o: In function `check_reset':
-> : multiple definition of `check_reset'
-> drivers/scsi/built-in.o:(.data+0xe458): first defined here
-> ld: Warning: size of symbol `check_reset' changed from 4 in drivers/scsi/built-in.o to 219 in drivers/isdn/built-in.o
-> ld: Warning: type of symbol `check_reset' changed from 1 to 2 in drivers/isdn/built-in.o
+>   given that the entire contents of include/linux/tty.h is contained
+> within an "#ifdef __KERNEL__", it seems pointless to export it to
+> userspace, unless there's some kind of need for that header file to
+> exist in userspace, even if it's empty.
 > 
-> Rename the former.
+>   a quick grep shows that nothing under /usr/include references any
+> file of the name "tty.h" in any way.  thoughts?
 
-yeah, well, I did aacraid-rename-check_reset.patch last month, but scsi
-patches are hard to get rid of.
+If we decide to remove the file, I would rather go through deprecation of the
+file with filing an entry in feature-remove-schedule. There still seems to be
+some users of the file.
 
-Both patches are needed: check_reset() is a dopey name.
+With deprecation done with sth. like
+#ifndef __KERNEL__
+#warning Don't include this file from userspace, it's emtpy.
+#endif
+
+>  diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+> index 4ff0f57..63de91a 100644
+> --- a/include/linux/Kbuild
+> +++ b/include/linux/Kbuild
+> @@ -328,7 +327,6 @@ unifdef-y += sysctl.h
+>  unifdef-y += tcp.h
+>  unifdef-y += time.h
+>  unifdef-y += timex.h
+> -unifdef-y += tty.h
+>  unifdef-y += types.h
+>  unifdef-y += udf_fs_i.h
+>  unifdef-y += udp.h
+
+
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
