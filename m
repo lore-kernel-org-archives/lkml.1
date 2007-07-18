@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbXGRBHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbXGRBY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760901AbXGRBHS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 21:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761274AbXGRBHF
+	id S1758829AbXGRBY7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 21:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbXGRBYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 21:07:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56985 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758049AbXGRBHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 21:07:03 -0400
-Date: Tue, 17 Jul 2007 18:06:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Schwab <schwab@suse.de>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Ulrich Drepper <drepper@redhat.com>, stable@kernel.org
-Subject: Re: [PATCH] Pass nr_wake2 to futex_wake_op
-Message-Id: <20070717180628.ec649a78.akpm@linux-foundation.org>
-In-Reply-To: <jey7hfs1v2.fsf@sykes.suse.de>
-References: <jey7hfs1v2.fsf@sykes.suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 17 Jul 2007 21:24:51 -0400
+Received: from mail.tmr.com ([64.65.253.246]:42447 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752109AbXGRBYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 21:24:51 -0400
+Message-ID: <469D6BD8.8050703@tmr.com>
+Date: Tue, 17 Jul 2007 21:24:40 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ian Kent <raven@themaw.net>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] CFS scheduler, -v19
+References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com> <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu> <1184648474.3188.33.camel@raven.themaw.net> <20070717074537.GA13539@elte.hu> <1184671021.3188.51.camel@raven.themaw.net> <20070717171643.GB7905@elte.hu>
+In-Reply-To: <20070717171643.GB7905@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007 13:31:29 +0200
-Andreas Schwab <schwab@suse.de> wrote:
+Ingo Molnar wrote:
+> * Ian Kent <raven@themaw.net> wrote:
+>
+>   
+>>> ah! It passes in a low-res time source into a high-res time interface 
+>>> (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to 
+>>> time(NULL) + 2, or change it to:
+>>>
+>>> 	gettimeofday(&wait, NULL);
+>>> 	wait.tv_sec++;
+>>>       
+>> OK, I'm with you, hi-res timer.
+>> But even so, how is the time in the past after adding a second.
+>>
+>> Is it because I'm not setting tv_nsec when it's close to a second 
+>> boundary, and hence your recommendation above?
+>>     
+>
+> yeah, it looks a bit suspicious: you create a +1 second timeout out of a 
+> 1 second resolution timesource. I dont yet understand the failure mode 
+> though that results in that looping and in the 30% CPU time use - do you 
+> understand it perhaps? (and automount is still functional while this is 
+> happening, correct?)
+>   
 
-> The fourth argument of sys_futex is ignored when op == FUTEX_WAKE_OP,
-> but futex_wake_op expects it as its nr_wake2 parameter.
-> 
-> The only user of this operation in glibc is always passing 1, so this
-> bug had no consequences so far.
-> 
-> Signed-off-by: Andreas Schwab <schwab@suse.de>
-> 
-> ---
->  kernel/futex.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.22.orig/kernel/futex.c	2007-07-02 00:40:44.000000000 +0200
-> +++ linux-2.6.22/kernel/futex.c	2007-07-07 15:56:42.000000000 +0200
-> @@ -2061,8 +2061,10 @@ asmlinkage long sys_futex(u32 __user *ua
->  	}
->  	/*
->  	 * requeue parameter in 'utime' if cmd == FUTEX_REQUEUE.
-> +	 * number of waiters to wake in 'utime' if cmd == FUTEX_WAKE_OP.
->  	 */
-> -	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
-> +	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE ||
-> +	    cmd == FUTEX_WAKE_OP)
->  		val2 = (u32) (unsigned long) utime;
->  
->  	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
-> 
+Can't say, I have automount running because I get it by default, but I 
+have nothing using at on my test machine. Why is it looping so fast when 
+there are no mount points defined? If the config changes there's no 
+requirement to notice right away, is there?
 
-So if an application or glibc _does_ start passing in non-1 values, it
-will malfunction on earlier kernels?
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
-So that userspace code would need to have a test for the kernel version, I
-assume?
-
-All a bit of a hassle.  Still, I'd propose that this change (if the
-thus-far-silent cc'ees agree with it?) go into 2.6.22.x at least.  If it
-gets accepted into 2.6.22.x then applications (or glibc) will need to test
-for kernels as far back as 2.6.22.  Really they would need to test for the
-correct value of x in 2.6.22.x, but I don't know if glibc is set up for
-that.
-
-Thoughts?
