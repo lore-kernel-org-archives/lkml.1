@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbXGRESb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbXGRE0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753259AbXGRESb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 00:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbXGRESV
+	id S1753588AbXGRE0T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 00:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbXGRE0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 00:18:21 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:3712 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbXGREST (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 00:18:19 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAFcxnUarR7O6/2dsb2JhbAA
-X-IronPort-AV: i="4.16,548,1175497200"; 
-   d="scan'208"; a="504297302:sNHT27384422"
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       chas@cmf.nrl.navy.mil, rolandd@cisco.com, dwmw2@infradead.org,
-       gregkh@suse.de
-Subject: Re: [git patches 1/2] warnings: attack valid cases spotted by warnings
-X-Message-Flag: Warning: May contain useful information
-References: <20070717214239.GF28448@devserv.devel.redhat.com>
-	<ada8x9epuip.fsf@cisco.com> <469D3E66.3010502@garzik.org>
-	<adamyxuo2w6.fsf@cisco.com> <adair8io2de.fsf@cisco.com>
-	<alpine.LFD.0.999.0707171957300.27353@woody.linux-foundation.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 17 Jul 2007 21:18:15 -0700
-In-Reply-To: <alpine.LFD.0.999.0707171957300.27353@woody.linux-foundation.org> (Linus Torvalds's message of "Tue, 17 Jul 2007 21:00:10 -0700 (PDT)")
-Message-ID: <adabqeamjjs.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Wed, 18 Jul 2007 00:26:08 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:56712 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751260AbXGRE0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 00:26:06 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Wed, 18 Jul 2007 10:19:29 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: Uwe Kleine-Konig <ukleinek@informatik.uni-freiburg.de>,
+       Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] UP: smp_call_function_single() must warn on irqs_disabled()
+In-Reply-To: <Pine.LNX.4.64.0707180934580.31117@cselinux1.cse.iitk.ac.in>
+Message-ID: <Pine.LNX.4.64.0707181016380.32074@cselinux1.cse.iitk.ac.in>
+References: <20070717232446.GA20140@lala> <20070717235400.GQ21668@ftp.linux.org.uk>
+ <Pine.LNX.4.64.0707180934580.31117@cselinux1.cse.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Jul 2007 04:18:16.0056 (UTC) FILETIME=[A9D8FF80:01C7C8F2]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Quite frankly, I don't quite understand where you get those enormous balls 
- > you have, that you can then talk about how ugly it is to just add a "= 0" 
- > that shuts up a compiler warning. That's the _least_ ugly part of the 
- > whole damn function!
+On Wed, 18 Jul 2007, Satyam Sharma wrote:
 
-The clanking when I walk annoys people in the office too...
+> On Wed, 18 Jul 2007, Al Viro wrote:
+> 
+> > On Wed, Jul 18, 2007 at 01:24:46AM +0200, Uwe Kleine-Konig wrote:
+> > > [...]
+> > > a52b1752c07 introduces usage of the WARN_ON macro in <linux/smp.h>, but
+> > > doesn't pull in <linux/kernel.h>.  (<asm/bug.h> is not enough, at least
+> > > for arm, because WARN_ON uses printk there.)
+> > > 
+> > > The obvious options are:
+> > > 
+> > > 1) include <linux/kernel.h> in <linux/smp.h>, maybe conditioned by !SMP
+> > > 2) include <linux/kernel.h> in all includers of <linux/smp.h>
+> > > 3) remove the WARN_ONs introduced by a52b1752c07.
+> > > [...]
+> > 
+> > 4) turn the sucker into macro
+> 
+> 
+> I think that warning is incorrect anyway ... and I'm to blame
+> for that. What happened is that I had earlier (month or two back,
+> _before_ the recent change in smp_call_function_single() semantics)
+> submitted a patch that put an unconditional WARN_ON(1) in this
+> function for UP -- in those days, both the smp_call_function*
+> variants were illegal on the current CPU itself.
+> ( http://lkml.org/lkml/2007/6/7/262 )
+> 
+> Then recently, Andi / Avi proposed the new semantics for
+> smp_call_function_single() to allow it to just execute the given
+> function on current CPU as well -- smp_call_function() semantics
+> were left unchanged, so as not to break stuff like smp_send_stop().
+> 
+> I think I got confused and recommended the (cpuid != 0) warning,
+> but I don't really think it is necessary with new semantics --
+> sorry about this, Avi.
+> 
+> OTOH, the function _should_ include a WARN_ON, but for a different
+> condition -- irqs_disabled(), as explained in changelog below.
 
-But you're right.  It is stupid of me to make such a big deal about
-this.  My excuse is that I've seen those warnings so many times and
-actually given them more thought than they deserve, and I really felt
-that Jeff's change makes the admittedly already ugly code a tiny
-little bit worse.
-
- > Anyway, here's a totally untested cleanup that compiles but probably 
- > doesn't work, because I didn't check that I did the right thing with all 
- > the pointer arithmetic (ie when I change "wqe" to a real structure pointer 
- > instead of just a "void *", maybe I left some pointer arithmetic around 
- > that expected it to work as a byte pointer, but now really works on the 
- > whole structure size instead).
-
-Given that you took the time to do this, I'll get the patch into a
-working state and apply it.  And maybe split it into reviewable chunks
-while I'm at it ;)
-
-Thanks,
-  Roland
+But on third thoughts, we shouldn't be executing that function locally
+for UP if cpuid != 0 anyway, so my earlier suggestion wasn't really
+erroneous ... perhaps *both* those warnings are required (well, the
+irqs_disabled() one definitely is, at least).
