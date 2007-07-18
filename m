@@ -1,39 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXGRLHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbXGRLJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932184AbXGRLHB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 07:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762986AbXGRLGs
+	id S1762263AbXGRLJt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 07:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbXGRLJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 07:06:48 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:19063 "EHLO kernel.dk"
+	Wed, 18 Jul 2007 07:09:41 -0400
+Received: from box.memset.com ([89.200.136.113]:55514 "EHLO box.memset.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756526AbXGRLGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 07:06:46 -0400
-Date: Wed, 18 Jul 2007 13:06:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Phillip Susi <psusi@cfl.rr.com>, Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>
-Subject: Re: [PATCH] block: factor out bio_check_eod()
-Message-ID: <20070718110619.GM11657@kernel.dk>
-References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070530093503.GA15559@kernel.dk> <20070718105655.GB22374@htj.dyndns.org> <20070718105946.GC22374@htj.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070718105946.GC22374@htj.dyndns.org>
+	id S1753036AbXGRLJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 07:09:41 -0400
+To: linux-kernel@vger.kernel.org
+Cc: Zan Lynx <zlynx@acm.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+In-Reply-To: <8IdHQ-7Pm-23@gated-at.bofh.it>
+References: <8IdHQ-7Pm-25@gated-at.bofh.it> <8IdHQ-7Pm-27@gated-at.bofh.it> <8IdHQ-7Pm-29@gated-at.bofh.it> <8IdHQ-7Pm-31@gated-at.bofh.it> <8IdHQ-7Pm-33@gated-at.bofh.it> <8IdHQ-7Pm-35@gated-at.bofh.it> <8IdHQ-7Pm-37@gated-at.bofh.it> <8IdHQ-7Pm-39@gated-at.bofh.it> <8IdHQ-7Pm-41@gated-at.bofh.it> <8IdHQ-7Pm-43@gated-at.bofh.it> <8IdHQ-7Pm-45@gated-at.bofh.it> <8IdHQ-7Pm-47@gated-at.bofh.it> <8IdHQ-7Pm-49@gated-at.bofh.it> <8IdHQ-7Pm-23@gated-at.bofh.it>
+Date: Wed, 18 Jul 2007 12:09:38 +0100
+Message-Id: <20070718110938.587151074197@irishsea.home.craig-wood.com>
+From: nick@craig-wood.com (Nick Craig-Wood)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18 2007, Tejun Heo wrote:
-> End of device check is done twice in __generic_make_request() and it's
-> fully inlined each time.  Factor out bio_check_eod().
+Nick Craig-Wood <nick@craig-wood.com> wrote:
+>  Zan Lynx <zlynx@acm.org> wrote:
+> >  There *are* crashes from LVM and ext3.  I had to change kernels to avoid
+> >  them.
+> > 
+> >  I had crashes with ext3 on LVM snapshot on DM mirror on SATA.
+> 
+>  We've noticed these too... ext3/LVM/raid0/sata seems fine.  If you add
+>  snapshot in that mix then it becomes rather unreliable.
 
-Tejun, yeah I should seperate the cleanups and put them in the upstream
-branch. Will do so and add your signed-off to both of them.
+I meant raid1 up there not raid0!
 
 -- 
-Jens Axboe
-
+Nick Craig-Wood <nick@craig-wood.com> -- http://www.craig-wood.com/nick
