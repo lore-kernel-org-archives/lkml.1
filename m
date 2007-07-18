@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934876AbXGRSqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936170AbXGRSro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934876AbXGRSqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 14:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbXGRSqJ
+	id S936170AbXGRSro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 14:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759724AbXGRSrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 14:46:09 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51742 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752159AbXGRSqI (ORCPT
+	Wed, 18 Jul 2007 14:47:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44696 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759495AbXGRSrf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 14:46:08 -0400
-Date: Wed, 18 Jul 2007 19:45:19 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Check for compound pages in set_page_dirty()
-In-Reply-To: <20070718182456.GE11657@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0707181942140.13919@blonde.wat.veritas.com>
-References: <20070718141533.GA11657@kernel.dk>
- <Pine.LNX.4.64.0707181619200.23261@blonde.wat.veritas.com>
- <20070718182456.GE11657@kernel.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAA2luYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAamVucy5heGJvZUBvcmFjbGUuY29tAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcA
-X-Brightmail-Tracker: AAAAAA==
+	Wed, 18 Jul 2007 14:47:35 -0400
+Date: Wed, 18 Jul 2007 20:47:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org,
+       torvalds@transmeta.com
+Subject: Re: Patches for REALLY TINY 386 kernels
+Message-ID: <20070718184734.GE3898@one.firstfloor.org>
+References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com> <20070718182021.GA3898@one.firstfloor.org> <Pine.LNX.4.64.0707182024231.5385@fbirervta.pbzchgretzou.qr> <20070718183840.GC3898@one.firstfloor.org> <Pine.LNX.4.64.0707182042580.5385@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707182042580.5385@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Jens Axboe wrote:
-> 
-> OK, you clearly have more knowledge in that area than I, but I do wish
-> that you would have made a note in the code at least to remove things
-> like this. It's pretty ugly to have superflous tests like that,
-> especially since there was not even a comment saying _why_ you could not
-> call set_page_dirty() on a compound page. I see it in the commit text,
-> but nobody looking at fs/bio.c or fs/direct-io.c would directly find any
-> reference of that.
-> 
-> Could you submit a patch removing the tests?
+> And the hypothetical case where RAM is hotplugged and/or recognized after the
+> kernel has been loaded by the bootloader? I do not claim to be an expert, but
 
-Okay, I'll do that - once I've reminded myself how to test it and done so!
+RAM hotadd needs working user space to trigger it.
 
-Hugh
+Besides it typically comes with cpuhotplug too, so you couldn't even
+discard __cpuinit.
+
+-Andi (who is out of the thread because it's getting silly) 
