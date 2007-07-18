@@ -1,115 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933833AbXGRQF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933882AbXGRQGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933833AbXGRQF0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 12:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932869AbXGRQFL
+	id S933882AbXGRQGr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 12:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbXGRQGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 12:05:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45407 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932387AbXGRQFH (ORCPT
+	Wed, 18 Jul 2007 12:06:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:3936 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756681AbXGRQGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 12:05:07 -0400
-Date: Wed, 18 Jul 2007 09:03:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Ian Kent <raven@themaw.net>, Chuck Ebbert <cebbert@redhat.com>,
-       Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v19
-In-Reply-To: <20070717074537.GA13539@elte.hu>
-Message-ID: <alpine.LFD.0.999.0707180852540.27353@woody.linux-foundation.org>
-References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net>
- <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com>
- <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu>
- <1184648474.3188.33.camel@raven.themaw.net>
- <20070717074537.GA13539@elte.hu>
+	Wed, 18 Jul 2007 12:06:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pXbbsMH5ytPQZJLy5RPbLGlPEuOQSSeXokmXAcbtNTKychMshnBpmDqyRUYQbYoOllhqqqW54KdAAxNw5JnxDdbJxnXn1Vme57gx7d+GuBVV1/cBQnLFvvNxYGRn7cKPfSQ2NFfpJSyb7p9TQAohN9AG4bxINIYMqPDPpAtGVrw=
+Message-ID: <a781481a0707180906w38b151faqd7077ee3da21aff3@mail.gmail.com>
+Date: Wed, 18 Jul 2007 21:36:37 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure path
+Cc: "Gabriel C" <nix.or.die@googlemail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>, gregkh@suse.de,
+       miles.lane@gmail.com
+In-Reply-To: <469E352A.90909@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>
+	 <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com>
+	 <469BC2D6.5090008@googlemail.com> <469BC34C.4080107@googlemail.com>
+	 <20070718071445.GI23568@htj.dyndns.org>
+	 <a781481a0707180748j4760ab8bo237c1abc02feb593@mail.gmail.com>
+	 <469E2A68.6010307@gmail.com>
+	 <a781481a0707180816r478d2512v953036a1e4145a72@mail.gmail.com>
+	 <469E352A.90909@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 7/18/07, Tejun Heo <htejun@gmail.com> wrote:
+> Satyam Sharma wrote:
+> >> Well, I dunno.  Probably my taste just sucks.  Please feel free to
+> >> submit patches and/or suggest better ideas.
+> >
+> > OK, for example:
+> >
+> > sysfs_find_dirent() -- to check for -EEXIST -- should be called
+> > *before* we create the new dentry for the to-be-created symlink
+> > in the first place. [ It's weird to grab a reference on the target
+> > for ourselves (and in fact even allocate the new dirent for the
+> > to-be-created symlink) and /then/ check for erroneous usage,
+> > and then go about undoing all that we should never have done
+> > at all. ] So this test could, and should, be made earlier, IMHO.
+>
+> Locking.
+
+Well s/sysfs_find_dirent/sysfs_get_dirent/ then. And then simply put
+down the reference later.
+
+> Otherwise, why would the code look like that in the first place?
 
 
-On Tue, 17 Jul 2007, Ingo Molnar wrote:
-> 
-> * Ian Kent <raven@themaw.net> wrote:
-> > 
-> > In several places I have code similar to:
-> > 
-> > wait.tv_sec = time(NULL) + 1;
-> > wait.tv_nsec = 0;
+> > And some similar others ... so attached (sorry, Gmail web
+> > interface) please find an attempt to make sysfs_create_link look
+> > a trifle more like what it should look like, IMHO. The code cleanup
+> > also leads to fewer LOC, smaller kernel image (lesser by 308 bytes),
+> > and even speeding up the no-error common case of this function,
+> > apart from the obvious readability benefits ... it's diffed on _top_ of
+> > your bugfix here, but not the other patch. [ Compile-tested only. ]
+>
+> Compounded if-else vs. flattened if () with common error path is pretty
+> much matter of being accustomed to.  I prefer the latter because it
+> scales better (less nesting and less need for extra intelligence as
+> error case grows).  As I'm already used to it, it's also easier on my
+> eyes.
 
-Ok, that definitely should work.
+Umm, I don't see any compounded if-else that I added that wasn't
+there already ... if any are, they only make the code clearly obvious
+as to what it's doing in the first place. And we've still got a common
+error path. Just that the error paths do not *need* to share any other
+code than the simple "return error;" precisely because it's been
+cleaned up. The existing code was just horrible, IMHO.
 
-Does the patch below help?
+> So, unless you have more to offer, I'm not really sure whether
+> the patch improves the situation noticeably.
 
-> ah! It passes in a low-res time source into a high-res time interface 
-> (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to 
-> time(NULL) + 2, or change it to:
-> 
-> 	gettimeofday(&wait, NULL);
-> 	wait.tv_sec++;
+Readability, fewer LOC, 308 lesser bytes in kernel image and
+faster for the common case -- not good enough for you?! Oh, well.
 
-This is wrong. It's wrong for two reasons:
-
- - it really shouldn't be needed. I don't think "time()" has to be 
-   *exactly* in sync, but I don't think it can be off by a third of a 
-   second or whatever (as the "30% CPU load" would seem to imply)
-
- - gettimeofday works on a timeval, pthread_cond_timedwait() works on a 
-   timespec.
-
-So if it actually makes a difference, it makes a difference for the 
-*wrong* reason: the time is still totally nonsensical in the tv_nsec field 
-(because it actually got filled in with msecs!), but now the tv_sec field 
-is in sync, so it hides the bug.
-
-Anyway, hopefully the patch below might help. But we probably should make 
-this whole thing a much more generic routine (ie we have our internal 
-"getnstimeofday()" that still is missing the second-overflow logic, and 
-that is quite possibly the one that triggers the "30% off" behaviour).
-
-Ingo, I'd suggest:
- - ger rid of "timespec_add_ns()", or at least make it return a return 
-   value for when it overflows.
- - make all the people who overflow into tv_sec call a "fix_up_seconds()" 
-   thing that does the xtime overflow handling.
-
-		Linus
-
----
-Subject: time: make sure sys_gettimeofday() and sys_time() are in sync
-From: Ingo Molnar <mingo@elte.hu>
-
-make sure sys_gettimeofday() and sys_time() results are coherent.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/time/timekeeping.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-Index: linux/kernel/time/timekeeping.c
-===================================================================
---- linux.orig/kernel/time/timekeeping.c
-+++ linux/kernel/time/timekeeping.c
-@@ -92,6 +92,19 @@ static inline void __get_realtime_clock_
- 	} while (read_seqretry(&xtime_lock, seq));
- 
- 	timespec_add_ns(ts, nsecs);
-+	/*
-+	 * Make sure xtime.tv_sec [returned by sys_time()] always
-+	 * follows the gettimeofday() result precisely. This
-+	 * condition is extremely unlikely, it can hit at most
-+	 * once per second:
-+	 */
-+	if (unlikely(xtime.tv_sec != ts->tv_sec)) {
-+		unsigned long flags;
-+
-+		write_seqlock_irqsave(&xtime_lock, flags);
-+		update_wall_time();
-+		write_sequnlock_irqrestore(&xtime_lock, flags);
-+	}
- }
- 
- /**
-
+Satyam
