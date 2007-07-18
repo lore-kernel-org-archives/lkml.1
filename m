@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbXGRFDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbXGRFJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbXGRFDT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 01:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXGRFDL
+	id S1755212AbXGRFJr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 01:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbXGRFJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 01:03:11 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41111 "EHLO gate.crashing.org"
+	Wed, 18 Jul 2007 01:09:39 -0400
+Received: from mx2.suse.de ([195.135.220.15]:54390 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750762AbXGRFDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 01:03:10 -0400
-Date: Wed, 18 Jul 2007 00:02:46 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: bzolnier@gmail.com
-cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-ide@vger.kernel.org
-Subject: compile error if CONFIG_BLOCK not enabled related to linux/ide.h
- include
-Message-ID: <Pine.LNX.4.64.0707172353050.29097@blarg.am.freescale.net>
+	id S1751311AbXGRFJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 01:09:38 -0400
+Date: Tue, 17 Jul 2007 22:09:34 -0700
+From: Brandon Philips <bphilips@suse.de>
+To: Greg KH <gregkh@suse.de>, Tejun Heo <teheo@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Documentation fix devres.txt: lib/iomap.c -> lib/devres.c
+Message-ID: <20070718050934.GA4397@ifup.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-M:      bzolnier@gmail.com
-L:      linux-ide@vger.kernel.org
+Signed-off-by: Brandon Philips <bphilips@suse.de>
+---
+ Documentation/driver-model/devres.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-We get the following compile error if CONFIG_BLOCK isn't enabled:
-
-  CC      arch/powerpc/kernel/setup_32.o
-In file included from arch/powerpc/kernel/setup_32.c:14:
-include/linux/ide.h:558: error: expected specifier-qualifier-list before 'request_queue_t'
-include/linux/ide.h:696: warning: 'struct request' declared inside parameter list
-include/linux/ide.h:696: warning: its scope is only this definition or declaration, which is probably not what you want
-include/linux/ide.h:820: warning: 'struct request' declared inside parameter list
-include/linux/ide.h:853: error: field 'wrq' has incomplete type
-include/linux/ide.h:1205: error: expected ')' before '*' token
-make[1]: *** [arch/powerpc/kernel/setup_32.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
-
-What I'm trying to figure out is if include/linux/ide.h should be wrapped
-in a #if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE) or if there is
-some other desired way to handle this.
-
-This seems to stem from the fact that include/linux/blkdev.h is wrapped in
-a CONFIG_BLOCK and thus request_queue_t isn't always defined.
-
-- k
-
+diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
+index 6c8d8f2..8569072 100644
+--- a/Documentation/driver-model/devres.txt
++++ b/Documentation/driver-model/devres.txt
+@@ -207,7 +207,7 @@ responsibility.  This is usually non-issue because bus ops and
+ resource allocations already do the job.
+ 
+ For an example of single-instance devres type, read pcim_iomap_table()
+-in lib/iomap.c.
++in lib/devres.c.
+ 
+ All devres interface functions can be called without context if the
+ right gfp mask is given.
+-- 
+1.5.3.GIT
 
