@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbXGRIgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbXGRIgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757396AbXGRIgj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 04:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXGRIgc
+	id S1759955AbXGRIgy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 04:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbXGRIgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 04:36:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41460 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbXGRIgb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 04:36:31 -0400
-Date: Wed, 18 Jul 2007 01:36:00 -0700
-From: Greg KH <greg@kroah.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] drivers/base/core: improve device_add() error
-	handling, fix bugs
-Message-ID: <20070718083600.GA21650@kroah.com>
-References: <20070718055348.GA5734@havoc.gtf.org> <20070718101501.6af017bc@gondolin.boeblingen.de.ibm.com> <469DCC4A.9010001@garzik.org>
+	Wed, 18 Jul 2007 04:36:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52877 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757571AbXGRIgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 04:36:41 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm 0/5] Freezer update
+Date: Wed, 18 Jul 2007 10:44:14 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>
+References: <200707180929.31511.rjw@sisk.pl> <20070718010353.27965df7.akpm@linux-foundation.org>
+In-Reply-To: <20070718010353.27965df7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <469DCC4A.9010001@garzik.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200707181044.15662.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 04:16:10AM -0400, Jeff Garzik wrote:
->  Cornelia Huck wrote:
-> > On Wed, 18 Jul 2007 01:53:48 -0400,
-> > Jeff Garzik <jeff@garzik.org> wrote:
-> >> The following change was checked into 'warnings' branch of
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
-> >>
-> >> commit 5330916f5a11d8b7def46a6b3e14a831684032f5
-> >> Author: Jeff Garzik <jeff@garzik.org>
-> >> Date:   Wed Jul 18 01:41:29 2007 -0400
-> >>
-> >>     drivers/base/core: improve device_add() error handling, fix bugs
-> >>         * silence several warnings by handling sysfs_create_link() failure
-> >>         * re-order some operations in error handling, to precisely reverse
-> >>       the order of operations, i.e. unwind properly.
-> >>         Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> >>
-> >>  drivers/base/core.c |   46 ++++++++++++++++++++++++++++++----------------
-> >>  1 file changed, 30 insertions(+), 16 deletions(-)
-> > Hm, what about driver-core-check-return-code-of-sysfs_create_link.patch
-> > (merged with ...-fix.patch) which has been in -mm for a while?
+On Wednesday, 18 July 2007 10:03, Andrew Morton wrote:
+> On Wed, 18 Jul 2007 09:29:30 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
->  No idea, I didn't check there.   If someone else has a better patch... 
->  great!  Let's merge it :)
+> > The patches in these series update the freezer to eliminate some existing
+> > shortcomings,
+> 
+> argh.
+> 
+> I have a backlog of maybe 300 patches here which I am cheerfully ignoring
+> while concentrating on preventing 2.6.23 from being less of a disaster than
+> it has already been.
+> 
+> Please, stop writing patches.  Maybe do something to help get 2.6.23 off
+> its back.  Like, go review some of the code which people are cheerfully
+> merging five minutes after having written it.
+> 
+> > so please consider them as 2.6.23 material.
+> 
+> The door for new 2.6.23 material shut two weeks ago.  Here, at least.
+> 
+> Later, OK?
 
-It's in my queue.
-
-Or it should be, hm, Cornelia, can you resend it, I seem to have dropped
-it :(
-
-thanks,
-
-greg k-h
+OK, and sorry for the trouble.
