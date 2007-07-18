@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbXGRMmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763784AbXGRMoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763472AbXGRMmG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 08:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758377AbXGRMlz
+	id S1763784AbXGRMoU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 08:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbXGRMoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 08:41:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34626 "EHLO mx2.mail.elte.hu"
+	Wed, 18 Jul 2007 08:44:11 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4248 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758178AbXGRMly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 08:41:54 -0400
-Date: Wed, 18 Jul 2007 14:41:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
+	id S1759291AbXGRMoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 08:44:10 -0400
+Date: Wed, 18 Jul 2007 14:40:07 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matt Mackall <mpm@selenic.com>, James Bruce <bruce@andrew.cmu.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070718124141.GA31215@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <200707172034.20581.olaf.kirch@oracle.com> <20070717185602.GA25271@elte.hu> <200707181404.20458.olaf.kirch@oracle.com>
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+In-Reply-To: <20070718104001.GA2801@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707181330480.1817@scrub.home>
+References: <20070716134036.GA1533@elte.hu> <Pine.LNX.4.64.0707161548000.1817@scrub.home>
+ <20070716203117.GC11166@waste.org> <20070716211851.GB18661@elte.hu>
+ <Pine.LNX.4.64.0707162351030.1817@scrub.home> <20070716222909.GA30906@elte.hu>
+ <Pine.LNX.4.64.0707170047230.1817@scrub.home> <Pine.LNX.4.64.0707170437110.1818@scrub.home>
+ <20070717080230.GC13539@elte.hu> <Pine.LNX.4.64.0707171324110.1817@scrub.home>
+ <20070718104001.GA2801@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707181404.20458.olaf.kirch@oracle.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Olaf Kirch <olaf.kirch@oracle.com> wrote:
+On Wed, 18 Jul 2007, Ingo Molnar wrote:
 
-> On Tuesday 17 July 2007 20:56, Ingo Molnar wrote:
-> > i logged these not via netconsole but via logging on over the console 
-> > and using dmesg, so it should include everything. in the 100hz case the 
-> > following seems to show the anomaly:
-> > 
-> >   NETDEV WATCHDOG: eth0: transmit timed out
-> 
-> So, it seems as if for some reason, dev->poll isn't called frequently 
-> enough.
-> 
-> Here's a debugging patch that tries to locate the problem - can you 
-> give it a try, please?
+> > > Roman, please do me a favor, and ask me the following question:
+> > > 
+> > >  [insult deleted]
 
-sure, give me a minute.
 
-	Ingo
+> In this discussion about 
+> nice levels you were (very) agressively asserting things that were 
+> untrue,
+
+Instead of simply asserting things, how about you provide some examples?
+I made so far a single mistake of mixing up nice levels 18 and 19.
+If you would point me to such examples, I could learn how to tone it down 
+a little, since the nice levels are not the only issue I have with the new 
+scheduler, the heavy stuff is still about to come. The problem here is 
+there is too much burnt ground so I can't just present raw ideas, which 
+get flamed by you, I have to be sufficiently confident they are valid, 
+what you might then interpret as "agressive assertion".
+
+> you were suggesting that i dont understand the code,
+
+Again, please point me to examples, so I at least have a chance to clear 
+things up, since it was never my intention to make such a suggestion, but 
+this gives me no chance to defend myself.
+
+OTOH I can tell you exactly how you continuously insult me, e.g. by 
+suggesting I ask "stupid questions" or that I'm in "denial of facts".
+Don't make such suggestions if you have no idea how insulting they are. 
+Especially the one deleted insult above where you have the impertinence to 
+quote it, such tone is more appropriate between lord and inferior, where 
+the latter have to make a request and the former "might" grant it. 
+_Never_ make me beg. :-(
+
+bye, Roman
