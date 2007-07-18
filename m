@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935026AbXGRQ5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935095AbXGRQ6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935026AbXGRQ5o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 12:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762287AbXGRQ5d
+	id S935095AbXGRQ6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 12:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761110AbXGRQ55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 12:57:33 -0400
-Received: from il.qumranet.com ([82.166.9.18]:57541 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933977AbXGRQ5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 12:57:31 -0400
-Message-ID: <469E4679.205@qumranet.com>
-Date: Wed, 18 Jul 2007 19:57:29 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Wed, 18 Jul 2007 12:57:57 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:37776 "EHLO
+	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761746AbXGRQ5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 12:57:55 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <469E4791.5040806@am.sony.com>
+Date: Wed, 18 Jul 2007 10:02:09 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Dor Laor <dor.laor@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [RFC] Deferred interrupt handling.
-References: <005901c7c921$79c006c0$6d401440$@com>	<20070718123040.615795b7@the-village.bc.nu>	<64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net>	<20070718174736.0baf6d0e@the-village.bc.nu>	<469E43D5.70802@qumranet.com> <20070718175708.6968923e@the-village.bc.nu>
-In-Reply-To: <20070718175708.6968923e@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Lindsay Roberts <lindsay.roberts.os@gmail.com>
+CC: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, celinux-dev@tree.celinuxforum.org
+Subject: Re: [PATCH] fs: Add romfs version 2
+References: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>	 <20070717013635.d6d0b124.akpm@linux-foundation.org>	 <20070717192100.GE11166@waste.org> <8734b7880707172016v530ce775p108910f7baf9de8e@mail.gmail.com>
+In-Reply-To: <8734b7880707172016v530ce775p108910f7baf9de8e@mail.gmail.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 18 Jul 2007 19:57:29 +0300 (IDT)
+X-OriginalArrivalTime: 18 Jul 2007 16:57:49.0634 (UTC) FILETIME=[C5D12220:01C7C95C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> IMO the only reasonable solution is to disallow interrupt forwarding
->> with shared irqs.  If someone later comes up with a bright idea, we can
->>     
->
-> Which means you are back to ISA bus devices. Even checking if an IRQ is
-> currently unshared isn't simple as with hotplug this may change.
->
->   
+Lindsay Roberts wrote:
+> Yes, my experience has been that it has been almost chillingly close
+> to .5k per regular file increase in partition size. I know in
+> applications in which size is utterly critical this may be slightly
+> unattractive, but in cases where romfs is chosen for its byte
+> reproducibility and read-only nature the size/performance tradeoff is
+> fairly advantageous.
 
-Hotplug is user-controllable, so if the user refrains from adding pci
-devices after assigning a device to the guest, it should work.  I think
-that USB interrupts are assigned to the controller, not the device, so
-USB hotplug can be ruled out.
+The size increase makes this a complete non-starter in the
+embedded configs I'm familiar with.  Size is still the number
+one problem using Linux in consumer electronics products.
 
-I admit this is fairly weak.
+I have nothing against this patch, if it achieve some speedups
+for other environments.  But I wouldn't expect to see this
+option used much in embedded devices.
+ -- Tim
 
->> implement it.  Otherwise the problem will solve itself with hardware
->> moving to msi.
->>     
->
-> Only if MSI ever works properly on the bridges and hardware 8(
->   
-
-Oh, I've no doubt it will be made to work -- there's money to be saved
-in those irq lines.  And msi makes sense technically as well.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
