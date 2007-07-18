@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbXGRTZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933237AbXGRT1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763269AbXGRTZb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 15:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbXGRTZW
+	id S933237AbXGRT1Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 15:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbXGRT1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 15:25:22 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:41500 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754174AbXGRTZV (ORCPT
+	Wed, 18 Jul 2007 15:27:03 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40267 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754174AbXGRT1B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 15:25:21 -0400
-Message-ID: <469E691D.3050305@codemonkey.ws>
-Date: Wed, 18 Jul 2007 14:25:17 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: Avi Kivity <avi@qumranet.com>, KVM devel <kvm-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [kvm-devel] [PATCH 3/3] KVM - add hypercall nr to kvm_run
-References: <20070716192447.GA16253@c2.user-mode-linux.org> <469C7C8D.1020600@qumranet.com> <469CCF17.3020709@codemonkey.ws> <20070717160710.GC7965@c2.user-mode-linux.org> <469E3FA2.7060408@codemonkey.ws> <20070718174104.GA8655@c2.user-mode-linux.org>
-In-Reply-To: <20070718174104.GA8655@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jul 2007 15:27:01 -0400
+Subject: Re: [PATCH] Conexant 2388x: check for kthread_run
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <v4l-dvb-maintainer@linuxtv.org>
+In-Reply-To: <20070718185624.GA13996@cvg>
+References: <20070718185624.GA13996@cvg>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 18 Jul 2007 16:25:38 -0300
+Message-Id: <1184786738.4049.38.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> On Wed, Jul 18, 2007 at 11:28:18AM -0500, Anthony Liguori wrote:
->   
->> Within the kernel right (VMCALL is only usable in ring 1).  
->>     
->
-> Yup.
->
->   
->> Is it 
->> terribly important to be able to pass through the syscall arguments in 
->> registers verses packing them in a data structure and passing a pointer 
->> to that structure?
->>     
->
-> An arg block would be fine, too.
->   
+Hi Cyrill,
 
-Okay, then you should be pretty well insulated against the changing 
-hypercall stuff since you only need one hypercall NR and can use a one 
-argument hypercall.
+Em Qua, 2007-07-18 às 22:56 +0400, Cyrill Gorcunov escreveu:
+> This patch adds checking of kthread_run return code.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+> Probably we could just ignore a such situation (we do
+> check for core->kthread value before trying to stop the
+> thread) but we have to leave a footmark in kernel
+> messages anyway I guess. Comments?
 
-Regards,
+> +		if (IS_ERR(core->kthread)) {
+> +			err = PTR_ERR(core->kthread);
+> +			printk(KERN_ERR "Failed to create cx88 audio thread, err=%d\n",
+> +			       err);
+> +			goto fail_unreg;
 
-Anthony Liguori
+I would just remove the goto from your patch. 
 
-> 				Jeff
->
->   
+It is safe not starting the kernel thread, but keeping the driver
+initializing.
+
+The drawback of not having the thread is not changing to stereo on some
+situations and not detecting audio standard changes (some countries may
+have more than one audio standard when you changing from VHF to UHF or
+on Cable TV).
+
+-- 
+Cheers,
+Mauro
 
