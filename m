@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbXGRF7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764116AbXGRF7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762063AbXGRF7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 01:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXGRF7M
+	id S1764116AbXGRF7f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 01:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXGRF7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 01:59:12 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:53076 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751740AbXGRF7M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 01:59:12 -0400
-X-Sasl-enc: a2pqPZy4+8ySQfJ9wpoKB+GWiGk0WqHMKDUn1OrkPIGD 1184738350
-Subject: RE: [patch] CFS scheduler, -v19
-From: Ian Kent <raven@themaw.net>
-To: davids@webmaster.com
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       Chuck Ebbert <cebbert@redhat.com>, Bill Davidsen <davidsen@tmr.com>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEBPFGAC.davids@webmaster.com>
-References: <MDEHLPKNGKAHNMBLJOLKKEBPFGAC.davids@webmaster.com>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 13:59:04 +0800
-Message-Id: <1184738344.4178.18.camel@raven.themaw.net>
+	Wed, 18 Jul 2007 01:59:25 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34929
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762696AbXGRF7Y convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 01:59:24 -0400
+Message-Id: <469DC8B8.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 18 Jul 2007 07:00:56 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
+Subject: Re: [PATCH] x86: make SMP locks handling interact properly
+	with CONFIG_DEBUG_RODATA (2nd try)
+References: <468B5B54.76E4.0078.0@novell.com>
+ <200707171954.34541.ak@suse.de>
+In-Reply-To: <200707171954.34541.ak@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 14:16 -0700, David Schwartz wrote:
-> > * Ian Kent <raven@themaw.net> wrote:
-> >
-> > > Yes it does and I have two reported bugs so far.
-> > >
-> > > In several places I have code similar to:
-> > >
-> > > wait.tv_sec = time(NULL) + 1;
-> > > wait.tv_nsec = 0;
-> > >
-> > > signaled = 0;
-> > > while (!signaled) {
-> > >         status = pthread_cond_timedwait(&cond, &mutex, &wait);
-> > >        if (status) {
-> > >              if (status == ETIMEDOUT)
-> > >                   break;
-> > >              fatal(status);
-> > >       }
-> > > }
-> >
-> > ah! It passes in a low-res time source into a high-res time interface
-> > (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to
-> > time(NULL) + 2, or change it to:
-> >
-> > 	gettimeofday(&wait, NULL);
-> > 	wait.tv_sec++;
-> >
-> > does this solve the spinning?
+>>  void alternatives_smp_module_del(struct module *mod)
+>>  {
+>>  	struct smp_alt_module *item;
+>> -	unsigned long flags;
+>>  
+>>  	if (smp_alt_once || noreplace_smp)
+>>  		return;
+>>  
+>> -	spin_lock_irqsave(&smp_alt, flags);
+>> +	spin_lock(&smp_alt);
+>
+>Unrelated change?  Why? Should probably be separate patch.
 
-Yes, adding in the offset within the current second appears to resolve
-the issue. Thanks Ingo.
+Absolutely not: You can't call change_page_attr(), or more precisely
+global_flush_tlb(), with interrupts disabled. And since interrupt disabling
+is unneeded here afaics, I simply changed the calls instead of inventing
+some ugly workaround.
 
-> >
-> > i'm wondering how widespread this is. If automount is the only app doing
-> > this then _maybe_ we could get away with it by changing automount?
+I'll do the other adjustments you asked for, but it'll be only in about three
+weeks from now...
 
-I don't think the change is unreasonable since I wasn't using an
-accurate time in the condition wait, so that's a coding mistake on my
-part which I will fix.
-
-Ian
-
+Jan
 
