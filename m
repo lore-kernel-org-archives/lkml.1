@@ -1,209 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXGRP0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932921AbXGRP27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933080AbXGRP0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 11:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbXGRP0M
+	id S932921AbXGRP27 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 11:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbXGRP2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 11:26:12 -0400
-Received: from xyzzy.farnsworth.org ([65.39.95.219]:4506 "HELO farnsworth.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758001AbXGRP0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 11:26:11 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jul 2007 11:26:11 EDT
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 18 Jul 2007 08:19:29 -0700
-To: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] rtc: update and use the MAX6900 century byte
-Message-ID: <20070718151929.GA6048@xyzzy.farnsworth.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 18 Jul 2007 11:28:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47360 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753800AbXGRP2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 11:28:51 -0400
+Date: Wed, 18 Jul 2007 11:28:43 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: nfsv4@linux-nfs.org, nfs@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] NFSv4: handle lack of clientaddr in option string
+ gracefully
+Message-Id: <20070718112843.08644184.jlayton@redhat.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We now read and write the century byte in the max6900 chip.
-We probably don't need to do so on Linux-only system, but it's
-necessary when the chip is shared by another OS that uses the
-century byte.
+If a NFSv4 mount is attempted  with string based options, and the
+option string doesn't contain a clientaddr= option, the kernel will
+currently oops. Check for this situation and return a proper error.
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
----
- drivers/rtc/rtc-max6900.c |   96 +++++++++++++++++++++++++++---------
- 1 file changed, 72 insertions(+), 24 deletions(-)
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
-diff --git a/drivers/rtc/rtc-max6900.c b/drivers/rtc/rtc-max6900.c
-index eee4ee5..a1cd448 100644
---- a/drivers/rtc/rtc-max6900.c
-+++ b/drivers/rtc/rtc-max6900.c
-@@ -31,17 +31,24 @@
- #define MAX6900_REG_DW			5	/* day of week	 1-7  */
- #define MAX6900_REG_YR			6	/* year		00-99 */
- #define MAX6900_REG_CT			7	/* control */
--#define MAX6900_REG_LEN			8
-+						/* register 8 is undocumented */
-+#define MAX6900_REG_CENTURY		9	/* century */
-+#define MAX6900_REG_LEN			10
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index a2b1af8..ff06b95 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -1683,6 +1683,9 @@ static int nfs4_validate_mount_data(struct nfs4_mount_data **options,
+ 
+ 		dprintk("MNTPATH: %s\n", *mntpath);
+ 
++		if (args.client_address == NULL)
++			goto out_no_client_address;
 +
-+#define MAX6900_BURST_LEN		8	/* can burst r/w first 8 regs */
+ 		*ip_addr = args.client_address;
  
- #define MAX6900_REG_CT_WP		(1 << 7)	/* Write Protect */
- 
+ 		break;
+@@ -1703,6 +1706,10 @@ out_inval_auth:
+ out_no_address:
+ 	dfprintk(MOUNT, "NFS4: mount program didn't pass remote address\n");
+ 	return -EINVAL;
 +
- /*
-  * register read/write commands
-  */
- #define MAX6900_REG_CONTROL_WRITE	0x8e
--#define MAX6900_REG_BURST_READ		0xbf
--#define MAX6900_REG_BURST_WRITE		0xbe
-+#define MAX6900_REG_CENTURY_WRITE	0x92
-+#define MAX6900_REG_CENTURY_READ	0x93
- #define MAX6900_REG_RESERVED_READ	0x96
-+#define MAX6900_REG_BURST_WRITE		0xbe
-+#define MAX6900_REG_BURST_READ		0xbf
- 
- #define MAX6900_IDLE_TIME_AFTER_WRITE	3	/* specification says 2.5 mS */
- 
-@@ -58,19 +65,32 @@ static int max6900_probe(struct i2c_adapter *adapter, int addr, int kind);
- 
- static int max6900_i2c_read_regs(struct i2c_client *client, u8 *buf)
- {
--	u8 reg_addr[1] = { MAX6900_REG_BURST_READ };
--	struct i2c_msg msgs[2] = {
-+	u8 reg_burst_read[1] = { MAX6900_REG_BURST_READ };
-+	u8 reg_century_read[1] = { MAX6900_REG_CENTURY_READ };
-+	struct i2c_msg msgs[4] = {
- 		{
- 			.addr	= client->addr,
- 			.flags	= 0, /* write */
--			.len	= sizeof(reg_addr),
--			.buf	= reg_addr
-+			.len	= sizeof(reg_burst_read),
-+			.buf	= reg_burst_read
- 		},
- 		{
- 			.addr	= client->addr,
- 			.flags	= I2C_M_RD,
--			.len	= MAX6900_REG_LEN,
-+			.len	= MAX6900_BURST_LEN,
- 			.buf	= buf
-+		},
-+		{
-+			.addr	= client->addr,
-+			.flags	= 0, /* write */
-+			.len	= sizeof(reg_century_read),
-+			.buf	= reg_century_read
-+		},
-+		{
-+			.addr	= client->addr,
-+			.flags	= I2C_M_RD,
-+			.len	= sizeof(buf[MAX6900_REG_CENTURY]),
-+			.buf	= &buf[MAX6900_REG_CENTURY]
- 		}
- 	};
- 	int rc;
-@@ -86,33 +106,58 @@ static int max6900_i2c_read_regs(struct i2c_client *client, u8 *buf)
- 
- static int max6900_i2c_write_regs(struct i2c_client *client, u8 const *buf)
- {
--	u8 i2c_buf[MAX6900_REG_LEN + 1] = { MAX6900_REG_BURST_WRITE };
--	struct i2c_msg msgs[1] = {
-+	u8 i2c_century_buf[1 + 1] = { MAX6900_REG_CENTURY_WRITE };
-+	struct i2c_msg century_msgs[1] = {
- 		{
- 			.addr	= client->addr,
- 			.flags	= 0, /* write */
--			.len	= MAX6900_REG_LEN + 1,
--			.buf	= i2c_buf
-+			.len	= sizeof(i2c_century_buf),
-+			.buf	= i2c_century_buf
-+		}
-+	};
-+	u8 i2c_burst_buf[MAX6900_BURST_LEN + 1] = { MAX6900_REG_BURST_WRITE };
-+	struct i2c_msg burst_msgs[1] = {
-+		{
-+			.addr	= client->addr,
-+			.flags	= 0, /* write */
-+			.len	= sizeof(i2c_burst_buf),
-+			.buf	= i2c_burst_buf
- 		}
- 	};
- 	int rc;
- 
--	memcpy(&i2c_buf[1], buf, MAX6900_REG_LEN);
-+	/*
-+	 * We have to make separate calls to i2c_transfer because of
-+	 * the need to delay after each write to the chip.  Also,
-+	 * we write the century byte first, since we set the write-protect
-+	 * bit as part of the burst write.
-+	 */
-+	i2c_century_buf[1] = buf[MAX6900_REG_CENTURY];
-+	rc = i2c_transfer(client->adapter, century_msgs,
-+			  ARRAY_SIZE(century_msgs));
-+	if (rc != ARRAY_SIZE(century_msgs))
-+		goto write_failed;
-+	msleep(MAX6900_IDLE_TIME_AFTER_WRITE);
- 
--	rc = i2c_transfer(client->adapter, msgs, ARRAY_SIZE(msgs));
--	if (rc != ARRAY_SIZE(msgs)) {
--		dev_err(&client->dev, "%s: register write failed\n",
--			__FUNCTION__);
--		return -EIO;
--	}
-+	memcpy(&i2c_burst_buf[1], buf, MAX6900_BURST_LEN);
-+
-+	rc = i2c_transfer(client->adapter, burst_msgs, ARRAY_SIZE(burst_msgs));
-+	if (rc != ARRAY_SIZE(burst_msgs))
-+		goto write_failed;
- 	msleep(MAX6900_IDLE_TIME_AFTER_WRITE);
-+
- 	return 0;
-+
-+write_failed:
-+	dev_err(&client->dev, "%s: register write failed\n",
-+		__FUNCTION__);
-+	return -EIO;
++out_no_client_address:
++	dfprintk(MOUNT, "NFS4: mount program didn't pass callback address\n");
++	return -EINVAL;
  }
  
- static int max6900_i2c_validate_client(struct i2c_client *client)
- {
- 	u8 regs[MAX6900_REG_LEN];
--	u8 zero_mask[MAX6900_REG_LEN] = {
-+	u8 zero_mask[] = {
- 		0x80,	/* seconds */
- 		0x80,	/* minutes */
- 		0x40,	/* hours */
-@@ -134,7 +179,7 @@ static int max6900_i2c_validate_client(struct i2c_client *client)
- 	if (rc < 0)
- 		return rc;
- 
--	for (i = 0; i < MAX6900_REG_LEN; ++i) {
-+	for (i = 0; i < ARRAY_SIZE(zero_mask); ++i) {
- 		if (regs[i] & zero_mask[i])
- 			return -ENODEV;
- 	}
-@@ -156,7 +201,8 @@ static int max6900_i2c_read_time(struct i2c_client *client, struct rtc_time *tm)
- 	tm->tm_hour = BCD2BIN(regs[MAX6900_REG_HR] & 0x3f);
- 	tm->tm_mday = BCD2BIN(regs[MAX6900_REG_DT]);
- 	tm->tm_mon = BCD2BIN(regs[MAX6900_REG_MO]) - 1;
--	tm->tm_year = BCD2BIN(regs[MAX6900_REG_YR]) + 100;
-+	tm->tm_year = BCD2BIN(regs[MAX6900_REG_YR]) +
-+		      BCD2BIN(regs[MAX6900_REG_CENTURY]) * 100 - 1900;
- 	tm->tm_wday = BCD2BIN(regs[MAX6900_REG_DW]);
- 
- 	return 0;
-@@ -189,9 +235,11 @@ static int max6900_i2c_set_time(struct i2c_client *client,
- 	regs[MAX6900_REG_HR] = BIN2BCD(tm->tm_hour);
- 	regs[MAX6900_REG_DT] = BIN2BCD(tm->tm_mday);
- 	regs[MAX6900_REG_MO] = BIN2BCD(tm->tm_mon + 1);
--	regs[MAX6900_REG_YR] = BIN2BCD(tm->tm_year - 100);
- 	regs[MAX6900_REG_DW] = BIN2BCD(tm->tm_wday);
--	regs[MAX6900_REG_CT] = MAX6900_REG_CT_WP;	/* set write protect */
-+	regs[MAX6900_REG_YR] = BIN2BCD(tm->tm_year % 100);
-+	regs[MAX6900_REG_CENTURY] = BIN2BCD((tm->tm_year + 1900) / 100);
-+	/* set write protect */
-+	regs[MAX6900_REG_CT] = MAX6900_REG_CT_WP;
- 
- 	rc = max6900_i2c_write_regs(client, regs);
- 	if (rc < 0)
+ /*
