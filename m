@@ -1,89 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbXGRGPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762180AbXGRGR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbXGRGPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 02:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbXGRGPj
+	id S1762180AbXGRGR6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbXGRGRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 02:15:39 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:61045 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752010AbXGRGPj (ORCPT
+	Wed, 18 Jul 2007 02:17:51 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:33407 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752056AbXGRGRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 02:15:39 -0400
-Date: Wed, 18 Jul 2007 08:15:36 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Arnd Bergmann <arnd@arndb.de>
-cc: cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       James Simmons <jsimmons@infradead.org>, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: fbdev: make fb_append_extra_logo() depend on fb=y
-In-Reply-To: <200707180052.04659.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.62.0707180811580.18423@pademelon.sonytel.be>
-References: <20070716135550.010775000@pademelon.sonytel.be>
- <20070716135950.895120000@pademelon.sonytel.be> <200707180052.04659.arnd@arndb.de>
+	Wed, 18 Jul 2007 02:17:51 -0400
+Date: Wed, 18 Jul 2007 16:17:48 +1000
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bret Towe <magnade@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Re: 2.6.22-git ppc build failure
+Message-ID: <20070718061748.GZ10345@bakeyournoodle.com>
+References: <dda83e780707171104g10372341l7d2225f172153a6b@mail.gmail.com> <20070718010355.GV10345@bakeyournoodle.com> <alpine.LFD.0.999.0707171843370.27353@woody.linux-foundation.org> <20070718022433.GY10345@bakeyournoodle.com> <alpine.LFD.0.999.0707171927110.27353@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1929967979-1184739308=:18423"
-Content-ID: <Pine.LNX.4.62.0707180815110.18423@pademelon.sonytel.be>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707171927110.27353@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584337861-1929967979-1184739308=:18423
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0707180815111.18423@pademelon.sonytel.be>
-
-On Wed, 18 Jul 2007, Arnd Bergmann wrote:
-> We can't show the extra logo from boot code if FB is built as
-> a module. Make the FB_LOGO_EXTRA depend on FB=y.
-
-Bummer...
-
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
-> Reported by Al Viro. I don't know how this ended up in the final
-> patch, as I'm pretty sure we talked about this scenario before
-> and had a solution...
-
-It happened because introducing CONFIG_FB_LOGO_EXTRA was done in the last
-iteration (before the code was protected by #ifdef CONFIG_FB), and I got
-bitten by the weird Kconfig logic again.
-
-> diff --git a/drivers/video/logo/Kconfig b/drivers/video/logo/Kconfig
-> index da219c0..9de1c11 100644
-> --- a/drivers/video/logo/Kconfig
-> +++ b/drivers/video/logo/Kconfig
-> @@ -12,7 +12,7 @@ if LOGO
->  
->  config FB_LOGO_EXTRA
->  	bool
-> -	depends on FB
-> +	depends on FB=y
->  	default y if SPU_BASE
->  
->  config LOGO_LINUX_MONO
-
-With kind regards,
+On Tue, Jul 17, 2007 at 07:27:51PM -0700, Linus Torvalds wrote:
  
-Geert Uytterhoeven
-Software Architect
+> Ok, thanks. Maybe it's the merge, and maybe it's one of the sides. You 
+> might want to double-check that both parents are ok before you look too 
+> closely at the merge itself.
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+Turns out the boot failure wasn't related to the merge after all.  With
+my orginal compile (and the revert below) PCI works and the kernel
+boots.
+
+Please apply both.
+
+From: Tony Breeds <tony@bakeyournoodle.com>
+Subject: [PATCH] Revert "[POWERPC] Do firmware feature fixups after features are initialised"
+
+This reverts commit 5a26f6bbb767d7ad23311a1e81cfdd2bebefb855.
+
+The original patch causes boot failures when built with ppc64_defconfig.  The
+quickest fix is to revert it while alterates are investigated.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/kernel/setup_64.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index bc43bba..6018178 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -350,11 +350,13 @@ void __init setup_system(void)
+ {
+ 	DBG(" -> setup_system()\n");
  
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1929967979-1184739308=:18423--
+-	/* Apply CPUs-specific fixups to kernel text (nop out sections
+-	 * not relevant to this CPU)
++	/* Apply the CPUs-specific and firmware specific fixups to kernel
++	 * text (nop out sections not relevant to this CPU or this firmware)
+ 	 */
+ 	do_feature_fixups(cur_cpu_spec->cpu_features,
+ 			  &__start___ftr_fixup, &__stop___ftr_fixup);
++	do_feature_fixups(powerpc_firmware_features,
++			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
+ 
+ 	/*
+ 	 * Unflatten the device-tree passed by prom_init or kexec
+@@ -392,12 +394,6 @@ void __init setup_system(void)
+ 	if (ppc_md.init_early)
+ 		ppc_md.init_early();
+ 
+-	/* Apply firmware specific fixups to kernel text (nop out
+-	 * sections not relevant to this firmware)
+-	 */
+-	do_feature_fixups(powerpc_firmware_features,
+-			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
+-
+  	/*
+ 	 * We can discover serial ports now since the above did setup the
+ 	 * hash table management for us, thus ioremap works. We do that early
+-- 
+1.5.2.3
+
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
