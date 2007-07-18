@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762465AbXGRWc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763905AbXGRWfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762465AbXGRWc0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 18:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbXGRWcR
+	id S1763905AbXGRWfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 18:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760169AbXGRWf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:32:17 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:53946 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbXGRWcQ (ORCPT
+	Wed, 18 Jul 2007 18:35:29 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:60319 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759657AbXGRWf2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:32:16 -0400
+	Wed, 18 Jul 2007 18:35:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=id2inxWNgnYwlk68nNRVMggdh9MX3KdvZ1ujnahnwk+zzEUvq6bolEv+nwQouwo87nQJRAhS08u9bYEcBqdzfYu1vru25j8D7G+BCpRLR4fHThps4lXrb8RxCdhgdiO4gmyip/uX8V2jG2RI8TRvpvr2pMYv4UySTabuggTNJgE=
-Message-ID: <86802c440707181532r6b8b0820ob1fc773f4fdbdbba@mail.gmail.com>
-Date: Wed, 18 Jul 2007 15:32:15 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH 3/3]x86_64: early_printk for early debug port support
-Cc: "Vivek Goyal" <vgoyal@in.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, "Greg KH" <gregkh@suse.de>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200707190010.53702.ak@suse.de>
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=jF/AvTjQ4AZixBIk73QkJLaQLdBQTYx1dgjq3IKK0NAJ4Q021mm2WORpB6UT+RVoBHEKQG627NN5uGL2BxS960LksLaxrOcj0zihnBYq6uiUjg1QotSJtYx0NSFEEDdr3h4zwS9dCtKpDVhUuVOuMVE9SqQkGdYNmMwTSIuXPyc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
+Date: Thu, 19 Jul 2007 00:53:24 +0200
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Giacomo Catenazzi <cate@cateee.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+References: <469D1D5E.8050609@cateee.net> <alpine.LFD.0.999.0707181313100.27353@woody.linux-foundation.org> <20070718202740.GN11657@kernel.dk>
+In-Reply-To: <20070718202740.GN11657@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <86802c440705202219k5aa758ffk217626424e613ec7@mail.gmail.com>
-	 <200707190010.53702.ak@suse.de>
+Message-Id: <200707190053.24578.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/18/07, Andi Kleen <ak@suse.de> wrote:
-> On Monday 21 May 2007 07:19:18 Yinghai Lu wrote:
-> > add early dbgp to early_printk.
-> >
-> > kernel command line:
-> > earlyprintk=dbgp
-> > or
-> > earlyprintk=dbgp1
->
-> Just checking some old patches. Was there ever an update for this one?
-> What were the testing results?
+On Wednesday 18 July 2007, Jens Axboe wrote:
+> On Wed, Jul 18 2007, Linus Torvalds wrote:
+> > 
+> > 
+> > On Wed, 18 Jul 2007, Jens Axboe wrote:
+> > > 
+> > > I think your analysis is pretty good, however you'd probably want to
+> > > incorporate that direct in ide_end_request().
+> > 
+> > Ok, that makes sense too.
+> > 
+> > And yes, the further cleanup would be:
+> > 
+> > > Better still would be to make __ide_end_request() take a byte count
+> > > instead and use end_that_request_chunk(). Then you can get rid of the
+> > > rounding as well.
+> > 
+> > and that sounds fine, but is an independent issue and not strictly 
+> > necessary.
+> 
+> Oh yeah, it's just a further improvement, not strictly necessary for
+> fixing this bug. So it could be done at a later time, all up to Bart...
 
-not yet.
+Thanks for finding and fixing this.
 
-will create one from my local tree tonight.
+The latest patch (with additional cleanups) also looks good and should be
+safe enough (unchanged behavior for all non-pc requests) to merge it now.
 
-YH
+Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Thanks,
+Bart
