@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764527AbXGRTJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbXGRTOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764527AbXGRTJP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 15:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXGRTJA
+	id S932352AbXGRTOn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 15:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXGRTOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 15:09:00 -0400
-Received: from mail.windriver.com ([147.11.1.11]:45431 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752808AbXGRTI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 15:08:59 -0400
-Date: Wed, 18 Jul 2007 12:08:06 -0700 (PDT)
-From: Jeremy Katz <jeremy.katz@windriver.com>
-X-X-Sender: jkatz@localhost.localdomain
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [PATCH] posix-timer: fix deletion race
-In-Reply-To: <20070718161156.GA761@tv-sign.ru>
-Message-ID: <Pine.LNX.4.63.0707181203110.3157@localhost.localdomain>
-References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain>
- <1184662429.12353.426.camel@chaos> <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
- <1184703427.12353.476.camel@chaos> <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
- <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
- <20070718161156.GA761@tv-sign.ru>
+	Wed, 18 Jul 2007 15:14:34 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:57153 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754830AbXGRTOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 15:14:34 -0400
+Date: Wed, 18 Jul 2007 15:14:33 -0400
+To: Avi Kivity <avi@qumranet.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dor Laor <dor.laor@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [RFC] Deferred interrupt handling.
+Message-ID: <20070718191433.GB24545@csclub.uwaterloo.ca>
+References: <005901c7c921$79c006c0$6d401440$@com> <20070718123040.615795b7@the-village.bc.nu> <64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net> <20070718174736.0baf6d0e@the-village.bc.nu> <469E43D5.70802@qumranet.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-OriginalArrivalTime: 18 Jul 2007 19:08:06.0564 (UTC) FILETIME=[F911FE40:01C7C96E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469E43D5.70802@qumranet.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Oleg Nesterov wrote:
+On Wed, Jul 18, 2007 at 07:46:13PM +0300, Avi Kivity wrote:
+> IMO the only reasonable solution is to disallow interrupt forwarding
+> with shared irqs.  If someone later comes up with a bright idea, we can
+> implement it.  Otherwise the problem will solve itself with hardware
+> moving to msi.
 
-> Jeremy, I agree with Thomas that your patch should not be right, but it
-> does make a difference. Perhaps this is just the timing, but who knows.
-> Could you add some printk's to be sure that lock_timer() actually fails
-> while it never should?
+Disallowing shared IRQs means disallowing PCI devices in general, so now
+you are back to ISA only devices, which it sounds like were the only
+things already allowed by vm86 or whatever it was for passing through.
 
-Agreed.
+MSI would be good, but how long until all devices support that?
+Certainly does appear to have potential though for allowing more
+interesting virtual machines.
 
-Unfortunately, adding any significant output appears to alter the 
-situation to the point where the issue either does not occur, or takes 
-significantly longer to surface.
-
-Jeremy
+--
+Len Sorensen
