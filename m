@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762397AbXGRVxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762732AbXGRV6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762397AbXGRVxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 17:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXGRVxN
+	id S1762732AbXGRV6Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 17:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbXGRV6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 17:53:13 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:14035 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbXGRVxM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 17:53:12 -0400
-X-IronPort-AV: i="4.16,552,1175486400"; 
-   d="scan'208"; a="45883195:sNHT39404610"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: early_printk accessing __log_buf
-Date: Wed, 18 Jul 2007 17:56:43 -0400
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 18 Jul 2007 17:58:15 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:44624 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752704AbXGRV6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 17:58:14 -0400
+Subject: RE: ia64 build failure from recent diskquota patch
+From: Doug Chapman <doug.chapman@hp.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       vtaras@openvz.org
+In-Reply-To: <617E1C2C70743745A92448908E030B2A01F661D1@scsmsx411.amr.corp.intel.com>
+References: <617E1C2C70743745A92448908E030B2A01F661D1@scsmsx411.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 17:51:34 -0400
+Message-Id: <1184795494.3026.21.camel@deimos.americas.hpqcorp.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707181756.44074.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 18 Jul 2007 21:53:08.0902 (UTC) FILETIME=[0752DC60:01C7C986]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quick question:
+On Wed, 2007-07-18 at 14:45 -0700, Luck, Tony wrote:
+> > The type compat_u64 on ia64 is defined if CONFIG_COMPAT is defined
+> > (which is rare these days on ia64)  So, it appears we are missing
+> > an #ifdef CONFIG_COMPAT somewhere in fs/quota.c.  I will leave that
+> > up to the original author to determine where.
+> 
+> Hmmmm ... all of my test config files have CONFIG_COMPAT=y, so I didn't
+> notice this.  I'll have to fix one of them to turn it off.
+> 
+> Perhaps this (untested) is what is needed?
+> 
+> diff --git a/fs/quota.c b/fs/quota.c
+> index e6577ac..ac3af87 100644
+> --- a/fs/quota.c
+> +++ b/fs/quota.c
+> @@ -387,7 +387,7 @@ asmlinkage long sys_quotactl(unsigned int cmd, const char __user *special, qid_t
+>  	return ret;
+>  }
+>  
+> -#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
+> +#if defined(CONFIG_X86_64) || (defined(CONFIG_IA64) && defined(CONFIG_COMPAT))
+>  /*
+>   * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
+>   * and is necessary due to alignment problems.
 
-I am currently setting up an early_printk for the Blackfin - & I'm populating
-an early fault interrupt handler at the same time. This allows things like
-catching interrupts, or faults before the kernel has had a chance to
-enable it's standard interrupt/fault handlers which happen midway 
-through the boot process.
+Works for me, compiles just fine now.
 
-I would like to be able to print out the standard __log_buf from my early
-fault handler - so everyone can see where things are when they died. In
-most situations - printk has dumped some info to the log_buf, and it is
-normally handy to see figure out what is going on.
+ACK
 
-However - __log_buf & associated pointers are declared as static in
-kernel/printk.c - so they can't be accessed by external files.
+- Doug
 
-I would normally use do_syslog([23],...) to read from the buffer - 
-but these crashes happens before the kernel is fully initialized,
-so spin_lock_irq, cond_resched, or wait_event_interruptible
-will cause problems...
 
-Although there are other solutions - I would prefer to just don't declare them
-as static when EARLY_PRINTK is defined. This way if something bad happens - 
-everyone can dump out the standard buffers to assist in debugging...
-
-===================================================================
---- linux-2.6.x/kernel/printk.c (revision 3400)
-+++ linux-2.6.x/kernel/printk.c (working copy)
-@@ -117,7 +117,12 @@
-
- #ifdef CONFIG_PRINTK
-
-+#ifdef CONFIG_EARLY_PRINTK
-+char __log_buf[__LOG_BUF_LEN];
-+#else
- static char __log_buf[__LOG_BUF_LEN];
-+#endif
-+
- static char *log_buf = __log_buf;
- static int log_buf_len = __LOG_BUF_LEN;
- static unsigned long logged_chars; /* Number of chars produced since last read+clear operation */
-
-Thoughts?
-
--Robin
