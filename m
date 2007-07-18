@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932778AbXGRLkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932934AbXGRLlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932778AbXGRLkm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 07:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbXGRLke
+	id S932934AbXGRLlo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 07:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760906AbXGRLlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 07:40:34 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:1153 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757321AbXGRLkd (ORCPT
+	Wed, 18 Jul 2007 07:41:32 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:55519 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760037AbXGRLl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 07:40:33 -0400
-Date: Wed, 18 Jul 2007 13:40:13 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, gregkh@suse.de,
-       miles.lane@gmail.com
-Subject: Re: [PATCH] sysfs: cosmetic clean up on node creation failure paths
-Message-ID: <20070718134013.057e4755@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070718073811.GA22374@htj.dyndns.org>
-References: <469A5C94.7030201@googlemail.com>
-	<a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>
-	<469A9D5D.10509@googlemail.com>
-	<469B61C8.8010902@googlemail.com>
-	<a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
-	<469BB7B8.3060002@gmail.com>
-	<469BB9CA.6090500@googlemail.com>
-	<469BC2D6.5090008@googlemail.com>
-	<469BC34C.4080107@googlemail.com>
-	<20070718071445.GI23568@htj.dyndns.org>
-	<20070718073811.GA22374@htj.dyndns.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Jul 2007 07:41:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=RUTPvVCmsHAppBUWC4mfTBRsOzFq1PIojQQYVc0i/bvM8Tro1fq6mClK+N+D9oMffQ+QUQbuQLQUVCzcump+qvmLnpV/dTikTpxkBQepEsCuHh5/qJ2cXf3YrhtOX0+QMT3Gn3vCT+EqhiChPrALudy0JPIskcFInTt3vrrIJMc=
+Message-ID: <469DFC61.2070301@gmail.com>
+Date: Wed, 18 Jul 2007 20:41:21 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Phillip Susi <psusi@cfl.rr.com>, Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>
+Subject: Re: [PATCH] block: factor out bio_check_eod()
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070530093503.GA15559@kernel.dk> <20070718105655.GB22374@htj.dyndns.org> <20070718105946.GC22374@htj.dyndns.org> <20070718110619.GM11657@kernel.dk> <469DF700.4030806@gmail.com> <20070718113103.GO11657@kernel.dk> <469DFA75.6070205@gmail.com> <20070718113450.GP11657@kernel.dk>
+In-Reply-To: <20070718113450.GP11657@kernel.dk>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007 16:38:11 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
-
-> Node addition failure is detected by testing return value of
-> sysfs_addfm_finish() which returns the number of added and removed
-> nodes.  As the function is called as the last step of addition right
-> on top of error handling block, the if blocks looked like the
-> following.
+Jens Axboe wrote:
+> On Wed, Jul 18 2007, Tejun Heo wrote:
+>> Jens Axboe wrote:
+>>> On Wed, Jul 18 2007, Tejun Heo wrote:
+>>>> Jens Axboe wrote:
+>>>>> On Wed, Jul 18 2007, Tejun Heo wrote:
+>>>>>> End of device check is done twice in __generic_make_request() and it's
+>>>>>> fully inlined each time.  Factor out bio_check_eod().
+>>>>> Tejun, yeah I should seperate the cleanups and put them in the upstream
+>>>>> branch. Will do so and add your signed-off to both of them.
+>>>>>
+>>>> Would they be different from the one I just posted?  No big deal either
+>>>> way.  I'm just basing the zero-length barrier on top of these patches.
+>>>> Oh well, the changes are trivial anyway.
+>>> This one ended up being the same, but in the first one you missed some
+>>> of the cleanups. I ended up splitting the patch some more though, see
+>>> the series:
+>>>
+>>> http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=barrier
+>> Alright, will base on 662d5c5e6afb79d05db5563205b809c0de530286.  Thanks.
 > 
-> 	if (sysfs_addrm_finish(&acxt))
-> 		success handling, usually return;
-> 	/* fall through to error handling */
-> 
-> This is the opposite of usual convention in sysfs and makes the code
-> difficult to understand.  This patch inverts the test and makes those
-> blocks look more like others.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
->  fs/sysfs/dir.c     |   12 +++++++-----
->  fs/sysfs/file.c    |    9 +++++----
->  fs/sysfs/symlink.c |   10 ++++++----
->  3 files changed, 18 insertions(+), 13 deletions(-)
+> 1781c6a39fb6e31836557618c4505f5f7bc61605, no? Unless you want to rewrite
+> it completely :-)
 
-Looks nice. One thing, though:
+I think I'll start from 662d5c5e and steal most parts from 1781c6a3.  I
+like stealing, you know. :-) I think 1781c6a3 also can use splitting -
+zero length barrier implementation and issue_flush conversion.
 
-sysfs_hash_and_remove() has the same check, but without a cleanup
-section. This should follow the (!sysfs_addrm_finish()) pattern as well
-(makes pattern matching easier when reading the code).
+Anyways, how do I pull from git.kernel.dk?
+git://git.kernel.dk/linux-2.6-block.git gives me connection reset by server.
+
+Thanks.
+
+-- 
+tejun
