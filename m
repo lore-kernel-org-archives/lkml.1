@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932250AbXGRUhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762215AbXGRUl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932250AbXGRUhn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 16:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbXGRUhc
+	id S1762215AbXGRUl1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 16:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757966AbXGRUlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 16:37:32 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:45082 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbXGRUhb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 16:37:31 -0400
-Date: Wed, 18 Jul 2007 13:40:12 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Gabriel C <crazy@pimpmylinux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-Message-Id: <20070718134012.cde2f956.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
-	<Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 18 Jul 2007 16:41:20 -0400
+Received: from waste.org ([66.93.16.53]:54427 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757008AbXGRUlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 16:41:19 -0400
+Date: Wed, 18 Jul 2007 15:41:02 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jonathan Campbell <jon@nerdgrounds.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Patches for REALLY TINY 386 kernels
+Message-ID: <20070718204102.GM11115@waste.org>
+References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com> <20070718194137.GG11166@waste.org> <20070718201043.GF3898@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070718201043.GF3898@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
-
-> On Wed, 18 Jul 2007, Gabriel C wrote:
+On Wed, Jul 18, 2007 at 10:10:43PM +0200, Andi Kleen wrote:
 > 
-> > Everything 'depends on' EXPERIMENTAL should be marked as such,
-> > visible in the menus.
+> I was waiting for someone to make that "point" ...
 > 
-> rather than add all that extraneous dreck to the Kconfig files, i
-> *really* wish folks would give serious thought to my earlier
-> suggestion about a "maturity level" attribute that could be used to
-> not only add a parenthesized maturity level during display, but could
-> also be used to activate/deactivate entire levels in one operation.
+> > 
+> > Every byte you can shave off the compressed kernel image is another
+> > byte you can use for userspace on your FLASH.
 > 
-> there's no point adding all that redundant content when it can all be
-> done automatically.
+> Now let's see if that 1MB 386 contains any flash at all. Guesses?  
 
-I like it.  Are there any kconfig patches to support this plan?
+I've certainly worked on such devices. I expect there are more of them
+still in service, than, say, Voyagers.
 
+I haven't looked at whether this CPUID stuff is worth the trouble, I'm
+just responding to your argument about init code. Init code is
+definitely not free. It takes up storage space, which can be extremely
+valuable.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+The deeper point is: if you know what your platform is, platform
+feature detection is a waste of code, regardless of whether it's
+marked init or not.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
