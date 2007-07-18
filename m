@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764280AbXGRWuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764076AbXGRWxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764280AbXGRWuf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 18:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbXGRWuY
+	id S1764076AbXGRWxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 18:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757483AbXGRWxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:50:24 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42096 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbXGRWuV (ORCPT
+	Wed, 18 Jul 2007 18:53:31 -0400
+Received: from [212.144.119.46] ([212.144.119.46]:41712 "EHLO mail1.bbf7.de"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756941AbXGRWxb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:50:21 -0400
-Message-ID: <469E9918.8040907@zytor.com>
-Date: Wed, 18 Jul 2007 15:50:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, Bodo Eggert <7eggert@gmx.de>,
-       linux-kernel@vger.kernel.org
+	Wed, 18 Jul 2007 18:53:31 -0400
+From: "Roland M. Kruggel" <rk.liste@bbf7.de>
+Organization: bbf7.de
+To: linux-kernel@vger.kernel.org
 Subject: Re: [RFC][Patch] Allow not mounting a root fs
-References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <Pine.LNX.4.64.0707072312380.1536@fbirervta.pbzchgretzou.qr> <469002EB.7030902@zytor.com> <200707181751.10276.rob@landley.net>
-In-Reply-To: <200707181751.10276.rob@landley.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Thu, 19 Jul 2007 00:53:23 +0200
+User-Agent: KMail/1.9.5
+References: <Pine.LNX.4.58.0707060318160.26869@be1.lrz> <200707181751.10276.rob@landley.net> <469E9918.8040907@zytor.com>
+In-Reply-To: <469E9918.8040907@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707190053.23811.rk.liste@bbf7.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> 
-> Out of curiosity, do you know which setup?  I know that it won't actually swap 
-> anything out yet because no swap is mounted, but I thought that mounting 
-> tmpfs and doing a swapon afterwards was ok...
-> 
 
-Nope, I just know that the "obvious" way to do it crashes the kernel
-horribly.  It looks based on the patchsets that have flown about
-recently as it's mostly a matter of initializing the icache.
 
-	-hpa
+-- 
+cu
+
+Roland Kruggel  mailto: rk.liste at bbf7.de
+System: Intel, Debian etch, 2.6.16.16, xfce4 KDE 3.5
+
+Test vom script...
