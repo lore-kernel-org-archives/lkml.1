@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936102AbXGRSua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936254AbXGRSwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936102AbXGRSua (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 14:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761174AbXGRSuX
+	id S936254AbXGRSwZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 14:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761174AbXGRSwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 14:50:23 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:4197 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761134AbXGRSuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 14:50:23 -0400
-Date: Wed, 18 Jul 2007 20:49:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Check for compound pages in set_page_dirty()
-Message-ID: <20070718184958.GH11657@kernel.dk>
-References: <20070718141533.GA11657@kernel.dk> <Pine.LNX.4.64.0707181619200.23261@blonde.wat.veritas.com> <20070718182456.GE11657@kernel.dk> <Pine.LNX.4.64.0707181942140.13919@blonde.wat.veritas.com>
+	Wed, 18 Jul 2007 14:52:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:20352 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759017AbXGRSwR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 14:52:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=Lis8S+nshrmcNKrmh/e7gb5+NmnnlBEm7pCu6xlcgADvIfTfeAKcpU1L9ySXdW39cqM9zR1EFII5UA0o2pm2dZw9jwp+OwiC6zm+drDUVVzpXypnbl2aGtxVpkcdgZEYvRBAxwgqtZhS9d4YJQVkj5AgiiLYJloM73+0UwAji00=
+Date: Wed, 18 Jul 2007 22:52:11 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: adobriyan@sw.ru, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Revert part of 3f1b0e1f287547903f11fa1e6de7d2765597766e
+Message-ID: <20070718185211.GA5575@martell.zuzino.mipt.ru>
+References: <200707182103.13500.caglar@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707181942140.13919@blonde.wat.veritas.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200707182103.13500.caglar@pardus.org.tr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18 2007, Hugh Dickins wrote:
-> On Wed, 18 Jul 2007, Jens Axboe wrote:
-> > 
-> > OK, you clearly have more knowledge in that area than I, but I do wish
-> > that you would have made a note in the code at least to remove things
-> > like this. It's pretty ugly to have superflous tests like that,
-> > especially since there was not even a comment saying _why_ you could not
-> > call set_page_dirty() on a compound page. I see it in the commit text,
-> > but nobody looking at fs/bio.c or fs/direct-io.c would directly find any
-> > reference of that.
-> > 
-> > Could you submit a patch removing the tests?
-> 
-> Okay, I'll do that - once I've reminded myself how to test it and done so!
+On Wed, Jul 18, 2007 at 09:03:13PM +0300, S.Çağlar Onur wrote:
+> With 3f1b0e1f287547903f11fa1e6de7d2765597766e Linus's current git tree starts 
+> to ignore any *.orig or *.rej files (for example "git status" cannot show 
+> what are they) but if there are some *.orig or *.rej files exists, for 
+> whatever reason, that means some unresolved merge conflicts occured for that 
+> code tree and this tree is no longer trusted so better not to ignore these.
 
-I'll do a test on this tomorrow and let you know what the results are! I
-should be able to do a quick fio job file for this, no need to write
-test cases :-)
+*.orig are generated even if line numbers change a bit, so untrusted is
+a somewhat exaggerated.
 
--- 
-Jens Axboe
+> --- a/.gitignore
+> +++ b/.gitignore
+> @@ -45,6 +45,3 @@ series
+>  
+>  # cscope files
+>  cscope.*
+> -
+> -*.orig
+> -*.rej
 
