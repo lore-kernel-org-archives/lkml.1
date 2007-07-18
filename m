@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764827AbXGROO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbXGROQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764827AbXGROO4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbXGROOs
+	id S1764999AbXGROQP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760083AbXGROQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:14:48 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1696 "EHLO scrub.xs4all.nl"
+	Wed, 18 Jul 2007 10:16:00 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:11531 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759112AbXGROOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:14:47 -0400
-Date: Wed, 18 Jul 2007 16:14:26 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-In-Reply-To: <20070718134811.GA9227@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707181558590.1817@scrub.home>
-References: <469B0D9E.3030402@andrew.cmu.edu> <20070716070610.GA10907@elte.hu>
- <Pine.LNX.4.64.0707161213500.1817@scrub.home> <20070716112037.GA6895@elte.hu>
- <Pine.LNX.4.64.0707161331570.1817@scrub.home>
- <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
- <1184754430.20032.130.camel@twins> <Pine.LNX.4.64.0707181442340.1817@scrub.home>
- <1184763148.20032.135.camel@twins> <Pine.LNX.4.64.0707181506460.1817@scrub.home>
- <20070718134811.GA9227@elte.hu>
+	id S1755186AbXGROQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 10:16:00 -0400
+Date: Wed, 18 Jul 2007 16:15:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: [PATCH] Check for compound pages in set_page_dirty()
+Message-ID: <20070718141533.GA11657@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-On Wed, 18 Jul 2007, Ingo Molnar wrote:
+We have these checks scattered, makes sense to put them in
+set_page_dirty() instead. This also fixes a bug where __bio_unmap_user()
+does set_page_dirty_lock() without checking for a compound page, instead
+of adding one more check we move it to set_page_dirty().
 
-> _changing_ it is an option within reason, and we've done it a couple of 
-> times already in the past, and even within CFS (as Peter correctly 
-> observed) we've been through a couple of iterations already. And as i 
-> mentioned it before, the outer edge of nice levels (+19, by far the most 
-> commonly used nice level) was inconsistent to begin with: 3%, 5%, 9% of 
-> nice-0, depending on HZ.
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
-Why do you constantly stress level 19? Yes, that one is special, all other 
-positive levels were already relatively consistent.
+diff --git a/fs/bio.c b/fs/bio.c
+index cd888f9..ff96cd9 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -902,7 +902,7 @@ void bio_set_pages_dirty(struct bio *bio)
+ 	for (i = 0; i < bio->bi_vcnt; i++) {
+ 		struct page *page = bvec[i].bv_page;
+ 
+-		if (page && !PageCompound(page))
++		if (page)
+ 			set_page_dirty_lock(page);
+ 	}
+ }
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 52bb263..72195bc 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -426,7 +426,7 @@ static int dio_bio_complete(struct dio *dio, struct bio *bio)
+ 		for (page_no = 0; page_no < bio->bi_vcnt; page_no++) {
+ 			struct page *page = bvec[page_no].bv_page;
+ 
+-			if (dio->rw == READ && !PageCompound(page))
++			if (dio->rw == READ)
+ 				set_page_dirty_lock(page);
+ 			page_cache_release(page);
+ 		}
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 886ea0d..3c590b9 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -861,8 +861,12 @@ EXPORT_SYMBOL(redirty_page_for_writepage);
+  */
+ int fastcall set_page_dirty(struct page *page)
+ {
+-	struct address_space *mapping = page_mapping(page);
++	struct address_space *mapping;
++	
++	if (unlikely(PageCompound(page)))
++		return 0;
+ 
++	mapping = page_mapping(page);
+ 	if (likely(mapping)) {
+ 		int (*spd)(struct page *) = mapping->a_ops->set_page_dirty;
+ #ifdef CONFIG_BLOCK
 
-> So changing that to a consistent (and 
-> user-requested)
+-- 
+Jens Axboe
 
-How old is CFS and how many users did it have so far? How many users has 
-the old scheduler, which will be exposed to the new one soon?
-
-> 1.5% is a much smaller change than you seem to make it 
-> out to be.
-
-The percentage levels are off by a factor of upto _seven_, sorry I fail 
-see how you can characterize this as "small".
-
-> So by your standard we could never change the 
-> scheduler. (which your ultimate argument might be after all =B-)
-
-Careful, you make assertion about me, for which you have absolutely no 
-base, adding a smiley doesn't make this any funnier.
-
-bye, Roman
