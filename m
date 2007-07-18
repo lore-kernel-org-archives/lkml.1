@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760220AbXGRMPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbXGRM1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760220AbXGRMPf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 08:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757935AbXGRMP0
+	id S1760918AbXGRM1e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 08:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbXGRM10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 08:15:26 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:30612 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756370AbXGRMPZ (ORCPT
+	Wed, 18 Jul 2007 08:27:26 -0400
+Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:47518 "HELO
+	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755851AbXGRM1Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 08:15:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=YREkKgD4/xwulmm0wmjrzssHLNhTmMCKtAniJd+dT3uAsMjVIDVQ2LCJfvl8D4N6ZCPiHWUx/I2a8AhT2Kf9rectfWvsx0zICbGKIIUUUbrHe6Q5mXeceDtc9N5lh84NuhEIP33BvGWieK4U/ZlQHRzpXPMEC+sZ2jiAftoPb6Y=
-Subject: Re: VESAFB CUSTOM RESOLUTION
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200707181342.00647.a1426z@gawab.com>
-References: <200707181342.00647.a1426z@gawab.com>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 20:15:17 +0800
-Message-Id: <1184760917.4523.13.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jul 2007 08:27:25 -0400
+X-YMail-OSG: IUuooQQVM1nZwXuuEFrzSdLXZpn9X23O5V2EDOYO.2Isn7dfQX0TCtKBdJbSwYlpgfB683EzHA5TVCd4d2miiOZPgg--
+X-RocketYMMF: knobi.rm
+Date: Wed, 18 Jul 2007 05:27:24 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: Re: [PATCH 00/17] per device dirty throttling -v7
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <845062.33459.qm@web32603.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-18 at 13:42 +0300, Al Boldi wrote:
-> Geert Uytterhoeven wrote:
-> > On Wed, 18 Jul 2007, Sasa Ostrouska wrote:
-> Is there any technical reason why vesafb shouldn't support non-BIOS modes?
-> 
+Miklos Szeredi wrote:
 
-vesafb can only use modes included by the vendor in the card's BIOS. The
-mode table contains standard modes defined by VESA, and perhaps
-vendor-defined custom modes. However, the mode ID of custom modes varies
-from card to card, so you have to 'probe' the BIOS first for the list of
-modes and their associated ID.  X + the 'vesa' driver does that probe,
-and so does the lrmi tool vbetest.
- 
-So, one cannot just set any mode, unless that mode is already defined in
-the BIOS mode table. In VBE 3.0, you might be able to choose an
-arbitrary vertical refresh rate, but that's the best mode tuning you can
-do with the video BIOS. 
+>> Latest version of the per bdi dirty throttling patches.
+>>
+>> Most of the changes since last time are little cleanups and more
+>> detail in the split out of the floating proportion into their
+>> own little lib.
+>>
+>> Patches are against 2.6.22-rc4-mm2
+>>
+>> A rollup of all this against 2.6.21 is available here:
+>>
+http://programming.kicks-ass.net/kernel-patches/balance_dirty_pages/2.6.21-per_bdi_dirty_pages.patch
+>>
+>> This patch-set passes the starve an USB stick test..
+>
+>I've done some testing of several problem cases.
 
-Tony
+ just curious - what are the plans towards inclusion in mainline?
 
+Cheers
+Martin
 
-
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
