@@ -1,40 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933833AbXGRBwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935025AbXGRBx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933833AbXGRBwc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 21:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbXGRBwY
+	id S935025AbXGRBx2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 21:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756104AbXGRBxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 21:52:24 -0400
-Received: from smtp131.iad.emailsrvr.com ([207.97.245.131]:48191 "EHLO
-	smtp131.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756479AbXGRBwX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 21:52:23 -0400
-Message-ID: <469D71FB.5070408@gentoo.org>
-Date: Tue, 17 Jul 2007 21:50:51 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
+	Tue, 17 Jul 2007 21:53:19 -0400
+Received: from mailhub.hp.com ([192.151.27.10]:36035 "EHLO mailhub.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756027AbXGRBxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 21:53:18 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett Packard
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/2] SELinux Netlabel updates
+Date: Tue, 17 Jul 2007 21:53:03 -0400
+User-Agent: KMail/1.9.7
+Cc: James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org, michal.k.k.piotrowski@gmail.com
+References: <Line.LNX.4.64.0707171945430.10858@d.namei> <alpine.LFD.0.999.0707171719320.27353@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707171719320.27353@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Sasa Ostrouska <casaxa@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: VESAFB CUSTOM RESOLUTION
-References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
-In-Reply-To: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707172153.03670.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sasa Ostrouska wrote:
-> I want to ask one question about a custom resolution in the console.
-> I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
-> 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
-> ugly as I get a border of about 2-3cm on one the sides of the screen.
-> So is there a way that I set the 1280x800 resolution at boot time ?
+On Tuesday 17 July 2007 8:24:55 pm Linus Torvalds wrote:
+> On Tue, 17 Jul 2007, James Morris wrote:
+> > These are updated Netlabel/SELinux changes from Paul, reworked so that
+> > they don't break userspace.  Michal says they work for him.  Please apply
+> > for 2.6.23.
+>
+> They don't work AT ALL for me:
+>
+> 	security/selinux/ss/sidtab.o: In function `netlbl_enabled':
+> 	sidtab.c:(.text+0x0): multiple definition of `netlbl_enabled'
+> 	security/selinux/ss/ebitmap.o:ebitmap.c:(.text+0x0): first defined here
+>
+> Tssk.
+>
+> That dummy "netlbl_enabled()" should be "static inline", methinks.
+>
+> Also, that <net/netlabel.h> file has two blocks after each other of
+>
+> 	#ifdef CONFIG_NETLABEL
+> 	..
+> 	#else
+> 	..
+> 	#endif
+>
+> 	#ifdef CONFIG_NETLABEL
+> 	..
+> 	#else
+> 	..
+> 	#endif
+>
+> which might as well be cleaned up at the same time (and might have avoided
+> this bug, since then the people involved would have seen the _correct_
+> example in the first version)
 
-I don't think vesafb can do what you want. However, uvesafb probably can.
+Oh my.  I'll fix this and get another version out to James and Michal tomorrow 
+morning; I have to spend the rest of the night smacking myself in the 
+forehead.
 
-http://dev.gentoo.org/~spock/projects/uvesafb/
-
-Daniel
-
+-- 
+paul moore
+linux security @ hp
