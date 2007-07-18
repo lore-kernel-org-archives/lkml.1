@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbXGRLUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbXGRLY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762792AbXGRLUE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 07:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXGRLTy
+	id S1760286AbXGRLY1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 07:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbXGRLYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 07:19:54 -0400
-Received: from agave.telenet-ops.be ([195.130.137.77]:55118 "EHLO
-	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbXGRLTy (ORCPT
+	Wed, 18 Jul 2007 07:24:20 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46902 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751179AbXGRLYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 07:19:54 -0400
-Date: Wed, 18 Jul 2007 13:19:52 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sasa Ostrouska <casaxa@gmail.com>
-cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: Re: VESAFB CUSTOM RESOLUTION
-In-Reply-To: <dcf706c60707180250i55a4554di83fc8fed4f24f25@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707181318570.24281@anakin>
-References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
- <469D71FB.5070408@gentoo.org> <dcf706c60707172336u38cb87c4ia77cc4dbe9b38a56@mail.gmail.com>
- <Pine.LNX.4.64.0707181116090.24281@anakin> <dcf706c60707180250i55a4554di83fc8fed4f24f25@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 18 Jul 2007 07:24:19 -0400
+Date: Wed, 18 Jul 2007 12:30:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Or Sagi" <ors@tutis.com>
+Cc: <linux-kernel@vger.kernel.org>, <kvm-devel@lists.sourceforge.net>
+Subject: Re: [RFC] Deferred interrupt handling.
+Message-ID: <20070718123040.615795b7@the-village.bc.nu>
+In-Reply-To: <005901c7c921$79c006c0$6d401440$@com>
+References: <005901c7c921$79c006c0$6d401440$@com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Sasa Ostrouska wrote:
-> On 7/18/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Wed, 18 Jul 2007, Sasa Ostrouska wrote:
-> > > On 7/18/07, Daniel Drake <dsd@gentoo.org> wrote:
-> > > > Sasa Ostrouska wrote:
-> > > > > I want to ask one question about a custom resolution in the console.
-> > > > > I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
-> > > > > 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
-> > > > > ugly as I get a border of about 2-3cm on one the sides of the screen.
-> > > > > So is there a way that I set the 1280x800 resolution at boot time ?
-> > > >
-> > > > I don't think vesafb can do what you want. However, uvesafb probably
-> > can.
-> > > >
-> > > > http://dev.gentoo.org/~spock/projects/uvesafb/
-> > > >
-> > > > Daniel
-> > >
-> > > Daniel you seem to be right, as till now, no one of those solutions
-> > > for me worked, I always end up or with a non recognised option or a
-> > > small square 640x480 pixels where I see the console. I need to try
-> > > still the vbetest thing what Mr. Daplas proposed.
-> > >
-> > > In any case this laptop has an screen of 16:10 aspect ratio and I
-> > > belive would be good
-> > > to have those modes in the vesafb driver.
-> > 
-> > There are no modes in the vesafb driver. The vesafb driver uses the
-> > video mode that was set by the BIOS before starting Linux.
-> > 
-> Geert, in that case what should i do to use the full screen, probably
-> usind another driver ?
+> In particular, this requires interrupt handling to be done by the guest --
+> The host shouldn't load the corresponding device driver or otherwise access
+> the device. Since the host kernel is not aware of the device semantics it
+> cannot acknowledge the interrupt at the device level.
 
-Yes, you can use a driver for one of yours graphics adapters.
+Tricky indeed.
 
-> This laptop has 2 graphic cards in it. One is a Intel 915 another is
-> the nVidia GeForce 7400. I manly use the nvidia one when i'm on AC
-> adapter.
-> So how can I do to set the console to 1280x800 ?
+> As far as the host kernel is concerned the VM is a user level process. We
+> require the ability to forward interrupt handling to such entities. The
+> current kernel interrupt handling path doesn't allow deferring interrupt
+> handling _and_ acknowledgement.
 
-Use nvidiafb and video=1280x800?
+We don't support this model at all, and it doesn't appear to work anyway.
 
-Gr{oetje,eeting}s,
+> 0. Adding an IRQ_DEFERRED mechanism to the interrupt handling path. ISRs
+> returning IRQ_DEFERRED will keep the interrupt masked until future
+> acknowledge.
 
-						Geert
+Deadlock. If you get an IRQ for a guest and you block the IRQ until the
+guest handles it you may (eg if the IRQ is shared) get priority inversion
+with another interrupt source on the same line the guest requires first
+(eg disks and other I/O)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> Another issue we are aware of is the effect deferred handling will have on
+> other devices sharing the interrupt. This seems to be a problem regardless
+> of the solution.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Yes. This is the big reason Linux has never supported this kind of model
+for anything but old ISA IRQ handling in vm86.
+> 
+> We wouldn't like to assume VT-d availability right now.
+> 
+> Any ideas ? Thoughts ?
+
+Mask the interrupt in the main kernel, pass an event of some kind to the
+guest. You can describe most devices from guest to kernel in a safe form
+as
+
+device, bar, offset, register size, mask, bits to set, bits to clear
+
+(or bits to test when deciding if it is the irq source)
+
