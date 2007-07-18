@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760409AbXGRF4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbXGRF7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760409AbXGRF4p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 01:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXGRF4i
+	id S1762063AbXGRF7U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 01:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXGRF7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 01:56:38 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:38589 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750773AbXGRF4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 01:56:37 -0400
-Date: Wed, 18 Jul 2007 01:56:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ak@suse.de
-Subject: [PATCH 3/3] x86-64: make flush_tlb_kernel_range() a static inline
-	function
-Message-ID: <20070718055635.GB5748@havoc.gtf.org>
-References: <20070718055348.GA5734@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070718055348.GA5734@havoc.gtf.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Wed, 18 Jul 2007 01:59:12 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:53076 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751740AbXGRF7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 01:59:12 -0400
+X-Sasl-enc: a2pqPZy4+8ySQfJ9wpoKB+GWiGk0WqHMKDUn1OrkPIGD 1184738350
+Subject: RE: [patch] CFS scheduler, -v19
+From: Ian Kent <raven@themaw.net>
+To: davids@webmaster.com
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       Chuck Ebbert <cebbert@redhat.com>, Bill Davidsen <davidsen@tmr.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEBPFGAC.davids@webmaster.com>
+References: <MDEHLPKNGKAHNMBLJOLKKEBPFGAC.davids@webmaster.com>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 13:59:04 +0800
+Message-Id: <1184738344.4178.18.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-07-17 at 14:16 -0700, David Schwartz wrote:
+> > * Ian Kent <raven@themaw.net> wrote:
+> >
+> > > Yes it does and I have two reported bugs so far.
+> > >
+> > > In several places I have code similar to:
+> > >
+> > > wait.tv_sec = time(NULL) + 1;
+> > > wait.tv_nsec = 0;
+> > >
+> > > signaled = 0;
+> > > while (!signaled) {
+> > >         status = pthread_cond_timedwait(&cond, &mutex, &wait);
+> > >        if (status) {
+> > >              if (status == ETIMEDOUT)
+> > >                   break;
+> > >              fatal(status);
+> > >       }
+> > > }
+> >
+> > ah! It passes in a low-res time source into a high-res time interface
+> > (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to
+> > time(NULL) + 2, or change it to:
+> >
+> > 	gettimeofday(&wait, NULL);
+> > 	wait.tv_sec++;
+> >
+> > does this solve the spinning?
 
-The following change was checked into 'warnings' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
+Yes, adding in the offset within the current second appears to resolve
+the issue. Thanks Ingo.
 
-commit b1c9131343597967d8fcc042f59e4ed36ea2855f
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Wed Jul 18 01:47:39 2007 -0400
+> >
+> > i'm wondering how widespread this is. If automount is the only app doing
+> > this then _maybe_ we could get away with it by changing automount?
 
-    [X86-64] make flush_tlb_kernel_range() a static inline function
-    
-    On x86-64, without this change, the following warning is emitted
-    
-    mm/vmalloc.c: In function ‘unmap_kernel_range’:
-    mm/vmalloc.c:75: warning: unused variable ‘start’
-    
-    because, x86-64, flush_tlb_kernel_range(start,end) evaluates down to
-    flush_tlb_all(void) in a macro.
-    
-    Avoid this warning by implementing x86-64's flush_tlb_kernel_range() as
-    a type-safe static inline, rather than a macro.
-    
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+I don't think the change is unreasonable since I wasn't using an
+accurate time in the condition wait, so that's a coding mistake on my
+part which I will fix.
 
- include/asm-x86_64/tlbflush.h |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Ian
 
-b1c9131343597967d8fcc042f59e4ed36ea2855f
-diff --git a/include/asm-x86_64/tlbflush.h b/include/asm-x86_64/tlbflush.h
-index 8516225..a82464c 100644
---- a/include/asm-x86_64/tlbflush.h
-+++ b/include/asm-x86_64/tlbflush.h
-@@ -92,7 +92,11 @@ static inline void flush_tlb_range(struct vm_area_struct * vma, unsigned long st
- 
- #endif
- 
--#define flush_tlb_kernel_range(start, end) flush_tlb_all()
-+static inline void flush_tlb_kernel_range(unsigned long start,
-+					  unsigned long end)
-+{
-+	flush_tlb_all();
-+}
- 
- static inline void flush_tlb_pgtables(struct mm_struct *mm,
- 				      unsigned long start, unsigned long end)
+
