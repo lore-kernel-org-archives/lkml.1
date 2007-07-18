@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935695AbXGRAKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934455AbXGRATM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935695AbXGRAKA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 20:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbXGRAJw
+	id S934455AbXGRATM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 20:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbXGRAS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 20:09:52 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39467 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759547AbXGRAJw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 20:09:52 -0400
-Date: Wed, 18 Jul 2007 01:16:15 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Shawn Bohrer <shawn.bohrer@gmail.com>
-Cc: Rene Herman <rene.herman@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Bodo Eggert <7eggert@gmx.de>, Matt Mackall <mpm@selenic.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Message-ID: <20070718011615.7550f583@the-village.bc.nu>
-In-Reply-To: <20070717161454.GB21538@mediacenter.austin.rr.com>
-References: <E1IA7j1-0000j9-I3@be1.lrz>
-	<469A5D7C.5010904@gmail.com>
-	<Pine.LNX.4.58.0707161523500.25779@be1.lrz>
-	<469BF104.1040703@gmail.com>
-	<2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
-	<469BF768.6040200@gmail.com>
-	<2c0942db0707161613lff9c07bpcf002b9139163a86@mail.gmail.com>
-	<469BFDA7.1040204@gmail.com>
-	<2c0942db0707161640h3c3afd7avecd7b3c61c4e7df1@mail.gmail.com>
-	<469C1409.9010305@gmail.com>
-	<20070717161454.GB21538@mediacenter.austin.rr.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jul 2007 20:18:58 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:35026 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757732AbXGRAS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 20:18:57 -0400
+Date: Wed, 18 Jul 2007 09:18:36 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: clameter@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.23 compile failure - slab/slob interspanking
+Message-ID: <20070718001836.GA30154@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jan Engelhardt <jengelh@computergmbh.de>, clameter@sgi.com,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Matt Mackall <mpm@selenic.com>
+References: <Pine.LNX.4.64.0707172148310.27468@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707172148310.27468@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I can't speak for Fedora, but RHEL disables XFS in their kernel likely
-> because it is known to cause problems with 4K stacks.
+On Tue, Jul 17, 2007 at 10:00:08PM +0200, Jan Engelhardt wrote:
+> 81cda6626178cd55297831296ba8ecedbfd8b52d is first bad commit
+> commit 81cda6626178cd55297831296ba8ecedbfd8b52d
+> Author: Christoph Lameter <clameter@sgi.com>
+> Date:   Tue Jul 17 04:03:29 2007 -0700
+> 
+>     Slab allocators: Cleanup zeroing allocations
+>     
+>     It becomes now easy to support the zeroing allocs with generic inline
+>     functions in slab.h.  Provide inline definitions to allow the continued use of
+>     kzalloc, kmem_cache_zalloc etc but remove other definitions of zeroing
+>     functions from the slab allocators and util.c.
+>     
+>     Signed-off-by: Christoph Lameter <clameter@sgi.com>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+This fixes it for me with your .config:
 
--was- - the SGI folks submitted patches to deal with some gcc problems
-with stack usage.
+slob: Kill off duplicate kzalloc() definition.
+
+With the slab zeroing allocations cleanups Christoph stubbed in a generic
+kzalloc(), which was missed on SLOB. Follow the SLAB/SLUB changes and
+kill off the __kzalloc() wrapper that SLOB was using.
+
+Reported-by: Jan Engelhardt <jengelh@computergmbh.de>
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
+--
+
+ include/linux/slob_def.h |   10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
+index a2daf2d..59a3fa4 100644
+--- a/include/linux/slob_def.h
++++ b/include/linux/slob_def.h
+@@ -33,14 +33,4 @@ static inline void *__kmalloc(size_t size, gfp_t flags)
+ 	return kmalloc(size, flags);
+ }
+ 
+-/**
+- * kzalloc - allocate memory. The memory is set to zero.
+- * @size: how many bytes of memory are required.
+- * @flags: the type of memory to allocate (see kcalloc).
+- */
+-static inline void *kzalloc(size_t size, gfp_t flags)
+-{
+-	return __kzalloc(size, flags);
+-}
+-
+ #endif /* __LINUX_SLOB_DEF_H */
