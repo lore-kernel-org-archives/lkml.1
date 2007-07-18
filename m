@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761944AbXGRLGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXGRLHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761944AbXGRLGk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 07:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756401AbXGRLGc
+	id S932184AbXGRLHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 07:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762986AbXGRLGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 07:06:32 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:45006 "EHLO
-	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756526AbXGRLGb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 07:06:31 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-Organization: AMD
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH 0/2] faking and fixing the NUMA SLIT
-Date: Wed, 18 Jul 2007 11:57:28 +0200
-User-Agent: KMail/1.9.7
-cc: "lkml List" <linux-kernel@vger.kernel.org>, gregkh@suse.de,
-       lenb@kernel.org, "Christoph Lameter" <clameter@sgi.com>
-References: <200707181130.01861.joachim.deguara@amd.com>
- <200707181142.20811.ak@suse.de>
-In-Reply-To: <200707181142.20811.ak@suse.de>
+	Wed, 18 Jul 2007 07:06:48 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:19063 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756526AbXGRLGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 07:06:46 -0400
+Date: Wed, 18 Jul 2007 13:06:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Phillip Susi <psusi@cfl.rr.com>, Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>
+Subject: Re: [PATCH] block: factor out bio_check_eod()
+Message-ID: <20070718110619.GM11657@kernel.dk>
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070530093503.GA15559@kernel.dk> <20070718105655.GB22374@htj.dyndns.org> <20070718105946.GC22374@htj.dyndns.org>
 MIME-Version: 1.0
-Message-ID: <200707181157.29052.joachim.deguara@amd.com>
-X-OriginalArrivalTime: 18 Jul 2007 11:06:16.0151 (UTC)
- FILETIME=[A91F0E70:01C7C92B]
-X-WSS-ID: 6A832BA17CS2748085-01-01
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070718105946.GC22374@htj.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 July 2007 11:42:20 Andi Kleen wrote:
-> On Wednesday 18 July 2007 11:30:01 Joachim Deguara wrote:
-> > The problem with NUMA distances in the SLIT is that they are often wrong,
-> > oh wait they aren't there at all because the BIOS didn't create a SLIT
-> > since Windows does not use it.  If Linux does not find a slit it just
-> > says the distance to local=10 and remote=20 according to ACPI spec.  The
-> > problem is when we have a 4P system (or larger), there is generally one
-> > node where we have two hops and its distance should be >20.
-> >
-> > Following are patches to first fake the SLIT in the ACPI code and then
-> > add ability to write the distances from sysfs.
->
-> The main use for the SLIT information are the zone fallback lists in
-> the VM. These are created at boot.  If you change the SLIT later these
-> won't be regenerated.
->
-> The scheduler also uses it for load balancing, but it is much less
-> important there than in the VM.
+On Wed, Jul 18 2007, Tejun Heo wrote:
+> End of device check is done twice in __generic_make_request() and it's
+> fully inlined each time.  Factor out bio_check_eod().
 
-I looked at how node_distance() was called from page_alloc.c and sched.c but I 
-overlooked that those results are really only used at init time.  So the 
-backing mechanism of patching the SLIT is right but sysfs is way to late for 
-those uses and creating a boot option is as you say ugly.  It would be great 
-if BIOS just did this for us and correctly but what do you really expect 
-that ;)
+Tejun, yeah I should seperate the cleanups and put them in the upstream
+branch. Will do so and add your signed-off to both of them.
 
-I would be happy to add it as a boot option if there is any popular support 
-for the idea.
-
--Joachim
-
-
-
-
+-- 
+Jens Axboe
 
