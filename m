@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936004AbXGRSEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935825AbXGRSHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936004AbXGRSEp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 14:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935368AbXGRSEb
+	id S935825AbXGRSHr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 14:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbXGRSHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 14:04:31 -0400
-Received: from il.qumranet.com ([82.166.9.18]:59843 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935925AbXGRSE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 14:04:26 -0400
-Message-ID: <469E5628.40609@qumranet.com>
-Date: Wed, 18 Jul 2007 21:04:24 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Wed, 18 Jul 2007 14:07:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:19833 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754571AbXGRSHh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 14:07:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FW9FnbYf9sUeS8a+42j9st03UWKIJjuK2/E36Pr2vESXBAmPDDHrxRZBI5CjVvw0NsjFIdNdP+3UP4MI0gClDMvHwGZX5DOu5fuWgyryZKSyU714AMs0RXcKCPpk8jf7godvZ1HMG429Jz19kZDTMai+dD4kxH4H3u06zEQeP5A=
+Message-ID: <64d833020707181107o705ff16ava129e91fcf68a8ef@mail.gmail.com>
+Date: Wed, 18 Jul 2007 14:07:36 -0400
+From: koan <koan00@gmail.com>
+To: "Rui Santos" <rsantos@grupopie.com>
+Subject: Re: Slow Soft-RAID 5 performance
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <469E4A70.1000306@grupopie.com>
 MIME-Version: 1.0
-To: caglar@pardus.org.tr
-CC: Anthony Liguori <anthony@codemonkey.ws>, kvm-devel@lists.sourceforge.net,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
-References: <11846910642166-git-send-email-avi@qumranet.com> <200707181309.11900.caglar@pardus.org.tr> <469DEC04.8000503@qumranet.com> <200707182046.05358.caglar@pardus.org.tr>
-In-Reply-To: <200707182046.05358.caglar@pardus.org.tr>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 18 Jul 2007 21:04:24 +0300 (IDT)
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <64d833020707180707i1bbbbcbao783e33a2487c9e2b@mail.gmail.com>
+	 <469E4A70.1000306@grupopie.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-S.Çağlar Onur wrote:
-> Hi Avi;
+Are you sure about that chunk size? In you initial posting you show
+/proc/mdstat reporting:
+
+"md2 : active raid5 sdc3[2] sda3[0] sdb3[1]
+      780083968 blocks level 5, 128k chunk, algorithm 2 [3/3] [UUU]"
+
+Which would seem to state a 128K chunk, and thus with a 4k block size
+you would need a stride of 32.
+
+
+
+On 7/18/07, Rui Santos <rsantos@grupopie.com> wrote:
+> koan wrote:
+> > How did you create the ext3 filesystem?
 >
-> 18 Tem 2007 Çar tarihinde, Avi Kivity şunları yazmıştı: 
->   
->> This trace is certainly a kvm bug.  What guest are you running?  If it
->> is free (and does not contain private information), can you post it
->> somewhere for me to download?
->>     
+> The chunk_size is at 256KB, ext3 block size is 4k. I believe the correct
+> option that should be passed trough to --stride is 64.
+> Am I correct ?
 >
-> After seeing your "[PATCH] i386: Decouple PAE from CONFIG_CMPXCHG64" mail i 
-> applied it on top of Linus's current git and disabled HIGHMEM64 (following is 
-> the diff between configs)
+> I've also tested ( after sending my first report ) with xfs.
+> I've also increases readahead to 65535 on all HD's
+> I've also increases the stripe_cache_size to 16384.
 >
->   
-
-It should not have made any difference.
-
-I'll send you a debug patch tomorrow.  These are rather fundamental
-failures, something is seriously wrong.
-
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+> I can now get ~100MB/sec...
+>
+> >
+> > Did you use the appropriate --stride option as noted here:
+> > http://tldp.org/HOWTO/Software-RAID-HOWTO-5.html (#5.11)
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe
+> > linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> >
+> >
+>
+>
