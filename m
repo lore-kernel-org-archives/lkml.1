@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935835AbXGRXAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934166AbXGRXGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935835AbXGRXAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763712AbXGRW6N
+	id S934166AbXGRXGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbXGRXGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:58:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:23349 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763950AbXGRW6L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:58:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=GubuyFo0f2Nh22X4K15hOKQJgGLA0hDXS1qvQ64nlOFaBlNigiKbsyvsfvFs1FJ6Fv46tXDXqnBSat6KIy8k9C5ZHcHo1Fr1bwu6k7a0B2FyrQ2JWK8OoJoo+MVgASMYVo5qOEbSI9l1VfPJp8L9JFN2VsKcMfBYnOQyHB8XpeQ=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Corey Minyard <minyard@mvista.com>
-Subject: [PATCH][IPMI] Fix mem leak in try_init_dmi() code
-Date: Thu, 19 Jul 2007 00:57:15 +0200
-User-Agent: KMail/1.9.7
-Cc: Christian Krafft <krafft@de.ibm.com>,
-       openipmi-developer@lists.sourceforge.net, minyard@wf-rch.cirr.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Wed, 18 Jul 2007 19:06:04 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:47009 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756473AbXGRXGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:06:03 -0400
+Date: Wed, 18 Jul 2007 19:05:55 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] [PATCH 013 of 20] knfsd: nfsd: factor out code from
+	show_expflags
+Message-ID: <20070718230555.GN7111@fieldses.org>
+References: <20070710121949.12548.patches@notabene> <1070710022737.13509@suse.de> <20070713002933.f15724a7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707190057.16051.jesper.juhl@gmail.com>
+In-Reply-To: <20070713002933.f15724a7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
+On Fri, Jul 13, 2007 at 12:29:33AM -0700, Andrew Morton wrote:
+> On Tue, 10 Jul 2007 12:27:37 +1000 NeilBrown <neilb@suse.de> wrote:
+> 
+> > +static void exp_flags(struct seq_file *m, int flag, int fsid,
+> > +		uid_t anonu, uid_t anong, struct nfsd4_fs_locations *fsloc)
+> > +{
+> > +	show_expflags(m, flag, NFSEXP_ALLFLAGS);
+> >  	if (flag & NFSEXP_FSID)
+> > -		seq_printf(m, "%sfsid=%d", first++?",":"", fsid);
+> > +		seq_printf(m, ",fsid=%d", fsid);
+> >  	if (anonu != (uid_t)-2 && anonu != (0x10000-2))
+> > -		seq_printf(m, "%sanonuid=%d", first++?",":"", anonu);
+> > +		seq_printf(m, ",sanonuid=%d", anonu);
+> 
+> It's a bit presumptuous to print a uid_t with "%d".  Fortunately it
+> will work OK with all the present architectures.
+> 
+> But in general: be cautious when feeding opaque types to printk.
 
-If we ever hit the "default:" case in the switch in try_init_dmi(), 
-then we'll leak the storage allocated with kzalloc() and assigned 
-to 'info'. 
+OK, here I'm still confused--what should we be doing instead?
 
-Note: patch has been compile tested only.
-
-Please consider merging upstream :-)
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/char/ipmi/ipmi_si_intf.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/char/ipmi/ipmi_si_intf.c 
-b/drivers/char/ipmi/ipmi_si_intf.c
-index 4edfdda..96d2f9e 100644
---- a/drivers/char/ipmi/ipmi_si_intf.c
-+++ b/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2050,6 +2050,7 @@ static __devinit void try_init_dmi(struct dmi_ipmi_data 
-*ipmi_data)
- 		info->si_type = SI_BT;
- 		break;
- 	default:
-+		kfree(info);
- 		return;
- 	}
- 
-
-
+--b.
