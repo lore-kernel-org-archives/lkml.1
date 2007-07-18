@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbXGRGGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762180AbXGRGHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757108AbXGRGGN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 02:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbXGRGGD
+	id S1762180AbXGRGHc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbXGRGHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 02:06:03 -0400
-Received: from www.osadl.org ([213.239.205.134]:49077 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751260AbXGRGGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 02:06:01 -0400
-Subject: Re: [PATCH] posix-timer: fix deletion race
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeremy Katz <jeremy.katz@windriver.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Stable Team <stable@kernel.org>
-In-Reply-To: <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
-References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain>
-	 <1184662429.12353.426.camel@chaos>
-	 <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
-	 <1184703427.12353.476.camel@chaos>
-	 <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
-	 <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 08:05:55 +0200
-Message-Id: <1184738755.12353.481.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Wed, 18 Jul 2007 02:07:20 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:13563 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbXGRGHR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 02:07:17 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=p9Zl4S0YSHeXwj1t4e55eItOqGrkXZawREGiGrsUmrR9BjBwt2f1sCAKZvXeYMtzZ
+	xTBlPZ124iIhJohLZIH8Q==
+Message-ID: <6599ad830707172307t7a9f9555n3ebe8c20c8b854fa@mail.gmail.com>
+Date: Tue, 17 Jul 2007 23:07:09 -0700
+From: "=?ISO-2022-JP?B?UGF1bCAoGyRCSnVOXBsoQikgTWVuYWdl?=" 
+	<menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Containers: css_put() dilemma
+Cc: dhaval@linux.vnet.ibm.com,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Pavel Emelianov" <xemul@sw.ru>, "Paul Jackson" <pj@sgi.com>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <469D9728.2080701@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <469BBE00.8000709@linux.vnet.ibm.com>
+	 <20070717070031.GA22410@linux.vnet.ibm.com>
+	 <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com>
+	 <469C99D1.7090807@linux.vnet.ibm.com>
+	 <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
+	 <469CFF2B.1080702@linux.vnet.ibm.com>
+	 <6599ad830707171044u38c0a940r12d2bc80b475ead4@mail.gmail.com>
+	 <469D066B.6050606@linux.vnet.ibm.com>
+	 <6599ad830707171126o7c431277p84f532d0122a8a98@mail.gmail.com>
+	 <469D9728.2080701@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 16:58 -0700, Jeremy Katz wrote:
+On 7/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+> Ok.. so my problem still remains, how do I get a non-blocking atomic
+> reference increment/decrement routine, that would prevent my
+> container from being deleted?
 
-> Scratch that.  I had infrastructure problems, and ended up using the wrong 
-> build.
+css_put() in my new patchset will be non-blocking.
 
-> EFLAGS: 00010246   (2.6.22.1-WR1.4aq_cgl #2)
+>
+> I don't find cpusets using css_put().
 
-Hmm. Are there any other patches on that kernel ?
+Cpusets never needs to keep a non-process reference on a cpuset
+object, so the framework handles everything.
 
-Is there a chance that you can whip up a test program which is not
-secret sauce ?
-
-Also can you please enable CONFIG_PROVE_LOCKING, which might catch any
-locking problem, which might be related to this.
-
-	tglx
-
-
+Paul
