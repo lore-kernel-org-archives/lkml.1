@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762287AbXGRJq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761178AbXGRJuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762287AbXGRJq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 05:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbXGRJqu
+	id S1761178AbXGRJuV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 05:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXGRJuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 05:46:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41420 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbXGRJqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 05:46:48 -0400
-Date: Wed, 18 Jul 2007 11:46:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE][RFC] PlugSched-6.5.1 for  2.6.22
-Message-ID: <20070718094641.GA22651@elte.hu>
-References: <46946E39.5090108@bigpond.net.au> <20070716082025.GA29529@elte.hu> <469C08BF.5010406@bigpond.net.au>
+	Wed, 18 Jul 2007 05:50:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:56236 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbXGRJuH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 05:50:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ersx+WFo4LEkGnpfuXPhgaFrsv/x+hFuW4aAqhz5uOTdgl6Ma917/agcN478hNICEqGp4pyxLXoUsGsy/S3k4qiCycAiY9woyaajnSu8iDkQBS9nChZoSTOg+Mx564C8enF5+ZlGjJaw9+6iRPpRCaRrPlCMU8+J0ZUqMlX/PRM=
+Message-ID: <dcf706c60707180250i55a4554di83fc8fed4f24f25@mail.gmail.com>
+Date: Wed, 18 Jul 2007 11:50:06 +0200
+From: "Sasa Ostrouska" <casaxa@gmail.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Subject: Re: VESAFB CUSTOM RESOLUTION
+Cc: "Daniel Drake" <dsd@gentoo.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0707181116090.24281@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <469C08BF.5010406@bigpond.net.au>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
+	 <469D71FB.5070408@gentoo.org>
+	 <dcf706c60707172336u38cb87c4ia77cc4dbe9b38a56@mail.gmail.com>
+	 <Pine.LNX.4.64.0707181116090.24281@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 7/18/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Wed, 18 Jul 2007, Sasa Ostrouska wrote:
+> > On 7/18/07, Daniel Drake <dsd@gentoo.org> wrote:
+> > > Sasa Ostrouska wrote:
+> > > > I want to ask one question about a custom resolution in the console.
+> > > > I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
+> > > > 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
+> > > > ugly as I get a border of about 2-3cm on one the sides of the screen.
+> > > > So is there a way that I set the 1280x800 resolution at boot time ?
+> > >
+> > > I don't think vesafb can do what you want. However, uvesafb probably can.
+> > >
+> > > http://dev.gentoo.org/~spock/projects/uvesafb/
+> > >
+> > > Daniel
+> >
+> > Daniel you seem to be right, as till now, no one of those solutions
+> > for me worked, I always end up or with a non recognised option or a
+> > small square 640x480 pixels where I see the console. I need to try
+> > still the vbetest thing what Mr. Daplas proposed.
+> >
+> > In any case this laptop has an screen of 16:10 aspect ratio and I
+> > belive would be good
+> > to have those modes in the vesafb driver.
+>
+> There are no modes in the vesafb driver. The vesafb driver uses the
+> video mode that was set by the BIOS before starting Linux.
+>
+> Gr{oetje,eeting}s,
+>
+>                                                 Geert
+>
 
-* Peter Williams <pwil3058@bigpond.net.au> wrote:
+Geert, in that case what should i do to use the full screen, probably
+usind another driver ?
+This laptop has 2 graphic cards in it. One is a Intel 915 another is
+the nVidia GeForce 7400. I manly use the nvidia one when i'm on AC
+adapter.
+So how can I do to set the console to 1280x800 ?
 
-> Ingo Molnar wrote:
-> > * Peter Williams <pwil3058@bigpond.net.au> wrote:
-> > 
-> >> Probably the last one now that CFS is in the main line :-(.
-> > 
-> > hm, why is CFS in mainline a problem?
-> 
-> It means a major rewrite of the plugsched interface and I'm not sure 
-> that it's worth it (if CFS works well).  However, note that I did say 
-> probably not definitely :-).  I'll play with it and see what happens.
-
-i think it's very useful as a constant reality check. Yes, i did 
-periodically boot your Zaphod scheduler too on a testbox ;-)
-"CFS works well" cannot be determined reliably if there's nothing to
-compare it against. One goal behind the CFS changes was to remove the
-need for massive scheduler rewrites and to ease prototyping. Somehow
-there are lots of people who really love to hack the scheduler,
-those weirdos ;-)
-
-> > The CFS merge should make the life of development/test patches like 
-> > plugsched conceptually easier. (it will certainly cause a lot of 
-> > churn, but that's for the better i think.)
-> 
-> I don't think that is necessarily the case.
-
-well, kernel/sched_rt.c and kernel/sched_fair.c are already more 
-different on a conceptual angle than any of the two schedulers in 
-PlugSched i think. But ... i dont expect the initial port of PlugSched 
-to be easy at all.
-
-> > Most of the schedulers in plugsched should be readily adaptable to 
-> > the modular scheduling-policy scheme of the upstream scheduler.
-> 
-> I don't think that this necessarily true.  Ingosched and ingo_ll are 
-> definitely out and I don't feel like converting staircase and 
-> nicksched as I have no real interest in them.  Perhaps I'll just 
-> create the interface and some schedulers based on my own ideas and let 
-> others such as Con and Nick add schedulers if they're still that way 
-> inclined.
-
-Yeah, i think starting with a smaller subset is the right approach - i 
-think people _will_ fill the gaps ;-) I agree that preserving 
-"Ingosched" would not make much sense. (Although it could still be 
-useful to someone who finds some regression and suspects CFS, and wants 
-to try with the old scheduler. Or just to test/prove that the 
-modularization is strong enough to even include those scheduler 
-heuristics the old scheduler did. Or out of historic interest.)
-
-> > I'm sure there will be some minor issues as isolation of the modules 
-> > is not enforced right now - and i'd be happy to review (and 
-> > potentially apply) common-sense patches that improve the framework.
-> 
-> Thanks for the offer of support (it may sway my decision),
-
-you are welcome :) Dmitry Adamushko and Srivatsa Vaddagiri already did 
-lots of nice "policy module isolation" work in CFS (since the first 
-crude cut i did in CFS v1), both for the cleanup factor and to enable 
-features like group-scheduling.
-
-	Ingo
+Rgds
+Sasa
