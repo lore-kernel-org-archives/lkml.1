@@ -1,98 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXGRPa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933198AbXGRPez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932486AbXGRPa0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 11:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbXGRPaQ
+	id S933198AbXGRPez (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 11:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbXGRPep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 11:30:16 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:43662 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbXGRPaO (ORCPT
+	Wed, 18 Jul 2007 11:34:45 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:51970 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754333AbXGRPeo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 11:30:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cX0fVsdx0e3LiR3baTbNcqvToD1ge6Pkj086/SfLclG3F1+8lVGBOzdkXJybPT2qUNMk8F4OO9CZzFFePUVTpFmqKDQDUGDtIj4eA4cXYiVIBORbq4VYWNPOiQaeqPbKOrb4SPT/070Ei7kUeuS6ednsEAL81UcOXzNp+Mt/xuI=
-Message-ID: <a781481a0707180830g44cdd38etb4a540afce218065@mail.gmail.com>
-Date: Wed, 18 Jul 2007 21:00:13 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure path
-Cc: "Gabriel C" <nix.or.die@googlemail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <clameter@sgi.com>, gregkh@suse.de,
-       miles.lane@gmail.com
-In-Reply-To: <a781481a0707180816r478d2512v953036a1e4145a72@mail.gmail.com>
+	Wed, 18 Jul 2007 11:34:44 -0400
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] eHEA: Fix bonding support
+Date: Wed, 18 Jul 2007 17:34:09 +0200
+User-Agent: KMail/1.8.2
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <ossthema@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>
-	 <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
-	 <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com>
-	 <469BC2D6.5090008@googlemail.com> <469BC34C.4080107@googlemail.com>
-	 <20070718071445.GI23568@htj.dyndns.org>
-	 <a781481a0707180748j4760ab8bo237c1abc02feb593@mail.gmail.com>
-	 <469E2A68.6010307@gmail.com>
-	 <a781481a0707180816r478d2512v953036a1e4145a72@mail.gmail.com>
+Message-Id: <200707181734.09278.osstklei@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/18/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> Hi,
->
-> On 7/18/07, Tejun Heo <htejun@gmail.com> wrote:
-> > Satyam Sharma wrote:
-> > > On 7/18/07, Tejun Heo <htejun@gmail.com> wrote:
-> > >> There is a subtle bug in sysfs_create_link() failure path.  When
-> > >> symlink creation fails because there's already a node with the same
-> > >> name, the target sysfs_dirent is put twice - once by failure path of
-> > >> sysfs_create_link() and once more when the symlink is released.
-> > >
-> > > The "symlink" is released? But the creation of the symlink is
-> > > precisely what failed here ... did it not?
-> > >
-> > >> Fix it by making only the symlink node responsible for putting
-> > >> target_sd.
-> > >
-> > > And again ... the changelog sounds confusing indeed, perhaps I'm
-> > > not familiar enough with sysfs symlink-related terminology/semantics.
-> > > Care to elaborate?
+The driver didn't allow an interface's MAC address to be modified if the
+respective interface wasn't setup - a failing Hcall was the result. Thus
+bonding wasn't usable. The fix moves the failing Hcall which was registering
+a MAC address for the reception of BC packets in firmware from the port up
+and down functions to the port resources setup functions. Additionally the
+missing update of the last_rx member of the netdev structure was added.
 
-BTW, please do explain this one to me, if you can find the time :-)
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-> > > Wow. This looks like a very mysterious way to fix a mysterious bug :-)
-> > > BTW I just looked over at sysfs_create_link() and ... it looks quite ...
-> > > unnecessarily complicated/obfuscated ...
-> >
-> > Well, I dunno.  Probably my taste just sucks.  Please feel free to
-> > submit patches and/or suggest better ideas.
->
-> OK, for example:
->
-> sysfs_find_dirent() -- to check for -EEXIST -- should be called
-> *before* we create the new dentry for the to-be-created symlink
-> in the first place. [ It's weird to grab a reference on the target
-> for ourselves (and in fact even allocate the new dirent for the
-> to-be-created symlink) and /then/ check for erroneous usage,
-> and then go about undoing all that we should never have done
-> at all. ] So this test could, and should, be made earlier, IMHO.
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |   37 +++++++++++++++++++------------------
+ 2 files changed, 20 insertions(+), 19 deletions(-)
 
-A trivial nit:
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 6628fa6..489c8b2 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0070"
++#define DRV_VERSION	"EHEA_0071"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index 1d1571c..4c70a93 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -466,6 +466,8 @@ static struct ehea_cqe *ehea_proc_rwqes(struct net_device *dev,
+ 							 cqe->vlan_tag);
+ 			else
+ 				netif_receive_skb(skb);
++
++			dev->last_rx = jiffies;
+ 		} else {
+ 			pr->p_stats.poll_receive_errors++;
+ 			port_reset = ehea_treat_poll_error(pr, rq, cqe,
+@@ -1433,7 +1435,8 @@ static int ehea_broadcast_reg_helper(struct ehea_port *port, u32 hcallid)
+ 				     port->logical_port_id,
+ 				     reg_type, port->mac_addr, 0, hcallid);
+ 	if (hret != H_SUCCESS) {
+-		ehea_error("reg_dereg_bcmc failed (tagged)");
++		ehea_error("%sregistering bc address failed (tagged)",
++                           hcallid == H_REG_BCMC ? "" : "de");
+ 		ret = -EIO;
+ 		goto out_herr;
+ 	}
+@@ -1444,7 +1447,8 @@ static int ehea_broadcast_reg_helper(struct ehea_port *port, u32 hcallid)
+ 				     port->logical_port_id,
+ 				     reg_type, port->mac_addr, 0, hcallid);
+ 	if (hret != H_SUCCESS) {
+-		ehea_error("reg_dereg_bcmc failed (vlan)");
++		ehea_error("%sregistering bc address failed (vlan)",
++			   hcallid == H_REG_BCMC ? "" : "de");
+ 		ret = -EIO;
+ 	}
+ out_herr:
+@@ -2170,7 +2174,6 @@ static int ehea_up(struct net_device *dev)
+ {
+ 	int ret, i;
+ 	struct ehea_port *port = netdev_priv(dev);
+-	u64 mac_addr = 0;
+ 
+ 	if (port->state == EHEA_PORT_UP)
+ 		return 0;
+@@ -2189,18 +2192,10 @@ static int ehea_up(struct net_device *dev)
+ 		goto out_clean_pr;
+ 	}
+ 
+-	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
+-	if (ret) {
+-		ret = -EIO;
+-		ehea_error("out_clean_pr");
+-		goto out_clean_pr;
+-	}
+-	mac_addr = (*(u64*)dev->dev_addr) >> 16;
+-
+ 	ret = ehea_reg_interrupts(dev);
+ 	if (ret) {
+-		ehea_error("out_dereg_bc");
+-		goto out_dereg_bc;
++		ehea_error("reg_interrupts failed. ret:%d", ret);
++		goto out_clean_pr;
+ 	}
+ 
+ 	for(i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++) {
+@@ -2226,9 +2221,6 @@ static int ehea_up(struct net_device *dev)
+ out_free_irqs:
+ 	ehea_free_interrupts(dev);
+ 
+-out_dereg_bc:
+-	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+-
+ out_clean_pr:
+ 	ehea_clean_all_portres(port);
+ out:
+@@ -2273,7 +2265,6 @@ static int ehea_down(struct net_device *dev)
+ 				&port->port_res[i].d_netdev->state))
+ 			msleep(1);
+ 
+-	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+ 	port->state = EHEA_PORT_DOWN;
+ 
+ 	ret = ehea_clean_all_portres(port);
+@@ -2655,12 +2646,18 @@ struct ehea_port *ehea_setup_single_port(struct ehea_adapter *adapter,
+ 
+ 	INIT_WORK(&port->reset_task, ehea_reset_port);
+ 
++	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
++	if (ret) {
++		ret = -EIO;
++		goto out_unreg_port;
++	}
++
+ 	ehea_set_ethtool_ops(dev);
+ 
+ 	ret = register_netdev(dev);
+ 	if (ret) {
+ 		ehea_error("register_netdev failed. ret=%d", ret);
+-		goto out_unreg_port;
++		goto out_dereg_bc;
+ 	}
+ 
+ 	ret = ehea_get_jumboframe_status(port, &jumbo);
+@@ -2675,6 +2672,9 @@ struct ehea_port *ehea_setup_single_port(struct ehea_adapter *adapter,
+ 
+ 	return port;
+ 
++out_dereg_bc:
++	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
++
+ out_unreg_port:
+ 	ehea_unregister_port(port);
+ 
+@@ -2694,6 +2694,7 @@ static void ehea_shutdown_single_port(struct ehea_port *port)
+ {
+ 	unregister_netdev(port->netdev);
+ 	ehea_unregister_port(port);
++	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+ 	kfree(port->mc_list);
+ 	free_netdev(port->netdev);
+ 	port->adapter->active_ports--;
+-- 
+1.5.2
 
-The cleanup ignores the return of sysfs_addrm_finish() -- functions
-such as those could and should be void-returning. It doesn't even
-need to return an int for success / failure ... I went over it's code,
-and it's obvious that the function just never fails!
 
-Returning the count of objects actually added / removed is quite
-redundant too, because we return "actx->cnt" unconditionally
-from inside it, and the caller can know that anyway, without
-even calling it. Also, note that nowhere in the present code is
-the return of that function ever being used in that sense (i.e. as
-a "count") anyway ...
 
-So: best to just make it void-returning. That's what it is.
 
-Satyam
