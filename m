@@ -1,139 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932193AbXGROuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764250AbXGROxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932193AbXGROuH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXGROty
+	id S1764250AbXGROxE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:53:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXGROwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:49:54 -0400
-Received: from smtp.ono.com ([62.42.230.12]:64967 "EHLO resmaa01.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752816AbXGROtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:49:53 -0400
-Date: Wed, 18 Jul 2007 16:49:21 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Rui Santos <rsantos@grupopie.com>, linux-kernel@vger.kernel.org
-Subject: Re: Slow Soft-RAID 5 performance
-Message-ID: <20070718164921.57e86dec@werewolf-wl>
-In-Reply-To: <469DE3BB.9070604@grupopie.com>
-References: <469DE3BB.9070604@grupopie.com>
-X-Mailer: Claws Mail 2.10.0cvs37 (GTK+ 2.11.5; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Jul 2007 10:52:55 -0400
+Received: from [212.12.190.95] ([212.12.190.95]:32872 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753022AbXGROwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 10:52:54 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: VESAFB CUSTOM RESOLUTION
+Date: Wed, 18 Jul 2007 17:52:29 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200707181342.00647.a1426z@gawab.com> <200707181645.01097.a1426z@gawab.com> <1184768426.4523.20.camel@daplas>
+In-Reply-To: <1184768426.4523.20.camel@daplas>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707181752.29478.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007 10:56:11 +0100, Rui Santos <rsantos@grupopie.com> wrote:
+Antonino A. Daplas wrote:
+> On Wed, 2007-07-18 at 16:45 +0300, Al Boldi wrote:
+> > Antonino A. Daplas wrote:
+> > > On Wed, 2007-07-18 at 13:42 +0300, Al Boldi wrote:
+> > > > Geert Uytterhoeven wrote:
+> > > > > On Wed, 18 Jul 2007, Sasa Ostrouska wrote:
+> > > >
+> > > > Is there any technical reason why vesafb shouldn't support non-BIOS
+> > > > modes?
+> > >
+> > > vesafb can only use modes included by the vendor in the card's BIOS.
+> > > The mode table contains standard modes defined by VESA, and perhaps
+> > > vendor-defined custom modes. However, the mode ID of custom modes
+> > > varies from card to card, so you have to 'probe' the BIOS first for
+> > > the list of modes and their associated ID.  X + the 'vesa' driver does
+> > > that probe, and so does the lrmi tool vbetest.
+> > >
+> > > So, one cannot just set any mode, unless that mode is already defined
+> > > in the BIOS mode table. In VBE 3.0, you might be able to choose an
+> > > arbitrary vertical refresh rate, but that's the best mode tuning you
+> > > can do with the video BIOS.
+> >
+> > Thanks for a great explanation!
+> >
+> > Looks like this chip supports VBE 3.0, but it only locks into 60Hz
+> > refresh. Here is an excerpt; full log attached.
+>
+> What you need to look at the X log is this particular part (this is the
+> output of my card, and for the sake of brevity, I removed the
+> descriptive sections):
 
-> Hi,
-> 
-> I'm getting a strange slow performance behavior on a recently installed
-> Server. Here are the details:
-> 
-...
-> 
-> I can get a write throughput of 60 MB/sec on each HD by issuing the
-> command 'time `dd if=/dev/zero of=test.raw bs=4k count=$(( 1024 * 1024 /
-> 4 )); sync`'
-> 
-...
-> 
-> The RAID device I'm testing on is /dev/md2. Now, by issuing the same
-> command 'dd if=/dev/zero of=test.raw bs=4k count=$(( 1024 * 1024 / 4 ));
-> sync`' on the raid device mount point, I get the following speeds:
-> With stripe_cache_size at default '265': 51 MB/sec
-> With stripe_cache_size at '8192': 73 MB/sec
-> 
+Here are mine; I tried them all, and they always lock into 60Hz refresh.
 
-I know many people consider this stupid, but can you post some hdparm -tT
-data ?
-The culprit can be the filesystem+pagecache, the md driver or the disk
-driver, so I think trying just hdparm will show if the disk o md are
-going nuts...
-
-In my case, I have a box with 2 raids, one with SCSI disks and one with
-IDE ones.
-
-Some results:
-
-lsscsi:
-[0:0:0:0]    disk    IBM      DDYS-T18350N     S96H  /dev/sda
-[2:0:0:0]    disk    SEAGATE  ST336807LW       0C01  /dev/sdb
-[2:0:1:0]    disk    SEAGATE  ST336807LW       0C01  /dev/sdc
-[2:0:2:0]    disk    SEAGATE  ST336807LW       0C01  /dev/sdd
-[2:0:3:0]    disk    SEAGATE  ST336807LW       0C01  /dev/sde
-[3:0:0:0]    disk    ATA      ST3120022A       3.06  /dev/sdf
-[3:0:1:0]    cd/dvd  HL-DT-ST DVDRAM GSA-4040B A300  /dev/sr0
-[4:0:0:0]    disk    ATA      ST3120022A       3.76  /dev/sdg
+Mode: 101 (640x480)
+Mode: 112 (640x480)
+Mode: 103 (800x600)
+Mode: 115 (800x600)
+Mode: 105 (1024x768)
+Mode: 118 (1024x768)
+Mode: 179 (1280x768)
+Mode: 17b (1280x768)
+Mode: 107 (1280x1024)
+Mode: 11b (1280x1024)
+Mode: 120 (1600x1200)
+Mode: 122 (1600x1200)
+Mode: 124 (1600x1200)
+Mode: 199 (1920x1440)
+Mode: 19a (1920x1440)
+Mode: 19b (1920x1440)
+Mode: 22e (800x480)
+Mode: 230 (800x480)
+Mode: 108 (80x60)
+Mode: 102 (800x600)
 
 
-/dev/md0:
-        Version : 00.90.03
-  Creation Time : Mon Jun 18 13:40:57 2007
-     Raid Level : raid5
-     Array Size : 107522304 (102.54 GiB 110.10 GB)
-  Used Dev Size : 35840768 (34.18 GiB 36.70 GB)
-   Raid Devices : 4
-  Total Devices : 4
-Preferred Minor : 0
-    Persistence : Superblock is persistent
+What about the VBE 3.0 arbitrary vertical refresh rate thing?
 
-    Update Time : Wed Jul 18 13:31:22 2007
-          State : clean
- Active Devices : 4
-Working Devices : 4
- Failed Devices : 0
-  Spare Devices : 0
 
-         Layout : left-symmetric
-     Chunk Size : 256K
-
-           UUID : 51ad72a7:a4d20d15:0f3ea3a1:5ccb49a0
-         Events : 0.2
-
-    Number   Major   Minor   RaidDevice State
-       0       8       17        0      active sync   /dev/sdb1
-       1       8       33        1      active sync   /dev/sdc1
-       2       8       49        2      active sync   /dev/sdd1
-       3       8       65        3      active sync   /dev/sde1
-
-This is, four scsi disks on a Adaptec U320, doing raid5:
-
-/dev/sdb:
- Timing cached reads:   904 MB in  2.00 seconds = 451.84 MB/sec
- Timing buffered disk reads:  228 MB in  3.00 seconds =  75.90 MB/sec
-/dev/sdc:
- Timing buffered disk reads:  226 MB in  3.01 seconds =  75.01 MB/sec
-/dev/sdd:
- Timing buffered disk reads:  228 MB in  3.00 seconds =  75.88 MB/sec
-/dev/sde:
- Timing buffered disk reads:  226 MB in  3.00 seconds =  75.31 MB/sec
-
-/dev/md0:
- Timing buffered disk reads:  562 MB in  3.01 seconds = 186.88 MB/sec
-
-Nearly 75x3 = 215 Mb/s. And this looks like a small regression, I remember
-to have seen 200Mb on this setup on previous kernels.
-Performance is like 186/215 = 86%.
-
-And /dev/md1, raid0 on 2 IDE disks:
-
-/dev/sdf:
- Timing buffered disk reads:  148 MB in  3.02 seconds =  48.93 MB/sec
-/dev/sdg:
- Timing buffered disk reads:  124 MB in  3.00 seconds =  41.33 MB/sec
-
-/dev/md1:
- Timing buffered disk reads:  204 MB in  3.01 seconds =  67.68 MB/sec
-
-Performance: 67 / 90 = 75%, more or less...not too good.
-
-Now that I read the hdparm man page, perhaps would be better to repeat
-the tests with hdparm --direct.
+Thanks!
 
 --
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.0 (Cooker) for i586
-Linux 2.6.21-jam12 (gcc 4.2.1 20070704 (4.2.1-3mdv2008.0)) SMP PREEMPT
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
+Al
+
