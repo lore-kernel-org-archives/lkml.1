@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbXGRFnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbXGRFqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbXGRFnF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 01:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXGRFmx
+	id S1754613AbXGRFqi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 01:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbXGRFq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 01:42:53 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43165 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbXGRFmw (ORCPT
+	Wed, 18 Jul 2007 01:46:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46412 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750773AbXGRFq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 01:42:52 -0400
-Date: Wed, 18 Jul 2007 11:22:18 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: "Paul (??) Menage" <menage@google.com>, dhaval@linux.vnet.ibm.com,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Pavel Emelianov <xemul@sw.ru>, Paul Jackson <pj@sgi.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Containers: css_put() dilemma
-Message-ID: <20070718055218.GF2216@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070717070031.GA22410@linux.vnet.ibm.com> <6599ad830707170018p180cb7dfr53e609fd0b186e30@mail.gmail.com> <469C99D1.7090807@linux.vnet.ibm.com> <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com> <469CFF2B.1080702@linux.vnet.ibm.com> <6599ad830707171044u38c0a940r12d2bc80b475ead4@mail.gmail.com> <469D066B.6050606@linux.vnet.ibm.com> <6599ad830707171126o7c431277p84f532d0122a8a98@mail.gmail.com> <469D9728.2080701@linux.vnet.ibm.com> <469DA57F.9050302@linux.vnet.ibm.com>
+	Wed, 18 Jul 2007 01:46:29 -0400
+Date: Tue, 17 Jul 2007 22:45:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Joe Jin <joe.jin@oracle.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       bill.irwin@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add nid sanity on alloc_pages_node
+Message-Id: <20070717224515.869f7040.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707180521470.18593@blonde.wat.veritas.com>
+References: <20070713024507.GA19438@joejin-pc.cn.oracle.com>
+	<20070712221842.f5e47065.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707171558470.26771@blonde.wat.veritas.com>
+	<20070717093228.3a3638aa.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707171818080.19489@blonde.wat.veritas.com>
+	<20070717115849.9f5e435c.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707172044001.5286@blonde.wat.veritas.com>
+	<20070717130118.bc78d31a.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0707172133400.9010@blonde.wat.veritas.com>
+	<20070718014027.GA23559@joejin-pc.cn.oracle.com>
+	<Pine.LNX.4.64.0707180521470.18593@blonde.wat.veritas.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <469DA57F.9050302@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 11:00:39AM +0530, Balbir Singh wrote:
-> Thinking out loud again, can we add can_destory() callbacks?
+On Wed, 18 Jul 2007 05:49:50 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
 
-I remember suggesting such a callback long before :
+> > With your patch, I have reproduced the panic:
+> 
+> That is... surprising to me.
 
-	http://marc.info/?l=linux-kernel&m=117576241131788&w=2
-
--- 
-Regards,
-vatsa
+To me also.  I'd like to double-check the code which Joe actually
+tested, please - have a sneaking suspicion that the 2.6.22 version
+of that function was tested ;)
