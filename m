@@ -1,165 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932474AbXGRCjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934486AbXGRCk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932474AbXGRCjo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 22:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbXGRCjf
+	id S934486AbXGRCk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 22:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758847AbXGRCkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 22:39:35 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:51038 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756867AbXGRCje (ORCPT
+	Tue, 17 Jul 2007 22:40:07 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:2531 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757074AbXGRCkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 22:39:34 -0400
-Message-ID: <469D7D1B.4050909@gmail.com>
-Date: Wed, 18 Jul 2007 04:38:19 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 17 Jul 2007 22:40:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CACIanUarR7MV/2dsb2JhbAA
+X-IronPort-AV: i="4.16,548,1175497200"; 
+   d="scan'208"; a="386387168:sNHT42473908"
+To: Jeff Garzik <jeff@garzik.org>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       chas@cmf.nrl.navy.mil, rolandd@cisco.com, dwmw2@infradead.org,
+       gregkh@suse.de
+Subject: Re: [git patches 1/2] warnings: attack valid cases spotted by warnings
+X-Message-Flag: Warning: May contain useful information
+References: <20070717214239.GF28448@devserv.devel.redhat.com>
+	<ada8x9epuip.fsf@cisco.com> <469D3E66.3010502@garzik.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 17 Jul 2007 19:35:05 -0700
+In-Reply-To: <469D3E66.3010502@garzik.org> (Jeff Garzik's message of "Tue, 17 Jul 2007 18:10:46 -0400")
+Message-ID: <adamyxuo2w6.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Ray Lee <ray-lk@madrabbit.org>, Bodo Eggert <7eggert@gmx.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <8GtnN-7TG-23@gated-at.bofh.it> <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com> <Pine.LNX.4.58.0707161523500.25779@be1.lrz> <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org> <469BFB73.3070105@gmail.com> <20070716232755.GD11115@waste.org>
-In-Reply-To: <20070716232755.GD11115@waste.org>
-Content-Type: multipart/mixed;
- boundary="------------070700010304060503000008"
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 18 Jul 2007 02:35:05.0790 (UTC) FILETIME=[40295DE0:01C7C8E4]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070700010304060503000008
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+ > I don't buy that performance argument, in this case.  You are already
+ > dirtying the same cacheline with other variable initializations.
+ > 
+ > Like I noted in the changeset description (hey, this is precisely why
+ > I included it, so that we could have this discussion), IMO the flow of
+ > control makes it not only impossible for the compiler to understand
+ > the full value range of 'f0', but also difficult for humans as well.
+ > 
+ > I could perhaps understand initializing the variable to some poison
+ > value rather than zero, but IMO the code is stronger with f0 set to a
+ > sane value.
 
-On 07/17/2007 01:27 AM, Matt Mackall wrote:
+The more I think about it, the less sense initializing f0 to 0 makes.
+The whole problem with an uninitialized variable is that a random
+value from the stack might be used.  So setting a variable to
+something meaningless (guaranteeing that a garbage value is used in
+case of a bug) just to shut up a warning makes no sense -- it's no
+safer than leaving the code as is.  uninitialized_var() gets rid of
+the warning, saves a little text and instruction cache, and documents
+things better.
 
-> Larger soft pages waste tremendous amounts of memory (mostly in page
-> cache) for minimal benefit on, say, the typical desktop. While there
-> are workloads where it's a win, it's probably on a small percentage of
-> machines.
-> 
-> So it's absolutely no help in fixing our order-1 allocation problem
-> because we don't want to force large pages on people.
+(BTW, I agree the code is a little confusing as written.  I think
+things could be cleaned up and made more efficient by getting rid of
+the initialization of size0 too -- I'll look at doing that)
 
-I was just now looking at how much space is in fact wasted in pagecache for 
-various pagesizes by running the attached dumb little program from a few 
-selected directories (heavy stack recursion, never mind).
+Anyway, I queued this up for my next merge with Linus:
 
-Well, hmmm. This is on a (compiled) git tree:
+commit 6d7d080e9f7cd535a8821efd3835c5cfa5223ab6
+Author: Roland Dreier <rolandd@cisco.com>
+Date:   Tue Jul 17 19:30:51 2007 -0700
 
-rene@7ixe4:~/src/linux/local$ pageslack
-total	: 447350347
-  4k	: 67738037 (15%)
-  8k	: 147814837 (33%)
-16k	: 324614581 (72%)
-32k	: 724629941 (161%)
-64k	: 1592785333 (356%)
+    IB/mthca: Use uninitialized_var() for f0
+    
+    Commit 9db48926 ("drivers/infiniband/hw/mthca/mthca_qp: kill uninit'd
+    var warning") added "= 0" to the declarations of f0 to shut up gcc
+    warnings.  However, there's no point in making the code bigger by
+    initializing f0 to a random value just to get rid of a warning;
+    setting f0 to 0 is no safer than just using uninitialized_var(), which
+    documents the situation better and gives smaller code too.  For example,
+    on x86_64:
+    
+    add/remove: 0/0 grow/shrink: 0/2 up/down: 0/-16 (-16)
+    function                                     old     new   delta
+    mthca_tavor_post_send                       1352    1344      -8
+    mthca_arbel_post_send                       1489    1481      -8
+    
+    Signed-off-by: Roland Dreier <rolandd@cisco.com>
 
-Nicely constant factor 2.2 instead of the 2 one would expect but oh well. On 
-a collection of larger files the percentages obviously drop. This is on a 
-directory of ogg vorbis files:
-
-root@7ixe4:/mnt/ogg/.../... # pageslack
-total	: 70817974
-  4k	: 26442 (0%)
-  8k	: 67402 (0%)
-16k	: 124746 (0%)
-32k	: 288586 (0%)
-64k	: 419658 (0%)
-
-The "typical desktop" is presented by neither I guess but does involve audio 
-and (much larger still) video and bloody huge browser apps.
-
-Not too sure then that 8K wouldn't be something I'd want, given fewer 
-pagefaults and all that...
-
-Rene.
-
-
---------------070700010304060503000008
-Content-Type: text/plain;
- name="pageslack.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="pageslack.c"
-
-/* gcc -W -Wall -o pageslack pageslack.c */
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <dirent.h>
-
-#define PAGE_SIZE (1UL << PAGE_SHIFT)
-#define PAGE_MASK (~(PAGE_SIZE - 1))
-
-unsigned long long total;
-unsigned long long slack[5];
-
-void do_dir(const char *name)
-{
-	DIR *dir; 
-	struct dirent *ent;
-
-	dir = opendir(name);
-	if (!dir) {
-		perror("opendir");
-		exit(EXIT_FAILURE);
-	}
-	while ((ent = readdir(dir))) {
-		struct stat buf;
-		char path[PATH_MAX];
-
-		if (!strcmp(ent->d_name, "."))
-			continue;
-		if (!strcmp(ent->d_name, ".."))
-			continue;
-
-		sprintf(path, "%s/%s", name, ent->d_name);
-		if (stat(path, &buf)) {
-			perror("stat");
-			exit(EXIT_FAILURE);
-		}
-		if (S_ISDIR(buf.st_mode)) {
-			do_dir(path);
-			continue;
-		}
-		if (S_ISREG(buf.st_mode)) {
-			int i;
-
-			for (i = 0; i < 5; i++) {
-				unsigned long PAGE_SHIFT = 12 + i;
-				slack[i] += (PAGE_SIZE - (buf.st_size % PAGE_SIZE)) % PAGE_SIZE;
-			}
-			total += buf.st_size;
-		}
-	}
-	if (closedir(dir)) {
-		perror("closedir");
-		exit(EXIT_FAILURE);
-	}
-}
-
-int main(void)
-{
-	do_dir(".");
-	printf("total\t: %llu\n", total);
-	printf(" 4k\t: %llu (%llu%%)\n", slack[0], (100 * slack[0]) / total);
-	printf(" 8k\t: %llu (%llu%%)\n", slack[1], (100 * slack[1]) / total);
-	printf("16k\t: %llu (%llu%%)\n", slack[2], (100 * slack[2]) / total);
-	printf("32k\t: %llu (%llu%%)\n", slack[3], (100 * slack[3]) / total);
-	printf("64k\t: %llu (%llu%%)\n", slack[4], (100 * slack[4]) / total);
-	return EXIT_SUCCESS;
-}
-
---------------070700010304060503000008--
+diff --git a/drivers/infiniband/hw/mthca/mthca_qp.c b/drivers/infiniband/hw/mthca/mthca_qp.c
+index 11f1d99..0e9ef24 100644
+--- a/drivers/infiniband/hw/mthca/mthca_qp.c
++++ b/drivers/infiniband/hw/mthca/mthca_qp.c
+@@ -1591,7 +1591,13 @@ int mthca_tavor_post_send(struct ib_qp *ibqp, struct ib_send_wr *wr,
+ 	int i;
+ 	int size;
+ 	int size0 = 0;
+-	u32 f0 = 0;
++	/*
++	 * f0 is only used if nreq != 0, and f0 will be initialized
++	 * the first time through the main loop, since size0 == 0 the
++	 * first time through.  So nreq cannot become non-zero without
++	 * initializing f0, and f0 is in fact never used uninitialized.
++	 */
++	u32 uninitialized_var(f0);
+ 	int ind;
+ 	u8 op0 = 0;
+ 
+@@ -1946,7 +1952,13 @@ int mthca_arbel_post_send(struct ib_qp *ibqp, struct ib_send_wr *wr,
+ 	int i;
+ 	int size;
+ 	int size0 = 0;
+-	u32 f0 = 0;
++	/*
++	 * f0 is only used if nreq != 0, and f0 will be initialized
++	 * the first time through the main loop, since size0 == 0 the
++	 * first time through.  So nreq cannot become non-zero without
++	 * initializing f0, and f0 is in fact never used uninitialized.
++	 */
++	u32 uninitialized_var(f0);
+ 	int ind;
+ 	u8 op0 = 0;
+ 
