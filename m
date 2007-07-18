@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbXGRGpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765399AbXGRGrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756425AbXGRGpa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 02:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXGRGpT
+	id S1765399AbXGRGrp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbXGRGrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 02:45:19 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:35367 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbXGRGpS (ORCPT
+	Wed, 18 Jul 2007 02:47:36 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:59556 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752351AbXGRGrf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 02:45:18 -0400
-Date: Wed, 18 Jul 2007 08:45:05 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Dike <jdike@addtoit.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>, jdike@karaya.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: uninline check_signature()
-In-Reply-To: <alpine.LFD.0.999.0707171338290.27353@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707180844330.23024@anakin>
-References: <200707161802.l6GI2tNp007390@hera.kernel.org>
- <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
- <20070716230307.GB12230@osiris.ibm.com> <Pine.LNX.4.64.0707171519300.10600@anakin>
- <20070717163328.GG7965@c2.user-mode-linux.org> <Pine.LNX.4.64.0707171842590.10600@anakin>
- <alpine.LFD.0.999.0707171102040.19166@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707172225260.23024@anakin>
- <alpine.LFD.0.999.0707171338290.27353@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 18 Jul 2007 02:47:35 -0400
+X-Sasl-enc: xebAMcZaOhlcQjFiD4S2zchIIiBgQ2yQGgBDFEaJolF8 1184739577
+Subject: Re: [patch] CFS scheduler, -v19
+From: Ian Kent <raven@themaw.net>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <469D6BD8.8050703@tmr.com>
+References: <20070706173319.GA2356@elte.hu>
+	 <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com>
+	 <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com>
+	 <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu>
+	 <1184648474.3188.33.camel@raven.themaw.net>
+	 <20070717074537.GA13539@elte.hu>
+	 <1184671021.3188.51.camel@raven.themaw.net> <20070717171643.GB7905@elte.hu>
+	 <469D6BD8.8050703@tmr.com>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 14:19:32 +0800
+Message-Id: <1184739572.4178.39.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007, Linus Torvalds wrote:
-> On Tue, 17 Jul 2007, Geert Uytterhoeven wrote:
-> > OR I'll have to disable HAS_IOMEM on m68k, and invent a new Kconfig
-> > symbol for lots of other stuff that currently depends on HAS_IOMEM...
+On Tue, 2007-07-17 at 21:24 -0400, Bill Davidsen wrote:
+> Ingo Molnar wrote:
+> > * Ian Kent <raven@themaw.net> wrote:
+> >
+> >   
+> >>> ah! It passes in a low-res time source into a high-res time interface 
+> >>> (pthread_cond_timedwait()). Could you change the time(NULL) + 1 to 
+> >>> time(NULL) + 2, or change it to:
+> >>>
+> >>> 	gettimeofday(&wait, NULL);
+> >>> 	wait.tv_sec++;
+> >>>       
+> >> OK, I'm with you, hi-res timer.
+> >> But even so, how is the time in the past after adding a second.
+> >>
+> >> Is it because I'm not setting tv_nsec when it's close to a second 
+> >> boundary, and hence your recommendation above?
+> >>     
+> >
+> > yeah, it looks a bit suspicious: you create a +1 second timeout out of a 
+> > 1 second resolution timesource. I dont yet understand the failure mode 
+> > though that results in that looping and in the 30% CPU time use - do you 
+> > understand it perhaps? (and automount is still functional while this is 
+> > happening, correct?)
+> >   
 > 
-> Well, as far as I'm concerned, you could also make all drivers that 
-> actually need "check_signature()" do a Kconfig level
-> 
-> 	select CHECK_SIGNATURE
-> 
-> along with a
-> 
-> 	config CHECK_SIGNATURE
-> 		bool
-> 		default n
-> 
-> in lib/Kconfig, and thus make it totally independent of any hw/bus 
-> features at all, and simply depend on whether it is needed or not. I'd be 
-> ok with that, and it's certainly "correct" too.
-> 
-> Hmm?
+> Can't say, I have automount running because I get it by default, but I 
+> have nothing using at on my test machine. Why is it looping so fast when 
+> there are no mount points defined? If the config changes there's no 
+> requirement to notice right away, is there?
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> ;-)
+There are two threads where this mistake is made.
 
-(will cook a patch when I find a timeslot)
+One is used to trigger expire events for all automounted filesystems
+which happen all the time since I need to run the expire to check if
+anything is mounted and whether it needs to be umounted. The alarm
+handler sleeps on a condition until the alarm list in not empty and then
+sleeps on a condition until the next alarm in the list expires or an
+alarm is added to the list, in which case it then checks the list again.
+Since the autofs timeout granularity is one second this is a problem and
+will be fixed. This isn't the source of the problem that's been
+reported.
 
-Gr{oetje,eeting}s,
+The second is the state queue handler which runs tasks such as expires,
+map re-reads, shutdowns etc. for all automounted filesystems. While the
+check interval could be longer it causes autofs to be slugish in
+situations such as shutdowns where there are a largish number of mounts
+present and I need to cancel such things as expires and the like. It's
+possible I could improve this but, in fact, once the timespec is set
+correctly as Ingo suggests it works fine and uses very little resource.
 
-						Geert
+Ian
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
