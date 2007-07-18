@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932430AbXGRWzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932568AbXGRW5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932430AbXGRWzh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 18:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbXGRWz2
+	id S932568AbXGRW5q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 18:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbXGRW5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:55:28 -0400
-Received: from mail1.ssmb.com ([199.67.179.103]:45426 "EHLO mail.citigroup.com"
+	Wed, 18 Jul 2007 18:57:36 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:42899 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752188AbXGRWz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:55:27 -0400
-X-Greylist: delayed 3889 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jul 2007 18:55:27 EDT
-Subject: RHEL4 kernel-2.6.9-42.0.2.EL
-From: Andrew Li <andrew2.li@citi.com>
-Reply-To: andrew2.li@citigroup.com
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Citigroup - CMB
-Message-Id: <1184795428.4797.398.camel@al68835rh>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.4.5 (1.4.5-20.el3) 
-Date: Thu, 19 Jul 2007 07:50:29 +1000
-X-OriginalArrivalTime: 18 Jul 2007 21:50:29.0766 (UTC) FILETIME=[A878A260:01C7C985]
+	id S1752937AbXGRW5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 18:57:35 -0400
+From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, andros@citi.umich.edu,
+       "J. Bruce Fields" <bfields@citi.umich.edu>, stable@kernel.org,
+       Greg Banks <gnb@melbourne.sgi.com>
+Subject: [PATCH 1/5] nfsd: fix possible read-ahead cache and export table corruption
+Date: Wed, 18 Jul 2007 18:57:26 -0400
+Message-Id: <11847994502502-git-send-email-bfields@fieldses.org>
+X-Mailer: git-send-email 1.5.2.2.238.g7cbf2f2
+In-Reply-To: <11847994502579-git-send-email-bfields@fieldses.org>
+References: <20070713114228.3c171a90.akpm@linux-foundation.org>
+ <11847994502579-git-send-email-bfields@fieldses.org>
+Message-Id: <2ac9f179334dc7894bb58b1c2fb62837a07fbbdf.1184798679.git.bfields@citi.umich.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-I have a strange problem with cron, it is doing a segfault every minute.
-This problem happened out of the blue, according to authlog no users
-have logged onto the system in between the time it last worked and the
-time it began to fail.
+The value of nperbucket calculated here is too small--we should be
+rounding up instead of down--with the result that the index j in the
+following loop can overflow the raparm_hash array.  At least in my case,
+the next thing in memory turns out to be export_table, so the symptoms I
+see are crashes caused by the appearance of four zeroed-out export
+entries in the first bucket of the hash table of exports (which were
+actually entries in the readahead cache, a pointer to which had been
+written to the export table in this initialization code).
 
-The error messages from messages file is :
-Jul 18 16:16:01 host100 kernel: crond[29540]: segfault at
-0000000000000000 rip 0000000000000000 rsp 0000007fbffbf018 error 14
+It looks like the bug was probably introduced with commit
+fce1456a19f5c08b688c29f00ef90fdfa074c79b ("knfsd: make the readahead
+params cache SMP-friendly").
 
-Looking at arch/x86_64/mm/fault.c, this happens when a user proc is
-trying to access memory thats not in its memory map. But the address
-reported in messages doesn't match /proc/pid/maps.
+Cc: stable@kernel.org
+Cc: Greg Banks <gnb@melbourne.sgi.com>
+Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
+---
+ fs/nfsd/vfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Does anyone have any idea what this might be?
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index e90f4a8..b8da5dd 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1916,7 +1916,7 @@ nfsd_racache_init(int cache_size)
+ 		raparm_hash[i].pb_head = NULL;
+ 		spin_lock_init(&raparm_hash[i].pb_lock);
+ 	}
+-	nperbucket = cache_size >> RAPARM_HASH_BITS;
++	nperbucket = DIV_ROUND_UP(cache_size, RAPARM_HASH_SIZE);
+ 	for (i = 0; i < cache_size - 1; i++) {
+ 		if (i % nperbucket == 0)
+ 			raparm_hash[j++].pb_head = raparml + i;
+-- 
+1.5.3.rc2
 
-Andrew
