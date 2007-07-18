@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932157AbXGRGjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbXGRGpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932157AbXGRGjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 02:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXGRGjF
+	id S1756425AbXGRGpa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXGRGpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 02:39:05 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:27453 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbXGRGjD (ORCPT
+	Wed, 18 Jul 2007 02:45:19 -0400
+Received: from adicia.telenet-ops.be ([195.130.132.56]:35367 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbXGRGpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 02:39:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=qkoZe6jhz8XTR1XtA77XP042+6bZ+cnF1tLFR4NQ8yxvovqURLbeieSKZ4pReqNB1uYGFs4EZI64iZh1JFSFU61/ZvHIwYtcvKG1YhMdqeL9ixHmOYm0ubzGq3MotcUeBT2xjNlRe3VJyhBNF4po6wEiw37VuuDHfaNthMfdAhc=
-Message-ID: <2c0942db0707172339o2e4950e0p17cd0f9b631e5311@mail.gmail.com>
-Date: Tue, 17 Jul 2007 23:39:00 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-Cc: "Rene Herman" <rene.herman@gmail.com>, "Bodo Eggert" <7eggert@gmx.de>,
-       "Matt Mackall" <mpm@selenic.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <20070718011436.2438dea6@the-village.bc.nu>
+	Wed, 18 Jul 2007 02:45:18 -0400
+Date: Wed, 18 Jul 2007 08:45:05 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Dike <jdike@addtoit.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>, jdike@karaya.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: uninline check_signature()
+In-Reply-To: <alpine.LFD.0.999.0707171338290.27353@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707180844330.23024@anakin>
+References: <200707161802.l6GI2tNp007390@hera.kernel.org>
+ <20070716221257.GA12230@osiris.ibm.com> <20070716152923.ce4a5c5a.akpm@linux-foundation.org>
+ <alpine.LFD.0.999.0707161532190.20061@woody.linux-foundation.org>
+ <20070716230307.GB12230@osiris.ibm.com> <Pine.LNX.4.64.0707171519300.10600@anakin>
+ <20070717163328.GG7965@c2.user-mode-linux.org> <Pine.LNX.4.64.0707171842590.10600@anakin>
+ <alpine.LFD.0.999.0707171102040.19166@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707172225260.23024@anakin>
+ <alpine.LFD.0.999.0707171338290.27353@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8FO1e-2jW-35@gated-at.bofh.it> <469A5D7C.5010904@gmail.com>
-	 <Pine.LNX.4.58.0707161523500.25779@be1.lrz>
-	 <469BF104.1040703@gmail.com>
-	 <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
-	 <20070716235438.1bdd0722@the-village.bc.nu>
-	 <2c0942db0707161553u5d55724u82424b3ffbbd79f7@mail.gmail.com>
-	 <469BF9A8.20306@gmail.com>
-	 <2c0942db0707161615g4bdf825ar51464ba564a823e2@mail.gmail.com>
-	 <20070718011436.2438dea6@the-village.bc.nu>
-X-Google-Sender-Auth: d930913fbdcf3589
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/17/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Mon, 16 Jul 2007 16:15:28 -0700
-> "Ray Lee" <ray-lk@madrabbit.org> wrote:
-> > Heh :-). No, it's not a question of trust. First and foremost, it's
-> > that there are still users who say that they can crash a current
-> > 4k+interrupt stacks kernel, while the 8k without interrupt stacks is
-> > fine.
->
-> You forgot "most of the time".
+On Tue, 17 Jul 2007, Linus Torvalds wrote:
+> On Tue, 17 Jul 2007, Geert Uytterhoeven wrote:
+> > OR I'll have to disable HAS_IOMEM on m68k, and invent a new Kconfig
+> > symbol for lots of other stuff that currently depends on HAS_IOMEM...
+> 
+> Well, as far as I'm concerned, you could also make all drivers that 
+> actually need "check_signature()" do a Kconfig level
+> 
+> 	select CHECK_SIGNATURE
+> 
+> along with a
+> 
+> 	config CHECK_SIGNATURE
+> 		bool
+> 		default n
+> 
+> in lib/Kconfig, and thus make it totally independent of any hw/bus 
+> features at all, and simply depend on whether it is needed or not. I'd be 
+> ok with that, and it's certainly "correct" too.
+> 
+> Hmm?
 
-Yeah, fair enough.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> ;-)
 
-> Its statistically less likely, which
-> merely means its evilly hard to debug
+(will cook a patch when I find a timeslot)
 
-Not being able to debug the cases that occur (and the fact that
-they're rare, as you're pointing out) is as much of a problem as the
-crashes themselves. 8k + IRQ stacks with a warning when 4k of process
-stack is exceeded would seem like a reasonable first step to making 4k
-a palatable default.
+Gr{oetje,eeting}s,
 
-Ray
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
