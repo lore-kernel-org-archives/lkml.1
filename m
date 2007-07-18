@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936731AbXGRXux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937214AbXGRXxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936731AbXGRXux (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbXGRXum
+	id S937214AbXGRXxU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761888AbXGRXxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:50:42 -0400
-Received: from ns.suse.de ([195.135.220.2]:59582 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752188AbXGRXul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:50:41 -0400
-Date: Thu, 19 Jul 2007 01:50:35 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-Message-ID: <20070718235035.GB29728@v2.random>
-References: <20070706222651.GG5777@v2.random> <1183764801.10287.233.camel@localhost> <20070706235228.GL5777@v2.random> <20070717174737.GM6909@holomorphy.com> <20070717193308.GD25301@v2.random> <20070718133222.GM11781@holomorphy.com> <469E410C.50302@gmail.com>
+	Wed, 18 Jul 2007 19:53:06 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:38244 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755642AbXGRXxF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:53:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fYTwLneKS8I6qfapN1js83HmFi0q4dSM0CoBnOzcJRw+80YL3o5y30HgtioBNR/eIeVl/3a8os0lm/8YqvUvJedhr0I19JTvZWVTPj9nHxF81UVWyWQpEkcl1NFiqKiPZIbZrKxOH1nH3kvGhMH722z2MbtPXdHl1QG7CB3reVo=
+Message-ID: <8bd0f97a0707181653j3d44aab2tf8b6d24689458023@mail.gmail.com>
+Date: Wed, 18 Jul 2007 19:53:04 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Robin Getz" <rgetz@blackfin.uclinux.org>
+Subject: Re: early_printk accessing __log_buf
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200707181939.46910.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <469E410C.50302@gmail.com>
+References: <200707181756.44074.rgetz@blackfin.uclinux.org>
+	 <20070718151617.fe6a2943.akpm@linux-foundation.org>
+	 <200707181939.46910.rgetz@blackfin.uclinux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 06:34:20PM +0200, Rene Herman wrote:
-> It says that highmem is not an issue due to no such thing as highmem even 
-> existing on the machines with support for larger hard pagesizes, but this 
-> wouldn't hold for soft pages. Sort of went "damn" in an x86 context upon 
-> reading that.
+On 7/18/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> On Wed 18 Jul 2007 18:16, Andrew Morton pondered:
+> > I'd suggest that any interface into here should be via function calls,
+> > not via direct access to printk internals: think up some nice
+> > copy_me_some_of_the_log_buffer() interface.
+>
+> If so - I would still like to put it in:
+>  - ifdef CONFIG_EARLY_PRINTK
+>  - and define as __init
+>
+> so that people don't use it when they shouldn't (when the kernel is up an
+> running).
+>
+> Something simple like - early_copy_log_buff(void *dest, size_t n)
+>
+> copies n bytes from log_buf to memory area dest. Returns number of bytes that
+> could not be copied. Can find out how many bytes are in the log_buff by
+> calling with zero size.
+>
+> This is not destructive to existing interfaces (log_start and con_start are
+> not updated/used). This should ensure that if booting does work - that normal
+> messages come out the standard method.
+>
+> Any other suggestions?
 
-Correct, but I'm not really sure if it worth worrying about x86
-missing this, furthermore it would still be possible to enable it on
-the very x86 low end (with regular 4k page size) that may worry to use
-up to the last byte of ram as cache for tiny files. To me using
-kmalloc for this looks quite ideal.
-
-Thanks.
+maybe something as cheesy as early_get_log_buf() ?  that way you dont
+have to do any buffer management, you can just operate read-only on
+the string ...
+-mike
