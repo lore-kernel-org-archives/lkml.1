@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764179AbXGRNy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932408AbXGROAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764179AbXGRNy1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 09:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbXGRNyS
+	id S932408AbXGROAi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbXGROAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 09:54:18 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:53097 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754808AbXGRNyR (ORCPT
+	Wed, 18 Jul 2007 10:00:30 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:59462 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753426AbXGROA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 09:54:17 -0400
-Subject: Re: block/bsg.c
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20070718092130V.tomof@acm.org>
-References: <20070717190705T.fujita.tomonori@lab.ntt.co.jp>
-	 <20070717101928.GK5195@kernel.dk>
-	 <1184698434.3378.15.camel@localhost.localdomain>
-	 <20070718092130V.tomof@acm.org>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 08:54:14 -0500
-Message-Id: <1184766854.3464.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Wed, 18 Jul 2007 10:00:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hu8843//EpfhTp1cbairX2ilOodVb2pVNs8m0zW3Qc1hdizKptAOhL++gXkJuJjFRMNSt7fPFgyI+eKXG7tXG55zp+/dNl6PZkJJyy5Kn9J6ysQJaP8qM92QmsazfKicbsuHwvHdGlrTo5VYNTJvSvu/QT1uqzSk5a0hK6natH4=
+Message-ID: <9a8748490707180700t60bdbe88tb5190ade4e4f0c35@mail.gmail.com>
+Date: Wed, 18 Jul 2007 16:00:28 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: other potential candidates for removal?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0707180631400.23141@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0707180631400.23141@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-18 at 09:20 +0900, FUJITA Tomonori wrote:
-> From: James Bottomley <James.Bottomley@SteelEye.com>
-> Subject: Re: block/bsg.c
-> Date: Tue, 17 Jul 2007 13:53:54 -0500
-> 
-> > On Tue, 2007-07-17 at 12:19 +0200, Jens Axboe wrote:
-> > > > > Since Linus is happily snoring by now, could you test and see if the
-> > > > > tree works for you?
-> > > > 
-> > > > It works for me. I'll submit some minor patches against your bsg
-> > > > branch to scsi-ml. Can you push them together?
-> > > 
-> > > Certainly, I'll pull them into the bsg branch.
-> > 
-> > While you're at it, here's a patch to separate BSG and SCSI again (so
-> > SCSI can be built modular).  The way I did it was simply to move the
-> > SCSI specific logic into SCSI.  When you come up with a generic way to
-> > register the bsg requiring drivers, then we can move it out again.
-> 
-> Thanks, looks nice.
+On 18/07/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+>
+>    a while back, i threw together this wiki page:
+>
+> http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
+>
+> feel free to comment.
+>
+Some comments on that list :
 
-You're welcome ... although there's still a problem for modular builds.
-This is what my /sys/class/bsg looks like:
+} PCMCIA IOCTL support
+}
+} Currently listed in the removal file as scheduled for deletion back
+in November of 2005, but
+} there's some debate as to whether it's really ready to go.
 
-So you see the if (rq->kobj.parent) is causing confusing naming.  The
-reason the first one shows up as 0:0:0:0 is because in an initrd
-scsi_mod is loaded first (which is when bsg binds) followed by sd_mod
-(which is what gives the device the ULD binding and hence the name).  I
-don't see any way around this, so I'd advocate simply using the sdev
-name rather than the block device name and dumping the if.
+If you remove that don't you run the risk of breaking existing
+userspace (something which we don't do lightly) ?  Same goes for other
+IOCTL's on the list as well as the ulog support.
 
-> > --- a/drivers/scsi/scsi_sysfs.c
-> > +++ b/drivers/scsi/scsi_sysfs.c
-> > @@ -714,6 +714,7 @@ static int attr_add(struct device *dev, struct device_attribute *attr)
-> >  int scsi_sysfs_add_sdev(struct scsi_device *sdev)
-> >  {
-> >  	int error, i;
-> > +	struct request_queue *rq = sdev->request_queue;
-> >  
-> >  	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
-> >  		return error;
-> > @@ -733,6 +734,16 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
-> >  	/* take a reference for the sdev_classdev; this is
-> >  	 * released by the sdev_class .release */
-> >  	get_device(&sdev->sdev_gendev);
-> > +
-> > +	if (rq->kobj.parent)
-> > +		error = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
-> > +	else
-> > +		error = bsg_register_queue(rq, kobject_name(&sdev->sdev_gendev.kobj));
-> > +	if (error) {
-> > +		sdev_printk(KERN_INFO, sdev, "Failed to register bsg queue\n");
-> > +		goto out;
-> 
-> Needs more cleanup here?
-
-No ... this bit's magic and clever.  Once you've set up the devices and
-done a get_device, cleanup is simply doing a put_device because it's all
-done in the release routine.
-
-> We might just ignore the error here since it's not fatal not to create
-> a bsg device, I guess.
-> 
-> I updated the patch against the latest code (which has just be merged
-> to Linus's tree).
-
-Thanks,
-
-James
+Also, some items seem to have made the list since they depend on
+BROKEN_ON_SMP or have no active maintainer.  As for depending on
+BROKEN_ON_SMP, as long as the drivers work fine on UP they may have
+users, so removing them would constitute regressions for those users -
+especially if there's no replacement driver. Wouldn't it be better to
+try and get those BROKEN_ON_SMP drivers to become SMP safe instead of
+just removing them (or just leave them as-is if they work for some
+people on UP)?
+As for the lack of an active maintainer being a partial reason for
+removal. I don't agree with that. As long as the code works and gets
+fixed up to continue working when other parts of the kernel evolve,
+then I see no reason to remove the code just because noone is actively
+maintaining it. Sometimes unmaintained code even grow new maintainers
+after a while.
 
 
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
