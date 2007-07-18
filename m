@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936761AbXGRXaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936442AbXGRXbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936761AbXGRXaj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936206AbXGRX1A
+	id S936442AbXGRXbG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:31:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935850AbXGRX1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:27:00 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33058 "EHLO mx2.suse.de"
+	Wed, 18 Jul 2007 19:27:04 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57445 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936379AbXGRX05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:26:57 -0400
+	id S936406AbXGRX1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:27:01 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: David Brownell <david-b@pacbell.net>,
        David Brownell <dbrownell@users.sourceforge.net>,
        Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 09/14] dev_vdbg(), available with -DVERBOSE_DEBUG
-Date: Wed, 18 Jul 2007 16:25:45 -0700
-Message-Id: <11848011842017-git-send-email-gregkh@suse.de>
+Subject: [PATCH 10/14] dev_vdbg() documentation
+Date: Wed, 18 Jul 2007 16:25:46 -0700
+Message-Id: <1184801188568-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11848011802979-git-send-email-gregkh@suse.de>
+In-Reply-To: <11848011842017-git-send-email-gregkh@suse.de>
 References: <20070718232400.GC4620@kroah.com>
  <11848011502972-git-send-email-gregkh@suse.de>
  <11848011551094-git-send-email-gregkh@suse.de>
@@ -29,72 +29,62 @@ References: <20070718232400.GC4620@kroah.com>
  <11848011731698-git-send-email-gregkh@suse.de>
  <1184801177102-git-send-email-gregkh@suse.de>
  <11848011802979-git-send-email-gregkh@suse.de>
+ <11848011842017-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Brownell <david-b@pacbell.net>
 
-This defines a dev_vdbg() call, which is enabled with -DVERBOSE_DEBUG.
-When enabled, dev_vdbg() acts just like dev_dbg().  When disabled, it is a
-NOP ...  just like dev_dbg() without -DDEBUG.  The specific code was moved
-out of a USB patch, but lots of drivers have similar support.
-
-That is, code can now be written to use an additional level of debug
-output, selected at compile time.  Many driver authors have found this
-idiom to be very useful.  A typical usage model is for "normal" debug
-messages to focus on fault paths and not be very "chatty", so that those
-messages can be left on during normal operation without much of a
-performance or syslog load.  On the other hand "verbose" messages would be
-noisy enough that they wouldn't normally be enabled; they might even affect
-timings enough to change system or driver behavior.
+Update CodingStyle to talk about "-DDEBUG" message conventions and the
+new "-DVERBOSE_DEBUG" convention.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/core/driver.c |    7 -------
- include/linux/device.h    |   10 ++++++++++
- 2 files changed, 10 insertions(+), 7 deletions(-)
+ Documentation/CodingStyle |   20 ++++++++++++++++++--
+ 1 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
-index 73c4936..6548574 100644
---- a/drivers/usb/core/driver.c
-+++ b/drivers/usb/core/driver.c
-@@ -29,13 +29,6 @@
- #include "hcd.h"
- #include "usb.h"
+diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+index a667eb1..7f1730f 100644
+--- a/Documentation/CodingStyle
++++ b/Documentation/CodingStyle
+@@ -633,12 +633,27 @@ covers RTL which is used frequently with assembly language in the kernel.
  
--#define VERBOSE_DEBUG	0
--
--#if VERBOSE_DEBUG
--#define dev_vdbg	dev_dbg
--#else
--#define dev_vdbg(dev, fmt, args...)	do { } while (0)
--#endif
+ Kernel developers like to be seen as literate. Do mind the spelling
+ of kernel messages to make a good impression. Do not use crippled
+-words like "dont" and use "do not" or "don't" instead.
++words like "dont"; use "do not" or "don't" instead.  Make the messages
++concise, clear, and unambiguous.
  
- #ifdef CONFIG_HOTPLUG
+ Kernel messages do not have to be terminated with a period.
  
-diff --git a/include/linux/device.h b/include/linux/device.h
-index be2debe..d9f0a57 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -572,6 +572,16 @@ dev_dbg(struct device * dev, const char * fmt, ...)
- }
- #endif
+ Printing numbers in parentheses (%d) adds no value and should be avoided.
  
-+#ifdef VERBOSE_DEBUG
-+#define dev_vdbg	dev_dbg
-+#else
-+static inline int __attribute__ ((format (printf, 2, 3)))
-+dev_vdbg(struct device * dev, const char * fmt, ...)
-+{
-+	return 0;
-+}
-+#endif
++There are a number of driver model diagnostic macros in <linux/device.h>
++which you should use to make sure messages are matched to the right device
++and driver, and are tagged with the right level:  dev_err(), dev_warn(),
++dev_info(), and so forth.  For messages that aren't associated with a
++particular device, <linux/kernel.h> defines pr_debug() and pr_info().
 +
- #define dev_err(dev, format, arg...)		\
- 	dev_printk(KERN_ERR , dev , format , ## arg)
- #define dev_info(dev, format, arg...)		\
++Coming up with good debugging messages can be quite a challenge; and once
++you have them, they can be a huge help for remote troubleshooting.  Such
++messages should be compiled out when the DEBUG symbol is not defined (that
++is, by default they are not included).  When you use dev_dbg() or pr_debug(),
++that's automatic.  Many subsystems have Kconfig options to turn on -DDEBUG.
++A related convention uses VERBOSE_DEBUG to add dev_vdbg() messages to the
++ones already enabled by DEBUG.
++
+ 
+ 		Chapter 14: Allocating memory
+ 
+@@ -790,4 +805,5 @@ Kernel CodingStyle, by greg@kroah.com at OLS 2002:
+ http://www.kroah.com/linux/talks/ols_2002_kernel_codingstyle_talk/html/
+ 
+ --
+-Last updated on 2006-December-06.
++Last updated on 2007-July-13.
++
 -- 
 1.5.2.2
 
