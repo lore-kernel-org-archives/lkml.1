@@ -1,150 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbXGRLje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932778AbXGRLkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932411AbXGRLje (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 07:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXGRLjZ
+	id S932778AbXGRLkm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 07:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbXGRLke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 07:39:25 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:40918 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753865AbXGRLjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 07:39:24 -0400
-Date: Wed, 18 Jul 2007 13:48:20 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070718114820.GA1734@ff.dom.local>
-References: <20070716091236.GA10718@elte.hu> <200707172006.11664.olaf.kirch@oracle.com> <20070717181857.GA16918@elte.hu> <200707172034.20581.olaf.kirch@oracle.com>
+	Wed, 18 Jul 2007 07:40:34 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:1153 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757321AbXGRLkd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 07:40:33 -0400
+Date: Wed, 18 Jul 2007 13:40:13 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, gregkh@suse.de,
+       miles.lane@gmail.com
+Subject: Re: [PATCH] sysfs: cosmetic clean up on node creation failure paths
+Message-ID: <20070718134013.057e4755@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070718073811.GA22374@htj.dyndns.org>
+References: <469A5C94.7030201@googlemail.com>
+	<a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>
+	<469A9D5D.10509@googlemail.com>
+	<469B61C8.8010902@googlemail.com>
+	<a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
+	<469BB7B8.3060002@gmail.com>
+	<469BB9CA.6090500@googlemail.com>
+	<469BC2D6.5090008@googlemail.com>
+	<469BC34C.4080107@googlemail.com>
+	<20070718071445.GI23568@htj.dyndns.org>
+	<20070718073811.GA22374@htj.dyndns.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707172034.20581.olaf.kirch@oracle.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 18 Jul 2007 16:38:11 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-Here is my proposal of a solution based on dev->state flag,
-but intended mainly to prevent poll_napi from disturbing
-while net_rx_action is running and polling the device.
+> Node addition failure is detected by testing return value of
+> sysfs_addfm_finish() which returns the number of added and removed
+> nodes.  As the function is called as the last step of addition right
+> on top of error handling block, the if blocks looked like the
+> following.
+> 
+> 	if (sysfs_addrm_finish(&acxt))
+> 		success handling, usually return;
+> 	/* fall through to error handling */
+> 
+> This is the opposite of usual convention in sysfs and makes the code
+> difficult to understand.  This patch inverts the test and makes those
+> blocks look more like others.
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+>  fs/sysfs/dir.c     |   12 +++++++-----
+>  fs/sysfs/file.c    |    9 +++++----
+>  fs/sysfs/symlink.c |   10 ++++++----
+>  3 files changed, 18 insertions(+), 13 deletions(-)
 
-It doesn't look very nice or clean but I hope it could
-guard net_rx_action enough with some room for netpoll too.
+Looks nice. One thing, though:
 
-I'd be very glad if it could be verified and/or tested.
-
-Regards,
-Jarek P.
-
-PS: not tested!
-
----
-
-diff -Nurp 2.6.22-git9-/include/linux/netdevice.h 2.6.22-git9/include/linux/netdevice.h
---- 2.6.22-git9-/include/linux/netdevice.h	2007-07-18 07:50:56.000000000 +0200
-+++ 2.6.22-git9/include/linux/netdevice.h	2007-07-18 13:21:12.000000000 +0200
-@@ -262,6 +262,8 @@ enum netdev_state_t
- 	__LINK_STATE_LINKWATCH_PENDING,
- 	__LINK_STATE_DORMANT,
- 	__LINK_STATE_QDISC_RUNNING,
-+	/* Set by net_rx_action vs poll_napi */
-+	__LINK_STATE_POLL_LIST_FROZEN,
- };
- 
- 
-diff -Nurp 2.6.22-git9-/net/core/dev.c 2.6.22-git9/net/core/dev.c
---- 2.6.22-git9-/net/core/dev.c	2007-07-18 07:50:58.000000000 +0200
-+++ 2.6.22-git9/net/core/dev.c	2007-07-18 13:18:23.000000000 +0200
-@@ -2025,6 +2025,7 @@ static void net_rx_action(struct softirq
- 	unsigned long start_time = jiffies;
- 	int budget = netdev_budget;
- 	void *have;
-+	struct net_device *dev_frozen = NULL;
- 
- 	local_irq_disable();
- 
-@@ -2040,15 +2041,35 @@ static void net_rx_action(struct softirq
- 				 struct net_device, poll_list);
- 		have = netpoll_poll_lock(dev);
- 
-+#ifdef CONFIG_NETPOLL
-+		/* prevent a race with poll_napi() */
-+		if (dev_frozen && dev_frozen != dev) {
-+                	clear_bit(__LINK_STATE_POLL_LIST_FROZEN,
-+						&dev_frozen->state);
-+                	set_bit(__LINK_STATE_POLL_LIST_FROZEN,
-+							 &dev->state);
-+			dev_frozen = dev;
-+		} else if (!dev_frozen) {
-+                	set_bit(__LINK_STATE_POLL_LIST_FROZEN,
-+							 &dev->state);
-+			dev_frozen = dev;
-+		}
-+#endif
- 		if (dev->quota <= 0 || dev->poll(dev, &budget)) {
- 			netpoll_poll_unlock(have);
- 			local_irq_disable();
--			list_move_tail(&dev->poll_list, &queue->poll_list);
-+			list_move_tail(&dev->poll_list,
-+						 &queue->poll_list);
- 			if (dev->quota < 0)
- 				dev->quota += dev->weight;
- 			else
- 				dev->quota = dev->weight;
- 		} else {
-+#ifdef CONFIG_NETPOLL
-+                	clear_bit(__LINK_STATE_POLL_LIST_FROZEN,
-+							&dev->state);
-+			dev_frozen = NULL;
-+#endif
- 			netpoll_poll_unlock(have);
- 			dev_put(dev);
- 			local_irq_disable();
-@@ -2056,6 +2077,14 @@ static void net_rx_action(struct softirq
- 	}
- out:
- 	local_irq_enable();
-+#ifdef CONFIG_NETPOLL
-+	if (dev_frozen) {
-+		have = netpoll_poll_lock(dev_frozen);
-+		clear_bit(__LINK_STATE_POLL_LIST_FROZEN,
-+						&dev_frozen->state);
-+		netpoll_poll_unlock(have);
-+	}
-+#endif
- #ifdef CONFIG_NET_DMA
- 	/*
- 	 * There may not be any more sk_buffs coming right now, so push
-diff -Nurp 2.6.22-git9-/net/core/netpoll.c 2.6.22-git9/net/core/netpoll.c
---- 2.6.22-git9-/net/core/netpoll.c	2007-07-18 07:50:58.000000000 +0200
-+++ 2.6.22-git9/net/core/netpoll.c	2007-07-18 12:09:43.000000000 +0200
-@@ -124,13 +124,20 @@ static void poll_napi(struct netpoll *np
- 	if (test_bit(__LINK_STATE_RX_SCHED, &np->dev->state) &&
- 	    npinfo->poll_owner != smp_processor_id() &&
- 	    spin_trylock(&npinfo->poll_lock)) {
--		npinfo->rx_flags |= NETPOLL_RX_DROP;
--		atomic_inc(&trapped);
-+		/*
-+		 * If POLL_LIST_FROZEN is set net_rx_action
-+		 * is working with this device.
-+		 */
-+		if (!test_bit(__LINK_STATE_POLL_LIST_FROZEN,
-+						 &np->dev->state)) {
-+			npinfo->rx_flags |= NETPOLL_RX_DROP;
-+			atomic_inc(&trapped);
- 
--		np->dev->poll(np->dev, &budget);
-+			np->dev->poll(np->dev, &budget);
- 
--		atomic_dec(&trapped);
--		npinfo->rx_flags &= ~NETPOLL_RX_DROP;
-+			atomic_dec(&trapped);
-+			npinfo->rx_flags &= ~NETPOLL_RX_DROP;
-+		}
- 		spin_unlock(&npinfo->poll_lock);
- 	}
- }
+sysfs_hash_and_remove() has the same check, but without a cleanup
+section. This should follow the (!sysfs_addrm_finish()) pattern as well
+(makes pattern matching easier when reading the code).
