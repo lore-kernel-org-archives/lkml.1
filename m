@@ -1,43 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937778AbXGRXqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937827AbXGRXqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937778AbXGRXqK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965041AbXGRXmG
+	id S937827AbXGRXqh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937617AbXGRXnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:42:06 -0400
-Received: from mga09.intel.com ([134.134.136.24]:32526 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964876AbXGRXmF convert rfc822-to-8bit (ORCPT
+	Wed, 18 Jul 2007 19:43:20 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:19340 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937610AbXGRXnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:42:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,553,1175497200"; 
-   d="scan'208";a="107618223"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 18 Jul 2007 19:43:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PmO01nCMiBh1Khxsrnp+vU4ueAxOAxRzwDGngyvzAfWo3tSVsfVsvs4+r6YBCQzGRs+GLs95MIIV1LBLPWp1pqmxYDA0ruV8EdBvsqY0xRWknx2xPqvJGx9J/Ywv75JUwijKOpt9xdSIinR4NJgh4ihrOwMtgVLcWj4GcdQfLGg=
+Message-ID: <9a8748490707181643v2ad6b0d0ld44226a367a6f937@mail.gmail.com>
+Date: Thu, 19 Jul 2007 01:43:14 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Subject: Re: [PATCH 1/5] HOWTO: add Japanese translation of Documentation/HOWTO
+Cc: linux-kernel@vger.kernel.org, "Tsugikazu Shibata" <tshibata@ab.jp.nec.com>,
+       "IKEDA Munehiro" <m-ikeda@ds.jp.nec.com>
+In-Reply-To: <11848012031961-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: which signal is sent to freeze process?
-Date: Wed, 18 Jul 2007 16:42:02 -0700
-Message-ID: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: which signal is sent to freeze process?
-thread-index: AcfJlSFnhP45UT9oQNiGdn31v0X8wg==
-From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 18 Jul 2007 23:42:03.0216 (UTC) FILETIME=[3E140D00:01C7C995]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070718232346.GB4620@kroah.com>
+	 <11848012031961-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My understanding is that Linux kernel sends a signal to freeze processes
-during suspend2ram operation. Which signal is used to achieve this?
-The problem I am facing is that some of the system calls are failing
-with EINTR errno during suspend operation and I want to install a signal
-handler for freeze signal with SA_RESTART flag. That should make the
-kernel to retry the system calls. Right?
+On 19/07/07, Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+>
+> Add the japanese translation of the Documentation/HOWTO file.
+>
 
-Thanks,
-Lomesh
+A few comments below.
+
+> Signed-off-by: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+> Cc: IKEDA Munehiro <m-ikeda@ds.jp.nec.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  Documentation/ja_JP/HOWTO |  650 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 650 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/ja_JP/HOWTO
+>
+> diff --git a/Documentation/ja_JP/HOWTO b/Documentation/ja_JP/HOWTO
+> new file mode 100644
+> index 0000000..b2446a0
+> --- /dev/null
+> +++ b/Documentation/ja_JP/HOWTO
+> @@ -0,0 +1,650 @@
+> +NOTE:
+> +This is Japanese translated version of "Documentation/HOWTO".
+
+I'd suggest "This is a Japanese translated version ..." or perhaps
+"This is a version of Documentation/HOWTO translated into Japanese".
+
+
+> +This one is maintained by Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+
+I'd write "This document is maintained by ..."
+
+> +and JF Project team <www.linux.or.jp/JF>.
+
+"and the JF Project team ..."
+
+> +If you find difference with original file or problem in translation,
+
+How about "If you find any difference between this document and the
+original file or a problem with the translation,"
+
+> +please contact maintainer of this file or JF project.
+
+"please contact the maintainer ..."
+
+> +
+> +Please also note that purpose of this file is easier to read for non
+> +English natives and not to be intended to fork. So, if you have any
+> +comments or updates of this file, please try to update Original(English)
+> +file at first.
+
+
+Shouldn't this be something along the lines of
+"Please also note that the purpose of this file is to be easier to
+read for non English (read: Japanese) speakers and is not intended as
+a fork. So if you have any comments or updates for this file please
+try to update the original English file first."
+
+
+<snip - can't comment on the actual Japanese text>
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
