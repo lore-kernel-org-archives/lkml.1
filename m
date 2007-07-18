@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763751AbXGRXVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934787AbXGRXYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763751AbXGRXVd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbXGRXV0
+	id S934787AbXGRXYu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbXGRXYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:21:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49783 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755348AbXGRXVZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:21:25 -0400
-Date: Wed, 18 Jul 2007 16:20:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Jens Axboe <jens.axboe@oracle.com>, Giacomo Catenazzi <cate@cateee.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
-In-Reply-To: <200707190053.24578.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.0.999.0707181618340.27353@woody.linux-foundation.org>
-References: <469D1D5E.8050609@cateee.net> <alpine.LFD.0.999.0707181313100.27353@woody.linux-foundation.org>
- <20070718202740.GN11657@kernel.dk> <200707190053.24578.bzolnier@gmail.com>
+	Wed, 18 Jul 2007 19:24:41 -0400
+Received: from ns.suse.de ([195.135.220.2]:57232 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752174AbXGRXYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:24:40 -0400
+Date: Wed, 18 Jul 2007 15:07:39 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       chas@cmf.nrl.navy.mil, rolandd@cisco.com, dwmw2@infradead.org
+Subject: Re: [git patches 1/2] warnings: attack valid cases spotted by
+	warnings
+Message-ID: <20070718220739.GA8305@suse.de>
+References: <20070717214239.GF28448@devserv.devel.redhat.com> <20070718024637.GC6146@suse.de> <469E71F9.5000005@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469E71F9.5000005@garzik.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 19 Jul 2007, Bartlomiej Zolnierkiewicz wrote:
+On Wed, Jul 18, 2007 at 04:03:05PM -0400, Jeff Garzik wrote:
+>  Greg KH wrote:
+> > On Tue, Jul 17, 2007 at 05:42:39PM -0400, Jeff Garzik wrote:
+> >> commit ae97fec3701a559929c3529e35417fab133a4d39
+> >> Author: Jeff Garzik <jeff@garzik.org>
+> >> Date:   Tue Jul 17 01:08:29 2007 -0400
+> >>
+> >>     drivers/usb/misc/auerswald: fix status check, remove redundant check
+> >>         1) We should only set 'actual_length' output variable if usb 
+> >> length is
+> >>     known to be good.
+> >>         2) No need to check actual_length for NULL.  The only caller 
+> >> always
+> >>     passes non-NULL value.
+> >>         Signed-off-by: Jeff Garzik <jeff@garzik.org>
+> > I have no objection to this patch at all, however it does not remove the
+> > compiler warning :(
 > 
-> Thanks for finding and fixing this.
+>  The description doesn't say it removes a warning, so it doesn't :)
 > 
-> The latest patch (with additional cleanups) also looks good and should be
-> safe enough (unchanged behavior for all non-pc requests) to merge it now.
+>  You want to look at
 > 
-> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>  	drivers/*: mark variables with uninitialized_var()
+> 
+>  which was in posting "[git patches 2/2] warnings: use uninitialized_var()" 
+>  and is now upstream commit a6343afb6e16b65b9f0b264f94f8207212e7e3ae
 
-Ok, Jens - mind signing off on the patch you sent out, and writing an 
-explanatory message? Feel free to just crib from my explanation of my 
-original patch, or whatever.
+Ah, sorry, I just went for the first USB change entry, sorry about that
+:)
 
-And it would be beautiful if people who saw the bad behaviour before 
-reverting the ide.c changes were to go back to that broken state, and try 
-the patch, and just verify that it acts like it should (ie you should see 
-just a few error messages, and it shouldn't cause the IDE layer to go 
-ballistic any more).
+And thanks for doing this, clean builds are good to have.
 
-		Linus
+greg k-h
