@@ -1,77 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764747AbXGROLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbXGROMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764747AbXGROLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759112AbXGROLg
+	id S1758825AbXGROMS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759112AbXGROMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:11:36 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38329 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758936AbXGROLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:11:35 -0400
-In-Reply-To: <200707181247.26262.bzolnier@gmail.com>
-References: <Pine.LNX.4.64.0707172353050.29097@blarg.am.freescale.net> <200707181247.26262.bzolnier@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <162F0B67-44AB-4955-873A-150224C128CB@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-ide@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: compile error if CONFIG_BLOCK not enabled related to linux/ide.h include
-Date: Wed, 18 Jul 2007 09:12:02 -0500
+	Wed, 18 Jul 2007 10:12:01 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:37655 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753708AbXGROMA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 10:12:00 -0400
+Subject: Re: block/bsg.c
+From: James Bottomley <James.Bottomley@SteelEye.com>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <200707180243.13368.bzolnier@gmail.com>
+References: <20070716165706.348f6bbf.akpm@linux-foundation.org>
+	 <1184710755.3378.30.camel@localhost.localdomain>
+	 <469D52D1.1000803@garzik.org>  <200707180243.13368.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 09:11:57 -0500
+Message-Id: <1184767917.3464.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-07-18 at 02:43 +0200, Bartlomiej Zolnierkiewicz wrote:
+> [ James, please remeber to cc: linux-ide on IDE patches, thanks. ]
 
-On Jul 18, 2007, at 5:47 AM, Bartlomiej Zolnierkiewicz wrote:
+Blame Andrew ... I assumed he'd be reporting the problem to the relevant
+lists, so I just did a reply all ...
 
->
-> Hi,
->
-> On Wednesday 18 July 2007, Kumar Gala wrote:
->> M:      bzolnier@gmail.com
->> L:      linux-ide@vger.kernel.org
->>
->> We get the following compile error if CONFIG_BLOCK isn't enabled:
->>
->>   CC      arch/powerpc/kernel/setup_32.o
->> In file included from arch/powerpc/kernel/setup_32.c:14:
->> include/linux/ide.h:558: error: expected specifier-qualifier-list  
->> before 'request_queue_t'
->> include/linux/ide.h:696: warning: 'struct request' declared inside  
->> parameter list
->> include/linux/ide.h:696: warning: its scope is only this  
->> definition or declaration, which is probably not what you want
->> include/linux/ide.h:820: warning: 'struct request' declared inside  
->> parameter list
->> include/linux/ide.h:853: error: field 'wrq' has incomplete type
->> include/linux/ide.h:1205: error: expected ')' before '*' token
->> make[1]: *** [arch/powerpc/kernel/setup_32.o] Error 1
->> make: *** [arch/powerpc/kernel] Error 2
->
-> include/linux/ide.h is exclusively for IDE subsystem
->
->> What I'm trying to figure out is if include/linux/ide.h should be  
->> wrapped
->> in a #if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE) or if  
->> there is
->> some other desired way to handle this.
->
-> Plese remove <linux/ide.h> include, there doesn't seem to be any  
-> piece of
-> code in arch/powerpc/kernel/setup_32.c which needs it anyway.
+> On Wednesday 18 July 2007, Jeff Garzik wrote:
+> > James Bottomley wrote:
+> > > @@ -1052,9 +1054,10 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
+> > >  	int err, (*setfunc)(ide_drive_t *, int);
+> > >  	u8 *val;
+> > >  
+> > > -	err = scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+> > > -	if (err != -ENOTTY)
+> > > -		return err;
+> > > +	switch (cmd) {
+> > > +	case SG_IO:
+> > > +		return scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+> > > +	}
+> > >  
+> > >  	switch (cmd) {
+> > >  	case HDIO_GET_32BIT:	    val = &drive->io_32bit;	 goto read_val;
+> > 
+> > 
+> > At that point you might as well use an 'if'.
+> > 
+> > But overall -- agreed.  ACK.
+> 
+> James/Jeff thanks for following the issue but NAK. ;)
+> 
+> Causes regression wrt ide-floppy CDROMEJECT/CDROMCLOSETRAY support when
+> compared to 2.6.22 and SG_IO is not supported by ide-{disk,scsi,tape}.
 
-Its needed for:
+Well ... that was why I put the case statement in ... I was sure there
+would be other ioctls I missed.
 
-struct ide_machdep_calls ppc_ide_md;
+> Luckily Linus has already fixed the issue properly.
 
-which gets defined in asm/ide.h which needs linux/ide.h for the defn  
-of ide_init_hwif.
+Actually, no, that's just a reversion.  I think we need the attached to
+complete all of this.
 
-- k
+> BTW cmd == 1 IOCTL is not defined/used by IDE driver.
 
+Andrew's trace clearly shows that something is sending cmd == 1 down, so
+I'm nearly positive at one time this was a legitimate ioctl for IDE.
+Anyway it's probably time to kill this deprecated ioctl in SCSI.
+
+James
+
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index 077fb67..fe65473 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -156,6 +156,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+ 
++#include <scsi/sg.h>
+ 
+ /* default maximum number of failures */
+ #define IDE_DEFAULT_MAX_FAILURES 	1
+@@ -1173,6 +1174,7 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
+ 
+ 		case CDROMEJECT:
+ 		case CDROMCLOSETRAY:
++		case SG_IO:
+ 			return scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
+ 
+ 		case HDIO_GET_BUSSTATE:
 
 
