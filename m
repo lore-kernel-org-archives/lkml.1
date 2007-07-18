@@ -1,696 +1,910 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936935AbXGRXc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936980AbXGRXd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936935AbXGRXc4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936386AbXGRX1W
+	id S936980AbXGRXd1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936425AbXGRX1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:27:22 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57491 "EHLO mx1.suse.de"
+	Wed, 18 Jul 2007 19:27:25 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33084 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936286AbXGRX1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:27:18 -0400
+	id S936301AbXGRX1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:27:21 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       IKEDA Munehiro <m-ikeda@ds.jp.nec.com>,
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Benedikt Spranger <b.spranger@linutronix.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/5] HOWTO: add Japanese translation of Documentation/HOWTO
-Date: Wed, 18 Jul 2007 16:26:39 -0700
-Message-Id: <11848012031961-git-send-email-gregkh@suse.de>
+Subject: [PATCH 1/3] UIO: Add the User IO core code
+Date: Wed, 18 Jul 2007 16:26:43 -0700
+Message-Id: <11848012053678-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <20070718232346.GB4620@kroah.com>
-References: <20070718232346.GB4620@kroah.com>
+In-Reply-To: <20070718232332.GA4620@kroah.com>
+References: <20070718232332.GA4620@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+From: Hans J. Koch <hjk@linutronix.de>
 
-Add the japanese translation of the Documentation/HOWTO file.
+This interface allows the ability to write the majority of a driver in
+userspace with only a very small shell of a driver in the kernel itself.
+It uses a char device and sysfs to interact with a userspace process to
+process interrupts and control memory accesses.
 
-Signed-off-by: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-Cc: IKEDA Munehiro <m-ikeda@ds.jp.nec.com>
+See the docbook documentation for more details on how to use this
+interface.
+
+From: Hans J. Koch <hjk@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benedikt Spranger <b.spranger@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/ja_JP/HOWTO |  650 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 650 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ja_JP/HOWTO
+ drivers/Kconfig            |    1 +
+ drivers/Makefile           |    1 +
+ drivers/uio/Kconfig        |   16 +
+ drivers/uio/Makefile       |    1 +
+ drivers/uio/uio.c          |  701 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/uio_driver.h |   91 ++++++
+ 6 files changed, 811 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/uio/Kconfig
+ create mode 100644 drivers/uio/Makefile
+ create mode 100644 drivers/uio/uio.c
+ create mode 100644 include/linux/uio_driver.h
 
-diff --git a/Documentation/ja_JP/HOWTO b/Documentation/ja_JP/HOWTO
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 7916f4b..ae01d86 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -84,4 +84,5 @@ source "drivers/auxdisplay/Kconfig"
+ 
+ source "drivers/kvm/Kconfig"
+ 
++source "drivers/uio/Kconfig"
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 6d9d7fa..c34c8ef 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -40,6 +40,7 @@ obj-$(CONFIG_ATA)		+= ata/
+ obj-$(CONFIG_FUSION)		+= message/
+ obj-$(CONFIG_FIREWIRE)		+= firewire/
+ obj-$(CONFIG_IEEE1394)		+= ieee1394/
++obj-$(CONFIG_UIO)		+= uio/
+ obj-y				+= cdrom/
+ obj-y				+= auxdisplay/
+ obj-$(CONFIG_MTD)		+= mtd/
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
 new file mode 100644
-index 0000000..b2446a0
+index 0000000..6b1a62d
 --- /dev/null
-+++ b/Documentation/ja_JP/HOWTO
-@@ -0,0 +1,650 @@
-+NOTE:
-+This is Japanese translated version of "Documentation/HOWTO".
-+This one is maintained by Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-+and JF Project team <www.linux.or.jp/JF>.
-+If you find difference with original file or problem in translation,
-+please contact maintainer of this file or JF project.
-+
-+Please also note that purpose of this file is easier to read for non
-+English natives and not to be intended to fork. So, if you have any
-+comments or updates of this file, please try to update Original(English)
-+file at first.
-+
-+Last Updated: 2007/06/04
-+==================================
-+これは、
-+linux-2.6.21/Documentation/HOWTO
-+の和訳です。
-+
-+翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
-+翻訳日： 2007/06/04
-+翻訳者： Tsugikazu Shibata <tshibata at ab dot jp dot nec dot com>
-+校正者： 松倉さん <nbh--mats at nifty dot com>
-+         小林 雅典さん (Masanori Kobayasi) <zap03216 at nifty dot ne dot jp>
-+         武井伸光さん、<takei at webmasters dot gr dot jp>
-+         かねこさん (Seiji Kaneko) <skaneko at a2 dot mbn dot or dot jp>
-+         野口さん (Kenji Noguchi) <tokyo246 at gmail dot com>
-+         河内さん (Takayoshi Kochi) <t-kochi at bq dot jp dot nec dot com>
-+         岩本さん (iwamoto) <iwamoto.kn at ncos dot nec dot co dot jp>
-+==================================
-+
-+Linux カーネル開発のやり方
-+-------------------------------
-+
-+これは上のトピック( Linux カーネル開発のやり方)の重要な事柄を網羅した
-+ドキュメントです。ここには Linux カーネル開発者になるための方法と
-+Linux カーネル開発コミュニティと共に活動するやり方を学ぶ方法が含まれて
-+います。カーネルプログラミングに関する技術的な項目に関することは何も含
-+めないようにしていますが、カーネル開発者となるための正しい方向に向かう
-+手助けになります。
-+
-+もし、このドキュメントのどこかが古くなっていた場合には、このドキュメン
-+トの最後にリストしたメンテナーにパッチを送ってください。
-+
-+はじめに
-+---------
-+
-+あなたは　Linux カーネルの開発者になる方法を学びたいのでしょうか？　そ
-+れともあなたは上司から「このデバイスの Linux ドライバを書くように」と
-+言われているのでしょうか？　
-+この文書の目的は、あなたが踏むべき手順と、コミュニティと一緒にうまく働
-+くヒントを書き下すことで、あなたが知るべき全てのことを教えることです。
-+また、このコミュニティがなぜ今うまくまわっているのかという理由の一部も
-+説明しようと試みています。
-+
-+カーネルは 少量のアーキテクチャ依存部分がアセンブリ言語で書かれている
-+以外は大部分は C 言語で書かれています。C言語をよく理解していることはカー
-+ネル開発者には必要です。アーキテクチャ向けの低レベル部分の開発をするの
-+でなければ、(どんなアーキテクチャでも)アセンブリ(訳注: 言語)は必要あり
-+ません。以下の本は、C 言語の十分な知識や何年もの経験に取って代わるもの
-+ではありませんが、少なくともリファレンスとしてはいい本です。
-+ - "The C Programming Language" by Kernighan and Ritchie [Prentice Hall]
-+ -『プログラミング言語Ｃ第2版』(B.W. カーニハン/D.M. リッチー著 石田晴久訳) [共立出版]
-+ - "Practical C Programming" by Steve Oualline [O'Reilly]
-+ - 『C実践プログラミング第3版』(Steve Oualline著 望月康司監訳 谷口功訳) [オライリージャパン]
-+ - "C:  A Reference Manual" by Harbison and Steele [Prentice Hall]
-+ - 『新・詳説 C 言語 H&S リファレンス』
-+       (サミュエル P ハービソン/ガイ L スティール共著 斉藤 信男監訳)[ソフトバンク]
-+
-+カーネルは GNU C と GNU ツールチェインを使って書かれています。カーネル
-+は ISO C89 仕様に準拠して書く一方で、標準には無い言語拡張を多く使って
-+います。カーネルは標準 C ライブラリとは関係がないといった、C 言語フリー
-+スタンディング環境です。そのため、C の標準で使えないものもあります。任
-+意の long long の除算や浮動小数点は使えません。
-+ときどき、カーネルがツールチェインや C 言語拡張に置いている前提がどう
-+なっているのかわかりにくいことがあり、また、残念なことに決定的なリファ
-+レンスは存在しません。情報を得るには、gcc の info ページ( info gcc )を
-+みてください。
-+
-+あなたは既存の開発コミュニティと一緒に作業する方法を学ぼうとしているこ
-+とに留意してください。そのコミュニティは、コーディング、スタイル、
-+開発手順について高度な標準を持つ、多様な人の集まりです。
-+地理的に分散した大規模なチームに対してもっともうまくいくとわかったこと
-+をベースにしながら、これらの標準は長い時間をかけて築かれてきました。
-+これらはきちんと文書化されていますから、事前にこれらの標準についてでき
-+るだけたくさん学んでください。また皆があなたやあなたの会社のやり方に合わ
-+せてくれると思わないでください。
-+
-+法的問題
-+------------
-+
-+Linux カーネルのソースコードは GPL ライセンスの下でリリースされていま
-+す。ライセンスの詳細については、ソースツリーのメインディレクトリに存在
-+する、COPYING のファイルをみてください。もしライセンスについてさらに質
-+問があれば、Linux Kernel メーリングリストに質問するのではなく、どうぞ
-+法律家に相談してください。メーリングリストの人達は法律家ではなく、法的
-+問題については彼らの声明はあてにするべきではありません。
-+
-+GPL に関する共通の質問や回答については、以下を参照してください。
-+	http://www.gnu.org/licenses/gpl-faq.html
-+
-+ドキュメント
-+------------
-+
-+Linux カーネルソースツリーは幅広い範囲のドキュメントを含んでおり、それ
-+らはカーネルコミュニティと会話する方法を学ぶのに非常に貴重なものです。
-+新しい機能がカーネルに追加される場合、その機能の使い方について説明した
-+新しいドキュメントファイルも追加することを勧めます。
-+カーネルの変更が、カーネルがユーザ空間に公開しているインターフェイスの
-+変更を引き起こす場合、その変更を説明するマニュアルページのパッチや情報
-+をマニュアルページのメンテナ mtk-manpages@gmx.net に送ることを勧めます。
-+
-+以下はカーネルソースツリーに含まれている読んでおくべきファイルの一覧で
-+す-
-+
-+  README
-+    このファイルは Linuxカーネルの簡単な背景とカーネルを設定(訳注
-+    configure )し、生成(訳注 build )するために必要なことは何かが書かれ
-+    ています。カーネルに関して初めての人はここからスタートするとよいで
-+    しょう。
-+
-+  Documentation/Changes
-+     このファイルはカーネルをうまく生成(訳注 build )し、走らせるのに最
-+     小限のレベルで必要な数々のソフトウェアパッケージの一覧を示してい
-+     ます。
-+
-+  Documentation/CodingStyle
-+    これは Linux カーネルのコーディングスタイルと背景にある理由を記述
-+    しています。全ての新しいコードはこのドキュメントにあるガイドライン
-+    に従っていることを期待されています。大部分のメンテナーはこれらのルー
-+    ルに従っているものだけを受け付け、多くの人は正しいスタイルのコード
-+    だけをレビューします。
-+
-+  Documentation/SubmittingPatches
-+  Documentation/SubmittingDrivers
-+     これらのファイルには、どうやってうまくパッチを作って投稿するかに
-+     ついて非常に詳しく書かれており、以下を含みます(これだけに限らない
-+     けれども)
-+        - Email に含むこと
-+        - Email の形式
-+        - だれに送るか
-+     これらのルールに従えばうまくいくことを保証することではありません
-+     が (すべてのパッチは内容とスタイルについて精査を受けるので)、
-+     ルールに従わなければ間違いなくうまくいかないでしょう。
-+     この他にパッチを作る方法についてのよくできた記述は-
-+
-+	"The Perfect Patch"
-+		http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
-+	"Linux kernel patch submission format"
-+		http://linux.yyz.us/patch-format.html
-+
-+  Documentation/stable_api_nonsense.txt
-+     このファイルはカーネルの中に不変のAPIを持たないことにした意識的な
-+     決断の背景にある理由について書かれています。以下のようなことを含
-+     んでいます-
-+       - サブシステムとの間に層を作ること(コンパチビリティのため?)
-+       - オペレーティングシステム間のドライバの移植性
-+       - カーネルソースツリーの素早い変更を遅らせる(もしくは素早い変更
-+         を妨げる)
-+     このドキュメントは Linux 開発の思想を理解するのに非常に重要です。
-+     そして、他のOSでの開発者が Linux に移る時にとても重要です。
-+
-+  Documentation/SecurityBugs
-+    もし Linux カーネルでセキュリティ問題を発見したように思ったら、こ
-+    のドキュメントのステップに従ってカーネル開発者に連絡し、問題解決を
-+    支援してください。
-+
-+  Documentation/ManagementStyle
-+    このドキュメントは Linux カーネルのメンテナー達がどう行動するか、
-+    彼らの手法の背景にある共有されている精神について記述しています。こ
-+    れはカーネル開発の初心者なら（もしくは、単に興味があるだけの人でも）
-+    重要です。なぜならこのドキュメントは、カーネルメンテナー達の独特な
-+    行動についての多くの誤解や混乱を解消するからです。
-+
-+  Documentation/stable_kernel_rules.txt
-+    このファイルはどのように stable カーネルのリリースが行われるかのルー
-+    ルが記述されています。そしてこれらのリリースの中のどこかで変更を取
-+    り入れてもらいたい場合に何をすればいいかが示されています。
-+
-+  Documentation/kernel-docs.txt
-+　　カーネル開発に付随する外部ドキュメントのリストです。もしあなたが
-+    探しているものがカーネル内のドキュメントでみつからなかった場合、
-+    このリストをあたってみてください。
-+
-+  Documentation/applying-patches.txt
-+    パッチとはなにか、パッチをどうやって様々なカーネルの開発ブランチに
-+    適用するのかについて正確に記述した良い入門書です。
-+
-+カーネルはソースコードから自動的に生成可能な多数のドキュメントを自分自
-+身でもっています。これにはカーネル内 API のすべての記述や、どう正しく
-+ロックをかけるかの規則が含まれます。このドキュメントは
-+Documentation/DocBook/ ディレクトリに作られ、以下のように
-+	make pdfdocs
-+	make psdocs
-+	make htmldocs
-+	make mandocs
-+コマンドを実行するとメインカーネルのソースディレクトリから
-+それぞれ、PDF, Postscript, HTML, man page の形式で生成されます。
-+
-+カーネル開発者になるには
-+---------------------------
-+
-+もしあなたが、Linux カーネル開発について何も知らないならば、
-+KernelNewbies プロジェクトを見るべきです
-+	http://kernelnewbies.org
-+
-+このサイトには役に立つメーリングリストがあり、基本的なカーネル開発に関
-+するほとんどどんな種類の質問もできます (既に回答されているようなことを
-+聞く前にまずはアーカイブを調べてください)。
-+またここには、リアルタイムで質問を聞くことができる IRC チャネルや、Linux
-+カーネルの開発に関して学ぶのに便利なたくさんの役に立つドキュメントがあ
-+ります。
-+
-+web サイトには、コードの構成、サブシステム、現在存在するプロジェクト(ツ
-+リーにあるもの無いものの両方)の基本的な管理情報があります。
-+ここには、また、カーネルのコンパイルのやり方やパッチの当て方などの間接
-+的な基本情報も記述されています。
-+
-+あなたがどこからスタートしてよいかわからないが、Linux カーネル開発コミュ
-+ニティに参加して何かすることをさがしている場合には、Linux kernel
-+Janitor's プロジェクトにいけばよいでしょう -
-+	http://janitor.kernelnewbies.org/
-+ここはそのようなスタートをするのにうってつけの場所です。ここには、
-+Linux カーネルソースツリーの中に含まれる、きれいにし、修正しなければな
-+らない、単純な問題のリストが記述されています。このプロジェクトに関わる
-+開発者と一緒に作業することで、あなたのパッチを Linuxカーネルツリーに入
-+れるための基礎を学ぶことができ、そしてもしあなたがまだアイディアを持っ
-+ていない場合には、次にやる仕事の方向性が見えてくるかもしれません。
-+
-+もしあなたが、すでにひとまとまりコードを書いていて、カーネルツリーに入
-+れたいと思っていたり、それに関する適切な支援を求めたい場合、カーネル
-+メンターズプロジェクトはそのような皆さんを助けるためにできました。
-+ここにはメーリングリストがあり、以下から参照できます
-+	http://selenic.com/mailman/listinfo/kernel-mentors
-+
-+実際に Linux カーネルのコードについて修正を加える前に、どうやってその
-+コードが動作するのかを理解することが必要です。そのためには、特別なツー
-+ルの助けを借りてでも、それを直接よく読むことが最良の方法です(ほとんど
-+のトリッキーな部分は十分にコメントしてありますから)。そういうツールで
-+特におすすめなのは、Linux クロスリファレンスプロジェクトです。これは、
-+自己参照方式で、索引がついた web 形式で、ソースコードを参照することが
-+できます。この最新の素晴しいカーネルコードのリポジトリは以下で見つかり
-+ます-
-+	http://sosdg.org/~coywolf/lxr/
-+
-+開発プロセス
-+-----------------------
-+
-+Linux カーネルの開発プロセスは現在幾つかの異なるメインカーネル「ブラン
-+チ」と多数のサブシステム毎のカーネルブランチから構成されます。
-+これらのブランチとは-
-+  - メインの 2.6.x カーネルツリー
-+  - 2.6.x.y -stable カーネルツリー
-+  - 2.6.x -git カーネルパッチ
-+  - 2.6.x -mm カーネルパッチ
-+  - サブシステム毎のカーネルツリーとパッチ
-+
-+2.6.x カーネルツリー
-+-----------------
-+
-+2.6.x カーネルは Linus Torvalds によってメンテナンスされ、kernel.org
-+の pub/linux/kernel/v2.6/ ディレクトリに存在します。この開発プロセスは
-+以下のとおり-
-+
-+  - 新しいカーネルがリリースされた直後に、2週間の特別期間が設けられ、
-+    この期間中に、メンテナー達は Linus に大きな差分を送ることができま
-+    す。このような差分は通常 -mm カーネルに数週間含まれてきたパッチで
-+    す。 大きな変更は git(カーネルのソース管理ツール、詳細は
-+    http://git.or.cz/  参照) を使って送るのが好ましいやり方ですが、パッ
-+    チファイルの形式のまま送るのでも十分です。
-+
-+  - 2週間後、-rc1 カーネルがリリースされ、この後にはカーネル全体の安定
-+    性に影響をあたえるような新機能は含まない類のパッチしか取り込むこと
-+    はできません。新しいドライバ(もしくはファイルシステム)のパッチは
-+    -rc1 の後で受け付けられることもあることを覚えておいてください。な
-+    ぜなら、変更が独立していて、追加されたコードの外の領域に影響を与え
-+    ない限り、退行のリスクは無いからです。-rc1 がリリースされた後、
-+    Linus へパッチを送付するのに git を使うこともできますが、パッチは
-+    レビューのために、パブリックなメーリングリストへも同時に送る必要が
-+    あります。
-+
-+  - 新しい -rc は Linus が、最新の git ツリーがテスト目的であれば十分
-+    に安定した状態にあると判断したときにリリースされます。目標は毎週新
-+    しい -rc カーネルをリリースすることです。
-+
-+  - このプロセスはカーネルが 「準備ができた」と考えられるまで継続しま
-+    す。このプロセスはだいたい 6週間継続します。
-+
-+Andrew Morton が Linux-kernel メーリングリストにカーネルリリースについ
-+て書いたことをここで言っておくことは価値があります-
-+  「カーネルがいつリリースされるかは誰も知りません。なぜなら、これは現
-+  実に認識されたバグの状況によりリリースされるのであり、前もって決めら
-+  れた計画によってリリースされるものではないからです。」
-+
-+2.6.x.y -stable カーネルツリー
-+---------------------------
-+
-+バージョンに4つ目の数字がついたカーネルは -stable カーネルです。これに
-+は、2.6.x カーネルで見つかったセキュリティ問題や重大な後戻りに対する比
-+較的小さい重要な修正が含まれます。
-+
-+これは、開発/実験的バージョンのテストに協力することに興味が無く、
-+最新の安定したカーネルを使いたいユーザに推奨するブランチです。
-+
-+もし、2.6.x.y カーネルが存在しない場合には、番号が一番大きい 2.6.x
-+が最新の安定版カーネルです。
-+
-+2.6.x.y は "stable" チーム <stable@kernel.org> でメンテされており、だ
-+いたい隔週でリリースされています。
-+
-+カーネルツリーに入っている、Documentation/stable_kernel_rules.txt ファ
-+イルにはどのような種類の変更が -stable ツリーに受け入れ可能か、またリ
-+リースプロセスがどう動くかが記述されています。
-+
-+2.6.x -git パッチ
-+------------------
-+
-+git リポジトリで管理されているLinus のカーネルツリーの毎日のスナップ
-+ショットがあります。(だから -git という名前がついています)。これらのパッ
-+チはおおむね毎日リリースされており、Linus のツリーの現状を表します。こ
-+れは -rc カーネルと比べて、パッチが大丈夫かどうかも確認しないで自動的
-+に生成されるので、より実験的です。
-+
-+2.6.x -mm カーネルパッチ
-+------------------------
-+
-+Andrew Morton によってリリースされる実験的なカーネルパッチ群です。
-+Andrew は個別のサブシステムカーネルツリーとパッチを全て集めてきて
-+linux-kernel メーリングリストで収集された多数のパッチと同時に一つにま
-+とめます。
-+このツリーは新機能とパッチが検証される場となります。ある期間の間パッチ
-+が -mm に入って価値を証明されたら、Andrew やサブシステムメンテナが、メ
-+インラインへ入れるように Linus にプッシュします。
-+
-+メインカーネルツリーに含めるために Linus に送る前に、すべての新しいパッ
-+チが -mm ツリーでテストされることが強く推奨されます。
-+
-+これらのカーネルは安定して動作すべきシステムとして使うのには適切ではあ
-+りませんし、カーネルブランチの中でももっとも動作にリスクが高いものです。
-+
-+もしあなたが、カーネル開発プロセスの支援をしたいと思っているのであれば、
-+どうぞこれらのカーネルリリースをテストに使ってみて、そしてもし問題があ
-+れば、またもし全てが正しく動作したとしても、linux-kernel メーリングリ
-+ストにフィードバックを提供してください。
-+
-+すべての他の実験的パッチに加えて、これらのカーネルは通常リリース時点で
-+メインラインの -git カーネルに含まれる全ての変更も含んでいます。
-+
-+-mm カーネルは決まったスケジュールではリリースされません、しかし通常幾
-+つかの -mm カーネル (1 から 3 が普通）が各-rc カーネルの間にリリースさ
-+れます。
-+
-+サブシステム毎のカーネルツリーとパッチ
-+-------------------------------------------
-+
-+カーネルの様々な領域で何が起きているかを見られるようにするため、多くの
-+カーネルサブシステム開発者は彼らの開発ツリーを公開しています。これらの
-+ツリーは説明したように -mm カーネルリリースに入れ込まれます。
-+
-+以下はさまざまなカーネルツリーの中のいくつかのリスト-
-+
-+  git ツリー-
-+    - Kbuild の開発ツリー、Sam Ravnborg <sam@ravnborg.org>
-+	kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
-+
-+    - ACPI の開発ツリー、 Len Brown <len.brown@intel.com>
-+	kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
-+
-+    - Block の開発ツリー、Jens Axboe <axboe@suse.de>
-+	kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
-+
-+    - DRM の開発ツリー、Dave Airlie <airlied@linux.ie>
-+	kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
-+
-+    - ia64 の開発ツリー、Tony Luck <tony.luck@intel.com>
-+	kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
-+
-+    - ieee1394 の開発ツリー、Jody McIntyre <scjody@modernduck.com>
-+	kernel.org:/pub/scm/linux/kernel/git/scjody/ieee1394.git
-+
-+    - infiniband, Roland Dreier <rolandd@cisco.com>
-+	kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
-+
-+    - libata, Jeff Garzik <jgarzik@pobox.com>
-+	kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
-+
-+    - ネットワークドライバ, Jeff Garzik <jgarzik@pobox.com>
-+	kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
-+
-+    - pcmcia, Dominik Brodowski <linux@dominikbrodowski.net>
-+	kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
-+
-+    - SCSI, James Bottomley <James.Bottomley@SteelEye.com>
-+	kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-+
-+  その他の git カーネルツリーは http://kernel.org/git に一覧表がありま
-+  す。
-+
-+  quilt ツリー-
-+    - USB, PCI ドライバコアと I2C, Greg Kroah-Hartman <gregkh@suse.de>
-+	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-+
-+バグレポート
-+-------------
-+
-+bugzilla.kernel.org は Linux カーネル開発者がカーネルのバグを追跡する
-+場所です。ユーザは見つけたバグの全てをこのツールで報告すべきです。
-+どう kernel bugzilla を使うかの詳細は、以下を参照してください-
-+	http://test.kernel.org/bugzilla/faq.html
-+
-+メインカーネルソースディレクトリにあるファイル REPORTING-BUGS はカーネ
-+ルバグらしいものについてどうレポートするかの良いテンプレートであり、問
-+題の追跡を助けるためにカーネル開発者にとってどんな情報が必要なのかの詳
-+細が書かれています。
-+
-+メーリングリスト
-+-------------
-+
-+上のいくつかのドキュメントで述べていますが、コアカーネル開発者の大部分
-+は Linux kernel メーリングリストに参加しています。このリストの登録/脱
-+退の方法については以下を参照してください-
-+	http://vger.kernel.org/vger-lists.html#linux-kernel
-+
-+このメーリングリストのアーカイブは web 上の多数の場所に存在します。こ
-+れらのアーカイブを探すにはサーチエンジンを使いましょう。例えば-
-+	http://dir.gmane.org/gmane.linux.kernel
-+
-+リストに投稿する前にすでにその話題がアーカイブに存在するかどうかを検索
-+することを是非やってください。多数の事がすでに詳細に渡って議論されて
-+おり、アーカイブにのみ記録されています。
-+
-+大部分のカーネルサブシステムも自分の個別の開発を実施するメーリングリス
-+トを持っています。個々のグループがどんなリストを持っているかは、
-+MAINTAINERS ファイルにリストがありますので参照してください。
-+
-+多くのリストは kernel.org でホストされています。これらの情報は以下にあ
-+ります-
-+	http://vger.kernel.org/vger-lists.html
-+
-+メーリングリストを使う場合、良い行動習慣に従うようにしましょう。
-+少し安っぽいが、以下の URL は上のリスト(や他のリスト)で会話する場合の
-+シンプルなガイドラインを示しています-
-+	http://www.albion.com/netiquette/
-+
-+もし複数の人があなたのメールに返事をした場合、CC: で受ける人のリストは
-+だいぶ多くなるでしょう。良い理由がない場合、CC: リストから誰かを削除を
-+しないように、また、メーリングリストのアドレスだけにリプライすることの
-+ないようにしましょう。1つは送信者から、もう1つはリストからのように、メー
-+ルを2回受けることになってもそれに慣れ、しゃれたメールヘッダーを追加し
-+てこの状態を変えようとしないように。人々はそのようなことは好みません。
-+
-+今までのメールでのやりとりとその間のあなたの発言はそのまま残し、
-+"John Kernlehacker wrote ...:" の行をあなたのリプライの先頭行にして、
-+メールの先頭でなく、各引用行の間にあなたの言いたいことを追加するべきで
-+す。
-+
-+もしパッチをメールに付ける場合は、Documentaion/SubmittingPatches に提
-+示されているように、それは プレーンな可読テキストにすることを忘れない
-+ようにしましょう。カーネル開発者は 添付や圧縮したパッチを扱いたがりま
-+せん-
-+彼らはあなたのパッチの行毎にコメントを入れたいので、そのためにはそうす
-+るしかありません。あなたのメールプログラムが空白やタブを圧縮しないよう
-+に確認した方がいいです。最初の良いテストとしては、自分にメールを送って
-+みて、そのパッチを自分で当ててみることです。もしそれがうまく行かないな
-+ら、あなたのメールプログラムを直してもらうか、正しく動くように変えるべ
-+きです。
-+
-+とりわけ、他の登録者に対する尊敬を表すようにすることを覚えておいてくだ
-+さい。
-+
-+コミュニティと共に働くこと
-+--------------------------
-+
-+カーネルコミュニティのゴールは可能なかぎり最高のカーネルを提供すること
-+です。あなたがパッチを受け入れてもらうために投稿した場合、それは、技術
-+的メリットだけがレビューされます。その際、あなたは何を予想すべきでしょ
-+うか?
-+  - 批判
-+  - コメント
-+  - 変更の要求
-+  - パッチの正当性の証明要求
-+  - 沈黙
-+
-+思い出してください、ここはあなたのパッチをカーネルに入れる話です。あ
-+なたは、あなたのパッチに対する批判とコメントを受け入れるべきで、それら
-+を技術的レベルで評価して、パッチを再作成するか、なぜそれらの変更をすべ
-+きでないかを明確で簡潔な理由の説明を提供してください。
-+もし、あなたのパッチに何も反応がない場合、たまにはメールの山に埋もれて
-+見逃され、あなたの投稿が忘れられてしまうこともあるので、数日待って再度
-+投稿してください。
-+
-+あなたがやるべきでないものは?
-+  - 質問なしにあなたのパッチが受け入れられると想像すること
-+  - 守りに入ること
-+  - コメントを無視すること
-+  - 要求された変更を何もしないでパッチを出し直すこと
-+
-+可能な限り最高の技術的解決を求めているコミュニティでは、パッチがどのく
-+らい有益なのかについては常に異なる意見があります。あなたは協調的である
-+べきですし、また、あなたのアイディアをカーネルに対してうまく合わせるよ
-+うにすることが望まれています。もしくは、最低限あなたのアイディアがそれ
-+だけの価値があるとすすんで証明するようにしなければなりません。
-+正しい解決に向かって進もうという意志がある限り、間違うことがあっても許
-+容されることを忘れないでください。
-+
-+あなたの最初のパッチに単に 1ダースもの修正を求めるリストの返答になるこ
-+とも普通のことです。これはあなたのパッチが受け入れられないということで
-+は *ありません*、そしてあなた自身に反対することを意味するのでも *ありま
-+せん*。単に自分のパッチに対して指摘された問題を全て修正して再送すれば
-+いいのです。
-+
-+カーネルコミュニティと企業組織のちがい
-+-----------------------------------------------------------------
-+
-+カーネルコミュニティは大部分の伝統的な会社の開発環境とは異ったやり方で
-+動いています。以下は問題を避けるためにできるとよいことののリストです-
-+
-+  あなたの提案する変更について言うときのうまい言い方：
-+
-+    - "これは複数の問題を解決します"
-+    - "これは2000行のコードを削除します"
-+    - "以下のパッチは、私が言おうとしていることを説明するものです"
-+    - "私はこれを5つの異なるアーキテクチャでテストしたのですが..."
-+    - "以下は一連の小さなパッチ群ですが..."
-+    - "これは典型的なマシンでの性能を向上させます.."
-+
-+  やめた方がいい悪い言い方：
-+
-+    - このやり方で AIX/ptx/Solaris ではできたので、できるはずだ
-+    - 私はこれを20年もの間やってきた、だから
-+    - これは、私の会社が金儲けをするために必要だ
-+    - これは我々のエンタープライズ向け商品ラインのためである
-+    - これは 私が自分のアイディアを記述した、1000ページの設計資料である
-+    - 私はこれについて、6ケ月作業している。
-+    - 以下は ... に関する5000行のパッチです
-+    - 私は現在のぐちゃぐちゃを全部書き直した、それが以下です...
-+    - 私は〆切がある、そのためこのパッチは今すぐ適用される必要がある
-+
-+カーネルコミュニティが大部分の伝統的なソフトウェアエンジニアリングの労
-+働環境と異なるもう一つの点は、やりとりに顔を合わせないということです。
-+email と irc を第一のコミュニケーションの形とする一つの利点は、性別や
-+民族の差別がないことです。Linux カーネルの職場環境は女性や少数民族を受
-+容します。なぜなら、email アドレスによってのみあなたが認識されるからで
-+す。
-+国際的な側面からも活動領域を均等にするようにします。なぜならば、あなた
-+は人の名前で性別を想像できないからです。ある男性が アンドレアという名
-+前で、女性の名前は パット かもしれません (訳注 Andrea は米国では女性、
-+それ以外(欧州など)では男性名として使われることが多い。同様に、Pat は
-+Patricia (主に女性名)や Patrick (主に男性名)の略称)。
-+Linux カーネルの活動をして、意見を表明したことがある大部分の女性は、前
-+向きな経験をもっています。
-+
-+言葉の壁は英語が得意でない一部の人には問題になります。
-+メーリングリストの中できちんとアイディアを交換するには、相当うまく英語
-+を操れる必要があることもあります。そのため、あなたは自分のメール
-+を送る前に英語で意味が通じているかをチェックすることをお薦めします。
-+
-+変更を分割する
-+---------------------
-+
-+Linux カーネルコミュニティは、一度に大量のコードの塊を喜んで受容するこ
-+とはありません。変更は正確に説明される必要があり、議論され、小さい、個
-+別の部分に分割する必要があります。これはこれまで多くの会社がやり慣れて
-+きたことと全く正反対のことです。あなたのプロポーザルは、開発プロセスのと
-+ても早い段階から紹介されるべきです。そうすれば あなたは自分のやってい
-+ることにフィードバックを得られます。これは、コミュニティからみれば、あ
-+なたが彼らと一緒にやっているように感じられ、単にあなたの提案する機能の
-+ゴミ捨て場として使っているのではない、と感じられるでしょう。
-+しかし、一度に 50 もの email をメーリングリストに送りつけるようなことは
-+やってはいけません、あなたのパッチ群はいつもどんな時でもそれよりは小さ
-+くなければなりません。
-+
-+パッチを分割する理由は以下です-
-+
-+1) 小さいパッチはあなたのパッチが適用される見込みを大きくします、カー
-+   ネルの人達はパッチが正しいかどうかを確認する時間や労力をかけないか
-+   らです。5行のパッチはメンテナがたった1秒見るだけで適用できます。し
-+   かし、500行のパッチは、正しいことをレビューするのに数時間かかるかも
-+   しれません(時間はパッチのサイズなどにより指数関数に比例してかかりま
-+   す)
-+   小さいパッチは何かあったときにデバッグもとても簡単になります。パッ
-+   チを1個1個取り除くのは、とても大きなパッチを当てた後に(かつ、何かお
-+   かしくなった後で)解剖するのに比べればとても簡単です。
-+
-+2) 小さいパッチを送るだけでなく、送るまえに、書き直して、シンプルにす
-+   る(もしくは、単に順番を変えるだけでも)ことも、とても重要です。
-+
-+以下はカーネル開発者の Al Viro のたとえ話しです：
-+
-+        "生徒の数学の宿題を採点する先生のことを考えてみてください、先
-+        生は生徒が解に到達するまでの試行錯誤をみたいとは思わないでしょ
-+        う。先生は簡潔な最高の解をみたいのです。良い生徒はこれを知って
-+        おり、そして最終解の前の中間作業を提出することは決してないので
-+        す"
-+        カーネル開発でもこれは同じです。メンテナー達とレビューア達は、
-+        問題を解決する解の背後になる思考プロセスをみたいとは思いません。
-+        彼らは単純であざやかな解決方法をみたいのです。
-+
-+あざやかな解を説明するのと、コミュニティと共に仕事をし、未解決の仕事を
-+議論することのバランスをキープするのは難しいかもしれません。
-+ですから、開発プロセスの早期段階で改善のためのフィードバックをもらうよ
-+うにするのもいいですが、変更点を小さい部分に分割して全体ではまだ完成し
-+ていない仕事を(部分的に)取り込んでもらえるようにすることもいいことです。
-+
-+また、でき上がっていないものや、"将来直す" ようなパッチを、本流に含め
-+てもらうように送っても、それは受け付けられないことを理解してください。
-+
-+あなたの変更を正当化する
-+-------------------
-+
-+あなたのパッチを分割するのと同時に、なぜその変更を追加しなければならな
-+いかを Linux コミュニティに知らせることはとても重要です。新機能は必要
-+性と有用性で正当化されなければなりません。
-+
-+あなたの変更の説明
-+--------------------
-+
-+あなたのパッチを送付する場合には、メールの中のテキストで何を言うかにつ
-+いて、特別に注意を払ってください。この情報はパッチの ChangeLog に使わ
-+れ、いつも皆がみられるように保管されます。これは次のような項目を含め、
-+パッチを完全に記述するべきです-
-+
-+  - なぜ変更が必要か
-+  - パッチ全体の設計アプローチ
-+  - 実装の詳細
-+  - テスト結果
-+
-+これについて全てがどのようにあるべきかについての詳細は、以下のドキュメ
-+ントの ChangeLog セクションをみてください-
-+  "The Perfect Patch"
-+      http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
-+
-+これらのどれもが、時にはとても困難です。これらの慣例を完璧に実施するに
-+は数年かかるかもしれません。これは継続的な改善のプロセスであり、そのた
-+めには多数の忍耐と決意を必要とするものです。でも、諦めないで、これは可
-+能なことです。多数の人がすでにできていますし、彼らも皆最初はあなたと同
-+じところからスタートしたのですから。
-+
-+Paolo Ciarrocchi に感謝、彼は彼の書いた "Development Process"
-+(http://linux.tar.bz/articles/2.6-development_process)セクショ
-+ンをこのテキストの原型にすることを許可してくれました。
-+Rundy Dunlap と Gerrit Huizenga はメーリングリストでやるべきこととやっ
-+てはいけないことのリストを提供してくれました。
-+以下の人々のレビュー、コメント、貢献に感謝。
-+Pat Mochel, Hanna Linder, Randy Dunlap, Kay Sievers,
-+Vojtech Pavlik, Jan Kara, Josh Boyer, Kees Cook, Andrew Morton, Andi
-+Kleen, Vadim Lobanov, Jesper Juhl, Adrian Bunk, Keri Harris, Frans Pop,
-+David A. Wheeler, Junio Hamano, Michael Kerrisk, と Alex Shepard
-+彼らの支援なしでは、このドキュメントはできなかったでしょう。
-+
-+Maintainer: Greg Kroah-Hartman <greg@kroah.com>
++++ b/drivers/uio/Kconfig
+@@ -0,0 +1,16 @@
++menu "Userspace I/O"
++	depends on !S390
++
++config UIO
++	tristate "Userspace I/O drivers"
++	default n
++	help
++	  Enable this to allow the userspace driver core code to be
++	  built.  This code allows userspace programs easy access to
++	  kernel interrupts and memory locations, allowing some drivers
++	  to be written in userspace.  Note that a small kernel driver
++	  is also required for interrupt handling to work properly.
++
++	  If you don't know what to do here, say N.
++
++endmenu
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+new file mode 100644
+index 0000000..9b7c830
+--- /dev/null
++++ b/drivers/uio/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_UIO) += uio.o
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+new file mode 100644
+index 0000000..865f32b
+--- /dev/null
++++ b/drivers/uio/uio.c
+@@ -0,0 +1,701 @@
++/*
++ * drivers/uio/uio.c
++ *
++ * Copyright(C) 2005, Benedikt Spranger <b.spranger@linutronix.de>
++ * Copyright(C) 2005, Thomas Gleixner <tglx@linutronix.de>
++ * Copyright(C) 2006, Hans J. Koch <hjk@linutronix.de>
++ * Copyright(C) 2006, Greg Kroah-Hartman <greg@kroah.com>
++ *
++ * Userspace IO
++ *
++ * Base Functions
++ *
++ * Licensed under the GPLv2 only.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/poll.h>
++#include <linux/device.h>
++#include <linux/mm.h>
++#include <linux/idr.h>
++#include <linux/string.h>
++#include <linux/kobject.h>
++#include <linux/uio_driver.h>
++
++#define UIO_MAX_DEVICES 255
++
++struct uio_device {
++	struct module		*owner;
++	struct device		*dev;
++	int			minor;
++	atomic_t		event;
++	struct fasync_struct	*async_queue;
++	wait_queue_head_t	wait;
++	int			vma_count;
++	struct uio_info		*info;
++	struct kset 		map_attr_kset;
++};
++
++static int uio_major;
++static DEFINE_IDR(uio_idr);
++static struct file_operations uio_fops;
++
++/* UIO class infrastructure */
++static struct uio_class {
++	struct kref kref;
++	struct class *class;
++} *uio_class;
++
++/*
++ * attributes
++ */
++
++static struct attribute attr_addr = {
++	.name  = "addr",
++	.mode  = S_IRUGO,
++};
++
++static struct attribute attr_size = {
++	.name  = "size",
++	.mode  = S_IRUGO,
++};
++
++static struct attribute* map_attrs[] = {
++	&attr_addr, &attr_size, NULL
++};
++
++static ssize_t map_attr_show(struct kobject *kobj, struct attribute *attr,
++			     char *buf)
++{
++	struct uio_mem *mem = container_of(kobj, struct uio_mem, kobj);
++
++	if (strncmp(attr->name,"addr",4) == 0)
++		return sprintf(buf, "0x%lx\n", mem->addr);
++
++	if (strncmp(attr->name,"size",4) == 0)
++		return sprintf(buf, "0x%lx\n", mem->size);
++
++	return -ENODEV;
++}
++
++static void map_attr_release(struct kobject *kobj)
++{
++	/* TODO ??? */
++}
++
++static struct sysfs_ops map_attr_ops = {
++	.show  = map_attr_show,
++};
++
++static struct kobj_type map_attr_type = {
++	.release	= map_attr_release,
++	.sysfs_ops	= &map_attr_ops,
++	.default_attrs	= map_attrs,
++};
++
++static ssize_t show_name(struct device *dev,
++			 struct device_attribute *attr, char *buf)
++{
++	struct uio_device *idev = dev_get_drvdata(dev);
++	if (idev)
++		return sprintf(buf, "%s\n", idev->info->name);
++	else
++		return -ENODEV;
++}
++static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
++
++static ssize_t show_version(struct device *dev,
++			    struct device_attribute *attr, char *buf)
++{
++	struct uio_device *idev = dev_get_drvdata(dev);
++	if (idev)
++		return sprintf(buf, "%s\n", idev->info->version);
++	else
++		return -ENODEV;
++}
++static DEVICE_ATTR(version, S_IRUGO, show_version, NULL);
++
++static ssize_t show_event(struct device *dev,
++			  struct device_attribute *attr, char *buf)
++{
++	struct uio_device *idev = dev_get_drvdata(dev);
++	if (idev)
++		return sprintf(buf, "%u\n",
++				(unsigned int)atomic_read(&idev->event));
++	else
++		return -ENODEV;
++}
++static DEVICE_ATTR(event, S_IRUGO, show_event, NULL);
++
++static struct attribute *uio_attrs[] = {
++	&dev_attr_name.attr,
++	&dev_attr_version.attr,
++	&dev_attr_event.attr,
++	NULL,
++};
++
++static struct attribute_group uio_attr_grp = {
++	.attrs = uio_attrs,
++};
++
++/*
++ * device functions
++ */
++static int uio_dev_add_attributes(struct uio_device *idev)
++{
++	int ret;
++	int mi;
++	int map_found = 0;
++	struct uio_mem *mem;
++
++	ret = sysfs_create_group(&idev->dev->kobj, &uio_attr_grp);
++	if (ret)
++		goto err_group;
++
++	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
++		mem = &idev->info->mem[mi];
++		if (mem->size == 0)
++			break;
++		if (!map_found) {
++			map_found = 1;
++			kobject_set_name(&idev->map_attr_kset.kobj,"maps");
++			idev->map_attr_kset.ktype = &map_attr_type;
++			idev->map_attr_kset.kobj.parent = &idev->dev->kobj;
++			ret = kset_register(&idev->map_attr_kset);
++			if (ret)
++				goto err_remove_group;
++		}
++		kobject_init(&mem->kobj);
++		kobject_set_name(&mem->kobj,"map%d",mi);
++		mem->kobj.parent = &idev->map_attr_kset.kobj;
++		mem->kobj.kset = &idev->map_attr_kset;
++		ret = kobject_add(&mem->kobj);
++		if (ret)
++			goto err_remove_maps;
++	}
++
++	return 0;
++
++err_remove_maps:
++	for (mi--; mi>=0; mi--) {
++		mem = &idev->info->mem[mi];
++		kobject_unregister(&mem->kobj);
++	}
++	kset_unregister(&idev->map_attr_kset); /* Needed ? */
++err_remove_group:
++	sysfs_remove_group(&idev->dev->kobj, &uio_attr_grp);
++err_group:
++	dev_err(idev->dev, "error creating sysfs files (%d)\n", ret);
++	return ret;
++}
++
++static void uio_dev_del_attributes(struct uio_device *idev)
++{
++	int mi;
++	struct uio_mem *mem;
++	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
++		mem = &idev->info->mem[mi];
++		if (mem->size == 0)
++			break;
++		kobject_unregister(&mem->kobj);
++	}
++	kset_unregister(&idev->map_attr_kset);
++	sysfs_remove_group(&idev->dev->kobj, &uio_attr_grp);
++}
++
++static int uio_get_minor(struct uio_device *idev)
++{
++	static DEFINE_MUTEX(minor_lock);
++	int retval = -ENOMEM;
++	int id;
++
++	mutex_lock(&minor_lock);
++	if (idr_pre_get(&uio_idr, GFP_KERNEL) == 0)
++		goto exit;
++
++	retval = idr_get_new(&uio_idr, idev, &id);
++	if (retval < 0) {
++		if (retval == -EAGAIN)
++			retval = -ENOMEM;
++		goto exit;
++	}
++	idev->minor = id & MAX_ID_MASK;
++exit:
++	mutex_unlock(&minor_lock);
++	return retval;
++}
++
++static void uio_free_minor(struct uio_device *idev)
++{
++	idr_remove(&uio_idr, idev->minor);
++}
++
++/**
++ * uio_event_notify - trigger an interrupt event
++ * @info: UIO device capabilities
++ */
++void uio_event_notify(struct uio_info *info)
++{
++	struct uio_device *idev = info->uio_dev;
++
++	atomic_inc(&idev->event);
++	wake_up_interruptible(&idev->wait);
++	kill_fasync(&idev->async_queue, SIGIO, POLL_IN);
++}
++EXPORT_SYMBOL_GPL(uio_event_notify);
++
++/**
++ * uio_interrupt - hardware interrupt handler
++ * @irq: IRQ number, can be UIO_IRQ_CYCLIC for cyclic timer
++ * @dev_id: Pointer to the devices uio_device structure
++ */
++static irqreturn_t uio_interrupt(int irq, void *dev_id)
++{
++	struct uio_device *idev = (struct uio_device *)dev_id;
++	irqreturn_t ret = idev->info->handler(irq, idev->info);
++
++	if (ret == IRQ_HANDLED)
++		uio_event_notify(idev->info);
++
++	return ret;
++}
++
++struct uio_listener {
++	struct uio_device *dev;
++	s32 event_count;
++};
++
++static int uio_open(struct inode *inode, struct file *filep)
++{
++	struct uio_device *idev;
++	struct uio_listener *listener;
++	int ret = 0;
++
++	idev = idr_find(&uio_idr, iminor(inode));
++	if (!idev)
++		return -ENODEV;
++
++	listener = kmalloc(sizeof(*listener), GFP_KERNEL);
++	if (!listener)
++		return -ENOMEM;
++
++	listener->dev = idev;
++	listener->event_count = atomic_read(&idev->event);
++	filep->private_data = listener;
++
++	if (idev->info->open) {
++		if (!try_module_get(idev->owner))
++			return -ENODEV;
++		ret = idev->info->open(idev->info, inode);
++		module_put(idev->owner);
++	}
++
++	if (ret)
++		kfree(listener);
++
++	return ret;
++}
++
++static int uio_fasync(int fd, struct file *filep, int on)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++
++	return fasync_helper(fd, filep, on, &idev->async_queue);
++}
++
++static int uio_release(struct inode *inode, struct file *filep)
++{
++	int ret = 0;
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++
++	if (idev->info->release) {
++		if (!try_module_get(idev->owner))
++			return -ENODEV;
++		ret = idev->info->release(idev->info, inode);
++		module_put(idev->owner);
++	}
++	if (filep->f_flags & FASYNC)
++		ret = uio_fasync(-1, filep, 0);
++	kfree(listener);
++	return ret;
++}
++
++static unsigned int uio_poll(struct file *filep, poll_table *wait)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++
++	if (idev->info->irq == UIO_IRQ_NONE)
++		return -EIO;
++
++	poll_wait(filep, &idev->wait, wait);
++	if (listener->event_count != atomic_read(&idev->event))
++		return POLLIN | POLLRDNORM;
++	return 0;
++}
++
++static ssize_t uio_read(struct file *filep, char __user *buf,
++			size_t count, loff_t *ppos)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++	DECLARE_WAITQUEUE(wait, current);
++	ssize_t retval;
++	s32 event_count;
++
++	if (idev->info->irq == UIO_IRQ_NONE)
++		return -EIO;
++
++	if (count != sizeof(s32))
++		return -EINVAL;
++
++	add_wait_queue(&idev->wait, &wait);
++
++	do {
++		set_current_state(TASK_INTERRUPTIBLE);
++
++		event_count = atomic_read(&idev->event);
++		if (event_count != listener->event_count) {
++			if (copy_to_user(buf, &event_count, count))
++				retval = -EFAULT;
++			else {
++				listener->event_count = event_count;
++				retval = count;
++			}
++			break;
++		}
++
++		if (filep->f_flags & O_NONBLOCK) {
++			retval = -EAGAIN;
++			break;
++		}
++
++		if (signal_pending(current)) {
++			retval = -ERESTARTSYS;
++			break;
++		}
++		schedule();
++	} while (1);
++
++	__set_current_state(TASK_RUNNING);
++	remove_wait_queue(&idev->wait, &wait);
++
++	return retval;
++}
++
++static int uio_find_mem_index(struct vm_area_struct *vma)
++{
++	int mi;
++	struct uio_device *idev = vma->vm_private_data;
++
++	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
++		if (idev->info->mem[mi].size == 0)
++			return -1;
++		if (vma->vm_pgoff == mi)
++			return mi;
++	}
++	return -1;
++}
++
++static void uio_vma_open(struct vm_area_struct *vma)
++{
++	struct uio_device *idev = vma->vm_private_data;
++	idev->vma_count++;
++}
++
++static void uio_vma_close(struct vm_area_struct *vma)
++{
++	struct uio_device *idev = vma->vm_private_data;
++	idev->vma_count--;
++}
++
++static struct page *uio_vma_nopage(struct vm_area_struct *vma,
++				   unsigned long address, int *type)
++{
++	struct uio_device *idev = vma->vm_private_data;
++	struct page* page = NOPAGE_SIGBUS;
++
++	int mi = uio_find_mem_index(vma);
++	if (mi < 0)
++		return page;
++
++	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
++		page = virt_to_page(idev->info->mem[mi].addr);
++	else
++		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
++	get_page(page);
++	if (type)
++		*type = VM_FAULT_MINOR;
++	return page;
++}
++
++static struct vm_operations_struct uio_vm_ops = {
++	.open = uio_vma_open,
++	.close = uio_vma_close,
++	.nopage = uio_vma_nopage,
++};
++
++static int uio_mmap_physical(struct vm_area_struct *vma)
++{
++	struct uio_device *idev = vma->vm_private_data;
++	int mi = uio_find_mem_index(vma);
++	if (mi < 0)
++		return -EINVAL;
++
++	vma->vm_flags |= VM_IO | VM_RESERVED;
++
++	return remap_pfn_range(vma,
++			       vma->vm_start,
++			       idev->info->mem[mi].addr >> PAGE_SHIFT,
++			       vma->vm_end - vma->vm_start,
++			       vma->vm_page_prot);
++}
++
++static int uio_mmap_logical(struct vm_area_struct *vma)
++{
++	vma->vm_flags |= VM_RESERVED;
++	vma->vm_ops = &uio_vm_ops;
++	uio_vma_open(vma);
++	return 0;
++}
++
++static int uio_mmap(struct file *filep, struct vm_area_struct *vma)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++	int mi;
++	unsigned long requested_pages, actual_pages;
++	int ret = 0;
++
++	if (vma->vm_end < vma->vm_start)
++		return -EINVAL;
++
++	vma->vm_private_data = idev;
++
++	mi = uio_find_mem_index(vma);
++	if (mi < 0)
++		return -EINVAL;
++
++	requested_pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
++	actual_pages = (idev->info->mem[mi].size + PAGE_SIZE -1) >> PAGE_SHIFT;
++	if (requested_pages > actual_pages)
++		return -EINVAL;
++
++	if (idev->info->mmap) {
++		if (!try_module_get(idev->owner))
++			return -ENODEV;
++		ret = idev->info->mmap(idev->info, vma);
++		module_put(idev->owner);
++		return ret;
++	}
++
++	switch (idev->info->mem[mi].memtype) {
++		case UIO_MEM_PHYS:
++			return uio_mmap_physical(vma);
++		case UIO_MEM_LOGICAL:
++		case UIO_MEM_VIRTUAL:
++			return uio_mmap_logical(vma);
++		default:
++			return -EINVAL;
++	}
++}
++
++static struct file_operations uio_fops = {
++	.owner		= THIS_MODULE,
++	.open		= uio_open,
++	.release	= uio_release,
++	.read		= uio_read,
++	.mmap		= uio_mmap,
++	.poll		= uio_poll,
++	.fasync		= uio_fasync,
++};
++
++static int uio_major_init(void)
++{
++	uio_major = register_chrdev(0, "uio", &uio_fops);
++	if (uio_major < 0)
++		return uio_major;
++	return 0;
++}
++
++static void uio_major_cleanup(void)
++{
++	unregister_chrdev(uio_major, "uio");
++}
++
++static int init_uio_class(void)
++{
++	int ret = 0;
++
++	if (uio_class != NULL) {
++		kref_get(&uio_class->kref);
++		goto exit;
++	}
++
++	/* This is the first time in here, set everything up properly */
++	ret = uio_major_init();
++	if (ret)
++		goto exit;
++
++	uio_class = kzalloc(sizeof(*uio_class), GFP_KERNEL);
++	if (!uio_class) {
++		ret = -ENOMEM;
++		goto err_kzalloc;
++	}
++
++	kref_init(&uio_class->kref);
++	uio_class->class = class_create(THIS_MODULE, "uio");
++	if (IS_ERR(uio_class->class)) {
++		ret = IS_ERR(uio_class->class);
++		printk(KERN_ERR "class_create failed for uio\n");
++		goto err_class_create;
++	}
++	return 0;
++
++err_class_create:
++	kfree(uio_class);
++	uio_class = NULL;
++err_kzalloc:
++	uio_major_cleanup();
++exit:
++	return ret;
++}
++
++static void release_uio_class(struct kref *kref)
++{
++	/* Ok, we cheat as we know we only have one uio_class */
++	class_destroy(uio_class->class);
++	kfree(uio_class);
++	uio_major_cleanup();
++	uio_class = NULL;
++}
++
++static void uio_class_destroy(void)
++{
++	if (uio_class)
++		kref_put(&uio_class->kref, release_uio_class);
++}
++
++/**
++ * uio_register_device - register a new userspace IO device
++ * @owner:	module that creates the new device
++ * @parent:	parent device
++ * @info:	UIO device capabilities
++ *
++ * returns zero on success or a negative error code.
++ */
++int __uio_register_device(struct module *owner,
++			  struct device *parent,
++			  struct uio_info *info)
++{
++	struct uio_device *idev;
++	int ret = 0;
++
++	if (!parent || !info || !info->name || !info->version)
++		return -EINVAL;
++
++	info->uio_dev = NULL;
++
++	ret = init_uio_class();
++	if (ret)
++		return ret;
++
++	idev = kzalloc(sizeof(*idev), GFP_KERNEL);
++	if (!idev) {
++		ret = -ENOMEM;
++		goto err_kzalloc;
++	}
++
++	idev->owner = owner;
++	idev->info = info;
++	init_waitqueue_head(&idev->wait);
++	atomic_set(&idev->event, 0);
++
++	ret = uio_get_minor(idev);
++	if (ret)
++		goto err_get_minor;
++
++	idev->dev = device_create(uio_class->class, parent,
++				  MKDEV(uio_major, idev->minor),
++				  "uio%d", idev->minor);
++	if (IS_ERR(idev->dev)) {
++		printk(KERN_ERR "UIO: device register failed\n");
++		ret = PTR_ERR(idev->dev);
++		goto err_device_create;
++	}
++	dev_set_drvdata(idev->dev, idev);
++
++	ret = uio_dev_add_attributes(idev);
++	if (ret)
++		goto err_uio_dev_add_attributes;
++
++	info->uio_dev = idev;
++
++	if (idev->info->irq >= 0) {
++		ret = request_irq(idev->info->irq, uio_interrupt,
++				  idev->info->irq_flags, idev->info->name, idev);
++		if (ret)
++			goto err_request_irq;
++	}
++
++	return 0;
++
++err_request_irq:
++	uio_dev_del_attributes(idev);
++err_uio_dev_add_attributes:
++	device_destroy(uio_class->class, MKDEV(uio_major, idev->minor));
++err_device_create:
++	uio_free_minor(idev);
++err_get_minor:
++	kfree(idev);
++err_kzalloc:
++	uio_class_destroy();
++	return ret;
++}
++EXPORT_SYMBOL_GPL(__uio_register_device);
++
++/**
++ * uio_unregister_device - unregister a industrial IO device
++ * @info:	UIO device capabilities
++ *
++ */
++void uio_unregister_device(struct uio_info *info)
++{
++	struct uio_device *idev;
++
++	if (!info || !info->uio_dev)
++		return;
++
++	idev = info->uio_dev;
++
++	uio_free_minor(idev);
++
++	if (info->irq >= 0)
++		free_irq(info->irq, idev);
++
++	uio_dev_del_attributes(idev);
++
++	dev_set_drvdata(idev->dev, NULL);
++	device_destroy(uio_class->class, MKDEV(uio_major, idev->minor));
++	kfree(idev);
++	uio_class_destroy();
++
++	return;
++}
++EXPORT_SYMBOL_GPL(uio_unregister_device);
++
++static int __init uio_init(void)
++{
++	return 0;
++}
++
++static void __exit uio_exit(void)
++{
++}
++
++module_init(uio_init)
++module_exit(uio_exit)
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+new file mode 100644
+index 0000000..44c28e9
+--- /dev/null
++++ b/include/linux/uio_driver.h
+@@ -0,0 +1,91 @@
++/*
++ * include/linux/uio_driver.h
++ *
++ * Copyright(C) 2005, Benedikt Spranger <b.spranger@linutronix.de>
++ * Copyright(C) 2005, Thomas Gleixner <tglx@linutronix.de>
++ * Copyright(C) 2006, Hans J. Koch <hjk@linutronix.de>
++ * Copyright(C) 2006, Greg Kroah-Hartman <greg@kroah.com>
++ *
++ * Userspace IO driver.
++ *
++ * Licensed under the GPLv2 only.
++ */
++
++#ifndef _UIO_DRIVER_H_
++#define _UIO_DRIVER_H_
++
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/interrupt.h>
++
++/**
++ * struct uio_mem - description of a UIO memory region
++ * @kobj:		kobject for this mapping
++ * @addr:		address of the device's memory
++ * @size:		size of IO
++ * @memtype:		type of memory addr points to
++ * @internal_addr:	ioremap-ped version of addr, for driver internal use
++ */
++struct uio_mem {
++	struct kobject		kobj;
++	unsigned long		addr;
++	unsigned long		size;
++	int			memtype;
++	void __iomem		*internal_addr;
++};
++
++#define MAX_UIO_MAPS 	5
++
++struct uio_device;
++
++/**
++ * struct uio_info - UIO device capabilities
++ * @uio_dev:		the UIO device this info belongs to
++ * @name:		device name
++ * @version:		device driver version
++ * @mem:		list of mappable memory regions, size==0 for end of list
++ * @irq:		interrupt number or UIO_IRQ_CUSTOM
++ * @irq_flags:		flags for request_irq()
++ * @priv:		optional private data
++ * @handler:		the device's irq handler
++ * @mmap:		mmap operation for this uio device
++ * @open:		open operation for this uio device
++ * @release:		release operation for this uio device
++ */
++struct uio_info {
++	struct uio_device	*uio_dev;
++	char			*name;
++	char			*version;
++	struct uio_mem		mem[MAX_UIO_MAPS];
++	long			irq;
++	unsigned long		irq_flags;
++	void			*priv;
++	irqreturn_t (*handler)(int irq, struct uio_info *dev_info);
++	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
++	int (*open)(struct uio_info *info, struct inode *inode);
++	int (*release)(struct uio_info *info, struct inode *inode);
++};
++
++extern int __must_check
++	__uio_register_device(struct module *owner,
++			      struct device *parent,
++			      struct uio_info *info);
++static inline int __must_check
++	uio_register_device(struct device *parent, struct uio_info *info)
++{
++	return __uio_register_device(THIS_MODULE, parent, info);
++}
++extern void uio_unregister_device(struct uio_info *info);
++extern void uio_event_notify(struct uio_info *info);
++
++/* defines for uio_device->irq */
++#define UIO_IRQ_CUSTOM	-1
++#define UIO_IRQ_NONE	-2
++
++/* defines for uio_device->memtype */
++#define UIO_MEM_NONE	0
++#define UIO_MEM_PHYS	1
++#define UIO_MEM_LOGICAL	2
++#define UIO_MEM_VIRTUAL 3
++
++#endif /* _LINUX_UIO_DRIVER_H_ */
 -- 
 1.5.2.2
 
