@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764379AbXGRNbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbXGRNcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764379AbXGRNbG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 09:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbXGRNaz
+	id S932639AbXGRNcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 09:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbXGRNcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 09:30:55 -0400
-Received: from holomorphy.com ([66.93.40.71]:59025 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758727AbXGRNay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 09:30:54 -0400
-Date: Wed, 18 Jul 2007 06:32:22 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-Message-ID: <20070718133222.GM11781@holomorphy.com>
-References: <20070706222651.GG5777@v2.random> <1183764801.10287.233.camel@localhost> <20070706235228.GL5777@v2.random> <20070717174737.GM6909@holomorphy.com> <20070717193308.GD25301@v2.random>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070717193308.GD25301@v2.random>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 18 Jul 2007 09:32:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38850 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759610AbXGRNcF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 09:32:05 -0400
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+From: Peter Zijlstra <peterz@infradead.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, James Bruce <bruce@andrew.cmu.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <Pine.LNX.4.64.0707181510590.1817@scrub.home>
+References: <20070711211638.GE18767@one.firstfloor.org>
+	 <20070711214649.GK14435@v2.random>
+	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>
+	 <1184302024.6709.11.camel@Homer.simpson.net>
+	 <Pine.LNX.4.64.0707131728070.1817@scrub.home>
+	 <1184355835.12353.321.camel@chaos> <469B0D9E.3030402@andrew.cmu.edu>
+	 <20070716070610.GA10907@elte.hu>
+	 <Pine.LNX.4.64.0707161213500.1817@scrub.home>
+	 <20070716112037.GA6895@elte.hu>
+	 <Pine.LNX.4.64.0707161331570.1817@scrub.home>
+	 <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
+	 <1184754430.20032.130.camel@twins>
+	 <Pine.LNX.4.64.0707181442340.1817@scrub.home>
+	 <1184763148.20032.135.camel@twins>
+	 <Pine.LNX.4.64.0707181510590.1817@scrub.home>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 15:31:20 +0200
+Message-Id: <1184765480.20032.144.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 10:47:37AM -0700, William Lee Irwin III wrote:
->> You may rest assured that it's technically feasible. It's been done.
->> The larger obstacles to all this are nontechnical.
+On Wed, 2007-07-18 at 15:26 +0200, Roman Zippel wrote:
+> Hi,
+> 
+> On Wed, 18 Jul 2007, Peter Zijlstra wrote:
+> 
+> > By breaking the UNIX model of nice levels. Not an option in my book.
+> 
+> BTW what is the "UNIX model of nice levels"?
+> 
+> SUS specifies the limit via NZERO, which is defined as "Minimum Acceptable 
+> Value: 20", I can't find any information that it must be 20.
 
-On Tue, Jul 17, 2007 at 09:33:08PM +0200, Andrea Arcangeli wrote:
-> Back then there was no variable order page size proposal, no slub,
-> generally nothing of that kind.
-> I think these days it worth to get it working again and solve the
-> technical obstacles once more time. Then we should plug into it a
-> pagecache logic to handle small files. That means if the soft page
-> size is 64k, we should kmalloc 32k of pagecache if the file is < 64k
-> but >= 32k, or kmalloc 16k if the file is < 32k but >= 16k, etc...
+I have never encountered a UNIX where it is anything other than 20.
+Convention (alas not specification) does dictate 20.
 
-Actually I'd worked on what was called MPSS (Multiple Page Size Support)
-before I ever started on pgcl. Some large portion of the pgcl proposal
-as I presented it internally was to reduce the order of large page
-allocations and provide a promotion and demotion mechanism enabling
-different processes to have different sized translations for the same
-large page, and hence no out-of-context pagetable/TLB updates during
-promotion and demotion, essentially by making the TLB translation to
-page relation M:N. ISTR describing this in a KS presentation for which
-IIRC you were present. But that's neither here nor there.
-
-
-On Tue, Jul 17, 2007 at 09:33:08PM +0200, Andrea Arcangeli wrote:
-> Down to 32bytes if we memcpy the 32bytes away to a 64k page, and we
-> disable the logic the moment somebody attempts to mmap the "kmalloced"
-> pagecache (which I think it's a lot simpler than trying to mmap a
-> kmalloced 4k naturally aligned object into userland). I wouldn't call
-> it tail packing, it's more a fine-granular pagecache with the already
-> available kmalloc granularities. That will maximize pagecache
-> utilization with read syscall for hg/git compared to current 2.6.22
-> plus memory will be allocated faster in 64k chunks etc... Ideally it
-> should be possible to disable the finer-granular-kmalloc-pagecache on
-> the big irons with lots of memory and only working with big files.
-
-In any event, that is a sound strategy for mitigating internal
-fragmentation of pagecache, though internal fragmentation of anonymous
-memory has more severe consequences and is less easily mitigated.
-
-
--- wli
