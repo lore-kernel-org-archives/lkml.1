@@ -1,262 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936980AbXGRXf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937273AbXGRXg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936980AbXGRXf4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936438AbXGRX1f
+	id S937273AbXGRXg0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936314AbXGRX1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:27:35 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33093 "EHLO mx2.suse.de"
+	Wed, 18 Jul 2007 19:27:40 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57562 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935960AbXGRX1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:27:32 -0400
+	id S936451AbXGRX1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:27:39 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: =?utf-8?q?Hans-J=C3=BCrgen=20Koch?= <hjk@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 3/3] UIO: Hilscher CIF card driver
-Date: Wed, 18 Jul 2007 16:26:45 -0700
-Message-Id: <1184801218392-git-send-email-gregkh@suse.de>
+Cc: TripleX <zhongyu@18mail.cn>, WANG Cong <xiyou.wangcong@gmail.com>,
+       Li Yang <leoli@freescale.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 4/5] Chinese translation of Documentation/stable_api_nonsense.txt
+Date: Wed, 18 Jul 2007 16:26:42 -0700
+Message-Id: <11848012222611-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11848012122374-git-send-email-gregkh@suse.de>
-References: <20070718232332.GA4620@kroah.com>
- <11848012053678-git-send-email-gregkh@suse.de>
- <11848012122374-git-send-email-gregkh@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <11848012151444-git-send-email-gregkh@suse.de>
+References: <20070718232346.GB4620@kroah.com>
+ <11848012031961-git-send-email-gregkh@suse.de>
+ <11848012093296-git-send-email-gregkh@suse.de>
+ <11848012151444-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hans-Jürgen Koch <hjk@linutronix.de>
+From: TripleX <zhongyu@18mail.cn>
 
-this is a patch that adds support for Hilscher CIF DeviceNet and
-Profibus cards. I tested it on a Kontron CPX board, and Thomas reviewed
-it.
+This is a Chinese translated version of
+Documentation/stable_api_nonsense.txt.
 
-You can find the user space part here:
-
-http://www.osadl.org/projects/downloads/UIO/user/cif-0.1.0.tar.gz
-
-Notes: cif_api.c is the main file you want to look at. It contains the
-functions to open, close, mmap and so on. cif_dps.c adds functions
-specific to Profibus cards, and cif_dn.c contains functions for
-DeviceNet cards.  cif.c is a universal playground, it's just a small
-test program.  The user space part of this UIO driver is still work in
-progress, and not everything is tested yet. At the moment, the thread in
-cif_api.c contains some code that artificially makes the card generate
-interrupts, this was added for testing and will be removed later. But
-the driver already contains all the functions needed for useful
-operation, so it gives a good idea of how such a thing looks like.
-
-For comparison, here's what you get from the manufacturer
-(www.hilscher.com) when you ask for a Linux 2.6 driver:
-
-http://www.tglx.de/private/hjk/cif-orig-2.6.tar.bz2
-
-WARNING: Don't look at the code for too long, you might become sick :-)
-
-
-Signed-off-by: Hans-Jürgen Koch <hjk@linutronix.de>
+From: TripleX <zhongyu@18mail.cn>
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/uio/Kconfig   |   13 ++++
- drivers/uio/Makefile  |    3 +-
- drivers/uio/uio_cif.c |  156 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 171 insertions(+), 1 deletions(-)
- create mode 100644 drivers/uio/uio_cif.c
+ Documentation/zh_CN/stable_api_nonsense.txt |  157 +++++++++++++++++++++++++++
+ 1 files changed, 157 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/zh_CN/stable_api_nonsense.txt
 
-diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-index 6b1a62d..b778ed7 100644
---- a/drivers/uio/Kconfig
-+++ b/drivers/uio/Kconfig
-@@ -13,4 +13,17 @@ config UIO
- 
- 	  If you don't know what to do here, say N.
- 
-+config UIO_CIF
-+	tristate "generic Hilscher CIF Card driver"
-+	depends on UIO && PCI
-+	default n
-+	help
-+	  Driver for Hilscher CIF DeviceNet and Profibus cards.  This
-+	  driver requires a userspace component that handles all of the
-+	  heavy lifting and can be found at:
-+	  	http://www.osadl.org/projects/downloads/UIO/user/cif-*
-+
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called uio_cif.
-+
- endmenu
-diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-index 9b7c830..7fecfb4 100644
---- a/drivers/uio/Makefile
-+++ b/drivers/uio/Makefile
-@@ -1 +1,2 @@
--obj-$(CONFIG_UIO) += uio.o
-+obj-$(CONFIG_UIO)	+= uio.o
-+obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
-diff --git a/drivers/uio/uio_cif.c b/drivers/uio/uio_cif.c
+diff --git a/Documentation/zh_CN/stable_api_nonsense.txt b/Documentation/zh_CN/stable_api_nonsense.txt
 new file mode 100644
-index 0000000..838bae4
+index 0000000..c26a27d
 --- /dev/null
-+++ b/drivers/uio/uio_cif.c
-@@ -0,0 +1,156 @@
-+/*
-+ * UIO Hilscher CIF card driver
-+ *
-+ * (C) 2007 Hans J. Koch <hjk@linutronix.de>
-+ * Original code (C) 2005 Benedikt Spranger <b.spranger@linutronix.de>
-+ *
-+ * Licensed under GPL version 2 only.
-+ *
-+ */
++++ b/Documentation/zh_CN/stable_api_nonsense.txt
+@@ -0,0 +1,157 @@
++Chinese translated version of Documentation/stable_api_nonsense.txt
 +
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/uio_driver.h>
++If you have any comment or update to the content, please contact the
++original document maintainer directly.  However, if you have problem
++communicating in English you can also ask the Chinese maintainer for help.
++Contact the Chinese maintainer, if this translation is outdated or there
++is problem with translation.
 +
-+#include <asm/io.h>
++Maintainer: Greg Kroah-Hartman <greg@kroah.com>
++Chinese maintainer: TripleX Chung <zhongyu@18mail.cn>
++---------------------------------------------------------------------
++Documentation/stable_api_nonsense.txt 的中文翻译
 +
-+#ifndef PCI_DEVICE_ID_PLX_9030
-+#define PCI_DEVICE_ID_PLX_9030	0x9030
-+#endif
++如果想评论或更新本文的内容，请直接联系原文档的维护者。如果你使用英文
++交流有困难的话，也可以向中文版维护者求助。如果本翻译更新不及时或者翻
++译存在问题，请联系中文版维护者。
 +
-+#define PLX9030_INTCSR		0x4C
-+#define INTSCR_INT1_ENABLE	0x01
-+#define INTSCR_INT1_STATUS	0x04
-+#define INT1_ENABLED_AND_ACTIVE	(INTSCR_INT1_ENABLE | INTSCR_INT1_STATUS)
++英文版维护者： Greg Kroah-Hartman <greg@kroah.com>
++中文版维护者： 钟宇  TripleX Chung <zhongyu@18mail.cn>
++中文版翻译者： 钟宇  TripleX Chung <zhongyu@18mail.cn>
++中文版校译者： 李阳  Li Yang <leoli@freescale.com>
++以下为正文
++---------------------------------------------------------------------
 +
-+#define PCI_SUBVENDOR_ID_PEP	0x1518
-+#define CIF_SUBDEVICE_PROFIBUS	0x430
-+#define CIF_SUBDEVICE_DEVICENET	0x432
++写作本文档的目的，是为了解释为什么Linux既没有二进制内核接口，也没有稳定
++的内核接口。这里所说的内核接口，是指内核里的接口，而不是内核和用户空间
++的接口。内核到用户空间的接口，是提供给应用程序使用的系统调用，系统调用
++在历史上几乎没有过变化，将来也不会有变化。我有一些老应用程序是在0.9版本
++或者更早版本的内核上编译的，在使用2.6版本内核的Linux发布上依然用得很好
++。用户和应用程序作者可以将这个接口看成是稳定的。
 +
 +
-+static irqreturn_t hilscher_handler(int irq, struct uio_info *dev_info)
-+{
-+	void __iomem *plx_intscr = dev_info->mem[0].internal_addr
-+					+ PLX9030_INTCSR;
++执行纲要
++--------
 +
-+	if ((ioread8(plx_intscr) & INT1_ENABLED_AND_ACTIVE)
-+	    != INT1_ENABLED_AND_ACTIVE)
-+		return IRQ_NONE;
++你也许以为自己想要稳定的内核接口，但是你不清楚你要的实际上不是它。你需
++要的其实是稳定的驱动程序，而你只有将驱动程序放到公版内核的源代码树里，
++才有可能达到这个目的。而且这样做还有很多其它好处，正是因为这些好处使得
++Linux能成为强壮，稳定，成熟的操作系统，这也是你最开始选择Linux的原因。
 +
-+	/* Disable interrupt */
-+	iowrite8(ioread8(plx_intscr) & ~INTSCR_INT1_ENABLE, plx_intscr);
-+	return IRQ_HANDLED;
-+}
 +
-+static int __devinit hilscher_pci_probe(struct pci_dev *dev,
-+					const struct pci_device_id *id)
-+{
-+	struct uio_info *info;
++入门
++-----
 +
-+	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
++只有那些写驱动程序的“怪人”才会担心内核接口的改变，对广大用户来说，既
++看不到内核接口，也不需要去关心它。
 +
-+	if (pci_enable_device(dev))
-+		goto out_free;
++首先，我不打算讨论关于任何非GPL许可的内核驱动的法律问题，这些非GPL许可
++的驱动程序包括不公开源代码，隐藏源代码，二进制或者是用源代码包装，或者
++是其它任何形式的不能以GPL许可公开源代码的驱动程序。如果有法律问题，请咨
++询律师，我只是一个程序员，所以我只打算探讨技术问题（不是小看法律问题，
++法律问题很实际，并且需要一直关注）。
 +
-+	if (pci_request_regions(dev, "hilscher"))
-+		goto out_disable;
++既然只谈技术问题，我们就有了下面两个主题：二进制内核接口和稳定的内核源
++代码接口。这两个问题是互相关联的，让我们先解决掉二进制接口的问题。
 +
-+	info->mem[0].addr = pci_resource_start(dev, 0);
-+	if (!info->mem[0].addr)
-+		goto out_release;
-+	info->mem[0].internal_addr = ioremap(pci_resource_start(dev, 0),
-+					     pci_resource_len(dev, 0));
-+	if (!info->mem[0].internal_addr)
-+		goto out_release;
 +
-+	info->mem[0].size = pci_resource_len(dev, 0);
-+	info->mem[0].memtype = UIO_MEM_PHYS;
-+	info->mem[1].addr = pci_resource_start(dev, 2);
-+	info->mem[1].size = pci_resource_len(dev, 2);
-+	info->mem[1].memtype = UIO_MEM_PHYS;
-+	switch (id->subdevice) {
-+		case CIF_SUBDEVICE_PROFIBUS:
-+			info->name = "CIF_Profibus";
-+			break;
-+		case CIF_SUBDEVICE_DEVICENET:
-+			info->name = "CIF_Devicenet";
-+			break;
-+		default:
-+			info->name = "CIF_???";
-+	}
-+	info->version = "0.0.1";
-+	info->irq = dev->irq;
-+	info->irq_flags = IRQF_DISABLED | IRQF_SHARED;
-+	info->handler = hilscher_handler;
++二进制内核接口
++--------------
++假如我们有一个稳定的内核源代码接口，那么自然而然的，我们就拥有了稳定的
++二进制接口，是这样的吗？错。让我们看看关于Linux内核的几点事实：
++    - 取决于所用的C编译器的版本，不同的内核数据结构里的结构体的对齐方
++式会有差别，代码中不同函数的表现形式也不一样（函数是不是被inline编译取
++决于编译器行为）。不同的函数的表现形式并不重要，但是数据结构内部的对齐
++方式很关键。
++    - 取决于内核的配置选项，不同的选项会让内核的很多东西发生改变：
++      - 同一个结构体可能包含不同的成员变量
++      - 有的函数可能根本不会被实现（比如编译的时候没有选择SMP支持
++，一些锁函数就会被定义成空函数）。
++      - 内核使用的内存会以不同的方式对齐，这取决于不同的内核配置选
++项。
++    - Linux可以在很多的不同体系结构的处理器上运行。在某个体系结构上编
++译好的二进制驱动程序，不可能在另外一个体系结构上正确的运行。
 +
-+	if (uio_register_device(&dev->dev, info))
-+		goto out_unmap;
++对于一个特定的内核，满足这些条件并不难，使用同一个C编译器和同样的内核配
++置选项来编译驱动程序模块就可以了。这对于给一个特定Linux发布的特定版本提
++供驱动程序，是完全可以满足需求的。但是如果你要给不同发布的不同版本都发
++布一个驱动程序，就需要在每个发布上用不同的内核设置参数都编译一次内核，
++这简直跟噩梦一样。而且还要注意到，每个Linux发布还提供不同的Linux内核，
++这些内核都针对不同的硬件类型进行了优化（有很多种不同的处理器，还有不同
++的内核设置选项）。所以每发布一次驱动程序，都需要提供很多不同版本的内核
++模块。
 +
-+	pci_set_drvdata(dev, info);
++相信我，如果你真的要采取这种发布方式，一定会慢慢疯掉，我很久以前就有过
++深刻的教训...
 +
-+	return 0;
-+out_unmap:
-+	iounmap(info->mem[0].internal_addr);
-+out_release:
-+	pci_release_regions(dev);
-+out_disable:
-+	pci_disable_device(dev);
-+out_free:
-+	kfree (info);
-+	return -ENODEV;
-+}
 +
-+static void hilscher_pci_remove(struct pci_dev *dev)
-+{
-+	struct uio_info *info = pci_get_drvdata(dev);
++稳定的内核源代码接口
++--------------------
 +
-+	uio_unregister_device(info);
-+	pci_release_regions(dev);
-+	pci_disable_device(dev);
-+	pci_set_drvdata(dev, NULL);
-+	iounmap(info->mem[0].internal_addr);
++如果有人不将他的内核驱动程序，放入公版内核的源代码树，而又想让驱动程序
++一直保持在最新的内核中可用，那么这个话题将会变得没完没了。
++ 内核开发是持续而且快节奏的，从来都不会慢下来。内核开发人员在当前接口中
++找到bug，或者找到更好的实现方式。一旦发现这些，他们就很快会去修改当前的
++接口。修改接口意味着，函数名可能会改变，结构体可能被扩充或者删减，函数
++的参数也可能发生改变。一旦接口被修改，内核中使用这些接口的地方需要同时
++修正，这样才能保证所有的东西继续工作。
 +
-+	kfree (info);
-+}
++举一个例子，内核的USB驱动程序接口在USB子系统的整个生命周期中，至少经历
++了三次重写。这些重写解决以下问题：
++    - 把数据流从同步模式改成非同步模式，这个改动减少了一些驱动程序的
++复杂度，提高了所有USB驱动程序的吞吐率，这样几乎所有的USB设备都能以最大
++速率工作了。
++    - 修改了USB核心代码中为USB驱动分配数据包内存的方式，所有的驱动都
++需要提供更多的参数给USB核心，以修正了很多已经被记录在案的死锁。
 +
-+static struct pci_device_id hilscher_pci_ids[] = {
-+	{
-+		.vendor =	PCI_VENDOR_ID_PLX,
-+		.device =	PCI_DEVICE_ID_PLX_9030,
-+		.subvendor =	PCI_SUBVENDOR_ID_PEP,
-+		.subdevice =	CIF_SUBDEVICE_PROFIBUS,
-+	},
-+	{
-+		.vendor =	PCI_VENDOR_ID_PLX,
-+		.device =	PCI_DEVICE_ID_PLX_9030,
-+		.subvendor =	PCI_SUBVENDOR_ID_PEP,
-+		.subdevice =	CIF_SUBDEVICE_DEVICENET,
-+	},
-+	{ 0, }
-+};
++这和一些封闭源代码的操作系统形成鲜明的对比，在那些操作系统上，不得不额
++外的维护旧的USB接口。这导致了一个可能性，新的开发者依然会不小心使用旧的
++接口，以不恰当的方式编写代码，进而影响到操作系统的稳定性。
++ 在上面的例子中，所有的开发者都同意这些重要的改动，在这样的情况下修改代
++价很低。如果Linux保持一个稳定的内核源代码接口，那么就得创建一个新的接口
++；旧的，有问题的接口必须一直维护，给Linux USB开发者带来额外的工作。既然
++所有的Linux USB驱动的作者都是利用自己的时间工作，那么要求他们去做毫无意
++义的免费额外工作，是不可能的。
++ 安全问题对Linux来说十分重要。一个安全问题被发现，就会在短时间内得到修
++正。在很多情况下，这将导致Linux内核中的一些接口被重写，以从根本上避免安
++全问题。一旦接口被重写，所有使用这些接口的驱动程序，必须同时得到修正，
++以确定安全问题已经得到修复并且不可能在未来还有同样的安全问题。如果内核
++内部接口不允许改变，那么就不可能修复这样的安全问题，也不可能确认这样的
++安全问题以后不会发生。
++开发者一直在清理内核接口。如果一个接口没有人在使用了，它就会被删除。这
++样可以确保内核尽可能的小，而且所有潜在的接口都会得到尽可能完整的测试
++（没有人使用的接口是不可能得到良好的测试的）。
 +
-+static struct pci_driver hilscher_pci_driver = {
-+	.name = "hilscher",
-+	.id_table = hilscher_pci_ids,
-+	.probe = hilscher_pci_probe,
-+	.remove = hilscher_pci_remove,
-+};
 +
-+static int __init hilscher_init_module(void)
-+{
-+	return pci_register_driver(&hilscher_pci_driver);
-+}
++要做什么
++-------
 +
-+static void __exit hilscher_exit_module(void)
-+{
-+	pci_unregister_driver(&hilscher_pci_driver);
-+}
++如果你写了一个Linux内核驱动，但是它还不在Linux源代码树里，作为一个开发
++者，你应该怎么做？为每个发布的每个版本提供一个二进制驱动，那简直是一个
++噩梦，要跟上永远处于变化之中的内核接口，也是一件辛苦活。
++很简单，让你的驱动进入内核源代码树（要记得我们在谈论的是以GPL许可发行
++的驱动，如果你的代码不符合GPL，那么祝你好运，你只能自己解决这个问题了，
++你这个吸血鬼<把Andrew和Linus对吸血鬼的定义链接到这里>）。当你的代码加入
++公版内核源代码树之后，如果一个内核接口改变，你的驱动会直接被修改接口的
++那个人修改。保证你的驱动永远都可以编译通过，并且一直工作，你几乎不需要
++做什么事情。
 +
-+module_init(hilscher_init_module);
-+module_exit(hilscher_exit_module);
++把驱动放到内核源代码树里会有很多的好处：
++    - 驱动的质量会提升，而维护成本（对原始作者来说）会下降。
++    - 其他人会给驱动添加新特性。
++    - 其他人会找到驱动中的bug并修复。
++    - 其他人会在驱动中找到性能优化的机会。
++    - 当外部的接口的改变需要修改驱动程序的时候，其他人会修改驱动程序
++。
++    - 不需要联系任何发行商，这个驱动会自动的随着所有的Linux发布一起发
++布。
 +
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Hans J. Koch, Benedikt Spranger");
++和别的操作系统相比，Linux为更多不同的设备提供现成的驱动，而且能在更多不
++同体系结构的处理器上支持这些设备。这个经过考验的开发模式，必然是错不了
++的 :)
++
++-------------
++感谢 Randy Dunlap, Andrew Morton, David Brownell, Hanna Linder,
++Robert Love, and Nishanth Aravamudan 对于本文档早期版本的评审和建议。
++
++英文版维护者： Greg Kroah-Hartman <greg@kroah.com>
 -- 
 1.5.2.2
 
