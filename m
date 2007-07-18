@@ -1,92 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934342AbXGRQaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934508AbXGRQbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934342AbXGRQaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 12:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933408AbXGRQaf
+	id S934508AbXGRQbP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 12:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933139AbXGRQaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 12:30:35 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:37550 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933301AbXGRQae (ORCPT
+	Wed, 18 Jul 2007 12:30:55 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42942 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761000AbXGRQay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 12:30:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=pF+VHTFPl7YZuNKHWqj6TAV7UFjV9GCV08/MQHvOfJGhJC2Mpr2mvKA5yE20ncU7ZiWRTMn1hrC3Avz3v6uKOKhIuAoiPVDcaiE70UQudSz9o7Dv/FJs4DowsxVZjKFg9V+zdjJl6l98cvYgE55JlgGbTxg0/OiJFkRiFAh/Agg=
-Message-ID: <469E401D.2020506@gmail.com>
-Date: Thu, 19 Jul 2007 01:30:21 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 18 Jul 2007 12:30:54 -0400
+Message-ID: <469E3DA1.3010600@vmware.com>
+Date: Wed, 18 Jul 2007 09:19:45 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Gabriel C <nix.or.die@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, gregkh@suse.de,
-       miles.lane@gmail.com
-Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure
- path
-References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>	 <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com>	 <469BC2D6.5090008@googlemail.com> <469BC34C.4080107@googlemail.com>	 <20070718071445.GI23568@htj.dyndns.org>	 <a781481a0707180748j4760ab8bo237c1abc02feb593@mail.gmail.com>	 <469E2A68.6010307@gmail.com>	 <a781481a0707180816r478d2512v953036a1e4145a72@mail.gmail.com>	 <469E352A.90909@gmail.com> <a781481a0707180906w38b151faqd7077ee3da21aff3@mail.gmail.com>
-In-Reply-To: <a781481a0707180906w38b151faqd7077ee3da21aff3@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@muc.de>, kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] i386: use x86_64's desc_def.h
+References: <1184743355.10380.112.camel@localhost.localdomain> <1184743422.10380.114.camel@localhost.localdomain>
+In-Reply-To: <1184743422.10380.114.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
->> > sysfs_find_dirent() -- to check for -EEXIST -- should be called
->> > *before* we create the new dentry for the to-be-created symlink
->> > in the first place. [ It's weird to grab a reference on the target
->> > for ourselves (and in fact even allocate the new dirent for the
->> > to-be-created symlink) and /then/ check for erroneous usage,
->> > and then go about undoing all that we should never have done
->> > at all. ] So this test could, and should, be made earlier, IMHO.
->>
->> Locking.
-> 
-> Well s/sysfs_find_dirent/sysfs_get_dirent/ then. And then simply put
-> down the reference later.
+Rusty Russell wrote:
+> The main effect is to change the definition of "struct desc_struct" to
+> a union of more complex types.
+>   
 
-Isn't that the current code?
+Yay!  Someone finally killed it.  Every time I tried to kill it, I ended 
+up off in the weeds chasing some bug.
 
->> > And some similar others ... so attached (sorry, Gmail web
->> > interface) please find an attempt to make sysfs_create_link look
->> > a trifle more like what it should look like, IMHO. The code cleanup
->> > also leads to fewer LOC, smaller kernel image (lesser by 308 bytes),
->> > and even speeding up the no-error common case of this function,
->> > apart from the obvious readability benefits ... it's diffed on _top_ of
->> > your bugfix here, but not the other patch. [ Compile-tested only. ]
->>
->> Compounded if-else vs. flattened if () with common error path is pretty
->> much matter of being accustomed to.  I prefer the latter because it
->> scales better (less nesting and less need for extra intelligence as
->> error case grows).  As I'm already used to it, it's also easier on my
->> eyes.
-> 
-> Umm, I don't see any compounded if-else that I added that wasn't
-> there already ... if any are, they only make the code clearly obvious
-> as to what it's doing in the first place. And we've still got a common
-> error path. Just that the error paths do not *need* to share any other
-> code than the simple "return error;" precisely because it's been
-> cleaned up. The existing code was just horrible, IMHO.
+>  
+> diff -r 656f3ff2c9ce arch/i386/kernel/process.c
+> @@ -880,21 +880,8 @@ asmlinkage int sys_set_thread_area(struc
+>   * Get the current Thread-Local Storage area:
+>   */
+>  
+> -#define GET_BASE(desc) ( \
+> -	(((desc)->a >> 16) & 0x0000ffff) | \
+> -	(((desc)->b << 16) & 0x00ff0000) | \
+> -	( (desc)->b        & 0xff000000)   )
+> -
+> -#define GET_LIMIT(desc) ( \
+> -	((desc)->a & 0x0ffff) | \
+> -	 ((desc)->b & 0xf0000) )
+> -	
+> -#define GET_32BIT(desc)		(((desc)->b >> 22) & 1)
+> -#define GET_CONTENTS(desc)	(((desc)->b >> 10) & 3)
+> -#define GET_WRITABLE(desc)	(((desc)->b >>  9) & 1)
+> -#define GET_LIMIT_PAGES(desc)	(((desc)->b >> 23) & 1)
+> -#define GET_PRESENT(desc)	(((desc)->b >> 15) & 1)
+> -#define GET_USEABLE(desc)	(((desc)->b >> 20) & 1)
+> +#define GET_CONTENTS(desc)	(((desc)->raw32.b >> 10) & 3)
+> +#define GET_WRITABLE(desc)	(((desc)->raw32.b >>  9) & 1)
+>  
+> diff -r 656f3ff2c9ce arch/i386/kernel/ptrace.c
+> --- a/arch/i386/kernel/ptrace.c	Wed Jul 18 16:21:04 2007 +1000
+> +++ b/arch/i386/kernel/ptrace.c	Wed Jul 18 16:21:06 2007 +1000
+> @@ -283,22 +283,8 @@ ptrace_get_thread_area(struct task_struc
+>  /*
+>   * Get the current Thread-Local Storage area:
+>   */
+> -
+> -#define GET_BASE(desc) ( \
+> -	(((desc)->a >> 16) & 0x0000ffff) | \
+> -	(((desc)->b << 16) & 0x00ff0000) | \
+> -	( (desc)->b        & 0xff000000)   )
+> -
+> -#define GET_LIMIT(desc) ( \
+> -	((desc)->a & 0x0ffff) | \
+> -	 ((desc)->b & 0xf0000) )
+> -
+> -#define GET_32BIT(desc)		(((desc)->b >> 22) & 1)
+> -#define GET_CONTENTS(desc)	(((desc)->b >> 10) & 3)
+> -#define GET_WRITABLE(desc)	(((desc)->b >>  9) & 1)
+> -#define GET_LIMIT_PAGES(desc)	(((desc)->b >> 23) & 1)
+> -#define GET_PRESENT(desc)	(((desc)->b >> 15) & 1)
+> -#define GET_USEABLE(desc)	(((desc)->b >> 20) & 1)
+> +#define GET_CONTENTS(desc)	(((desc)->raw32.b >> 10) & 3)
+> +#define GET_WRITABLE(desc)	(((desc)->raw32.b >>  9) & 1)
+>   
 
-I just don't agree with you and with the locking bug fixed, you'll end
-up with more code in the error path.
+You got rid of the duplicate definitions here, but then added new 
+duplicates (GET_CONTENTS / WRITABLE).  Can you stick them in desc.h?
 
->> So, unless you have more to offer, I'm not really sure whether
->> the patch improves the situation noticeably.
-> 
-> Readability, fewer LOC, 308 lesser bytes in kernel image and
-> faster for the common case -- not good enough for you?! Oh, well.
-
-Sorry, not agreed on readability.  The rest doesn't really matter too
-much and please stop making big deal out of this kind of stuff.  Things
-like that do matter but not that much.  Mostly it's matter of getting
-used to and there are many alternatives.  Some people like things one
-way other people like another.  My taste might not be the best around
-here but I don't think it's that awful either.  You may find my taste
-disgusting but we all have to deal with such issue, don't we?
-
--- 
-tejun
+Zach
