@@ -1,75 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbXGRO3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbXGROah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759953AbXGRO3v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbXGRO3l
+	id S1760570AbXGROah (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbXGROa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:29:41 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57008 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756485AbXGRO3k (ORCPT
+	Wed, 18 Jul 2007 10:30:29 -0400
+Received: from mail.phnxsoft.com ([195.227.45.4]:3700 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752319AbXGROa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:29:40 -0400
-Date: Wed, 18 Jul 2007 10:29:34 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: david@lang.hm
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-In-Reply-To: <Pine.LNX.4.64.0707171535350.2467@asgard.lang.hm>
-Message-ID: <Pine.LNX.4.44L0.0707181021300.3759-100000@iolanthe.rowland.org>
+	Wed, 18 Jul 2007 10:30:28 -0400
+Message-ID: <469E23F9.2080304@imap.cc>
+Date: Wed, 18 Jul 2007 16:30:17 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [2.6.22.1] spurious (?) message "BUG: lock held at task exit time"
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig65A91AFFD62C4B7E64A2C6AE"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jul 2007 david@lang.hm wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig65A91AFFD62C4B7E64A2C6AE
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, 17 Jul 2007, Alan Stern wrote:
-> 
-> > On Tue, 17 Jul 2007 david@lang.hm wrote:
-> >
-> >>> But what about the freezer?  The original reason for using kexec was to
-> >>> avoid the need for the freezer.  With no freezer, while the original
-> >>> kernel is busy powering down its devices, user tasks will be free to
-> >>> carry out I/O -- which will make the memory snapshot inconsistent with
-> >>> the on-disk data structures.
-> >>
-> >> no, user tasks just don't get scheduled during shutdown.
-> >
-> > But a user task may be holding a lock which is needed for putting some
-> > device into low-power mode.  It can't release that lock if it doesn't
-> > get scheduled.
-> 
-> then you can't suspend that box. if you schedule it, it could get another 
-> lock (or another process gets another lock)
-> 
-> if you can't power down or put hardware into low-power mode without the 
-> approval of userspace, you are in serious trouble.
+When testing the serial Gigaset driver with kernel release 2.6.22.1
+I get a kernel BUG message:
 
-You don't seem to appreciate the issues involved here.  Part of the 
-justification for the freezer is that it doesn't need userspace 
-approval and it freezes tasks at controlled points where they don't 
-hold any locks.
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+[ BUG: lock held at task exit time! ]
+-------------------------------------
+gigasetm101d/5970 is exiting with locks still held!
+1 lock held by gigasetm101d/5970:
+ #0:  (&cs->hw.ser->dead_mutex){--..}, at: [<c02d8bc7>] mutex_lock+0x1c/0=
+x1f
 
-Never mind.  It seems clear that this approach will suffer the same 
-drawback as the proposal for removing the freezer from the 
-suspend-to-RAM pathway.  Namely, device drivers will have to be changed 
-to prevent user I/O requests from proceeding while devices are supposed 
-to be quiescent or in a low-power state.
+which is all well and true except the process that has exited is the
+grandfather process of a daemon() call, and the daemonized grandchild
+process is still running happily, keeping the serial device open and
+ensuring the line discipline stays loaded, and therefore legally
+holding the dead_mutex:
 
-If a driver fails to handle this properly, its device could be 
-reactivated in order to service a user request before the memory 
-snapshot is made.  This could easily ruin the snapshot.
+ts@xenon:~> ps lw 5992
+F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMM=
+AND
+1     0  5992     1  16   0   1432   168 pause  S    ?          0:00 ./gi=
+gaset/driver/daemon/gigasetm101d /dev/ttyS0
 
-Alan Stern
+The structure of gigasetm101d is basically:
 
+    if ((tty_fd =3D open(dev, O_RDWR|O_NOCTTY)) < 0) {
+        fprintf(stderr, "%s: cannot open %s: %s\n", prog, dev, strerror(e=
+rrno));
+        exit(EXIT_FAILURE);
+    }
+    if (ioctl(tty_fd, TIOCSETD, &ldisc) < 0)
+    {
+        fprintf(stderr, "%s: cannot set line discipline: %s\n",
+                prog, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    if (daemon (0, 0) !=3D 0)
+    {
+        fprintf(stderr, "%s: cannot daemonize: %s\n",
+                prog, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    pause();
+    exit(EXIT_SUCCESS);
+
+Who is at fault here?
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig65A91AFFD62C4B7E64A2C6AE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGniQCMdB4Whm86/kRAj8hAJwJWWTyx4z6QNd48yXl7vliGaHgFQCfarAz
+XJfjv2NhM6hGNSbgXgAZIco=
+=Ypox
+-----END PGP SIGNATURE-----
+
+--------------enig65A91AFFD62C4B7E64A2C6AE--
