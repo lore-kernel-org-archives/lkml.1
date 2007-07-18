@@ -1,77 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762546AbXGRUxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbXGRUys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762546AbXGRUxt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 16:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbXGRUxi
+	id S1756086AbXGRUys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 16:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbXGRUyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 16:53:38 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:51510 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753302AbXGRUxh (ORCPT
+	Wed, 18 Jul 2007 16:54:39 -0400
+Received: from mga06.intel.com ([134.134.136.21]:57648 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754505AbXGRUyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 16:53:37 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 18 Jul 2007 16:51:33 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, Gabriel C <crazy@pimpmylinux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-In-Reply-To: <469E7BE1.6090401@garzik.org>
-Message-ID: <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
- <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
- <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
+	Wed, 18 Jul 2007 16:54:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,552,1175497200"; 
+   d="scan'208";a="267874238"
+Message-ID: <469E7E0B.7040703@ichips.intel.com>
+Date: Wed, 18 Jul 2007 13:54:35 -0700
+From: Sean Hefty <mshefty@ichips.intel.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Sean Hefty <sean.hefty@intel.com>
+CC: "'Roland Dreier'" <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Further 2.6.23 merge plans...
+References: <000001c7c8fc$360eec90$5dcc180a@amr.corp.intel.com> <469E4876.7020805@ichips.intel.com>
+In-Reply-To: <469E4876.7020805@ichips.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Jeff Garzik wrote:
+> Based on discussions so far, maybe the best path forward from here is to
+> delay until 2.6.24.  This will let us add this version to OFED 1.3 for
+> more widespread testing, plus give us the time that we need to come up
+> with a plan to integrate QoS with the local SA.
 
-> Randy Dunlap wrote:
-> > On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
-> > > there's no point adding all that redundant content when it can all be
-> > > done automatically.
-> >
-> > I like it.  Are there any kconfig patches to support this plan?
->
-> Speaking specifically to adding 'EXPERIMENTAL', I distinctly
-> remember at some point in the past the config system was smart
-> enough to print " (EXPERIMENTAL)" if that entry depended on
-> CONFIG_EXPERIMENTAL.
->
-> We should head in that direction.
+I spoke with Matt on this, and he agreed with this plan.
 
-there's one point i want to re-iterate.  i'd prefer to see
-EXPERIMENTAL stop being a dependency, as in:
-
-  depends on SNAFU && FUBAR && EXPERIMENTAL
-
-"EXPERIMENTAL" is not a dependency in the true sense of the word -- it
-is more of an attribute, and i think it would far more sense to see
-entries like:
-
-  depends on SNAFU && FUBAR
-  maturity EXPERIMENTAL
-
-sure, it's more work, but i think the cost is worth it in terms of
-flexibility (particularly if *i'm* not the one doing the work. :-)
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+- Sean
