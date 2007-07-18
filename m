@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934741AbXGRQks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934667AbXGRQl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934741AbXGRQks (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 12:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933564AbXGRQkh
+	id S934667AbXGRQl1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 12:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933199AbXGRQlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 12:40:37 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:60792 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933549AbXGRQkg (ORCPT
+	Wed, 18 Jul 2007 12:41:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60990 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933864AbXGRQlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 12:40:36 -0400
-Date: Wed, 18 Jul 2007 09:40:33 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, dave@thedillows.org
-Subject: Re: [RFT][PATCH v7] sata_mv: convert to new EH
-In-Reply-To: <20070718092351.GY4106@edu.joroinen.fi>
-Message-ID: <Pine.LNX.4.64.0707180938420.16002@twinlark.arctic.org>
-References: <20070711200538.GA7374@havoc.gtf.org>
- <Pine.LNX.4.64.0707120212210.25837@twinlark.arctic.org> <46960225.5000502@garzik.org>
- <Pine.LNX.4.64.0707121140560.29365@twinlark.arctic.org> <46967B3C.708@garzik.org>
- <Pine.LNX.4.64.0707121323570.29365@twinlark.arctic.org>
- <20070718092351.GY4106@edu.joroinen.fi>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="500119290-1713319310-1184776833=:16002"
+	Wed, 18 Jul 2007 12:41:16 -0400
+Date: Wed, 18 Jul 2007 17:47:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Dor Laor" <dor.laor@qumranet.com>
+Cc: "Or Sagi" <ors@tutis.com>, <kvm-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] [RFC] Deferred interrupt handling.
+Message-ID: <20070718174736.0baf6d0e@the-village.bc.nu>
+In-Reply-To: <64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net>
+References: <005901c7c921$79c006c0$6d401440$@com>
+	<20070718123040.615795b7@the-village.bc.nu>
+	<64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+> What if we will force the specific device to the end of the list. Once
+> IRQ_NONE was returned by the other devices, we will mask the irq,
+> forward the irq to the guest, issue a timer for 1msec. Motivation:
+> 1msec is long enough for the guest to ack the irq + host unmask the irq
 
---500119290-1713319310-1184776833=:16002
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+It makes no difference. The deadlock isn't fixable by timing hacks.
+Consider the following sequence
 
-On Wed, 18 Jul 2007, Pasi Kärkkäinen wrote:
 
-> What brand/model your sata_mv controller is? Would be nice to know to be
-> able to get a "known-to-work" one.. 
+	Guest0	-	blocked on I/O
 
-http://supermicro.com/products/accessories/addon/AoC-SAT2-MV8.cfm
+	IRQ14 from your hardware
+		Block IRQ14
+		Sent to guest (guest is blocked)
 
--dean
---500119290-1713319310-1184776833=:16002--
+	IRQ14 from hard disk
+		Ignored (as blocked)
+
+	Deadlock
+
