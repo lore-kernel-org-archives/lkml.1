@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763285AbXGROCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764368AbXGRODK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763285AbXGROCT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756884AbXGROCK
+	id S1764368AbXGRODK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758333AbXGROC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:02:10 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:3717 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753426AbXGROCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:02:09 -0400
-Date: Wed, 18 Jul 2007 15:58:39 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-In-Reply-To: <1184765266.20032.141.camel@twins>
-Message-ID: <Pine.LNX.4.64.0707181553000.1817@scrub.home>
-References: <20070711211638.GE18767@one.firstfloor.org>  <20070711214649.GK14435@v2.random>
-  <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org> 
- <Pine.LNX.4.64.0707130415520.1818@scrub.home>  <1184302024.6709.11.camel@Homer.simpson.net>
-  <Pine.LNX.4.64.0707131728070.1817@scrub.home>  <1184355835.12353.321.camel@chaos>
- <469B0D9E.3030402@andrew.cmu.edu>  <20070716070610.GA10907@elte.hu> 
- <Pine.LNX.4.64.0707161213500.1817@scrub.home>  <20070716112037.GA6895@elte.hu>
-  <Pine.LNX.4.64.0707161331570.1817@scrub.home> 
- <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org> 
- <1184754430.20032.130.camel@twins>  <Pine.LNX.4.64.0707181442340.1817@scrub.home>
-  <1184763148.20032.135.camel@twins>  <Pine.LNX.4.64.0707181506460.1817@scrub.home>
- <1184765266.20032.141.camel@twins>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 18 Jul 2007 10:02:57 -0400
+Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:55717 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756884AbXGROC5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 10:02:57 -0400
+Date: Wed, 18 Jul 2007 16:04:03 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysfs: make sysfs_init_inode() static
+Message-ID: <20070718160403.7a3e8c57@hyperion.delvare>
+In-Reply-To: <20070718053028.GH23568@htj.dyndns.org>
+References: <20070715124232.4e371bf9@hyperion.delvare>
+	<20070717034844.GB11602@suse.de>
+	<20070717131255.71b7e72e@hyperion.delvare>
+	<20070717183652.GG9702@suse.de>
+	<20070717230530.64d9a896@hyperion.delvare>
+	<20070718052906.GG23568@htj.dyndns.org>
+	<20070718053028.GH23568@htj.dyndns.org>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 18 Jul 2007 14:30:28 +0900, Tejun Heo wrote:
+> With sysfs_fill_super() converted to use sysfs_get_inode(), there is
+> no user of sysfs_init_inode() outside of fs/sysfs/inode.c.  Make it
+> static.
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
 
-On Wed, 18 Jul 2007, Peter Zijlstra wrote:
+Looks good.
 
-> The only expectation is that a process with a lower nice level gets more
-> time. Any other expectation is a bug.
+Acked-by: Jean Delvare <khali@linux-fr.org>
 
-Yes, users are buggy, they expect a lot of stupid things...
-Is this really reason enough to break this?
+> ---
+>  fs/sysfs/inode.c |    2 +-
+>  fs/sysfs/sysfs.h |    1 -
+>  2 files changed, 1 insertion(+), 2 deletions(-)
+> 
+> Index: work/fs/sysfs/inode.c
+> ===================================================================
+> --- work.orig/fs/sysfs/inode.c
+> +++ work/fs/sysfs/inode.c
+> @@ -133,7 +133,7 @@ static inline void set_inode_attr(struct
+>   */
+>  static struct lock_class_key sysfs_inode_imutex_key;
+>  
+> -void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+> +static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+>  {
+>  	inode->i_blocks = 0;
+>  	inode->i_mapping->a_ops = &sysfs_aops;
+> Index: work/fs/sysfs/sysfs.h
+> ===================================================================
+> --- work.orig/fs/sysfs/sysfs.h
+> +++ work/fs/sysfs/sysfs.h
+> @@ -71,7 +71,6 @@ extern void sysfs_remove_one(struct sysf
+>  extern int sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
+>  
+>  extern void sysfs_delete_inode(struct inode *inode);
+> -extern void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode);
+>  extern struct inode * sysfs_get_inode(struct sysfs_dirent *sd);
+>  extern void sysfs_instantiate(struct dentry *dentry, struct inode *inode);
+>  
 
-What exactly is the damage if setpriority() accepts a few more levels?
 
-bye, Roman
+-- 
+Jean Delvare
