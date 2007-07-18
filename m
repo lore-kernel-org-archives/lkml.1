@@ -1,40 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765584AbXGRGtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbXGRGw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765584AbXGRGtf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 02:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXGRGt2
+	id S1761180AbXGRGw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 02:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXGRGwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 02:49:28 -0400
-Received: from gate.crashing.org ([63.228.1.57]:35516 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311AbXGRGt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 02:49:27 -0400
-Subject: Re: [PATCH] vmalloc_32 should use GFP_KERNEL
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Dave Airlie <airlied@gmail.com>, Andi Kleen <ak@suse.de>
-In-Reply-To: <20070717233358.2edeaac0.akpm@linux-foundation.org>
-References: <1184739934.25235.220.camel@localhost.localdomain>
-	 <20070717233358.2edeaac0.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 16:49:14 +1000
-Message-Id: <1184741354.25235.222.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 18 Jul 2007 02:52:51 -0400
+Received: from fwil.voltaire.com ([193.47.165.2]:53081 "EHLO exil.voltaire.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751319AbXGRGwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 02:52:50 -0400
+X-Greylist: delayed 978 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jul 2007 02:52:50 EDT
+Message-ID: <469DB4E1.6080200@voltaire.com>
+Date: Wed, 18 Jul 2007 09:36:17 +0300
+From: Or Gerlitz <ogerlitz@voltaire.com>
+User-Agent: Thunderbird 1.4.1 (Windows/20051006)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: leininger2@llnl.gov, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Further 2.6.23 merge plans...
+References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>	<adazm1urji8.fsf@cisco.com> <1184704987.7702.106.camel@hyperion> <adatzs2pxmx.fsf@cisco.com>
+In-Reply-To: <adatzs2pxmx.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Jul 2007 06:36:27.0167 (UTC) FILETIME=[F7BC22F0:01C7C905]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-17 at 23:33 -0700, Andrew Morton wrote:
-> whoops, yes.
+Roland Dreier wrote:
+>  >      I would like to see these features moved upstream.  DOE funded this
+>  > work as part of the items we see needing on our large scale IB
+>  > deployment (both present and future).  So from at least one big customer
+>  > perspective we see this as useful.  
 > 
-> Are those errors serious and common enough for 2.6.22.x?  
+> Does your reference to "present deployment" mean you are running this
+> code now?
 
-No idea, so far, the nouveau DRM isn't something I would recommend to
-people to use in stable environments but heh... I don't know who else
-uses vmalloc_32.
+Indeed, my understanding is that the DOE uses an Open MPI device (I 
+think its called PTE) which is implemented directly over libibverbs and 
+hence no path queries are issued at all, if this is indeed the case, for 
+them its more of a "for-the-future" thing.
 
-Cheers,
-Ben.
+Or.
 
