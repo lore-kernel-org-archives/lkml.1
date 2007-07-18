@@ -1,112 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761768AbXGRVVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759929AbXGRVWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761768AbXGRVVg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 17:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbXGRVV0
+	id S1759929AbXGRVWN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 17:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbXGRVV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 17:21:26 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:52456 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757498AbXGRVVY (ORCPT
+	Wed, 18 Jul 2007 17:21:57 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:5443 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302AbXGRVVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 17:21:24 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 18 Jul 2007 17:18:20 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Adrian Bunk <bunk@stusta.de>
-cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Gabriel C <crazy@pimpmylinux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-In-Reply-To: <20070718210903.GM3801@stusta.de>
-Message-ID: <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
- <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
- <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
- <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
- <20070718210903.GM3801@stusta.de>
+	Wed, 18 Jul 2007 17:21:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kFGHUJSdtP3Spt/6pHxR+JsEV8AUimCjxkDgvFly4zZBNikVLJ3xRfiDlsHY9XoKktgffFUYfVHnJRr9gZfTaUIwFylEfb34TrZOD43nd8LP7g3xtCW8yYY6e8cRh7uN6YaZjP+OW2Y7Af/bKtPwwynMlNsjmpyfaDPhGn/tJjo=
+Message-ID: <6101e8c40707181421l6166c319l8648341b855904b7@mail.gmail.com>
+Date: Wed, 18 Jul 2007 23:21:54 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: sysfs root link count broken in 2.6.22-git5
+Cc: "Greg KH" <gregkh@suse.de>, "Tejun Heo" <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070718220652.15ad2c4b@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070715124232.4e371bf9@hyperion.delvare>
+	 <20070717034844.GB11602@suse.de>
+	 <20070717131255.71b7e72e@hyperion.delvare>
+	 <20070717183652.GG9702@suse.de>
+	 <20070717230530.64d9a896@hyperion.delvare>
+	 <20070718033828.GA8582@suse.de>
+	 <20070718220652.15ad2c4b@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Adrian Bunk wrote:
-
-> On Wed, Jul 18, 2007 at 04:51:33PM -0400, Robert P. J. Day wrote:
-> > On Wed, 18 Jul 2007, Jeff Garzik wrote:
-> >
-> > > Randy Dunlap wrote:
-> > > > On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
-> > > > > there's no point adding all that redundant content when it can all be
-> > > > > done automatically.
-> > > >
-> > > > I like it.  Are there any kconfig patches to support this plan?
-> > >
-> > > Speaking specifically to adding 'EXPERIMENTAL', I distinctly
-> > > remember at some point in the past the config system was smart
-> > > enough to print " (EXPERIMENTAL)" if that entry depended on
-> > > CONFIG_EXPERIMENTAL.
-> > >
-> > > We should head in that direction.
-> >
-> > there's one point i want to re-iterate.  i'd prefer to see
-> > EXPERIMENTAL stop being a dependency, as in:
-> >
-> >   depends on SNAFU && FUBAR && EXPERIMENTAL
-> >
-> > "EXPERIMENTAL" is not a dependency in the true sense of the word
-> > -- it is more of an attribute, and i think it would far more sense
-> > to see entries like:
-> >
-> >   depends on SNAFU && FUBAR
-> >   maturity EXPERIMENTAL
+On 7/18/07, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi Greg,
 >
-> Plus some special case in the kconfig code that you can somewhere
-> select the maturity levels you want to use (currently it's a normal
-> option kconfig doesn't have to know anything about).
+> On Tue, 17 Jul 2007 20:38:28 -0700, Greg KH wrote:
+> > On Tue, Jul 17, 2007 at 11:05:30PM +0200, Jean Delvare wrote:
+> > > This breaks libsensors. libsensors uses libsysfs, and libsysfs is not
+> > > very smart in that it will initialize successfully even if sysfs is not
+> > > mounted.
+> >
+> > libsysfs isn't smart at all, and isn't even supported anymore.  I'd
+> > really suggest droping it entirely, it isn't worth it.
+>
+> Agreed, except that I do not have the time for this right now. I want
+> to get lm-sensors-3.0.0 ready for a release candidate first. What
+> really matters for this is to get the API ready. Implementation details
+> will come later.
+>
+> > > So I added tests after the initialization, to make sure that
+> > > sysfs is really there. These tests are:
+> > > * The mount point exists.
+> > > * The mount point is really mounted.
+> >
+> > Do you know of a 2.6 based distro that does not mount sysfs at /sys?  We
+> > took that check out a long time ago in udev and no one has complained :)
+>
+> I don't know of any 2.6-based distro not mounting sysfs at /sys, but I
+> know of 2.4-based distros not mounting sysfs at all ;) libsensors
+> supports both 2.4 and 2.6 kernels, so being able to tell whether sysfs
+> is mounted or not, matters.
 
-i already described that here:
+debian has mounted the sysfs
 
-http://readlist.com/lists/vger.kernel.org/linux-kernel/66/334172.html
+/etc/rcS.d/S02mountkernfs.sh:
 
-where the top-level config would look something like:
+#
+	# Mount sysfs on /sys
+	#
+	# Only mount sysfs if it is supported (kernel >= 2.6)
+	if grep -E -qs "sysfs\$" /proc/filesystems
+	then
+		domount sysfs "" /sys sysfs -onodev,noexec,nosuid
+	fi
 
-[*] Activate maturity attributes
-  [*] EXPERIMENTAL
-  [*] DEPRECATED
-  [*] OBSOLETE
-  [*] BROKEN
+	# Mount /var/run and /var/lock as tmpfs if enabled
+	if [ yes = "$RAMRUN" ] ; then
+		RUN_OPT=
+		[ "${RUN_SIZE:=$TMPFS_SIZE}" ] && RUN_OPT=",size=$RUN_SIZE"
+		domount tmpfs "" /var/run varrun -omode=0755,nosuid$RUN_OPT
+		touch /var/run/.ramfs
+	fi
+	if [ yes = "$RAMLOCK" ] ; then
+		LOCK_OPT=
+		[ "${LOCK_SIZE:=$TMPFS_SIZE}" ] && LOCK_OPT=",size=$LOCK_SIZE"
+		domount tmpfs "" /var/lock varlock -omode=1777,nodev,noexec,nosuid$LOCK_OPT
+		touch /var/lock/.ramfs
+	fi
 
-whereupon you could select any combination of the attributes you want
-displayed *beyond the regular ones* during the config process.
 
-> Remind me, would there be any big advantage after such a change
-> besides being able to automatically print " (EXPERIMENTAL)" at the
-> end of the prompt?
-
-defining a new Kconfig attribute means you can process it differently
-from regular dependencies.  and if it's added as a general feature, it
-can be used for other possible attributes beyond just a maturity
-level.
-
-if you leave these maturity levels as regular dependencies, you're
-going to have to brute force and manually process them, and why make
-it that ugly?
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+>
+> > > The code looks like:
+> > >
+> > >        if (sysfs_get_mnt_path(sensors_sysfs_mount, NAME_MAX)
+> > >          || stat(sensors_sysfs_mount, &statbuf) < 0
+> > >          || statbuf.st_nlink <= 2)      /* Empty directory */
+> > >                 return 0;           /* Failure */
+> > >
+> > > This works OK with 2.6.22.1, but the last test fails with the current
+> > > git kernel even when sysfs is mounted.
+> >
+> > Yeah, but is checking the number of hard links in the directory a safe
+> > way to always verify that it isn't empty?
+>
+> I think so, yes. To the best of my knowledge, it has worked on all
+> Unix-like systems for decades. There are other ways, but this is by far
+> the less expensive.
+>
+> >                                            Isn't there some glibc
+> > function that can detect the mount point of a filesystem or directory?
+> > Something in glibc parses /proc/mounts for something, I can't remember
+> > what it is right now though, sorry.
+>
+> Maybe getmntent(3)? Sure I could use this, but how expensive compared
+> to a single stat(2).
+>
+> > Again, I recommend dropping libsysfs, it's gone from some distros
+> > already :)
+>
+> Really? I'm curious how such distributions support libsensors and the
+> other tools which still rely on libsysfs. If they have already
+> converted libsensors for me, that would be good news :)
+>
+> > And yes, the bug should be fixed, I agree.  Thanks for letting us know.
+>
+> Tejun already fixed it, that was quick :)
+>
+> --
+> Jean Delvare
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
