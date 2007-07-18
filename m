@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXGRTG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764527AbXGRTJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964868AbXGRTG5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 15:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXGRTGt
+	id S1764527AbXGRTJP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 15:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXGRTJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 15:06:49 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46783 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbXGRTGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 15:06:49 -0400
-Message-ID: <469E6335.8010708@zytor.com>
-Date: Wed, 18 Jul 2007 12:00:05 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 18 Jul 2007 15:09:00 -0400
+Received: from mail.windriver.com ([147.11.1.11]:45431 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752808AbXGRTI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 15:08:59 -0400
+Date: Wed, 18 Jul 2007 12:08:06 -0700 (PDT)
+From: Jeremy Katz <jeremy.katz@windriver.com>
+X-X-Sender: jkatz@localhost.localdomain
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Stable Team <stable@kernel.org>
+Subject: Re: [PATCH] posix-timer: fix deletion race
+In-Reply-To: <20070718161156.GA761@tv-sign.ru>
+Message-ID: <Pine.LNX.4.63.0707181203110.3157@localhost.localdomain>
+References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain>
+ <1184662429.12353.426.camel@chaos> <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
+ <1184703427.12353.476.camel@chaos> <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
+ <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
+ <20070718161156.GA761@tv-sign.ru>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andi Kleen <andi@firstfloor.org>, Jonathan Campbell <jon@nerdgrounds.com>,
-       linux-kernel@vger.kernel.org, torvalds@transmeta.com
-Subject: Re: Patches for REALLY TINY 386 kernels
-References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com> <20070718183359.GK3801@stusta.de>
-In-Reply-To: <20070718183359.GK3801@stusta.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-OriginalArrivalTime: 18 Jul 2007 19:08:06.0564 (UTC) FILETIME=[F911FE40:01C7C96E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Jul 18, 2007 at 08:55:50AM -0700, H. Peter Anvin wrote:
->> Andi Kleen wrote:
->>>> Already with these patches I can compile a zImage kernel that is 450kb
->>>> large (890kb decompressed)
->>> The important part is not how big the vmlinux is, but how much
->>> memory is actually used after boot. 
->>>
->>> I expect concentrating some of the dynamic data structures would
->>> be more fruitful in fact.
->>>
->> Well, how big the vmlinux file is matters if it doesn't fit in memory
->> with enough time to get to the phase where it is dumping the init
->> sections.  *If that is not the issue*, then axing stuff like CPUID is a
->> major lose in terms of code maintainability for zero gain.
-> 
-> If this is an issue, then changing i386 back to discarding __exit code 
-> and data at linktime instead of runtime might make a bigger difference.
+On Wed, 18 Jul 2007, Oleg Nesterov wrote:
 
-What would really make a big difference would be to unspool the
-initramfs in such a way that it only requires O(1) instead off O(n)
-extra memory, by freeing memory as it decompresses and decodes the cpio
-ball.
+> Jeremy, I agree with Thomas that your patch should not be right, but it
+> does make a difference. Perhaps this is just the timing, but who knows.
+> Could you add some printk's to be sure that lock_timer() actually fails
+> while it never should?
 
-	-hpa
+Agreed.
+
+Unfortunately, adding any significant output appears to alter the 
+situation to the point where the issue either does not occur, or takes 
+significantly longer to surface.
+
+Jeremy
