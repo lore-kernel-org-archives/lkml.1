@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764250AbXGROxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760456AbXGRO57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764250AbXGROxE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:53:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXGROwz
+	id S1760456AbXGRO57 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbXGRO5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:52:55 -0400
-Received: from [212.12.190.95] ([212.12.190.95]:32872 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753022AbXGROwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:52:54 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: VESAFB CUSTOM RESOLUTION
-Date: Wed, 18 Jul 2007 17:52:29 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200707181342.00647.a1426z@gawab.com> <200707181645.01097.a1426z@gawab.com> <1184768426.4523.20.camel@daplas>
-In-Reply-To: <1184768426.4523.20.camel@daplas>
+	Wed, 18 Jul 2007 10:57:52 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:42697 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753078AbXGRO5v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 10:57:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=k0hfy0mEFHPy1yNusp1VOZz1y/aJS93Rrr8HeG8qD/h8gI/jQJ94rnZQjJC1KOyDhyUrkt5Rj1WEi1ERHstxqp3yMlYgwJEpj7tz2qgCWLk/M9X78P4zKcv9TAruyH6piC09u++h2rYguXbnvbr2TEYGhI+aFHWK5alO0y5I79g=
+Message-ID: <469E2A68.6010307@gmail.com>
+Date: Wed, 18 Jul 2007 23:57:44 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Gabriel C <nix.or.die@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, gregkh@suse.de,
+       miles.lane@gmail.com
+Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure
+ path
+References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>	 <a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>	 <469A9D5D.10509@googlemail.com> <469B61C8.8010902@googlemail.com>	 <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>	 <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com>	 <469BC2D6.5090008@googlemail.com> <469BC34C.4080107@googlemail.com>	 <20070718071445.GI23568@htj.dyndns.org> <a781481a0707180748j4760ab8bo237c1abc02feb593@mail.gmail.com>
+In-Reply-To: <a781481a0707180748j4760ab8bo237c1abc02feb593@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707181752.29478.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Antonino A. Daplas wrote:
-> On Wed, 2007-07-18 at 16:45 +0300, Al Boldi wrote:
-> > Antonino A. Daplas wrote:
-> > > On Wed, 2007-07-18 at 13:42 +0300, Al Boldi wrote:
-> > > > Geert Uytterhoeven wrote:
-> > > > > On Wed, 18 Jul 2007, Sasa Ostrouska wrote:
-> > > >
-> > > > Is there any technical reason why vesafb shouldn't support non-BIOS
-> > > > modes?
-> > >
-> > > vesafb can only use modes included by the vendor in the card's BIOS.
-> > > The mode table contains standard modes defined by VESA, and perhaps
-> > > vendor-defined custom modes. However, the mode ID of custom modes
-> > > varies from card to card, so you have to 'probe' the BIOS first for
-> > > the list of modes and their associated ID.  X + the 'vesa' driver does
-> > > that probe, and so does the lrmi tool vbetest.
-> > >
-> > > So, one cannot just set any mode, unless that mode is already defined
-> > > in the BIOS mode table. In VBE 3.0, you might be able to choose an
-> > > arbitrary vertical refresh rate, but that's the best mode tuning you
-> > > can do with the video BIOS.
-> >
-> > Thanks for a great explanation!
-> >
-> > Looks like this chip supports VBE 3.0, but it only locks into 60Hz
-> > refresh. Here is an excerpt; full log attached.
->
-> What you need to look at the X log is this particular part (this is the
-> output of my card, and for the sake of brevity, I removed the
-> descriptive sections):
+Satyam Sharma wrote:
+> On 7/18/07, Tejun Heo <htejun@gmail.com> wrote:
+>> There is a subtle bug in sysfs_create_link() failure path.  When
+>> symlink creation fails because there's already a node with the same
+>> name, the target sysfs_dirent is put twice - once by failure path of
+>> sysfs_create_link() and once more when the symlink is released.
+> 
+> The "symlink" is released? But the creation of the symlink is
+> precisely what failed here ... did it not?
+> 
+>> Fix it by making only the symlink node responsible for putting
+>> target_sd.
+> 
+> And again ... the changelog sounds confusing indeed, perhaps I'm
+> not familiar enough with sysfs symlink-related terminology/semantics.
+> Care to elaborate?
+> 
+>>         sd = sysfs_new_dirent(name, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
+>>         if (!sd)
+>>                 goto out_put;
+>> +
+>>         sd->s_elem.symlink.target_sd = target_sd;
+>> +       target_sd = NULL;       /* reference is now owned by the
+>> symlink */
+> 
+> Wow. This looks like a very mysterious way to fix a mysterious bug :-)
+> BTW I just looked over at sysfs_create_link() and ... it looks quite ...
+> unnecessarily complicated/obfuscated ...
 
-Here are mine; I tried them all, and they always lock into 60Hz refresh.
+Well, I dunno.  Probably my taste just sucks.  Please feel free to
+submit patches and/or suggest better ideas.
 
-Mode: 101 (640x480)
-Mode: 112 (640x480)
-Mode: 103 (800x600)
-Mode: 115 (800x600)
-Mode: 105 (1024x768)
-Mode: 118 (1024x768)
-Mode: 179 (1280x768)
-Mode: 17b (1280x768)
-Mode: 107 (1280x1024)
-Mode: 11b (1280x1024)
-Mode: 120 (1600x1200)
-Mode: 122 (1600x1200)
-Mode: 124 (1600x1200)
-Mode: 199 (1920x1440)
-Mode: 19a (1920x1440)
-Mode: 19b (1920x1440)
-Mode: 22e (800x480)
-Mode: 230 (800x480)
-Mode: 108 (80x60)
-Mode: 102 (800x600)
-
-
-What about the VBE 3.0 arbitrary vertical refresh rate thing?
-
-
-Thanks!
-
---
-Al
-
+-- 
+tejun
