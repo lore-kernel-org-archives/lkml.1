@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933987AbXGRQMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934036AbXGRQPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933987AbXGRQMr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 12:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759528AbXGRQMi
+	id S934036AbXGRQPI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 12:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761033AbXGRQOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 12:12:38 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:33803 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758282AbXGRQMg (ORCPT
+	Wed, 18 Jul 2007 12:14:54 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:43611 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760958AbXGRQOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 12:12:36 -0400
-Date: Wed, 18 Jul 2007 18:12:34 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Olaf Hering <olaf@aepfle.de>
-cc: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: PS3 Storage Driver O_DIRECT issue
-In-Reply-To: <20070713122752.GA854@aepfle.de>
-Message-ID: <Pine.LNX.4.62.0707181808030.15632@pademelon.sonytel.be>
-References: <20070704132212.726923000@pademelon.sonytel.be>
- <20070713122752.GA854@aepfle.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1037303210-1184774900=:15632"
-Content-ID: <Pine.LNX.4.62.0707181808410.15632@pademelon.sonytel.be>
+	Wed, 18 Jul 2007 12:14:53 -0400
+Subject: Re: Occational lockups during boot with post 2.6.22 kernels
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Peter Osterlund <petero2@telia.com>, linux-kernel@vger.kernel.org,
+       Bcm43xx-dev@lists.berlios.de,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Netdev <netdev@vger.kernel.org>
+In-Reply-To: <469E2AAB.2010408@redhat.com>
+References: <m3sl7mk1f1.fsf@telia.com>  <469E2AAB.2010408@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-cFIavx7nPsrz2d1k/Gh7"
+Date: Wed, 18 Jul 2007 17:51:10 +0200
+Message-Id: <1184773870.4002.8.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-1037303210-1184774900=:15632
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0707181808411.15632@pademelon.sonytel.be>
+--=-cFIavx7nPsrz2d1k/Gh7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 13 Jul 2007, Olaf Hering wrote:
-> This driver (or the generic PS3 code) has appearently problems with
-> O_DIRECT. 
-> glibc aborts parted because the malloc metadata get corrupted. While it
-> is reproducible, the place where it crashes changes with every version
-> of the debug attempt.
-> I dont have a handle right now, all I know is that the metadata after a
-> malloc area get overwritten with zeros.
-> 
-> 
-> Can you have a look at this? 
-> parted /dev/ps3da
-> print (a few times)
+On Wed, 2007-07-18 at 10:58 -0400, Chuck Ebbert wrote:
+> On 07/17/2007 08:20 PM, Peter Osterlund wrote:
+> > Current -git kernels sometimes lock up on my computer during boot. I
+> > guess it happens about 10-20% of the time. I first saw this maybe a
+> > week ago, but never with kernels <=3D 2.6.22.
+> >=20
+> > The last reported info on the console is that named is started.
+> > SysRq-T still works and reports the non-sleeping tasks below.
+> >=20
+> > My guess is that wpa_supplicant and events/0 deadlock and later the
+> > named thread also hangs when it needs a deadlocked resource.
+> >=20
+> > I'm using the bcm43xx driver.
+> > =20
+> > No lockdep errors are reported before the lockup. Earlier during boot
+> > the kernel reports:
+> >=20
+> >   Good, all 218 testcases passed! |
+>=20
+> Try this, it should at least detect the problem:
+>=20
+> http://lkml.org/lkml/2007/7/17/202
+> http://lkml.org/lkml/2007/7/17/204
+> http://lkml.org/lkml/2007/7/17/203
+>=20
+> It's a known bug in wireless/80211, not sure when it will be fixed.
 
-I could reproduce it with parted 1.8.0 and later.
+Heh, yes, that's the patchset that came from this bug :)
+A patch for this is available but due to process issues hasn't
+percolated up yet. See
+http://thread.gmane.org/gmane.linux.kernel.wireless.general/3315/focus=3D33=
+19
 
-The patch below fixes it (tested with 1.8.0, 1.8.2 (FC6), 1.9.0 (git)).
+johannes
 
-Apparently sometimes bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE != bvec->bv_len
-when using O_DIRECT. Is that true (or a bug?)?
+--=-cFIavx7nPsrz2d1k/Gh7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-If it's OK, I'll fold this patch into the main ps3disk patch.
----
- drivers/block/ps3disk.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
---- a/drivers/block/ps3disk.c
-+++ b/drivers/block/ps3disk.c
-@@ -108,7 +108,7 @@ static void ps3disk_scatter_gather(struc
- 			__func__, __LINE__, i, bio_segments(bio),
- 			bio_sectors(bio), sector);
- 		bio_for_each_segment(bvec, bio, j) {
--			size = bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE;
-+			size = bvec->bv_len;
- 			buf = __bio_kmap_atomic(bio, j, KM_IRQ0);
- 			if (gather)
- 				memcpy(dev->bounce_buf+offset, buf, size);
+iD8DBQBGnjbu/ETPhpq3jKURAkewAJ4upZrVdlFmk1Iu8lkl57u4JWVe9wCaA1Ja
+LtdjTGABatX+Da4zjdqWh40=
+=e7Hh
+-----END PGP SIGNATURE-----
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+--=-cFIavx7nPsrz2d1k/Gh7--
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1037303210-1184774900=:15632--
