@@ -1,183 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbXGRKZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbXGRK2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760202AbXGRKZc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 06:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbXGRKZZ
+	id S1762137AbXGRK2G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 06:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXGRK1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 06:25:25 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:41402 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754139AbXGRKZY (ORCPT
+	Wed, 18 Jul 2007 06:27:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50351 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbXGRK1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 06:25:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=R+tv3Z458NZY12c039YiYeHy7qixLPLobx0+oi33Be84pKMht4bFZDLqO3hnAqZ6W3dgqhuJZ1sw6msGB6RFj5r5ebsRwJpFOSCJFSkxLNBOs/bomEvswMrcROGX5MRLsmGdI659HfTQza6eaRAIXNEYxzSeGV1h9Mrf8oYzLok=
-Date: Wed, 18 Jul 2007 18:25:27 +0000
-From: Dave Young <hidave.darkstar@gmail.com>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs - use mutex instead of semaphore
-Message-ID: <20070718182527.GA1827@darkstar.te-china.tietoenator.com>
+	Wed, 18 Jul 2007 06:27:54 -0400
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>,
+       James Bruce <bruce@andrew.cmu.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
+References: <20070711211638.GE18767@one.firstfloor.org>
+	 <20070711214649.GK14435@v2.random>
+	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>
+	 <1184302024.6709.11.camel@Homer.simpson.net>
+	 <Pine.LNX.4.64.0707131728070.1817@scrub.home>
+	 <1184355835.12353.321.camel@chaos> <469B0D9E.3030402@andrew.cmu.edu>
+	 <20070716070610.GA10907@elte.hu>
+	 <Pine.LNX.4.64.0707161213500.1817@scrub.home>
+	 <20070716112037.GA6895@elte.hu>
+	 <Pine.LNX.4.64.0707161331570.1817@scrub.home>
+	 <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 12:27:10 +0200
+Message-Id: <1184754430.20032.130.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Sorry,this is the right one. dir.c bin.c and symlink.c use the
-mutex.h,should not be deleted.
+On Mon, 2007-07-16 at 10:47 -0700, Linus Torvalds wrote:
+> 
+> On Mon, 16 Jul 2007, Roman Zippel wrote:
+> >
+> > To illustrate the problem a little different: a task with a nice level -20 
+> > got around 700% more cpu time (or 8 times more), now it gets 8500% more 
+> > cpu time (or 86.7 times more).
+> 
+> Ingo, that _does_ sound excessive. 
+> 
+> How about trying a much less aggressive nice-level (and preferably linear, 
+> not exponential)?
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+I actually like the extra range, it allows for a much softer punch of
+background tasks even on somewhat slower boxen.
 
----
+I've been testing CFS on my 1200 MHz lappy for some time and a strongly
+niced kbuild leaves a very usable system. 
 
-fs/sysfs/bin.c     |    2 +-
-fs/sysfs/dir.c     |    2 +-
-fs/sysfs/file.c    |   14 +++++++-------
-fs/sysfs/group.c   |    1 -
-fs/sysfs/inode.c   |    1 -
-fs/sysfs/mount.c   |    1 -
-fs/sysfs/symlink.c |    2 +-
-7 files changed, 10 insertions(+), 13 deletions(-)
+The old scheduler would leave the thing rather jumpy. And while CFS
+fully fixes the jumpyness, I just did a nice +13 (which should be
+equivalent to the old schedulers nice +19 for my HZ) and did a nice +19
+kbuild and I can definitely feel the difference between them.
 
-diff -upr linux/fs/sysfs/bin.c linux.new/fs/sysfs/bin.c
---- linux/fs/sysfs/bin.c	2007-07-18 17:40:46.000000000 +0000
-+++ linux.new/fs/sysfs/bin.c	2007-07-18 18:18:06.000000000 +0000
-@@ -14,9 +14,9 @@
- #include <linux/kobject.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-+#include <linux/mutex.h>
- 
- #include <asm/uaccess.h>
--#include <asm/semaphore.h>
- 
- #include "sysfs.h"
- 
-diff -upr linux/fs/sysfs/dir.c linux.new/fs/sysfs/dir.c
---- linux/fs/sysfs/dir.c	2007-07-18 17:40:46.000000000 +0000
-+++ linux.new/fs/sysfs/dir.c	2007-07-18 18:18:26.000000000 +0000
-@@ -10,8 +10,8 @@
- #include <linux/kobject.h>
- #include <linux/namei.h>
- #include <linux/idr.h>
-+#include <linux/mutex.h>
- #include <linux/completion.h>
--#include <asm/semaphore.h>
- #include "sysfs.h"
- 
- DEFINE_MUTEX(sysfs_mutex);
-diff -upr linux/fs/sysfs/file.c linux.new/fs/sysfs/file.c
---- linux/fs/sysfs/file.c	2007-07-18 17:40:46.000000000 +0000
-+++ linux.new/fs/sysfs/file.c	2007-07-18 17:40:37.000000000 +0000
-@@ -8,8 +8,8 @@
- #include <linux/namei.h>
- #include <linux/poll.h>
- #include <linux/list.h>
-+#include <linux/mutex.h>
- #include <asm/uaccess.h>
--#include <asm/semaphore.h>
- 
- #include "sysfs.h"
- 
-@@ -55,7 +55,7 @@ struct sysfs_buffer {
- 	loff_t			pos;
- 	char			* page;
- 	struct sysfs_ops	* ops;
--	struct semaphore	sem;
-+	struct mutex		lock;
- 	int			needs_read_fill;
- 	int			event;
- };
-@@ -128,7 +128,7 @@ sysfs_read_file(struct file *file, char 
- 	struct sysfs_buffer * buffer = file->private_data;
- 	ssize_t retval = 0;
- 
--	down(&buffer->sem);
-+	mutex_lock(&buffer->lock);
- 	if (buffer->needs_read_fill) {
- 		retval = fill_read_buffer(file->f_path.dentry,buffer);
- 		if (retval)
-@@ -139,7 +139,7 @@ sysfs_read_file(struct file *file, char 
- 	retval = simple_read_from_buffer(buf, count, ppos, buffer->page,
- 					 buffer->count);
- out:
--	up(&buffer->sem);
-+	mutex_unlock(&buffer->lock);
- 	return retval;
- }
- 
-@@ -228,13 +228,13 @@ sysfs_write_file(struct file *file, cons
- 	struct sysfs_buffer * buffer = file->private_data;
- 	ssize_t len;
- 
--	down(&buffer->sem);
-+	mutex_lock(&buffer->lock);
- 	len = fill_write_buffer(buffer, buf, count);
- 	if (len > 0)
- 		len = flush_write_buffer(file->f_path.dentry, buffer, len);
- 	if (len > 0)
- 		*ppos += len;
--	up(&buffer->sem);
-+	mutex_unlock(&buffer->lock);
- 	return len;
- }
- 
-@@ -294,7 +294,7 @@ static int sysfs_open_file(struct inode 
- 	if (!buffer)
- 		goto err_out;
- 
--	init_MUTEX(&buffer->sem);
-+	mutex_init(&buffer->lock);
- 	buffer->needs_read_fill = 1;
- 	buffer->ops = ops;
- 	file->private_data = buffer;
-diff -upr linux/fs/sysfs/group.c linux.new/fs/sysfs/group.c
---- linux/fs/sysfs/group.c	2007-07-18 17:40:46.000000000 +0000
-+++ linux.new/fs/sysfs/group.c	2007-07-18 17:40:37.000000000 +0000
-@@ -14,7 +14,6 @@
- #include <linux/namei.h>
- #include <linux/err.h>
- #include <linux/fs.h>
--#include <asm/semaphore.h>
- #include "sysfs.h"
- 
- 
-diff -upr linux/fs/sysfs/inode.c linux.new/fs/sysfs/inode.c
---- linux/fs/sysfs/inode.c	2007-07-18 17:40:46.000000000 +0000
-+++ linux.new/fs/sysfs/inode.c	2007-07-18 17:40:37.000000000 +0000
-@@ -14,7 +14,6 @@
- #include <linux/capability.h>
- #include <linux/errno.h>
- #include <linux/sched.h>
--#include <asm/semaphore.h>
- #include "sysfs.h"
- 
- extern struct super_block * sysfs_sb;
-diff -upr linux/fs/sysfs/mount.c linux.new/fs/sysfs/mount.c
---- linux/fs/sysfs/mount.c	2007-07-18 17:40:46.000000000 +0000
-+++ linux.new/fs/sysfs/mount.c	2007-07-18 17:40:37.000000000 +0000
-@@ -8,7 +8,6 @@
- #include <linux/mount.h>
- #include <linux/pagemap.h>
- #include <linux/init.h>
--#include <asm/semaphore.h>
- 
- #include "sysfs.h"
- 
-diff -upr linux/fs/sysfs/symlink.c linux.new/fs/sysfs/symlink.c
---- linux/fs/sysfs/symlink.c	2007-07-18 17:40:46.000000000 +0000
-+++ linux.new/fs/sysfs/symlink.c	2007-07-18 18:18:38.000000000 +0000
-@@ -7,7 +7,7 @@
- #include <linux/module.h>
- #include <linux/kobject.h>
- #include <linux/namei.h>
--#include <asm/semaphore.h>
-+#include <linux/mutex.h>
- 
- #include "sysfs.h"
- 
+Early CFS versions had an pretty aggressive nice range (0.1% for +19),
+and that has been toned down based on feedback. The current levels seem
+to work well, at least on my boxen.
+
+- Peter
+
