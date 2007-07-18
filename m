@@ -1,183 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935695AbXGRAUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936736AbXGRAVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935695AbXGRAUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 20:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758425AbXGRAU2
+	id S936736AbXGRAVN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 20:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758425AbXGRAUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 20:20:28 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:40604 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757732AbXGRAU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 20:20:27 -0400
-Date: Wed, 18 Jul 2007 09:20:09 +0900
-To: James.Bottomley@SteelEye.com
-Cc: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: block/bsg.c
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <1184698434.3378.15.camel@localhost.localdomain>
-References: <20070717190705T.fujita.tomonori@lab.ntt.co.jp>
-	<20070717101928.GK5195@kernel.dk>
-	<1184698434.3378.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070718092130V.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
+	Tue, 17 Jul 2007 20:20:55 -0400
+Received: from pne-smtpout1-sn1.fre.skanova.net ([81.228.11.98]:57532 "EHLO
+	pne-smtpout1-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756099AbXGRAUx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 20:20:53 -0400
+To: linux-kernel@vger.kernel.org, Bcm43xx-dev@lists.berlios.de
+Subject: Occational lockups during boot with post 2.6.22 kernels
+From: Peter Osterlund <petero2@telia.com>
+Date: 18 Jul 2007 02:20:34 +0200
+Message-ID: <m3sl7mk1f1.fsf@telia.com>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: block/bsg.c
-Date: Tue, 17 Jul 2007 13:53:54 -0500
+Current -git kernels sometimes lock up on my computer during boot. I
+guess it happens about 10-20% of the time. I first saw this maybe a
+week ago, but never with kernels <= 2.6.22.
 
-> On Tue, 2007-07-17 at 12:19 +0200, Jens Axboe wrote:
-> > > > Since Linus is happily snoring by now, could you test and see if the
-> > > > tree works for you?
-> > > 
-> > > It works for me. I'll submit some minor patches against your bsg
-> > > branch to scsi-ml. Can you push them together?
-> > 
-> > Certainly, I'll pull them into the bsg branch.
-> 
-> While you're at it, here's a patch to separate BSG and SCSI again (so
-> SCSI can be built modular).  The way I did it was simply to move the
-> SCSI specific logic into SCSI.  When you come up with a generic way to
-> register the bsg requiring drivers, then we can move it out again.
+The last reported info on the console is that named is started.
+SysRq-T still works and reports the non-sleeping tasks below.
 
-Thanks, looks nice.
+My guess is that wpa_supplicant and events/0 deadlock and later the
+named thread also hangs when it needs a deadlocked resource.
 
-
-> --- a/drivers/scsi/scsi_sysfs.c
-> +++ b/drivers/scsi/scsi_sysfs.c
-> @@ -714,6 +714,7 @@ static int attr_add(struct device *dev, struct device_attribute *attr)
->  int scsi_sysfs_add_sdev(struct scsi_device *sdev)
->  {
->  	int error, i;
-> +	struct request_queue *rq = sdev->request_queue;
->  
->  	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
->  		return error;
-> @@ -733,6 +734,16 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
->  	/* take a reference for the sdev_classdev; this is
->  	 * released by the sdev_class .release */
->  	get_device(&sdev->sdev_gendev);
-> +
-> +	if (rq->kobj.parent)
-> +		error = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
-> +	else
-> +		error = bsg_register_queue(rq, kobject_name(&sdev->sdev_gendev.kobj));
-> +	if (error) {
-> +		sdev_printk(KERN_INFO, sdev, "Failed to register bsg queue\n");
-> +		goto out;
-
-Needs more cleanup here?
-
-We might just ignore the error here since it's not fatal not to create
-a bsg device, I guess.
-
-I updated the patch against the latest code (which has just be merged
-to Linus's tree).
-
-
-diff --git a/block/Kconfig b/block/Kconfig
-index 0768741..93adf61 100644
---- a/block/Kconfig
-+++ b/block/Kconfig
-@@ -53,7 +53,7 @@ endif # BLOCK
+I'm using the bcm43xx driver.
  
- config BLK_DEV_BSG
- 	bool "Block layer SG support v4 (EXPERIMENTAL)"
--	depends on (SCSI=y) && EXPERIMENTAL
-+ 	depends on EXPERIMENTAL
- 	---help---
- 	Saying Y here will enable generic SG (SCSI generic) v4 support
- 	for any block device.
-diff --git a/block/bsg.c b/block/bsg.c
-index baa04e7..4e0be1b 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -1009,29 +1009,6 @@ err:
- }
- EXPORT_SYMBOL_GPL(bsg_register_queue);
+No lockdep errors are reported before the lockup. Earlier during boot
+the kernel reports:
+
+  Good, all 218 testcases passed! |
+
+SysRq-T output:
+
+   =======================
+  events/0      D 00000001     0     5      2
+         dfe0fe64 00000092 935ee27c 00000001 c0345e48 935ee27c 00000001 c0462fc0
+         00000001 dcab5040 dcd44de4 dcd44da4 00000246 dfe0cb90 dfe0fea0 c0345df6
+         00000000 00000002 c0346026 00000000 dcd44dd0 dcd44dd0 dcd44dd0 dfe0cb90
+  Call Trace:
+   [<c0345df6>] __mutex_lock_slowpath+0xb2/0x2c6
+   [<c0346026>] mutex_lock+0x1c/0x1f
+   [<e08b6bab>] ieee80211softmac_assoc_work+0x24/0x51b [ieee80211softmac]
+   [<e08b70b5>] ieee80211softmac_assoc_notify_scan+0x13/0x15 [ieee80211softmac]
+   [<e08b7653>] ieee80211softmac_notify_callback+0x41/0x7a [ieee80211softmac]
+   [<c012a80c>] run_workqueue+0xbb/0x13d
+   [<c012b0b1>] worker_thread+0x9a/0xf9
+   [<c012d84e>] kthread+0x36/0x58
+   [<c0104b87>] kernel_thread_helper+0x7/0x10
  
--static int bsg_add(struct class_device *cl_dev, struct class_interface *cl_intf)
--{
--	int ret;
--	struct scsi_device *sdp = to_scsi_device(cl_dev->dev);
--	struct request_queue *rq = sdp->request_queue;
--
--	if (rq->kobj.parent)
--		ret = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
--	else
--		ret = bsg_register_queue(rq, kobject_name(&sdp->sdev_gendev.kobj));
--	return ret;
--}
--
--static void bsg_remove(struct class_device *cl_dev, struct class_interface *cl_intf)
--{
--	bsg_unregister_queue(to_scsi_device(cl_dev->dev)->request_queue);
--}
--
--static struct class_interface bsg_intf = {
--	.add	= bsg_add,
--	.remove	= bsg_remove,
--};
--
- static struct cdev bsg_cdev = {
- 	.kobj   = {.name = "bsg", },
- 	.owner  = THIS_MODULE,
-@@ -1069,16 +1046,9 @@ static int __init bsg_init(void)
- 	if (ret)
- 		goto unregister_chrdev;
+   =======================
+  klogd         R running      0  2771      1
+  wpa_supplican D 00000001     0  2806      1
+         dc309d7c 00200082 935ecce6 00000001 c0138e84 935ecce6 00000001 00200046
+         dc309dbc dcab5040 dc309db8 dc309dbc dc309db8 dcd44fd4 dc309da0 c0344f98
+         00000001 dcfdd350 c01186cc dc309de4 dc309de4 dff61740 dcd44fd4 dc309df0
+  Call Trace:
+   [<c0344f98>] wait_for_completion+0x91/0xc8
+   [<c012a98b>] flush_cpu_workqueue+0x47/0x6f
+   [<c012ae46>] flush_workqueue+0x1c/0x1f
+   [<c012ae56>] flush_scheduled_work+0xd/0xf
+   [<e08b699c>] ieee80211softmac_wx_set_essid+0x144/0x188 [ieee80211softmac]
+   [<c0343811>] ioctl_standard_call+0x16b/0x350
+   [<c0343d51>] wext_handle_ioctl+0x35b/0x3e5
+   [<c02e4ea2>] dev_ioctl+0x322/0x33d
+   [<c02d8587>] sock_ioctl+0xba/0x1d8
+   [<c0171d02>] do_ioctl+0x22/0x71
+   [<c0171da6>] vfs_ioctl+0x55/0x28a
+   [<c017200e>] sys_ioctl+0x33/0x51
+   [<c0103f36>] sysenter_past_esp+0x5f/0x99
  
--	ret = scsi_register_interface(&bsg_intf);
--	if (ret)
--		goto remove_cdev;
--
- 	printk(KERN_INFO BSG_DESCRIPTION " version " BSG_VERSION
- 	       " loaded (major %d)\n", bsg_major);
- 	return 0;
--remove_cdev:
--	printk(KERN_ERR "bsg: failed register scsi interface %d\n", ret);
--	cdev_del(&bsg_cdev);
- unregister_chrdev:
- 	unregister_chrdev_region(MKDEV(bsg_major, 0), BSG_MAX_DEVS);
- destroy_bsg_class:
-diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index ed72086..9ebd215 100644
---- a/drivers/scsi/scsi_sysfs.c
-+++ b/drivers/scsi/scsi_sysfs.c
-@@ -714,6 +714,7 @@ static int attr_add(struct device *dev,
- int scsi_sysfs_add_sdev(struct scsi_device *sdev)
- {
- 	int error, i;
-+	struct request_queue *rq = sdev->request_queue;
- 
- 	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
- 		return error;
-@@ -733,6 +734,15 @@ int scsi_sysfs_add_sdev(struct scsi_devi
- 	/* take a reference for the sdev_classdev; this is
- 	 * released by the sdev_class .release */
- 	get_device(&sdev->sdev_gendev);
-+
-+	if (rq->kobj.parent)
-+		error = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
-+	else
-+		error = bsg_register_queue(rq, kobject_name(&sdev->sdev_gendev.kobj));
-+
-+	if (error)
-+		sdev_printk(KERN_INFO, sdev, "Failed to register bsg queue\n");
-+
- 	if (sdev->host->hostt->sdev_attrs) {
- 		for (i = 0; sdev->host->hostt->sdev_attrs[i]; i++) {
- 			error = attr_add(&sdev->sdev_gendev,
-@@ -779,6 +789,7 @@ void __scsi_remove_device(struct scsi_de
- 	if (scsi_device_set_state(sdev, SDEV_CANCEL) != 0)
- 		return;
- 
-+	bsg_unregister_queue(sdev->request_queue);
- 	class_device_unregister(&sdev->sdev_classdev);
- 	transport_remove_device(dev);
- 	device_del(dev);
+   =======================
+  named         D 00000001     0  2836   2834
+         dbdc5e70 00200082 960324f3 00000001 c0345e48 960324f3 00000001 c0462fc0
+         00000001 dd0d6300 c0454e20 c0454de0 00200246 c1694fd0 dbdc5eac c0345df6
+         00000000 00000002 c0346026 00000000 c0454e0c c0454e0c c0454e0c c1694fd0
+  Call Trace:
+   [<c0345df6>] __mutex_lock_slowpath+0xb2/0x2c6
+   [<c0346026>] mutex_lock+0x1c/0x1f
+   [<c02ec08c>] rtnl_lock+0xd/0xf
+   [<c02e4c32>] dev_ioctl+0xb2/0x33d
+   [<c02d8587>] sock_ioctl+0xba/0x1d8
+   [<c0171d02>] do_ioctl+0x22/0x71
+   [<c0171da6>] vfs_ioctl+0x55/0x28a
+   [<c017200e>] sys_ioctl+0x33/0x51
+   [<c0103f36>] sysenter_past_esp+0x5f/0x99
+
+-- 
+Peter Osterlund - petero2@telia.com
+http://web.telia.com/~u89404340
