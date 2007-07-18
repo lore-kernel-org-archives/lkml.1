@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXGRJ02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbXGRJca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbXGRJ02 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 05:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbXGRJ0V
+	id S1758599AbXGRJca (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 05:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbXGRJcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 05:26:21 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:54841 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753472AbXGRJ0U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 05:26:20 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 18 Jul 2007 05:24:28 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][RFC] Delete export of tty.h to userspace.
-Message-ID: <Pine.LNX.4.64.0707180520040.19434@localhost.localdomain>
+	Wed, 18 Jul 2007 05:32:22 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:54871 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751169AbXGRJcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 05:32:21 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [kvm-devel] [GIT PULL][RESEND #2] KVM Updates for 2.6.23-rc1
+Date: Wed, 18 Jul 2007 12:31:25 +0300
+User-Agent: KMail/1.9.7
+Cc: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <11846910642166-git-send-email-avi@qumranet.com> <200707180225.31160.caglar@pardus.org.tr> <469D52F4.8090909@codemonkey.ws>
+In-Reply-To: <469D52F4.8090909@codemonkey.ws>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: multipart/signed;
+  boundary="nextPart1555136.FSMSlFXkro";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707181231.35628.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1555136.FSMSlFXkro
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Hi;
 
----
+18 Tem 2007 =C3=87ar tarihinde, Anthony Liguori =C5=9Funlar=C4=B1 yazm=C4=
+=B1=C5=9Ft=C4=B1:=20
+> Can you reproduce without the appArmor patchset?
 
-  given that the entire contents of include/linux/tty.h is contained
-within an "#ifdef __KERNEL__", it seems pointless to export it to
-userspace, unless there's some kind of need for that header file to
-exist in userspace, even if it's empty.
+If needed http://cekirdek.pardus.org.tr/~caglar/kvm/netconsole is the appAr=
+mor=20
+patchset included kernel's output captured with netconsole and yes i'll try=
+=20
+to reproduce same with vanilla one whenever i found some time :)
 
-  a quick grep shows that nothing under /usr/include references any
-file of the name "tty.h" in any way.  thoughts?
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
 
+--nextPart1555136.FSMSlFXkro
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
- diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 4ff0f57..63de91a 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -328,7 +327,6 @@ unifdef-y += sysctl.h
- unifdef-y += tcp.h
- unifdef-y += time.h
- unifdef-y += timex.h
--unifdef-y += tty.h
- unifdef-y += types.h
- unifdef-y += udf_fs_i.h
- unifdef-y += udp.h
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+iD8DBQBGnd33y7E6i0LKo6YRAoW0AKCJaBZP7en6DwNQYNeeUowx+muNnQCfep9N
+uzJwc//eypYJW5MuGYGaXFE=
+=87Ne
+-----END PGP SIGNATURE-----
+
+--nextPart1555136.FSMSlFXkro--
