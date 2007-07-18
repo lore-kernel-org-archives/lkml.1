@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbXGRDXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbXGRDaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763277AbXGRDXu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 23:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbXGRDXk
+	id S1763277AbXGRDaR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 23:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXGRDaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 23:23:40 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:44719 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752131AbXGRDXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 23:23:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAHMknUarR7O6/2dsb2JhbAA
-X-IronPort-AV: i="4.16,548,1175497200"; 
-   d="scan'208"; a="504286534:sNHT27300232"
-To: "Or Gerlitz" <or.gerlitz@gmail.com>
-Cc: "Sean Hefty" <mshefty@ichips.intel.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Further 2.6.23 merge plans...
-X-Message-Flag: Warning: May contain useful information
-References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
-	<4696D1F3.2040507@ichips.intel.com>
-	<15ddcffd0707172020j5b68fcb2v7d3ca77863998020@mail.gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 17 Jul 2007 20:23:38 -0700
-In-Reply-To: <15ddcffd0707172020j5b68fcb2v7d3ca77863998020@mail.gmail.com> (Or Gerlitz's message of "Wed, 18 Jul 2007 06:20:15 +0300")
-Message-ID: <adaabtuo0n9.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Tue, 17 Jul 2007 23:30:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52200 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752898AbXGRD37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jul 2007 23:29:59 -0400
+Message-ID: <469D8932.9080101@garzik.org>
+Date: Tue, 17 Jul 2007 23:29:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Jul 2007 03:23:38.0524 (UTC) FILETIME=[08494DC0:01C7C8EB]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: Roland Dreier <rdreier@cisco.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       chas@cmf.nrl.navy.mil, rolandd@cisco.com, dwmw2@infradead.org,
+       gregkh@suse.de
+Subject: Re: [git patches 1/2] warnings: attack valid cases spotted by warnings
+References: <20070717214239.GF28448@devserv.devel.redhat.com>	<ada8x9epuip.fsf@cisco.com> <469D3E66.3010502@garzik.org>	<adamyxuo2w6.fsf@cisco.com>	<alpine.LFD.0.999.0707171954230.27353@woody.linux-foundation.org> <adaejj6o1aw.fsf@cisco.com>
+In-Reply-To: <adaejj6o1aw.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > But to be fair, it will be difficult to enable both QoS and local PR
- > > caching.  To me, this would be the strongest reason against using it.
- > > However, QoS places additional burden on the SA, which will make scaling
- > > even more challenging.
- > 
- > my understanding is that the local sa does a path-query where all the fields
- > except for the SGID are wildcard-ed. This means we expect the result to be a
- > table of all the paths from this port to every other port on the fabrics for
- > every pkey which this port is a member of etc, correct?
- > 
- > How do you plug here  the QoS concept of SID in the path query? are you
- > expecting the SA to realize what are all the services for which this port is
- > a "member"? does the proposed definision for QoS management at the SA
- > defines "services per gids" isn't it "what SL to user per Service"?
+Roland Dreier wrote:
+> In this case the code is basically
+> 
+> 	u32 x;
+> 
+> 	for (n = 0; cond; ++n) {
+> 		...
+> 		if (!n)
+> 			x = something;
+> 		...
+> 	}
+> 
+> 	if (n) {
+> 		...
+> 		use(x);
+> 		...
+> 	}
+> 
+> and gcc still warns...
 
-Or, thanks for rescuing this post.
 
-I think this is an important question.  If we merge the local SA
-stuff, then are we creating a problem for dealing with QoS?  Are we
-going to have to revert the local SA stuff once the QoS stuff is
-available?  Or is there at least a sketch of a plan on how to handle
-this?
+Interestingly, the above accurately describes a common code pattern 
+matching code which caused gcc to emit the uninit'd-var warnings.
 
- - R.
+For the record I think initializating 'f0' to zero is safer for the 
+reasons Linus gave, and in addition, f0 is or'd with a value written to 
+a hardware register, which means things should go awry (if they go) in a 
+semi-predictable manner.
+
+According to the assembly language produced, sure it is larger -- by one 
+(per function) MOV that is adjacent to other initializations, making it 
+highly likely the initializations are all streamed together.  I doubt 
+one MOV per function will make a huge difference, considering the peace 
+of mind it buys.
+
+	Jeff
+
+
