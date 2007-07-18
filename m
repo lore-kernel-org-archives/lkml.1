@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932193AbXGROXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbXGRO3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932193AbXGROXz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbXGROXr
+	id S1756581AbXGRO3b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXGRO3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:23:47 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:52471 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753863AbXGROXq (ORCPT
+	Wed, 18 Jul 2007 10:29:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:2574 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752319AbXGRO3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:23:46 -0400
-Subject: Re: block/bsg.c
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <1184766854.3464.4.camel@localhost.localdomain>
-References: <20070717190705T.fujita.tomonori@lab.ntt.co.jp>
-	 <20070717101928.GK5195@kernel.dk>
-	 <1184698434.3378.15.camel@localhost.localdomain>
-	 <20070718092130V.tomof@acm.org>
-	 <1184766854.3464.4.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 09:23:44 -0500
-Message-Id: <1184768624.3464.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Wed, 18 Jul 2007 10:29:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OLxM6MtFFfa0q2CbvA6K8rxEpLJCDH+4RZ3cKSeGkEZ6uwOKquDFoXHBmRbRNmgwmzkIHPRJyjFEfg6Q6b6hz6G8i2DNn4g5TV+jOe0LbljL7kO1sZ+jvZ8y20EXPhH+hQOk7cqpny4gbK5F+tX8oHsxO8mOCoClB1PuQP3ENIU=
+Message-ID: <a44ae5cd0707180729q1cd48c72ya26f6ca7c3e19265@mail.gmail.com>
+Date: Wed, 18 Jul 2007 07:29:17 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure path
+Cc: "Gabriel C" <nix.or.die@googlemail.com>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>, gregkh@suse.de
+In-Reply-To: <20070718071445.GI23568@htj.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>
+	 <a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>
+	 <469A9D5D.10509@googlemail.com> <469B61C8.8010902@googlemail.com>
+	 <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
+	 <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com>
+	 <469BC2D6.5090008@googlemail.com> <469BC34C.4080107@googlemail.com>
+	 <20070718071445.GI23568@htj.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-18 at 08:54 -0500, James Bottomley wrote:
-> You're welcome ... although there's still a problem for modular builds.
-> This is what my /sys/class/bsg looks like:
+On 7/18/07, Tejun Heo <htejun@gmail.com> wrote:
+> There is a subtle bug in sysfs_create_link() failure path.  When
+> symlink creation fails because there's already a node with the same
+> name, the target sysfs_dirent is put twice - once by failure path of
+> sysfs_create_link() and once more when the symlink is released.
+>
+> Fix it by making only the symlink node responsible for putting
+> target_sd.
+>
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+> Gabriel, Miles, please verify this fixes your problem.  Thanks.
+>
+>  fs/sysfs/symlink.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+> index 2f86e04..d056e96 100644
+> --- a/fs/sysfs/symlink.c
+> +++ b/fs/sysfs/symlink.c
+> @@ -86,7 +86,9 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
+>         sd = sysfs_new_dirent(name, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
+>         if (!sd)
+>                 goto out_put;
+> +
+>         sd->s_elem.symlink.target_sd = target_sd;
+> +       target_sd = NULL;       /* reference is now owned by the symlink */
+>
+>         sysfs_addrm_start(&acxt, parent_sd);
+>
+> diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+>
 
-Sorry, lets see if I can get the paste to work this time:
+Great!  I tested with both patches applied to 2.6.22-rc6-mm1 and was
+able to remove ipw2200 without triggering the BUG.
 
-jejb@hobholes> ls /sys/class/bsg/
-0:0:1:0/  sdb/
-
-> So you see the if (rq->kobj.parent) is causing confusing naming.  The
-> reason the first one shows up as 0:0:0:0 is because in an initrd
-> scsi_mod is loaded first (which is when bsg binds) followed by sd_mod
-> (which is what gives the device the ULD binding and hence the name).  I
-> don't see any way around this, so I'd advocate simply using the sdev
-> name rather than the block device name and dumping the if.
-> 
-> > > --- a/drivers/scsi/scsi_sysfs.c
-> > > +++ b/drivers/scsi/scsi_sysfs.c
-> > > @@ -714,6 +714,7 @@ static int attr_add(struct device *dev, struct device_attribute *attr)
-> > >  int scsi_sysfs_add_sdev(struct scsi_device *sdev)
-> > >  {
-> > >  	int error, i;
-> > > +	struct request_queue *rq = sdev->request_queue;
-> > >  
-> > >  	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
-> > >  		return error;
-> > > @@ -733,6 +734,16 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
-> > >  	/* take a reference for the sdev_classdev; this is
-> > >  	 * released by the sdev_class .release */
-> > >  	get_device(&sdev->sdev_gendev);
-> > > +
-> > > +	if (rq->kobj.parent)
-> > > +		error = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
-> > > +	else
-> > > +		error = bsg_register_queue(rq, kobject_name(&sdev->sdev_gendev.kobj));
-> > > +	if (error) {
-> > > +		sdev_printk(KERN_INFO, sdev, "Failed to register bsg queue\n");
-> > > +		goto out;
-> > 
-> > Needs more cleanup here?
-> 
-> No ... this bit's magic and clever.  Once you've set up the devices and
-> done a get_device, cleanup is simply doing a put_device because it's all
-> done in the release routine.
-> 
-> > We might just ignore the error here since it's not fatal not to create
-> > a bsg device, I guess.
-> > 
-> > I updated the patch against the latest code (which has just be merged
-> > to Linus's tree).
-> 
-> Thanks,
-> 
-> James
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Thanks,
+            Miles
