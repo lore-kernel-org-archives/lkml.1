@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbXGRIEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbXGRIHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbXGRIEk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 04:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbXGRIE0
+	id S1757705AbXGRIHi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 04:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbXGRIHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 04:04:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54132 "EHLO
+	Wed, 18 Jul 2007 04:07:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41438 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750736AbXGRIEY (ORCPT
+	by vger.kernel.org with ESMTP id S1752104AbXGRIHV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 04:04:24 -0400
-Date: Wed, 18 Jul 2007 01:03:53 -0700
+	Wed, 18 Jul 2007 04:07:21 -0400
+Date: Wed, 18 Jul 2007 01:07:00 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm 0/5] Freezer update
-Message-Id: <20070718010353.27965df7.akpm@linux-foundation.org>
-In-Reply-To: <200707180929.31511.rjw@sisk.pl>
-References: <200707180929.31511.rjw@sisk.pl>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: System hangs on running kernbench
+Message-Id: <20070718010700.1ca7fd9f.akpm@linux-foundation.org>
+In-Reply-To: <20070718075648.GA4235@linux.vnet.ibm.com>
+References: <20070718075648.GA4235@linux.vnet.ibm.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,23 +27,17 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007 09:29:30 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Wed, 18 Jul 2007 13:26:48 +0530 Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-> The patches in these series update the freezer to eliminate some existing
-> shortcomings,
+> I was running kernbench on top of 2.6.22-rc6-mm1 and I got a Hangcheck
+> alert (This is when kernbench reached make -j).
 
-argh.
+hm, never had a report of that before.  It's the first time I've seen
+hangcheck produce anything useful, frankly.
 
-I have a backlog of maybe 300 patches here which I am cheerfully ignoring
-while concentrating on preventing 2.6.23 from being less of a disaster than
-it has already been.
+Was the softlockup detector not enabled?
 
-Please, stop writing patches.  Maybe do something to help get 2.6.23 off
-its back.  Like, go review some of the code which people are cheerfully
-merging five minutes after having written it.
+> Also make -j is hanging.
 
-> so please consider them as 2.6.23 material.
+Please try to capture the full sysrq-T output when it is hung.
 
-The door for new 2.6.23 material shut two weeks ago.  Here, at least.
-
-Later, OK?
