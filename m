@@ -1,140 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbXGRLAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761944AbXGRLGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761188AbXGRLAN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 07:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbXGRK7z
+	id S1761944AbXGRLGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 07:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756401AbXGRLGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 06:59:55 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:26261 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754355AbXGRK7w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 06:59:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=K85gHsjhGIXx9PO4sQO3k9fToKIszh2sEIUSZykjVP9yoVgzqH5qc5ws8hCwwmbgjl9FkKJMOWYxL23L+hKfv5r5+x1FZQgIwhOXW3wGq5UsaDjux+G+B1CPkyZX2zjQQ7MwrYiRSddsPE86YEtHl7m2Js4ALkWn+o9Zv2I3Wbs=
-Date: Wed, 18 Jul 2007 19:59:46 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Phillip Susi <psusi@cfl.rr.com>, Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>
-Subject: [PATCH] block: factor out bio_check_eod()
-Message-ID: <20070718105946.GC22374@htj.dyndns.org>
-References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070530093503.GA15559@kernel.dk> <20070718105655.GB22374@htj.dyndns.org>
+	Wed, 18 Jul 2007 07:06:32 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:45006 "EHLO
+	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756526AbXGRLGb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 07:06:31 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Organization: AMD
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 0/2] faking and fixing the NUMA SLIT
+Date: Wed, 18 Jul 2007 11:57:28 +0200
+User-Agent: KMail/1.9.7
+cc: "lkml List" <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       lenb@kernel.org, "Christoph Lameter" <clameter@sgi.com>
+References: <200707181130.01861.joachim.deguara@amd.com>
+ <200707181142.20811.ak@suse.de>
+In-Reply-To: <200707181142.20811.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <200707181157.29052.joachim.deguara@amd.com>
+X-OriginalArrivalTime: 18 Jul 2007 11:06:16.0151 (UTC)
+ FILETIME=[A91F0E70:01C7C92B]
+X-WSS-ID: 6A832BA17CS2748085-01-01
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070718105655.GB22374@htj.dyndns.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-End of device check is done twice in __generic_make_request() and it's
-fully inlined each time.  Factor out bio_check_eod().
+On Wednesday 18 July 2007 11:42:20 Andi Kleen wrote:
+> On Wednesday 18 July 2007 11:30:01 Joachim Deguara wrote:
+> > The problem with NUMA distances in the SLIT is that they are often wrong,
+> > oh wait they aren't there at all because the BIOS didn't create a SLIT
+> > since Windows does not use it.  If Linux does not find a slit it just
+> > says the distance to local=10 and remote=20 according to ACPI spec.  The
+> > problem is when we have a 4P system (or larger), there is generally one
+> > node where we have two hops and its distance should be >20.
+> >
+> > Following are patches to first fake the SLIT in the ACPI code and then
+> > add ability to write the distances from sysfs.
+>
+> The main use for the SLIT information are the zone fallback lists in
+> the VM. These are created at boot.  If you change the SLIT later these
+> won't be regenerated.
+>
+> The scheduler also uses it for load balancing, but it is much less
+> important there than in the VM.
 
-This is taken from Jens' zero-length barrier patch.
+I looked at how node_distance() was called from page_alloc.c and sched.c but I 
+overlooked that those results are really only used at init time.  So the 
+backing mechanism of patching the SLIT is right but sysfs is way to late for 
+those uses and creating a boot option is as you say ugly.  It would be great 
+if BIOS just did this for us and correctly but what do you really expect 
+that ;)
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
- block/ll_rw_blk.c |   63 ++++++++++++++++++++++++++++--------------------------
- 1 file changed, 33 insertions(+), 30 deletions(-)
+I would be happy to add it as a boot option if there is any popular support 
+for the idea.
 
-Index: work/block/ll_rw_blk.c
-===================================================================
---- work.orig/block/ll_rw_blk.c
-+++ work/block/ll_rw_blk.c
-@@ -3094,6 +3094,35 @@ static inline int should_fail_request(st
- 
- #endif /* CONFIG_FAIL_MAKE_REQUEST */
- 
-+/*
-+ * Check whether this bio extends beyond the end of the device.
-+ */
-+static int bio_check_eod(struct bio *bio, unsigned int nr_sectors)
-+{
-+	sector_t maxsector;
-+
-+	if (!nr_sectors)
-+		return 0;
-+
-+	/* Test device or partition size, when known. */
-+	maxsector = bio->bi_bdev->bd_inode->i_size >> 9;
-+	if (maxsector) {
-+		sector_t sector = bio->bi_sector;
-+
-+		if (maxsector < nr_sectors || maxsector - nr_sectors < sector) {
-+			/*
-+			 * This may well happen - the kernel calls bread()
-+			 * without checking the size of the device, e.g., when
-+			 * mounting a device.
-+			 */
-+			handle_bad_sector(bio);
-+			return 1;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * generic_make_request: hand a buffer to its device driver for I/O
-  * @bio:  The bio describing the location in memory and on the device.
-@@ -3121,27 +3150,14 @@ static inline int should_fail_request(st
- static inline void __generic_make_request(struct bio *bio)
- {
- 	request_queue_t *q;
--	sector_t maxsector;
- 	sector_t old_sector;
- 	int ret, nr_sectors = bio_sectors(bio);
- 	dev_t old_dev;
- 
- 	might_sleep();
--	/* Test device or partition size, when known. */
--	maxsector = bio->bi_bdev->bd_inode->i_size >> 9;
--	if (maxsector) {
--		sector_t sector = bio->bi_sector;
- 
--		if (maxsector < nr_sectors || maxsector - nr_sectors < sector) {
--			/*
--			 * This may well happen - the kernel calls bread()
--			 * without checking the size of the device, e.g., when
--			 * mounting a device.
--			 */
--			handle_bad_sector(bio);
--			goto end_io;
--		}
--	}
-+	if (bio_check_eod(bio, nr_sectors))
-+		goto end_io;
- 
- 	/*
- 	 * Resolve the mapping until finished. (drivers are
-@@ -3197,21 +3213,8 @@ end_io:
- 		old_sector = bio->bi_sector;
- 		old_dev = bio->bi_bdev->bd_dev;
- 
--		maxsector = bio->bi_bdev->bd_inode->i_size >> 9;
--		if (maxsector) {
--			sector_t sector = bio->bi_sector;
--
--			if (maxsector < nr_sectors ||
--					maxsector - nr_sectors < sector) {
--				/*
--				 * This may well happen - partitions are not
--				 * checked to make sure they are within the size
--				 * of the whole device.
--				 */
--				handle_bad_sector(bio);
--				goto end_io;
--			}
--		}
-+		if (bio_check_eod(bio, nr_sectors))
-+			goto end_io;
- 
- 		ret = q->make_request_fn(q, bio);
- 	} while (ret);
+-Joachim
+
+
+
+
+
