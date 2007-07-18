@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936254AbXGRSwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935756AbXGRS4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936254AbXGRSwZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 14:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761174AbXGRSwR
+	id S935756AbXGRS4n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 14:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762628AbXGRS4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 14:52:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:20352 "EHLO
+	Wed, 18 Jul 2007 14:56:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:23483 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759017AbXGRSwR (ORCPT
+	with ESMTP id S1761134AbXGRS4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 14:52:17 -0400
+	Wed, 18 Jul 2007 14:56:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=Lis8S+nshrmcNKrmh/e7gb5+NmnnlBEm7pCu6xlcgADvIfTfeAKcpU1L9ySXdW39cqM9zR1EFII5UA0o2pm2dZw9jwp+OwiC6zm+drDUVVzpXypnbl2aGtxVpkcdgZEYvRBAxwgqtZhS9d4YJQVkj5AgiiLYJloM73+0UwAji00=
-Date: Wed, 18 Jul 2007 22:52:11 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: adobriyan@sw.ru, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert part of 3f1b0e1f287547903f11fa1e6de7d2765597766e
-Message-ID: <20070718185211.GA5575@martell.zuzino.mipt.ru>
-References: <200707182103.13500.caglar@pardus.org.tr>
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=sDZDKzlHQW5WKLoaEHKwwtu/nVM8ZvefV1fZ8XYEPqPUBfkex9ExZbUCQqHzwZBu3wJfFhF0jq8i5XHMfASHq9xCwV7bYaHHNARw04K+OQhTtw8OtgBZZZ0kzz3YN5X7peyzJ8X7tCB5IDnX/Ulz3NJvrAV1jQnaOdO4Sg3kHD4=
+Date: Wed, 18 Jul 2007 22:56:24 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Mauro Carvalho Chehab <v4l-dvb-maintainer@linuxtv.org>
+Subject: [PATCH] Conexant 2388x: check for kthread_run
+Message-ID: <20070718185624.GA13996@cvg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200707182103.13500.caglar@pardus.org.tr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 09:03:13PM +0300, S.Çağlar Onur wrote:
-> With 3f1b0e1f287547903f11fa1e6de7d2765597766e Linus's current git tree starts 
-> to ignore any *.orig or *.rej files (for example "git status" cannot show 
-> what are they) but if there are some *.orig or *.rej files exists, for 
-> whatever reason, that means some unresolved merge conflicts occured for that 
-> code tree and this tree is no longer trusted so better not to ignore these.
+This patch adds checking of kthread_run return code.
 
-*.orig are generated even if line numbers change a bit, so untrusted is
-a somewhat exaggerated.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
+Probably we could just ignore a such situation (we do
+check for core->kthread value before trying to stop the
+thread) but we have to leave a footmark in kernel
+messages anyway I guess. Comments?
 
-> --- a/.gitignore
-> +++ b/.gitignore
-> @@ -45,6 +45,3 @@ series
->  
->  # cscope files
->  cscope.*
-> -
-> -*.orig
-> -*.rej
+ drivers/media/video/cx88/cx88-video.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/media/video/cx88/cx88-video.c b/drivers/media/video/cx88/cx88-video.c
+index 98fa354..2e05450 100644
+--- a/drivers/media/video/cx88/cx88-video.c
++++ b/drivers/media/video/cx88/cx88-video.c
+@@ -1881,8 +1881,15 @@ static int __devinit cx8800_initdev(struct pci_dev *pci_dev,
+ 	mutex_unlock(&core->lock);
+ 
+ 	/* start tvaudio thread */
+-	if (core->tuner_type != TUNER_ABSENT)
++	if (core->tuner_type != TUNER_ABSENT) {
+ 		core->kthread = kthread_run(cx88_audio_thread, core, "cx88 tvaudio");
++		if (IS_ERR(core->kthread)) {
++			err = PTR_ERR(core->kthread);
++			printk(KERN_ERR "Failed to create cx88 audio thread, err=%d\n",
++			       err);
++			goto fail_unreg;
++		}
++	}
+ 	return 0;
+ 
+ fail_unreg:
