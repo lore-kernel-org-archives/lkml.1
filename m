@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932193AbXGRLSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbXGRLUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932193AbXGRLSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 07:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbXGRLSc
+	id S1762792AbXGRLUE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 07:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXGRLTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 07:18:32 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:3510 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbXGRLSa (ORCPT
+	Wed, 18 Jul 2007 07:19:54 -0400
+Received: from agave.telenet-ops.be ([195.130.137.77]:55118 "EHLO
+	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752056AbXGRLTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 07:18:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ZhHRFVPnpSFT9e2RGzlM+lFAR4bzBVVwROnjCegfOMV5mH7jkZoJ6eUy4Kv4WRD9++BdaM1L4Bhnmk740lZRfiuO/m2fyuQDqTjm/T95vItb1L3mXp5XrB9pzuNWlpEL+DolqxXgO+NhyoSjbCXZj0HHjcxK2DhNLc5r466aKXg=
-Message-ID: <469DF700.4030806@gmail.com>
-Date: Wed, 18 Jul 2007 20:18:24 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 18 Jul 2007 07:19:54 -0400
+Date: Wed, 18 Jul 2007 13:19:52 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Sasa Ostrouska <casaxa@gmail.com>
+cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: VESAFB CUSTOM RESOLUTION
+In-Reply-To: <dcf706c60707180250i55a4554di83fc8fed4f24f25@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0707181318570.24281@anakin>
+References: <dcf706c60707170713t605ce652r83b5b53f3c315691@mail.gmail.com>
+ <469D71FB.5070408@gentoo.org> <dcf706c60707172336u38cb87c4ia77cc4dbe9b38a56@mail.gmail.com>
+ <Pine.LNX.4.64.0707181116090.24281@anakin> <dcf706c60707180250i55a4554di83fc8fed4f24f25@mail.gmail.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Phillip Susi <psusi@cfl.rr.com>, Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>
-Subject: Re: [PATCH] block: factor out bio_check_eod()
-References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070530093503.GA15559@kernel.dk> <20070718105655.GB22374@htj.dyndns.org> <20070718105946.GC22374@htj.dyndns.org> <20070718110619.GM11657@kernel.dk>
-In-Reply-To: <20070718110619.GM11657@kernel.dk>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Jul 18 2007, Tejun Heo wrote:
->> End of device check is done twice in __generic_make_request() and it's
->> fully inlined each time.  Factor out bio_check_eod().
-> 
-> Tejun, yeah I should seperate the cleanups and put them in the upstream
-> branch. Will do so and add your signed-off to both of them.
-> 
+On Wed, 18 Jul 2007, Sasa Ostrouska wrote:
+> On 7/18/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Wed, 18 Jul 2007, Sasa Ostrouska wrote:
+> > > On 7/18/07, Daniel Drake <dsd@gentoo.org> wrote:
+> > > > Sasa Ostrouska wrote:
+> > > > > I want to ask one question about a custom resolution in the console.
+> > > > > I have a Sony Vaio Laptop VGN-SZ2VP/X, the screen resolution is
+> > > > > 1280x800, now I'm using the vga=773 which is an 1024x768 but this is
+> > > > > ugly as I get a border of about 2-3cm on one the sides of the screen.
+> > > > > So is there a way that I set the 1280x800 resolution at boot time ?
+> > > >
+> > > > I don't think vesafb can do what you want. However, uvesafb probably
+> > can.
+> > > >
+> > > > http://dev.gentoo.org/~spock/projects/uvesafb/
+> > > >
+> > > > Daniel
+> > >
+> > > Daniel you seem to be right, as till now, no one of those solutions
+> > > for me worked, I always end up or with a non recognised option or a
+> > > small square 640x480 pixels where I see the console. I need to try
+> > > still the vbetest thing what Mr. Daplas proposed.
+> > >
+> > > In any case this laptop has an screen of 16:10 aspect ratio and I
+> > > belive would be good
+> > > to have those modes in the vesafb driver.
+> > 
+> > There are no modes in the vesafb driver. The vesafb driver uses the
+> > video mode that was set by the BIOS before starting Linux.
+> > 
+> Geert, in that case what should i do to use the full screen, probably
+> usind another driver ?
 
-Would they be different from the one I just posted?  No big deal either
-way.  I'm just basing the zero-length barrier on top of these patches.
-Oh well, the changes are trivial anyway.
+Yes, you can use a driver for one of yours graphics adapters.
 
--- 
-tejun
+> This laptop has 2 graphic cards in it. One is a Intel 915 another is
+> the nVidia GeForce 7400. I manly use the nvidia one when i'm on AC
+> adapter.
+> So how can I do to set the console to 1280x800 ?
+
+Use nvidiafb and video=1280x800?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
