@@ -1,88 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbXGREbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbXGREl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbXGREbS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 00:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbXGREbE
+	id S1754528AbXGREl7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 00:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXGRElt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 00:31:04 -0400
-Received: from mga05.intel.com ([192.55.52.89]:29782 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751210AbXGREbC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 00:31:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,548,1175497200"; 
-   d="scan'208";a="269674522"
-Subject: Re: [PATCH] Optimize struct task_delay_info
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Shailabh Nagar <nagar1234@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4694C30E.1030607@linux.vnet.ibm.com>
-References: <1184138034.3068.51.camel@ymzhang>
-	 <4694C30E.1030607@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 18 Jul 2007 12:30:15 +0800
-Message-Id: <1184733015.4688.46.camel@ymzhang>
+	Wed, 18 Jul 2007 00:41:49 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43331 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751155AbXGREls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 00:41:48 -0400
+Date: Wed, 18 Jul 2007 14:41:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>, wli@holomorphy.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, sparclinux@vger.kernel.org
+Subject: [PATCH] Mark sparc and sparc64 as not having virt_to_bus
+Message-Id: <20070718144140.3b4fd82e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-11 at 17:16 +0530, Balbir Singh wrote:
-> Zhang, Yanmin wrote:
-> > struct task_delay_info is used by per process block I/O delay statistics
-> > feature which is useful in kernel. This struct is not optimized.
-> > 
-> > My patch against kernel 2.6.22 shrinks it a half.
-> > 
-> > 1) Delete blkio_start and blkio_end. As the collection happens in
-> > io_schedule and io_schedule_timeout, we use local variables to
-> > replace them;
-> > 2) Delete lock. The change to the protected data has no nested cases.
-> > In addition, the result is for performance data collection, so it’s
-> > unnecessary to add such lock. 
-> > 3) Delete flags. It just has one value. Use the most significant bit of
-> > blkio_delay (64 bits) to mark it..
-> > 
-> > 
-> > Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
-> 
-> Hi, Yanmin,
-> 
-> Did you see any particular performance issues with the delay accounting
-> patches? Is the patch tested; could you please provide test results?
-It's hard to find an appropriate benchmark to test it. Anyway, I used sysbench
-to test it on my x86_64 machine. My machine has 16 logical cpu, dual-core+hyperThread.
-memory is 8GB and disk is one SATA.
 
-I tested both sequence and rand.
-1) seq read/write:use command line:
-echo "3">/proc/sys/vm/drop_caches; sysbench --test=fileio --file-test-mode=seqrewr
---num-threads=32 --file-total-size=1500M --max-requests=150000 --max-time=3000 run;
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/sparc/Kconfig       |    3 +++
+ arch/sparc64/Kconfig     |    3 +++
+ include/asm-sparc64/io.h |    5 -----
+ 3 files changed, 6 insertions(+), 5 deletions(-)
 
-Run the command for 20 times and get average result:
-Without patch: 49.7511Mb/sec
-With patch: 51.6557Mb/sec
-Improvement: 3.8%
+This is part of a rash attempt to make allmodconfig builds work for sparc
+and sparc64 :-)
 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-2) Rand read/write:use command line:
-echo "3">/proc/sys/vm/drop_caches; sysbench --test=fileio --file-test-mode=rndrw
---num-threads=32 --file-total-size=800M --max-requests=15000 --max-time=3000 run;
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 73df711..603d83a 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -21,6 +21,9 @@ config GENERIC_ISA_DMA
+ 	bool
+ 	default y
+ 
++config ARCH_NO_VIRT_TO_BUS
++	def_bool y
++
+ source "init/Kconfig"
+ 
+ menu "General machine setup"
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index b84b6af..df6ee71 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -62,6 +62,9 @@ config AUDIT_ARCH
+ 	bool
+ 	default y
+ 
++config ARCH_NO_VIRT_TO_BUS
++	def_bool y
++
+ choice
+ 	prompt "Kernel page size"
+ 	default SPARC64_PAGE_SIZE_8KB
+diff --git a/include/asm-sparc64/io.h b/include/asm-sparc64/io.h
+index ad595b6..9565a89 100644
+--- a/include/asm-sparc64/io.h
++++ b/include/asm-sparc64/io.h
+@@ -14,11 +14,6 @@
+ #define __SLOW_DOWN_IO	do { } while (0)
+ #define SLOW_DOWN_IO	do { } while (0)
+ 
+-extern unsigned long virt_to_bus_not_defined_use_pci_map(volatile void *addr);
+-#define virt_to_bus virt_to_bus_not_defined_use_pci_map
+-extern unsigned long bus_to_virt_not_defined_use_pci_map(volatile void *addr);
+-#define bus_to_virt bus_to_virt_not_defined_use_pci_map
+-
+ /* BIO layer definitions. */
+ extern unsigned long kern_base, kern_size;
+ #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
+-- 
+1.5.2.3
 
-Run the command for 10 times and get average result:
-Without patch: 7.25657Mb/sec
-With patch: 7.35052Mb/sec
-Improvement: 1.3%
-
-
-I didn't use application to read the delay accounting info. If I did, I guess the improvement
-is better.
-
-> 
-> Meanwhile, I'll review these patches and I am correcting Shailabh's id
-> to his new email id.
-Thanks.
-
-Yanmin
