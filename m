@@ -1,383 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935803AbXGRXyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935790AbXGRX7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935803AbXGRXyZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbXGRXyP
+	id S935790AbXGRX7e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760932AbXGRX70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:54:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37925 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752808AbXGRXyL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:54:11 -0400
-Date: Wed, 18 Jul 2007 16:52:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Cc: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 3/3] ps3: FLASH ROM Storage Driver
-Message-Id: <20070718165222.e504d92e.akpm@linux-foundation.org>
-In-Reply-To: <20070716162206.723142000@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.723142000@pademelon.sonytel.be>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Jul 2007 19:59:26 -0400
+Received: from ns1.suse.de ([195.135.220.2]:60244 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760910AbXGRX70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:59:26 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [git patches] two warning fixes
+Date: Thu, 19 Jul 2007 01:59:22 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+References: <20070718235504.GA9601@havoc.gtf.org>
+In-Reply-To: <20070718235504.GA9601@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707190159.22654.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jul 2007 18:15:42 +0200
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+On Thursday 19 July 2007 01:55:04 Jeff Garzik wrote:
 > 
-> Add a FLASH ROM Storage Driver for the PS3:
->   - Implemented as a misc character device driver
->   - Uses a fixed 256 KiB buffer allocated from boot memory as the hypervisor
->     requires the writing of aligned 256 KiB blocks
+> Please pull from 'warnings' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git warnings
 > 
-> --- /dev/null
-> +++ b/drivers/char/ps3flash.c
-> @@ -0,0 +1,429 @@
-> +/*
-> + * PS3 FLASH ROM Storage Driver
-> + *
-> + * Copyright (C) 2007 Sony Computer Entertainment Inc.
-> + * Copyright 2007 Sony Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; version 2 of the License.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along
-> + * with this program; if not, write to the Free Software Foundation, Inc.,
-> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-> + */
-> +
-> +#include <linux/fs.h>
-> +#include <linux/miscdevice.h>
-> +#include <linux/uaccess.h>
-> +
-> +#include <asm/lv1call.h>
-> +#include <asm/ps3stor.h>
-> +
-> +
-> +#define DEVICE_NAME		"ps3flash"
-> +
-> +#define FLASH_BLOCK_SIZE	(256*1024)
-> +
-> +
-> +struct ps3flash_private {
-> +	struct mutex mutex;	/* Bounce buffer mutex */
-> +};
-> +#define ps3flash_priv(dev)	((dev)->sbd.core.driver_data)
+> to receive the following updates:
+> 
+>  drivers/video/aty/radeon_base.c |   23 ++++++++++++++++++-----
+>  include/asm-x86_64/tlbflush.h   |    6 +++++-
+>  2 files changed, 23 insertions(+), 6 deletions(-)
+> 
+> Jeff Garzik (2):
+>       drivers/video/aty/radeon_base: fix radeonfb_pci_register() err handling
+>       [X86-64] make flush_tlb_kernel_range() a static inline function
 
-bzzzt!
+I already got that patch queued. Why don't you send them through the maintainers?
 
-> +static loff_t ps3flash_llseek(struct file *file, loff_t offset, int origin)
-> +{
-> +	struct ps3_storage_device *dev = ps3flash_dev;
-> +	u64 size = dev->regions[dev->region_idx].size*dev->blk_size;
-> +
-> +	switch (origin) {
-> +	case 1:
-> +		offset += file->f_pos;
-> +		break;
-> +	case 2:
-> +		offset += size;
-> +		break;
-> +	}
-> +	if (offset < 0)
-> +		return -EINVAL;
-> +
-> +	file->f_pos = offset;
-> +	return file->f_pos;
-> +}
-
-lseek implementations usually need locking.  file->f_mapping->host->i_mutex
-would be typical.
-
-That locking mostly protects 64-bit f_pos on 32-bit architectures so you
-can perahps kinda get away with it here.  However the code is a bit racy
-even on 64-bit, for silly userspace.
-
-That being said, I'd have thought that you could use one of our many
-generic lseek library fucntions here, or even an newly-exported
-block_llseek().  That assumes that i_size is correct, which I trust is the
-case.
-
-> +static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
-> +			     loff_t *pos)
-> +{
-> +	struct ps3_storage_device *dev = ps3flash_dev;
-> +	struct ps3flash_private *priv = ps3flash_priv(dev);
-> +	u64 size, start_sector, end_sector, offset;
-> +	ssize_t sectors_read;
-> +	size_t remaining, n;
-> +
-> +	dev_dbg(&dev->sbd.core,
-> +		"%s:%u: Reading %zu bytes at position %lld to user 0x%p\n",
-> +		__func__, __LINE__, count, *pos, buf);
-> +
-> +	size = dev->regions[dev->region_idx].size*dev->blk_size;
-> +	if (*pos >= size || !count)
-> +		return 0;
-> +
-> +	if (*pos+count > size) {
-> +		dev_dbg(&dev->sbd.core,
-> +			"%s:%u Truncating count from %zu to %llu\n", __func__,
-> +			__LINE__, count, size - *pos);
-> +		count = size - *pos;
-> +	}
-> +
-> +	start_sector = do_div_llr(*pos, dev->blk_size, &offset);
-> +	end_sector = DIV_ROUND_UP(*pos+count, dev->blk_size);
-> +
-> +	remaining = count;
-> +	do {
-> +		mutex_lock(&priv->mutex);
-> +
-> +		sectors_read = ps3flash_read_sectors(dev, start_sector,
-> +						     end_sector-start_sector,
-> +						     0);
-> +		if (sectors_read < 0) {
-> +			mutex_unlock(&priv->mutex);
-> +			return sectors_read;
-> +		}
-> +
-> +		n = min(remaining, sectors_read*dev->blk_size-offset);
-> +		dev_dbg(&dev->sbd.core,
-> +			"%s:%u: copy %lu bytes from 0x%p to user 0x%p\n",
-> +			__func__, __LINE__, n, dev->bounce_buf+offset, buf);
-> +		if (copy_to_user(buf, dev->bounce_buf+offset, n)) {
-> +			mutex_unlock(&priv->mutex);
-> +			return -EFAULT;
-> +		}
-> +
-> +		mutex_unlock(&priv->mutex);
-> +
-> +		*pos += n;
-> +		buf += n;
-> +		remaining -= n;
-> +		start_sector += sectors_read;
-> +		offset = 0;
-> +	} while (remaining > 0);
-> +
-> +	return count;
-> +}
-
-There are several nasty deeply-embedded return points in this function.
-
-> +static ssize_t ps3flash_write(struct file *file, const char __user *buf,
-> +			      size_t count, loff_t *pos)
-> +{
-> +	struct ps3_storage_device *dev = ps3flash_dev;
-> +	struct ps3flash_private *priv = ps3flash_priv(dev);
-> +	u64 size, chunk_sectors, start_write_sector, end_write_sector,
-> +	    end_read_sector, start_read_sector, head, tail, offset;
-> +	ssize_t res;
-> +	size_t remaining, n;
-> +	unsigned int sec_off;
-> +
-> +	dev_dbg(&dev->sbd.core,
-> +		"%s:%u: Writing %zu bytes at position %lld from user 0x%p\n",
-> +		__func__, __LINE__, count, *pos, buf);
-> +
-> +	size = dev->regions[dev->region_idx].size*dev->blk_size;
-> +	if (*pos >= size || !count)
-> +		return 0;
-> +
-> +	if (*pos+count > size) {
-
-checkpatch missed stuff here.
-
-> +		dev_dbg(&dev->sbd.core,
-> +			"%s:%u Truncating count from %zu to %llu\n", __func__,
-> +			__LINE__, count, size - *pos);
-> +		count = size - *pos;
-> +	}
-> +
-> +	chunk_sectors = dev->bounce_size / dev->blk_size;
-> +
-> +	start_write_sector = do_div_llr(*pos, dev->bounce_size, &offset) *
-> +			     chunk_sectors;
-
-It's strange to see a do_div_llr() in the middle of all this 64-bit-only
-code.  Could use / and %?
-
-> +	end_write_sector = DIV_ROUND_UP(*pos+count, dev->bounce_size) *
-> +			   chunk_sectors;
-> +
-> +	end_read_sector = DIV_ROUND_UP(*pos, dev->blk_size);
-> +	start_read_sector = (*pos+count) / dev->blk_size;
-> +
-> +	/*
-> +	 * As we have to write in 256 KiB chunks, while we can read in blk_size
-> +	 * (usually 512 bytes) chunks, we perform the following steps:
-> +	 *   1. Read from start_write_sector to end_read_sector ("head")
-> +	 *   2. Read from start_read_sector to end_write_sector ("tail")
-> +	 *   3. Copy data to buffer
-> +	 *   4. Write from start_write_sector to end_write_sector
-> +	 * All of this is complicated by using only one 256 KiB bounce buffer.
-> +	 */
-> +
-> +	head = end_read_sector-start_write_sector;
-> +	tail = end_write_sector-start_read_sector;
-
-checkpatch missed this too.
-
-> +	remaining = count;
-> +	do {
-> +		mutex_lock(&priv->mutex);
-> +
-> +		if (end_read_sector >= start_read_sector) {
-> +			/* Merge head and tail */
-> +			dev_dbg(&dev->sbd.core,
-> +				"Merged head and tail: %lu sectors at %lu\n",
-> +				chunk_sectors, start_write_sector);
-> +			res = ps3flash_read_sectors(dev, start_write_sector,
-> +						    chunk_sectors, 0);
-> +			if (res < 0)
-> +				goto fail;
-> +		} else {
-> +			if (head) {
-> +				/* Read head */
-> +				dev_dbg(&dev->sbd.core,
-> +					"head: %lu sectors at %lu\n", head,
-> +					start_write_sector);
-> +				res = ps3flash_read_sectors(dev,
-> +							    start_write_sector,
-> +							    head, 0);
-> +				if (res < 0)
-> +					goto fail;
-> +			}
-> +			if (start_read_sector <
-> +			    start_write_sector+chunk_sectors) {
-> +				/* Read tail */
-> +				dev_dbg(&dev->sbd.core,
-> +					"tail: %lu sectors at %lu\n", tail,
-> +					start_read_sector);
-> +				sec_off = start_read_sector-start_write_sector;
-> +				res = ps3flash_read_sectors(dev,
-> +							    start_read_sector,
-> +							    tail, sec_off);
-> +				if (res < 0)
-> +					goto fail;
-> +			}
-> +		}
-> +
-> +		n = min(remaining, dev->bounce_size-offset);
-> +		dev_dbg(&dev->sbd.core,
-> +			"%s:%u: copy %lu bytes from user 0x%p to 0x%p\n",
-> +			__func__, __LINE__, n, buf, dev->bounce_buf+offset);
-> +		if (copy_from_user(dev->bounce_buf+offset, buf, n)) {
-> +			res = -EFAULT;
-> +			goto fail;
-> +		}
-> +
-> +		res = ps3flash_write_chunk(dev, start_write_sector);
-> +		if (res < 0)
-> +			goto fail;
-> +
-> +		mutex_unlock(&priv->mutex);
-> +
-> +		*pos += n;
-> +		buf += n;
-> +		remaining -= n;
-> +		start_write_sector += chunk_sectors;
-> +		head = 0;
-> +		offset = 0;
-> +	} while (remaining > 0);
-> +
-> +	return count;
-> +
-> +fail:
-> +	mutex_unlock(&priv->mutex);
-> +	return res;
-> +}
->
-> ...
->
-> +static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
-> +{
-> +	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
-> +	struct ps3flash_private *priv;
-> +	int error;
-> +	unsigned long tmp;
-> +
-> +	tmp = dev->regions[dev->region_idx].start*dev->blk_size;
-> +	if (tmp % FLASH_BLOCK_SIZE) {
-> +		dev_err(&dev->sbd.core,
-> +			"%s:%u region start %lu is not aligned\n", __func__,
-> +			__LINE__, tmp);
-> +		return -EINVAL;
-> +	}
-> +	tmp = dev->regions[dev->region_idx].size*dev->blk_size;
-> +	if (tmp % FLASH_BLOCK_SIZE) {
-> +		dev_err(&dev->sbd.core,
-> +			"%s:%u region size %lu is not aligned\n", __func__,
-> +			__LINE__, tmp);
-> +		return -EINVAL;
-> +	}
-> +
-> +	/* use static buffer, kmalloc cannot allocate 256 KiB */
-> +	if (!ps3flash_bounce_buffer.address)
-> +		return -ENODEV;
-> +
-> +	if (ps3flash_dev) {
-> +		dev_err(&dev->sbd.core,
-> +			"Only one FLASH device is supported\n");
-> +		return -EBUSY;
-> +	}
-> +
-> +	ps3flash_dev = dev;
-> +
-> +	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-> +	if (!priv) {
-> +		error = -ENOMEM;
-> +		goto fail;
-> +	}
-> +
-> +	ps3flash_priv(dev) = priv;
-> +	mutex_init(&priv->mutex);
-> +
-> +	dev->bounce_size = ps3flash_bounce_buffer.size;
-> +	dev->bounce_buf = ps3flash_bounce_buffer.address;
-> +
-> +	error = ps3stor_setup(dev, ps3flash_interrupt);
-> +	if (error)
-> +		goto fail_free_priv;
-> +
-> +	ps3flash_misc.parent = &dev->sbd.core;
-> +	error = misc_register(&ps3flash_misc);
-> +	if (error) {
-> +		dev_err(&dev->sbd.core, "%s:%u: misc_register failed %d\n",
-> +			__func__, __LINE__, error);
-> +		goto fail_teardown;
-> +	}
-> +
-> +	dev_info(&dev->sbd.core, "%s:%u: registered misc device %d\n",
-> +		 __func__, __LINE__, ps3flash_misc.minor);
-> +	return 0;
-> +
-> +fail_teardown:
-> +	ps3stor_teardown(dev);
-> +fail_free_priv:
-> +	kfree(priv);
-> +	ps3flash_priv(dev) = NULL;
-> +fail:
-> +	ps3flash_dev = NULL;
-> +	return error;
-> +}
-> +
-
+-Andi
