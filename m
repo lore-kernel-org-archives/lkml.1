@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760998AbXGRUNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbXGRUPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760998AbXGRUNH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 16:13:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbXGRUMy
+	id S1758337AbXGRUPg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 16:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbXGRUP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 16:12:54 -0400
-Received: from ns1.suse.de ([195.135.220.2]:43807 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753313AbXGRUMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 16:12:53 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Greg KH <gregkh@suse.de>, Tejun Heo <htejun@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sysfs root link count broken in 2.6.22-git5
-References: <20070715124232.4e371bf9@hyperion.delvare>
-	<20070717034844.GB11602@suse.de>
-	<20070717131255.71b7e72e@hyperion.delvare>
-	<20070717183652.GG9702@suse.de>
-	<20070717230530.64d9a896@hyperion.delvare>
-	<20070718033828.GA8582@suse.de>
-	<20070718220652.15ad2c4b@hyperion.delvare>
-X-Yow: Yow!  Am I having fun yet?
-Date: Wed, 18 Jul 2007 22:12:52 +0200
-In-Reply-To: <20070718220652.15ad2c4b@hyperion.delvare> (Jean Delvare's
-	message of "Wed\, 18 Jul 2007 22\:06\:52 +0200")
-Message-ID: <jeir8hqxmj.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Wed, 18 Jul 2007 16:15:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48449 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752640AbXGRUP2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 16:15:28 -0400
+Date: Wed, 18 Jul 2007 13:14:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Giacomo Catenazzi <cate@cateee.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
+In-Reply-To: <20070718200835.GK11657@kernel.dk>
+Message-ID: <alpine.LFD.0.999.0707181313100.27353@woody.linux-foundation.org>
+References: <469D1D5E.8050609@cateee.net> <200707172320.12141.bzolnier@gmail.com>
+ <alpine.LFD.0.999.0707181238500.27353@woody.linux-foundation.org>
+ <20070718200835.GK11657@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare <khali@linux-fr.org> writes:
 
-> On Tue, 17 Jul 2007 20:38:28 -0700, Greg KH wrote:
->>                                            Isn't there some glibc
->> function that can detect the mount point of a filesystem or directory?
->> Something in glibc parses /proc/mounts for something, I can't remember
->> what it is right now though, sorry.
->
-> Maybe getmntent(3)? Sure I could use this, but how expensive compared
-> to a single stat(2).
 
-How about comparing the device numbers of /sys and its parent?  If they
-are different then /sys is a mount point.
+On Wed, 18 Jul 2007, Jens Axboe wrote:
+> 
+> I think your analysis is pretty good, however you'd probably want to
+> incorporate that direct in ide_end_request().
 
-Andreas.
+Ok, that makes sense too.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+And yes, the further cleanup would be:
+
+> Better still would be to make __ide_end_request() take a byte count
+> instead and use end_that_request_chunk(). Then you can get rid of the
+> rounding as well.
+
+and that sounds fine, but is an independent issue and not strictly 
+necessary.
+
+Bartlomiej?
+
+		Linus
