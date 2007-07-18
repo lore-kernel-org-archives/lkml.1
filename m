@@ -1,253 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934713AbXGRRSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934613AbXGRRSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934713AbXGRRSL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 13:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762723AbXGRRRw
+	id S934613AbXGRRSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 13:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762780AbXGRRSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 13:17:52 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58992 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762839AbXGRRRv (ORCPT
+	Wed, 18 Jul 2007 13:18:31 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:33456 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761557AbXGRRSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 13:17:51 -0400
-Date: Wed, 18 Jul 2007 19:17:49 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.22-git* regression: Kconfig prompts without help text
-In-Reply-To: <20070718094119.4a26ae03.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0707181916410.5385@fbirervta.pbzchgretzou.qr>
-References: <469BBDAD.2010908@s5r6.in-berlin.de>
- <Pine.LNX.4.64.0707181634100.5385@fbirervta.pbzchgretzou.qr>
- <20070718094119.4a26ae03.randy.dunlap@oracle.com>
+	Wed, 18 Jul 2007 13:18:30 -0400
+Message-ID: <469E4B1A.8050807@gmail.com>
+Date: Wed, 18 Jul 2007 19:17:14 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt Mackall <mpm@selenic.com>
+CC: Ray Lee <ray-lk@madrabbit.org>, Bodo Eggert <7eggert@gmx.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+References: <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com> <Pine.LNX.4.58.0707161523500.25779@be1.lrz> <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org> <469BFB73.3070105@gmail.com> <20070716232755.GD11115@waste.org> <469D7D1B.4050909@gmail.com> <20070718165402.GK11115@waste.org>
+In-Reply-To: <20070718165402.GK11115@waste.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/18/2007 06:54 PM, Matt Mackall wrote:
 
-On Jul 18 2007 09:41, Randy Dunlap wrote:
->
->Looks good to me except that help text should be indented by
->2 more spaces according to CodingStyle.
+> You can expect the distribution of file sizes to follow a gamma
+> distribution, with a large hump towards the small end of the spectrum
+> around 1-10K, dropping off very rapidly as file sizes grow.
 
-Who invented that rule anyway... the "---help---" marker (note the dashes)
-clearly separates things already.
-Here you go.
+Okay.
 
-===
+>> Not too sure then that 8K wouldn't be something I'd want, given fewer 
+>> pagefaults and all that...
+> 
+> Fewer minor pagefaults, perhaps. Readahead already deals with most of
+> the major pagefaults that larger pages would.
 
-Add some help texts to recently-introduced kconfig items
+Mmm, yes.
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+> Anyway, raising the systemwide memory overhead by up to 15% seems an 
+> awfully silly way to address the problem of not being able to allocate a
+> stack when you're down to your last 1 or 2% of memory!
 
----
- arch/i386/Kconfig          |    5 +++++
- drivers/atm/Kconfig        |    5 +++++
- drivers/auxdisplay/Kconfig |    5 +++++
- drivers/block/Kconfig      |    6 ++++++
- drivers/crypto/Kconfig     |    5 +++++
- drivers/hid/Kconfig        |    5 +++++
- drivers/kvm/Kconfig        |    5 +++++
- drivers/macintosh/Kconfig  |    6 ++++++
- drivers/misc/Kconfig       |    5 +++++
- drivers/net/Kconfig        |   15 +++++++++++++++
- drivers/usb/Kconfig        |    3 +++
- 11 files changed, 65 insertions(+)
+Well, I've seen larger pagesizes submerge in more situations, specifically 
+in allocation overhead -- ie, making the struct page's fit in lowmem for 
+hugemem x86 boxes was the first I heard of it. But yes, otherwise (also) 
+mostly database loads which obviously have moved to 64-bit since.
 
-Index: linux-2.6.23/arch/i386/Kconfig
-===================================================================
---- linux-2.6.23.orig/arch/i386/Kconfig
-+++ linux-2.6.23/arch/i386/Kconfig
-@@ -1216,6 +1216,11 @@ menuconfig INSTRUMENTATION
- 	bool "Instrumentation Support"
- 	depends on EXPERIMENTAL
- 	default y
-+	---help---
-+	  Say Y here to get to see options related to performance measurement,
-+	  debugging, and testing. This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if INSTRUMENTATION
- 
-Index: linux-2.6.23/drivers/atm/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/atm/Kconfig
-+++ linux-2.6.23/drivers/atm/Kconfig
-@@ -6,6 +6,11 @@ menuconfig ATM_DRIVERS
- 	bool "ATM drivers"
- 	depends on NETDEVICES && ATM
- 	default y
-+	---help---
-+	  Say Y here to get to see options for Asynchronous Transfer Mode
-+	  device drivers. This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if ATM_DRIVERS && NETDEVICES && ATM
- 
-Index: linux-2.6.23/drivers/auxdisplay/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/auxdisplay/Kconfig
-+++ linux-2.6.23/drivers/auxdisplay/Kconfig
-@@ -8,6 +8,11 @@
- menuconfig AUXDISPLAY
- 	depends on PARPORT
- 	bool "Auxiliary Display support"
-+	---help---
-+	  Say Y here to get to see options for auxiliary display drivers.
-+	  This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if AUXDISPLAY && PARPORT
- 
-Index: linux-2.6.23/drivers/block/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/block/Kconfig
-+++ linux-2.6.23/drivers/block/Kconfig
-@@ -6,6 +6,12 @@ menuconfig BLK_DEV
- 	bool "Block devices"
- 	depends on BLOCK
- 	default y
-+	---help---
-+	  Say Y here to get to see options for various different block device
-+	  drivers. This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled;
-+	  only do this if you know what you are doing.
- 
- if BLK_DEV
- 
-Index: linux-2.6.23/drivers/crypto/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/crypto/Kconfig
-+++ linux-2.6.23/drivers/crypto/Kconfig
-@@ -2,6 +2,11 @@
- menuconfig CRYPTO_HW
- 	bool "Hardware crypto devices"
- 	default y
-+	---help---
-+	  Say Y here to get to see options for hardware crypto devices and
-+	  processors. This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if CRYPTO_HW
- 
-Index: linux-2.6.23/drivers/hid/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/hid/Kconfig
-+++ linux-2.6.23/drivers/hid/Kconfig
-@@ -5,6 +5,11 @@ menuconfig HID_SUPPORT
- 	bool "HID Devices"
- 	depends on INPUT
- 	default y
-+	---help---
-+	  Say Y here to get to see options for various computer-human interface
-+	  device drivers. This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if HID_SUPPORT
- 
-Index: linux-2.6.23/drivers/kvm/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/kvm/Kconfig
-+++ linux-2.6.23/drivers/kvm/Kconfig
-@@ -5,6 +5,11 @@ menuconfig VIRTUALIZATION
- 	bool "Virtualization"
- 	depends on X86
- 	default y
-+	---help---
-+	  Say Y here to get to see options for virtualization guest drivers.
-+	  This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if VIRTUALIZATION
- 
-Index: linux-2.6.23/drivers/macintosh/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/macintosh/Kconfig
-+++ linux-2.6.23/drivers/macintosh/Kconfig
-@@ -3,6 +3,12 @@ menuconfig MACINTOSH_DRIVERS
- 	bool "Macintosh device drivers"
- 	depends on PPC || MAC || X86
- 	default y if (PPC_PMAC || MAC)
-+	---help---
-+	  Say Y here to get to see options for devices used with Macintosh
-+	  computers, both PPC and Intel based. This option alone does not add
-+	  any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if MACINTOSH_DRIVERS
- 
-Index: linux-2.6.23/drivers/misc/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/misc/Kconfig
-+++ linux-2.6.23/drivers/misc/Kconfig
-@@ -5,6 +5,11 @@
- menuconfig MISC_DEVICES
- 	bool "Misc devices"
- 	default y
-+	---help---
-+	  Say Y here to get to see options for device drivers from various
-+	  different categories. This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if MISC_DEVICES
- 
-Index: linux-2.6.23/drivers/net/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/net/Kconfig
-+++ linux-2.6.23/drivers/net/Kconfig
-@@ -1923,6 +1923,16 @@ menuconfig NETDEV_1000
- 	bool "Ethernet (1000 Mbit)"
- 	depends on !UML
- 	default y
-+	---help---
-+	  Ethernet (also called IEEE 802.3 or ISO 8802-2) is the most common
-+	  type of Local Area Network (LAN) in universities and companies.
-+
-+	  Say Y here to get to see options for Gigabit Ethernet drivers.
-+	  This option alone does not add any kernel code.
-+	  Note that drivers supporting both 100 and 1000 MBit may be listed
-+	  under "Ethernet (10 or 100MBit)" instead.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if NETDEV_1000
- 
-@@ -2294,6 +2304,11 @@ menuconfig NETDEV_10000
- 	bool "Ethernet (10000 Mbit)"
- 	depends on !UML
- 	default y
-+	---help---
-+	  Say Y here to get to see options for 10 Gigabit Ethernet drivers.
-+	  This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
- 
- if NETDEV_10000
- 
-Index: linux-2.6.23/drivers/usb/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/usb/Kconfig
-+++ linux-2.6.23/drivers/usb/Kconfig
-@@ -6,6 +6,9 @@ menuconfig USB_SUPPORT
- 	bool "USB support"
- 	depends on HAS_IOMEM
- 	default y
-+	---help---
-+	  This option adds core support for Universal Serial Bus (USB).
-+	  You will also need drivers from the following menu to make use of it.
- 
- if USB_SUPPORT
- 
+Pagecache tail-packing seems like a promising idea to deal with the downside 
+of larger pages but I'll admit I'm not particularly sure how many _up_ sides 
+to them are left on x86 (not -64) now that's becoming a legacy architecture 
+(and since you just shot down the pagefaults thing).
+
+Rene.
