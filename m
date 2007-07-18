@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764243AbXGRN2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764100AbXGRNaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764243AbXGRN2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 09:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761332AbXGRN2R
+	id S1764100AbXGRNaS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 09:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbXGRNaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 09:28:17 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:31654 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759934AbXGRN2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 09:28:14 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [RFC 0/3] lro: Generic Large Receive Offload for TCP traffic (IPv6)
-Date: Wed, 18 Jul 2007 15:00:59 +0200
-User-Agent: KMail/1.8.2
-Cc: hch@infradead.org, netdev@vger.kernel.org, raisch@de.ibm.com,
-       themann@de.ibm.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
-       stefan.roscher@de.ibm.com
-References: <200707111621.24852.ossthema@de.ibm.com> <20070715091253.GA15790@infradead.org> <20070715.024015.126137834.davem@davemloft.net>
-In-Reply-To: <20070715.024015.126137834.davem@davemloft.net>
+	Wed, 18 Jul 2007 09:30:05 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4889 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759138AbXGRNaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 09:30:04 -0400
+Date: Wed, 18 Jul 2007 15:26:31 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, James Bruce <bruce@andrew.cmu.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Andrea Arcangeli <andrea@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
+In-Reply-To: <1184763148.20032.135.camel@twins>
+Message-ID: <Pine.LNX.4.64.0707181510590.1817@scrub.home>
+References: <20070711211638.GE18767@one.firstfloor.org>  <20070711214649.GK14435@v2.random>
+  <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org> 
+ <Pine.LNX.4.64.0707130415520.1818@scrub.home>  <1184302024.6709.11.camel@Homer.simpson.net>
+  <Pine.LNX.4.64.0707131728070.1817@scrub.home>  <1184355835.12353.321.camel@chaos>
+ <469B0D9E.3030402@andrew.cmu.edu>  <20070716070610.GA10907@elte.hu> 
+ <Pine.LNX.4.64.0707161213500.1817@scrub.home>  <20070716112037.GA6895@elte.hu>
+  <Pine.LNX.4.64.0707161331570.1817@scrub.home> 
+ <alpine.LFD.0.999.0707161045520.20061@woody.linux-foundation.org> 
+ <1184754430.20032.130.camel@twins>  <Pine.LNX.4.64.0707181442340.1817@scrub.home>
+ <1184763148.20032.135.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707181501.00163.ossthema@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-I suggest we keep the interface open for IPv6 support by adding 
-an additional parameter but first just get IPv4 support only 
-into the kernel. IPv6 support can then incrementially be added.
-Would that be ok?
+On Wed, 18 Jul 2007, Peter Zijlstra wrote:
 
+> By breaking the UNIX model of nice levels. Not an option in my book.
 
+BTW what is the "UNIX model of nice levels"?
 
-On Sunday 15 July 2007 11:40, David Miller wrote:
-> From: Christoph Hellwig <hch@infradead.org>
-> Date: Sun, 15 Jul 2007 10:12:53 +0100
-> 
-> > I'm not sure that's a good idea.  If current chips can't handle ipv6
-> > lro there is no way to actually test it and the code will surely bitrot.
-> 
-> Christoph, you can do LRO pretty much completely in software.
-> 
-> 
+SUS specifies the limit via NZERO, which is defined as "Minimum Acceptable 
+Value: 20", I can't find any information that it must be 20.
+
+bye, Roman
