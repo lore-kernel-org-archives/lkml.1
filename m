@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760808AbXGRJJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbXGRJLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760808AbXGRJJx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 05:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbXGRJJp
+	id S1761180AbXGRJLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 05:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbXGRJLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 05:09:45 -0400
-Received: from colin.muc.de ([193.149.48.1]:4710 "EHLO mail.muc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753591AbXGRJJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 05:09:44 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jul 2007 05:09:44 EDT
-Date: 18 Jul 2007 11:03:02 +0200
-Date: Wed, 18 Jul 2007 11:03:02 +0200
-From: Andi Kleen <ak@muc.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] Standardize x86_64's desc_defs.h in preparation for exposure to i386.
-Message-ID: <20070718090302.GA67073@muc.de>
-References: <1184743355.10380.112.camel@localhost.localdomain>
+	Wed, 18 Jul 2007 05:11:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45875
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756088AbXGRJLI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 05:11:08 -0400
+Date: Wed, 18 Jul 2007 02:11:07 -0700 (PDT)
+Message-Id: <20070718.021107.40833440.davem@davemloft.net>
+To: crquan@gmail.com
+Cc: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
+       jmorris@namei.org, kaber@coreworks.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] [net/core] move dev_mc_discard from dev_mcast.c to
+ dev.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <11847264651509-git-send-email-crquan@gmail.com>
+References: <11846606051099-git-send-email-crquan@gmail.com>
+	<11847264651509-git-send-email-crquan@gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184743355.10380.112.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 05:22:34PM +1000, Rusty Russell wrote:
-> However, the currently (i386-derived) x86-64 ones are suboptimal.  The
+From: Denis Cheng <crquan@gmail.com>
+Date: Wed, 18 Jul 2007 10:41:03 +0800
 
-In what way are they suboptimal? 
+> Because this function is only called by unregister_netdevice,
+> this moving could make this non-global function static,
+> and also remove its declaration in netdevice.h;
+> 
+> Any further, function __dev_addr_discard is also just called by
+> dev_mc_discard and dev_unicast_discard, keeping this two functions
+> both in one c file could make __dev_addr_discard also static
+> and remove its declaration in netdevice.h;
+> 
+> Futhermore, the sequential call to dev_unicast_discard and then
+> dev_mc_discard in unregister_netdevice have a similar mechanism that:
+> (netif_tx_lock_bh / __dev_addr_discard / netif_tx_unlock_bh),
+> they should merged into one to eliminate duplicates in acquiring and
+> releasing the dev->_xmit_lock, this would be done in my following patch.
+> 
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
 
-They seem to work just fine.
-
--Andi
-
+Patch applied, thanks.
