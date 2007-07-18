@@ -1,299 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932617AbXGRPSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762254AbXGRPYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932617AbXGRPSt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 11:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759780AbXGRPSk
+	id S1762254AbXGRPYB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 11:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbXGRPXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 11:18:40 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46258 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbXGRPSi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 11:18:38 -0400
-Date: Wed, 18 Jul 2007 17:18:34 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.22-git* regression: Kconfig prompts without help text
-In-Reply-To: <469BBDAD.2010908@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0707181634100.5385@fbirervta.pbzchgretzou.qr>
-References: <469BBDAD.2010908@s5r6.in-berlin.de>
+	Wed, 18 Jul 2007 11:23:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44653 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754333AbXGRPXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 11:23:51 -0400
+Message-ID: <469E305D.8060003@redhat.com>
+Date: Wed, 18 Jul 2007 11:23:09 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Patrick McHardy <kaber@trash.net>
+CC: Alasdair G Kergon <agk@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Subject: Re: [2.6.23 PATCH 07/18] dm io: fix panic on large request
+References: <20070711205846.GY24114@agk.fab.redhat.com> <469CC11B.2020103@trash.net>
+In-Reply-To: <469CC11B.2020103@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 07/17/2007 09:16 AM, Patrick McHardy wrote:
+> Alasdair G Kergon wrote:
+>> From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+>>
+>> bio_alloc_bioset() will return NULL if 'num_vecs' is too large.
+>> Use bio_get_nr_vecs() to get estimation of maximum number.
+>>
+>> Signed-off-by: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+>> Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+>>
+>> ---
+>>  drivers/md/dm-io.c |    5 ++++-
+>>  1 files changed, 4 insertions(+), 1 deletion(-)
+> 
+> 
+> This patch reproducibly oopses my box:
+> 
+> [  126.754204] BUG: unable to handle kernel NULL pointer dereference at
+> virtual address 00000000
+> [  126.754326]  printing eip:
+> [  126.754369] c0141a67
+> [  126.754420] *pde = 00000000
+> [  126.754465] Oops: 0000 [#1]
+> [  126.754507] PREEMPT
+> [  126.754585] Modules linked in: [...]
+> 
+> 
+> [  126.758372] CPU:    0
+> [  126.758373] EIP:    0060:[<c0141a67>]    Not tainted VLI
+> [  126.758374] EFLAGS: 00010282   (2.6.22 #1)
+> [  126.758511] EIP is at mempool_free+0xe/0xc0
+> [  126.758558] eax: d39e65d0   ebx: 00000000   ecx: df2b9898   edx: 00000000
+> [  126.758605] esi: 00000000   edi: d39e65d0   ebp: d487d6d0   esp: df79fec0
+> [  126.758652] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
+> [  126.758699] Process kcryptd/0 (pid: 3218, ti=df79f000 task=df2b9640
+> task.ti=df79f000)
+> [  126.758747] Stack: 00000000 00000000 d3835f80 00000000 e08b0923
+> e08a5f69 00000200 e0ad1080
+> [  126.759093]        dfb5ab40 d3835f80 e08b08c0 00000000 e08a5fb7
+> c01804d8 00000000 00000200
+> [  126.759439]        c520bc00 00000c00 d0b77438 d5754b00 df79ff5c
+> e08a515e d0b77444 d5754b00
+> [  126.759858] Call Trace:
+> [  126.759965]  [<e08b0923>] clone_endio+0x63/0xc0 [dm_mod]
+> [  126.760066]  [<e08a5f69>] crypt_convert+0x131/0x17f [dm_crypt]
+> [  126.760168]  [<e08b08c0>] clone_endio+0x0/0xc0 [dm_mod]
+> [  126.760264]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
+> [  126.760349]  [<c01804d8>] bio_endio+0x33/0x5d
+> [  126.760462]  [<e08a515e>] dec_pending+0x28/0x39 [dm_crypt]
+> [  126.760558]  [<e08a61e6>] kcryptd_do_work+0x22f/0x30f [dm_crypt]
+> [  126.760669]  [<c0112182>] update_stats_wait_end+0x7f/0xb2
+> [  126.760801]  [<e08a5fb7>] kcryptd_do_work+0x0/0x30f [dm_crypt]
+> [  126.760888]  [<c012700e>] run_workqueue+0x84/0x179
+> [  126.760990]  [<c0127292>] worker_thread+0x0/0xf0
+> [  126.761074]  [<c012732f>] worker_thread+0x9d/0xf0
+> [  126.761160]  [<c012a360>] autoremove_wake_function+0x0/0x37
+> [  126.761256]  [<c0127292>] worker_thread+0x0/0xf0
+> [  126.761334]  [<c012a15c>] kthread+0x52/0x58
+> [  126.761411]  [<c012a10a>] kthread+0x0/0x58
+> [  126.761496]  [<c0104983>] kernel_thread_helper+0x7/0x14
+> [  126.761598]  =======================
+> [  126.761717] Code: 1c 00 89 f6 eb a9 b8 88 13 00 00 e8 b4 56 1c 00 8d
+> 74 26 00 eb d5 31 db e9 11 ff ff ff 57 56 53 83 ec 04 89 c7 89 d6 85 c0
+> 74 55 <8b> 02 39 42 04 7d 46 9c 58 90 8d b4 26 00 00 00 00 89 c3 fa 90
 
-
-On Jul 16 2007 20:49, Stefan Richter wrote:
->
->It is an error to add visible Kconfig options without help text.  Among
->them are the new "menuconfig" options.  Jan obviously never uses "make
->oldconfig".
-
-Untrue. Users of menuconfig/xconfig/gconfig who do not know what an
-item is supposed to do would not get any helptext either.
-It's just that I did not quite know what helptext to put there
-besides some trivial "enable this to see more fluffy options from
-this category". Feel free to add Blame-From: <srichter> :)
-But see below.
-
->Most of these options were added after 2.6.22:
->
->BLK_DEV
->HID_SUPPORT
->INSTRUMENTATION
->MACINTOSH_DRIVERS
->MISC_DEVICES
->USB_SUPPORT
->
->Here are suggestions for help texts.  Please verify if they are correct
->and check whether there are more new (menuconfig) options without help
->texts.
-
-Other config options without text include:
-
-CRYPTO_HW       (b511431d85948823ec58639bd3137b910964be34)
-AUXDISPLAY      (f5920969fb9e29c9d60568864d0a56fe85e8f4b6)
-VIRTUALIZATION  (de062065a5293d8f434acb2d6ba5df87ad76bbd9)
-ATM_DRIVERS     (4151ce3159c18a990da7fd6f0fe36c73d1c40f87)
-NETDEV_1000     (f30486d57bceec2364aa696403d64429ada61b60)
-NETDEV_10000    (f30486d57bceec2364aa696403d64429ada61b60)
-
-Thanks for the starting help texts. I have produced a cumulative patch
-with both yours and the extra ones listed above. Can we somehow sneak
-this directly in without split-to-maintainers? tis' just some help text.
-(Patch below)
-
->PS:
->
->I believe one possible *bug* of this menuconfig stuff is that if (1.)
->user X disables menuconfig A in linux-2.6.x because nothing interesting
->for him is in there, (2.) developer Y adds something very interesting in
->menu A in linux-2.6.x+1, --> (3.) user X will miss this new option when
->he runs "make oldconfig" when switching to linux-2.6.x+1 because
->everything between 'if A'...'endif # A' will be invisible and disabled.
-
-If I once said "I don't want no USB", I do not want to be prompted in a later
-version for USB_COFFEE_PAD. :)
-
-
-	Jan
-===
->> add-help-texts-to-textless-menuconfig-objects.diff <<
-
-
-Add some help texts to recently-introduced kconfig items
-
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-
----
- arch/i386/Kconfig          |    5 +++++
- drivers/atm/Kconfig        |    5 +++++
- drivers/auxdisplay/Kconfig |    5 +++++
- drivers/block/Kconfig      |    6 ++++++
- drivers/crypto/Kconfig     |    5 +++++
- drivers/hid/Kconfig        |    5 +++++
- drivers/kvm/Kconfig        |    5 +++++
- drivers/macintosh/Kconfig  |    6 ++++++
- drivers/misc/Kconfig       |    5 +++++
- drivers/net/Kconfig        |   15 +++++++++++++++
- drivers/usb/Kconfig        |    3 +++
- 11 files changed, 65 insertions(+)
-
-Index: linux-2.6.23/arch/i386/Kconfig
-===================================================================
---- linux-2.6.23.orig/arch/i386/Kconfig
-+++ linux-2.6.23/arch/i386/Kconfig
-@@ -1216,6 +1216,11 @@ menuconfig INSTRUMENTATION
- 	bool "Instrumentation Support"
- 	depends on EXPERIMENTAL
- 	default y
-+	---help---
-+	Say Y here to get to see options related to performance measurement,
-+	debugging, and testing. This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if INSTRUMENTATION
- 
-Index: linux-2.6.23/drivers/atm/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/atm/Kconfig
-+++ linux-2.6.23/drivers/atm/Kconfig
-@@ -6,6 +6,11 @@ menuconfig ATM_DRIVERS
- 	bool "ATM drivers"
- 	depends on NETDEVICES && ATM
- 	default y
-+	---help---
-+	Say Y here to get to see options for Asynchronous Transfer Mode
-+	device drivers. This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if ATM_DRIVERS && NETDEVICES && ATM
- 
-Index: linux-2.6.23/drivers/auxdisplay/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/auxdisplay/Kconfig
-+++ linux-2.6.23/drivers/auxdisplay/Kconfig
-@@ -8,6 +8,11 @@
- menuconfig AUXDISPLAY
- 	depends on PARPORT
- 	bool "Auxiliary Display support"
-+	---help---
-+	Say Y here to get to see options for auxiliary display drivers.
-+	This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if AUXDISPLAY && PARPORT
- 
-Index: linux-2.6.23/drivers/block/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/block/Kconfig
-+++ linux-2.6.23/drivers/block/Kconfig
-@@ -6,6 +6,12 @@ menuconfig BLK_DEV
- 	bool "Block devices"
- 	depends on BLOCK
- 	default y
-+	---help---
-+	Say Y here to get to see options for various different block device
-+	drivers. This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled;
-+	only do this if you know what you are doing.
- 
- if BLK_DEV
- 
-Index: linux-2.6.23/drivers/crypto/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/crypto/Kconfig
-+++ linux-2.6.23/drivers/crypto/Kconfig
-@@ -2,6 +2,11 @@
- menuconfig CRYPTO_HW
- 	bool "Hardware crypto devices"
- 	default y
-+	---help---
-+	Say Y here to get to see options for hardware crypto devices and
-+	processors. This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if CRYPTO_HW
- 
-Index: linux-2.6.23/drivers/hid/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/hid/Kconfig
-+++ linux-2.6.23/drivers/hid/Kconfig
-@@ -5,6 +5,11 @@ menuconfig HID_SUPPORT
- 	bool "HID Devices"
- 	depends on INPUT
- 	default y
-+	---help---
-+	Say Y here to get to see options for various computer-human interface
-+	device drivers. This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if HID_SUPPORT
- 
-Index: linux-2.6.23/drivers/kvm/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/kvm/Kconfig
-+++ linux-2.6.23/drivers/kvm/Kconfig
-@@ -5,6 +5,11 @@ menuconfig VIRTUALIZATION
- 	bool "Virtualization"
- 	depends on X86
- 	default y
-+	---help---
-+	Say Y here to get to see options for virtualization guest drivers.
-+	This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if VIRTUALIZATION
- 
-Index: linux-2.6.23/drivers/macintosh/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/macintosh/Kconfig
-+++ linux-2.6.23/drivers/macintosh/Kconfig
-@@ -3,6 +3,12 @@ menuconfig MACINTOSH_DRIVERS
- 	bool "Macintosh device drivers"
- 	depends on PPC || MAC || X86
- 	default y if (PPC_PMAC || MAC)
-+	---help---
-+	Say Y here to get to see options for devices used with Macintosh
-+	computers, both PPC and Intel based. This option alone does not add
-+	any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if MACINTOSH_DRIVERS
- 
-Index: linux-2.6.23/drivers/misc/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/misc/Kconfig
-+++ linux-2.6.23/drivers/misc/Kconfig
-@@ -5,6 +5,11 @@
- menuconfig MISC_DEVICES
- 	bool "Misc devices"
- 	default y
-+	---help---
-+	Say Y here to get to see options for device drivers from various
-+	different categories. This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if MISC_DEVICES
- 
-Index: linux-2.6.23/drivers/net/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/net/Kconfig
-+++ linux-2.6.23/drivers/net/Kconfig
-@@ -1923,6 +1923,16 @@ menuconfig NETDEV_1000
- 	bool "Ethernet (1000 Mbit)"
- 	depends on !UML
- 	default y
-+	---help---
-+	Ethernet (also called IEEE 802.3 or ISO 8802-2) is the most common
-+	type of Local Area Network (LAN) in universities and companies.
-+
-+	Say Y here to get to see options for Gigabit Ethernet drivers.
-+	This option alone does not add any kernel code.
-+	Note that drivers supporting both 100 and 1000 MBit may be listed
-+	under "Ethernet (10 or 100MBit)" instead.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if NETDEV_1000
- 
-@@ -2294,6 +2304,11 @@ menuconfig NETDEV_10000
- 	bool "Ethernet (10000 Mbit)"
- 	depends on !UML
- 	default y
-+	---help---
-+	Say Y here to get to see options for 10 Gigabit Ethernet drivers.
-+	This option alone does not add any kernel code.
-+
-+	If you say N, all options in this submenu will be skipped and disabled.
- 
- if NETDEV_10000
- 
-Index: linux-2.6.23/drivers/usb/Kconfig
-===================================================================
---- linux-2.6.23.orig/drivers/usb/Kconfig
-+++ linux-2.6.23/drivers/usb/Kconfig
-@@ -6,6 +6,9 @@ menuconfig USB_SUPPORT
- 	bool "USB support"
- 	depends on HAS_IOMEM
- 	default y
-+	---help---
-+	This option adds core support for Universal Serial Bus (USB).
-+	You will also need drivers from the following menu to make use of it.
- 
- if USB_SUPPORT
- 
+mempool_free() was called with a NULL pool. That can't be good.
