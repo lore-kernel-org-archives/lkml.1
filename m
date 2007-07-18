@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932617AbXGRWig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934474AbXGRWi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932617AbXGRWig (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 18:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760643AbXGRWi0
+	id S934474AbXGRWi4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 18:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762240AbXGRWib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:38:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53876 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760718AbXGRWiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:38:25 -0400
-Date: Thu, 19 Jul 2007 00:38:20 +0200
-From: Karel Zak <kzak@redhat.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH][RFC] Delete export of tty.h to userspace.
-Message-ID: <20070718223820.GF3181@petra.dvoda.cz>
-References: <Pine.LNX.4.64.0707180520040.19434@localhost.localdomain> <469E7599.4060608@gmail.com> <Pine.LNX.4.64.0707181631340.14452@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707181631340.14452@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+	Wed, 18 Jul 2007 18:38:31 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56377 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761606AbXGRWia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 18:38:30 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <469E9635.3060102@s5r6.in-berlin.de>
+Date: Thu, 19 Jul 2007 00:37:41 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
+Subject: [GIT PULL] FireWire updates (repost)
+References: <tkrat.f5ba2b840fcda9e5@s5r6.in-berlin.de> <469E93AF.3080202@s5r6.in-berlin.de>
+In-Reply-To: <469E93AF.3080202@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 04:33:12PM -0400, Robert P. J. Day wrote:
-> On Wed, 18 Jul 2007, Jiri Slaby wrote:
-> 
-> > Robert P. J. Day napsal(a):
-> > >   given that the entire contents of include/linux/tty.h is contained
-> > > within an "#ifdef __KERNEL__", it seems pointless to export it to
-> > > userspace, unless there's some kind of need for that header file to
-> > > exist in userspace, even if it's empty.
-> > >
-> > >   a quick grep shows that nothing under /usr/include references any
-> > > file of the name "tty.h" in any way.  thoughts?
-> >
-> > If we decide to remove the file, I would rather go through
-> > deprecation of the file with filing an entry in
-> > feature-remove-schedule. There still seems to be some users of the
-> > file.
-> 
-> i'm curious -- how did you determine that?
+Seems my posting from half an hour ago got lost somehow.  Another try,
+same message:  Linus, please pull from the for-linus branch at
 
- $ grep "tty.h" util-linux/sys-utils/cytune.c
- #include <linux/tty.h>
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
- ... I'll fix it in util-linux-ng.
+to receive the following few fixes and a SCSI API update for the
+FireWire subsystem.
 
+ drivers/firewire/fw-ohci.c        |    3 ++-
+ drivers/firewire/fw-sbp2.c        |   16 +++++++---------
+ drivers/firewire/fw-transaction.c |    9 +++------
+ drivers/firewire/fw-transaction.h |    4 ++++
+ 4 files changed, 16 insertions(+), 16 deletions(-)
 
-    Karel
-
+Stefan Richter (5):
+      firewire: fw-ohci: flush MMIO write before msleep
+      firewire: fw-ohci: fix "scheduling while atomic"
+      firewire: remove bogus check in fw_core_handle_request
+      firewire: fix memory leak of fw_request instances
+      firewire: fw-sbp2: convert to new SCSI data buffer accessors
 -- 
- Karel Zak  <kzak@redhat.com>
+Stefan Richter
+-=====-=-=== -=== =--==
+http://arcgraph.de/sr/
