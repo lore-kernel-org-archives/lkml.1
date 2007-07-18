@@ -1,90 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932171AbXGRDJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbXGRDQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932171AbXGRDJi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jul 2007 23:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXGRDJ3
+	id S1763277AbXGRDQf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jul 2007 23:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXGRDQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jul 2007 23:09:29 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:57299 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbXGRDJ2 (ORCPT
+	Tue, 17 Jul 2007 23:16:26 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:32423 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752630AbXGRDQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jul 2007 23:09:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAGYhnUarR7O6/2dsb2JhbAA
-X-IronPort-AV: i="4.16,548,1175497200"; 
-   d="scan'208"; a="167093815:sNHT25215426"
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       chas@cmf.nrl.navy.mil, rolandd@cisco.com, dwmw2@infradead.org,
-       gregkh@suse.de
-Subject: Re: [git patches 1/2] warnings: attack valid cases spotted by warnings
-X-Message-Flag: Warning: May contain useful information
-References: <20070717214239.GF28448@devserv.devel.redhat.com>
-	<ada8x9epuip.fsf@cisco.com> <469D3E66.3010502@garzik.org>
-	<adamyxuo2w6.fsf@cisco.com>
-	<alpine.LFD.0.999.0707171954230.27353@woody.linux-foundation.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 17 Jul 2007 20:09:27 -0700
-In-Reply-To: <alpine.LFD.0.999.0707171954230.27353@woody.linux-foundation.org> (Linus Torvalds's message of "Tue, 17 Jul 2007 19:56:55 -0700 (PDT)")
-Message-ID: <adaejj6o1aw.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Tue, 17 Jul 2007 23:16:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=M4hThtxDL5gi5eTDV4eFtw7wogkt0DivsTqW4E0IM6dMDZG3u+M7ewUhazx30EcUzj2h/XV3KQec7hY6l0//+Uihy8gBu9p8bJYG8WzG6d7hqQ3czFpeHPxZT7Ihb5YsF/iVz4h86GwWef8NpwLjjMJ3AnPxLFLSf/o8yR8gdzI=
+Message-ID: <8734b7880707172016v530ce775p108910f7baf9de8e@mail.gmail.com>
+Date: Wed, 18 Jul 2007 13:16:24 +1000
+From: "Lindsay Roberts" <lindsay.roberts.os@gmail.com>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: [PATCH] fs: Add romfs version 2
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, celinux-dev@tree.celinuxforum.org
+In-Reply-To: <20070717192100.GE11166@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Jul 2007 03:09:27.0477 (UTC) FILETIME=[0D05D650:01C7C8E9]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
+	 <20070717013635.d6d0b124.akpm@linux-foundation.org>
+	 <20070717192100.GE11166@waste.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > So setting a variable to something meaningless (guaranteeing that a 
- > > garbage value is used in case of a bug) just to shut up a warning makes 
- > > no sense -- it's no safer than leaving the code as is.  
- > 
- > Wrong.
- > 
- > It's safer for two reasons:
- >  - now everybody will see the *same* behaviour
- >  - the "meaningless value" is guaranteed to not be a security leak
- > 
- > but the whole "shut up bogus warnings" is the best reason.
- > 
- > So it *is* safer than leaving the code as-is.
+On 7/18/07, Matt Mackall <mpm@selenic.com> wrote:
+> > > * Adds new derivative of romfs filesystem (rom2fs) with
+> > >   block aligned regular file data to bring performance
+> > >   parity with ext2/3. This is about 225% of the read
+> > >   speed of the existing romfs.
+>
+> Doesn't that make these filesystems much bigger? By, on average, .5k
+> per file? Or, if I'm understanding things correctly, ~1k?
 
-OK, fair enough.  What I said wasn't quite right, but in my case I
-think neither of your reasons really applies, since the uninitialized
-variable would be written into some hardware control block, so the
-effect would probably still be random even if the value is the same
-and the information leak doesn't really matter.
-
-Anyway, I think that in this case it's not too hard to show that the
-variable really can't be used uninitialized, so I prefer the smaller
-generated code from uninitialized_var() (plus a comment explaining why
-that's safe).
-
- > Of course, usually the best approach is to rewrite the code to be simpler, 
- > so that even gcc sees that something is obviously initialized. Sadly, 
- > people seldom do the right thing, and sometimes gcc just blows incredibly 
- > hard.
-
-In this case the code is basically
-
-	u32 x;
-
-	for (n = 0; cond; ++n) {
-		...
-		if (!n)
-			x = something;
-		...
-	}
-
-	if (n) {
-		...
-		use(x);
-		...
-	}
-
-and gcc still warns...
-
- - R.
+Yes, my experience has been that it has been almost chillingly close
+to .5k per regular file increase in partition size. I know in
+applications in which size is utterly critical this may be slightly
+unattractive, but in cases where romfs is chosen for its byte
+reproducibility and read-only nature the size/performance tradeoff is
+fairly advantageous.
