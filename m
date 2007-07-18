@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935082AbXGRR6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935668AbXGRSB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935082AbXGRR6c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 13:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763009AbXGRR6W
+	id S935668AbXGRSB4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 14:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935135AbXGRSBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 13:58:22 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:15237 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761032AbXGRR6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 13:58:21 -0400
-Date: Wed, 18 Jul 2007 19:57:56 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Olaf Hering <olaf@aepfle.de>, Paul Mackerras <paulus@samba.org>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: PS3 Storage Driver O_DIRECT issue
-Message-ID: <20070718175756.GC11657@kernel.dk>
-References: <20070704132212.726923000@pademelon.sonytel.be> <20070713122752.GA854@aepfle.de> <Pine.LNX.4.62.0707181808030.15632@pademelon.sonytel.be>
+	Wed, 18 Jul 2007 14:01:35 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23643 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935057AbXGRSBe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 14:01:34 -0400
+Message-ID: <469E5629.4020409@oracle.com>
+Date: Wed, 18 Jul 2007 11:04:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0707181808030.15632@pademelon.sonytel.be>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: 2.6.22-git* regression: Kconfig prompts without help text
+References: <469BBDAD.2010908@s5r6.in-berlin.de> <Pine.LNX.4.64.0707181634100.5385@fbirervta.pbzchgretzou.qr> <20070718094119.4a26ae03.randy.dunlap@oracle.com> <Pine.LNX.4.64.0707181916410.5385@fbirervta.pbzchgretzou.qr> <20070718103456.cf32bf78.randy.dunlap@oracle.com> <Pine.LNX.4.64.0707181954190.5385@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0707181954190.5385@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18 2007, Geert Uytterhoeven wrote:
-> On Fri, 13 Jul 2007, Olaf Hering wrote:
-> > This driver (or the generic PS3 code) has appearently problems with
-> > O_DIRECT. 
-> > glibc aborts parted because the malloc metadata get corrupted. While it
-> > is reproducible, the place where it crashes changes with every version
-> > of the debug attempt.
-> > I dont have a handle right now, all I know is that the metadata after a
-> > malloc area get overwritten with zeros.
-> > 
-> > 
-> > Can you have a look at this? 
-> > parted /dev/ps3da
-> > print (a few times)
+Jan Engelhardt wrote:
+> On Jul 18 2007 10:34, Randy Dunlap wrote:
+>>> On Jul 18 2007 09:41, Randy Dunlap wrote:
+>>>> Looks good to me except that help text should be indented by
+>>>> 2 more spaces according to CodingStyle.
+>>> Who invented that rule anyway... the "---help---" marker (note the dashes)
+>>> clearly separates things already.
+>>> Here you go.
+>> I have no idea where it came from.  (not me)
 > 
-> I could reproduce it with parted 1.8.0 and later.
+> It was akpm:
+> http://linux.bkbits.net:8080/linux-2.6/Documentation/CodingStyle?PAGE=diffs&REV=1.5
 > 
-> The patch below fixes it (tested with 1.8.0, 1.8.2 (FC6), 1.9.0 (git)).
-> 
-> Apparently sometimes bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE != bvec->bv_len
-> when using O_DIRECT. Is that true (or a bug?)?
-> 
-> If it's OK, I'll fold this patch into the main ps3disk patch.
+> Well, can we lift it?
 
-The bug is in your code - you iterate the bio segments, but always
-reference the current one. Which of course makes no sense, you may as
-well just kill the loop in that case, the code would be the same.
+I think that would only make sense if "---help---" is used (like you did)
+instead of the plain "help" string.
+
+In the case of "---help---", it's OK with me not to be indented by 2 more
+spaces.
 
 -- 
-Jens Axboe
-
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
