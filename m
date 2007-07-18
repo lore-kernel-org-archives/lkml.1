@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935777AbXGRXAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbXGRXBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935777AbXGRXAJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933685AbXGRW5w
+	id S1758105AbXGRXBQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761541AbXGRW7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:57:52 -0400
-Received: from stinky.trash.net ([213.144.137.162]:50228 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933580AbXGRW5v (ORCPT
+	Wed, 18 Jul 2007 18:59:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38493 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933786AbXGRW7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:57:51 -0400
-Message-ID: <469E9AC8.3090603@trash.net>
-Date: Thu, 19 Jul 2007 00:57:12 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: andrei radulescu-banu <iubica2@yahoo.com>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <878246.51044.qm@web56608.mail.re3.yahoo.com>
-In-Reply-To: <878246.51044.qm@web56608.mail.re3.yahoo.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 18 Jul 2007 18:59:10 -0400
+Date: Wed, 18 Jul 2007 15:57:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-usb-devel@lists.sourceforge.net,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Nicolas Boichat <nicolas@boichat.ch>,
+       Michael Hanselmann <linux-kernel@hansmi.ch>,
+       Peter Osterlund <petero2@telia.com>,
+       Frank Arnold <frank@scirocco-5v-turbo.de>,
+       Stelian Pop <stelian@popies.net>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Greg Kroah-Hartman <greg@kroah.com>
+Subject: Re: [PATCH] appletouch powersaving - please apply for 2.6.23-rc1
+Message-Id: <20070718155758.072db90d.akpm@linux-foundation.org>
+In-Reply-To: <1184656218.14051.43.camel@localhost>
+References: <1184656218.14051.43.camel@localhost>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-andrei radulescu-banu wrote:
-> [...]
+On Tue, 17 Jul 2007 09:10:18 +0200
+Soeren Sonnenburg <kernel@nn7.de> wrote:
+
+> the attached minimally intrusive patch is based on Matthew Garret's
+> patch 'Make appletouch shut up when it has nothing to say' patches (e.g.
+> http://lkml.org/lkml/2007/5/13/117): Matthews description follows /
+> second paragraph lists my additional changes.
 > 
-> In conclusion, here is the buglist:  
-> 1). If set promiscuous, the e1000 should disable any vlan rx filtering, so that it can receive vlan frames of other vlan id's. Other ethernet drivers probably need fixed as well.
->   2). The packet layer should change the rx skb device from the vlan 'fake' device (eth0.2) to the corresponding physical device (eth0), so when we run tcpdump on eth0 we see all vlan-tagged and non-vlan-tagged frames
->   3). The packet socket layer should insert the vlan tag header before passing frames to the upper layer, so tcpdump can display them.
+> The appletouch geyser3 devices found in the Intel Macs (and possibly some later 
+> PPC ones?) send a constant stream of packets after the first touch. This 
+> results in the kernel waking up around once every couple of milliseconds 
+> to process them, making it almost impossible to spend any significant 
+> period of time in C3 state on a dynamic HZ kernel. Sending the mode 
+> initialization code makes the device shut up until it's touched again. 
+> This patch does so after receiving 10 packets with no interesting 
+> content.
+> 
+> In addition it now empties the work queue via cancel_work_sync on module
+> exit, keeps all error checking and only reports BTN_LEFT presses if bit
+> 1 in the status byte (last byte in packet) is set. This fixes the random
+> left clicks issue. Furthermore it invalidates touchpad data before the
+> mode switch, which fixes the touchpad runs amok issue.
 
-
-Put another way, once you enable VLAN header stripping, you
-won't see the headers for *any* VLAN, not only for those you're
-actually running locally. This is also a problem for devices
-like macvlan, where it would be desirable to make use of
-hardware VLAN accerlation. I was thinking about storing the
-information somewhere in the packets meta-data on both RX and
-TX paths, that would also allow tcpdump to properly display
-packets.
-
-I have planned to look into this when I find some time.
-Your suggestion of disabling VLAN acceleration in promiscous
-mode sounds like a reasonable solution until then ..
-
+Please feed this through scripts/checkpatch.pl and consider addressing
+all the things which it reports.
