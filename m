@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934882AbXGRRUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763125AbXGRRU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934882AbXGRRUT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 13:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935060AbXGRRTu
+	id S1763125AbXGRRU6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 13:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932891AbXGRRUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 13:19:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43288 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934896AbXGRRTt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 13:19:49 -0400
-Date: Wed, 18 Jul 2007 18:19:39 +0100 (BST)
-From: James Simmons <jsimmons@infradead.org>
-To: Paul Fulghum <paulkf@microgate.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux console project <linuxconsole-dev@lists.sourceforge.net>
-Subject: Re: [PATCH] Use tty_schedule in VT code.
-In-Reply-To: <469D35B1.5050905@microgate.com>
-Message-ID: <Pine.LNX.4.64.0707181805150.28741@pentafluge.infradead.org>
-References: <Pine.LNX.4.64.0707171933180.6721@pentafluge.infradead.org>
- <alpine.LFD.0.999.0707171222060.27353@woody.linux-foundation.org>
- <469D2810.9080109@microgate.com> <alpine.LFD.0.999.0707171243220.27353@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707172050180.9131@pentafluge.infradead.org>
- <469D2F67.40305@microgate.com> <Pine.LNX.4.64.0707172104050.9131@pentafluge.infradead.org>
- <469D35B1.5050905@microgate.com>
+	Wed, 18 Jul 2007 13:20:49 -0400
+Received: from pxy2nd.nifty.com ([202.248.175.14]:44574 "HELO pxy2nd.nifty.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932546AbXGRRUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 13:20:48 -0400
+X-Nifty-SrcIP: [210.170.245.86]
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=pxy2nd-default; d=mbf.nifty.com;
+  b=bdc4ZpIJ/4yvWtUvKLT4yt7gfFmCcDQ6R8fOW2oe+/GO9W3tYANs5CIHLbBd2moz17KWkIYYPut6WXFRJr5vrw==  ;
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: i386: pata_cs5520 does not work
+Cc: linux-kernel@vger.kernel.org, teheo@novell.com
+In-Reply-To: <20070718144212.3289e86c@the-village.bc.nu>
+References: <20070716.091928.111205836.takada@mbf.nifty.com> <20070718144212.3289e86c@the-village.bc.nu>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.064
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.28.01 [ja]
+Message-ID: <20070718172045.24362.qmail@smb518.nifty.com>
+Date: Thu, 19 Jul 2007 02:20:45 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi. Thanks for reply.
+It is not issue of pata_cs5520.
+In good case, ReiserFS detects root partition.
+Bad case, ReiserFS does not detects partition.
 
-> James Simmons wrote:
-> > The low_latency is used by the drivers in the case where its not in a
-> > interrupt context. Well we are trusting the drivers.
-> > Now if it is true what you said then tty_flip_buffer_push has
-> > a bug. Looking at several drivers including serial devices
-> > they set the low_latency flag.
-> 
-> The generic serial driver (8250) is the one that was
-> dead locking when that code originally existed.
-> It was setting low_latency and calling from interrupt context.
+ReiserFS: sda2: found reiserfs format "3.6" with standard journal
 
-serial8250_interrupt -> serial8250_handle_port ->
-receive_chars -> tty_flip_buffer_push
+On Wed, 18 Jul 2007 14:42:12 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-It could still dead lock. The low_latency flag is too weak of a test.
-I patched tty_flip_buffer_push to fix this.
-
-> > > And the initial schedule has no reason to add the extra delay.
+> > > I'll take a look at this next week. Can you send me a dmesg of the
+> > > working case and an lspci -vvxxx
 > > 
-> > So do you support a non delay work queue as well?
+> > Thanks. attached 2 dmesgs(2.6.21 with pata_cs5520, 2.6.22 with IDE) and output of lspci.
 > 
-> No, the delay work must be used for flush_to_ldisc()
-> so it makes no sense to define two different work queues
-> (one delayed and one not) for the same work.
+> Nothing obviously wrong. What happens if you find the line
+> 
+> if (!iomap[0] || !iomap[1] || !iomap[2] || !iomap[3] || !iomap[4])
+> 		return -ENOMEM;
+> 
+> in pata_cs5520.c and change the end from return -ENOMEM to 
+> 
+> if (!iomap[0] || !iomap[1] || !iomap[2] || !iomap[3] || !iomap[4])
+> 		panic("IO MAP");
+> 
+> This should help identify where the problem occurs
 
-Sorry I mean move to a just a non delay work queue only.
-Which we won't anyways.
+-- 
+TAKADA <takada@mbf.nifty.com>
 
-> I support your patch.
-
-> The current stuff works and your patch works.
-> With your patch, you actually reduce initial
-> latency for processing receive data.
-
-Thanks.
