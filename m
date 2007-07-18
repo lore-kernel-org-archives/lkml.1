@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760019AbXGROst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbXGROts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760019AbXGROst (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXGROsm
+	id S1763586AbXGROts (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXGROtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:48:42 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:14681 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbXGROsl (ORCPT
+	Wed, 18 Jul 2007 10:49:41 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:48787 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752816AbXGROtk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:48:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nFUFJb4rJ+6PvQZYAkkDBtlX1/FsFs7lzIV8jOoa7aD/cawwws2hvYhiH4/9N9R/8z/HsDQu/pAmpJFVUmRMRxFz1ewGH7yIqgL7IFJLGvwCKEujFYXBwCP2rTQhnwciFxt8uqEHWc3gxwFp0LET4hAn31E10CxBZ5qVEeULPdw=
-Message-ID: <a781481a0707180748j4760ab8bo237c1abc02feb593@mail.gmail.com>
-Date: Wed, 18 Jul 2007 20:18:40 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure path
-Cc: "Gabriel C" <nix.or.die@googlemail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <clameter@sgi.com>, gregkh@suse.de,
-       miles.lane@gmail.com
-In-Reply-To: <20070718071445.GI23568@htj.dyndns.org>
+	Wed, 18 Jul 2007 10:49:40 -0400
+Date: Wed, 18 Jul 2007 20:16:37 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: System hangs on running kernbench
+Message-ID: <20070718144637.GC5337@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20070718075648.GA4235@linux.vnet.ibm.com> <20070718010700.1ca7fd9f.akpm@linux-foundation.org> <20070718094142.GA12330@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>
-	 <a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>
-	 <469A9D5D.10509@googlemail.com> <469B61C8.8010902@googlemail.com>
-	 <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
-	 <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com>
-	 <469BC2D6.5090008@googlemail.com> <469BC34C.4080107@googlemail.com>
-	 <20070718071445.GI23568@htj.dyndns.org>
+In-Reply-To: <20070718094142.GA12330@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tejun,
+Hi Andrew,
 
-Thanks for tracking this down and fixing it.
+On Wed, Jul 18, 2007 at 03:11:42PM +0530, Dhaval Giani wrote:
+> On Wed, Jul 18, 2007 at 01:07:00AM -0700, Andrew Morton wrote:
+> > On Wed, 18 Jul 2007 13:26:48 +0530 Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> >  
+> In the meantime I will go and check if it was there in 2.6.22-rc4-mm2
+> 
 
-On 7/18/07, Tejun Heo <htejun@gmail.com> wrote:
-> There is a subtle bug in sysfs_create_link() failure path.  When
-> symlink creation fails because there's already a node with the same
-> name, the target sysfs_dirent is put twice - once by failure path of
-> sysfs_create_link() and once more when the symlink is released.
+It is hanging with 2.6.22-rc4-mm2 as well as on the latest git on
+kernel.org (2.6.22-git10).
 
-The "symlink" is released? But the creation of the symlink is
-precisely what failed here ... did it not?
+I will get back to you with more information as soon as I have it.
 
-> Fix it by making only the symlink node responsible for putting
-> target_sd.
+Thanks
 
-And again ... the changelog sounds confusing indeed, perhaps I'm
-not familiar enough with sysfs symlink-related terminology/semantics.
-Care to elaborate?
+-- 
+regards,
+Dhaval
 
->         sd = sysfs_new_dirent(name, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
->         if (!sd)
->                 goto out_put;
-> +
->         sd->s_elem.symlink.target_sd = target_sd;
-> +       target_sd = NULL;       /* reference is now owned by the symlink */
-
-Wow. This looks like a very mysterious way to fix a mysterious bug :-)
-BTW I just looked over at sysfs_create_link() and ... it looks quite ...
-unnecessarily complicated/obfuscated ...
-
-Thanks again,
-Satyam
+I would like to change the world but they don't give me the source code!
