@@ -1,58 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763364AbXGRNqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763933AbXGRNtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763364AbXGRNqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 09:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXGRNqe
+	id S1763933AbXGRNtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 09:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbXGRNtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 09:46:34 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:34268 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbXGRNqd (ORCPT
+	Wed, 18 Jul 2007 09:49:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:50463 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbXGRNtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 09:46:33 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 18 Jul 2007 09:44:40 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Clemens Koller <clemens.koller@anagramm.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: other potential candidates for removal?
-In-Reply-To: <469E189A.9080502@anagramm.de>
-Message-ID: <Pine.LNX.4.64.0707180942490.21296@localhost.localdomain>
-References: <Pine.LNX.4.64.0707180631400.23141@localhost.localdomain>
- <469E189A.9080502@anagramm.de>
+	Wed, 18 Jul 2007 09:49:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Ee3RDWYu5oEJsHD8bh69AM2A9ub7X4tlDWYRjwK3DVpLB5RP7899kXBJ0wF+9be5YOLUtQHfE+GZ3jBDD1C6RWL/ZDJcL/5Gqt6dslZACG+hFEFFEQakyrIq1ZFd4rdTEZTU6d5CkVQ4CLw+YpUxMUqmFiEkeHh/ZXogD4KGPAg=
+Message-ID: <f44c5fdf0707180649h778f017dlb532c3ba224944b2@mail.gmail.com>
+Date: Wed, 18 Jul 2007 15:49:07 +0200
+From: "Radoslaw Szkodzinski" <astralstorm@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com
+Subject: XFS -git changes and Linux-VServer patch porting
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Clemens Koller wrote:
+Linux-VServer patch adds 2 new flags: barrier and iunlink.
+With recent changes in -git (filestreams), XFS now lacks di_flags bits
+to add these.
+iunlink flag adds Copy-on-Write semantics to hard links, while barrier
+flag signifies a filesystem barrier no virtual context can pass.
 
-> Robert P. J. Day schrieb:
-> >    a while back, i threw together this wiki page:
-> >
-> > http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
-> >
-> > feel free to comment.
->
-> Won't miss anything there.
-> However, removal of kernel_threads() needs some updated drivers...
-
-well, i *did* note that that feature didn't look quite ready for
-removal just yet.  :-)
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+I'd like to know how to possibly resolve this problem w/o negatively
+impacting performance (especially of iunlink) or changing on-disc
+format in an incompatible way, as well as being more future-proof.
