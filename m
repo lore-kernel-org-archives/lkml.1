@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbXGRKeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764037AbXGRKey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763671AbXGRKeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 06:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXGRKeL
+	id S1764037AbXGRKey (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 06:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXGRKer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 06:34:11 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:11995 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbXGRKeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 06:34:10 -0400
-Date: Wed, 18 Jul 2007 12:33:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: walter harms <wharms@bfs.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: crash with 2.6.21 BUG:ll_rw_blk.c
-Message-ID: <20070718103342.GI11657@kernel.dk>
-References: <469DD37C.8050200@bfs.de>
+	Wed, 18 Jul 2007 06:34:47 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:56091 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753287AbXGRKeq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 06:34:46 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Wed, 18 Jul 2007 06:32:55 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: other potential candidates for removal?
+Message-ID: <Pine.LNX.4.64.0707180631400.23141@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <469DD37C.8050200@bfs.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18 2007, walter harms wrote:
-> hi list,
-> i managed to crash 2.6.21 at boottime with
-> 
-> IPI Shortcut mode
-> BUG: atblock/ll_rw_blc.c 1566 blk_remove_plug()
-> 
-> 
-> system: acer Notebook TM620
-> 
-> does anyone care or is 2.6.21 already done ?
 
-We need a lot more than that, can you capture the full oops? Preferably
-complete with boot messages prior to the oops.
+   a while back, i threw together this wiki page:
 
+http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
+
+feel free to comment.
+
+rday
 -- 
-Jens Axboe
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
