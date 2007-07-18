@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936543AbXGRXaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936761AbXGRXaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936543AbXGRXaF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:30:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936192AbXGRX0z
+	id S936761AbXGRXaj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936206AbXGRX1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:26:55 -0400
-Received: from mx1.suse.de ([195.135.220.2]:57436 "EHLO mx1.suse.de"
+	Wed, 18 Jul 2007 19:27:00 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33058 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936211AbXGRX0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:26:53 -0400
+	id S936379AbXGRX05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:26:57 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 08/14] sysfs: make sysfs_init_inode() static
-Date: Wed, 18 Jul 2007 16:25:44 -0700
-Message-Id: <11848011802979-git-send-email-gregkh@suse.de>
+Cc: David Brownell <david-b@pacbell.net>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 09/14] dev_vdbg(), available with -DVERBOSE_DEBUG
+Date: Wed, 18 Jul 2007 16:25:45 -0700
+Message-Id: <11848011842017-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <1184801177102-git-send-email-gregkh@suse.de>
+In-Reply-To: <11848011802979-git-send-email-gregkh@suse.de>
 References: <20070718232400.GC4620@kroah.com>
  <11848011502972-git-send-email-gregkh@suse.de>
  <11848011551094-git-send-email-gregkh@suse.de>
@@ -25,48 +28,73 @@ References: <20070718232400.GC4620@kroah.com>
  <1184801169806-git-send-email-gregkh@suse.de>
  <11848011731698-git-send-email-gregkh@suse.de>
  <1184801177102-git-send-email-gregkh@suse.de>
+ <11848011802979-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tejun Heo <htejun@gmail.com>
+From: David Brownell <david-b@pacbell.net>
 
-With sysfs_fill_super() converted to use sysfs_get_inode(), there is
-no user of sysfs_init_inode() outside of fs/sysfs/inode.c.  Make it
-static.
+This defines a dev_vdbg() call, which is enabled with -DVERBOSE_DEBUG.
+When enabled, dev_vdbg() acts just like dev_dbg().  When disabled, it is a
+NOP ...  just like dev_dbg() without -DDEBUG.  The specific code was moved
+out of a USB patch, but lots of drivers have similar support.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Acked-by: Jean Delvare <khali@linux-fr.org>
+That is, code can now be written to use an additional level of debug
+output, selected at compile time.  Many driver authors have found this
+idiom to be very useful.  A typical usage model is for "normal" debug
+messages to focus on fault paths and not be very "chatty", so that those
+messages can be left on during normal operation without much of a
+performance or syslog load.  On the other hand "verbose" messages would be
+noisy enough that they wouldn't normally be enabled; they might even affect
+timings enough to change system or driver behavior.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/inode.c |    2 +-
- fs/sysfs/sysfs.h |    1 -
- 2 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/usb/core/driver.c |    7 -------
+ include/linux/device.h    |   10 ++++++++++
+ 2 files changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 3756e15..10d1b52 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -133,7 +133,7 @@ static inline void set_inode_attr(struct inode * inode, struct iattr * iattr)
-  */
- static struct lock_class_key sysfs_inode_imutex_key;
+diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
+index 73c4936..6548574 100644
+--- a/drivers/usb/core/driver.c
++++ b/drivers/usb/core/driver.c
+@@ -29,13 +29,6 @@
+ #include "hcd.h"
+ #include "usb.h"
  
--void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
-+static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
- {
- 	inode->i_blocks = 0;
- 	inode->i_mapping->a_ops = &sysfs_aops;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 6a37f23..6b8c8d7 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -71,7 +71,6 @@ extern void sysfs_remove_one(struct sysfs_addrm_cxt *acxt,
- extern int sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
+-#define VERBOSE_DEBUG	0
+-
+-#if VERBOSE_DEBUG
+-#define dev_vdbg	dev_dbg
+-#else
+-#define dev_vdbg(dev, fmt, args...)	do { } while (0)
+-#endif
  
- extern void sysfs_delete_inode(struct inode *inode);
--extern void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode);
- extern struct inode * sysfs_get_inode(struct sysfs_dirent *sd);
- extern void sysfs_instantiate(struct dentry *dentry, struct inode *inode);
+ #ifdef CONFIG_HOTPLUG
  
+diff --git a/include/linux/device.h b/include/linux/device.h
+index be2debe..d9f0a57 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -572,6 +572,16 @@ dev_dbg(struct device * dev, const char * fmt, ...)
+ }
+ #endif
+ 
++#ifdef VERBOSE_DEBUG
++#define dev_vdbg	dev_dbg
++#else
++static inline int __attribute__ ((format (printf, 2, 3)))
++dev_vdbg(struct device * dev, const char * fmt, ...)
++{
++	return 0;
++}
++#endif
++
+ #define dev_err(dev, format, arg...)		\
+ 	dev_printk(KERN_ERR , dev , format , ## arg)
+ #define dev_info(dev, format, arg...)		\
 -- 
 1.5.2.2
 
