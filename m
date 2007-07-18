@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbXGRO3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbXGRO3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbXGRO3b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 10:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXGRO3X
+	id S1759953AbXGRO3v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 10:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbXGRO3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 10:29:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:2574 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbXGRO3W (ORCPT
+	Wed, 18 Jul 2007 10:29:41 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57008 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756485AbXGRO3k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 10:29:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OLxM6MtFFfa0q2CbvA6K8rxEpLJCDH+4RZ3cKSeGkEZ6uwOKquDFoXHBmRbRNmgwmzkIHPRJyjFEfg6Q6b6hz6G8i2DNn4g5TV+jOe0LbljL7kO1sZ+jvZ8y20EXPhH+hQOk7cqpny4gbK5F+tX8oHsxO8mOCoClB1PuQP3ENIU=
-Message-ID: <a44ae5cd0707180729q1cd48c72ya26f6ca7c3e19265@mail.gmail.com>
-Date: Wed, 18 Jul 2007 07:29:17 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] sysfs: kill an extra put in sysfs_create_link() failure path
-Cc: "Gabriel C" <nix.or.die@googlemail.com>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <clameter@sgi.com>, gregkh@suse.de
-In-Reply-To: <20070718071445.GI23568@htj.dyndns.org>
+	Wed, 18 Jul 2007 10:29:40 -0400
+Date: Wed, 18 Jul 2007 10:29:34 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: david@lang.hm
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+In-Reply-To: <Pine.LNX.4.64.0707171535350.2467@asgard.lang.hm>
+Message-ID: <Pine.LNX.4.44L0.0707181021300.3759-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>
-	 <a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>
-	 <469A9D5D.10509@googlemail.com> <469B61C8.8010902@googlemail.com>
-	 <a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
-	 <469BB7B8.3060002@gmail.com> <469BB9CA.6090500@googlemail.com>
-	 <469BC2D6.5090008@googlemail.com> <469BC34C.4080107@googlemail.com>
-	 <20070718071445.GI23568@htj.dyndns.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/18/07, Tejun Heo <htejun@gmail.com> wrote:
-> There is a subtle bug in sysfs_create_link() failure path.  When
-> symlink creation fails because there's already a node with the same
-> name, the target sysfs_dirent is put twice - once by failure path of
-> sysfs_create_link() and once more when the symlink is released.
->
-> Fix it by making only the symlink node responsible for putting
-> target_sd.
->
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
-> Gabriel, Miles, please verify this fixes your problem.  Thanks.
->
->  fs/sysfs/symlink.c |    2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-> index 2f86e04..d056e96 100644
-> --- a/fs/sysfs/symlink.c
-> +++ b/fs/sysfs/symlink.c
-> @@ -86,7 +86,9 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
->         sd = sysfs_new_dirent(name, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
->         if (!sd)
->                 goto out_put;
-> +
->         sd->s_elem.symlink.target_sd = target_sd;
-> +       target_sd = NULL;       /* reference is now owned by the symlink */
->
->         sysfs_addrm_start(&acxt, parent_sd);
->
-> diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
->
+On Tue, 17 Jul 2007 david@lang.hm wrote:
 
-Great!  I tested with both patches applied to 2.6.22-rc6-mm1 and was
-able to remove ipw2200 without triggering the BUG.
+> On Tue, 17 Jul 2007, Alan Stern wrote:
+> 
+> > On Tue, 17 Jul 2007 david@lang.hm wrote:
+> >
+> >>> But what about the freezer?  The original reason for using kexec was to
+> >>> avoid the need for the freezer.  With no freezer, while the original
+> >>> kernel is busy powering down its devices, user tasks will be free to
+> >>> carry out I/O -- which will make the memory snapshot inconsistent with
+> >>> the on-disk data structures.
+> >>
+> >> no, user tasks just don't get scheduled during shutdown.
+> >
+> > But a user task may be holding a lock which is needed for putting some
+> > device into low-power mode.  It can't release that lock if it doesn't
+> > get scheduled.
+> 
+> then you can't suspend that box. if you schedule it, it could get another 
+> lock (or another process gets another lock)
+> 
+> if you can't power down or put hardware into low-power mode without the 
+> approval of userspace, you are in serious trouble.
 
-Thanks,
-            Miles
+You don't seem to appreciate the issues involved here.  Part of the 
+justification for the freezer is that it doesn't need userspace 
+approval and it freezes tasks at controlled points where they don't 
+hold any locks.
+
+Never mind.  It seems clear that this approach will suffer the same 
+drawback as the proposal for removing the freezer from the 
+suspend-to-RAM pathway.  Namely, device drivers will have to be changed 
+to prevent user I/O requests from proceeding while devices are supposed 
+to be quiescent or in a low-power state.
+
+If a driver fails to handle this properly, its device could be 
+reactivated in order to service a user request before the memory 
+snapshot is made.  This could easily ruin the snapshot.
+
+Alan Stern
+
