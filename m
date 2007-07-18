@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbXGRHiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbXGRHkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761262AbXGRHiv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 03:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760580AbXGRHiZ
+	id S1761262AbXGRHkW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 03:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbXGRHkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 03:38:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:13877 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759316AbXGRHiY (ORCPT
+	Wed, 18 Jul 2007 03:40:10 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:60334 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754775AbXGRHkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 03:38:24 -0400
-Date: Wed, 18 Jul 2007 10:38:31 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Tziporet Koren <tziporet@dev.mellanox.co.il>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: Further 2.6.23 merge plans...
-Message-ID: <20070718073831.GE1115@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <adalkdl43w0.fsf@cisco.com> <adahco943ip.fsf@cisco.com>
-	<adazm1urji8.fsf@cisco.com> <20070717214417.GE17168@mellanox.co.il>
-	<469DC29C.3070205@mellanox.co.il>
+	Wed, 18 Jul 2007 03:40:08 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm 1/5] Freezer: Document relationship with memory shrinking
+Date: Wed, 18 Jul 2007 17:40:02 +1000
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200707180929.31511.rjw@sisk.pl> <200707180930.45564.rjw@sisk.pl>
+In-Reply-To: <200707180930.45564.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <469DC29C.3070205@mellanox.co.il>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed;
+  boundary="nextPart6176431.Yz8DZegXY6";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707181740.04917.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Tziporet Koren <tziporet@dev.mellanox.co.il>:
-> Subject: Re: [ofa-general] Re: Further 2.6.23 merge plans...
-> 
-> Michael S. Tsirkin wrote:
-> >We have the patches applied in ofed 1.2.c with default module parameter set
-> >to caching disabled (ofed 1.2 had a different version of the patches, but
-> >caching is disabled by default there, too). At least
-> >in this configuration (caching disabled), all issues I've seen seem to be
-> >fixed now, and tests seem to be running smoothly.
->
-> As far as I know Intel run with SA cache enabled on large clusters with 
-> Intel MPI
+--nextPart6176431.Yz8DZegXY6
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-With OFED 1.2 version of the code, right?
+Hi.
 
--- 
-MST
+On Wednesday 18 July 2007 17:30:44 Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>=20
+> One important reason to freeze tasks, which is that we don't want them to
+> allocate memory after freeing it for the hibernation image, has not been
+> documented.  Fix it.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+
+Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
+
+--nextPart6176431.Yz8DZegXY6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGncPUN0y+n1M3mo0RAo8zAJ9+6z0aRKCqHx78QdRgomrfligrcACfd1JY
+KX9ojquBO56E0fHQdpbMF6o=
+=NL+9
+-----END PGP SIGNATURE-----
+
+--nextPart6176431.Yz8DZegXY6--
