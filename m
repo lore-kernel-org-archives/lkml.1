@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934181AbXGRVk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762397AbXGRVxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934181AbXGRVk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 17:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbXGRVkQ
+	id S1762397AbXGRVxW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 17:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXGRVxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 17:40:16 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49080 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757096AbXGRVkO (ORCPT
+	Wed, 18 Jul 2007 17:53:13 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:14035 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751989AbXGRVxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 17:40:14 -0400
-Date: Wed, 18 Jul 2007 22:46:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Dor Laor" <dor.laor@qumranet.com>
-Cc: "Avi Kivity" <avik@qumranet.com>, <kvm-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [kvm-devel] [RFC] Deferred interrupt handling.
-Message-ID: <20070718224649.3e49a978@the-village.bc.nu>
-In-Reply-To: <64F9B87B6B770947A9F8391472E032160CC16F3C@ehost011-8.exch011.intermedia.net>
-References: <005901c7c921$79c006c0$6d401440$@com>
-	<20070718123040.615795b7@the-village.bc.nu>
-	<64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net>
-	<20070718174736.0baf6d0e@the-village.bc.nu>
-	<469E43D5.70802@qumranet.com>
-	<64F9B87B6B770947A9F8391472E032160CC16D06@ehost011-8.exch011.intermedia.net>
-	<20070718183358.0a0886aa@the-village.bc.nu>
-	<64F9B87B6B770947A9F8391472E032160CC16F3C@ehost011-8.exch011.intermedia.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Jul 2007 17:53:12 -0400
+X-IronPort-AV: i="4.16,552,1175486400"; 
+   d="scan'208"; a="45883195:sNHT39404610"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: early_printk accessing __log_buf
+Date: Wed, 18 Jul 2007 17:56:43 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707181756.44074.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 18 Jul 2007 21:53:08.0902 (UTC) FILETIME=[0752DC60:01C7C986]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - Make the device the last irqaction in the list
-> - Our dummy handler will always return IRQ_HANDLED in case any other
-> previous
->   irqaction did not return such. It will also issue the timer and mask
-> the irq in this case.
+Quick question:
 
-Ok
+I am currently setting up an early_printk for the Blackfin - & I'm populating
+an early fault interrupt handler at the same time. This allows things like
+catching interrupts, or faults before the kernel has had a chance to
+enable it's standard interrupt/fault handlers which happen midway 
+through the boot process.
 
->   btw, if I'm not mistaken only after bad 99900/100000 the irq is
-> disabled.
+I would like to be able to print out the standard __log_buf from my early
+fault handler - so everyone can see where things are when they died. In
+most situations - printk has dumped some info to the log_buf, and it is
+normally handy to see figure out what is going on.
 
-(and with GIT providing that they occurred in a short time period)
+However - __log_buf & associated pointers are declared as static in
+kernel/printk.c - so they can't be accessed by external files.
 
-> - If the timer pops before the guest acks the irq, the timer handler
-> will
->   ack the irq and unmask it. The timer's job is only to prevent
-> deadlocks.
+I would normally use do_syslog([23],...) to read from the buffer - 
+but these crashes happens before the kernel is fully initialized,
+so spin_lock_irq, cond_resched, or wait_event_interruptible
+will cause problems...
 
-Ok I see what you are doing. It's either inspired or insane and I am not
-quite sure which of the two. I agree it should work although may cause
-performance crunches now and then and will also need care getting the
-locking right.
+Although there are other solutions - I would prefer to just don't declare them
+as static when EARLY_PRINTK is defined. This way if something bad happens - 
+everyone can dump out the standard buffers to assist in debugging...
 
-Alan
+===================================================================
+--- linux-2.6.x/kernel/printk.c (revision 3400)
++++ linux-2.6.x/kernel/printk.c (working copy)
+@@ -117,7 +117,12 @@
+
+ #ifdef CONFIG_PRINTK
+
++#ifdef CONFIG_EARLY_PRINTK
++char __log_buf[__LOG_BUF_LEN];
++#else
+ static char __log_buf[__LOG_BUF_LEN];
++#endif
++
+ static char *log_buf = __log_buf;
+ static int log_buf_len = __LOG_BUF_LEN;
+ static unsigned long logged_chars; /* Number of chars produced since last read+clear operation */
+
+Thoughts?
+
+-Robin
