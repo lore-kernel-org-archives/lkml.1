@@ -1,50 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbXGRNwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764179AbXGRNy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932468AbXGRNwU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 09:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbXGRNwN
+	id S1764179AbXGRNy1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 09:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbXGRNyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 09:52:13 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:10693 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755543AbXGRNwM (ORCPT
+	Wed, 18 Jul 2007 09:54:18 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:53097 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754808AbXGRNyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 09:52:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=UtI4bSKm2RBNW5I3VSkDHxFifj7PLAai9fvim72FbSNlbKoVkFJaUft16XpYH4zBmxNN4f5DXlS9CnRsbDBx70U5bLl66HZKScS8dAMlDfFGjGodRoIYN01U4CvAPbZ5P7WyXam4hu33yIzK0vfU/mXYptGN3A87/VIdfAEejOQ=
-Message-ID: <469E1AFE.7010108@gmail.com>
-Date: Wed, 18 Jul 2007 09:51:58 -0400
-From: Parag Warudkar <parag.warudkar@gmail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.22 - Suspend and Weird Load Averages
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 18 Jul 2007 09:54:17 -0400
+Subject: Re: block/bsg.c
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20070718092130V.tomof@acm.org>
+References: <20070717190705T.fujita.tomonori@lab.ntt.co.jp>
+	 <20070717101928.GK5195@kernel.dk>
+	 <1184698434.3378.15.camel@localhost.localdomain>
+	 <20070718092130V.tomof@acm.org>
+Content-Type: text/plain
+Date: Wed, 18 Jul 2007 08:54:14 -0500
+Message-Id: <1184766854.3464.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-07-18 at 09:20 +0900, FUJITA Tomonori wrote:
+> From: James Bottomley <James.Bottomley@SteelEye.com>
+> Subject: Re: block/bsg.c
+> Date: Tue, 17 Jul 2007 13:53:54 -0500
+> 
+> > On Tue, 2007-07-17 at 12:19 +0200, Jens Axboe wrote:
+> > > > > Since Linus is happily snoring by now, could you test and see if the
+> > > > > tree works for you?
+> > > > 
+> > > > It works for me. I'll submit some minor patches against your bsg
+> > > > branch to scsi-ml. Can you push them together?
+> > > 
+> > > Certainly, I'll pull them into the bsg branch.
+> > 
+> > While you're at it, here's a patch to separate BSG and SCSI again (so
+> > SCSI can be built modular).  The way I did it was simply to move the
+> > SCSI specific logic into SCSI.  When you come up with a generic way to
+> > register the bsg requiring drivers, then we can move it out again.
+> 
+> Thanks, looks nice.
 
-For the first time since 1997 I have a machine (Mac Mini) running a 
-stock kernel which I am suspending/resuming for 2 days now without any 
-problems. Amongst the various hardware and kernel versions that I've 
-used so far this combination is the first to suspend/resume without issues!
+You're welcome ... although there's still a problem for modular builds.
+This is what my /sys/class/bsg looks like:
 
-But one thing that annoys me a bit is that the load averages spike up 
-quite a bit after resume although it doesn't feel like the machine is 
-loaded  -
+So you see the if (rq->kobj.parent) is causing confusing naming.  The
+reason the first one shows up as 0:0:0:0 is because in an initrd
+scsi_mod is loaded first (which is when bsg binds) followed by sd_mod
+(which is what gives the device the ULD binding and hence the name).  I
+don't see any way around this, so I'd advocate simply using the sdev
+name rather than the block device name and dumping the if.
 
-Before Resume -
-parag@parag-desktop:~$ uptime
- 09:35:14 up  5:18,  2 users,  load average: 0.08, 0.87, 1.00
-After Resume -
-parag@parag-desktop:~$ uptime
- 09:36:37 up  5:18,  2 users,  load average: 12.53, 3.83, 1.98
-parag@parag-desktop:~$
+> > --- a/drivers/scsi/scsi_sysfs.c
+> > +++ b/drivers/scsi/scsi_sysfs.c
+> > @@ -714,6 +714,7 @@ static int attr_add(struct device *dev, struct device_attribute *attr)
+> >  int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+> >  {
+> >  	int error, i;
+> > +	struct request_queue *rq = sdev->request_queue;
+> >  
+> >  	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
+> >  		return error;
+> > @@ -733,6 +734,16 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+> >  	/* take a reference for the sdev_classdev; this is
+> >  	 * released by the sdev_class .release */
+> >  	get_device(&sdev->sdev_gendev);
+> > +
+> > +	if (rq->kobj.parent)
+> > +		error = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
+> > +	else
+> > +		error = bsg_register_queue(rq, kobject_name(&sdev->sdev_gendev.kobj));
+> > +	if (error) {
+> > +		sdev_printk(KERN_INFO, sdev, "Failed to register bsg queue\n");
+> > +		goto out;
+> 
+> Needs more cleanup here?
 
-Is this a known problem? Worth fixing?
+No ... this bit's magic and clever.  Once you've set up the devices and
+done a get_device, cleanup is simply doing a put_device because it's all
+done in the release routine.
 
-Thanks
-Parag
+> We might just ignore the error here since it's not fatal not to create
+> a bsg device, I guess.
+> 
+> I updated the patch against the latest code (which has just be merged
+> to Linus's tree).
+
+Thanks,
+
+James
+
+
