@@ -1,621 +1,432 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937670AbXGRXnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932226AbXGRXoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937670AbXGRXnm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 19:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937361AbXGRXiW
+	id S932226AbXGRXoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 19:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937250AbXGRXij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 19:38:22 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49010 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937284AbXGRXiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 19:38:17 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linuxppc-dev@ozlabs.org
-Cc: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH] [updated] PHY fixed driver: rework release path and update
-	phy_id notation
-Date: Thu, 19 Jul 2007 03:38:04 +0400
-Message-ID: <20070718233804.24451.22543.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 18 Jul 2007 19:38:39 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58473 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S937368AbXGRXif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 19:38:35 -0400
+Date: Wed, 18 Jul 2007 16:36:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Andy Whitcroft <apw@shadowen.org>
+Cc: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+Message-Id: <20070718163637.3f0e0164.akpm@linux-foundation.org>
+In-Reply-To: <20070716162206.392129000@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.392129000@pademelon.sonytel.be>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 16 Jul 2007 18:15:40 +0200
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-device_bind_driver() error code returning has been fixed.  
-release() function has been written, so that to free resources 
-in correct way; the release path is now clean. 
- 
-Before the rework, it used to cause 
- Device 'fixed@100:1' does not have a release() function, it is broken 
- and must be fixed. 
- BUG: at drivers/base/core.c:104 device_release() 
-  
- Call Trace:   
-  [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e 
-  [<ffffffff802ec3ab>] kobject_release+0x0/0x9 
-  [<ffffffff802ecf3f>] kref_put+0x74/0x81 
-  [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265 
-  [<ffffffff80564d31>] fixed_init+0x1f/0x35 
-  [<ffffffff802071a4>] init+0x147/0x2fb 
-  [<ffffffff80223b6e>] schedule_tail+0x36/0x92 
-  [<ffffffff8020a678>] child_rip+0xa/0x12 
-  [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83 
-  [<ffffffff8020705d>] init+0x0/0x2fb 
-  [<ffffffff8020a66e>] child_rip+0x0/0x12   
- 
- 
-Also changed the notation of the fixed phy definition on 
-mdio bus to the form of <speed>+<duplex> to make it able to be used by 
-gianfar and ucc_geth that define phy_id strictly as "%d:%d" and cleaned up 
-the whitespace issues.
- 
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> 
+> Add a Disk Storage Driver for the PS3:
 
----
+Your patchset significantly hits powerpc, scsi and block.  So who gets to
+merge this?  Jens?  James?  Paul?
 
- drivers/net/phy/Kconfig   |   14 ++
- drivers/net/phy/fixed.c   |  310 +++++++++++++++++++++++----------------------
- include/linux/phy_fixed.h |   38 ++++++
- 3 files changed, 207 insertions(+), 155 deletions(-)
+Me, I guess ;)
 
-diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
-index dd09011..432c210 100644
---- a/drivers/net/phy/Kconfig
-+++ b/drivers/net/phy/Kconfig
-@@ -76,4 +76,18 @@ config FIXED_MII_100_FDX
- 	bool "Emulation for 100M Fdx fixed PHY behavior"
- 	depends on FIXED_PHY
- 
-+config FIXED_MII_1000_FDX
-+	bool "Emulation for 1000M Fdx fixed PHY behavior"
-+	depends on FIXED_PHY
-+
-+config FIXED_MII_AMNT
-+        int "Number of emulated PHYs to allocate "
-+        depends on FIXED_PHY
-+        default "1"
-+        ---help---
-+        Sometimes it is required to have several independent emulated
-+        PHYs on the bus (in case of multi-eth but phy-less HW for instance).
-+        This control will have specified number allocated for each fixed
-+        PHY type enabled.
-+
- endif # PHYLIB
-diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
-index bb96691..5619182 100644
---- a/drivers/net/phy/fixed.c
-+++ b/drivers/net/phy/fixed.c
-@@ -30,53 +30,31 @@
- #include <linux/mii.h>
- #include <linux/ethtool.h>
- #include <linux/phy.h>
-+#include <linux/phy_fixed.h>
- 
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/uaccess.h>
- 
--#define MII_REGS_NUM	7
--
--/*
--    The idea is to emulate normal phy behavior by responding with
--    pre-defined values to mii BMCR read, so that read_status hook could
--    take all the needed info.
--*/
--
--struct fixed_phy_status {
--	u8 	link;
--	u16	speed;
--	u8 	duplex;
--};
--
--/*-----------------------------------------------------------------------------
-- *  Private information hoder for mii_bus
-- *-----------------------------------------------------------------------------*/
--struct fixed_info {
--	u16 *regs;
--	u8 regs_num;
--	struct fixed_phy_status phy_status;
--	struct phy_device *phydev; /* pointer to the container */
--	/* link & speed cb */
--	int(*link_update)(struct net_device*, struct fixed_phy_status*);
--
--};
-+/* we need to track the allocated pointers in order to free them on exit */
-+static struct fixed_info *fixed_phy_ptrs[CONFIG_FIXED_MII_AMNT*MAX_PHY_AMNT];
- 
- /*-----------------------------------------------------------------------------
-  *  If something weird is required to be done with link/speed,
-  * network driver is able to assign a function to implement this.
-  * May be useful for PHY's that need to be software-driven.
-  *-----------------------------------------------------------------------------*/
--int fixed_mdio_set_link_update(struct phy_device* phydev,
--		int(*link_update)(struct net_device*, struct fixed_phy_status*))
-+int fixed_mdio_set_link_update(struct phy_device *phydev,
-+			       int (*link_update) (struct net_device *,
-+						   struct fixed_phy_status *))
- {
- 	struct fixed_info *fixed;
- 
--	if(link_update == NULL)
-+	if (link_update == NULL)
- 		return -EINVAL;
- 
--	if(phydev) {
--		if(phydev->bus)	{
-+	if (phydev) {
-+		if (phydev->bus) {
- 			fixed = phydev->bus->priv;
- 			fixed->link_update = link_update;
- 			return 0;
-@@ -84,54 +62,64 @@ int fixed_mdio_set_link_update(struct phy_device* phydev,
- 	}
- 	return -EINVAL;
- }
-+
- EXPORT_SYMBOL(fixed_mdio_set_link_update);
- 
-+struct fixed_info *fixed_mdio_get_phydev (int phydev_ind)
-+{
-+	if (phydev_ind >= MAX_PHY_AMNT)
-+		return NULL;
-+	return fixed_phy_ptrs[phydev_ind];
-+}
-+
-+EXPORT_SYMBOL(fixed_mdio_get_phydev);
-+
- /*-----------------------------------------------------------------------------
-  *  This is used for updating internal mii regs from the status
-  *-----------------------------------------------------------------------------*/
--#if defined(CONFIG_FIXED_MII_100_FDX) || defined(CONFIG_FIXED_MII_10_FDX)
-+#if defined(CONFIG_FIXED_MII_100_FDX) || defined(CONFIG_FIXED_MII_10_FDX) || defined(CONFIG_FIXED_MII_1000_FDX)
- static int fixed_mdio_update_regs(struct fixed_info *fixed)
- {
- 	u16 *regs = fixed->regs;
- 	u16 bmsr = 0;
- 	u16 bmcr = 0;
- 
--	if(!regs) {
-+	if (!regs) {
- 		printk(KERN_ERR "%s: regs not set up", __FUNCTION__);
- 		return -EINVAL;
- 	}
- 
--	if(fixed->phy_status.link)
-+	if (fixed->phy_status.link)
- 		bmsr |= BMSR_LSTATUS;
- 
--	if(fixed->phy_status.duplex) {
-+	if (fixed->phy_status.duplex) {
- 		bmcr |= BMCR_FULLDPLX;
- 
--		switch ( fixed->phy_status.speed ) {
-+		switch (fixed->phy_status.speed) {
- 		case 100:
- 			bmsr |= BMSR_100FULL;
- 			bmcr |= BMCR_SPEED100;
--		break;
-+			break;
- 
- 		case 10:
- 			bmsr |= BMSR_10FULL;
--		break;
-+			break;
- 		}
- 	} else {
--		switch ( fixed->phy_status.speed ) {
-+		switch (fixed->phy_status.speed) {
- 		case 100:
- 			bmsr |= BMSR_100HALF;
- 			bmcr |= BMCR_SPEED100;
--		break;
-+			break;
- 
- 		case 10:
- 			bmsr |= BMSR_100HALF;
--		break;
-+			break;
- 		}
- 	}
- 
--	regs[MII_BMCR] =  bmcr;
--	regs[MII_BMSR] =  bmsr | 0x800; /*we are always capable of 10 hdx*/
-+	regs[MII_BMCR] = bmcr;
-+	regs[MII_BMSR] = bmsr | 0x800;	/*we are always capable of 10 hdx */
- 
- 	return 0;
- }
-@@ -141,29 +129,30 @@ static int fixed_mii_read(struct mii_bus *bus, int phy_id, int location)
- 	struct fixed_info *fixed = bus->priv;
- 
- 	/* if user has registered link update callback, use it */
--	if(fixed->phydev)
--		if(fixed->phydev->attached_dev) {
--			if(fixed->link_update) {
-+	if (fixed->phydev)
-+		if (fixed->phydev->attached_dev) {
-+			if (fixed->link_update) {
- 				fixed->link_update(fixed->phydev->attached_dev,
--						&fixed->phy_status);
-+						   &fixed->phy_status);
- 				fixed_mdio_update_regs(fixed);
- 			}
--	}
-+		}
- 
- 	if ((unsigned int)location >= fixed->regs_num)
- 		return -1;
- 	return fixed->regs[location];
- }
- 
--static int fixed_mii_write(struct mii_bus *bus, int phy_id, int location, u16 val)
-+static int fixed_mii_write(struct mii_bus *bus, int phy_id, int location,
-+			   u16 val)
- {
--	/* do nothing for now*/
-+	/* do nothing for now */
- 	return 0;
- }
- 
- static int fixed_mii_reset(struct mii_bus *bus)
- {
--	/*nothing here - no way/need to reset it*/
-+	/*nothing here - no way/need to reset it */
- 	return 0;
- }
- #endif
-@@ -171,8 +160,8 @@ static int fixed_mii_reset(struct mii_bus *bus)
- static int fixed_config_aneg(struct phy_device *phydev)
- {
- 	/* :TODO:03/13/2006 09:45:37 PM::
--	 The full autoneg funcionality can be emulated,
--	 but no need to have anything here for now
-+	   The full autoneg funcionality can be emulated,
-+	   but no need to have anything here for now
- 	 */
- 	return 0;
- }
-@@ -182,59 +171,79 @@ static int fixed_config_aneg(struct phy_device *phydev)
-  * match will never return true...
-  *-----------------------------------------------------------------------------*/
- static struct phy_driver fixed_mdio_driver = {
--	.name		= "Fixed PHY",
--	.features	= PHY_BASIC_FEATURES,
--	.config_aneg	= fixed_config_aneg,
--	.read_status	= genphy_read_status,
--	.driver 	= { .owner = THIS_MODULE,},
-+	.name = "Fixed PHY",
-+#ifdef CONFIG_FIXED_MII_1000_FDX
-+	.features = PHY_GBIT_FEATURES,
-+#else
-+	.features = PHY_BASIC_FEATURES,
-+#endif
-+	.config_aneg = fixed_config_aneg,
-+	.read_status = genphy_read_status,
-+	.driver = { .owner = THIS_MODULE, },
- };
- 
-+static void fixed_mdio_release(struct device *dev)
-+{
-+	struct phy_device *phydev = container_of(dev, struct phy_device, dev);
-+	struct mii_bus *bus = phydev->bus;
-+	struct fixed_info *fixed = bus->priv;
-+
-+	kfree(phydev);
-+	kfree(bus->dev);
-+	kfree(bus);
-+	kfree(fixed->regs);
-+	kfree(fixed);
-+}
-+
- /*-----------------------------------------------------------------------------
-  *  This func is used to create all the necessary stuff, bind
-  * the fixed phy driver and register all it on the mdio_bus_type.
-- * speed is either 10 or 100, duplex is boolean.
-+ * speed is either 10 or 100 or 1000, duplex is boolean.
-  * number is used to create multiple fixed PHYs, so that several devices can
-  * utilize them simultaneously.
-+ *
-+ * The device on mdio bus will look like [bus_id]:[phy_id],
-+ * bus_id = number
-+ * phy_id = speed+duplex.
-  *-----------------------------------------------------------------------------*/
--#if defined(CONFIG_FIXED_MII_100_FDX) || defined(CONFIG_FIXED_MII_10_FDX)
--static int fixed_mdio_register_device(int number, int speed, int duplex)
-+#if defined(CONFIG_FIXED_MII_100_FDX) || defined(CONFIG_FIXED_MII_10_FDX) || defined(CONFIG_FIXED_MII_1000_FDX)
-+struct fixed_info *fixed_mdio_register_device(
-+	int bus_id, int speed, int duplex, u8 phy_id)
- {
- 	struct mii_bus *new_bus;
- 	struct fixed_info *fixed;
- 	struct phy_device *phydev;
--	int err = 0;
-+	int err;
- 
--	struct device* dev = kzalloc(sizeof(struct device), GFP_KERNEL);
-+	struct device *dev = kzalloc(sizeof(struct device), GFP_KERNEL);
- 
--	if (NULL == dev)
--		return -ENOMEM;
-+	if (dev == NULL)
-+		goto err_dev_alloc;
- 
- 	new_bus = kzalloc(sizeof(struct mii_bus), GFP_KERNEL);
- 
--	if (NULL == new_bus) {
--		kfree(dev);
--		return -ENOMEM;
--	}
-+	if (new_bus == NULL)
-+		goto err_bus_alloc;
-+
- 	fixed = kzalloc(sizeof(struct fixed_info), GFP_KERNEL);
- 
--	if (NULL == fixed) {
--		kfree(dev);
--		kfree(new_bus);
--		return -ENOMEM;
--	}
-+	if (fixed == NULL)
-+		goto err_fixed_alloc;
-+
-+	fixed->regs = kzalloc(MII_REGS_NUM * sizeof(int), GFP_KERNEL);
-+	if (NULL == fixed->regs)
-+		goto err_fixed_regs_alloc;
- 
--	fixed->regs = kzalloc(MII_REGS_NUM*sizeof(int), GFP_KERNEL);
- 	fixed->regs_num = MII_REGS_NUM;
- 	fixed->phy_status.speed = speed;
- 	fixed->phy_status.duplex = duplex;
- 	fixed->phy_status.link = 1;
- 
--	new_bus->name = "Fixed MII Bus",
--	new_bus->read = &fixed_mii_read,
--	new_bus->write = &fixed_mii_write,
--	new_bus->reset = &fixed_mii_reset,
--
--	/*set up workspace*/
-+	new_bus->name = "Fixed MII Bus";
-+	new_bus->read = &fixed_mii_read;
-+	new_bus->write = &fixed_mii_write;
-+	new_bus->reset = &fixed_mii_reset;
-+	/*set up workspace */
- 	fixed_mdio_update_regs(fixed);
- 	new_bus->priv = fixed;
- 
-@@ -243,119 +252,110 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
- 
- 	/* create phy_device and register it on the mdio bus */
- 	phydev = phy_device_create(new_bus, 0, 0);
-+	if (phydev == NULL)
-+		goto err_phy_dev_create;
- 
- 	/*
--	 Put the phydev pointer into the fixed pack so that bus read/write code could
--	 be able to access for instance attached netdev. Well it doesn't have to do
--	 so, only in case of utilizing user-specified link-update...
-+	 * Put the phydev pointer into the fixed pack so that bus read/write
-+	 * code could be able to access for instance attached netdev. Well it
-+	 * doesn't have to do so, only in case of utilizing user-specified
-+	 * link-update...
- 	 */
--	fixed->phydev = phydev;
- 
--	if(NULL == phydev) {
--		err = -ENOMEM;
--		goto device_create_fail;
--	}
-+	fixed->phydev = phydev;
-+	phydev->speed = speed;
-+	phydev->duplex = duplex;
- 
- 	phydev->irq = PHY_IGNORE_INTERRUPT;
- 	phydev->dev.bus = &mdio_bus_type;
- 
--	if(number)
--		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
--				"fixed_%d@%d:%d", number, speed, duplex);
--	else
--		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
--				"fixed@%d:%d", speed, duplex);
--	phydev->bus = new_bus;
-+	snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-+		 PHY_ID_FMT, bus_id, phy_id);
- 
--	err = device_register(&phydev->dev);
--	if(err) {
--		printk(KERN_ERR "Phy %s failed to register\n",
--				phydev->dev.bus_id);
--		goto bus_register_fail;
--	}
-+	phydev->bus = new_bus;
- 
--	/*
--	   the mdio bus has phy_id match... In order not to do it
--	   artificially, we are binding the driver here by hand;
--	   it will be the same for all the fixed phys anyway.
--	 */
- 	phydev->dev.driver = &fixed_mdio_driver.driver;
--
-+	phydev->dev.release = fixed_mdio_release;
- 	err = phydev->dev.driver->probe(&phydev->dev);
--	if(err < 0) {
--		printk(KERN_ERR "Phy %s: problems with fixed driver\n",phydev->dev.bus_id);
--		goto probe_fail;
-+	if (err < 0) {
-+		printk(KERN_ERR "Phy %s: problems with fixed driver\n",
-+		       phydev->dev.bus_id);
-+		goto err_out;
- 	}
-+	err = device_register(&phydev->dev);
-+	if (err) {
-+		printk(KERN_ERR "Phy %s failed to register\n",
-+		       phydev->dev.bus_id);
-+		goto err_out;
-+	}
-+	//phydev->state = PHY_RUNNING; /* make phy go up quick, but in 10Mbit/HDX
-+	return fixed;
- 
--	err = device_bind_driver(&phydev->dev);
--	if (err)
--		goto probe_fail;
--
--	return 0;
--
--probe_fail:
--	device_unregister(&phydev->dev);
--bus_register_fail:
-+err_out:
- 	kfree(phydev);
--device_create_fail:
--	kfree(dev);
--	kfree(new_bus);
-+err_phy_dev_create:
-+	kfree(fixed->regs);
-+err_fixed_regs_alloc:
- 	kfree(fixed);
-+err_fixed_alloc:
-+	kfree(new_bus);
-+err_bus_alloc:
-+	kfree(dev);
-+err_dev_alloc:
-+
-+	return NULL;
- 
--	return err;
- }
- #endif
- 
--
- MODULE_DESCRIPTION("Fixed PHY device & driver for PAL");
- MODULE_AUTHOR("Vitaly Bordug");
- MODULE_LICENSE("GPL");
- 
- static int __init fixed_init(void)
- {
--#if 0
--	int ret;
--	int duplex = 0;
--#endif
--
--	/* register on the bus... Not expected to be matched with anything there... */
-+	int cnt = 0;
-+	int i;
-+/* register on the bus... Not expected to be matched
-+ * with anything there...
-+ *
-+ */
- 	phy_driver_register(&fixed_mdio_driver);
- 
--	/* So let the fun begin...
--	   We will create several mdio devices here, and will bound the upper
--	   driver to them.
--
--	   Then the external software can lookup the phy bus by searching
--	   fixed@speed:duplex, e.g. fixed@100:1, to be connected to the
--	   virtual 100M Fdx phy.
--
--	   In case several virtual PHYs required, the bus_id will be in form
--	   fixed_<num>@<speed>:<duplex>, which make it able even to define
--	   driver-specific link control callback, if for instance PHY is completely
--	   SW-driven.
--
--	*/
--
--#ifdef CONFIG_FIXED_MII_DUPLEX
--#if 0
--	duplex = 1;
--#endif
-+/* We will create several mdio devices here, and will bound the upper
-+ * driver to them.
-+ *
-+ * Then the external software can lookup the phy bus by searching
-+ * for 0:101, to be connected to the virtual 100M Fdx phy.
-+ *
-+ * In case several virtual PHYs required, the bus_id will be in form
-+ * [num]:[duplex]+[speed], which make it able even to define
-+ * driver-specific link control callback, if for instance PHY is
-+ * completely SW-driven.
-+ */
-+	for (i=1; i <= CONFIG_FIXED_MII_AMNT; i++) {
-+#ifdef CONFIG_FIXED_MII_1000_FDX
-+		fixed_phy_ptrs[cnt++] = fixed_mdio_register_device(0, 1000, 1, i);
- #endif
--
- #ifdef CONFIG_FIXED_MII_100_FDX
--	fixed_mdio_register_device(0, 100, 1);
-+		fixed_phy_ptrs[cnt++] = fixed_mdio_register_device(1, 100, 1, i);
- #endif
--
- #ifdef CONFIG_FIXED_MII_10_FDX
--	fixed_mdio_register_device(0, 10, 1);
-+		fixed_phy_ptrs[cnt++] = fixed_mdio_register_device(2, 10, 1, i);
- #endif
-+	}
-+
- 	return 0;
- }
- 
- static void __exit fixed_exit(void)
- {
-+	int i;
-+
- 	phy_driver_unregister(&fixed_mdio_driver);
--	/* :WARNING:02/18/2006 04:32:40 AM:: Cleanup all the created stuff */
-+	for (i=0; i < MAX_PHY_AMNT; i++)
-+		if ( fixed_phy_ptrs[i] )
-+			device_unregister(&fixed_phy_ptrs[i]->phydev->dev);
- }
- 
- module_init(fixed_init);
-diff --git a/include/linux/phy_fixed.h b/include/linux/phy_fixed.h
-new file mode 100644
-index 0000000..04ba70d
---- /dev/null
-+++ b/include/linux/phy_fixed.h
-@@ -0,0 +1,38 @@
-+#ifndef __PHY_FIXED_H
-+#define __PHY_FIXED_H
-+
-+#define MII_REGS_NUM	29
-+
-+/* max number of virtual phy stuff */
-+#define MAX_PHY_AMNT	10
-+/*
-+    The idea is to emulate normal phy behavior by responding with
-+    pre-defined values to mii BMCR read, so that read_status hook could
-+    take all the needed info.
-+*/
-+
-+struct fixed_phy_status {
-+	u8 link;
-+	u16 speed;
-+	u8 duplex;
-+};
-+
-+/*-----------------------------------------------------------------------------
-+ *  Private information hoder for mii_bus
-+ *-----------------------------------------------------------------------------*/
-+struct fixed_info {
-+	u16 *regs;
-+	u8 regs_num;
-+	struct fixed_phy_status phy_status;
-+	struct phy_device *phydev;	/* pointer to the container */
-+	/* link & speed cb */
-+	int (*link_update) (struct net_device *, struct fixed_phy_status *);
-+
-+};
-+
-+
-+int fixed_mdio_set_link_update(struct phy_device *,
-+       int (*link_update) (struct net_device *, struct fixed_phy_status *));
-+struct fixed_info *fixed_mdio_get_phydev (int phydev_ind);
-+
-+#endif /* __PHY_FIXED_H */
+>   - Implemented as a block device driver with a dynamic major
+>   - Disk names (and partitions) are of the format ps3d%c(%u)
+>   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
+>     doesn't support scatter-gather
+> 
+> ...
+>
+> --- /dev/null
+> +++ b/drivers/block/ps3disk.c
+> @@ -0,0 +1,624 @@
+> +/*
+> + * PS3 Disk Storage Driver
+> + *
+> + * Copyright (C) 2007 Sony Computer Entertainment Inc.
+> + * Copyright 2007 Sony Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License as published
+> + * by the Free Software Foundation; version 2 of the License.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along
+> + * with this program; if not, write to the Free Software Foundation, Inc.,
+> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+> + */
+> +
+> +#include <linux/ata.h>
+> +#include <linux/blkdev.h>
+> +
+> +#include <asm/lv1call.h>
+> +#include <asm/ps3stor.h>
+> +#include <asm/firmware.h>
+> +
+> +
+> +#define DEVICE_NAME		"ps3disk"
+> +
+> +#define BOUNCE_SIZE		(64*1024)
+> +
+> +#define PS3DISK_MAX_DISKS	16
+> +#define PS3DISK_MINORS		16
+> +
+> +#define KERNEL_SECTOR_SIZE	512
+
+Sigh.  We have at least ten separate definitions of SECTOR_SIZE< none of
+them in the right place.  Cleanup opportunity for someone.
+
+> +
+> +#define PS3DISK_NAME		"ps3d%c"
+> +
+> +
+> +struct ps3disk_private {
+> +	spinlock_t lock;		/* Request queue spinlock */
+> +	struct request_queue *queue;
+> +	struct gendisk *gendisk;
+> +	unsigned int blocking_factor;
+> +	struct request *req;
+> +	u64 raw_capacity;
+> +	unsigned char model[ATA_ID_PROD_LEN+1];
+> +};
+> +#define ps3disk_priv(dev)	((dev)->sbd.core.driver_data)
+
+hm, this code has "ata" all over it and actually uses a libata #define (at
+least) but there is no Kconfig dependency on ATA.  Fair enough, I guess,
+but a bit funny-looking.
+
+> +static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
+> +				   struct request *req, int gather)
+> +{
+> +	unsigned int sectors = 0, offset = 0;
+> +	struct bio *bio;
+> +	sector_t sector;
+> +	struct bio_vec *bvec;
+> +	unsigned int i = 0, j;
+> +	size_t size;
+> +	void *buf;
+> +
+> +	rq_for_each_bio(bio, req) {
+> +		sector = bio->bi_sector;
+> +		dev_dbg(&dev->sbd.core,
+> +			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
+> +			__func__, __LINE__, i, bio_segments(bio),
+> +			bio_sectors(bio), sector);
+> +		bio_for_each_segment(bvec, bio, j) {
+> +			size = bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE;
+> +			buf = __bio_kmap_atomic(bio, j, KM_IRQ0);
+> +			if (gather)
+> +				memcpy(dev->bounce_buf+offset, buf, size);
+> +			else
+> +				memcpy(buf, dev->bounce_buf+offset, size);
+> +			offset += size;
+> +			flush_kernel_dcache_page(bio_iovec_idx(bio, j)->bv_page);
+> +			__bio_kunmap_atomic(bio, KM_IRQ0);
+> +		}
+> +		sectors += bio_sectors(bio);
+> +		i++;
+> +	}
+> +}
+
+Local variable `sectors' doesn't do anything.
+
+> +static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
+> +				     struct request *req)
+> +{
+> +	struct ps3disk_private *priv = ps3disk_priv(dev);
+> +	int write = rq_data_dir(req), res;
+> +	const char *op = write ? "write" : "read";
+> +	u64 start_sector, sectors;
+> +	unsigned int region_id = dev->regions[dev->region_idx].id;
+
+So we're ignoring the sector_t stuff.  I guess it's 64-bit only.  Still, it
+might be nice to use sector_t for consistency, readability and possible
+future 32-bitness?
+
+> +#ifdef DEBUG
+> +	unsigned int n = 0;
+> +	struct bio *bio;
+> +	rq_for_each_bio(bio, req)
+> +		n++;
+
+I'm surprised that the block core doesn't have a helper to count the number
+of bios in a request.
+
+Please prefer to put a blank line between end-of-locals and start-of-code.
+
+> +	dev_dbg(&dev->sbd.core,
+> +		"%s:%u: %s req has %u bios for %lu sectors %lu hard sectors\n",
+> +		__func__, __LINE__, op, n, req->nr_sectors,
+> +		req->hard_nr_sectors);
+> +#endif
+> +
+> +	start_sector = req->sector*priv->blocking_factor;
+> +	sectors = req->nr_sectors*priv->blocking_factor;
+
+s/*/ * /.  checkpatch missed this.
+
+I suspect you didn't run cehckpatch anyway.
+
+Please run checkpatch.
+
+> +	dev_dbg(&dev->sbd.core, "%s:%u: %s %lu sectors starting at %lu\n",
+> +		__func__, __LINE__, op, sectors, start_sector);
+> +
+> +	if (write) {
+> +		ps3disk_scatter_gather(dev, req, 1);
+> +
+> +		res = lv1_storage_write(dev->sbd.dev_id, region_id,
+> +					start_sector, sectors, 0,
+> +					dev->bounce_lpar, &dev->tag);
+> +	} else {
+> +		res = lv1_storage_read(dev->sbd.dev_id, region_id,
+> +				       start_sector, sectors, 0,
+> +				       dev->bounce_lpar, &dev->tag);
+> +	}
+> +	if (res) {
+> +		dev_err(&dev->sbd.core, "%s:%u: %s failed %d\n", __func__,
+> +			__LINE__, op, res);
+> +		end_request(req, 0);
+> +		return 0;
+> +	}
+> +
+> +	priv->req = req;
+> +	return 1;
+> +}
+> +
+>
+> ...
+>
+> +
+> +/* ATA helpers copied from drivers/ata/libata-core.c */
+
+ooh, bad person.
+
+> +static void swap_buf_le16(u16 *buf, unsigned int buf_words)
+> +{
+> +#ifdef __BIG_ENDIAN
+> +	unsigned int i;
+> +
+> +	for (i = 0; i < buf_words; i++)
+> +		buf[i] = le16_to_cpu(buf[i]);
+> +#endif /* __BIG_ENDIAN */
+> +}
+> +
+> +static u64 ata_id_n_sectors(const u16 *id)
+> +{
+> +	if (ata_id_has_lba(id)) {
+> +		if (ata_id_has_lba48(id))
+> +			return ata_id_u64(id, 100);
+> +		else
+> +			return ata_id_u32(id, 60);
+> +	} else {
+> +		if (ata_id_current_chs_valid(id))
+> +			return ata_id_u32(id, 57);
+> +		else
+> +			return id[1] * id[3] * id[6];
+> +	}
+> +}
+> +
+> +static void ata_id_string(const u16 *id, unsigned char *s, unsigned int ofs,
+> +			  unsigned int len)
+> +{
+> +	unsigned int c;
+> +
+> +	while (len > 0) {
+> +		c = id[ofs] >> 8;
+> +		*s = c;
+> +		s++;
+> +
+> +		c = id[ofs] & 0xff;
+> +		*s = c;
+> +		s++;
+> +
+> +		ofs++;
+> +		len -= 2;
+> +	}
+> +}
+> +
+> +static void ata_id_c_string(const u16 *id, unsigned char *s, unsigned int ofs,
+> +			    unsigned int len)
+> +{
+> +	unsigned char *p;
+> +
+> +	WARN_ON(!(len & 1));
+> +
+> +	ata_id_string(id, s, ofs, len - 1);
+> +
+> +	p = s + strnlen(s, len - 1);
+> +	while (p > s && p[-1] == ' ')
+> +		p--;
+> +	*p = '\0';
+> +}
+> +
+>
+> ...
+>
+> +static unsigned long ps3disk_mask;
+> +
+> +static int __devinit ps3disk_probe(struct ps3_system_bus_device *_dev)
+> +{
+> +	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+> +	struct ps3disk_private *priv;
+> +	int error;
+> +	unsigned int devidx;
+> +	struct request_queue *queue;
+> +	struct gendisk *gendisk;
+> +
+> +	if (dev->blk_size < KERNEL_SECTOR_SIZE) {
+> +		dev_err(&dev->sbd.core,
+> +			"%s:%u: cannot handle block size %lu\n", __func__,
+> +			__LINE__, dev->blk_size);
+> +		return -EINVAL;
+> +	}
+> +
+> +	BUILD_BUG_ON(PS3DISK_MAX_DISKS > BITS_PER_LONG);
+> +	devidx = find_first_zero_bit(&ps3disk_mask, PS3DISK_MAX_DISKS);
+> +	if (devidx >= PS3DISK_MAX_DISKS) {
+> +		dev_err(&dev->sbd.core, "%s:%u: Too many disks\n", __func__,
+> +			__LINE__);
+> +		return -ENOSPC;
+> +	}
+> +	__set_bit(devidx, &ps3disk_mask);
+> +
+> +	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+> +	if (!priv) {
+> +		error = -ENOMEM;
+> +		goto fail;
+> +	}
+> +
+> +	ps3disk_priv(dev) = priv;
+> +	spin_lock_init(&priv->lock);
+> +
+> +	dev->bounce_size = BOUNCE_SIZE;
+> +	dev->bounce_buf = kmalloc(BOUNCE_SIZE, GFP_DMA);
+> +	if (!dev->bounce_buf) {
+> +		error = -ENOMEM;
+> +		goto fail_free_priv;
+> +	}
+> +
+> +	error = ps3stor_setup(dev, ps3disk_interrupt);
+> +	if (error)
+> +		goto fail_free_bounce;
+> +
+> +	ps3disk_identify(dev);
+
+ps3disk_identify() can return an error?
+
+> +	queue = blk_init_queue(ps3disk_request, &priv->lock);
+> +	if (!queue) {
+> +		dev_err(&dev->sbd.core, "%s:%u: blk_init_queue failed\n",
+> +			__func__, __LINE__);
+> +		error = -ENOMEM;
+> +		goto fail_teardown;
+> +	}
+> +
+> +	priv->queue = queue;
+> +	queue->queuedata = dev;
+> +
+> +	blk_queue_bounce_limit(queue, BLK_BOUNCE_HIGH);
+> +
+> +	blk_queue_max_sectors(queue, dev->bounce_size/KERNEL_SECTOR_SIZE);
+> +	blk_queue_segment_boundary(queue, -1UL);
+> +	blk_queue_dma_alignment(queue, dev->blk_size-1);
+> +	blk_queue_hardsect_size(queue, dev->blk_size);
+> +
+> +	blk_queue_issue_flush_fn(queue, ps3disk_issue_flush);
+> +	blk_queue_ordered(queue, QUEUE_ORDERED_DRAIN_FLUSH,
+> +			  ps3disk_prepare_flush);
+> +
+> +	blk_queue_max_phys_segments(queue, -1);
+> +	blk_queue_max_hw_segments(queue, -1);
+> +	blk_queue_max_segment_size(queue, dev->bounce_size);
+> +
+> +	gendisk = alloc_disk(PS3DISK_MINORS);
+> +	if (!gendisk) {
+> +		dev_err(&dev->sbd.core, "%s:%u: alloc_disk failed\n", __func__,
+> +			__LINE__);
+> +		error = -ENOMEM;
+> +		goto fail_cleanup_queue;
+> +	}
+> +
+> +	priv->gendisk = gendisk;
+> +	gendisk->major = ps3disk_major;
+> +	gendisk->first_minor = devidx * PS3DISK_MINORS;
+> +	gendisk->fops = &ps3disk_fops;
+> +	gendisk->queue = queue;
+> +	gendisk->private_data = dev;
+> +	gendisk->driverfs_dev = &dev->sbd.core;
+> +	snprintf(gendisk->disk_name, sizeof(gendisk->disk_name), PS3DISK_NAME,
+> +		 devidx+'a');
+> +	priv->blocking_factor = dev->blk_size/KERNEL_SECTOR_SIZE;
+> +	set_capacity(gendisk,
+> +		     dev->regions[dev->region_idx].size*priv->blocking_factor);
+> +
+> +	dev_info(&dev->sbd.core,
+> +		 "%s is a %s (%lu MiB total, %lu MiB for OtherOS)\n",
+> +		 gendisk->disk_name, priv->model, priv->raw_capacity >> 11,
+> +		 get_capacity(gendisk) >> 11);
+> +
+> +	add_disk(gendisk);
+> +	return 0;
+> +
+> +fail_cleanup_queue:
+> +	blk_cleanup_queue(queue);
+> +fail_teardown:
+> +	ps3stor_teardown(dev);
+> +fail_free_bounce:
+> +	kfree(dev->bounce_buf);
+> +fail_free_priv:
+> +	kfree(priv);
+> +	ps3disk_priv(dev) = NULL;
+> +fail:
+> +	__clear_bit(devidx, &ps3disk_mask);
+> +	return error;
+> +}
+> +
+> +static int ps3disk_remove(struct ps3_system_bus_device *_dev)
+> +{
+> +	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+> +	struct ps3disk_private *priv = ps3disk_priv(dev);
+> +
+> +	__clear_bit(priv->gendisk->first_minor / PS3DISK_MINORS,
+> +		    &ps3disk_mask);
+
+I see no locking here which makes this __clear_bit and the above __set_bit
+non-racy?
+
+> +	del_gendisk(priv->gendisk);
+> +	blk_cleanup_queue(priv->queue);
+> +	put_disk(priv->gendisk);
+> +	dev_notice(&dev->sbd.core, "Synchronizing disk cache\n");
+> +	ps3disk_sync_cache(dev);
+> +	ps3stor_teardown(dev);
+> +	kfree(dev->bounce_buf);
+> +	kfree(priv);
+> +	ps3disk_priv(dev) = NULL;
+
+I suspect this nulling here will just hide any bugs?  If we're going to
+write anything there, probably 0xdeadbeef would be better?
+
+> +	return 0;
+> +}
+> +
 
