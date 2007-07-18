@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933339AbXGRUt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763405AbXGRUuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933339AbXGRUt1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 16:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbXGRUtQ
+	id S1763405AbXGRUuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 16:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759081AbXGRUtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 16:49:16 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:46185 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754765AbXGRUtP (ORCPT
+	Wed, 18 Jul 2007 16:49:46 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:40807 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759326AbXGRUtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 16:49:15 -0400
-Message-ID: <469E7C82.5020400@pimpmylinux.org>
-Date: Wed, 18 Jul 2007 22:48:02 +0200
-From: Gabriel C <crazy@pimpmylinux.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Wed, 18 Jul 2007 16:49:45 -0400
+Message-ID: <469E7D7D.6050007@oracle.com>
+Date: Wed, 18 Jul 2007 13:52:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+To: Jeff Garzik <jeff@garzik.org>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Gabriel C <crazy@pimpmylinux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        netdev@vger.kernel.org
 Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII
+References: <469E75AA.7040109@pimpmylinux.org>	<Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
+In-Reply-To: <469E7BE1.6090401@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Wed, 18 Jul 2007, Gabriel C wrote:
+Jeff Garzik wrote:
+> Randy Dunlap wrote:
+>> On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
+>>> there's no point adding all that redundant content when it can all be
+>>> done automatically.
+>>
+>> I like it.  Are there any kconfig patches to support this plan?
 > 
->> Everything 'depends on' EXPERIMENTAL should be marked as such,
->> visible in the menus.
 > 
-> rather than add all that extraneous dreck to the Kconfig files, i
-> *really* wish folks would give serious thought to my earlier
-> suggestion about a "maturity level" attribute that could be used to
-> not only add a parenthesized maturity level during display, but could
-> also be used to activate/deactivate entire levels in one operation.
+> Speaking specifically to adding 'EXPERIMENTAL', I distinctly remember at 
+> some point in the past the config system was smart enough to print " 
+> (EXPERIMENTAL)" if that entry depended on CONFIG_EXPERIMENTAL.
 > 
-> there's no point adding all that redundant content when it can all be
-> done automatically.
-
-
-I don't know what your suggestion was , I'm sorry.
-
-It may be for sure a good idea to add all this maturity levels
-automatically but for now such an thing does not exists.
-
+> We should head in that direction.
 > 
-> rday
+> I strongly NAK the original patch from Gabriel C in this thread -- it 
+> just adds too much redundant info.  Better to add it -once-, somewhere 
+> inside Kconfig system.
+> 
+>     Jeff
+> 
+> 
 
+Yes, that's what Robert & I are referring to as well (AFAIK).
 
-Gabriel
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
