@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934956AbXGRVdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933802AbXGRVgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934956AbXGRVdI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 17:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760283AbXGRVcw
+	id S933802AbXGRVgA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 17:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757977AbXGRVfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 17:32:52 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:35315 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755498AbXGRVcu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 17:32:50 -0400
-Subject: Re: block/bsg.c
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <200707182232.58961.bzolnier@gmail.com>
-References: <20070716165706.348f6bbf.akpm@linux-foundation.org>
-	 <200707180243.13368.bzolnier@gmail.com>
-	 <1184767917.3464.13.camel@localhost.localdomain>
-	 <200707182232.58961.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Wed, 18 Jul 2007 16:32:46 -0500
-Message-Id: <1184794366.3464.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Wed, 18 Jul 2007 17:35:51 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:39713 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755348AbXGRVfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 17:35:50 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: trenn@suse.de
+Subject: Re: [PATCH] - Increase PNP_MAX_PORT. ACPI devices can have a lot IO resource declarations
+Date: Wed, 18 Jul 2007 15:33:25 -0600
+User-Agent: KMail/1.9.6
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>, Bernhard Walle <bwalle@suse.de>
+References: <1184595667.19959.312.camel@queen.suse.de> <200707170949.47346.bjorn.helgaas@hp.com> <1184746874.4062.35.camel@fanta4.site>
+In-Reply-To: <1184746874.4062.35.camel@fanta4.site>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707181533.25366.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-18 at 22:32 +0200, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> On Wednesday 18 July 2007, James Bottomley wrote:
-> > On Wed, 2007-07-18 at 02:43 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > [ James, please remeber to cc: linux-ide on IDE patches, thanks. ]
+On Wednesday 18 July 2007 02:21:14 am Thomas Renninger wrote:
+> On Tue, 2007-07-17 at 09:49 -0600, Bjorn Helgaas wrote:
+> > On Monday 16 July 2007 08:21:07 am Thomas Renninger wrote:
+> > > PNP0C02 devices normally have a lot more IO port declarations than
+> > > currently defined in PNP_MAX_PORT
 > > 
-> > Blame Andrew ... I assumed he'd be reporting the problem to the relevant
-> > lists, so I just did a reply all ...
-> 
-> No need to blame anybody, especially since it seems that one more person
-> forgot about adding linux-ide ML.  ;)
-> 
-> > > On Wednesday 18 July 2007, Jeff Garzik wrote:
-> > > > James Bottomley wrote:
-> > > > > @@ -1052,9 +1054,10 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
-> > > > >  	int err, (*setfunc)(ide_drive_t *, int);
-> > > > >  	u8 *val;
-> > > > >  
-> > > > > -	err = scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
-> > > > > -	if (err != -ENOTTY)
-> > > > > -		return err;
-> > > > > +	switch (cmd) {
-> > > > > +	case SG_IO:
-> > > > > +		return scsi_cmd_ioctl(file, bdev->bd_disk->queue, bdev->bd_disk, cmd, p);
-> > > > > +	}
-> > > > >  
-> > > > >  	switch (cmd) {
-> > > > >  	case HDIO_GET_32BIT:	    val = &drive->io_32bit;	 goto read_val;
-> > > > 
-> > > > 
-> > > > At that point you might as well use an 'if'.
-> > > > 
-> > > > But overall -- agreed.  ACK.
-> > > 
-> > > James/Jeff thanks for following the issue but NAK. ;)
-> > > 
-> > > Causes regression wrt ide-floppy CDROMEJECT/CDROMCLOSETRAY support when
-> > > compared to 2.6.22 and SG_IO is not supported by ide-{disk,scsi,tape}.
+> > Yes.
 > > 
-> > Well ... that was why I put the case statement in ... I was sure there
-> > would be other ioctls I missed.
-> 
-> The thing is that ide-{disk,scsi,tape} really don't support
-> REQ_TYPE_BLOCK_PC type requests so ide.c::generic_ide_ioctl()
-> is not the best place to add handling of SG_IO.
-
-SG_IO has become a general packet request ioctl, so I think the idea is
-to allow it to send taskfiles down ... I'll let Jens speak to where the
-actual pieces to do this currently stand.
-
-> Patch attached.
-> 
-> > > Luckily Linus has already fixed the issue properly.
+> > > I also wonder whether other limits like:
+> > >  #define PNP_MAX_MEM        4
+> > >  #define PNP_MAX_IRQ        2
+> > >  #define PNP_MAX_DMA        2
+> > > could get exceeded with pnpacpi?
 > > 
-> > Actually, no, that's just a reversion.  I think we need the attached to
-> > complete all of this.
+> > Definitely.  I think the current limits come from the PNP ISA spec
+> > (sec 4.6).  I don't see similar limits in the PNPBIOS or ACPI specs,
+> > so ideally I think they should be dynamically allocated as you suggest.
 > > 
-> > > BTW cmd == 1 IOCTL is not defined/used by IDE driver.
-> > 
-> > Andrew's trace clearly shows that something is sending cmd == 1 down, so
-> 
-> I still haven't got the trace.  Andrew, please (re)send it in PM, thanks.
+> I wanted to implement the dynamic approach and used a dynamically
+> allocated array, filled up from beginning. While this is close to the
+> current implementation I thought this is the easiest sufficient way...
+> (I also only did this for io ports where most mem is wasted).
+> Now I am thinking about hotplug (e.g. if a SSDT with resources gets
+> hot-added, removed)... If a device can vanish, the array must get
+> reordered, not a really well fitting structure, a list (a pnp specific
+> set up, or from include/linux/list.h?) should be better?
 
-http://marc.info/?l=linux-scsi&m=118470384305607
+I don't understand the array reordering problem.  Either a device exists
+or it doesn't.  Loading or unloading an SSDT should not change the number
+of resources for devices (except that it might add or remove an entire
+device).
 
-James
+I think for now, it would be sufficient to increase PNP_MAX_IRQ to 8
+and PNP_MAX_PORT to 32 and be done with it.  I don't think it's worth
+getting more complicated unless we dynamically allocate everything.
 
-
+Bjorn
