@@ -1,44 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762446AbXGRVJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbXGRVKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762446AbXGRVJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 17:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbXGRVIG
+	id S1762775AbXGRVKf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 17:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934377AbXGRVJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 17:08:06 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:54055 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754608AbXGRVIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 17:08:04 -0400
-Subject: ia64 build failure from recent diskquota patch
-From: Doug Chapman <doug.chapman@hp.com>
-To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       vtaras@openvz.org
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 18 Jul 2007 17:03:19 -0400
-Message-Id: <1184792599.3026.19.camel@deimos.americas.hpqcorp.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 8bit
+	Wed, 18 Jul 2007 17:09:44 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37714 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934263AbXGRVJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 17:09:42 -0400
+Date: Wed, 18 Jul 2007 23:09:03 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Gabriel C <crazy@pimpmylinux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+Message-ID: <20070718210903.GM3801@stusta.de>
+References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org> <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit: b716395e2b8e450e294537de0c91476ded2f0395 introduces a build
-failure on ia64.
+On Wed, Jul 18, 2007 at 04:51:33PM -0400, Robert P. J. Day wrote:
+> On Wed, 18 Jul 2007, Jeff Garzik wrote:
+> 
+> > Randy Dunlap wrote:
+> > > On Wed, 18 Jul 2007 16:23:09 -0400 (EDT) Robert P. J. Day wrote:
+> > > > there's no point adding all that redundant content when it can all be
+> > > > done automatically.
+> > >
+> > > I like it.  Are there any kconfig patches to support this plan?
+> >
+> > Speaking specifically to adding 'EXPERIMENTAL', I distinctly
+> > remember at some point in the past the config system was smart
+> > enough to print " (EXPERIMENTAL)" if that entry depended on
+> > CONFIG_EXPERIMENTAL.
+> >
+> > We should head in that direction.
+> 
+> there's one point i want to re-iterate.  i'd prefer to see
+> EXPERIMENTAL stop being a dependency, as in:
+> 
+>   depends on SNAFU && FUBAR && EXPERIMENTAL
+> 
+> "EXPERIMENTAL" is not a dependency in the true sense of the word -- it
+> is more of an attribute, and i think it would far more sense to see
+> entries like:
+> 
+>   depends on SNAFU && FUBAR
+>   maturity EXPERIMENTAL
 
-  CC      fs/quota.o
-fs/quota.c:396: error: expected specifier-qualifier-list before ‘compat_u64’
-fs/quota.c:409: error: expected specifier-qualifier-list before ‘compat_u64’
-fs/quota.c:420: error: expected specifier-qualifier-list before ‘compat_uint_t’
+Plus some special case in the kconfig code that you can somewhere select 
+the maturity levels you want to use (currently it's a normal option 
+kconfig doesn't have to know anything about).
 
-.... more related errors ....
+Remind me, would there be any big advantage after such a change besides
+being able to automatically print " (EXPERIMENTAL)" at the end of 
+the prompt?
 
+> sure, it's more work, but i think the cost is worth it in terms of
+> flexibility (particularly if *i'm* not the one doing the work. :-)
 
-The type compat_u64 on ia64 is defined if CONFIG_COMPAT is defined
-(which is rare these days on ia64)  So, it appears we are missing
-an #ifdef CONFIG_COMPAT somewhere in fs/quota.c.  I will leave that
-up to the original author to determine where.
+If you are not doing it, noone might do it.
+And discusing improvements noone will implement is somehow pointless...
 
+> rday
 
-- Doug
+cu
+Adrian
 
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
