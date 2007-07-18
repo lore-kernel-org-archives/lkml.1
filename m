@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933717AbXGRW2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762465AbXGRWc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933717AbXGRW2r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 18:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXGRW2j
+	id S1762465AbXGRWc0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 18:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbXGRWcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 18:28:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:4292 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbXGRW2h (ORCPT
+	Wed, 18 Jul 2007 18:32:17 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:53946 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbXGRWcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 18:28:37 -0400
+	Wed, 18 Jul 2007 18:32:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=c5WId3jtd1usS094iFdDl0p50zGlvpXQy4HTlBgCxpDGJWp6OubnR+/yLhahGb7pY8mpBftUe5JnlgjRn3M5B0Gu9guUcMyQjzX+ZeT6brqKiu4BY1/rdJHI8sFKfxkdw2ELQwdI/Ro+slEtx/ZCVkZZeA/UXAGUBLAvDZWcLm0=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix memory leak in dlm_add_member() when dlm_node_weight() returns less than zero
-Date: Thu, 19 Jul 2007 00:27:43 +0200
-User-Agent: KMail/1.9.7
-Cc: David Teigland <teigland@redhat.com>, Jesper Juhl <jesper.juhl@gmail.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=id2inxWNgnYwlk68nNRVMggdh9MX3KdvZ1ujnahnwk+zzEUvq6bolEv+nwQouwo87nQJRAhS08u9bYEcBqdzfYu1vru25j8D7G+BCpRLR4fHThps4lXrb8RxCdhgdiO4gmyip/uX8V2jG2RI8TRvpvr2pMYv4UySTabuggTNJgE=
+Message-ID: <86802c440707181532r6b8b0820ob1fc773f4fdbdbba@mail.gmail.com>
+Date: Wed, 18 Jul 2007 15:32:15 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 3/3]x86_64: early_printk for early debug port support
+Cc: "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, "Greg KH" <gregkh@suse.de>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200707190010.53702.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707190027.43195.jesper.juhl@gmail.com>
+References: <86802c440705202219k5aa758ffk217626424e613ec7@mail.gmail.com>
+	 <200707190010.53702.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+On 7/18/07, Andi Kleen <ak@suse.de> wrote:
+> On Monday 21 May 2007 07:19:18 Yinghai Lu wrote:
+> > add early dbgp to early_printk.
+> >
+> > kernel command line:
+> > earlyprintk=dbgp
+> > or
+> > earlyprintk=dbgp1
+>
+> Just checking some old patches. Was there ever an update for this one?
+> What were the testing results?
 
-There's a memory leak in fs/dlm/member.c::dlm_add_member().
+not yet.
 
-If "dlm_node_weight(ls->ls_name, nodeid)" returns < 0, then 
-we'll return without freeing the memory allocated to the (at 
-that point yet unused) 'memb'.
-This patch frees the allocated memory in that case and thus 
-avoids the leak.
+will create one from my local tree tonight.
 
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- fs/dlm/member.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/fs/dlm/member.c b/fs/dlm/member.c
-index 073599d..d099775 100644
---- a/fs/dlm/member.c
-+++ b/fs/dlm/member.c
-@@ -56,8 +56,10 @@ static int dlm_add_member(struct dlm_ls *ls, int nodeid)
- 		return -ENOMEM;
- 
- 	w = dlm_node_weight(ls->ls_name, nodeid);
--	if (w < 0)
-+	if (w < 0) {
-+		kfree(memb);
- 		return w;
-+	}
- 
- 	memb->nodeid = nodeid;
- 	memb->weight = w;
-
-
+YH
