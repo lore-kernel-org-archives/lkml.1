@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765234AbXGSKMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937778AbXGSKNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765234AbXGSKMI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbXGSJzj
+	id S937778AbXGSKNI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760955AbXGSJzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:55:39 -0400
-Received: from mail.suse.de ([195.135.220.2]:35395 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 05:55:41 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33083 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753164AbXGSJzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:55:21 -0400
+	id S1759028AbXGSJzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:55:22 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
 To: tglx@linutronix.de, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [30/58] x86: share hpet.h with i386
-Message-Id: <20070719095515.D6E1514E06@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:15 +0200 (CEST)
+Subject: [PATCH] [31/58] x86_64: apic.c coding style janitor work
+Message-Id: <20070719095516.E65AD14E06@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:16 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Thomas Gleixner <tglx@linutronix.de>
-hpet.h in asm-i386 and asm-x86_64 contain tons of duplicated stuff.
-Consolidate into one shared header file.
+Fix coding style, white space wreckage and remove unused code.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
@@ -30,254 +29,175 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- include/asm-i386/hpet.h   |  124 +++++++++++++++++-----------------------------
- include/asm-x86_64/hpet.h |   61 ----------------------
- 2 files changed, 48 insertions(+), 137 deletions(-)
+ arch/x86_64/kernel/apic.c |   73 ++++++++++++++++++----------------------------
+ 1 file changed, 30 insertions(+), 43 deletions(-)
 
-Index: linux/include/asm-i386/hpet.h
+Index: linux/arch/x86_64/kernel/apic.c
 ===================================================================
---- linux.orig/include/asm-i386/hpet.h
-+++ linux/include/asm-i386/hpet.h
-@@ -4,112 +4,82 @@
+--- linux.orig/arch/x86_64/kernel/apic.c
++++ linux/arch/x86_64/kernel/apic.c
+@@ -92,8 +92,9 @@ unsigned int safe_apic_wait_icr_idle(voi
+ void enable_NMI_through_LVT0 (void * dummy)
+ {
+ 	unsigned int v;
+-	
+-	v = APIC_DM_NMI;                        /* unmask and set to NMI */
++
++	/* unmask and set to NMI */
++	v = APIC_DM_NMI;
+ 	apic_write(APIC_LVT0, v);
+ }
  
- #ifdef CONFIG_HPET_TIMER
- 
--#include <linux/errno.h>
--#include <linux/module.h>
--#include <linux/sched.h>
--#include <linux/kernel.h>
--#include <linux/param.h>
--#include <linux/string.h>
--#include <linux/mm.h>
--#include <linux/interrupt.h>
--#include <linux/time.h>
--#include <linux/delay.h>
--#include <linux/init.h>
--#include <linux/smp.h>
--
--#include <asm/io.h>
--#include <asm/smp.h>
--#include <asm/irq.h>
--#include <asm/msr.h>
--#include <asm/delay.h>
--#include <asm/mpspec.h>
--#include <asm/uaccess.h>
--#include <asm/processor.h>
--
--#include <linux/timex.h>
--
- /*
-  * Documentation on HPET can be found at:
-  *      http://www.intel.com/ial/home/sp/pcmmspec.htm
-  *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+@@ -120,7 +121,7 @@ void ack_bad_irq(unsigned int irq)
+ 	 * holds up an irq slot - in excessive cases (when multiple
+ 	 * unexpected vectors occur) that might lock up the APIC
+ 	 * completely.
+-  	 * But don't ack when the APIC is disabled. -AK
++	 * But don't ack when the APIC is disabled. -AK
+ 	 */
+ 	if (!disable_apic)
+ 		ack_APIC_irq();
+@@ -616,7 +617,7 @@ early_param("apic", apic_set_verbosity);
+  * Detect and enable local APICs on non-SMP boards.
+  * Original code written by Keir Fraser.
+  * On AMD64 we trust the BIOS - if it says no APIC it is likely
+- * not correctly set up (usually the APIC timer won't work etc.) 
++ * not correctly set up (usually the APIC timer won't work etc.)
   */
  
--#define HPET_MMAP_SIZE	1024
-+#define HPET_MMAP_SIZE		1024
+ static int __init detect_init_APIC (void)
+@@ -789,13 +790,13 @@ static void setup_APIC_timer(unsigned in
+ 	local_irq_save(flags);
  
--#define HPET_ID		0x000
--#define HPET_PERIOD	0x004
--#define HPET_CFG	0x010
--#define HPET_STATUS	0x020
--#define HPET_COUNTER	0x0f0
--#define HPET_T0_CFG	0x100
--#define HPET_T0_CMP	0x108
--#define HPET_T0_ROUTE	0x110
--#define HPET_T1_CFG	0x120
--#define HPET_T1_CMP	0x128
--#define HPET_T1_ROUTE	0x130
--#define HPET_T2_CFG	0x140
--#define HPET_T2_CMP	0x148
--#define HPET_T2_ROUTE	0x150
+ 	/* wait for irq slice */
+- 	if (hpet_address && hpet_use_timer) {
+- 		int trigger = hpet_readl(HPET_T0_CMP);
+- 		while (hpet_readl(HPET_COUNTER) >= trigger)
+- 			/* do nothing */ ;
+- 		while (hpet_readl(HPET_COUNTER) <  trigger)
+- 			/* do nothing */ ;
+- 	} else {
++	if (hpet_address && hpet_use_timer) {
++		int trigger = hpet_readl(HPET_T0_CMP);
++		while (hpet_readl(HPET_COUNTER) >= trigger)
++			/* do nothing */ ;
++		while (hpet_readl(HPET_COUNTER) <  trigger)
++			/* do nothing */ ;
++	} else {
+ 		int c1, c2;
+ 		outb_p(0x00, 0x43);
+ 		c2 = inb_p(0x40);
+@@ -881,10 +882,10 @@ static unsigned int calibration_result;
+ 
+ void __init setup_boot_APIC_clock (void)
+ {
+-	if (disable_apic_timer) { 
+-		printk(KERN_INFO "Disabling APIC timer\n"); 
+-		return; 
+-	} 
++	if (disable_apic_timer) {
++		printk(KERN_INFO "Disabling APIC timer\n");
++		return;
++	}
+ 
+ 	printk(KERN_INFO "Using local APIC timer interrupts.\n");
+ 	using_apic_timer = 1;
+@@ -1128,20 +1129,6 @@ asmlinkage void smp_spurious_interrupt(v
+ 	if (v & (1 << (SPURIOUS_APIC_VECTOR & 0x1f)))
+ 		ack_APIC_irq();
+ 
+-#if 0
+-	static unsigned long last_warning; 
+-	static unsigned long skipped; 
 -
--#define HPET_ID_LEGSUP	0x00008000
--#define HPET_ID_NUMBER	0x00001f00
--#define HPET_ID_REV	0x000000ff
-+#define HPET_ID			0x000
-+#define HPET_PERIOD		0x004
-+#define HPET_CFG		0x010
-+#define HPET_STATUS		0x020
-+#define HPET_COUNTER		0x0f0
-+#define HPET_T0_CFG		0x100
-+#define HPET_T0_CMP		0x108
-+#define HPET_T0_ROUTE		0x110
-+#define HPET_T1_CFG		0x120
-+#define HPET_T1_CMP		0x128
-+#define HPET_T1_ROUTE		0x130
-+#define HPET_T2_CFG		0x140
-+#define HPET_T2_CMP		0x148
-+#define HPET_T2_ROUTE		0x150
-+
-+#define HPET_ID_REV		0x000000ff
-+#define HPET_ID_NUMBER		0x00001f00
-+#define HPET_ID_64BIT		0x00002000
-+#define HPET_ID_LEGSUP		0x00008000
-+#define HPET_ID_VENDOR		0xffff0000
- #define	HPET_ID_NUMBER_SHIFT	8
-+#define HPET_ID_VENDOR_SHIFT	16
+-	/* see sw-dev-man vol 3, chapter 7.4.13.5 */
+-	if (time_before(last_warning+30*HZ,jiffies)) { 
+-		printk(KERN_INFO "spurious APIC interrupt on CPU#%d, %ld skipped.\n",
+-		       smp_processor_id(), skipped);
+-		last_warning = jiffies; 
+-		skipped = 0;
+-	} else { 
+-		skipped++; 
+-	} 
+-#endif 
+ 	irq_exit();
+ }
  
--#define HPET_CFG_ENABLE	0x001
--#define HPET_CFG_LEGACY	0x002
-+#define HPET_ID_VENDOR_8086	0x8086
-+
-+#define HPET_CFG_ENABLE		0x001
-+#define HPET_CFG_LEGACY		0x002
- #define	HPET_LEGACY_8254	2
- #define	HPET_LEGACY_RTC		8
+@@ -1173,11 +1160,11 @@ asmlinkage void smp_error_interrupt(void
+ 	   7: Illegal register address
+ 	*/
+ 	printk (KERN_DEBUG "APIC error on CPU%d: %02x(%02x)\n",
+-	        smp_processor_id(), v , v1);
++		smp_processor_id(), v , v1);
+ 	irq_exit();
+ }
  
--#define HPET_TN_ENABLE		0x004
--#define HPET_TN_PERIODIC	0x008
--#define HPET_TN_PERIODIC_CAP	0x010
--#define HPET_TN_SETVAL		0x040
--#define HPET_TN_32BIT		0x100
--
--/* Use our own asm for 64 bit multiply/divide */
--#define ASM_MUL64_REG(eax_out,edx_out,reg_in,eax_in) 			\
--		__asm__ __volatile__("mull %2" 				\
--				:"=a" (eax_out), "=d" (edx_out) 	\
--				:"r" (reg_in), "0" (eax_in))
--
--#define ASM_DIV64_REG(eax_out,edx_out,reg_in,eax_in,edx_in) 		\
--		__asm__ __volatile__("divl %2" 				\
--				:"=a" (eax_out), "=d" (edx_out) 	\
--				:"r" (reg_in), "0" (eax_in), "1" (edx_in))
-+#define HPET_TN_LEVEL		0x0002
-+#define HPET_TN_ENABLE		0x0004
-+#define HPET_TN_PERIODIC	0x0008
-+#define HPET_TN_PERIODIC_CAP	0x0010
-+#define HPET_TN_64BIT_CAP	0x0020
-+#define HPET_TN_SETVAL		0x0040
-+#define HPET_TN_32BIT		0x0100
-+#define HPET_TN_ROUTE		0x3e00
-+#define HPET_TN_FSB		0x4000
-+#define HPET_TN_FSB_CAP		0x8000
-+#define HPET_TN_ROUTE_SHIFT	9
+-int disable_apic; 
++int disable_apic;
  
--#define KERNEL_TICK_USEC 	(1000000UL/HZ)	/* tick value in microsec */
- /* Max HPET Period is 10^8 femto sec as in HPET spec */
--#define HPET_MAX_PERIOD (100000000UL)
-+#define HPET_MAX_PERIOD		100000000UL
  /*
-  * Min HPET period is 10^5 femto sec just for safety. If it is less than this,
-  * then 32 bit HPET counter wrapsaround in less than 0.5 sec.
+  * This initializes the IO-APIC and APIC hardware if this is
+@@ -1185,11 +1172,11 @@ int disable_apic; 
   */
--#define HPET_MIN_PERIOD (100000UL)
--#define HPET_TICK_RATE  (HZ * 100000UL)
-+#define HPET_MIN_PERIOD		100000UL
+ int __init APIC_init_uniprocessor (void)
+ {
+-	if (disable_apic) { 
++	if (disable_apic) {
+ 		printk(KERN_INFO "Apic disabled\n");
+-		return -1; 
++		return -1;
+ 	}
+-	if (!cpu_has_apic) { 
++	if (!cpu_has_apic) {
+ 		disable_apic = 1;
+ 		printk(KERN_INFO "Apic disabled by BIOS\n");
+ 		return -1;
+@@ -1211,8 +1198,8 @@ int __init APIC_init_uniprocessor (void)
+ 	return 0;
+ }
  
--extern unsigned long hpet_address;	/* hpet memory map physical address */
-+/* hpet memory map physical address */
-+extern unsigned long hpet_address;
- extern int is_hpet_enabled(void);
--
--#ifdef CONFIG_X86_64
--extern unsigned long hpet_tick;	/* hpet clks count per tick */
--extern int hpet_use_timer;
--extern int hpet_rtc_timer_init(void);
- extern int hpet_enable(void);
--extern int is_hpet_capable(void);
--extern int hpet_readl(unsigned long a);
--#else
--extern int hpet_enable(void);
--#endif
+-static __init int setup_disableapic(char *str) 
+-{ 
++static __init int setup_disableapic(char *str)
++{
+ 	disable_apic = 1;
+ 	clear_bit(X86_FEATURE_APIC, boot_cpu_data.x86_capability);
+ 	return 0;
+@@ -1220,10 +1207,10 @@ static __init int setup_disableapic(char
+ early_param("disableapic", setup_disableapic);
  
- #ifdef CONFIG_HPET_EMULATE_RTC
-+
-+#include <linux/interrupt.h>
-+
- extern int hpet_mask_rtc_irq_bit(unsigned long bit_mask);
- extern int hpet_set_rtc_irq_bit(unsigned long bit_mask);
--extern int hpet_set_alarm_time(unsigned char hrs, unsigned char min, unsigned char sec);
-+extern int hpet_set_alarm_time(unsigned char hrs, unsigned char min,
-+			       unsigned char sec);
- extern int hpet_set_periodic_freq(unsigned long freq);
- extern int hpet_rtc_dropped_irq(void);
- extern int hpet_rtc_timer_init(void);
- extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
-+
- #endif /* CONFIG_HPET_EMULATE_RTC */
+ /* same as disableapic, for compatibility */
+-static __init int setup_nolapic(char *str) 
+-{ 
++static __init int setup_nolapic(char *str)
++{
+ 	return setup_disableapic(str);
+-} 
++}
+ early_param("nolapic", setup_nolapic);
  
- #else
-Index: linux/include/asm-x86_64/hpet.h
-===================================================================
---- linux.orig/include/asm-x86_64/hpet.h
-+++ linux/include/asm-x86_64/hpet.h
-@@ -1,59 +1,10 @@
- #ifndef _ASM_X8664_HPET_H
- #define _ASM_X8664_HPET_H 1
+ static int __init parse_lapic_timer_c2_ok(char *arg)
+@@ -1233,13 +1220,13 @@ static int __init parse_lapic_timer_c2_o
+ }
+ early_param("lapic_timer_c2_ok", parse_lapic_timer_c2_ok);
  
--/*
-- * Documentation on HPET can be found at:
-- *      http://www.intel.com/ial/home/sp/pcmmspec.htm
-- *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
-- */
--
--#define HPET_MMAP_SIZE	1024
--
--#define HPET_ID		0x000
--#define HPET_PERIOD	0x004
--#define HPET_CFG	0x010
--#define HPET_STATUS	0x020
--#define HPET_COUNTER	0x0f0
--#define HPET_Tn_OFFSET	0x20
--#define HPET_Tn_CFG(n)	 (0x100 + (n) * HPET_Tn_OFFSET)
--#define HPET_Tn_ROUTE(n) (0x104 + (n) * HPET_Tn_OFFSET)
--#define HPET_Tn_CMP(n)	 (0x108 + (n) * HPET_Tn_OFFSET)
--#define HPET_T0_CFG	HPET_Tn_CFG(0)
--#define HPET_T0_CMP	HPET_Tn_CMP(0)
--#define HPET_T1_CFG	HPET_Tn_CFG(1)
--#define HPET_T1_CMP	HPET_Tn_CMP(1)
--
--#define HPET_ID_VENDOR	0xffff0000
--#define HPET_ID_LEGSUP	0x00008000
--#define HPET_ID_64BIT	0x00002000
--#define HPET_ID_NUMBER	0x00001f00
--#define HPET_ID_REV	0x000000ff
--#define	HPET_ID_NUMBER_SHIFT	8
--
--#define HPET_ID_VENDOR_SHIFT	16
--#define HPET_ID_VENDOR_8086	0x8086
--
--#define HPET_CFG_ENABLE	0x001
--#define HPET_CFG_LEGACY	0x002
--#define	HPET_LEGACY_8254	2
--#define	HPET_LEGACY_RTC		8
--
--#define HPET_TN_LEVEL		0x0002
--#define HPET_TN_ENABLE		0x0004
--#define HPET_TN_PERIODIC	0x0008
--#define HPET_TN_PERIODIC_CAP	0x0010
--#define HPET_TN_64BIT_CAP	0x0020
--#define HPET_TN_SETVAL		0x0040
--#define HPET_TN_32BIT		0x0100
--#define HPET_TN_ROUTE		0x3e00
--#define HPET_TN_FSB		0x4000
--#define HPET_TN_FSB_CAP		0x8000
--
--#define HPET_TN_ROUTE_SHIFT	9
-+#include <asm-i386/hpet.h>
+-static __init int setup_noapictimer(char *str) 
+-{ 
++static __init int setup_noapictimer(char *str)
++{
+ 	if (str[0] != ' ' && str[0] != 0)
+ 		return 0;
+ 	disable_apic_timer = 1;
+ 	return 1;
+-} 
++}
  
- #define HPET_TICK_RATE (HZ * 100000UL)
+ static __init int setup_apicmaintimer(char *str)
+ {
+@@ -1264,5 +1251,5 @@ static __init int setup_apicpmtimer(char
+ }
+ __setup("apicpmtimer", setup_apicpmtimer);
  
--extern int is_hpet_enabled(void);
- extern int hpet_rtc_timer_init(void);
- extern int hpet_arch_init(void);
- extern int hpet_timer_stop_set_go(unsigned long tick);
-@@ -61,17 +12,7 @@ extern int hpet_reenable(void);
- extern unsigned int hpet_calibrate_tsc(void);
+-__setup("noapictimer", setup_noapictimer); 
++__setup("noapictimer", setup_noapictimer);
  
- extern int hpet_use_timer;
--extern unsigned long hpet_address;
- extern unsigned long hpet_period;
- extern unsigned long hpet_tick;
- 
--#ifdef CONFIG_HPET_EMULATE_RTC
--extern int hpet_mask_rtc_irq_bit(unsigned long bit_mask);
--extern int hpet_set_rtc_irq_bit(unsigned long bit_mask);
--extern int hpet_set_alarm_time(unsigned char hrs, unsigned char min, unsigned char sec);
--extern int hpet_set_periodic_freq(unsigned long freq);
--extern int hpet_rtc_dropped_irq(void);
--extern int hpet_rtc_timer_init(void);
--#endif /* CONFIG_HPET_EMULATE_RTC */
--
- #endif
