@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939092AbXGSOOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938027AbXGSOPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939092AbXGSOOv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965221AbXGSOIj
+	id S938027AbXGSOPg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939193AbXGSOKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:08:39 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:31814 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965215AbXGSOIi (ORCPT
+	Thu, 19 Jul 2007 10:10:30 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:19763 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939187AbXGSOK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:08:38 -0400
+	Thu, 19 Jul 2007 10:10:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=gqVVqKvz5t0Anauo0MnwbS0zjGs5fMmzdpSGoHRt37Gkfk1U1l1PjaDJZjJmr3/51WWiLAySuDETneEfdT8Z/8nQJIdkUrMuJMTKBbK0pva5mtRZE3itu+wRcUuUFTTXzafvwXrhzeq1ValFrnhMLPxisdReWmqDv2c1ZpViMWQ=
-Message-ID: <84144f020707190708p1c4d63cnbb0397a602c3527d@mail.gmail.com>
-Date: Thu, 19 Jul 2007 17:08:34 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: kmalloc zero size changes break i386
-Cc: "Christoph Lameter" <clameter@sgi.com>, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200707191201.35777.ak@suse.de>
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=S9hhtyIbrwomabxAudOhHUqf8/JVxxL98WD/OGJgqmoGI1JIW4pryPH4LwGN4d5fsG/x7N2zWSj5Iq0BC8Ui0wpUB8NE8348r42qUgQSbmbhn51JipGDCPccD6LDRhk3BZTlRflAWwmqjhnV/p/n6A8WQqVCDlRKGDup6WfWUCk=
+Message-ID: <44c63dc40707190710rcd97947jbb044cb22c73f11b@mail.gmail.com>
+Date: Thu, 19 Jul 2007 23:10:26 +0900
+From: barrios <barrioskmc@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: __pdflush have an unnecessary code ?
+Cc: akpm@linux-foundation.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200707191201.35777.ak@suse.de>
-X-Google-Sender-Auth: 8174b5c92eafac01
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+When pdflush kernel thread is died, Why do it store current jiffies in
+when_i_went_to_sleep variable ?
+IMHO, __pdflush function have an unnecessary code although it is trivial.
+If my thought is wrong, please give me a answer.
 
-On 7/19/07, Andi Kleen <ak@suse.de> wrote:
-> qemu testing and booting test machines with i386 kernels wasn't very successfull
-> with recent git kernels. I got either BUGs because of failing sysfs initialization
-> or oopses in kmalloc, but no user land.
->
-> I bisected it down to this commit.
->
-> To reproduce: try to boot a 386 defconfig kernel, compiled with gcc 4.1, in qemu
+---
+ mm/pdflush.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-[snip]
-
-> 6cb8f91320d3e720351c21741da795fed580b21b is first bad commit
-> commit 6cb8f91320d3e720351c21741da795fed580b21b
-> Author: Christoph Lameter <clameter@sgi.com>
-> Date:   Tue Jul 17 04:03:22 2007 -0700
->
->     Slab allocators: consistent ZERO_SIZE_PTR support and NULL result semantics
-
-I have i386 defconfig kernel + qemu + busybox userland image + GCC
-4.1.2 booting ok here. Did you manage to capture the oops? Is the
-userland image available somewhere?
-
-                                             Pekka
+diff --git a/mm/pdflush.c b/mm/pdflush.c
+index 8f6ee07..96aa1da 100644
+--- a/mm/pdflush.c
++++ b/mm/pdflush.c
+@@ -153,7 +153,6 @@ static int __pdflush(struct pdflush_work *my_work)
+                pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
+                if (jiffies - pdf->when_i_went_to_sleep > 1 * HZ) {
+                        /* Limit exit rate */
+-                       pdf->when_i_went_to_sleep = jiffies;
+                        break;                                  /* exeunt */
+                }
+        }
+--
