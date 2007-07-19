@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933439AbXGSHMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935046AbXGSHPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933439AbXGSHMT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 03:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757408AbXGSHMK
+	id S935046AbXGSHPN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 03:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbXGSHPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 03:12:10 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:41741 "EHLO e1.ny.us.ibm.com"
+	Thu, 19 Jul 2007 03:15:00 -0400
+Received: from mail.queued.net ([207.210.101.209]:2109 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757391AbXGSHMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 03:12:08 -0400
-Date: Thu, 19 Jul 2007 00:12:06 -0700
-From: sukadev@us.ibm.com
-To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Cc: Pavel Emelianov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Containers <containers@lists.osdl.org>
-Subject: [PATCH 0/5][V2] Misc helper patches for pid namespaces
-Message-ID: <20070719071206.GE10195@us.ibm.com>
+	id S1760052AbXGSHO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 03:14:59 -0400
+Date: Thu, 19 Jul 2007 03:17:12 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Juergen Beisert <juergen127@kreuzholzen.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       TAKADA Yoshihito <takada@mbf.nifty.com>, linux-kernel@vger.kernel.org,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Andres Salomon <dilinger@debian.org>, Andi Kleen <ak@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/1] i386: Geode's TSC is not neccessary to mark tu
+ unstable
+Message-Id: <20070719031712.bda40333.dilinger@queued.net>
+In-Reply-To: <200707190849.05983.juergen127@kreuzholzen.de>
+References: <20070715.210036.157242351.takada@mbf.nifty.com>
+	<200707152106.28437.juergen127@kreuzholzen.de>
+	<20070718180223.e1dad55d.akpm@linux-foundation.org>
+	<200707190849.05983.juergen127@kreuzholzen.de>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some helper patches to support multiple pid namespaces. These
-were posted earlier on Containers@ mailing list. 
+On Thu, 19 Jul 2007 08:49:05 +0200
+Juergen Beisert <juergen127@kreuzholzen.de> wrote:
 
-	[PATCH 1/5] Define and use task_active_pid_ns() wrapper
-	[PATCH 2/5] Rename child_reaper() function.
-	[PATCH 3/5] Use task_pid() to find leader's pid
-	[PATCH 4/5] Define is_global_init() and is_container_init().
-	[PATCH 5/5] Move alloc_pid() to copy_process()
+> On Thursday 19 July 2007 03:02, Andrew Morton wrote:
+> > On Sun, 15 Jul 2007 21:06:27 +0200
+> >
+> > Juergen Beisert <juergen127@kreuzholzen.de> wrote:
+> > > Replace NSC/Cyrix specific chipset access macros by inlined functions.
+> > > With the macros a line like this fails (and does nothing):
+> > > 	setCx86(CX86_CCR2, getCx86(CX86_CCR2) | 0x88);
+> > > With inlined functions this line will work as expected.
+> >
+> > I don't get it.  Why would the macros behave differently from inlined
+> > functions?
+> 
+> X86 magic. The access order is important. The first access must always be the 
+> offset at 0x22. This access enables the next access to 0x23 (data). If you do 
+> it in wrong order, it fails. With the macros you get something like 0x22, 
+> 0x22, 0x23, 0x23. With the inline functions 0x22,0x23,0x22,0x23.
+> 
+> Juergen
 
-Changelog:
+Wow, that's a really cool bug; nice work!  Don't forget to update
+arch/i386/kernel/cpu/mtrr/state.c, though; it uses setCx86() as well.  It needs
+to include processor-cyrix.h.
 
-	- Addressed Oleg Nesterov's comments on [V1] of this patchset.
+
+Acked-by: Andres Salomon <dilinger@debian.org>
+
+-- 
+Andres Salomon <dilinger@queued.net>
