@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbXGSUBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXGSUCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759152AbXGSUBV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 16:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbXGSUAv
+	id S1755579AbXGSUCZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 16:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbXGSUCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 16:00:51 -0400
-Received: from mx1.suse.de ([195.135.220.2]:55662 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758314AbXGSUAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 16:00:49 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] [7/58] x86_64: various cleanups in NUMA scan node
-Date: Thu, 19 Jul 2007 22:00:41 +0200
-User-Agent: KMail/1.9.6
-Cc: rientjes@google.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200707191154.642492000@suse.de> <200707191921.22909.ak@suse.de> <86802c440707191038x7b37f949i6e1ff903ccc51b4f@mail.gmail.com>
-In-Reply-To: <86802c440707191038x7b37f949i6e1ff903ccc51b4f@mail.gmail.com>
+	Thu, 19 Jul 2007 16:02:12 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:51331 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755870AbXGSUCL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 16:02:11 -0400
+Date: Thu, 19 Jul 2007 22:02:10 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] UIO: Hilscher CIF card driver
+In-Reply-To: <200707192128.45595.hjk@linutronix.de>
+Message-ID: <Pine.LNX.4.64.0707192201260.31013@fbirervta.pbzchgretzou.qr>
+References: <20070718232332.GA4620@kroah.com> <1184801218392-git-send-email-gregkh@suse.de>
+ <Pine.LNX.4.64.0707191832210.31013@fbirervta.pbzchgretzou.qr>
+ <200707192128.45595.hjk@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707192200.41369.ak@suse.de>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-620330697-1184875330=:31013"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> "
->  * For initialized data:
->  * You should insert __initdata between the variable name and equal
->  * sign followed by value, e.g.:
->  *
->  * static int init_variable __initdata = 0;
->  * static char linux_logo[] __initdata = { 0x32, 0x36, ... };
-> "
-> 
-> or we need to update these lines?
+---699020219-620330697-1184875330=:31013
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-This might date back to old compilers that are now dropped (like 2.95) 
 
-But recommending it this way is probably not bad, it's just not a catastrophe
-to not follow the recommendation.
+On Jul 19 2007 21:28, Hans-Jürgen Koch wrote:
+>Am Donnerstag 19 Juli 2007 18:33 schrieb Jan Engelhardt:
+>> On Jul 18 2007 16:26, Greg Kroah-Hartman wrote:
+>> >
+>> >http://www.tglx.de/private/hjk/cif-orig-2.6.tar.bz2
+>> >
+>> >WARNING: Don't look at the code for too long, you might become sick :-)
+>> 
+>> Taking precautions for people? I get a 404...
+>
+>Now it's there.
 
--Andi
+aaaa, my eyes... ("Microsoft" is a good summary of the codingstyle...)
+:)
+
+	Jan
+-- 
+---699020219-620330697-1184875330=:31013--
