@@ -1,97 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965502AbXGSOQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965607AbXGSOQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965502AbXGSOQB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939167AbXGSOLV
+	id S965607AbXGSOQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939294AbXGSOL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:11:21 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:33422 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939166AbXGSOLT (ORCPT
+	Thu, 19 Jul 2007 10:11:59 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64811 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939199AbXGSOLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:11:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=deiJBAludcFTXuhcJp69bxE3wFDZd8aZ+rstbLWkEz8c6agvcMvglMAZw7UZSZhmu/C0tJy0WJ7Ole7khVeUu+spoArn/gAaPiYhonZKLO/rZJBfkQJuxMS7GHQ2ulq5FDFAQVSd7YrLnF0Si+OjE9zv/FXF12Z/4Gcn2LA9Wug=
-Message-ID: <a781481a0707190711s58d7ab24xa53c6975d4172597@mail.gmail.com>
-Date: Thu, 19 Jul 2007 19:41:17 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
-Cc: "David CHANIAL" <david.ml@euro-web.fr>,
-       "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>
-In-Reply-To: <18076.42052.961808.528867@notabene.brown>
+	Thu, 19 Jul 2007 10:11:55 -0400
+Message-ID: <469F7117.2020404@mathtm.de>
+Date: Thu, 19 Jul 2007 16:11:35 +0200
+From: =?ISO-8859-15?Q?Thomas_M=FCller?= <thomas@mathtm.de>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org
+CC: netdev@vger.kernel.org
+Subject: [BUG] Lockup on boot when trying to bring up r8169 NIC
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200707160638.15750.david.ml@euro-web.fr>
-	 <18076.42052.961808.528867@notabene.brown>
+X-Provags-ID: V01U2FsdGVkX1/rf6PuqudiueI8GSgsE/xSxPky1KQA5dVPavf
+ fIxDhQVRUHLSQBA9Zh6dnsKuD7lecriymA8s05cya+7GQUKJwl
+ AoyNVCQ+v65LBuCPmWQksUPEkwk0Tvu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Neil,
+Hi,
 
-[ okay, just searching through my lkml folder looking for
-"unable to handle" :-) ]
+I already sent this two days ago, but I have the feeling it was
+overlooked or filtered because of a large attachment.
 
-On 7/17/07, Neil Brown <neilb@suse.de> wrote:
-> On Monday July 16, david.ml@euro-web.fr wrote:
-> >
-> > ************
-> > BUG: unable to handle kernel NULL pointer dereference at virtual address
-> > 00000004
 
-> > EIP is at encode_fsid+0x67/0x89
->
-> This is presumably where the illegal access happened.
->
-> > eax: e5bde8c0   ebx: f7593404   ecx: 00000000   edx: 00000006
-> > esi: dc569048   edi: f75934ec   ebp: f7593404   esp: f75f1f18
+If I try to boot 2.6.21.6, 2.6.22.1 or 2.6.22-git8 the system completely
+hangs when init tries to bring up my r8169-based NIC. Not even the
+keyboard lights are working anymore.
 
-Yup, ecx is to blame here ...
+If I unplug the network cable, boot continues just fine and everything
+works as it should.
+If I boot with the cable unplugged, the system also hangs and continues
+after I plug in the cable.
 
-> > Code: e2 08 09 d1 09 c1 eb 10 8b 83 88 00 00 00 8b 40 30 89 c3 89 c1 c1 fb 1f
-> > 89 d8 0f c8 89 06 89 c8 eb 1e
->
-> Unfortunately "ksymoops" does seem to decode this into something quite
-> useful enough.  Normally one of the numbers has <> around it.  Are you
-> should you copied the number across exactly?
 
-Yes, I think David missed posting the full "Code:" here. Unfortunate.
+Everything works fine with 2.6.20.15.
 
->  In any case, there is no place in encode_fsid where an offset of 4
->  from any register is indexed, nor an offset of -2.
 
-But I went ahead and disassembled encode_fsid() anyway. I did
-stumble across a "mov 0x4(%ecx), %edx" -- which turns out to be:
+Configuration:
+  http://www.mathtm.de/config_2.6.20.15_fc6based
+  http://www.mathtm.de/config_2.6.21.6_f7based
 
-static __be32 *encode_fsid(__be32 *p, struct svc_fh *fhp)
-{
-	u64 f;
-	switch(fsid_source(fhp)) {
-	default:
-	case FSIDSOURCE_DEV:
-		p = xdr_encode_hyper(p, (u64)huge_encode_dev
-				(fhp->fh_dentry->d_inode->i_sb->s_dev));
-		break;
-	case FSIDSOURCE_FSID:
-		p = xdr_encode_hyper(p, (u64) fhp->fh_export->ex_fsid);
-		break;
-	case FSIDSOURCE_UUID:
-		f = ((u64*)fhp->fh_export->ex_uuid)[0];
-		f ^= ((u64*)fhp->fh_export->ex_uuid)[1]; /* ***** HERE ***** */
-		p = xdr_encode_hyper(p, f);
-		break;
-	}
-	return p;
-}
 
-Note that fhp->fh_export->ex_uuid is an unsigned char *, which is
-4 bytes on an i386 (which is what David's system is). For some
-reason fhp->fh_export->ex_uuid (%ecx) is NULL here, which leads
-to the oops. I have _zero_ other knowledge of knfsd code, and
-not really be of any other use, sorry.
+Using a Fedora kernel (based on 2.6.21.5) I get the following kernel
+message:
+r8169: eth0: link down
+BUG: soft lockup detected on CPU#0!
+ [<c0451ea2>] softlockup_tick+0xa5/0xb4
+ [<c042e930>] update_process_times+0x3b/0x5e
+ [<c043d298>] tick_sched_timer+0x57/0x9a
+ [<c0439df5>] hrtimer_interrupt+0x12b/0x1b6
+ [<c043d241>] tick_sched_timer+0x0/0x9a
+ [<c0408534>] timer_interrupt+0x2c/0x32
+ [<c045210e>] handle_IRQ_event+0x1a/0x3f
+ [<c045354e>] handle_level_irq+0x81/0xc7
+ [<c04072c7>] do_IRQ+0xb8/0xd1
+ [<c04058ff>] common_interrupt+0x23/0x28
+ [<c0452105>] handle_IRQ_event+0x11/0x3f
+ [<c045354e>] handle_level_irq+0x81/0xc7
+ [<c04534cd>] handle_level_irq+0x0/0xc7
+ [<c04072bb>] do_IRQ+0xac/0xd1
+ [<c04058ff>] common_interrupt+0x23/0x28
+ [<c042b2dc>] __do_softirq+0x54/0xba
+ [<c04071b7>] do_softirq+0x59/0xb1
+ [<c04534cd>] handle_level_irq+0x0/0xc7
+ [<c042b194>] irq_exit+0x38/0x6b
+ [<c04072cc>] do_IRQ+0xbd/0xd1
+ [<c04058ff>] common_interrupt+0x23/0x28
+ [<c04200d8>] find_busiest_group+0x264/0x4c5
+ [<c0601895>] _spin_unlock_irqrestore+0x8/0x9
+ [<c042e863>] __mod_timer+0xa1/0xab
+ [<f8a4e1ec>] rtl8169_open+0x12e/0x194 [r8169]
+ [<c05a3054>] dev_open+0x2b/0x62
+ [<c05a1aa1>] dev_change_flags+0x47/0xe4
+ [<c05de45c>] devinet_ioctl+0x250/0x56a
+ [<c04e72c0>] copy_to_user+0x3c/0x50
+ [<c0598b47>] sock_ioctl+0x19f/0x1be
+ [<c05989a8>] sock_ioctl+0x0/0x1be
+ [<c047f713>] do_ioctl+0x1f/0x62
+ [<c047f99a>] vfs_ioctl+0x244/0x256
+ [<c047f9f8>] sys_ioctl+0x4c/0x64
+ [<c0404f70>] syscall_call+0x7/0xb
+ =======================
+r8169: eth0: link up
 
-Satyam
+
+
+There already is a bugzilla entry at
+http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242572
+I know, not everyone is a fan of bugzilla, but maybe someone wants to
+take a look at what was discussed there.
+
+
+Please CC me as I'm not subscribed to the list and don't hesitate to
+tell me that I forgot to include some crucial information ;)
+
+
+Regards,
+Thomas
+
