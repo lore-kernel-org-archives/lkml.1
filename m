@@ -1,126 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936226AbXGSQfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939889AbXGSQgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936226AbXGSQfT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934863AbXGSQfA
+	id S939889AbXGSQgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932669AbXGSQgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:35:00 -0400
-Received: from cust198-202.dsl.versadsl.be ([62.166.198.202]:51736 "HELO
-	idefix.wisa.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1765729AbXGSQe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:34:58 -0400
-X-Greylist: delayed 441 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 12:34:57 EDT
-Date: Thu, 19 Jul 2007 18:27:34 +0200 (CEST)
-From: =?ISO-8859-1?Q?Dani=EBl_Mantione?= <daniel.mantione@freepascal.org>
-X-X-Sender: daniel@idefix.wisa.be
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Keyboard programming needs root
-In-Reply-To: <d120d5000707190817t62013ddcg966bd4e8c0ec116f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.61.0707191748340.10291@idefix.wisa.be>
-References: <f79qnt$rn3$1@sea.gmane.org> <d120d5000707190817t62013ddcg966bd4e8c0ec116f@mail.gmail.com>
+	Thu, 19 Jul 2007 12:36:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:54576 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764159AbXGSQgH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:36:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=gHl4SX9hR1hnXT2ef6DnyuJYsIbc8WMDNpPEN9EmEw69UhOA+t6ISSg1S+3Tf7wPoxN+EIWprQXgo75U/lE7HEikYI0OFlEI3fS8ZHnsOGm/2Mi1JNFLUI50M9yKQW2b3LNydTe2hDq4nW2i+COsUGBIPctuKhf2cGGgMYucAjo=
+Message-ID: <469F92A1.5070203@googlemail.com>
+Date: Thu, 19 Jul 2007 18:34:41 +0200
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="657924-1701969859-1184862454=:10291"
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       Avi Kivity <avi@qumranet.com>,
+       =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<ukleinek@informatik.uni-freiburg.de>,
+       Jens Axboe <axboe@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       dri-devel@lists.sourceforge.net, Dave Airlie <airlied@linux.ie>,
+       =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@tungstengraphics.com>,
+       =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>,
+       Charles Gagalac <charles.gagalac@gmail.com>
+Subject: [1/2] 2.6.22-git: known regressions
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi all,
 
---657924-1701969859-1184862454=:10291
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Here is a list of some known regressions in 2.6.22-git.
+
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+List of Aces
+
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            3
+Andi Kleen                             2
+Andrew Morton                          2
+David Woodhouse                        2
+Hugh Dickins                           2
+Jens Axboe                             2
 
 
 
-Op Thu, 19 Jul 2007, schreef Dmitry Torokhov:
+Unclassified
 
-> Hi Daniel,
->=20
-> On 7/14/07, Daniel Mantione <daniel.mantione@freepascal.org> wrote:
-> > Hello,
-> >=20
-> > A while back a patch was merged to make that only root can program the
-> > keyboard:
-> >=20
-> > http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3D=
-commit;h=3D0b360adbdb54d5b98b78d57ba0916bc4b8871968
-> >=20
-> > Is this patch discussable? I think this patch isn't proper because of t=
-he
-> > following reasons:
-> >=20
-> > * Users can play games in many ways. They can configure the terminal
-> > settings, (remove the automatic line feed, disable the echo etc). They
-> > can
-> > load console fonts. They can still put the keyboard in raw mode, etc.
->=20
-> Keyboard raw mode or disabling line echo may be annoying but you
-> really don't want someone leaving box after binding "rm -rf /" to a
-> backspace key...
+Subject         : a52b1752c07 broke !SMP: error: implicit declaration of function `WARN_ON'
+References      : http://lkml.org/lkml/2007/7/17/600
+Last known good : ?
+Submitter       : Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
+Caused-By       : Avi Kivity <avi@qumranet.com>
+                  commit a52b1752c077cb919b71167c54968a0b91673281
+Handled-By      : ?
+Status          : unknown
 
-As I said, the proper solution to this problem is to restore the keyboard=
-=20
-in a known state after logout. There is no need for the kernel to change=20
-behaviour. Many operating systems allow changing keyboard layout and can=20
-because there is no need for it to be insecure.
+Subject         : Section mismatch: reference to .init.data:cpu_llc_id (between 'set_cpu_sibling_map' and 'initialize_secondary')
+References      : http://lkml.org/lkml/2007/7/19/202
+Last known good : ?
+Submitter       : Gabriel C <nix.or.die@googlemail.com>
+Caused-By       : Jeremy Fitzhardinge <jeremy@xensource.com>
+                  commit c70df74376c1e29a04e07e23dd3f4c384d6166dd
+Handled-By      : ?
+Status          : unknown
 
-However, I can agree that in some cases, as per system policy,=20
-administrators mays want to prevent this.
 
-> > * All of these games can be prevented by making mingetty (or whatever=
-=20
-> >   getty is used) or PAM can put the console into a known state after=20
-> >   logout.
-> > * All of these games are annoyances, system security is not=20
-> >   compromised.
-> > * I do not see a problem with for example a French user doing a "loadke=
-ys
-> > fr" if that allows hims to use the computer easier.
-> >=20
-> > Worst issue for me though, is that KDSBENT is needed to be able to catc=
-h
-> > keys like shift+tab, alt+fx, escape without delay. My application
-> > suddenly
-> > needs root permissions to work properly.
->=20
-> Yes, if your application mucks with the console it has to be trusted...
+Subject         : Oops while modprobing phy fixed module
+References      : http://lkml.org/lkml/2007/7/14/63
+Last known good : ?
+Submitter       : Gabriel C <nix.or.die@googlemail.com>
+Caused-By       : Tejun Heo <htejun@gmail.com>
+                  commit 3007e997de91ec59af39a3f9c91595b31ae6e08b
+Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
+                  Tejun Heo <htejun@gmail.com>
+Status          : unknown
 
-That is not really constructive: I don't want to muck with the console, I
-a working keyboard. Linux just just requires you to muck with the console i=
-f=20
-you want a working keyboard. Many applications, Midnight Commander to name=
-=20
-one, work around Linux console limitations (try ctrl+arrows,=20
-works as expected despite not supported by Linux).
 
-Now if you force applications to work around limitations, you have a=20
-certain responsibility not to break them.
 
-> > The alternative, semi raw mode,
-> > has the disadvantage that you need to implement your own keymaps (like
-> > X).
-> > In short, this change breaks applications.
-> >=20
->=20
-> You may also try reading data directly from evdev devices... They are
-> normally privileged as well but usually user logged on console is
-> given access to them.
+Block layer
 
-evdev has the same problem as medium/full raw mode: You need your own=20
-keyboard maps. This makes this solution not very practical.
+Subject         : broken {sd,hd}parm
+References      : http://lkml.org/lkml/2007/7/16/389
+Last known good : ?
+Submitter       : Gabriel C <nix.or.die@googlemail.com>
+Caused-By       : ?
+Handled-By      : FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Status          : problem is being debugged
 
-To make this discussion productive, I want to work towards a solution. I=20
-don't mind how I can make the keyboard work as it should, I just want it=20
-work. Think of the needs of a user interface, you walk through controls=20
-using tab and shift+tab, put common commands under the function keys and=20
-shift/control/alt combinations. Cursor control in an editor is done with=20
-the navigation pad on your keyboard: arrows, home/end/pgup/pgdown, plus=20
-shift/control/alt combinations with them.
 
-That is all, nothing fancy. Could the kernel support a way to do this?
 
-Greetings,
+DRM
 
-Dani=EBl Mantione
---657924-1701969859-1184862454=:10291--
+Subject         : wine locks up system
+References      : http://lkml.org/lkml/2007/7/17/128
+Last known good : ?
+Submitter       : Charles Gagalac <charles.gagalac@gmail.com>
+Caused-By       : commit d4e2cbe9cb9219fc924191a6baa2369140cb5ea8
+                  Dave Airlie <airlied@linux.ie>
+                  Michel Dänzer <michel@tungstengraphics.com>
+                  Kristian Høgsberg <krh@redhat.com>
+Handled-By      : 
+Status          : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
