@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933485AbXGSNiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937214AbXGSNi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933485AbXGSNiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 09:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759628AbXGSNiE
+	id S937214AbXGSNi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 09:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbXGSNit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:38:04 -0400
-Received: from il.qumranet.com ([82.166.9.18]:56544 "EHLO il.qumranet.com"
+	Thu, 19 Jul 2007 09:38:49 -0400
+Received: from khc.piap.pl ([195.187.100.11]:42664 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759680AbXGSNiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:38:03 -0400
-Message-ID: <469F6941.9010901@qumranet.com>
-Date: Thu, 19 Jul 2007 16:38:09 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1759667AbXGSNis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 09:38:48 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+Subject: Re: [git patches] two warning fixes
+References: <20070718235504.GA9601@havoc.gtf.org>
+	<alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 19 Jul 2007 15:38:46 +0200
+In-Reply-To: <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org> (Linus Torvalds's message of "Wed, 18 Jul 2007 18:37:53 -0700 (PDT)")
+Message-ID: <m3vecgbjix.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dor Laor <dor.laor@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [RFC] Deferred interrupt handling.
-References: <005901c7c921$79c006c0$6d401440$@com> <20070718123040.615795b7@the-village.bc.nu> <64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net> <20070718174736.0baf6d0e@the-village.bc.nu> <469E43D5.70802@qumranet.com> <20070718191433.GB24545@csclub.uwaterloo.ca> <469F2D8C.7020805@qumranet.com> <20070719131718.GC5623@csclub.uwaterloo.ca>
-In-Reply-To: <20070719131718.GC5623@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Thu, Jul 19, 2007 at 12:23:24PM +0300, Avi Kivity wrote:
->   
->> No, it means disallowing pci devices that use shared irqs, and allowing 
->> pci devices that use non-shared irqs.
->>     
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+
+> So let's make a new rule:
 >
-> Most machiens I see today have almost no chance of having PCI devices
-> without shared IRQs.  This probably means any implementation will only
-> work on a small set of machines with very specific setup in terms of
-> which PCI slots they install cards in, and only as long as you don't
-> allow any type of hotplugging of devices (or ever changing hardware at
-> all).  May not be worth implementing if it has such a limited use case.
-> The MSI setup on the other hand does sound like it might have potential
-> for working in general.
->
->   
+>   We absolutely NEVER add things like "must_check" unless not checking 
+>   causes a real and obvious SECURITY ISSUE.
 
-Looking at two random servers here and a desktop, interrupts are 
-unshared except for usb.  A laptop was not so lucky.  So "no chance" is 
-a bit extreme.
+Oh, come on, almost every kernel bug is a potential security issue.
 
-I agree it's far from optimal, but it is less limited than you imply.
+IMHO, if the function can only fail due to a kernel bug, it should
+return void and, in case of bug, explode with BUG_ON() or something
+like that. Sure, must_check doesn't apply too well to void.
 
-
+But, if I have functions which can fail for legitimate (not kernel
+bug) reasons, and I know ignoring their return values would always
+be a bug, then must_check seems an obvious best and simple defense
+against that.
 -- 
-error compiling committee.c: too many arguments to function
-
+Krzysztof Halasa
