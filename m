@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937891AbXGSJ2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937922AbXGSJ3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937891AbXGSJ2a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbXGSJ2R
+	id S937922AbXGSJ3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935245AbXGSJ3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:28:17 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:43302 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbXGSJ2P (ORCPT
+	Thu, 19 Jul 2007 05:29:00 -0400
+Received: from fallback.mail.elte.hu ([157.181.151.13]:35855 "EHLO
+	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933539AbXGSJ27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:28:15 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 19 Jul 2007 05:25:30 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Adrian Bunk <bunk@stusta.de>, Jeff Garzik <jeff@garzik.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Gabriel C <crazy@pimpmylinux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-In-Reply-To: <469F240E.9040205@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
- <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
- <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
- <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
- <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
- <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
- <469F240E.9040205@s5r6.in-berlin.de>
+	Thu, 19 Jul 2007 05:28:59 -0400
+Date: Thu, 19 Jul 2007 09:51:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch] fix the softlockup watchdog to actually work
+Message-ID: <20070719075152.GB12760@elte.hu>
+References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070719002231.069ebbdd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719002231.069ebbdd.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Stefan Richter wrote:
 
-> Robert P. J. Day wrote:
-> > On Thu, 19 Jul 2007, Adrian Bunk wrote:
-> >
-> > ...
-> >> I would consider it more ugly to special case this and that in the
-> >> kconfig code when plain dependencies already offer exactly the same
-> >> functionality...
-> >
-> > well, this is the *third* time i've proposed adding this kind of
-> > feature so, at this point, i've really given up caring about it.  if
-> > someone wants to do this, have at it.  i have better things to do than
-> > to keep suggesting it and getting nowhere with it.
->
-> For better or worse, it can often be observed that feature requests
-> don't set anything in motion until a first patch is sent.  Even a
-> patch that is far from perfect can get things going really quickly.
-> (If the requested feature makes sense to other people.)
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-i *did* submit a preliminary patch once upon a time, and it
-(predictably) went nowhere.  so, if someone else wants to pick this up
-and do something with it, you have my blessing.  life's too short to
-keep wasting time on this.
+> But I'll sit on this patch for a while until this gets sorted out. 
+> Meanwhile, please double-check the elapsed-time arithmetic in there, 
+> maybe do a bit of runtime testing?
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+btw., could you apply the patch below as well? Maybe sched_clock() is 
+misbehaving on your box? (with this i have 5 softlockup patches in my 
+tree - and they are working fine so far.)
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+	Ingo
+
+---------------->
+Subject: [patch] softlockup: use a reliable global time source
+From: Ingo Molnar <mingo@elte.hu>
+
+using sched_clock() for the soft-lockups was a bad idea, sched_clock()
+is not a reliable global time-source.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/softlockup.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+Index: linux/kernel/softlockup.c
+===================================================================
+--- linux.orig/kernel/softlockup.c
++++ linux/kernel/softlockup.c
+@@ -37,13 +37,11 @@ static struct notifier_block panic_block
+ };
+ 
+ /*
+- * Returns seconds, approximately.  We don't need nanosecond
+- * resolution, and we don't need to waste time with a big divide when
+- * 2^30ns == 1.074s.
++ * Returns seconds.
+  */
+ static unsigned long get_timestamp(void)
+ {
+-	return sched_clock() >> 30;  /* 2^30 ~= 10^9 */
++	return jiffies / HZ;
+ }
+ 
+ void touch_softlockup_watchdog(void)
