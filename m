@@ -1,60 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932463AbXGSNtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761294AbXGSNt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932463AbXGSNtf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 09:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932550AbXGSNsc
+	id S1761294AbXGSNt4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 09:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932749AbXGSNse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:48:32 -0400
-Received: from ns2.suse.de ([195.135.220.15]:48581 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 09:48:34 -0400
+Received: from ns.suse.de ([195.135.220.2]:54505 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761065AbXGSNsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:48:31 -0400
+	id S932477AbXGSNsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 09:48:33 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070719348.540885000@suse.de>
 In-Reply-To: <20070719348.540885000@suse.de>
-To: sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: [PATCH for review] [2/48] i386: fix section mismatch warning in intel_cacheinfo
-Message-Id: <20070719134830.B513314E6E@wotan.suse.de>
-Date: Thu, 19 Jul 2007 15:48:30 +0200 (CEST)
+To: rjw@sisk.pl, ak@suse.de, rientjes@google.com, linux-kernel@vger.kernel.org
+Subject: [PATCH for review] [3/48] i386: do not restore reserved memory after hibernation
+Message-Id: <20070719134831.C514714E6E@wotan.suse.de>
+Date: Thu, 19 Jul 2007 15:48:31 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Sam Ravnborg <sam@ravnborg.org>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Fix following warning:
-WARNING: arch/i386/kernel/built-in.o(.init.text+0x3818): Section mismatch: reference to .exit.text:cache_remove_dev (between 'cacheinfo_cpu_callback' and 'cache_sysfs_init')
+On some systems the ACPI NVS area is located in the first 1 MB of RAM and
+it is overwritten by the i386 code during the restore after hibernation. 
+This confuses the ACPI platform firmware that doesn't update the AC adapter
+status appropriately as a result
+(http://bugzilla.kernel.org/show_bug.cgi?id=7995).
 
-It points out that a function marked __cpuexit is calling a function marked
-__cpuinit => oops.
+The solution is to register the reserved memory in the first 1 MB as
+'nosave', so that swsusp doesn't touch it during the restore.  Also, this
+has been done on x86_64 for a long time now, so this patch makes the i386
+restore code behave like the x86_64 one.
 
-The call happens only in an error-condition which may explain why we have
-not seen it before.
-
-The offending function was not used anywhere else - so marked it __cpuexit.
-
-Note: This warning triggers only with a local copy of modpost
-      but that version will soon be pushed out.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+[akpm@linux-foundation.org: build fix]
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Andi Kleen <ak@suse.de>
-
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Cc: Andi Kleen <ak@suse.de>
+Cc: David Rientjes <rientjes@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/i386/kernel/cpu/intel_cacheinfo.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/i386/kernel/e820.c  |   32 ++++++++++++++++++++++++++++++++
+ arch/i386/kernel/setup.c |    1 +
+ include/asm-i386/e820.h  |    8 ++++++++
+ 3 files changed, 41 insertions(+)
 
-Index: linux/arch/i386/kernel/cpu/intel_cacheinfo.c
+Index: linux/arch/i386/kernel/e820.c
 ===================================================================
---- linux.orig/arch/i386/kernel/cpu/intel_cacheinfo.c
-+++ linux/arch/i386/kernel/cpu/intel_cacheinfo.c
-@@ -746,7 +746,7 @@ static int __cpuinit cache_add_dev(struc
- 	return retval;
- }
+--- linux.orig/arch/i386/kernel/e820.c
++++ linux/arch/i386/kernel/e820.c
+@@ -10,6 +10,7 @@
+ #include <linux/efi.h>
+ #include <linux/pfn.h>
+ #include <linux/uaccess.h>
++#include <linux/suspend.h>
  
--static void __cpuexit cache_remove_dev(struct sys_device * sys_dev)
-+static void __cpuinit cache_remove_dev(struct sys_device * sys_dev)
+ #include <asm/pgtable.h>
+ #include <asm/page.h>
+@@ -320,6 +321,37 @@ static int __init request_standard_resou
+ 
+ subsys_initcall(request_standard_resources);
+ 
++#if defined(CONFIG_PM) && defined(CONFIG_SOFTWARE_SUSPEND)
++/**
++ * e820_mark_nosave_regions - Find the ranges of physical addresses that do not
++ * correspond to e820 RAM areas and mark the corresponding pages as nosave for
++ * hibernation.
++ *
++ * This function requires the e820 map to be sorted and without any
++ * overlapping entries and assumes the first e820 area to be RAM.
++ */
++void __init e820_mark_nosave_regions(void)
++{
++	int i;
++	unsigned long pfn;
++
++	pfn = PFN_DOWN(e820.map[0].addr + e820.map[0].size);
++	for (i = 1; i < e820.nr_map; i++) {
++		struct e820entry *ei = &e820.map[i];
++
++		if (pfn < PFN_UP(ei->addr))
++			register_nosave_region(pfn, PFN_UP(ei->addr));
++
++		pfn = PFN_DOWN(ei->addr + ei->size);
++		if (ei->type != E820_RAM)
++			register_nosave_region(PFN_UP(ei->addr), pfn);
++
++		if (pfn >= max_low_pfn)
++			break;
++	}
++}
++#endif
++
+ void __init add_memory_region(unsigned long long start,
+ 			      unsigned long long size, int type)
  {
- 	unsigned int cpu = sys_dev->id;
- 	unsigned long i;
+Index: linux/arch/i386/kernel/setup.c
+===================================================================
+--- linux.orig/arch/i386/kernel/setup.c
++++ linux/arch/i386/kernel/setup.c
+@@ -640,6 +640,7 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ 
+ 	e820_register_memory();
++	e820_mark_nosave_regions();
+ 
+ #ifdef CONFIG_VT
+ #if defined(CONFIG_VGA_CONSOLE)
+Index: linux/include/asm-i386/e820.h
+===================================================================
+--- linux.orig/include/asm-i386/e820.h
++++ linux/include/asm-i386/e820.h
+@@ -47,6 +47,14 @@ extern void e820_register_memory(void);
+ extern void limit_regions(unsigned long long size);
+ extern void print_memory_map(char *who);
+ 
++#if defined(CONFIG_PM) && defined(CONFIG_SOFTWARE_SUSPEND)
++extern void e820_mark_nosave_regions(void);
++#else
++static inline void e820_mark_nosave_regions(void)
++{
++}
++#endif
++
+ #endif/*!__ASSEMBLY__*/
+ 
+ #endif/*__E820_HEADER*/
