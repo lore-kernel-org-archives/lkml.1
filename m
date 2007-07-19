@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbXGSDmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935511AbXGSDmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbXGSDmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 23:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbXGSDmX
+	id S935511AbXGSDmx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 23:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXGSDmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 23:42:23 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39783 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbXGSDmW (ORCPT
+	Wed, 18 Jul 2007 23:42:33 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:45033
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932437AbXGSDmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 23:42:22 -0400
-Date: Wed, 18 Jul 2007 20:41:55 -0700
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, tytso@mit.edu,
-       cmm@us.ibm.com, suparna@in.ibm.com, adilger@clusterfs.com, dgc@sgi.com,
-       michael.kerrisk@gmx.net
-Subject: Re: [PATCH 1/5][TAKE8] manpage for fallocate
-Message-ID: <20070719034155.GE32734@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <20070713184125.GA12156@amitarora.in.ibm.com> <20070713184625.GB12156@amitarora.in.ibm.com>
+	Wed, 18 Jul 2007 23:42:31 -0400
+Date: Wed, 18 Jul 2007 20:35:38 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: James Morris <jmorris@namei.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+In-Reply-To: <Line.LNX.4.64.0707182226070.10682@d.namei>
+Message-ID: <Pine.LNX.4.64.0707182032310.19248@asgard.lang.hm>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei>
+ <20070718183503.541026f8.akpm@linux-foundation.org> <Line.LNX.4.64.0707182226070.10682@d.namei>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070713184625.GB12156@amitarora.in.ibm.com>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 14, 2007 at 12:16:25AM +0530, Amit K. Arora wrote:
-> After a successful call, subsequent writes are guaranteed not to fail because
-> of lack of disk space.
-  
-If a write to an unwritten region requires a node split, that could result
-in the allocation of new meta data which obviously could fail if the disk is
-truly full.
+On Wed, 18 Jul 2007, James Morris wrote:
 
-Granted that's unlikely to happen but maybe we should be conservative and
-say something like:
+> 
+> On Wed, 18 Jul 2007, Andrew Morton wrote:
+>
+>>> The SECURITY_FRAMEWORK_VERSION macro has also been removed.
+>>
+>> I'd like to understand who is (or claims to be) adversely affected by this
+>> change, and what their complaints (if any) will be.
+>>
+>> Because I prefer my flamewars pre- rather than post-merge.
+>
+> This was already discussed and resolved during previous postings of the
+> patch.
+>
+> In a nutshell, there is no safe way to unload an LSM.  The modular
+> interface is thus unecessary and broken infrastructure.  It is used only
+> by out-of-tree modules, which are often binary-only, illegal, abusive of
+> the API and dangerous, e.g. silently re-vectoring SELinux.
 
-"After a successful call, subsequent writes are guaranteed to never require
-allocation of file data." ?
-        --Mark
+there's a difference between 'often' and 'always'. I really don't think 
+you want to start that sort of argument (after all, would you like it if 
+the MPAA argued "dvd burners are often used to make pirate copies, let's 
+make it so that they won't burn anything without being given a special 
+key"?)
 
---
-Mark Fasheh
-Senior Software Developer, Oracle
-mark.fasheh@oracle.com
+and arguing that the LSM is only used by out-of-tree modules and then 
+strenuously opposing mergeing of such modules means that one of your 
+arguments is bogus
+
+David Lang
+
+> Chris has already agreed to take the patch:
+> http://lkml.org/lkml/2007/6/24/152
+>
+>
+>> aww man, you passed over an opportunity to fix vast amounts of coding style
+>> cruftiness.
+>
+> GregKH-esque :-)
+>
+>> <does whizzy things>
+>>
+>> Here you go..
+>
+> Thanks.
+>
+>
+>
