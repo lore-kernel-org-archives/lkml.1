@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbXGSUPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761980AbXGSUQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761254AbXGSUPu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 16:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbXGSUPP
+	id S1761980AbXGSUQy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 16:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761325AbXGSUQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 16:15:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53582 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757956AbXGSUPM (ORCPT
+	Thu, 19 Jul 2007 16:16:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49266 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760576AbXGSUPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 16:15:12 -0400
-Subject: Re: Slow IRQ handling? (was: Nova-T, cx88-dvb & "cx88_wakeup: 2
-	buffers handled (should be 1)")
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Hanno Zulla <abos@hanno.de>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4694BF03.5070508@hanno.de>
-References: <4693C318.8040105@hanno.de> <46949AFD.5030101@redhat.com>
-	 <4694BF03.5070508@hanno.de>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 19 Jul 2007 17:13:45 -0300
-Message-Id: <1184876025.4049.275.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 19 Jul 2007 16:15:19 -0400
+Date: Thu, 19 Jul 2007 13:09:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] slub crashes with recent -git
+In-Reply-To: <20070719194234.GA27917@elte.hu>
+Message-ID: <alpine.LFD.0.999.0707191307220.27249@woody.linux-foundation.org>
+References: <20070719194234.GA27917@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hanno,
 
-Em Qua, 2007-07-11 às 13:29 +0200, Hanno Zulla escreveu:
-> Hi,
+
+On Thu, 19 Jul 2007, Ingo Molnar wrote:
 > 
-> [ please cc me. Thanks. ]
-> 
-> > I've added the printk some years ago.  I stopped maintaining v4l/dvb
-> > bits two years ago, so it's a bit a shot into the dark because I have no
-> > idea what has changed recently in the driver.
-> 
-> Indeed, it appears that this driver has no maintainer right now. (Or the
-> maintainer is on holidays.
-It is the second :) I was in vacations.
+> i had to apply the patch below to make the kernel boot again.
 
-> > Could also be the irq handler for the other device sharing the same irq
-> > being very slow.  Any pattern here that it is linked to some specific
-> > device sharing the irq?
-> 
-> No idea, I did not see any pattern here. Also, the problem on my system
-> appears with every PCI slot I tried.
-> 
-> What do you suggest? How can I debug this issue so that you kernel guys
-> can look into it?
+A better patch should be the appended. Does that work for you too?
 
-Debugging this type of trouble is not always easy, since it is
-system-specific, and probably not directly related to cx88 driver, since
-cx88 drivers work fine on several configurations. 
+		Linus
+---
+ mm/slub.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-So, we need more details about your configuration. You may try also to
-use the latest vanilla linux kernel (2.6.22.1). Maybe this might be an
-issue already handled.
-
-You can do a "cat /proc/interrupts". This will help to identify the
-shared interrupts and if the processors are balancing the IRQ handling. 
-
-There are some tutorials that may help seeking for a bug:
-Documentation/BUG-HUNTING
-
-Also, the file /REPORTING-BUGS, at the main tree contains some
-orientations on what kind of information can be retrieved for you to
-report a bug.
-
-This can also help you to force the handling of an IRQ to an specific
-CPU:
-Documentation/IRQ-affinity.txt                                                                          
-
--- 
-Cheers,
-Mauro
-
+diff --git a/mm/slub.c b/mm/slub.c
+index 52a4f44..322f3a5 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2394,7 +2394,7 @@ size_t ksize(const void *object)
+ 	struct page *page;
+ 	struct kmem_cache *s;
+ 
+-	if (object == ZERO_SIZE_PTR)
++	if (ZERO_OR_NULL_PTR(object))
+ 		return 0;
+ 
+ 	page = get_object_page(object);
