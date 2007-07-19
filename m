@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932161AbXGSAuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936587AbXGSAvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932161AbXGSAuL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 20:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbXGSAt7
+	id S936587AbXGSAvp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 20:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXGSAvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 20:49:59 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:51967 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbXGSAt6 (ORCPT
+	Wed, 18 Jul 2007 20:51:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43701 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753335AbXGSAvf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 20:49:58 -0400
-Message-ID: <469EB4E5.2040300@gmail.com>
-Date: Thu, 19 Jul 2007 02:48:37 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrea Arcangeli <andrea@suse.de>, Ray Lee <ray-lk@madrabbit.org>,
-       Bodo Eggert <7eggert@gmx.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com> <Pine.LNX.4.58.0707161523500.25779@be1.lrz> <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org> <469BFB73.3070105@gmail.com> <20070716232755.GD11115@waste.org> <20070719001539.GC29728@v2.random> <20070719004129.GN11115@waste.org>
-In-Reply-To: <20070719004129.GN11115@waste.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 18 Jul 2007 20:51:35 -0400
+Date: Wed, 18 Jul 2007 17:51:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       robert.moore@intel.com, len.brown@intel.com
+Subject: Re: [PATCH][ACPI] Fix acpi_ev_pci_config_region_setup() to avoid
+ memory leak
+Message-Id: <20070718175126.40d845c5.akpm@linux-foundation.org>
+In-Reply-To: <200707190048.03992.jesper.juhl@gmail.com>
+References: <200707190048.03992.jesper.juhl@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/19/2007 02:41 AM, Matt Mackall wrote:
+On Thu, 19 Jul 2007 00:48:03 +0200
+Jesper Juhl <jesper.juhl@gmail.com> wrote:
 
-> On Thu, Jul 19, 2007 at 02:15:39AM +0200, Andrea Arcangeli wrote:
-
->> Using kmalloc(8k) instead of alloc_page() doesn't sound a too big deal
->> and that will solve the problem.
+> Hello,
 > 
-> How do you figure?
+> In drivers/acpi/events/evrgnini.c::acpi_ev_pci_config_region_setup() 
+> there is a memory leak.
+> We may return at "if (!pci_device_node)" without freeing storage 
+> previously allocated and assigned to 'pci_id'.
+> This patch fixes the leak by freeing the allocated storage in this 
+> case.
 > 
-> If you're saying that soft pages helps our 8k stack allocations, it
-> doesn't. The memory overhead of soft pages will be higher (5-15%,
-> mostly due to file tails in pagecache) than the level at which 8k
-> stacks currently run into trouble (1-2% free?).
+> Compile tested only...
 > 
-> Not helpful.
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+>  drivers/acpi/events/evrgnini.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/acpi/events/evrgnini.c b/drivers/acpi/events/evrgnini.c
+> index 400d90f..10f378b 100644
+> --- a/drivers/acpi/events/evrgnini.c
+> +++ b/drivers/acpi/events/evrgnini.c
+> @@ -284,6 +284,7 @@ acpi_ev_pci_config_region_setup(acpi_handle handle,
+>  	}
+>  
+>  	if (!pci_device_node) {
+> +		kfree(pci_id);
+>  		return_ACPI_STATUS(AE_AML_OPERAND_TYPE);
+>  	}
+>  
 
-With tail-packing it is.
-
-Rene.
+We're supposed to use the attractive ACPI_FREE() here.  I'll make that
+change.
 
