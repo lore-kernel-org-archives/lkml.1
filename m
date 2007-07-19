@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940753AbXGSTgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941027AbXGSTgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940753AbXGSTgK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 15:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939542AbXGSTfW
+	id S941027AbXGSTgr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 15:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939921AbXGSTgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 15:35:22 -0400
-Received: from mx2.suse.de ([195.135.220.15]:44524 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939236AbXGSTfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 15:35:20 -0400
-Date: Thu, 19 Jul 2007 12:19:43 -0700
-From: Greg KH <gregkh@suse.de>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kay.sievers@vrfy.org
-Subject: Re: kobject link failure
-Message-ID: <20070719191943.GB18871@suse.de>
-References: <Pine.LNX.4.64.0707191956510.31013@fbirervta.pbzchgretzou.qr> <469FA94E.20002@googlemail.com>
+	Thu, 19 Jul 2007 15:36:33 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:42771 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939542AbXGSTg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 15:36:27 -0400
+From: Olaf Kirch <olaf.kirch@oracle.com>
+Organization: Oracle
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Date: Thu, 19 Jul 2007 21:35:41 +0200
+User-Agent: KMail/1.9.1
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+References: <20070716091236.GA10718@elte.hu> <200707192113.26878.olaf.kirch@oracle.com> <20070719192256.GA22151@elte.hu>
+In-Reply-To: <20070719192256.GA22151@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <469FA94E.20002@googlemail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200707192135.43652.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 08:11:26PM +0200, Gabriel C wrote:
-> Jan Engelhardt wrote:
-> > Hi,
-> >
-> >
-> > top is 275afcac9953ece0828972edeab9684cfe1a5ef3, error is:
-> >   LD      .tmp_vmlinux1
-> > drivers/built-in.o: In function `store_uevent':
-> > core.c:(.text+0x20ebb): undefined reference to `kobject_actions'
-> > core.c:(.text+0x20edd): undefined reference to `kobject_actions'
-> > make[1]: *** [.tmp_vmlinux1] Error 1
-> > make: *** [_all] Error 2
-> >
-> > .config attached. Is it because of CONFIG_HOTPLUG=n?
-> >   
-> 
-> Don't know but I got the same with randconfig today.
-> 
-> http://lkml.org/lkml/2007/7/19/349
 
-Yes, that is the problem for your config also.
+Does the following help?
 
-thanks,
+Olaf
+-- 
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
+Test patch
+---
+Index: build-2.6/drivers/net/netconsole.c
+===================================================================
+--- build-2.6.orig/drivers/net/netconsole.c
++++ build-2.6/drivers/net/netconsole.c
+@@ -70,7 +70,7 @@ static void write_msg(struct console *co
+ 	int frag, left;
+ 	unsigned long flags;
+ 
+-	if (!np.dev)
++	if (!np.dev || !netif_running(np.dev))
+ 		return;
+ 
+ 	local_irq_save(flags);
 
-greg k-h
