@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932463AbXGSMmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbXGSMm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932463AbXGSMmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbXGSMmG
+	id S1754016AbXGSMm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbXGSMmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:42:06 -0400
-Received: from maxwell.spina.si ([193.77.104.223]:50069 "EHLO maxwell.spina.si"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753599AbXGSMmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:42:04 -0400
-Message-ID: <469F5C1A.6010003@kanardia.eu>
-Date: Thu, 19 Jul 2007 14:42:02 +0200
-From: Rok Markovic <kernel@kanardia.eu>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 19 Jul 2007 08:42:50 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:43209 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753599AbXGSMmt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:42:49 -0400
+X-YMail-OSG: 3VOB8hMVM1nnWUfHoCaA5S6xcI66yTtvNwWU3BNcqYdqY5JRebB93Kn2mFtUZpxzg5QgTVP1Pg--
+Date: Thu, 19 Jul 2007 07:42:44 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: James Morris <jmorris@namei.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Christian Ehrhardt <lk@c--e.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Message-ID: <20070719124244.GA7219@vino.hallyn.com>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de> <20070719122424.GA5186@vino.hallyn.com> <Line.LNX.4.64.0707190832290.4303@d.namei>
 MIME-Version: 1.0
-To: Mike Rapoport <mike@compulab.co.il>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Oops on arm pxa270 2.6.22
-References: <469F1CDA.8080304@kanardia.eu> <469F4525.5040309@compulab.co.il>
-In-Reply-To: <469F4525.5040309@compulab.co.il>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Line.LNX.4.64.0707190832290.4303@d.namei>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Rapoport wrote:
-
-> I think you have conflict between PXA serial and 8250 drivers. Make sure 
-> you use only one of them.
-> If you need to use PCMCIA serial cards, please see 
-> http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-July/040604.html 
+Quoting James Morris (jmorris@namei.org):
+> On Thu, 19 Jul 2007, Serge E. Hallyn wrote:
 > 
+> > If we could get a few (non-afilliated :) people who work with
+> > customers in the security field to tell us whether this is being
+> > used, that would be very helpful.  Not sure how to get that.
+> 
+> The mainline kernel does not cater to out of tree code.
 
+(Must... resist...)
 
-Thanks, I already fixed my problem. You are right it was serial port
-problem. I had wrong MAJOR and MINOR numbers in serial/pxa.c Now kerel boots 
-and works fine with -ck patch.
+> > Or we just apply the patch and see who yells  :)
+> 
+> 
+> It's already pretty clear.
 
-My I ask you if you (compulab) have any plans of merging machine cm-x270 patches
-into mainline kernel.
+I doubt anyone not on lkml or linux-security-module has heard of this.
 
-Thanks again,
-Rok Markovic
- 
+So we'll see.
 
+(I was, obviously, talking about end-users)
+
+-serge
