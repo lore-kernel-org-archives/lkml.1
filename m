@@ -1,65 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939420AbXGSTQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965670AbXGSTSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939420AbXGSTQn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 15:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933856AbXGSTQf
+	id S965670AbXGSTSU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 15:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932771AbXGSTSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 15:16:35 -0400
-Received: from gw.goop.org ([64.81.55.164]:59302 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933737AbXGSTQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 15:16:34 -0400
-Message-ID: <469FB856.6030000@goop.org>
-Date: Thu, 19 Jul 2007 12:15:34 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 19 Jul 2007 15:18:04 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:17934 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763762AbXGSTSC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 15:18:02 -0400
+From: Olaf Kirch <olaf.kirch@oracle.com>
+Organization: Oracle
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Date: Thu, 19 Jul 2007 21:13:25 +0200
+User-Agent: KMail/1.9.1
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+References: <20070716091236.GA10718@elte.hu> <469F867C.7020707@intel.com> <20070719160713.GA3807@elte.hu>
+In-Reply-To: <20070719160713.GA3807@elte.hu>
 MIME-Version: 1.0
-To: drzeus-sdhci@drzeus.cx
-CC: sdhci-devel@list.drzeus.cx,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: SDHCI: mmc0: Unexpected interrupt 0x00008000.
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707192113.26878.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting this with current GIT kernels when I plug an SD card into
-the side of my machine.  It appears to see the filesystem OK anyway, but
-for some reason all the hal/gnome desktop stuff isn't seeing it.  Was
-working last week.
+On Thursday 19 July 2007 18:07, Ingo Molnar wrote:
+> because i dont seem to be able to trigger Olaf's WARN_ON(), can you see 
+> anything in the ethtool output that i sent in the previous mail(s)?
 
-The message is:
+If the WARN_ON doesn't trigger, I cannot see how my patch would affect
+your system.
 
-mmc0: Unexpected interrupt 0x00008000.
-sdhci: ============== REGISTER DUMP ==============
-sdhci: Sys addr: 0x2d7d4600 | Version:  0x00000200
-sdhci: Blk size: 0x00007200 | Blk cnt:  0x00000000
-sdhci: Argument: 0x000001aa | Trn mode: 0x00000033
-sdhci: Present:  0x01ff0001 | Host ctl: 0x00000001
-sdhci: Power:    0x0000000f | Blk gap:  0x00000000
-sdhci: Wake-up:  0x00000000 | Clock:    0x00008007
-sdhci: Timeout:  0x00000009 | Int stat: 0x00000000
-sdhci: Int enab: 0x00ff00fb | Sig enab: 0x00ff00fb
-sdhci: AC12 err: 0x00000000 | Slot int: 0x00000000
-sdhci: Caps:     0x018021a1 | Max curr: 0x00000040
-sdhci: ===========================================
-PM: Adding info for mmc:mmc0:b368
-mmcblk0: mmc0:b368 LEXAR 999936KiB 
- mmcblk0: p1
+ -	IF we enter the if() branch in poll_napi, then the following
+	must hold:
+	 -	an interrupt from the e1000 arrived
+	 -	e1000_intr disables interrupts, increments irq_sem
+		(which is now 1) and schedules rx_action
 
+ -	Now, inside poll_napi, the following happens:
+	 -	poll_napi is called, finds the device is marked for
+		polling, invokes dev->poll
+	 -	dev->poll calls netif_rx_complete (which does *not*
+		remove the device from the poll list), and re-enables
+		interrupts. irq_sem is now 0.
 
-The machine is a Thinkpad X60, and the SD device is:
+ -	Finally, the rx_action softirq is run, which calls dev->poll
+	again, which ends up invoking netif_rx_complete once more,
+	and tries to re-enable interrupts. The latter doesn't do
+	anything except decrementing irq_sem once more, which now
+	goes negative.
 
-15:00.2 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 18)
-        Subsystem: Lenovo Thinkpad X60s
-        Flags: bus master, medium devsel, latency 64, IRQ 22
-        Memory at e4301800 (32-bit, non-prefetchable) [size=256]
-        Capabilities: [80] Power Management version 2
+	Which would trigger the WARN_ON.
 
+Now, as you say the WARN_ON is never triggered, it follows that
+we never end up in the if() branch of poll_napi. But that is
+where the only substantial modification of my patch is.
 
-Seems to work OK if I manually mount it.  To be honest, I don't know if
-this message was always appearing or not; I only checked because it
-didn't seem to be working.
+Here's a somewhat drastic modification that should not change any
+timing, but just verifies whether my patch is to blame at all. Can
+you give it a try?
 
-    J
+Thanks,
+Olaf
+-- 
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
+---
+Test patch
+---
+ include/linux/netdevice.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: build-2.6/include/linux/netdevice.h
+===================================================================
+--- build-2.6.orig/include/linux/netdevice.h
++++ build-2.6/include/linux/netdevice.h
+@@ -1027,7 +1027,7 @@ static inline void netif_rx_complete(str
+ 	 * But at least it doesn't penalize the non-netpoll
+ 	 * code path. */
+ 	if (test_bit(__LINK_STATE_POLL_LIST_FROZEN, &dev->state))
+-		return;
++		BUG();
+ #endif
+ 
+ 	local_irq_save(flags);
