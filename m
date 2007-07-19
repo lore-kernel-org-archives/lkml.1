@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939610AbXGSRDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940125AbXGSRE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939610AbXGSRDW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935070AbXGSRDN
+	id S940125AbXGSRE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933756AbXGSRET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:03:13 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:48755 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934857AbXGSRDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:03:12 -0400
-Date: Thu, 19 Jul 2007 19:03:09 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: MMC/SD Root filesystem suspend/resume problems
-Message-ID: <20070719190309.28708be8@poseidon.drzeus.cx>
-In-Reply-To: <1184860419.29634.10.camel@localhost.localdomain>
-References: <1184860419.29634.10.camel@localhost.localdomain>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
+	Thu, 19 Jul 2007 13:04:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48814 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933574AbXGSRES (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:04:18 -0400
+Date: Thu, 19 Jul 2007 10:03:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Josh Boyer" <jwboyer@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>, "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [PATCH -mm 0/5] Freezer update
+Message-Id: <20070719100346.a9e8b12b.akpm@linux-foundation.org>
+In-Reply-To: <625fc13d0707190930j381ea4f2x462a8269db269388@mail.gmail.com>
+References: <200707180929.31511.rjw@sisk.pl>
+	<20070718010353.27965df7.akpm@linux-foundation.org>
+	<625fc13d0707190930j381ea4f2x462a8269db269388@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 16:53:39 +0100
-Richard Purdie <rpurdie@rpsys.net> wrote:
+On Thu, 19 Jul 2007 11:30:54 -0500 "Josh Boyer" <jwboyer@gmail.com> wrote:
 
-> Hi Pierre,
+> On 7/18/07, Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Lots of Linux handhelds use MMC/SD devices as the root file system.
-> This has worked quite reliably for many kernel versions. In 2.6.22,
-> it seems that if you suspend such a system then resume it, the device
-> locks up. Trying to execute anything on the filesystem results in a
-> "Permission Denied" message. I did see a message from the MMC
-> subsystem saying it had redetected the card. There are also messages
-> on the console like "MMC: killing requests for dead queue" each time
-> you suspend/resume.
+> > > so please consider them as 2.6.23 material.
+> >
+> > The door for new 2.6.23 material shut two weeks ago.  Here, at least.
 > 
+> So do you have a general guideline as to when you'd like patches sent
+> to you for the next merge window?  The releases are fairly
+> predictable, so perhaps something like one of the later -rc candidates
+> for the upcoming release?
+> 
+> E.g. patches for 2.6.24 should be to you by 2.6.23-rc<N>?
 
-The card is removed when you suspend and readded when you resume.
-That's the only safe thing we can do until we get suspend support in
-the filesystems.
+That sounds about right.  But nothing is cast in stone here: one needs
+to take into account the urgency/desirability of the change, the perceived
+benefit and risk, etc.
 
-If you really want to shoot yourself in the foot, there is a Kconfig
-option that keeps the card around across the suspend.
+I do prefer that material has been out in at least one -mm release before
+it goes mainline.
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
