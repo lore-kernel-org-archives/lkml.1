@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938314AbXGSPMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938286AbXGSPM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938314AbXGSPMa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762090AbXGSPMH
+	id S938286AbXGSPM6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938922AbXGSPM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:12:07 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45104 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964805AbXGSPMF (ORCPT
+	Thu, 19 Jul 2007 11:12:27 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:39619 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S938895AbXGSPMZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:12:05 -0400
-Date: Thu, 19 Jul 2007 16:18:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: TAKADA Yoshihito <takada@mbf.nifty.com>
-Cc: linux-kernel@vger.kernel.org, teheo@novell.com
-Subject: Re: i386: pata_cs5520 does not work
-Message-ID: <20070719161821.5206ac36@the-village.bc.nu>
-In-Reply-To: <20070719.190831.23015057.takada@mbf.nifty.com>
-References: <20070716.091928.111205836.takada@mbf.nifty.com>
-	<20070718144212.3289e86c@the-village.bc.nu>
-	<20070719015806.8B09.TAKADA@mbf.nifty.com>
-	<20070719.190831.23015057.takada@mbf.nifty.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Jul 2007 11:12:25 -0400
+Message-ID: <469F7F58.4080709@steeleye.com>
+Date: Thu, 19 Jul 2007 11:12:24 -0400
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Denis Cheng <crquan@gmail.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Steven Whitehouse <steve@chygwyn.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] nbd: use list_for_each_entry_safe to make it more
+ consolidated and readable
+References: <11848376711601-git-send-email-crquan@gmail.com>
+In-Reply-To: <11848376711601-git-send-email-crquan@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> > rc = devm_request_irq(&pdev->dev, irq[ap->port_no],
-> > 	ata_interrupt, 0, DRV_NAME, host);
+Denis Cheng wrote:
+> Thus the traverse of the loop may delete nodes, use the safe version.
 > 
-> devm_request_irq() is called twice from loop.
-> In 1st time, ap->port_no is 0. devm_request_irq() is success.
-> 2nd time, ap->port_no is 0 too. devm_request_irq() failed.
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+>  drivers/block/nbd.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+> index c129510..86639c0 100644
+> --- a/drivers/block/nbd.c
+> +++ b/drivers/block/nbd.c
+> @@ -237,8 +237,7 @@ error_out:
+>  
+>  static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
+>  {
+> -	struct request *req;
+> -	struct list_head *tmp;
+> +	struct request *req, *n;
+>  	struct request *xreq;
+>  	int err;
+>  
+> @@ -249,8 +248,7 @@ static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
+>  		goto out;
+>  
+>  	spin_lock(&lo->queue_lock);
+> -	list_for_each(tmp, &lo->queue_head) {
+> -		req = list_entry(tmp, struct request, queuelist);
+> +	list_for_each_entry_safe(req, n, &lo->queue_head, queuelist) {
+>  		if (req != xreq)
+>  			continue;
+>  		list_del_init(&req->queuelist);
 
-Looks like whoever updated it to the new probe mechanism didn't quite get
-it right
+Could you name "n" as "tmp" (as in the previous code) so that it's clear 
+that's only a temporary variable. Other than that, this looks good.
 
-Change it to use 
-
-          struct ata_port *ap = host->ports[i];
-
-not ports[0]
-
-Alan
+Thanks,
+Paul
