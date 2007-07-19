@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbXGSMwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934034AbXGSMym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760665AbXGSMwo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934255AbXGSMw0
+	id S934034AbXGSMym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbXGSMyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:52:26 -0400
-Received: from stinky.trash.net ([213.144.137.162]:33683 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933960AbXGSMwY (ORCPT
+	Thu, 19 Jul 2007 08:54:33 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48311 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbXGSMyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:52:24 -0400
-Message-ID: <469F5DBB.3080106@trash.net>
-Date: Thu, 19 Jul 2007 14:48:59 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+	Thu, 19 Jul 2007 08:54:32 -0400
+From: Olaf Kirch <olaf.kirch@oracle.com>
+Organization: Oracle
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Date: Thu, 19 Jul 2007 14:52:07 +0200
+User-Agent: KMail/1.9.1
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Auke Kok <auke-jan.h.kok@intel.com>
+References: <20070716091236.GA10718@elte.hu> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu>
+In-Reply-To: <20070719105816.GA15852@elte.hu>
 MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: net/ipv4/inetpeer.c stack warnings
-References: <469F5941.7090900@googlemail.com>
-In-Reply-To: <469F5941.7090900@googlemail.com>
-Content-Type: multipart/mixed;
- boundary="------------080804060201080304000500"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707191452.09609.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080804060201080304000500
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thursday 19 July 2007 12:58, Ingo Molnar wrote:
+> i.e. it's the classic 'eth0 got stuck somehow' tx/rx state machine 
+> hickup symptoms, with no other bad symptoms such as lockups or crashes.
 
-Gabriel C wrote:
-> Hello ,
->
-> I noticed on current git this warning in net/ipv4/inetpeer.c
+Duh, I found it.
 
-Yeah, I have no idea why the gcc people thought that this was
-something worth warning about. Especially since explicitly
-checking for != NULL silences the warning again.
+The e1000 poll routine does this to leave polling mode.
 
+	netif_rx_complete(poll_dev);
+        e1000_irq_enable(adapter);
+        return 0;
 
+Which looks innocent enough, except that e1000_irq_enable has
+this little irq_sem counter:
 
---------------080804060201080304000500
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
+	if (likely(atomic_dec_and_test(&adapter->irq_sem))) {
+                E1000_WRITE_REG(&adapter->hw, IMS, IMS_ENABLE_MASK);
+                E1000_WRITE_FLUSH(&adapter->hw);
+        }
 
-[IPV4]: Fix inetpeer gcc-4.2 warnings
+So as poll_napi calls the poll() routine repeatedly, the irq_sem
+counter is decremented by one each time. During the first call,
+it re-enables the interrupt. During the next calls, irq_sem goes
+negative.
 
-  CC      net/ipv4/inetpeer.o
-net/ipv4/inetpeer.c: In function 'unlink_from_pool':
-net/ipv4/inetpeer.c:297: warning: the address of 'stack' will always evaluate as 'true'
-net/ipv4/inetpeer.c:297: warning: the address of 'stack' will always evaluate as 'true'
-net/ipv4/inetpeer.c: In function 'inet_getpeer':
-net/ipv4/inetpeer.c:409: warning: the address of 'stack' will always evaluate as 'true'
-net/ipv4/inetpeer.c:409: warning: the address of 'stack' will always evaluate as 'true'
+Then an interrupt comes in, e1000_intr disables the interrupt,
+increments irq_sem by one, and schedules the device for rx_action.
+rx_action calls dev->poll(), which finishes cleaning rx/rx rings,
+and when it finds there's no more work, it calls rx_complete and
+irq_enable. Except irq_enable doesn't enable anything now, since
+irq_sem is <= 0, and dec_and_test returns false.
 
-"Fix" by checking for != NULL.
+The whole irq_sem accounting in the e1000 does not rhyme well with
+netpoll's way of exercising dev->poll(). The reason my patch triggers
+the problem reliably for you is that now, we always get at least
+two invocations of dev->poll: once from poll_napi - where we do not
+remove the device from the poll list any longer - and another one
+from net_rx_action.
 
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-diff --git a/net/ipv4/inetpeer.c b/net/ipv4/inetpeer.c
-index 2f44e61..f725f9f 100644
---- a/net/ipv4/inetpeer.c
-+++ b/net/ipv4/inetpeer.c
-@@ -158,7 +158,7 @@ static void unlink_from_unused(struct inet_peer *p)
- #define lookup(_daddr,_stack) 					\
- ({								\
- 	struct inet_peer *u, **v;				\
--	if (_stack) {						\
-+	if (_stack != NULL) {					\
- 		stackptr = _stack;				\
- 		*stackptr++ = &peer_root;			\
- 	}							\
-@@ -169,7 +169,7 @@ static void unlink_from_unused(struct inet_peer *p)
- 			v = &u->avl_left;			\
- 		else						\
- 			v = &u->avl_right;			\
--		if (_stack)					\
-+		if (_stack != NULL)				\
- 			*stackptr++ = v;			\
- 		u = *v;						\
- 	}							\
+I don't have a fix ready yet - I hope I'll have something later
+this afternoon.
 
---------------080804060201080304000500--
+Olaf
+-- 
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
