@@ -1,163 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939588AbXGSPu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939619AbXGSPvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939588AbXGSPu6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937921AbXGSPuL
+	id S939619AbXGSPvh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939575AbXGSPus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:50:11 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:50434 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937982AbXGSPuJ (ORCPT
+	Thu, 19 Jul 2007 11:50:48 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:53467 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939590AbXGSPup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:50:09 -0400
-Message-ID: <469F87D8.9020404@googlemail.com>
-Date: Thu, 19 Jul 2007 17:48:40 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Thu, 19 Jul 2007 11:50:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=Wiu9AW+Ron2gryp+31zu4m73bNb53bFNP0S3j5QcuYD/sbHaGVcazViR+xpn/VpkUNmHKk9N6zAdhjzjKL4cTBp1yuy2Qx9cFNx0VS0UcXBD42dv6Imc8/NgT+lN5Dm46rPDgQLpzsDNgyfNBXUdkjg+9cc7KK/IxfdWPKgwXos=
+Message-ID: <469F884B.6010402@gmail.com>
+Date: Thu, 19 Jul 2007 11:50:35 -0400
+From: Florin Malita <fmalita@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org
-Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-References: <469C10F6.3050008@googlemail.com>	 <20070717100921W.fujita.tomonori@lab.ntt.co.jp>	 <469C1E2A.8010508@googlemail.com>	 <20070719082516W.fujita.tomonori@lab.ntt.co.jp>	 <1184853770.3464.85.camel@localhost.localdomain>	 <469F75A4.8050301@googlemail.com> <1184858356.3464.96.camel@localhost.localdomain>
-In-Reply-To: <1184858356.3464.96.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
+To: James.Smart@emulex.com
+CC: James.Bottomley@SteelEye.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [scsi] lpfc: potential leak in lpfc_sli_hbqbuf_fill_hbqs
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Thu, 2007-07-19 at 16:31 +0200, Gabriel C wrote:
->   
->> No is not an SATA controller.
->>
->> sda and sdb are SCSI disks connected to an Adaptec AIC-7892P U160/m
->> controller using the aic7xxx driver.
->>     
->
-> OK, this definitely works for me, that's what my root disk is on.  I
-> think this isn't a kernel problem ... I think it's a udev name clash
-> problem.  Try the attached patch, which corrects the names:
->   
+If lpfc_hbq_alloc() fails, an hbq_buffer is leaked. Found by Coverity 
+(1775).
 
-Thx, your patch fixes the problem for me.
+Signed-off-by: Florin Malita <fmalita@gmail.com>
+---
 
->   
->> sdc is an ATA-7 disk connected to an IDE controller ( 82801BA IDE U100
->> )  using libata and the ata_piix driver.
->>     
->
->
-> James
->
-> ---
->
-> Index: BUILD-2.6/block/Kconfig
-> ===================================================================
-> --- BUILD-2.6.orig/block/Kconfig	2007-07-18 11:34:20.000000000 -0500
-> +++ BUILD-2.6/block/Kconfig	2007-07-18 11:36:24.000000000 -0500
-> @@ -53,7 +53,7 @@ endif # BLOCK
->  
->  config BLK_DEV_BSG
->  	bool "Block layer SG support v4 (EXPERIMENTAL)"
-> -	depends on (SCSI=y) && EXPERIMENTAL
-> + 	depends on EXPERIMENTAL
->  	---help---
->  	Saying Y here will enable generic SG (SCSI generic) v4 support
->  	for any block device.
-> Index: BUILD-2.6/block/bsg.c
-> ===================================================================
-> --- BUILD-2.6.orig/block/bsg.c	2007-07-18 11:34:20.000000000 -0500
-> +++ BUILD-2.6/block/bsg.c	2007-07-18 11:36:24.000000000 -0500
-> @@ -1009,29 +1009,6 @@ err:
->  }
->  EXPORT_SYMBOL_GPL(bsg_register_queue);
->  
-> -static int bsg_add(struct class_device *cl_dev, struct class_interface *cl_intf)
-> -{
-> -	int ret;
-> -	struct scsi_device *sdp = to_scsi_device(cl_dev->dev);
-> -	struct request_queue *rq = sdp->request_queue;
-> -
-> -	if (rq->kobj.parent)
-> -		ret = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
-> -	else
-> -		ret = bsg_register_queue(rq, kobject_name(&sdp->sdev_gendev.kobj));
-> -	return ret;
-> -}
-> -
-> -static void bsg_remove(struct class_device *cl_dev, struct class_interface *cl_intf)
-> -{
-> -	bsg_unregister_queue(to_scsi_device(cl_dev->dev)->request_queue);
-> -}
-> -
-> -static struct class_interface bsg_intf = {
-> -	.add	= bsg_add,
-> -	.remove	= bsg_remove,
-> -};
-> -
->  static struct cdev bsg_cdev = {
->  	.kobj   = {.name = "bsg", },
->  	.owner  = THIS_MODULE,
-> @@ -1069,16 +1046,9 @@ static int __init bsg_init(void)
->  	if (ret)
->  		goto unregister_chrdev;
->  
-> -	ret = scsi_register_interface(&bsg_intf);
-> -	if (ret)
-> -		goto remove_cdev;
-> -
->  	printk(KERN_INFO BSG_DESCRIPTION " version " BSG_VERSION
->  	       " loaded (major %d)\n", bsg_major);
->  	return 0;
-> -remove_cdev:
-> -	printk(KERN_ERR "bsg: failed register scsi interface %d\n", ret);
-> -	cdev_del(&bsg_cdev);
->  unregister_chrdev:
->  	unregister_chrdev_region(MKDEV(bsg_major, 0), BSG_MAX_DEVS);
->  destroy_bsg_class:
-> Index: BUILD-2.6/drivers/scsi/scsi_sysfs.c
-> ===================================================================
-> --- BUILD-2.6.orig/drivers/scsi/scsi_sysfs.c	2007-07-18 11:36:02.000000000 -0500
-> +++ BUILD-2.6/drivers/scsi/scsi_sysfs.c	2007-07-19 10:10:50.000000000 -0500
-> @@ -715,6 +715,7 @@ static int attr_add(struct device *dev, 
->  int scsi_sysfs_add_sdev(struct scsi_device *sdev)
->  {
->  	int error, i;
-> +	struct request_queue *rq = sdev->request_queue;
->  
->  	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
->  		return error;
-> @@ -734,6 +735,17 @@ int scsi_sysfs_add_sdev(struct scsi_devi
->  	/* take a reference for the sdev_classdev; this is
->  	 * released by the sdev_class .release */
->  	get_device(&sdev->sdev_gendev);
-> +
-> +	error = bsg_register_queue(rq, sdev->sdev_gendev.bus_id);
-> +
-> +	if (error)
-> +		sdev_printk(KERN_INFO, sdev,
-> +			    "Failed to register bsg queue, errno=%d\n", error);
-> +
-> +	/* we're treating error on bsg register as non-fatal, so pretend
-> +	 * nothing went wrong */
-> +	error = 0;
-> +
->  	if (sdev->host->hostt->sdev_attrs) {
->  		for (i = 0; sdev->host->hostt->sdev_attrs[i]; i++) {
->  			error = attr_add(&sdev->sdev_gendev,
-> @@ -780,6 +792,7 @@ void __scsi_remove_device(struct scsi_de
->  	if (scsi_device_set_state(sdev, SDEV_CANCEL) != 0)
->  		return;
->  
-> +	bsg_unregister_queue(sdev->request_queue);
->  	class_device_unregister(&sdev->sdev_classdev);
->  	transport_remove_device(dev);
->  	device_del(dev);
->
->
->
->
->   
+ drivers/scsi/lpfc/lpfc_sli.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
+index f4d5a6b..fe16b0c 100644
+--- a/drivers/scsi/lpfc/lpfc_sli.c
++++ b/drivers/scsi/lpfc/lpfc_sli.c
+@@ -622,8 +622,10 @@ lpfc_sli_hbqbuf_fill_hbqs(struct lpfc_hba *phba, uint32_t hbqno, uint32_t count)
+ 			return 1;
+ 		hbq_buffer->dbuf.virt = lpfc_hbq_alloc(phba, MEM_PRI,
+ 							&hbq_buffer->dbuf.phys);
+-		if (hbq_buffer->dbuf.virt == NULL)
++		if (hbq_buffer->dbuf.virt == NULL) {
++			kfree(hbq_buffer);
+ 			return 1;
++		}
+ 		hbq_buffer->tag = (i | (hbqno << 16));
+ 		lpfc_sli_hbq_to_firmware(phba, hbqno, hbq_buffer);
+ 		lpfc_hbq_defs[hbqno]->buffer_count++;
 
