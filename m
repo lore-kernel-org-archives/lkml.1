@@ -1,94 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763896AbXGSMFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765135AbXGSMGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763896AbXGSMFS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbXGSMFF
+	id S1765135AbXGSMGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758471AbXGSMG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:05:05 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50339 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758063AbXGSMFC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:05:02 -0400
-Message-ID: <469F5372.7010703@bull.net>
-Date: Thu, 19 Jul 2007 14:05:06 +0200
-From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
-X-Accept-Language: en-us, en, fr, hu
+	Thu, 19 Jul 2007 08:06:28 -0400
+Received: from mail.suse.de ([195.135.220.2]:46475 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758378AbXGSMG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:06:27 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] [58/58] x86: remove support for the Rise CPU
+Date: Thu, 19 Jul 2007 14:03:39 +0200
+User-Agent: KMail/1.9.6
+Cc: Adrian Bunk <bunk@stusta.de>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+References: <200707191154.642492000@suse.de> <20070719104825.GR3801@stusta.de> <20070719121340.08da9bbf@the-village.bc.nu>
+In-Reply-To: <20070719121340.08da9bbf@the-village.bc.nu>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, "tony.luck@intel.com" <tony.luck@intel.com>,
-       nickpiggin@yahoo.com.au, mike@stroyan.net, dmosberger@gmail.com,
-       GOTO <y-goto@jp.fujitsu.com>
-Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
-References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com> <20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 19/07/2007 14:09:33,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 19/07/2007 14:09:35,
-	Serialize complete at 19/07/2007 14:09:35
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+Message-Id: <200707191403.39372.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-
-> Then, what should I do more for fixing this SIGILL problem ?
+On Thursday 19 July 2007 13:13:40 Alan Cox wrote:
+> > - It's not only code, it also bloats everyone's kernel image.
 > 
-> -Kame
+> Its a miniscule piece of code that is discarded on boot. Yes it might
+> make the image 100 bytes longer, but have you priced a 160GB disk
+> recently. I don't think 100 bytes of disk and 0 of memory really is worth
+> saving for any risk at all. Its not even worth the time to apply the
+> patch.
 
-I can think of a relatively cheap solution:
+The patch is already applied.
 
-New pages are allocated with the bit PG_arch_1 off, see
-page_cache_read() ... prep_new_page(), i.e. the I-cache is
-not coherent with the D-cache.
+Besides the CPU will likely boot even without special handling.
 
-page_cache_read() should add a macro, say:
-
-	ARCH_PREP_PAGE_BEFORE_READ(page);
-
-before actually calling mapping->a_ops->readpage(file, page).
-
-This macro can be for ia64 something like:
-
-do { if (CPU_has_split_L2_I_cache) set_bit(PG_arch_1, &page->flags); }
-
-and empty for the the architectures non concerned.
-
-The file systems which are identified not to use HW tools to
-avoid split I-cache incoherency, e.g. nfs_readpage(), are required
-to add a macro, say:
-
-	ARCH_CHECK_READ_PAGE_COHERENCY(page);
-
-This macro can be for ia64:
-
-do { if (CPU_has_split_L2_I_cache) clear_bit(PG_arch_1, &page->flags); }
-
-and empty for the the architectures non concerned.
-
-Back to do_no_page():
-if the new PTE includes the exec bit and PG_arch_1 is set,
-the page has to be flushed from the I-cache before the PTE is
-made globally visible.
-
-File systems using local block devices with DMA are considered
-to be safe, with the exceptions of the bounce buffers.
-
-When you copy into the destination page, another macro should be
-added, say:
-
-	ARCH_CHECK_BOUNCE_READ_COHERENCY(bio_vec);
-
-#define ARCH_CHECK_BOUNCE_READ_COHERENCY(bio_vec) \
-		ARCH_CHECK_READ_PAGE_COHERENCY(bio_vec->bv_page)
-
-Remote DMA based network file systems, e.g. Lustre on Quadrics,
-Infiniband are also considered to be safe.
-
-Thanks,
-
-Zoltan
+-Andi
