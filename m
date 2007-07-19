@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939779AbXGSPzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939853AbXGSPz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939779AbXGSPzf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936011AbXGSPzX
+	id S939853AbXGSPz5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939786AbXGSPzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:55:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:63025 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934513AbXGSPzU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:55:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Bm3Ep2OJKr+FkH7MY4qWp+Agf1NKSdKXiGgjkKUXLN3XSxBMDeH/gCiJWek61CQ9XKNcEFw23+q/rdOHG63sT4a3fmQTbYTfKtvuidPeu7cPVieQs9/DrNwZtOEV879NGkh1Bx1tFDyZTw6xPKl1iNW4xFl7joHbAAG069WIzJk=
-Message-ID: <91b13c310707190855h6fee9604pcc86b6712d2c76f8@mail.gmail.com>
-Date: Thu, 19 Jul 2007 23:55:18 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Paul Clements" <paul.clements@steeleye.com>
-Subject: Re: [PATCH 1/2] nbd: use list_for_each_entry_safe to make it more consolidated and readable
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Pavel Machek" <pavel@ucw.cz>, "Steven Whitehouse" <steve@chygwyn.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <469F7F58.4080709@steeleye.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Jul 2007 11:55:37 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40833 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939775AbXGSPzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:55:35 -0400
+In-Reply-To: <469DE555.10507@anagramm.de>
+References: 20070717140622.GA25846@uranus.ravnborg.org <11846813423231-git-send-email-sam@ravnborg.org> <11846813432423-git-send-email-sam@ravnborg.org> <1184681343138-git-send-email-sam@ravnborg.org> <469DE555.10507@anagramm.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6E2D9630-377F-4A92-8D18-0696E86E1664@kernel.crashing.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11848376711601-git-send-email-crquan@gmail.com>
-	 <469F7F58.4080709@steeleye.com>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 03/33] powerpc: Refuse to build 64-bit with GCC-4.2.0 and CONFIG_MODULES
+Date: Thu, 19 Jul 2007 17:55:25 +0200
+To: Clemens Koller <clemens.koller@anagramm.de>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/19/07, Paul Clements <paul.clements@steeleye.com> wrote:
-> Could you name "n" as "tmp" (as in the previous code) so that it's clear
-> that's only a temporary variable. Other than that, this looks good.
-Sure. I just use the name "n" as in the declaration of
-list_for_each_entry_safe in the header file <linux/list.h>
-I'll resend it a little later.
-
+>> From: Segher Boessenkool <segher@kernel.crashing.org>
+>> ...since this won't work (compiler bug, see <http://gcc.gnu.org/ 
+>> PR31490>).
 >
-> Thanks,
-> Paul
->
+> The bug report says IA64 is broken, too. Please verify and extend the
+> patch if possible...
 
--- 
-Denis Cheng
-Linux Application Developer
+The GCC bug exists on all architectures.  Linux build is only
+affected on PowerPC, and only when modules are enabled, as far
+as I know.  I have no way to build IA64 kernels right now, someone
+else will have to check and create a similar patch if necessary.
 
-"One of my most productive days was throwing away 1000 lines of code."
- - Ken Thompson.
+> gcc-4.2.1 will be released soon.
+
+For some value of "soon".  Likely this bug will be fixed in 4.2.1,
+and if not, I'll just update the range check in here.
+
+
+Segher
+
