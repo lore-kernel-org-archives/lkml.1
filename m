@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765391AbXGSMl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932463AbXGSMmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765391AbXGSMl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbXGSMlT
+	id S932463AbXGSMmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbXGSMmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:41:19 -0400
-Received: from mx1.suse.de ([195.135.220.2]:49837 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 08:42:06 -0400
+Received: from maxwell.spina.si ([193.77.104.223]:50069 "EHLO maxwell.spina.si"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757249AbXGSMlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:41:18 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: new text patching for review
-Date: Thu, 19 Jul 2007 14:41:15 +0200
-User-Agent: KMail/1.9.6
-Cc: prasanna@in.ibm.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, patches@x86-64.org
-References: <469F6669020000780003960B@public.id2-vpn.continvity.gns.novell.com>
-In-Reply-To: <469F6669020000780003960B@public.id2-vpn.continvity.gns.novell.com>
+	id S1753599AbXGSMmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:42:04 -0400
+Message-ID: <469F5C1A.6010003@kanardia.eu>
+Date: Thu, 19 Jul 2007 14:42:02 +0200
+From: Rok Markovic <kernel@kanardia.eu>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mike Rapoport <mike@compulab.co.il>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Oops on arm pxa270 2.6.22
+References: <469F1CDA.8080304@kanardia.eu> <469F4525.5040309@compulab.co.il>
+In-Reply-To: <469F4525.5040309@compulab.co.il>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707191441.15194.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 14:25:59 Jan Beulich wrote:
-> I like this approach much better, just one small note (I think I
-> had the same mistake in my changes initially):
+Mike Rapoport wrote:
+
+> I think you have conflict between PXA serial and 8250 drivers. Make sure 
+> you use only one of them.
+> If you need to use PCMCIA serial cards, please see 
+> http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-July/040604.html 
 > 
-> >@@ -202,7 +209,7 @@ static void alternatives_smp_lock(u8 **s
-> > 			continue;
-> > 		if (*ptr > text_end)
-> > 			continue;
-> >-		**ptr = 0xf0; /* lock prefix */
-> >+		text_poke(ptr, 0xf0); /* lock prefix */
-> > 	};
-> > }
->  
-> You probably want *ptr here.
 
-Thanks fixed
 
--Andi
+Thanks, I already fixed my problem. You are right it was serial port
+problem. I had wrong MAJOR and MINOR numbers in serial/pxa.c Now kerel boots 
+and works fine with -ck patch.
+
+My I ask you if you (compulab) have any plans of merging machine cm-x270 patches
+into mainline kernel.
+
+Thanks again,
+Rok Markovic
+ 
+
