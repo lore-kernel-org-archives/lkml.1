@@ -1,78 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965611AbXGSRJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965740AbXGSRKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965611AbXGSRJp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965407AbXGSRIG
+	id S965740AbXGSRKO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940350AbXGSRJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:08:06 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:36391 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965478AbXGSRIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:08:04 -0400
-Date: Thu, 19 Jul 2007 10:07:59 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, Bill Irwin <bill.irwin@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] hugetlbfs read() support
-Message-ID: <20070719170759.GE2083@us.ibm.com>
-References: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com> <20070718221950.35bbdb76.akpm@linux-foundation.org> <1184860309.18188.90.camel@dyn9047017100.beaverton.ibm.com> <20070719095850.6e09b0e8.akpm@linux-foundation.org>
+	Thu, 19 Jul 2007 13:09:12 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:49898 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S940342AbXGSRJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:09:09 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: 2.6.22-git: known regressions with patches
+Date: Thu, 19 Jul 2007 20:08:09 +0300
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Giacomo Catenazzi <cate@cateee.net>, Jens Axboe <jens.axboe@oracle.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jens Axboe <axboe@suse.de>,
+       "Peter M. Jones" <pjones@redhat.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>, Meelis Roos <mroos@linux.ee>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>
+References: <469F92B8.5090809@googlemail.com>
+In-Reply-To: <469F92B8.5090809@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719095850.6e09b0e8.akpm@linux-foundation.org>
-X-Operating-System: Linux 2.6.22-rc6-gaee87db2 (x86_64)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed;
+  boundary="nextPart3915519.YtECA2XLpR";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707192008.15147.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19.07.2007 [09:58:50 -0700], Andrew Morton wrote:
-> On Thu, 19 Jul 2007 08:51:49 -0700 Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> 
-> > > > +		}
-> > > > +
-> > > > +		offset += ret;
-> > > > +		retval += ret;
-> > > > +		len -= ret;
-> > > > +		index += offset >> HPAGE_SHIFT;
-> > > > +		offset &= ~HPAGE_MASK;
-> > > > +
-> > > > +		page_cache_release(page);
-> > > > +		if (ret == nr && len)
-> > > > +			continue;
-> > > > +		goto out;
-> > > > +	}
-> > > > +out:
-> > > > +	return retval;
-> > > > +}
-> > > 
-> > > This code doesn't have all the ghastly tricks which we deploy to
-> > > handle concurrent truncate.
-> > 
-> > Do I need to ? Baaahh!!  I don't want to deal with them. 
-> 
-> Nick, can you think of any serious consequences of a read/truncate
-> race in there?  I can't..
-> 
-> > All I want is a simple read() to get my oprofile working.  Please
-> > advise.
-> 
-> Did you consider changing oprofile userspace to read the executable
-> with mmap?
+--nextPart3915519.YtECA2XLpR
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It's not actually oprofile's code, though, it's libbfd (used by
-oprofile). And it works fine (presumably) for other binaries. Just not
-for libhugetlbfs-relinked binaries because hugetlbfs doesn't behave like
-a normal ramfs (perhaps it shouldn't, but that's a different argument).
+Hi Michal;
 
-But I do think a second reason to do this is to make hugetlbfs behave
-like a normal fs -- that is read(), write(), etc. work on files in the
-mountpoint. But that is simply my opinion.
+19 Tem 2007 Per tarihinde, Michal Piotrowski =C5=9Funlar=C4=B1 yazm=C4=B1=
+=C5=9Ft=C4=B1:=20
+> Block layer
+>
+> Subject         : bsg.c:(.init.text+0x43d): undefined reference to
+> `scsi_register_interface' References      :
+> http://lkml.org/lkml/2007/7/16/343
+> Last known good : ?
+> Submitter       : Larry Finger <Larry.Finger@lwfinger.net>
+> Caused-By       : ?
+> Handled-By      : S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+> Patch           : http://lkml.org/lkml/2007/7/16/380
+> Status          : patch available
 
-Thanks,
-Nish
+After a off-list discussion this was solved with Linus's commit [1], so ple=
+ase=20
+drop that one
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+[1]=20
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+it;h=3D29417b899a77aaba1c060f5e123db4f50006f58a
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart3915519.YtECA2XLpR
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGn5p+y7E6i0LKo6YRAowhAKDUsRQBQpbQp7lgebGtEYI44np7hwCfbRpq
+byayx/iQGIhdU7aGZXDOErA=
+=tmqV
+-----END PGP SIGNATURE-----
+
+--nextPart3915519.YtECA2XLpR--
