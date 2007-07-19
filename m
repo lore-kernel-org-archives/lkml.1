@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbXGSKpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764736AbXGSKsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbXGSKpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXGSKpc
+	id S1764736AbXGSKsU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXGSKsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 06:45:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36490 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 06:48:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58488 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752992AbXGSKpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 06:45:30 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: =?utf-8?q?Bj=C3=B6rn_Steinbrink?= <B.Steinbrink@gmx.de>
-Subject: Re: [PATCH] [21/58] i386: Reserve the right performance counter for the Intel PerfMon NMI watchdog
-Date: Thu, 19 Jul 2007 12:45:26 +0200
-User-Agent: KMail/1.9.6
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200707191154.642492000@suse.de> <20070719095506.52E3214E06@wotan.suse.de> <20070719102145.GA6581@atjola.homenet>
-In-Reply-To: <20070719102145.GA6581@atjola.homenet>
+	id S1752961AbXGSKsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 06:48:06 -0400
+Date: Thu, 19 Jul 2007 12:47:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Olaf Kirch <olaf.kirch@oracle.com>
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Message-ID: <20070719104756.GA13769@elte.hu>
+References: <20070716091236.GA10718@elte.hu> <200707191144.24434.olaf.kirch@oracle.com> <20070719100135.GA2986@elte.hu> <200707191237.56455.olaf.kirch@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707191245.26604.ak@suse.de>
+In-Reply-To: <200707191237.56455.olaf.kirch@oracle.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 12:21:45 BjÃ¶rn Steinbrink wrote:
-> On 2007.07.19 11:55:06 +0200, Andi Kleen wrote:
+
+* Olaf Kirch <olaf.kirch@oracle.com> wrote:
+
+> On Thursday 19 July 2007 12:01, Ingo Molnar wrote:
+> >  Calling initcall 0xc0603f55: netpoll_init+0x0/0x39()
+> >  initcall 0xc0603f55: netpoll_init+0x0/0x39() returned 0.
+> >  initcall 0xc0603f55 ran for 0 msecs: netpoll_init+0x0/0x39()
+> >  Calling initcall 0xc0604257: netlink_proto_init+0x0/0x12a()
+> >  NET: Registered protocol family 16
 > > 
-> > From: [** iso-8859-1 charset **] BjörnSteinbrink <B.Steinbrink@gmx.de>
-> > 
-> > The Intel PerfMon NMI watchdog was using the generic reservation
-> > function which always reserves the first performance counter. But the
-> > watchdog actually uses the second performance counter, thus we need a
-> > specialised function.
+> > and no output ever since - and the box has been up for a few minutes.
 > 
-> Ah, almost forgot about that patch. Actually, thanks to your fix that
-> basically reverted the msr->offset conversation to its 2.6.21
-> implementation, single_msr_reserve has sane semantics now and does just
-> what the name suggests (before, the wd_ops entries had to store the
-> "base" msrs, so it was really a first_msr_reserve).
-> 
-> With wd_ops->perfctr no longer needed to be the base msr, we can just
-> fix that value for the arch perfmon watchdog. (And maybe we should
-> remove the values for those implementations that don't employ the
-> single_msr_reserve() stuff?)
+> Okay, I need to ask a stupid question - did you verify that it's not 
+> spinning on a spinlock?
 
-I replaced the patch with the new patch, thanks
+the box is fully usable after it has booted up and (as you can see it in 
+the config i've uploaded) i've got every kernel debug option enabled, 
+including lockdep.
 
--Andi
+> Specifically, I'm wondering whether the net_rx_action softirq may be 
+> scheduled while we're in poll_napi holding the poll_lock. 
+> net_rx_action would try to take the poll_lock as well, and we'd be 
+> hung for good. The patch with local_bh_disable/enable was supposed to 
+> test that idea (this is the "trickle" patch)
 
+the box isnt hung - it just has no networking. (i couldnt get the logs 
+out if it were hung - netconsole is the only remote debugging option and 
+with that broken i can only get info out if it boots up fine)
+
+	Ingo
