@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764757AbXGSVGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765506AbXGSVGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764757AbXGSVGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 17:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbXGSVGG
+	id S1765506AbXGSVGg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 17:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761917AbXGSVG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 17:06:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:4996 "EHLO mga03.intel.com"
+	Thu, 19 Jul 2007 17:06:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33114 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759461AbXGSVGF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 17:06:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,558,1175497200"; 
-   d="scan'208";a="252522060"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1762189AbXGSVGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 17:06:25 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patches] new text patching for review
+Date: Thu, 19 Jul 2007 23:06:20 +0200
+User-Agent: KMail/1.9.6
+Cc: patches@x86-64.org, Zachary Amsden <zach@vmware.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       "S. P. Prasanna" <prasanna@in.ibm.com>,
+       Chris Wright <chrisw@sous-sol.org>
+References: <200707191105.44056.ak@suse.de> <200707192246.58047.ak@suse.de> <469FCEE7.8060900@goop.org>
+In-Reply-To: <469FCEE7.8060900@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: which signal is sent to freeze process?
-Date: Thu, 19 Jul 2007 14:06:01 -0700
-Message-ID: <A3258B497F1C1441AD36A2E8B45FD628550DD6@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <200707191459.20998.nigel@nigel.suspend2.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: which signal is sent to freeze process?
-thread-index: AcfJwZQd+7XHhr3jSuGHHnDqnmOWxgAhnO3g
-References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707191218.32730.nigel@nigel.suspend2.net> <A3258B497F1C1441AD36A2E8B45FD6285508CB@scsmsx412.amr.corp.intel.com> <200707191459.20998.nigel@nigel.suspend2.net>
-From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-To: <nigel@suspend2.net>, "Rafael Wysocki" <rjw@sisk.pl>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 19 Jul 2007 21:06:02.0853 (UTC) FILETIME=[9D47C150:01C7CA48]
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707192306.20625.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So basically I can not install a signal handler to catch freeze signal
-in the process. Right?
-Is there any other way to solve the problem I am facing? After resume
-some of the system calls are failing in some of my applications with
-errno set as EINTR. I wanted to explore a way to not check for this
-error all over the place and somehow retry failed system call. Any
-ideas?
+On Thursday 19 July 2007 22:51:51 Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> > Normally there are not that many NMIs or MCEs at boot, but it would
+> > be still good to avoid the very rare crash by auditing the code first
+> > [better than try to debug it on some production system later]
+> >   
+> 
+> Auditing it for what?  If we want to make patching safe against NMI/MCE,
+> I guess we need to make sure those handlers don't use any pvops, but
+> that seems unreasonable if they want to poke at MSRs and so on.
 
------Original Message-----
-From: Nigel Cunningham [mailto:nigel@nigel.suspend2.net] 
-Sent: Wednesday, July 18, 2007 9:59 PM
-To: Agarwal, Lomesh; Rafael Wysocki
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: which signal is sent to freeze process?
+Either not use any pvops or make sure all the pvops patching is atomic
+on the local CPU.
 
-Hi.
+Ok you can avoid MCEs by not enabling them until after you patch (which I think
+is the case currently), but it's more difficult with NMIs.
 
-On Thursday 19 July 2007 14:09:56 Agarwal, Lomesh wrote:
-> Can you point me to code where kernel captures process in signal
-> handling and code which runs after suspend to ram is finished?
+The plain NMI handler is probably auditable.
+Or set a flag that makes the NMI handler just return during patching?
 
-Sure.
+> 
+> > In theory yes, in practice there can be errata of course. There tend 
+> > to be a couple with self modifying code, especially cross modifying
+> > (from another CPU) -- but you don't do that.
+> >   
+> 
+> No, but the pv-ops patching code should have no requirement for
+> atomicity at all; we shouldn't be trying to patch a live instruction stream.
 
-It's in kernel/signal.c (get_signal_to_deliver) for x86 and x86_64, and 
-arch/<name>/kernel/signal.c for other arches. The support for other
-arches is 
-the place x86 & x86_64 used to use - I wonder if they should be going
-away 
-(Rafael cc'd to raise this point with him).
+Yes, but NMI could happen inbetween
 
-Regards,
-
-Nigel
--- 
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
+-Andi
