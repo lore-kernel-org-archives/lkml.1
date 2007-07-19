@@ -1,110 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965607AbXGSOQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965652AbXGSOQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965607AbXGSOQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939294AbXGSOL7
+	id S965652AbXGSOQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965427AbXGSOOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:11:59 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:64811 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939199AbXGSOLz (ORCPT
+	Thu, 19 Jul 2007 10:14:06 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:42711 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965454AbXGSOOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:11:55 -0400
-Message-ID: <469F7117.2020404@mathtm.de>
-Date: Thu, 19 Jul 2007 16:11:35 +0200
-From: =?ISO-8859-15?Q?Thomas_M=FCller?= <thomas@mathtm.de>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: netdev@vger.kernel.org
-Subject: [BUG] Lockup on boot when trying to bring up r8169 NIC
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/rf6PuqudiueI8GSgsE/xSxPky1KQA5dVPavf
- fIxDhQVRUHLSQBA9Zh6dnsKuD7lecriymA8s05cya+7GQUKJwl
- AoyNVCQ+v65LBuCPmWQksUPEkwk0Tvu
+	Thu, 19 Jul 2007 10:14:03 -0400
+Date: Thu, 19 Jul 2007 19:42:48 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Bernhard Walle <bwalle@suse.de>, Dan Aloni <da-x@monatomic.org>,
+       Neil Horman <nhorman@redhat.com>
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070719141248.GA18586@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070716123633.GA10920@in.ibm.com> <20070718230740oomichi@mail.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070718230740oomichi@mail.jp.nec.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Jul 18, 2007 at 11:07:40PM +0900, Ken'ichi Ohmichi wrote:
+> 
+> Hi,
+> 
+> 2007/07/16 18:06:33 +0530, Vivek Goyal <vgoyal@in.ibm.com> wrote:
+> >On Mon, Jul 16, 2007 at 02:28:54PM +0200, Bernhard Walle wrote:
+> >> * Vivek Goyal <vgoyal@in.ibm.com> [2007-07-16 14:25]:
+> >> > 
+> >> > Ok. Now there seems to be two ways for accessing such info.
+> >> > - Through global variables
+> >> > - Export through ELF notes.
+> >> > 
+> >> > Personally, I like the approach taken by Dan Aloni of exporting required
+> >> > info through ELF notes. That seems to be more standard in the sense we 
+> >> > are not dependent on somebody removing above variable tomorrow.
+> >> > 
+> >> > Dan, are you planning to put the modified patch for discussions on LKML?
+> >> 
+> >> You mean the proposal with the makedumpfile-compatible ELF note?
+> >> Although I like that idea, I think Ken'ichi Ohmichi was against it.
+> >> 
+> >
+> >Yes, makedumpfile compatible ELF note one. Ken'ichi did not like the idea
+> >too much, but I am not sure we discussed his objections in detail. I had
+> >also responded with a mail with some of the advantages of ELF note based
+> >approach. No response on that.
+> 
+> Sorry for my delayed response, I took a short vacation.
+> 
+> I'm not against with the proposal adding PT_NOTE segment to /proc/vmcore.
+> I don't like only point that adds the necessary information list
+> (some symbols, structures, etc.) for makedumpfile to kernel code.
+> 
+> The content of mkdfinfo file has been increasing whenever adding
+> features and correcting bugs. The content is increasing even now.
+> And, the feature addition is done not only for new kernels but also
+> for old upstream kernels. When the content of mkdfinfo file is taken 
+> into the kernel and fixed, the feature addition in the future is
+> remarkably limited. So makedumpfile needs mkdfinfo file outside of
+> the kernel.
+> 
 
-I already sent this two days ago, but I have the feeling it was
-overlooked or filtered because of a large attachment.
+Well, idea of filtering tool having flexibility to create its own ELF note
+and later retrieve it and use it looks good. But at the same time you 
+will have to standardize the contents of ELF note. One can not keep on
+changing it at will.
+
+> I propose the solution including Dan's, Vivek's and Bernhard's opinions.
+> How about the following sequence for distributors ?
+> (It is not necessary to rebuild 2nd-kernel initrd even if 1st-kernel changes.
+>  A new option "--mkdfinfo" is added to kexec command.)
+> 
+> * On the kernel building system
+>   1. Create the kernel files.
+>      # cd linux-2.6.xx
+>      # make
+>   2. Create the mkdfinfo file from the vmlinux.
+>      # makedumpfile -g mkdfinfo-2.6.xx -x vmlinux
+>      (OSRELEASE is taken from the vmlinux.)
+>   3. Pack the kernel package with the kernel files and the mkdfinfo file.
+> 
+> * On each system
+>   4. Preload 2nd-kernel and the mkdfinfo file.
+>      # kexec -p vmlinux-kdump --mkdfinfo=mkdfinfo-2.6.xx ...
+
+Providing first kernel's debug data on commandline while loading second
+kernel is little odd but I guess can be lived with.
+
+>      - 2nd-kernel is preloaded.
+>      - 1st-kernel's PAGESIZE is taken by sysconf().
+>      - The mkdfinfo file and the above PAGESIZE is preloaded
+>        into /proc/vmcore's PT_NOTE segment.
+
+>   5. Panic happens, and the system switchs to 2nd-kernel.
+>   6. Create a filtered dump file.
+>      # makedumpfile -cd31 /proc/vmcore dumpfile
+>      (User doesn't need to specify the mkdfinfo file, because the
+>       contents of the mkdfinfo file is included into /proc/vmcore.)
+> 
+
+Overall proposal looks interesting. But it still requires a debug compiled
+vmlinux for one to use filtering. For distros it is probably easy as they
+can extract the debug info at build time and ship separate file with kernel
+package (/boot/mkdfinfo-2.6.xxx). For people building their custom kernel,
+they still need to build vmlinux with debuginfo. Personally, I wished
+we could get rid of this requirement. I think may be down the line we can
+start exporting it from kenrel once contents of ELF note are well defined.
+
+Thanks
+Vivek
 
 
-If I try to boot 2.6.21.6, 2.6.22.1 or 2.6.22-git8 the system completely
-hangs when init tries to bring up my r8169-based NIC. Not even the
-keyboard lights are working anymore.
-
-If I unplug the network cable, boot continues just fine and everything
-works as it should.
-If I boot with the cable unplugged, the system also hangs and continues
-after I plug in the cable.
-
-
-Everything works fine with 2.6.20.15.
-
-
-Configuration:
-  http://www.mathtm.de/config_2.6.20.15_fc6based
-  http://www.mathtm.de/config_2.6.21.6_f7based
-
-
-Using a Fedora kernel (based on 2.6.21.5) I get the following kernel
-message:
-r8169: eth0: link down
-BUG: soft lockup detected on CPU#0!
- [<c0451ea2>] softlockup_tick+0xa5/0xb4
- [<c042e930>] update_process_times+0x3b/0x5e
- [<c043d298>] tick_sched_timer+0x57/0x9a
- [<c0439df5>] hrtimer_interrupt+0x12b/0x1b6
- [<c043d241>] tick_sched_timer+0x0/0x9a
- [<c0408534>] timer_interrupt+0x2c/0x32
- [<c045210e>] handle_IRQ_event+0x1a/0x3f
- [<c045354e>] handle_level_irq+0x81/0xc7
- [<c04072c7>] do_IRQ+0xb8/0xd1
- [<c04058ff>] common_interrupt+0x23/0x28
- [<c0452105>] handle_IRQ_event+0x11/0x3f
- [<c045354e>] handle_level_irq+0x81/0xc7
- [<c04534cd>] handle_level_irq+0x0/0xc7
- [<c04072bb>] do_IRQ+0xac/0xd1
- [<c04058ff>] common_interrupt+0x23/0x28
- [<c042b2dc>] __do_softirq+0x54/0xba
- [<c04071b7>] do_softirq+0x59/0xb1
- [<c04534cd>] handle_level_irq+0x0/0xc7
- [<c042b194>] irq_exit+0x38/0x6b
- [<c04072cc>] do_IRQ+0xbd/0xd1
- [<c04058ff>] common_interrupt+0x23/0x28
- [<c04200d8>] find_busiest_group+0x264/0x4c5
- [<c0601895>] _spin_unlock_irqrestore+0x8/0x9
- [<c042e863>] __mod_timer+0xa1/0xab
- [<f8a4e1ec>] rtl8169_open+0x12e/0x194 [r8169]
- [<c05a3054>] dev_open+0x2b/0x62
- [<c05a1aa1>] dev_change_flags+0x47/0xe4
- [<c05de45c>] devinet_ioctl+0x250/0x56a
- [<c04e72c0>] copy_to_user+0x3c/0x50
- [<c0598b47>] sock_ioctl+0x19f/0x1be
- [<c05989a8>] sock_ioctl+0x0/0x1be
- [<c047f713>] do_ioctl+0x1f/0x62
- [<c047f99a>] vfs_ioctl+0x244/0x256
- [<c047f9f8>] sys_ioctl+0x4c/0x64
- [<c0404f70>] syscall_call+0x7/0xb
- =======================
-r8169: eth0: link up
-
-
-
-There already is a bugzilla entry at
-http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242572
-I know, not everyone is a fan of bugzilla, but maybe someone wants to
-take a look at what was discussed there.
-
-
-Please CC me as I'm not subscribed to the list and don't hesitate to
-tell me that I forgot to include some crucial information ;)
-
-
-Regards,
-Thomas
 
