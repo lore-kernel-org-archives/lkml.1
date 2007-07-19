@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965789AbXGSTUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965956AbXGSTVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965789AbXGSTUi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 15:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964888AbXGSTUD
+	id S965956AbXGSTVA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 15:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965812AbXGSTU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 15:20:03 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:28857 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765193AbXGSTUA (ORCPT
+	Thu, 19 Jul 2007 15:20:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46519 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965805AbXGSTUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 15:20:00 -0400
-Subject: Re: [PATCH] virtual sched_clock() for s390
-From: Jan Glauber <jang@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-       vatsa@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com, efault@gmx.de,
-       dmitry.adamushko@gmail.com, paulus@samba.org, anton@samba.org
-In-Reply-To: <20070719160025.GA31815@elte.hu>
-References: <1184842661.6546.14.camel@localhost.localdomain>
-	 <469F8342.7060000@goop.org>  <20070719160025.GA31815@elte.hu>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 19:20:21 +0000
-Message-Id: <1184872821.5516.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 15:20:24 -0400
+Date: Thu, 19 Jul 2007 12:19:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland Dreier <rdreier@cisco.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Subject: Re: kmalloc zero size changes break i386
+In-Reply-To: <alpine.LFD.0.999.0707191107570.27353@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0707191218470.27353@woody.linux-foundation.org>
+References: <200707191201.35777.ak@suse.de> <84144f020707190708p1c4d63cnbb0397a602c3527d@mail.gmail.com>
+ <adamyxsfmnc.fsf@cisco.com>
+ <alpine.LFD.0.999.0707191107570.27353@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 18:00 +0200, Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+
+On Thu, 19 Jul 2007, Linus Torvalds wrote:
 > 
-> > >  /*
-> > > - * Monotonic_clock - returns # of nanoseconds passed since time_init()
-> > > + * Scheduler clock - returns current time in nanosec units.
-> > > + * Now based on virtual cpu time to only account time the guest
-> > > + * was actually running.
-> > 
-> > Runn*ing*?  Does it include time the VCPU spends idle/blocked?  If 
-> > not, then the scheduler won't be able to tell how long a process has 
-> > been asleep.  Maybe this doesn't matter (I had this problem in a 
-> > version of Xen's sched_clock, and I can't say I saw an ill effects 
-> > from it).
-
-No, it does not include idle time, if we're going idle the cpu timer
-gets stopped.
-
-> CFS does measure time elapsed across task-sleep periods (and does 
-> something similar to what the old scheduler's 'sleep average' 
-> interactivity mechanism did), but that mechanism measures "time spent 
-> running during sleep", not "time spent idling".
+> Does something like this fix it?
 > 
-> still, CFS needs time measurement across idle periods as well, for 
-> another purpose: to be able to do precise task statistics for /proc. 
-> (for top, ps, etc.) So it's still true that sched_clock() should include 
-> idle periods too.
+> Christoph, please go over this and see if there are other cases like that.
 
-I'm not sure, s390 already has an implemetation for precise accounting
-in the architecture code, does CFS also improve accounting data? 
+Actually, here's a better version, I think.
 
-Jan
+Andi, does this patch fix your problem?
 
+		Linus
+---
+ mm/slab.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mm/slab.c b/mm/slab.c
+index 88bc633..c3feeaa 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -3690,8 +3690,8 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
+ 	 * functions.
+ 	 */
+ 	cachep = __find_general_cachep(size, flags);
+-	if (unlikely(cachep == NULL))
+-		return NULL;
++	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
++		return cachep;
+ 	return __cache_alloc(cachep, flags, caller);
+ }
+ 
