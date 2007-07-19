@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939120AbXGSPS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936057AbXGSPTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939120AbXGSPS3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933439AbXGSPRw
+	id S936057AbXGSPTY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935648AbXGSPS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:17:52 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:7559 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756579AbXGSPRv (ORCPT
+	Thu, 19 Jul 2007 11:18:57 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38859 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934570AbXGSPSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:17:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LoAJqCYsaoVFAgGNCYqsd5W3r6UexkrVQSiw7EBNajpJrTdTDz53W9pa+ga50VNqYAOD/2fp/4YYK7eZSbkagIRPKgt1u8fha0BPiYw73OlQxIxLyrH4fTuJ4+SDu8cUfIugYpz7ZIFl71geJg4PlkEN/jPuR8+8qRzm1F6+zM8=
-Message-ID: <d120d5000707190817t62013ddcg966bd4e8c0ec116f@mail.gmail.com>
-Date: Thu, 19 Jul 2007 11:17:50 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Daniel Mantione" <daniel.mantione@freepascal.org>
-Subject: Re: Keyboard programming needs root
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <f79qnt$rn3$1@sea.gmane.org>
+	Thu, 19 Jul 2007 11:18:55 -0400
+Message-ID: <469F80E3.3040007@bull.net>
+Date: Thu, 19 Jul 2007 17:18:59 +0200
+From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
+X-Accept-Language: en-us, en, fr, hu
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tony.luck@intel.com, nickpiggin@yahoo.com.au,
+       mike@stroyan.net, dmosberger@gmail.com, y-goto@jp.fujitsu.com
+Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
+References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>	<20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>	<469F5372.7010703@bull.net>	<20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>	<469F71E7.4050200@bull.net> <20070719235157.9715baff.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070719235157.9715baff.kamezawa.hiroyu@jp.fujitsu.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/07/2007 17:23:25,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/07/2007 17:23:27,
+	Serialize complete at 19/07/2007 17:23:27
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f79qnt$rn3$1@sea.gmane.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
+KAMEZAWA Hiroyuki wrote:
 
-On 7/14/07, Daniel Mantione <daniel.mantione@freepascal.org> wrote:
-> Hello,
->
-> A while back a patch was merged to make that only root can program the
-> keyboard:
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0b360adbdb54d5b98b78d57ba0916bc4b8871968
->
-> Is this patch discussable? I think this patch isn't proper because of the
-> following reasons:
->
-> * Users can play games in many ways. They can configure the terminal
->  settings, (remove the automatic line feed, disable the echo etc). They can
->  load console fonts. They can still put the keyboard in raw mode, etc.
+> Hmm...but the current code flushes the page. just do it in "lazy" way.
+> much difference ?
 
-Keyboard raw mode or disabling line echo may be annoying but you
-really don't want someone leaving box after binding "rm -rf /" to a
-backspace key...
+I agree the current code flushes the I-cache for all kinds of file
+systems (for PTEs with the exec bit on).
 
-> * All of these games can be prevented by making mingetty (or whatever getty
->  is used) or PAM can put the console into a known state after logout.
-> * All of these games are annoyances, system security is not compromised.
-> * I do not see a problem with for example a French user doing a "loadkeys
->  fr" if that allows hims to use the computer easier.
->
-> Worst issue for me though, is that KDSBENT is needed to be able to catch
-> keys like shift+tab, alt+fx, escape without delay. My application suddenly
-> needs root permissions to work properly.
+The error is that it does it after the PTE is written.
 
-Yes, if your application mucks with the console it has to be trusted...
+In addition, I wanted to optimize it to gain a few %.
+Apparently this idea is not much welcome.
 
-> The alternative, semi raw mode,
-> has the disadvantage that you need to implement your own keymaps (like X).
-> In short, this change breaks applications.
->
+I can agree that flushing the I-cache (if the architecture requires it)
+before setting the PTE eliminates the error.
 
-You may also try reading data directly from evdev devices... They are
-normally privileged as well but usually user logged on console is
-given access to them.
+Thanks,
 
--- 
-Dmitry
+Zoltan
