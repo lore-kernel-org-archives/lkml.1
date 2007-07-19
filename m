@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938105AbXGSSbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbXGSSgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938105AbXGSSbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 14:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759283AbXGSSbh
+	id S933999AbXGSSgB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 14:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbXGSSft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 14:31:37 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:46759 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756413AbXGSSbg (ORCPT
+	Thu, 19 Jul 2007 14:35:49 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:13574 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753893AbXGSSfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 14:31:36 -0400
-Date: Thu, 19 Jul 2007 11:31:29 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       shai@scalex86.org
-Subject: Re: [patch] Change softlockup trigger limit using a kernel parameter
-Message-ID: <20070719183129.GB20298@localdomain>
-References: <20070716222650.GA5947@localdomain> <20070718160858.75865461.akpm@linux-foundation.org> <20070719054121.GA15074@localdomain> <20070718230907.741ae56c.akpm@linux-foundation.org> <20070719091142.GA28723@elte.hu>
+	Thu, 19 Jul 2007 14:35:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RTW3ATiDaO++3H/vqskvlKhN99cc5P655/NeFVGsbd2yweGlVhdicJhhbNSvDZK1Ek7wrdqoQysXLGQ8dFApghqdpBNB8Y4nzlxpb2/zTeukdbFocdbptoAcmslRUAjsvHtlB1COh4aIGsj1XczTQ4CgA85jQ9ai1UdgxEM+BZI=
+Message-ID: <6bffcb0e0707191135s2d3d06aep71f42613a4385a09@mail.gmail.com>
+Date: Thu, 19 Jul 2007 20:35:47 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: [2/2] 2.6.22-git: known regressions
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Jeff Garzik" <jeff@garzik.org>,
+       "Theodore Tso" <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
+       "Mingming Cao" <cmm@us.ibm.com>, "Doug Chapman" <doug.chapman@hp.com>,
+       "Vasily Tarasov" <vtaras@openvz.org>, linux-ide@vger.kernel.org,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Kumar Gala" <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       "Christoph Lameter" <clameter@sgi.com>, "Andi Kleen" <ak@suse.de>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Jean Delvare" <khali@linux-fr.org>, "Tejun Heo" <htejun@gmail.com>
+In-Reply-To: <a781481a0707191007q241f5f5bh6c029da56090d8b3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070719091142.GA28723@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+References: <469F9125.8040502@googlemail.com> <469F92AF.10405@googlemail.com>
+	 <a781481a0707191007q241f5f5bh6c029da56090d8b3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 11:11:42AM +0200, Ingo Molnar wrote:
+On 19/07/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> > Subject         : ext4 build warnings
+> > References      : http://lkml.org/lkml/2007/7/18/420
+> > Last known good : ?
+> > Submitter       : Jeff Garzik <jeff@garzik.org>
+> > Caused-By       : ?
+> > Handled-By      : Mingming Cao <cmm@us.ibm.com>
+> > Status          : unknown
 >
->* Andrew Morton <akpm@linux-foundation.org> wrote:
+> Mingming Cao fixed this:
 >
->> > +softlockup_thresh:
->> > +
->> > +This value can be used to lower the softlockup tolerance
->> > +threshold. The default threshold is 10s.  If a cpu is locked up
->> > +for 10s, the kernel complains.  Valid values are 1-10s.
->> > +
->> 
->> neato.
+> http://lkml.org/lkml/2007/7/18/564
 >
->please make sure this is applied after the softlockup watchdog patches i 
->already did. (in particular the cleanup patch, which this could interact 
->with)
+> Dunno if it's in latest git
 >
->also, i think the valid threshold should be between 1 and 60 seconds i 
->think.
 
-60 seconds!  Is that not a pretty high threshold?  The reason for lowering
-the tolerance threshold from 10s is to catch bugs early in lab environments,
-but why do we need to raise the tolerance thresh beyond 10s?
+Informations updated. Thanks!
 
-Thanks,
-Kiran
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
