@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763036AbXGSUw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763501AbXGSUyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763036AbXGSUw4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 16:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755808AbXGSUwu
+	id S1763501AbXGSUyz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 16:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758652AbXGSUys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 16:52:50 -0400
-Received: from gw.goop.org ([64.81.55.164]:52818 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755147AbXGSUwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 16:52:49 -0400
-Message-ID: <469FCEE7.8060900@goop.org>
-Date: Thu, 19 Jul 2007 13:51:51 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: patches@x86-64.org, Zachary Amsden <zach@vmware.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patches] new text patching for review
-References: <200707191105.44056.ak@suse.de> <p73d4yow0ys.fsf@bingen.suse.de> <469FC9D4.5070604@goop.org> <200707192246.58047.ak@suse.de>
-In-Reply-To: <200707192246.58047.ak@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 Jul 2007 16:54:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51563
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757485AbXGSUys (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 16:54:48 -0400
+Date: Thu, 19 Jul 2007 13:54:47 -0700 (PDT)
+Message-Id: <20070719.135447.112263535.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: airlied@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org
+Subject: Re: cmpxchg is not available to generic code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070719012141.47911bd7.akpm@linux-foundation.org>
+References: <20070719.002716.30181989.davem@davemloft.net>
+	<21d7e9970707190115r15e691d5s123c9889a8ebd8a5@mail.gmail.com>
+	<20070719012141.47911bd7.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Normally there are not that many NMIs or MCEs at boot, but it would
-> be still good to avoid the very rare crash by auditing the code first
-> [better than try to debug it on some production system later]
->   
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 19 Jul 2007 01:21:41 -0700
 
-Auditing it for what?  If we want to make patching safe against NMI/MCE,
-I guess we need to make sure those handlers don't use any pvops, but
-that seems unreasonable if they want to poke at MSRs and so on.
+> On Thu, 19 Jul 2007 18:15:03 +1000 "Dave Airlie" <airlied@gmail.com> wrote:
+> 
+> > Maybe we could add CONFIG_HAVE_CMPXCHG and let DRM depend on it..
+> 
+> That would certainly be better than adding a sprinkle of architectures
+> in DRM Kconfig dependencies.
+> 
+> I don't know how important DRM is on ARM.  Zero?
 
-> In theory yes, in practice there can be errata of course. There tend 
-> to be a couple with self modifying code, especially cross modifying
-> (from another CPU) -- but you don't do that.
->   
-
-No, but the pv-ops patching code should have no requirement for
-atomicity at all; we shouldn't be trying to patch a live instruction stream.
-
-    J
+We already have EMULATED_CMPXCHG guarding DRM.
