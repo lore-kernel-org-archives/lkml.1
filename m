@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbXGSGuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXGSG6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756155AbXGSGuW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 02:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbXGSGuF
+	id S933585AbXGSG6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 02:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbXGSG6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 02:50:05 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:36287 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755381AbXGSGuB (ORCPT
+	Thu, 19 Jul 2007 02:58:38 -0400
+Received: from fgwmail8.fujitsu.co.jp ([192.51.44.38]:46129 "EHLO
+	fgwmail8.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755744AbXGSG6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 02:50:01 -0400
-Date: Thu, 19 Jul 2007 08:50:12 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: pvp@tk.ru.acad.bg
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-git10 compile error
-Message-ID: <20070719085012.19fa2df7@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <469F048A.5070003@tk.ru.acad.bg>
-References: <469F048A.5070003@tk.ru.acad.bg>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+	Thu, 19 Jul 2007 02:58:36 -0400
+Date: Thu, 19 Jul 2007 15:56:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "tony.luck@intel.com" <tony.luck@intel.com>,
+       nickpiggin@yahoo.com.au, mike@stroyan.net, Zoltan.Menyhart@bull.net,
+       dmosberger@gmail.com, GOTO <y-goto@jp.fujitsu.com>
+Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
+Message-Id: <20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 09:28:26 +0300,
-Plamen Petrov <plamen.petrov@tk.ru.acad.bg> wrote:
+On Fri, 6 Jul 2007 11:29:01 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> Hi, all!
+> This is a patch for fixing icache flush race in ia64(Montecito) by implementing
+> flush_icache_page() at el.
 > 
-> Just for the record - linux kernel version 2.6.22-git10 fails to build
-> with the following error:
+> Changelog:
+>  - updated against 2.6.22-rc7 (previous one was against 2.6.21)
+>  - removed hugetlbe's lazy_mmu_prot_update().
+>  - rewrote patch description.
+>  - removed patch against mprotect() if flushes cache.
 > 
-> In file included from net/netfilter/xt_connlimit.c:27:
-> include/net/netfilter/nf_conntrack.h:99: error: field `ct_general' has 
-> incomplete type
-> include/net/netfilter/nf_conntrack.h: In function `nf_ct_get':
-> include/net/netfilter/nf_conntrack.h:163: error: structure has no member 
-> named `nfct'
-> include/net/netfilter/nf_conntrack.h: In function `nf_ct_put':
-> include/net/netfilter/nf_conntrack.h:170: error: implicit declaration of 
-> function `nf_conntrack_put'
-> include/net/netfilter/nf_conntrack.h: In function `nf_ct_is_untracked':
-> include/net/netfilter/nf_conntrack.h:252: error: structure has no member 
-> named `nfct'
-> In file included from net/netfilter/xt_connlimit.c:28:
-> include/net/netfilter/nf_conntrack_core.h: In function 
-> `nf_conntrack_confirm':
-> include/net/netfilter/nf_conntrack_core.h:68: error: structure has no 
-> member named `nfct'
-> make[2]: *** [net/netfilter/xt_connlimit.o] Error 1
-> make[1]: *** [net/netfilter] Error 2
-> make: *** [net] Error 2
+Then, what should I do more for fixing this SIGILL problem ?
 
-This is fixed with commit 3fd8f9e4b6c184d03d340bc86630f700de967fa8.
+-Kame
+
