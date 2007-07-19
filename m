@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940465AbXGSRS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940444AbXGSRTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940465AbXGSRS6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939068AbXGSRS2
+	id S940444AbXGSRTp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938348AbXGSRTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:18:28 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:18995 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938982AbXGSRSW (ORCPT
+	Thu, 19 Jul 2007 13:19:20 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51810 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938117AbXGSRTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:18:22 -0400
-Date: Thu, 19 Jul 2007 10:20:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] irq.h fix kernel-doc
-Message-Id: <20070719102036.65e210b2.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 19 Jul 2007 13:19:17 -0400
+Date: Thu, 19 Jul 2007 12:19:13 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Christian Ehrhardt <lk@c--e.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Message-ID: <20070719171913.GA1275@sergelap.austin.ibm.com>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de> <20070719122424.GA5186@vino.hallyn.com> <1184864070.2694.3.camel@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184864070.2694.3.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Quoting Arjan van de Ven (arjan@infradead.org):
+> 
+> > Right, the ability to boot with security.capability=disabpled (or
+> > whatever) and then load a custom module without having to use a whole
+> > new kernel is something I'm sure end-users want.
+> > 
+> > Especially since compiling a kernel which works with, say, a default
+> > fedora install, with lvm etc, is not imo for a novice (where novice
+> > != security novice).
+> 
+> the next step after this patch is to have an option to get rid of all
+> the function pointer chasing (which is expensive) for the case where you
+> know you only want one security module (which you then can turn on or
+> off)... that advantage is a performance gain for a lot of people.... but
+> if the person configuring the kernel selects this, it does mean there's
+> no way to load modules. I don't know what Fedora will do, but they might
+> select such an option. That's CHOICE...
 
-Add kernel-doc entry in <linux/irq.h> for:
+War is peace
+Freedom is slavery
+Ignorance is strength
+	-1984
 
-Warning(linux-2.6.22-git12//include/linux/irq.h:177): No description found for parameter 'last_unhandled'
+:)
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/irq.h |    1 +
- 1 file changed, 1 insertion(+)
+Actually, given that when lsm was being introduced, lsm seemed to
+improve performance overall, have you taken any measurements to show
+that this is actually the case?  Of course it makes sense that it would,
+but witjout measurements we do not know.
 
---- linux-2.6.22-git12.orig/include/linux/irq.h
-+++ linux-2.6.22-git12/include/linux/irq.h
-@@ -140,6 +140,7 @@ struct irq_chip {
-  * @wake_depth:		enable depth, for multiple set_irq_wake() callers
-  * @irq_count:		stats field to detect stalled irqs
-  * @irqs_unhandled:	stats field for spurious unhandled interrupts
-+ * @last_unhandled:	aging timer for unhandled count
-  * @lock:		locking for SMP
-  * @affinity:		IRQ affinity on SMP
-  * @cpu:		cpu index useful for balancing
+> they chose a performance
+
+> improvement over enabling external kernel modules that they don't ship
+> anyway...
+> 
+> but is it really worth blocking such clear improvements in performance?
+
+I'm blocking nothing.
+
+In fact I concede that this patch might force any out of tree module
+authors to come to the table, which is a good thing.
+
+-serge
