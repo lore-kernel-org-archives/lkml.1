@@ -1,100 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939231AbXGSOHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965125AbXGSOIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939231AbXGSOHq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937910AbXGSNwj
+	id S965125AbXGSOIR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765673AbXGSNxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:52:39 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:43762 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S937928AbXGSNwh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:52:37 -0400
-Date: Thu, 19 Jul 2007 15:52:35 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andy Whitcroft <apw@shadowen.org>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 0/4] PS3 storage driver updates (was: Re: [patch 1/3] ps3:
- Disk Storage Driver)
-In-Reply-To: <20070719021045.c0b994ca.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0707191548070.8661@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
- <20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
- <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
- <20070719021045.c0b994ca.akpm@linux-foundation.org>
+	Thu, 19 Jul 2007 09:53:01 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49049 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765679AbXGSNw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 09:52:59 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH for review] [31/48] i386: basic infrastructure support for AMD geode-class  machines
+Date: Thu, 19 Jul 2007 15:47:38 +0200
+User-Agent: KMail/1.9.6
+Cc: dilinger@queued.net, david-b@pacbell.net, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+References: <20070719317.317927000@suse.de> <20070719131756.4E41714E5F@wotan.suse.de> <20070719144136.4fd007ba@the-village.bc.nu>
+In-Reply-To: <20070719144136.4fd007ba@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-146660919-1184852977=:8661"
-Content-ID: <Pine.LNX.4.62.0707191549510.8661@pademelon.sonytel.be>
+Content-Disposition: inline
+Message-Id: <200707191547.39131.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-146660919-1184852977=:8661
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0707191549511.8661@pademelon.sonytel.be>
-
-	Hi Andrew,
-
-On Thu, 19 Jul 2007, Andrew Morton wrote:
-> On Thu, 19 Jul 2007 10:57:53 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > On Wed, 18 Jul 2007, Andrew Morton wrote:
-> > > Your patchset significantly hits powerpc, scsi and block.  So who gets to
-> > > merge this?  Jens?  James?  Paul?
-> > > 
-> > > Me, I guess ;)
-> > 
-> > As Paul is on holidays, please take it.
+> > +/* Specific geode tests */
+> > +
+> > +static inline int is_geode_gx(void)
+> > +{
+> > +	return ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC) &&
+> > +		(boot_cpu_data.x86 == 5) &&
+> > +		(boot_cpu_data.x86_model == 5));
+> > +}
 > 
-> OK.
+> My docs imply this could also be 5,5,VENDOR_CYRIX ?
 > 
-> > The PS3 storage driver core support is
-> > already in mainline, but the actual drivers aren't, as Paul was waiting for
-> > acks from the maintainers.
-> > 
-> > BTW, do you prefer incremental patches for the comments below, or an update of
-> > the full patchset?
-> 
-> Incremental is preferred, but I convert replacement patches into
-> incremental patches at about 10Hz nowadays.  Whatever's easier.
-> 
-> (Actually, if it's a replacement patch then only I get to see the
-> incremental patch, and the incremental patch is more reviewer-friendly).
+> Mot sure it matters for the I/O stuff
 
-Here are the updates:
-  [1] ps3disk: use correct bio vector size
-  [2] ps3disk: updates after final review
-  [3] ps3rom: updates after final review
-  [4] ps3flash: updates after final review
+I guess i'll wait for someone with that hardware to submit a tested patch.
+Just changing it blind seems too risky.
 
-The first one is the bugfix for O_DIRECT, the other 3 patches are the updates
-in response to your review.
-
-Thanks for integrating (and forwarding to Linus)!
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-146660919-1184852977=:8661--
+-Andi
