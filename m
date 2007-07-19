@@ -1,67 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936152AbXGSAyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936227AbXGSA5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936152AbXGSAyr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 20:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXGSAyj
+	id S936227AbXGSA5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 20:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760488AbXGSA5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 20:54:39 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:39633 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755363AbXGSAyi (ORCPT
+	Wed, 18 Jul 2007 20:57:09 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:49749 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759333AbXGSA5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 20:54:38 -0400
-Message-ID: <469EB604.50000@gmail.com>
-Date: Thu, 19 Jul 2007 02:53:24 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Wed, 18 Jul 2007 20:57:07 -0400
+Message-ID: <469EB4DE.7050602@googlemail.com>
+Date: Thu, 19 Jul 2007 02:48:30 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
 MIME-Version: 1.0
-To: Andrea Arcangeli <andrea@suse.de>
-CC: William Lee Irwin III <wli@holomorphy.com>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-References: <20070706222651.GG5777@v2.random> <1183764801.10287.233.camel@localhost> <20070706235228.GL5777@v2.random> <20070717174737.GM6909@holomorphy.com> <20070717193308.GD25301@v2.random> <20070718133222.GM11781@holomorphy.com> <469E410C.50302@gmail.com> <20070718235035.GB29728@v2.random>
-In-Reply-To: <20070718235035.GB29728@v2.random>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       James.Bottomley@SteelEye.com
+Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
+References: <469C10F6.3050008@googlemail.com>	<20070717100921W.fujita.tomonori@lab.ntt.co.jp>	<469C1E2A.8010508@googlemail.com> <20070719082516W.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20070719082516W.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/19/2007 01:50 AM, Andrea Arcangeli wrote:
+FUJITA Tomonori wrote:
+> From: Gabriel C <nix.or.die@googlemail.com>
+> Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
+> Date: Tue, 17 Jul 2007 03:40:58 +0200
+>
+>   
+>> FUJITA Tomonori wrote:
+>>     
+>>> From: Gabriel C <nix.or.die@googlemail.com>
+>>> Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
+>>> Date: Tue, 17 Jul 2007 02:44:38 +0200
+>>>
+>>>   
+>>>       
+>>>> Gabriel C wrote:
+>>>>     
+>>>>         
+>>>>> Hello,
+>>>>>
+>>>>> sdparm and hdparm are broken for me on git (
+>>>>> abce891a10559343d8ac9f79b46d78afdba63a40 )
+>>>>>
+>>>>>
+>>>>> ~$ sudo hdparm  /dev/sdc
+>>>>>
+>>>>> /dev/sdc:
+>>>>>  BLKROGET failed: Inappropriate ioctl for device
+>>>>>  BLKRAGET failed: Inappropriate ioctl for device
+>>>>>  BLKGETSIZE failed: Inappropriate ioctl for device
+>>>>>
+>>>>>
+>>>>> ~$ sudo sdparm  --all /dev/sdc
+>>>>> unable to access /dev/sdc, ATA disk?
+>>>>>
+>>>>>   
+>>>>>       
+>>>>>           
+>>>> Well it is bsg , setting BLK_DEV_BSG=n fixed all this errors.
+>>>>         
+>
+> I've not tested this yet (need to find sata drives in my workplace),
+> but James Bottomley told me that both works for him with bsg enabled.
+> It might worth trying the latest git tree.
+>
+>   
 
-> On Wed, Jul 18, 2007 at 06:34:20PM +0200, Rene Herman wrote:
+Hi ,
 
->> It says that highmem is not an issue due to no such thing as highmem even 
->> existing on the machines with support for larger hard pagesizes, but this 
->> wouldn't hold for soft pages. Sort of went "damn" in an x86 context upon 
->> reading that.
-> 
-> Correct, but I'm not really sure if it worth worrying about x86
-> missing this
+I'm running current git head and this problem still exists.
 
-Larger softpages would nicely solve the "1-page stacks are sometimes small" 
-issue with 4KSTACKS on x86 that was discussed in another thread just now but 
-without tail packing, the pagecache slack would be too high a price to pay 
-given that loads that would actually benefit from it most definitely have 
-moved to 64-bit (although I'd certainly still want to try 8K as well, and 
-filesystems with larger blocksizes could be nice as well).
+crazy@lara:/work/crazy/linux-git/linux2.6$ git rev-parse --verify HEAD
+5bae7ac9feba925fd0099057f6b23d7be80b7b41
 
-> furthermore it would still be possible to enable it on the very x86 low
-> end (with regular 4k page size) that may worry to use up to the last byte
-> of ram as cache for tiny files.
 
-But, yes, that's true, and I wonder if !HIGHMEM x86 will in fact be "very 
-low end" for long considering x86-64 is now _really_ here. Many people who 
-want enough memory to need highmem have probably already made the switch, 
-and in the embedded world, 896M (or 1G, or 2G with a adjusted split) is 
-still decidely non-low end. Yet a PVR, say, could love 64K pages for VM and 
-disk...
+With BLK_DEV_BSG=n
 
-> To me using kmalloc for this looks quite ideal.
 
-Certainly simplest...
+crazy@lara:/work/crazy/linux-git/linux2.6$ sudo sdparm /dev/sda
+/dev/sda: SEAGATE ST318406LW 0109
+Read write error recovery mode page:
+AWRE 1 [cha: y, def: 1, sav: 1]
+ARRE 1 [cha: y, def: 1, sav: 1]
+PER 0 [cha: y, def: 0, sav: 0]
+Caching (SBC) mode page:
+WCE 1 [cha: y, def: 1, sav: 1]
+RCD 0 [cha: y, def: 0, sav: 0]
+Control mode page:
+SWP 0 [cha: n, def: 0, sav: 0]
+Informational exceptions control mode page:
+EWASC 0 [cha: n, def: 0, sav: 0]
+DEXCPT 0 [cha: y, def: 0, sav: 0]
+MRIE 0 [cha: y, def: 0, sav: 0]
+crazy@lara:/work/crazy/linux-git/linux2.6$ sudo sdparm /dev/sdb
+/dev/sdb: FUJITSU MAH3182MP 0114
+Read write error recovery mode page:
+AWRE 0 [cha: y, def: 0, sav: 0]
+ARRE 1 [cha: y, def: 1, sav: 1]
+PER 0 [cha: y, def: 0, sav: 0]
+Caching (SBC) mode page:
+WCE 1 [cha: y, def: 1, sav: 1]
+RCD 0 [cha: y, def: 0, sav: 0]
+Control mode page:
+SWP 0 [cha: n, def: 0, sav: 0]
+Informational exceptions control mode page:
+EWASC 1 [cha: y, def: 0, sav: 1]
+DEXCPT 0 [cha: y, def: 1, sav: 0]
+MRIE 6 [cha: y, def: 0, sav: 6]
+crazy@lara:/work/crazy/linux-git/linux2.6$ sudo sdparm /dev/sdc
+/dev/sdc: ATA SAMSUNG SP1203N TL10
+Read write error recovery mode page:
+AWRE 1
+ARRE 1
+PER 0
+Caching (SBC) mode page:
+WCE 1
+RCD 0
+Control mode page:
+SWP 0
 
-Rene.
+
+crazy@lara:/work/crazy/linux-git/linux2.6$ sudo hdparm /dev/sda
+
+/dev/sda:
+readonly = 0 (off)
+readahead = 256 (on)
+geometry = 2231/255/63, sectors = 35843670, start = 0
+crazy@lara:/work/crazy/linux-git/linux2.6$ sudo hdparm /dev/sdb
+
+/dev/sdb:
+readonly = 0 (off)
+readahead = 256 (on)
+geometry = 2222/255/63, sectors = 35701260, start = 0
+crazy@lara:/work/crazy/linux-git/linux2.6$ sudo hdparm /dev/sdc
+
+/dev/sdc:
+IO_support = 0 (default 16-bit)
+readonly = 0 (off)
+readahead = 256 (on)
+geometry = 14596/255/63, sectors = 234493056, start = 0
+
+
+
+And this when set to y
+
+
+crazy@lara:~$ sudo hdparm /dev/sda
+
+/dev/sda:
+BLKROGET failed: Inappropriate ioctl for device
+BLKRAGET failed: Inappropriate ioctl for device
+BLKGETSIZE failed: Inappropriate ioctl for device
+crazy@lara:~$ sudo hdparm /dev/sdb
+
+/dev/sdb:
+BLKROGET failed: Inappropriate ioctl for device
+BLKRAGET failed: Inappropriate ioctl for device
+BLKGETSIZE failed: Inappropriate ioctl for device
+crazy@lara:~$ sudo hdparm /dev/sdc
+
+/dev/sdc:
+BLKROGET failed: Inappropriate ioctl for device
+BLKRAGET failed: Inappropriate ioctl for device
+BLKGETSIZE failed: Inappropriate ioctl for device
+crazy@lara:~$ sudo sdparm /dev/sdc
+unable to access /dev/sdc, ATA disk?
+crazy@lara:~$ sudo sdparm /dev/sdb
+unable to access /dev/sdb, ATA disk?
+crazy@lara:~$ sudo sdparm /dev/sda
+unable to access /dev/sda, ATA disk?
+crazy@lara:~$ dmesg|grep bsg
+[ 41.411171] Block layer SCSI generic (bsg) driver version 0.4 loaded
+(major 253)
+
+
+
+Smartd now spams the dmesg too with :
+
+snip
+
+....
+[ 75.329927] program smartd is using a deprecated SCSI ioctl, please
+convert it to SG_IO
+[ 75.334267] program smartd is using a deprecated SCSI ioctl, please
+convert it to SG_IO
+[ 75.334396] program smartd is using a deprecated SCSI ioctl, please
+convert it to SG_IO
+[ 75.388284] program smartd is using a deprecated SCSI ioctl, please
+convert it to SG_IO
+[ 75.438146] program smartd is using a deprecated SCSI ioctl, please
+convert it to SG_IO
+....
+
+dmesg|grep 'program smartd is using'|wc -l
+42
+
+
+Just stopped it for now :)
+
+You can find the used config and dmesg there :
+
+http://194.231.229.228/2.6.22-g5bae7ac9/
+
+
+Gabriel
+
 
