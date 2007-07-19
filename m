@@ -1,37 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764634AbXGSM5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936422AbXGSNBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764634AbXGSM5u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936187AbXGSM5X
+	id S936422AbXGSNBF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 09:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760077AbXGSNAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:57:23 -0400
-Received: from mx2.suse.de ([195.135.220.15]:45898 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936158AbXGSM5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:57:21 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Stable Team <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] X86_64: hpet tsc calibration fix broken smi detection logic
-References: <1184402499.12353.340.camel@chaos>
-	<20070718195932.ea72e6f0.akpm@linux-foundation.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 19 Jul 2007 15:52:21 +0200
-In-Reply-To: <20070718195932.ea72e6f0.akpm@linux-foundation.org>
-Message-ID: <p73sl7kwley.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Thu, 19 Jul 2007 09:00:49 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:54060 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757889AbXGSNAr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 09:00:47 -0400
+Date: Thu, 19 Jul 2007 09:00:45 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: "Serge E. Hallyn" <serge@hallyn.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+In-Reply-To: <20070719124244.GA7219@vino.hallyn.com>
+Message-ID: <Line.LNX.4.64.0707190847020.4393@d.namei>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei>
+ <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de>
+ <20070719122424.GA5186@vino.hallyn.com> <Line.LNX.4.64.0707190832290.4303@d.namei>
+ <20070719124244.GA7219@vino.hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Thu, 19 Jul 2007, Serge E. Hallyn wrote:
+
+> > It's already pretty clear.
 > 
-> So I queued this, and then another patch to revert it so that the
-> x86_64-clockevents conversion would apply.  But I was unable to locate the
-> corresponding bug in the post-x86_64-clockevents tree.  Did it get fixed by
-> other means in there?
+> I doubt anyone not on lkml or linux-security-module has heard of this.
+> 
+> So we'll see.
+> 
+> (I was, obviously, talking about end-users)
 
-Yes, the code gets merged with i386 there
+If distributions are shipping binary modules and other out of tree code to 
+their users, then they should bear responsibility for supporting and 
+maintaining the infrastructure required for it, and not expect upstream 
+maintainers to do it for them.
 
--Andi
+Additionally, if they want to expose their users to risks arising from 
+broken and unecessary infrastructure, then they should bear the cost and 
+responsibility of doing that and not expect others to do so as well.
+
+I don't see how this is even slightly difficult to understand.
+
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
