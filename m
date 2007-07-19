@@ -1,100 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966034AbXGSTYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938812AbXGSTYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966034AbXGSTYN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 15:24:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965972AbXGSTXM
+	id S938812AbXGSTYn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 15:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965874AbXGSTXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 15:23:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38696 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965963AbXGSTXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 15:23:10 -0400
-Date: Thu, 19 Jul 2007 21:22:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070719192256.GA22151@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <469F867C.7020707@intel.com> <20070719160713.GA3807@elte.hu> <200707192113.26878.olaf.kirch@oracle.com>
+	Thu, 19 Jul 2007 15:23:33 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:42913 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965916AbXGSTXb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 15:23:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pA0thgUouXqQ4lBy+vZ335Ju10Zo03bu48WtkGsa0l/X2x53HbiWBqcnggVIXkAkGIIjKMidaLNS5Au+Osvx4fSNK/McvmtRUr7k2gT61FzQgmhgtnxwQOROl+veMZS381TC3+We986tymY2WHtSthFm0ZavxX9nhdwmP5Bbj68=
+Message-ID: <d120d5000707191223s40d58d1bga858357265318371@mail.gmail.com>
+Date: Thu, 19 Jul 2007 15:23:30 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH for review] [12/48] x86_64: use the global PIT lock
+Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <200707191929.40016.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707192113.26878.olaf.kirch@oracle.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20070719348.540885000@suse.de>
+	 <20070719134841.5677614E6E@wotan.suse.de>
+	 <d120d5000707190822v44ca6fb0lefcc5302d3f7b8de@mail.gmail.com>
+	 <200707191929.40016.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 7/19/07, Andi Kleen <ak@suse.de> wrote:
+> On Thursday 19 July 2007 17:22:38 Dmitry Torokhov wrote:
+> > Hi Andi,
+> >
+> > On 7/19/07, Andi Kleen <ak@suse.de> wrote:
+> > >
+> > > From: Thomas Gleixner <tglx@linutronix.de>
+> > >
+> > > Replace the pcspkr private PIT lock by the global PIT lock to serialize the
+> > > PIT access all over the place.
+> > >
+> >
+> > Like I said before I'd be more happy if spinlock was attached to a
+> > platform device that pcspkr binds to so the arch code would control
+> > wehther we use a private spinlock or a global one (I sent a patch to
+> > that effect earlier).
+>
+> Not sure that flexibility is needed. Why would an architecture ever want
+> to have more than one lock for this? And we normally don't need sysdevs
+> for locks, they seem to be quite unrelated.
+>
 
-* Olaf Kirch <olaf.kirch@oracle.com> wrote:
+I was not talking about sysdevs. I was talking about platform devices
+that are already being created for pcspkr by arch code. Now I want
+arch code to provide a spinlock for pcspkr driver to use when
+accessing PIT. What it does it allows to remove arch specific
+knowledge (i.e. #ifdef CONFIG_X86...) from the pcspkr driver.
 
-> Here's a somewhat drastic modification that should not change any 
-> timing, but just verifies whether my patch is to blame at all. Can you 
-> give it a try?
-
-> @@ -1027,7 +1027,7 @@ static inline void netif_rx_complete(str
->  	 * But at least it doesn't penalize the non-netpoll
->  	 * code path. */
->  	if (test_bit(__LINK_STATE_POLL_LIST_FROZEN, &dev->state))
-> -		return;
-> +		BUG();
-
-ok, i tried the patch below, and it gave this (single) warning:
-
- Calling initcall 0xc02f5c17: init_netconsole+0x0/0x67()
- netconsole: device eth0 not up yet, forcing it
- netconsole: timeout waiting for carrier
- console [netcon0] enabled
- WARNING: at include/linux/netdevice.h:1030 netif_rx_complete()
-  [<c0105e3e>] show_trace_log_lvl+0x19/0x2e
-  [<c0105f37>] show_trace+0x12/0x14
-  [<c0105f4d>] dump_stack+0x14/0x16
-  [<c02c4fef>] e1000_clean+0x1f4/0x26f
-  [<c03d0f6f>] netpoll_poll+0x8b/0x357
-  [<c03d0e80>] netpoll_send_skb+0xe8/0x14c
-  [<c03d1502>] netpoll_send_udp+0x258/0x260
-  [<c02f5cea>] write_msg+0x53/0x8d
-  [<c012c5ba>] __call_console_drivers+0x4e/0x5a
-  [<c012c623>] _call_console_drivers+0x5d/0x61
-  [<c012cc42>] release_console_sem+0x120/0x1c1
-  [<c012d446>] register_console+0x22e/0x236
-  [<c02f5c6c>] init_netconsole+0x55/0x67
-  [<c05e48e5>] kernel_init+0x154/0x2d9
-  [<c0105c53>] kernel_thread_helper+0x7/0x10
-  =======================
- e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
- netconsole: network logging started
- initcall 0xc02f5c17: init_netconsole+0x0/0x67() returned 0.
- initcall 0xc02f5c17 ran for 4012 msecs: init_netconsole+0x0/0x67()
- Calling initcall 0xc0600ff9: spi_transport_init+0x0/0x27()
- initcall 0xc0600ff9: spi_transport_init+0x0/0x27() returned 0.
-
-
-	Ingo
-
----
- include/linux/netdevice.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-cfs-2.6.23-git.q.prev3/include/linux/netdevice.h
-===================================================================
---- linux-cfs-2.6.23-git.q.prev3.orig/include/linux/netdevice.h
-+++ linux-cfs-2.6.23-git.q.prev3/include/linux/netdevice.h
-@@ -1027,7 +1027,7 @@ static inline void netif_rx_complete(str
- 	 * But at least it doesn't penalize the non-netpoll
- 	 * code path. */
- 	if (test_bit(__LINK_STATE_POLL_LIST_FROZEN, &dev->state))
--		return;
-+		WARN_ON(1);
- #endif
- 
- 	local_irq_save(flags);
+-- 
+Dmitry
