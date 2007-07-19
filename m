@@ -1,136 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938214AbXGSOcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938049AbXGSOdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938214AbXGSOcq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937867AbXGSOca
+	id S938049AbXGSOdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764756AbXGSOce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:32:30 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:50146 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937809AbXGSOc2 (ORCPT
+	Thu, 19 Jul 2007 10:32:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:11511 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937872AbXGSOcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:32:28 -0400
-Message-ID: <469F75A4.8050301@googlemail.com>
-Date: Thu, 19 Jul 2007 16:31:00 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Thu, 19 Jul 2007 10:32:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=D8ugqDRA/hSnTdU3UMFpVJzISSF3InxGaT6UmbgzeAx4DhKwrG7dX6gyYR01+IchagZjA742f3NzGycbHA6vResf6mWMTbUsTP07RvJfiQSXAMjJDCh4jDDjV2ZxkIs3vFZQA/2NXLUfAPWeaJ5lbzOQHSg8+eFYSEhFlvVmlDs=
+Date: Thu, 19 Jul 2007 18:32:25 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Conexant 2388x: check for kthread_run
+Message-ID: <20070719143225.GA7246@cvg>
+References: <20070718185624.GA13996@cvg> <1184786738.4049.38.camel@gaivota>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org
-Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-References: <469C10F6.3050008@googlemail.com>	 <20070717100921W.fujita.tomonori@lab.ntt.co.jp>	 <469C1E2A.8010508@googlemail.com>	 <20070719082516W.fujita.tomonori@lab.ntt.co.jp> <1184853770.3464.85.camel@localhost.localdomain>
-In-Reply-To: <1184853770.3464.85.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184786738.4049.38.camel@gaivota>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Thu, 2007-07-19 at 08:25 +0900, FUJITA Tomonori wrote:
->   
->> From: Gabriel C <nix.or.die@googlemail.com>
->> Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
->> Date: Tue, 17 Jul 2007 03:40:58 +0200
->>
->>     
->>> FUJITA Tomonori wrote:
->>>       
->>>> From: Gabriel C <nix.or.die@googlemail.com>
->>>> Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
->>>> Date: Tue, 17 Jul 2007 02:44:38 +0200
->>>>
->>>>   
->>>>         
->>>>> Gabriel C wrote:
->>>>>     
->>>>>           
->>>>>> Hello,
->>>>>>
->>>>>> sdparm and hdparm are broken for me on git (
->>>>>> abce891a10559343d8ac9f79b46d78afdba63a40 )
->>>>>>
->>>>>>
->>>>>> ~$ sudo hdparm  /dev/sdc
->>>>>>
->>>>>> /dev/sdc:
->>>>>>  BLKROGET failed: Inappropriate ioctl for device
->>>>>>  BLKRAGET failed: Inappropriate ioctl for device
->>>>>>  BLKGETSIZE failed: Inappropriate ioctl for device
->>>>>>
->>>>>>
->>>>>> ~$ sudo sdparm  --all /dev/sdc
->>>>>> unable to access /dev/sdc, ATA disk?
->>>>>>
->>>>>>   
->>>>>>       
->>>>>>             
->>>>> Well it is bsg , setting BLK_DEV_BSG=n fixed all this errors.
->>>>>           
->> I've not tested this yet (need to find sata drives in my workplace),
->> but James Bottomley told me that both works for him with bsg enabled.
->> It might worth trying the latest git tree.
->>     
->
-> It certainly does work for me.  However, my ATA devices are connected to
-> an aic94xx SAS controller.  Although this uses libata, the ioctl path is
-> probably slightly different from the libata one. I assume you're using a
-> SATA controller?  Unfortunately I have no ability to test on a SATA
-> controller, but I'd suggest looking at the ioctl and REQ_BLOCK_PC paths
-> in libata for clues.
->   
+[Mauro Carvalho Chehab - Wed, Jul 18, 2007 at 04:25:38PM -0300]
+| Hi Cyrill,
+| 
+| Em Qua, 2007-07-18 ??s 22:56 +0400, Cyrill Gorcunov escreveu:
+| > This patch adds checking of kthread_run return code.
+| > 
+| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| > ---
+| > Probably we could just ignore a such situation (we do
+| > check for core->kthread value before trying to stop the
+| > thread) but we have to leave a footmark in kernel
+| > messages anyway I guess. Comments?
+| 
+| > +		if (IS_ERR(core->kthread)) {
+| > +			err = PTR_ERR(core->kthread);
+| > +			printk(KERN_ERR "Failed to create cx88 audio thread, err=%d\n",
+| > +			       err);
+| > +			goto fail_unreg;
+| 
+| I would just remove the goto from your patch. 
+| 
+| It is safe not starting the kernel thread, but keeping the driver
+| initializing.
+| 
+| The drawback of not having the thread is not changing to stereo on some
+| situations and not detecting audio standard changes (some countries may
+| have more than one audio standard when you changing from VHF to UHF or
+| on Cable TV).
+| 
+| -- 
+| Cheers,
+| Mauro
+| 
 
-No is not an SATA controller.
+Hi Mauro,
+thanks for the answer. Well, here is updated version.
 
-sda and sdb are SCSI disks connected to an Adaptec AIC-7892P U160/m
-controller using the aic7xxx driver.
+---
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [PATCH] Conexant 2388x: check for kthread_run
 
-sdc is an ATA-7 disk connected to an IDE controller ( 82801BA IDE U100
-)  using libata and the ata_piix driver.
+The patch adds checking of kthread_run return code
+and issues a message if it fails.
 
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-$ lspci -nn 
-00:00.0 Host bridge [0600]: Intel Corporation 82860 860 (Wombat) Chipset
-Host Bridge (MCH) [8086:2531] (rev 04)
-00:01.0 PCI bridge [0604]: Intel Corporation 82850 850 (Tehama) Chipset
-AGP Bridge [8086:2532] (rev 04)
-00:02.0 PCI bridge [0604]: Intel Corporation 82860 860 (Wombat) Chipset
-AGP Bridge [8086:2533] (rev 04)
-00:1e.0 PCI bridge [0604]: Intel Corporation 82801 PCI Bridge
-[8086:244e] (rev 04)
-00:1f.0 ISA bridge [0601]: Intel Corporation 82801BA ISA Bridge (LPC)
-[8086:2440] (rev 04)
-00:1f.1 IDE interface [0101]: Intel Corporation 82801BA IDE U100
-Controller [8086:244b] (rev 04)
-00:1f.2 USB Controller [0c03]: Intel Corporation 82801BA/BAM USB
-Controller #1 [8086:2442] (rev 04)
-00:1f.3 SMBus [0c05]: Intel Corporation 82801BA/BAM SMBus Controller
-[8086:2443] (rev 04)
-00:1f.4 USB Controller [0c03]: Intel Corporation 82801BA/BAM USB
-Controller #1 [8086:2444] (rev 04)
-00:1f.5 Multimedia audio controller [0401]: Intel Corporation
-82801BA/BAM AC'97 Audio Controller [8086:2445] (rev 04)
-01:00.0 VGA compatible controller [0300]: nVidia Corporation NV11
-[GeForce2 MX/MX 400] [10de:0110] (rev a1)
-02:1f.0 PCI bridge [0604]: Intel Corporation 82806AA PCI64 Hub PCI
-Bridge [8086:1360] (rev 03)
-03:00.0 PIC [0800]: Intel Corporation 82806AA PCI64 Hub Advanced
-Programmable Interrupt Controller [8086:1161] (rev 01)
-03:0e.0 SCSI storage controller [0100]: Adaptec AIC-7892P U160/m
-[9005:008f] (rev 02)
-04:0b.0 Ethernet controller [0200]: 3Com Corporation 3c905C-TX/TX-M
-[Tornado] [10b7:9200] (rev 78)
-04:0c.0 FireWire (IEEE 1394) [0c00]: Texas Instruments TSB12LV26
-IEEE-1394 Controller (Link) [104c:8020]
-04:0f.0 USB Controller [0c03]: NEC Corporation USB [1033:0035] (rev 41)
-04:0f.1 USB Controller [0c03]: NEC Corporation USB [1033:0035] (rev 41)
-04:0f.2 USB Controller [0c03]: NEC Corporation USB 2.0 [1033:00e0] (rev 02)
+ drivers/media/video/cx88/cx88-video.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-
-> James
->
->   
-
-
-Gabriel
+diff --git a/drivers/media/video/cx88/cx88-video.c b/drivers/media/video/cx88/cx88-video.c
+index 98fa354..06b233a 100644
+--- a/drivers/media/video/cx88/cx88-video.c
++++ b/drivers/media/video/cx88/cx88-video.c
+@@ -1881,8 +1881,14 @@ static int __devinit cx8800_initdev(struct pci_dev *pci_dev,
+ 	mutex_unlock(&core->lock);
+ 
+ 	/* start tvaudio thread */
+-	if (core->tuner_type != TUNER_ABSENT)
++	if (core->tuner_type != TUNER_ABSENT) {
+ 		core->kthread = kthread_run(cx88_audio_thread, core, "cx88 tvaudio");
++		if (IS_ERR(core->kthread)) {
++			err = PTR_ERR(core->kthread);
++			printk(KERN_ERR "Failed to create cx88 audio thread, err=%d\n",
++			       err);
++		}
++	}
+ 	return 0;
+ 
+ fail_unreg:
