@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940479AbXGSR6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940969AbXGSR6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940479AbXGSR6V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbXGSR6H
+	id S940969AbXGSR6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762936AbXGSR6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:58:07 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:39049 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751926AbXGSR6G (ORCPT
+	Thu, 19 Jul 2007 13:58:33 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:56385 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbXGSR6c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:58:06 -0400
-Subject: Re: [PATCH] [scsi] lpfc: potential leak in
-	lpfc_sli_hbqbuf_fill_hbqs
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: James.Smart@Emulex.Com
-Cc: Florin Malita <fmalita@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <469FA312.7070702@emulex.com>
-References: <469F884B.6010402@gmail.com>  <469FA312.7070702@emulex.com>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 12:58:03 -0500
-Message-Id: <1184867884.3464.101.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Thu, 19 Jul 2007 13:58:32 -0400
+Message-ID: <469FA5E5.3070301@gmail.com>
+Date: Thu, 19 Jul 2007 19:56:53 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
+References: <20070716161539.075822000@pademelon.sonytel.be>	<20070716162206.529280000@pademelon.sonytel.be>	<20070718164351.a92ec032.akpm@linux-foundation.org>	<Pine.LNX.4.62.0707191100270.8661@pademelon.sonytel.be>	<20070719021752.35cb7daa.akpm@linux-foundation.org>	<Pine.LNX.4.62.0707191137470.8661@pademelon.sonytel.be> <20070719024730.03609f1f.akpm@linux-foundation.org>
+In-Reply-To: <20070719024730.03609f1f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 13:44 -0400, James Smart wrote:
-> Florin,
+On 07/19/2007 11:47 AM, Andrew Morton wrote:
+
+> On Thu, 19 Jul 2007 11:39:32 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 > 
-> Thanks for the effort to create this patch.  Turns out we have already
-> fixed this, and have it included in our 8.2.2 patch set, which we will be
-> posting within the next week.
+>>> Oh dear.
+>>>
+>>> 	ps3rom_priv(dev) = host;
+>>>
+>>> that's 'orrid.  We have an identifier pretending to be a function, only we
+>>> go and treat it as an lvalue.
+>>>
+>>> I mean, C code should look like C code, and the above just doesn't.
+>>>
+>>> Sigh.
 
-The 2.6.23 merge window is estimated to close on Sunday (22 July) ...
+You could insist that it be PS3ROM_PRIV() because then it at least also 
+_looks_ like cpp...
 
-> So James, don't pick this patch up, take the larger patch set instead.
-
-OK, will wait.
-
-James
-
-
+Rene.
