@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbXGSJ7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765459AbXGSJ7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761541AbXGSJ7Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbXGSJyz
+	id S1765459AbXGSJ7r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbXGSJyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 19 Jul 2007 05:54:55 -0400
-Received: from mail.suse.de ([195.135.220.2]:35336 "EHLO mx1.suse.de"
+Received: from cantor2.suse.de ([195.135.220.15]:33044 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754798AbXGSJyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755051AbXGSJyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Jul 2007 05:54:54 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
-To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [8/58] x86_64: Use string instruction memcpy/memset on AMD Fam10
-Message-Id: <20070719095452.4419E14E04@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:54:52 +0200 (CEST)
+To: jh@suse.cz, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [9/58] x86_64: Always use builtin memcpy on gcc 4.3
+Message-Id: <20070719095453.5434214E04@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:54:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Jan asked to always use the builtin memcpy on gcc 4.3 mainline because
+it should generate better code than the old macro. Let's try it.
+
+Cc: jh@suse.cz
+
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/setup.c |    2 ++
- 1 file changed, 2 insertions(+)
+ include/asm-x86_64/string.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Index: linux/arch/x86_64/kernel/setup.c
+Index: linux/include/asm-x86_64/string.h
 ===================================================================
---- linux.orig/arch/x86_64/kernel/setup.c
-+++ linux/arch/x86_64/kernel/setup.c
-@@ -575,6 +575,8 @@ static void __cpuinit init_amd(struct cp
- 	level = cpuid_eax(1);
- 	if (c->x86 == 15 && ((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58))
- 		set_bit(X86_FEATURE_REP_GOOD, &c->x86_capability);
-+	if (c->x86 == 0x10)
-+		set_bit(X86_FEATURE_REP_GOOD, &c->x86_capability);
+--- linux.orig/include/asm-x86_64/string.h
++++ linux/include/asm-x86_64/string.h
+@@ -29,6 +29,9 @@ return (to);
+    function. */
  
- 	/* Enable workaround for FXSAVE leak */
- 	if (c->x86 >= 6)
+ #define __HAVE_ARCH_MEMCPY 1
++#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 3) || __GNUC__ > 4
++extern void *memcpy(void *to, const void *from, size_t len);
++#else
+ extern void *__memcpy(void *to, const void *from, size_t len); 
+ #define memcpy(dst,src,len) \
+ 	({ size_t __len = (len);				\
+@@ -38,7 +41,7 @@ extern void *__memcpy(void *to, const vo
+ 	   else							\
+ 		 __ret = __builtin_memcpy((dst),(src),__len);	\
+ 	   __ret; }) 
+-
++#endif
+ 
+ #define __HAVE_ARCH_MEMSET
+ void *memset(void *s, int c, size_t n);
