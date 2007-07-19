@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965015AbXGSO5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938481AbXGSPB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965015AbXGSO5e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938345AbXGSO5F
+	id S938481AbXGSPB2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756631AbXGSPBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:57:05 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39939 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937927AbXGSO5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:57:03 -0400
-Message-ID: <469F7BB9.1000202@garzik.org>
-Date: Thu, 19 Jul 2007 10:56:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [58/58] x86: remove support for the Rise CPU
-References: <200707191154.642492000@suse.de> <20070719104825.GR3801@stusta.de> <20070719121340.08da9bbf@the-village.bc.nu> <200707191403.39372.ak@suse.de>
-In-Reply-To: <200707191403.39372.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Jul 2007 11:01:16 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34232 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754928AbXGSPBP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:01:15 -0400
+Date: Thu, 19 Jul 2007 16:00:33 +0100
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Patrick McHardy <kaber@trash.net>,
+       andrei radulescu-banu <iubica2@yahoo.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Linux, tcpdump and vlan
+Message-ID: <20070719160033.628f39e1@oldman.hamilton.local>
+In-Reply-To: <m3k5swbhfv.fsf@maximus.localdomain>
+References: <878246.51044.qm@web56608.mail.re3.yahoo.com>
+	<469E9AC8.3090603@trash.net>
+	<m3zm1sbjzl.fsf@maximus.localdomain>
+	<20070719144131.0c230c8f@oldman.hamilton.local>
+	<m3k5swbhfv.fsf@maximus.localdomain>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Thursday 19 July 2007 13:13:40 Alan Cox wrote:
->>> - It's not only code, it also bloats everyone's kernel image.
->> Its a miniscule piece of code that is discarded on boot. Yes it might
->> make the image 100 bytes longer, but have you priced a 160GB disk
->> recently. I don't think 100 bytes of disk and 0 of memory really is worth
->> saving for any risk at all. Its not even worth the time to apply the
->> patch.
+On Thu, 19 Jul 2007 16:23:48 +0200
+Krzysztof Halasa <khc@pm.waw.pl> wrote:
+
+> Stephen Hemminger <shemminger@linux-foundation.org> writes:
 > 
-> The patch is already applied.
+> > 1) non-accelerated device 
+> >     * all frames show in promiscious mode
+> >     * tag is part of the frame that shows up
+> >        in tcpdump, and then gets stripped by the 8021q module.
+> 
+> Sure. It's IMHO good and working, modulo the tag being removed
+> on the master device (optional cloning or something, IIRC).
+> 
+> > 2) rx tag stripping device
+> >      * all frames show in promiscious mode
+> >      * tag is in skb but NOT passed to tcpdump
+> > 3) rx vlan acceleration
+> >      * only frames that for vlan's that are registered show up
+> >         in promisicous mode
+> >      * tag is in skb but NOT passed to tcpdump
+> 
+> I wasn't aware of devices doing 3. Aren't we able to tell them
+> to receive all packets anyway (even unknown VLANs#)?
 
-Er, huh?  It's not upstream.
+See NETIF_F_HW_VLAN_FILTER (e1000, etc).
 
+> > Unfortunately, the tag is lost as part of the VLAN acceleration process
+> > so it is not a simple matter of changing code in AF_PACKET receive
+> > to restore the tag.
+> 
+> I'm not sure if we really want it. If needed we can disable
+> acceleration, can't we? While accelerated we can see the packets
+> (without tags) on logical devices.
 
-> Besides the CPU will likely boot even without special handling.
+Not at runtime, acceleration is always on if you compile kernel with vlan
+support.  That is a design mistake as far as I can tell.
 
-You don't know this.  Why risk it?  Just leave the CPU magic as-is.
+> However seeing unknown tags on master device (with tcpdump etc)
+> would certainly be useful.
 
-	Jeff
-
-
+Only in promiscuous mode. In some sense tag is part of the mac address.
