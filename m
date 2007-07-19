@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934034AbXGSMym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765355AbXGSMzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934034AbXGSMym (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbXGSMyd
+	id S1765355AbXGSMzW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbXGSMzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:54:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48311 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbXGSMyc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:54:32 -0400
-From: Olaf Kirch <olaf.kirch@oracle.com>
-Organization: Oracle
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Date: Thu, 19 Jul 2007 14:52:07 +0200
-User-Agent: KMail/1.9.1
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net,
-       Auke Kok <auke-jan.h.kok@intel.com>
-References: <20070716091236.GA10718@elte.hu> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu>
-In-Reply-To: <20070719105816.GA15852@elte.hu>
+	Thu, 19 Jul 2007 08:55:07 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45795 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751306AbXGSMzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:55:06 -0400
+Message-ID: <469F5F31.2030809@qumranet.com>
+Date: Thu, 19 Jul 2007 15:55:13 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: kvm-devel <kvm-devel@lists.sourceforge.net>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] kvm-30 release
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707191452.09609.olaf.kirch@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 12:58, Ingo Molnar wrote:
-> i.e. it's the classic 'eth0 got stuck somehow' tx/rx state machine 
-> hickup symptoms, with no other bad symptoms such as lockups or crashes.
+This kvm release introduces guest smp.  I've tested 4-way Linux (64-bit 
+and 32-bit) and 2-way Windows XP.  A kernel build on 2-way 64-bit Linux 
+is 40% faster that on a uniprocessor guest.  Expect performance to 
+improve as the in-kernel apic work is merged and as we tune kvm for smp.
 
-Duh, I found it.
+Changes from kvm-29:
+- minor fixes and cleanups  (Jeff Dike, Rusty Russell, me)
+- kernel pio string write (Eddie Dong)
+- guest smp kernel fixes
+- rdmsr and wrmsr real mode emulation
+- fix real mode shadow pages aliasing nx large page shadows
+- enable guest smp in qemu
+- fix external module installer
+- revert ide enable changes that caused an I/O regression
 
-The e1000 poll routine does this to leave polling mode.
+Notes:
+    If you use the modules from kvm-30, you can use any version of Linux
+from 2.6.9 upwards.
+    If you use the modules from Linux 2.6.20, you need to use kvm-12.
+    If you use the modules from Linux 2.6.21, you need to use kvm-17.
+    Modules from Linux 2.6.22 and up will work with any kvm version from
+kvm-22.  Some features may only be available in newer releases.
 
-	netif_rx_complete(poll_dev);
-        e1000_irq_enable(adapter);
-        return 0;
+http://kvm.qumranet.com
 
-Which looks innocent enough, except that e1000_irq_enable has
-this little irq_sem counter:
 
-	if (likely(atomic_dec_and_test(&adapter->irq_sem))) {
-                E1000_WRITE_REG(&adapter->hw, IMS, IMS_ENABLE_MASK);
-                E1000_WRITE_FLUSH(&adapter->hw);
-        }
-
-So as poll_napi calls the poll() routine repeatedly, the irq_sem
-counter is decremented by one each time. During the first call,
-it re-enables the interrupt. During the next calls, irq_sem goes
-negative.
-
-Then an interrupt comes in, e1000_intr disables the interrupt,
-increments irq_sem by one, and schedules the device for rx_action.
-rx_action calls dev->poll(), which finishes cleaning rx/rx rings,
-and when it finds there's no more work, it calls rx_complete and
-irq_enable. Except irq_enable doesn't enable anything now, since
-irq_sem is <= 0, and dec_and_test returns false.
-
-The whole irq_sem accounting in the e1000 does not rhyme well with
-netpoll's way of exercising dev->poll(). The reason my patch triggers
-the problem reliably for you is that now, we always get at least
-two invocations of dev->poll: once from poll_napi - where we do not
-remove the device from the poll list any longer - and another one
-from net_rx_action.
-
-I don't have a fix ready yet - I hope I'll have something later
-this afternoon.
-
-Olaf
--- 
-Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
-okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
