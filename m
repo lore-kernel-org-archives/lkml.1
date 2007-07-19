@@ -1,80 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933117AbXGSMNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933841AbXGSMPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933117AbXGSMNp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbXGSMNh
+	id S933841AbXGSMPn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758471AbXGSMPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:13:37 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:42778 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753770AbXGSMNf (ORCPT
+	Thu, 19 Jul 2007 08:15:35 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:35849 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755911AbXGSMPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:13:35 -0400
-Date: Thu, 19 Jul 2007 14:13:33 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-In-Reply-To: <20070719140038.606abd44@gondolin.boeblingen.de.ibm.com>
-Message-ID: <Pine.LNX.4.62.0707191411060.8661@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
- <20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
- <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
- <20070719112602.5e3cb21a@gondolin.boeblingen.de.ibm.com>
- <Pine.LNX.4.62.0707191132150.8661@pademelon.sonytel.be>
- <20070719140038.606abd44@gondolin.boeblingen.de.ibm.com>
+	Thu, 19 Jul 2007 08:15:35 -0400
+Message-ID: <469F55D0.4050203@ah.jp.nec.com>
+Date: Thu, 19 Jul 2007 21:15:12 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-175469791-1184847213=:8661"
+To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+CC: k-miyoshi@cb.jp.nec.com
+Subject: [patch] add kdump_after_notifier
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi,
 
----584337861-175469791-1184847213=:8661
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In latest kernel, we can't use panic_notifier_list if kdump is enabled.
+panic_notifier_list is very useful function for debug, failover, etc...
 
-On Thu, 19 Jul 2007, Cornelia Huck wrote:
-> On Thu, 19 Jul 2007 11:36:31 +0200 (CEST),
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> 
-> > We have a probe thread that checks for new storage devices and adds them to the
-> > bus with ps3_system_bus_device_register(), which calls device_register().
-> > 
-> > I guess the actual bus probe() routine gets called through the notifier call
-> > chain? That's where I got lost...
-> 
-> No, ->probe() is called from device_register() directly. If you just
-> have one probe thread, you should have enough serialization.
+So this patch adds a control file /proc/sys/kernel/dump_after_notifier
+and resolves a problem users can not use both kdump and panic_notifier_list
+at the same time.
 
-IC, through bus_attach_device() in device_add().
+kdump_after_notifier = 0
+ -> panic()
+    -> crash_kexec(NULL)
 
-Any chance this will change? I already added a mutex to ps3disk to protect
-against this.
+kdump_after_notifier = 1
+ -> panic()
+    -> atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+    -> crash_kexec(NULL)
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-175469791-1184847213=:8661--
+Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
+Signed-off-by: Kazuto Miyoshi <k-miyoshi@cb.jp.nec.com>
+---
+
+diff -uprN linux-2.6.22.orig/include/linux/kexec.h
+linux-2.6.22/include/linux/kexec.h
+--- linux-2.6.22.orig/include/linux/kexec.h	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/include/linux/kexec.h	2007-07-19 18:55:04.236000000 +0900
+@@ -123,6 +123,7 @@ int kexec_should_crash(struct task_struc
+ void crash_save_cpu(struct pt_regs *regs, int cpu);
+ extern struct kimage *kexec_image;
+ extern struct kimage *kexec_crash_image;
++extern int kdump_after_notifier;
+
+ #ifndef kexec_flush_icache_page
+ #define kexec_flush_icache_page(page)
+@@ -160,5 +161,6 @@ struct pt_regs;
+ struct task_struct;
+ static inline void crash_kexec(struct pt_regs *regs) { }
+ static inline int kexec_should_crash(struct task_struct *p) { return 0; }
++#define kdump_after_notifier 0
+ #endif /* CONFIG_KEXEC */
+ #endif /* LINUX_KEXEC_H */
+diff -uprN linux-2.6.22.orig/include/linux/sysctl.h
+linux-2.6.22/include/linux/sysctl.h
+--- linux-2.6.22.orig/include/linux/sysctl.h	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/include/linux/sysctl.h	2007-07-19 18:55:04.260000000 +0900
+@@ -165,6 +165,7 @@ enum
+ 	KERN_MAX_LOCK_DEPTH=74,
+ 	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
+ 	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
++	KERN_KDUMP_AFTER_NOTIFIER=77, /* int: kdump after panic_notifier */
+ };
+
+
+diff -uprN linux-2.6.22.orig/kernel/kexec.c linux-2.6.22/kernel/kexec.c
+--- linux-2.6.22.orig/kernel/kexec.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/kernel/kexec.c	2007-07-19 18:55:04.304000000 +0900
+@@ -22,6 +22,7 @@
+ #include <linux/hardirq.h>
+ #include <linux/elf.h>
+ #include <linux/elfcore.h>
++#include <linux/sysctl.h>
+
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+@@ -31,6 +32,7 @@
+
+ /* Per cpu memory for storing cpu states in case of system crash. */
+ note_buf_t* crash_notes;
++int kdump_after_notifier;
+
+ /* Location of the reserved area for the crash kernel */
+ struct resource crashk_res = {
+@@ -1123,6 +1125,30 @@ void crash_save_cpu(struct pt_regs *regs
+ 	final_note(buf);
+ }
+
++#ifdef CONFIG_SYSCTL
++static ctl_table kdump_after_notifier_table[] = {
++	{
++		.ctl_name = KERN_KDUMP_AFTER_NOTIFIER,
++		.procname = "kdump_after_notifier",
++		.data = &kdump_after_notifier,
++		.maxlen = sizeof(int),
++		.mode = 0644,
++		.proc_handler = &proc_dointvec,
++	},
++	{ .ctl_name = 0 }
++};
++
++static ctl_table kexec_sys_table[] = {
++	{
++		.ctl_name = CTL_KERN,
++		.procname = "kernel",
++		.mode = 0555,
++		.child = kdump_after_notifier_table,
++	},
++	{ .ctl_name = 0 }
++};
++#endif
++
+ static int __init crash_notes_memory_init(void)
+ {
+ 	/* Allocate memory for saving cpu registers. */
+@@ -1132,6 +1158,9 @@ static int __init crash_notes_memory_ini
+ 		" states failed\n");
+ 		return -ENOMEM;
+ 	}
++#ifdef CONFIG_SYSCTL
++	register_sysctl_table(kexec_sys_table, 0);
++#endif
+ 	return 0;
+ }
+ module_init(crash_notes_memory_init)
+diff -uprN linux-2.6.22.orig/kernel/panic.c linux-2.6.22/kernel/panic.c
+--- linux-2.6.22.orig/kernel/panic.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/kernel/panic.c	2007-07-19 18:55:04.340000000 +0900
+@@ -85,7 +85,8 @@ NORET_TYPE void panic(const char * fmt,
+ 	 * everything else.
+ 	 * Do we want to call this before we try to display a message?
+ 	 */
+-	crash_kexec(NULL);
++	if (!kdump_after_notifier)
++		crash_kexec(NULL);
+
+ #ifdef CONFIG_SMP
+ 	/*
+@@ -98,6 +99,8 @@ NORET_TYPE void panic(const char * fmt,
+
+ 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+
++	crash_kexec(NULL);
++
+ 	if (!panic_blink)
+ 		panic_blink = no_blink;
+
+
+
