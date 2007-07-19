@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939418AbXGSPdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939154AbXGSPfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939418AbXGSPdx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937211AbXGSPdk
+	id S939154AbXGSPfw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761853AbXGSPfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:33:40 -0400
-Received: from il.qumranet.com ([82.166.9.18]:49840 "EHLO il.qumranet.com"
+	Thu, 19 Jul 2007 11:35:44 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:40738 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934014AbXGSPdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:33:39 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: paulus@samba.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH] powerpc: Allow smp_call_function_single() to current cpu
-Date: Thu, 19 Jul 2007 18:33:48 +0300
-Message-Id: <11848592284075-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.2.4
+	id S1758498AbXGSPfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:35:43 -0400
+Date: Thu, 19 Jul 2007 11:35:36 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] [PATCH 013 of 20] knfsd: nfsd: factor out code from
+	show_expflags
+Message-ID: <20070719153536.GB23093@fieldses.org>
+References: <20070710121949.12548.patches@notabene> <1070710022737.13509@suse.de> <20070713002933.f15724a7.akpm@linux-foundation.org> <20070718230555.GN7111@fieldses.org> <18078.44366.961344.428533@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18078.44366.961344.428533@notabene.brown>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes the requirement for callers to get_cpu() to check in simple
-cases.  i386 and x86_64 already received a similar treatment.
+On Thu, Jul 19, 2007 at 10:16:14AM +1000, Neil Brown wrote:
+> On Wednesday July 18, bfields@fieldses.org wrote:
+> > On Fri, Jul 13, 2007 at 12:29:33AM -0700, Andrew Morton wrote:
+> > > On Tue, 10 Jul 2007 12:27:37 +1000 NeilBrown <neilb@suse.de> wrote:
+> > > 
+> > > > +static void exp_flags(struct seq_file *m, int flag, int fsid,
+> > > > +		uid_t anonu, uid_t anong, struct nfsd4_fs_locations *fsloc)
+> > > > +{
+> > > > +	show_expflags(m, flag, NFSEXP_ALLFLAGS);
+> > > >  	if (flag & NFSEXP_FSID)
+> > > > -		seq_printf(m, "%sfsid=%d", first++?",":"", fsid);
+> > > > +		seq_printf(m, ",fsid=%d", fsid);
+> > > >  	if (anonu != (uid_t)-2 && anonu != (0x10000-2))
+> > > > -		seq_printf(m, "%sanonuid=%d", first++?",":"", anonu);
+> > > > +		seq_printf(m, ",sanonuid=%d", anonu);
+> > > 
+> > > It's a bit presumptuous to print a uid_t with "%d".  Fortunately it
+> > > will work OK with all the present architectures.
+> > > 
+> > > But in general: be cautious when feeding opaque types to printk.
+> > 
+> > OK, here I'm still confused--what should we be doing instead?
+> 
+> Cast the variable to a type that printf knows about.
+>        seq_printf(m, ",anonuid=%d", (int)anonu);
+> 
+> Or maybe cast it to (long) and use %ld, just in case...
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- arch/powerpc/kernel/smp.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+OK.  In the event that uid_t some day ceases to eventually become an
+int, will the casts help, or will they just suppress useful warnings?
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index d577b71..087c92f 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -284,7 +284,7 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
- 			int wait)
- {
- 	cpumask_t map = CPU_MASK_NONE;
--	int ret = -EBUSY;
-+	int ret = 0;
- 
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
-@@ -292,6 +292,11 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
- 	cpu_set(cpu, map);
- 	if (cpu != get_cpu())
- 		ret = smp_call_function_map(func,info,nonatomic,wait,map);
-+	else {
-+		local_irq_disable();
-+		func(info);
-+		local_irq_enable();
-+	}
- 	put_cpu();
- 	return ret;
- }
--- 
-1.5.2.4
+> Note the stray 's' in the current patch, after the comma!
 
+Sharp eyes, thanks!  I'll make a patch.  Uh, any objection if I print
+all those uid's as unsigned while I'm at it?
+
+--b.
