@@ -1,97 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938424AbXGSK1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938531AbXGSK1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938424AbXGSK1I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:27:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762127AbXGSJ4P
+	id S938531AbXGSK1l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbXGSJ4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:56:15 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33133 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 05:56:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33135 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760996AbXGSJzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761125AbXGSJzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Jul 2007 05:55:52 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
-To: stern@rowland.harvard.edu, ak@suse.de, patches@x86-64.org,
+To: venkatesh.pallipadi@intel.com, ak@suse.de, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [54/58] x86: Make Alt-SysRq-p display the debug register contents
-Message-Id: <20070719095541.5AD9414E06@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:41 +0200 (CEST)
+Subject: [PATCH] [56/58] x86: round_jiffies() for i386 and x86-64 non-critical/corrected MCE polling
+Message-Id: <20070719095543.7843514E06@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
 
-This patch (as921) adds code to the show_regs() routine in i386 and x86_64
-to print the contents of the debug registers along with all the others.
+This helps to reduce the frequency at which the CPU must be taken out of a
+lower-power state.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
+Acked-by: Tim Hockin <thockin@hockin.org>
 Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/i386/kernel/process.c   |   12 ++++++++++++
- arch/x86_64/kernel/process.c |   10 ++++++++++
- 2 files changed, 22 insertions(+)
+ arch/i386/kernel/cpu/mcheck/non-fatal.c |    4 ++--
+ arch/x86_64/kernel/mce.c                |    9 ++++++---
+ 2 files changed, 8 insertions(+), 5 deletions(-)
 
-Index: linux/arch/i386/kernel/process.c
+Index: linux/arch/i386/kernel/cpu/mcheck/non-fatal.c
 ===================================================================
---- linux.orig/arch/i386/kernel/process.c
-+++ linux/arch/i386/kernel/process.c
-@@ -300,6 +300,7 @@ early_param("idle", idle_setup);
- void show_regs(struct pt_regs * regs)
- {
- 	unsigned long cr0 = 0L, cr2 = 0L, cr3 = 0L, cr4 = 0L;
-+	unsigned long d0, d1, d2, d3, d6, d7;
+--- linux.orig/arch/i386/kernel/cpu/mcheck/non-fatal.c
++++ linux/arch/i386/kernel/cpu/mcheck/non-fatal.c
+@@ -57,7 +57,7 @@ static DECLARE_DELAYED_WORK(mce_work, mc
+ static void mce_work_fn(struct work_struct *work)
+ { 
+ 	on_each_cpu(mce_checkregs, NULL, 1, 1);
+-	schedule_delayed_work(&mce_work, MCE_RATE);
++	schedule_delayed_work(&mce_work, round_jiffies_relative(MCE_RATE));
+ } 
  
- 	printk("\n");
- 	printk("Pid: %d, comm: %20s\n", current->pid, current->comm);
-@@ -324,6 +325,17 @@ void show_regs(struct pt_regs * regs)
- 	cr3 = read_cr3();
- 	cr4 = read_cr4_safe();
- 	printk("CR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n", cr0, cr2, cr3, cr4);
-+
-+	get_debugreg(d0, 0);
-+	get_debugreg(d1, 1);
-+	get_debugreg(d2, 2);
-+	get_debugreg(d3, 3);
-+	printk("DR0: %08lx DR1: %08lx DR2: %08lx DR3: %08lx\n",
-+			d0, d1, d2, d3);
-+	get_debugreg(d6, 6);
-+	get_debugreg(d7, 7);
-+	printk("DR6: %08lx DR7: %08lx\n", d6, d7);
-+
- 	show_trace(NULL, regs, &regs->esp);
+ static int __init init_nonfatal_mce_checker(void)
+@@ -82,7 +82,7 @@ static int __init init_nonfatal_mce_chec
+ 	/*
+ 	 * Check for non-fatal errors every MCE_RATE s
+ 	 */
+-	schedule_delayed_work(&mce_work, MCE_RATE);
++	schedule_delayed_work(&mce_work, round_jiffies_relative(MCE_RATE));
+ 	printk(KERN_INFO "Machine check exception polling timer started.\n");
+ 	return 0;
+ }
+Index: linux/arch/x86_64/kernel/mce.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/mce.c
++++ linux/arch/x86_64/kernel/mce.c
+@@ -375,7 +375,8 @@ static void mcheck_timer(struct work_str
+ 	if (mce_notify_user()) {
+ 		next_interval = max(next_interval/2, HZ/100);
+ 	} else {
+-		next_interval = min(next_interval*2, check_interval*HZ);
++		next_interval = min(next_interval*2,
++				(int)round_jiffies_relative(check_interval*HZ));
+ 	}
+ 
+ 	schedule_delayed_work(&mcheck_work, next_interval);
+@@ -428,7 +429,8 @@ static __init int periodic_mcheck_init(v
+ { 
+ 	next_interval = check_interval * HZ;
+ 	if (next_interval)
+-		schedule_delayed_work(&mcheck_work, next_interval);
++		schedule_delayed_work(&mcheck_work,
++				      round_jiffies_relative(next_interval));
+ 	idle_notifier_register(&mce_idle_notifier);
+ 	return 0;
+ } 
+@@ -720,7 +722,8 @@ static void mce_restart(void) 
+ 	on_each_cpu(mce_init, NULL, 1, 1);       
+ 	next_interval = check_interval * HZ;
+ 	if (next_interval)
+-		schedule_delayed_work(&mcheck_work, next_interval);
++		schedule_delayed_work(&mcheck_work,
++				      round_jiffies_relative(next_interval));
  }
  
-Index: linux/arch/x86_64/kernel/process.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/process.c
-+++ linux/arch/x86_64/kernel/process.c
-@@ -306,6 +306,7 @@ early_param("idle", idle_setup);
- void __show_regs(struct pt_regs * regs)
- {
- 	unsigned long cr0 = 0L, cr2 = 0L, cr3 = 0L, cr4 = 0L, fs, gs, shadowgs;
-+	unsigned long d0, d1, d2, d3, d6, d7;
- 	unsigned int fsindex,gsindex;
- 	unsigned int ds,cs,es; 
- 
-@@ -350,6 +351,15 @@ void __show_regs(struct pt_regs * regs)
- 	       fs,fsindex,gs,gsindex,shadowgs); 
- 	printk("CS:  %04x DS: %04x ES: %04x CR0: %016lx\n", cs, ds, es, cr0); 
- 	printk("CR2: %016lx CR3: %016lx CR4: %016lx\n", cr2, cr3, cr4);
-+
-+	get_debugreg(d0, 0);
-+	get_debugreg(d1, 1);
-+	get_debugreg(d2, 2);
-+	printk("DR0: %016lx DR1: %016lx DR2: %016lx\n", d0, d1, d2);
-+	get_debugreg(d3, 3);
-+	get_debugreg(d6, 6);
-+	get_debugreg(d7, 7);
-+	printk("DR3: %016lx DR6: %016lx DR7: %016lx\n", d3, d6, d7);
- }
- 
- void show_regs(struct pt_regs *regs)
+ static struct sysdev_class mce_sysclass = {
