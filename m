@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939295AbXGSPcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939362AbXGSPcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939295AbXGSPcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbXGSPcJ
+	id S939362AbXGSPcm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765796AbXGSPcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:32:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:30262 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756514AbXGSPcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:32:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=pMJbFZgS8GJypvjUCaYCbqUgJ0qsgbGao4/w1pApCeBegaJ1icgTj0xzILEbG9/gVReySpSxW5vrHdibsSDqEE5dKY5iLklWzOljhBlS4wmdjha901Wk/ipAWqVPideCGnU1eQUFi9QPTey5zC4VzZ6bNg0aGCao32wU4YjV1F0=
-Message-ID: <469F8417.5020008@gmail.com>
-Date: Thu, 19 Jul 2007 17:32:39 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 19 Jul 2007 11:32:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34713 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756579AbXGSPc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:32:28 -0400
+Date: Thu, 19 Jul 2007 17:32:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Olaf Kirch <olaf.kirch@oracle.com>
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Message-ID: <20070719153217.GA25544@elte.hu>
+References: <20070716091236.GA10718@elte.hu> <200707191144.24434.olaf.kirch@oracle.com> <20070719100135.GA2986@elte.hu> <200707191237.56455.olaf.kirch@oracle.com> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu> <20070719150728.GA17000@elte.hu>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>, Karel Zak <kzak@redhat.com>,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH][RFC] Delete export of tty.h to userspace.
-References: <Pine.LNX.4.64.0707180520040.19434@localhost.localdomain> <469E7599.4060608@gmail.com> <Pine.LNX.4.64.0707181631340.14452@localhost.localdomain> <20070718223820.GF3181@petra.dvoda.cz> <Pine.LNX.4.64.0707190715320.25024@localhost.localdomain> <20070719135707.GA16279@infradead.org>
-In-Reply-To: <20070719135707.GA16279@infradead.org>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719150728.GA17000@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig napsal(a):
-> On Thu, Jul 19, 2007 at 07:17:07AM -0400, Robert P. J. Day wrote:
->> so you're saying you'll drop that include from util-linux, is that it?
->> but it's still a good plan to generate a warning whenever userspace
->> includes that file, so i'll submit a quick patch to generate that,
->> based on jiri's suggestion.
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> ugh. Something really weird happened with this e1000 problem.
 > 
-> Not exporting it at all gives an error which is a lot better.  Just look
-> at all the warnings most userspace spews, they'd never even notice it
-> otherwise.
+> i crashed the laptop in a weird way and had to power-cycle it in an 
+> unusual fashion. After that i wanted to try your latest BUG_ON() 
+> theory but the network hang went away!
+> 
+> For 3 hours i tried to reproduce the hang (i went back to the original 
+> git tree and the .config under which i found it, i power cycled it 
+> again, i unplugged the power cord to make it go off battery, unplugged 
+> the ethernet, recreated a completely new tree, etc. etc.) but with no 
+> success! Total Heisenbug - and the really annoying thing is that you 
+> just had a good theory about what might be happening. I'm now at 
+> kernel build iteration #75 in this tree ...
 
-Not directly responding to this, but keeping CCs. I though of the removal one
-more time and there is one more issue (maybe). Every exported kernel header,
-which includes this file outside #ifdef __KERNEL__ #endif will be broken in
-userspace. Are you sure, there are no such includes?
+ah! Just found the reason: the bug apparently depends on the precise 
+kernel command-line contents. I accidentally dropped ignore_loglevel 
+(found this while comparing with the older logs i sent to you), adding 
+it back in produces hung networking too. So it appears that a netconsole 
+printout while e1000 is initializing (or while some other networking 
+component is initializing) might be the culprit?
 
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+	Ingo
+
