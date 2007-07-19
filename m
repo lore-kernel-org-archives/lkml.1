@@ -1,82 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937922AbXGSJ3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964942AbXGSJbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937922AbXGSJ3R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935245AbXGSJ3A
+	id S964942AbXGSJbt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760526AbXGSJbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:29:00 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:35855 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933539AbXGSJ27 (ORCPT
+	Thu, 19 Jul 2007 05:31:40 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:56632 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755717AbXGSJbj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:28:59 -0400
-Date: Thu, 19 Jul 2007 09:51:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patch] fix the softlockup watchdog to actually work
-Message-ID: <20070719075152.GB12760@elte.hu>
-References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070719002231.069ebbdd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719002231.069ebbdd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 19 Jul 2007 05:31:39 -0400
+Date: Thu, 19 Jul 2007 11:31:36 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Hans-Christian Egtvedt <hcegtvedt@atmel.com>,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Victor <andrew@sanpeople.com>,
+       kernel-avr32 <kernel@avr32linux.org>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] Driver for the Atmel on-chip SSC on AT32AP and
+ AT91.
+Message-ID: <20070719113136.4d0a951f@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <20070719110122.262c2778@dhcp-255-175.norway.atmel.com>
+References: <1184568752.15535.9.camel@localhost.localdomain>
+	<20070718170120.8a031cdf.akpm@linux-foundation.org>
+	<469F0A78.3040808@atmel.com>
+	<20070719110122.262c2778@dhcp-255-175.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Whoops, didn't notice that Andrew and LKML fell off Cc. Sorry.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Håvard
 
-> But I'll sit on this patch for a while until this gets sorted out. 
-> Meanwhile, please double-check the elapsed-time arithmetic in there, 
-> maybe do a bit of runtime testing?
+On Thu, 19 Jul 2007 11:01:22 +0200
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-btw., could you apply the patch below as well? Maybe sched_clock() is 
-misbehaving on your box? (with this i have 5 softlockup patches in my 
-tree - and they are working fine so far.)
-
-	Ingo
-
----------------->
-Subject: [patch] softlockup: use a reliable global time source
-From: Ingo Molnar <mingo@elte.hu>
-
-using sched_clock() for the soft-lockups was a bad idea, sched_clock()
-is not a reliable global time-source.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/softlockup.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-Index: linux/kernel/softlockup.c
-===================================================================
---- linux.orig/kernel/softlockup.c
-+++ linux/kernel/softlockup.c
-@@ -37,13 +37,11 @@ static struct notifier_block panic_block
- };
- 
- /*
-- * Returns seconds, approximately.  We don't need nanosecond
-- * resolution, and we don't need to waste time with a big divide when
-- * 2^30ns == 1.074s.
-+ * Returns seconds.
-  */
- static unsigned long get_timestamp(void)
- {
--	return sched_clock() >> 30;  /* 2^30 ~= 10^9 */
-+	return jiffies / HZ;
- }
- 
- void touch_softlockup_watchdog(void)
+> On Thu, 19 Jul 2007 08:53:44 +0200
+> Hans-Christian Egtvedt <hcegtvedt@atmel.com> wrote:
+> 
+> > >> +EXPORT_SYMBOL(ssc_request);
+> > >>       
+> > >
+> > > All exports need justification, please.  An additional paragraph in the
+> > > changelog would suit.
+> > >     
+> > How are exports justified? Can they be removed since the user have to 
+> > include <linux/atmel-ssc.h> anyway?
+> 
+> No, we do need these since modules are going to link to them.
+> 
+> The idea is that other drivers call these functions to obtain a
+> reference to one of the SSC instances in the system. Such drivers
+> typically implement some sort of serial frame-based protocol, e.g. i2s,
+> by programming the SSC controller directly. This driver is out of the
+> way after a protocol driver has successfully requested an instance.
+> 
+> So the protocol drivers need some kind of resource management in order
+> to not step on each others' toes, and that's the reason for the export
+> of ssc_request() and ssc_free().
+> 
+> I'm not sure if anyone would have been very mad at me for sneaking this
+> in through the avr32 tree, but I'd really like to know what others, in
+> particular the AT91 people and David, think of this kind of thing
+> before it ends up in mainline.
+> 
+> Feel free to add
+> 
+> Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> 
+> to both patches (the driver and the fix) though. It's been through a
+> few rounds of internal review.
+> 
+> Håvard
+> _______________________________________________
+> Kernel mailing list
+> Kernel@avr32linux.org
+> http://duppen.flaskehals.net/cgi-bin/mailman/listinfo/kernel
