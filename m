@@ -1,41 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbXGSVXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764209AbXGSV1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933074AbXGSVXG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 17:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761988AbXGSVWz
+	id S1764209AbXGSV1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 17:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXGSV1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 17:22:55 -0400
-Received: from hq.tensilica.com ([65.205.227.29]:56454 "EHLO
-	maia.hq.tensilica.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761215AbXGSVWz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 17:22:55 -0400
-X-Greylist: delayed 757 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 17:22:54 EDT
-Message-ID: <469FD333.9050306@tensilica.com>
-Date: Thu, 19 Jul 2007 14:10:11 -0700
-From: Chris Zankel <zankel@tensilica.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 19 Jul 2007 17:27:12 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49640 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751848AbXGSV1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 17:27:10 -0400
+Date: Thu, 19 Jul 2007 16:24:53 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, tchicks@us.ibm.com,
+       trevor.highland@gmail.com, pregan@ic.sunysb.edu, toml@us.ibm.com,
+       sergeh@us.ibm.com, mhalcrow@us.ibm.com, mike@halcrow.us
+Subject: [PATCH 0/8] eCryptfs: Support multiple keys per inode
+Message-ID: <20070719212453.GA13821@halcrow.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Chris Zankel <czankel@tensilica.com>, torvalds@linux-foundation.org,
-       chris@zankel.net, linux-kernel <linux-kernel@vger.kernel.org>,
-       sam@ravnborg.org
-Subject: Re: [PATCH] fix modpost warnings for xtensa
-References: <200707191837.l6JIbuE25527@corvus.hq.tensilica.com> <20070719140005.863f7ffa.akpm@linux-foundation.org>
-In-Reply-To: <20070719140005.863f7ffa.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
-
-Andrew Morton wrote:
-> This generates unfixable-by-me rejects against Sam's git-kbuild tree.
-> Sam already had a pull request into Linus for that tree.  Could I ask
-> that you wait for that piece of dust to settle and then regenerate the
-> diff?
-
-Thanks Andrew. I will wait for his updates.
-
--Chris
+This series of patches to eCryptfs introduces support for associating
+multiple keys with individual files. When mounting, eCryptfs will
+register one key for each key signature/identifier specified by an
+ecryptfs_sig= mount option. These keys will all be used to encrypt the
+FEK for each eCryptfs inode. This patch set also adds support for
+searching the user's keyring for keys when opening existing files;
+this allows the user to add keys to his keyring at any time, and
+eCryptfs will use those keys to open files protected by those keys.
