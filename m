@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936936AbXGSOYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937699AbXGSO1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936936AbXGSOYI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759302AbXGSOXw
+	id S937699AbXGSO1D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761491AbXGSO0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:23:52 -0400
-Received: from khc.piap.pl ([195.187.100.11]:57650 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755886AbXGSOXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:23:50 -0400
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Patrick McHardy <kaber@trash.net>,
-       andrei radulescu-banu <iubica2@yahoo.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <878246.51044.qm@web56608.mail.re3.yahoo.com>
-	<469E9AC8.3090603@trash.net> <m3zm1sbjzl.fsf@maximus.localdomain>
-	<20070719144131.0c230c8f@oldman.hamilton.local>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 19 Jul 2007 16:23:48 +0200
-In-Reply-To: <20070719144131.0c230c8f@oldman.hamilton.local> (Stephen Hemminger's message of "Thu, 19 Jul 2007 14:41:31 +0100")
-Message-ID: <m3k5swbhfv.fsf@maximus.localdomain>
+	Thu, 19 Jul 2007 10:26:52 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53099 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756905AbXGSO0v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 10:26:51 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <469F749F.8030606@s5r6.in-berlin.de>
+Date: Thu, 19 Jul 2007 16:26:39 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
+References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger <shemminger@linux-foundation.org> writes:
+Robert P. J. Day wrote:
+...
+> it's not clear if that means that it was a *one-time* transition
+> aid which is now unnecessary, or whether it's an *ongoing* aid which
+> might be used at any time.  currently, there are no invocations of
+> EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
+> this feature can be tossed?  or might it still be used every so often?
 
-> 1) non-accelerated device 
->     * all frames show in promiscious mode
->     * tag is part of the frame that shows up
->        in tcpdump, and then gets stripped by the 8021q module.
+git-blame (or qgit, which I actually used) points from this part of
+lib/Kconfig.debug to the following chunk in
+Documentation/feature-removal-schedule.txt:
 
-Sure. It's IMHO good and working, modulo the tag being removed
-on the master device (optional cloning or something, IIRC).
-
-> 2) rx tag stripping device
->      * all frames show in promiscious mode
->      * tag is in skb but NOT passed to tcpdump
-> 3) rx vlan acceleration
->      * only frames that for vlan's that are registered show up
->         in promisicous mode
->      * tag is in skb but NOT passed to tcpdump
-
-I wasn't aware of devices doing 3. Aren't we able to tell them
-to receive all packets anyway (even unknown VLANs#)?
-
-> Unfortunately, the tag is lost as part of the VLAN acceleration process
-> so it is not a simple matter of changing code in AF_PACKET receive
-> to restore the tag.
-
-I'm not sure if we really want it. If needed we can disable
-acceleration, can't we? While accelerated we can see the packets
-(without tags) on logical devices.
-
-However seeing unknown tags on master device (with tcpdump etc)
-would certainly be useful.
+What:	Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL exports
+	(temporary transition config option provided until then)
+	The transition config option will also be removed at the same time.
+When:	before 2.6.19
+Why:	Unused symbols are both increasing the size of the kernel binary
+	and are often a sign of "wrong API"
+Who:	Arjan van de Ven <arjan@linux.intel.com>
 -- 
-Krzysztof Halasa
+Stefan Richter
+-=====-=-=== -=== =--==
+http://arcgraph.de/sr/
