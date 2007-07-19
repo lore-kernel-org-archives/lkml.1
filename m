@@ -1,48 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937256AbXGSNCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937413AbXGSND1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937256AbXGSNCw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 09:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935902AbXGSNCH
+	id S937413AbXGSND1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 09:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937079AbXGSNCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:02:07 -0400
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:50155 "EHLO
-	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936908AbXGSNCF (ORCPT
+	Thu, 19 Jul 2007 09:02:20 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57730 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936959AbXGSNCQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:02:05 -0400
-Date: Thu, 19 Jul 2007 09:01:59 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Jim Kovaric <jkovaric@us.ibm.com>
-cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Christian Ehrhardt <lk@c--e.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, serue@linux.vnet.ibm.com
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-In-Reply-To: <OF54A17BCF.9A1D7004-ON8725731D.0044828E-8625731D.0046CAED@us.ibm.com>
-Message-ID: <Line.LNX.4.64.0707190901200.4393@d.namei>
-References: <OF54A17BCF.9A1D7004-ON8725731D.0044828E-8625731D.0046CAED@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Jul 2007 09:02:16 -0400
+Date: Thu, 19 Jul 2007 22:01:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tony.luck@intel.com, nickpiggin@yahoo.com.au,
+       mike@stroyan.net, dmosberger@gmail.com, y-goto@jp.fujitsu.com
+Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
+Message-Id: <20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <469F5372.7010703@bull.net>
+References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
+	<469F5372.7010703@bull.net>
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Jim Kovaric wrote:
+On Thu, 19 Jul 2007 14:05:06 +0200
+Zoltan Menyhart <Zoltan.Menyhart@bull.net> wrote:
 
-> IBMs  TAMOS (Tivoli Access Manager for Operating systems) contains a 
-> loadable module,
->  which is an "out of tree module",  and registers "itself"  as a security 
-> module during the TAMOS startup
-> process. It also requires that SElinux  be "disabled"
+> KAMEZAWA Hiroyuki wrote:
+> 
+> > Then, what should I do more for fixing this SIGILL problem ?
+> > 
+> > -Kame
+> 
+> I can think of a relatively cheap solution:
+> 
+Maybe I should take performance numbers with the patch.
 
-Please provide a link to the source code, so we can understand how you're 
-using the API.
+But is it too costly that flushing icache page only if a page is newly
+installed into the system (PG_arch1) && it is mapped as executable ?
 
+I don't want to leak this (stupid) corner case to the file system layer.
+Hmm...can't we do clever flushing (like your idea) in VM layer ?
 
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+-Kame
+> New pages are allocated with the bit PG_arch_1 off, see
+> page_cache_read() ... prep_new_page(), i.e. the I-cache is
+> not coherent with the D-cache.
+> 
+> page_cache_read() should add a macro, say:
+> 
+> 	ARCH_PREP_PAGE_BEFORE_READ(page);
+> 
+> before actually calling mapping->a_ops->readpage(file, page).
+> 
+> This macro can be for ia64 something like:
+> 
+> do { if (CPU_has_split_L2_I_cache) set_bit(PG_arch_1, &page->flags); }
+> 
+> and empty for the the architectures non concerned.
+> 
+> The file systems which are identified not to use HW tools to
+> avoid split I-cache incoherency, e.g. nfs_readpage(), are required
+> to add a macro, say:
+> 
+> 	ARCH_CHECK_READ_PAGE_COHERENCY(page);
+> 
+> This macro can be for ia64:
+> 
+> do { if (CPU_has_split_L2_I_cache) clear_bit(PG_arch_1, &page->flags); }
+> 
+> and empty for the the architectures non concerned.
+> 
+> Back to do_no_page():
+> if the new PTE includes the exec bit and PG_arch_1 is set,
+> the page has to be flushed from the I-cache before the PTE is
+> made globally visible.
+> 
+> File systems using local block devices with DMA are considered
+> to be safe, with the exceptions of the bounce buffers.
+> 
+> When you copy into the destination page, another macro should be
+> added, say:
+> 
+> 	ARCH_CHECK_BOUNCE_READ_COHERENCY(bio_vec);
+> 
+> #define ARCH_CHECK_BOUNCE_READ_COHERENCY(bio_vec) \
+> 		ARCH_CHECK_READ_PAGE_COHERENCY(bio_vec->bv_page)
+> 
+> Remote DMA based network file systems, e.g. Lustre on Quadrics,
+> Infiniband are also considered to be safe.
+> 
+> Thanks,
+> 
+> Zoltan
+> 
