@@ -1,157 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938998AbXGSPTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938048AbXGSPVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938998AbXGSPTq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939088AbXGSPTW
+	id S938048AbXGSPVH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756905AbXGSPUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:19:22 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:57793 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S939053AbXGSPTS (ORCPT
+	Thu, 19 Jul 2007 11:20:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45340 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762596AbXGSPUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:19:18 -0400
-Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org
-In-Reply-To: <469F75A4.8050301@googlemail.com>
-References: <469C10F6.3050008@googlemail.com>
-	 <20070717100921W.fujita.tomonori@lab.ntt.co.jp>
-	 <469C1E2A.8010508@googlemail.com>
-	 <20070719082516W.fujita.tomonori@lab.ntt.co.jp>
-	 <1184853770.3464.85.camel@localhost.localdomain>
-	 <469F75A4.8050301@googlemail.com>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 10:19:16 -0500
-Message-Id: <1184858356.3464.96.camel@localhost.localdomain>
+	Thu, 19 Jul 2007 11:20:49 -0400
+Date: Thu, 19 Jul 2007 16:20:08 +0100
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Patrick McHardy <kaber@trash.net>,
+       andrei radulescu-banu <iubica2@yahoo.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Linux, tcpdump and vlan
+Message-ID: <20070719162008.7c94bcaa@oldman.hamilton.local>
+In-Reply-To: <m3k5swbhfv.fsf@maximus.localdomain>
+References: <878246.51044.qm@web56608.mail.re3.yahoo.com>
+	<469E9AC8.3090603@trash.net>
+	<m3zm1sbjzl.fsf@maximus.localdomain>
+	<20070719144131.0c230c8f@oldman.hamilton.local>
+	<m3k5swbhfv.fsf@maximus.localdomain>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 16:31 +0200, Gabriel C wrote:
-> No is not an SATA controller.
+On Thu, 19 Jul 2007 16:23:48 +0200
+Krzysztof Halasa <khc@pm.waw.pl> wrote:
+
+> Stephen Hemminger <shemminger@linux-foundation.org> writes:
 > 
-> sda and sdb are SCSI disks connected to an Adaptec AIC-7892P U160/m
-> controller using the aic7xxx driver.
+> > 1) non-accelerated device 
+> >     * all frames show in promiscious mode
+> >     * tag is part of the frame that shows up
+> >        in tcpdump, and then gets stripped by the 8021q module.
+> 
+> Sure. It's IMHO good and working, modulo the tag being removed
+> on the master device (optional cloning or something, IIRC).
+> 
+> > 2) rx tag stripping device
+> >      * all frames show in promiscious mode
+> >      * tag is in skb but NOT passed to tcpdump
+> > 3) rx vlan acceleration
+> >      * only frames that for vlan's that are registered show up
+> >         in promisicous mode
+> >      * tag is in skb but NOT passed to tcpdump
+> 
+> I wasn't aware of devices doing 3. Aren't we able to tell them
+> to receive all packets anyway (even unknown VLANs#)?
 
-OK, this definitely works for me, that's what my root disk is on.  I
-think this isn't a kernel problem ... I think it's a udev name clash
-problem.  Try the attached patch, which corrects the names:
+See NETIF_F_HW_VLAN_FILTER (e1000, etc).
 
-> sdc is an ATA-7 disk connected to an IDE controller ( 82801BA IDE U100
-> )  using libata and the ata_piix driver.
+> > Unfortunately, the tag is lost as part of the VLAN acceleration process
+> > so it is not a simple matter of changing code in AF_PACKET receive
+> > to restore the tag.
+> 
+> I'm not sure if we really want it. If needed we can disable
+> acceleration, can't we? While accelerated we can see the packets
+> (without tags) on logical devices.
 
+Not at runtime, acceleration is always on if you compile kernel with vlan
+support.  That is a design mistake as far as I can tell.
 
-James
+> However seeing unknown tags on master device (with tcpdump etc)
+> would certainly be useful.
 
----
-
-Index: BUILD-2.6/block/Kconfig
-===================================================================
---- BUILD-2.6.orig/block/Kconfig	2007-07-18 11:34:20.000000000 -0500
-+++ BUILD-2.6/block/Kconfig	2007-07-18 11:36:24.000000000 -0500
-@@ -53,7 +53,7 @@ endif # BLOCK
- 
- config BLK_DEV_BSG
- 	bool "Block layer SG support v4 (EXPERIMENTAL)"
--	depends on (SCSI=y) && EXPERIMENTAL
-+ 	depends on EXPERIMENTAL
- 	---help---
- 	Saying Y here will enable generic SG (SCSI generic) v4 support
- 	for any block device.
-Index: BUILD-2.6/block/bsg.c
-===================================================================
---- BUILD-2.6.orig/block/bsg.c	2007-07-18 11:34:20.000000000 -0500
-+++ BUILD-2.6/block/bsg.c	2007-07-18 11:36:24.000000000 -0500
-@@ -1009,29 +1009,6 @@ err:
- }
- EXPORT_SYMBOL_GPL(bsg_register_queue);
- 
--static int bsg_add(struct class_device *cl_dev, struct class_interface *cl_intf)
--{
--	int ret;
--	struct scsi_device *sdp = to_scsi_device(cl_dev->dev);
--	struct request_queue *rq = sdp->request_queue;
--
--	if (rq->kobj.parent)
--		ret = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
--	else
--		ret = bsg_register_queue(rq, kobject_name(&sdp->sdev_gendev.kobj));
--	return ret;
--}
--
--static void bsg_remove(struct class_device *cl_dev, struct class_interface *cl_intf)
--{
--	bsg_unregister_queue(to_scsi_device(cl_dev->dev)->request_queue);
--}
--
--static struct class_interface bsg_intf = {
--	.add	= bsg_add,
--	.remove	= bsg_remove,
--};
--
- static struct cdev bsg_cdev = {
- 	.kobj   = {.name = "bsg", },
- 	.owner  = THIS_MODULE,
-@@ -1069,16 +1046,9 @@ static int __init bsg_init(void)
- 	if (ret)
- 		goto unregister_chrdev;
- 
--	ret = scsi_register_interface(&bsg_intf);
--	if (ret)
--		goto remove_cdev;
--
- 	printk(KERN_INFO BSG_DESCRIPTION " version " BSG_VERSION
- 	       " loaded (major %d)\n", bsg_major);
- 	return 0;
--remove_cdev:
--	printk(KERN_ERR "bsg: failed register scsi interface %d\n", ret);
--	cdev_del(&bsg_cdev);
- unregister_chrdev:
- 	unregister_chrdev_region(MKDEV(bsg_major, 0), BSG_MAX_DEVS);
- destroy_bsg_class:
-Index: BUILD-2.6/drivers/scsi/scsi_sysfs.c
-===================================================================
---- BUILD-2.6.orig/drivers/scsi/scsi_sysfs.c	2007-07-18 11:36:02.000000000 -0500
-+++ BUILD-2.6/drivers/scsi/scsi_sysfs.c	2007-07-19 10:10:50.000000000 -0500
-@@ -715,6 +715,7 @@ static int attr_add(struct device *dev, 
- int scsi_sysfs_add_sdev(struct scsi_device *sdev)
- {
- 	int error, i;
-+	struct request_queue *rq = sdev->request_queue;
- 
- 	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
- 		return error;
-@@ -734,6 +735,17 @@ int scsi_sysfs_add_sdev(struct scsi_devi
- 	/* take a reference for the sdev_classdev; this is
- 	 * released by the sdev_class .release */
- 	get_device(&sdev->sdev_gendev);
-+
-+	error = bsg_register_queue(rq, sdev->sdev_gendev.bus_id);
-+
-+	if (error)
-+		sdev_printk(KERN_INFO, sdev,
-+			    "Failed to register bsg queue, errno=%d\n", error);
-+
-+	/* we're treating error on bsg register as non-fatal, so pretend
-+	 * nothing went wrong */
-+	error = 0;
-+
- 	if (sdev->host->hostt->sdev_attrs) {
- 		for (i = 0; sdev->host->hostt->sdev_attrs[i]; i++) {
- 			error = attr_add(&sdev->sdev_gendev,
-@@ -780,6 +792,7 @@ void __scsi_remove_device(struct scsi_de
- 	if (scsi_device_set_state(sdev, SDEV_CANCEL) != 0)
- 		return;
- 
-+	bsg_unregister_queue(sdev->request_queue);
- 	class_device_unregister(&sdev->sdev_classdev);
- 	transport_remove_device(dev);
- 	device_del(dev);
-
-
-
+Only in promiscuous mode. In some sense tag is part of the mac address.
