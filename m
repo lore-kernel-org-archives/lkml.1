@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940175AbXGSQvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940205AbXGSQv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940175AbXGSQvI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938443AbXGSQuz
+	id S940205AbXGSQv5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762719AbXGSQvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:50:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53403 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938157AbXGSQux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:50:53 -0400
-Date: Thu, 19 Jul 2007 18:50:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull request] scheduler updates
-Message-ID: <20070719165046.GA16539@elte.hu>
+	Thu, 19 Jul 2007 12:51:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:43587 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939834AbXGSQvq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:51:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nIEboVR6xc0hDq1h/cnU3f8QB4YjtNYmgUOFd20p2t+U7MYbPO+qQ8Sf+/yNuK5UP+Uh2HtFt/M43JAdCkEbEVLOZ/WyPby9xkipurQs5nE8lQNHfuXbAwglVhmNb8qj+YimoWQadtTLIlZxfYwarb293Dkp8D5NgetAyV6iQtM=
+Message-ID: <6bffcb0e0707190951j1f350683l62415b9ce24f0e8a@mail.gmail.com>
+Date: Thu, 19 Jul 2007 18:51:44 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [2/2] 2.6.22-git: known regressions
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Jean Delvare" <khali@linux-fr.org>, "Tejun Heo" <htejun@gmail.com>
+In-Reply-To: <20070719162625.GA16505@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <469F9125.8040502@googlemail.com> <469F92AF.10405@googlemail.com>
+	 <20070719162625.GA16505@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 19/07/07, Greg KH <gregkh@suse.de> wrote:
+> On Thu, Jul 19, 2007 at 06:34:55PM +0200, Michal Piotrowski wrote:
+> > SYSFS
+> >
+> > Subject         : sysfs root link count broken in 2.6.22-git5
+> > References      : http://lkml.org/lkml/2007/7/15/62
+> > Last known good : ?
+> > Submitter       : Jean Delvare <khali@linux-fr.org>
+> > Caused-By       : ?
+> > Handled-By      : Tejun Heo <htejun@gmail.com>
+> > Status          : unknown
+>
+> This is now fixed in Linus's tree with a patch from Tejun.
 
-Linus, please pull the latest scheduler git tree from:
+Thanks for the information
+commit e080e436f605877e47e4950f5386ed843badbb1b
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+>
+> thanks,
+>
+> greg k-h
+>
 
-4 small changes only. It includes an cleanup: Ralf Baechle noticed that 
-sched_cacheflush() is now unused, a new kernel-internal API for future 
-use (cpu_clock(cpu)), and two SMP balancer fixes from Suresh Siddha. The 
-balancer fixes are the only functional bits. Tested on x86-32bit and 
-x86-64bit, build-tested on allyesconfig and allnoconfig. I re-checked a 
-few SMP balancing scenarios due to the balancer fixes and kept those 
-changes in my tree for a few days, and they are working fine here.
+Regards,
+Michal
 
-Thanks,
-
-	Ingo
-
---------------->
-Ingo Molnar (1):
-      sched: implement cpu_clock(cpu) high-speed time source
-
-Ralf Baechle (1):
-      sched: sched_cacheflush is now unused
-
-Suresh Siddha (2):
-      sched: fix newly idle load balance in case of SMT
-      sched: fix the all pinned logic in load_balance_newidle()
-
- arch/ia64/kernel/setup.c     |    9 ---------
- include/asm-alpha/system.h   |   10 ----------
- include/asm-arm/system.h     |   10 ----------
- include/asm-arm26/system.h   |   10 ----------
- include/asm-i386/system.h    |    9 ---------
- include/asm-ia64/system.h    |    1 -
- include/asm-m32r/system.h    |   10 ----------
- include/asm-mips/system.h    |   10 ----------
- include/asm-parisc/system.h  |   11 -----------
- include/asm-powerpc/system.h |   10 ----------
- include/asm-ppc/system.h     |   10 ----------
- include/asm-s390/system.h    |   10 ----------
- include/asm-sh/system.h      |   10 ----------
- include/asm-sparc/system.h   |   10 ----------
- include/asm-sparc64/system.h |   10 ----------
- include/asm-x86_64/system.h  |    9 ---------
- include/linux/sched.h        |    7 +++++++
- kernel/sched.c               |   31 ++++++++++++++++++++++++++-----
- 18 files changed, 33 insertions(+), 154 deletions(-)
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
