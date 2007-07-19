@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939287AbXGSQEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939488AbXGSQGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939287AbXGSQEN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965022AbXGSQDx
+	id S939488AbXGSQGX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765793AbXGSQGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:03:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37419 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Jul 2007 12:06:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54948 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964964AbXGSQDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:03:51 -0400
-Date: Thu, 19 Jul 2007 18:00:25 +0200
+	id S937331AbXGSQGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:06:06 -0400
+Date: Thu, 19 Jul 2007 18:05:56 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Jan Glauber <jang@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       vatsa@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com, efault@gmx.de,
-       dmitry.adamushko@gmail.com, paulus@samba.org, anton@samba.org
-Subject: Re: [PATCH] virtual sched_clock() for s390
-Message-ID: <20070719160025.GA31815@elte.hu>
-References: <1184842661.6546.14.camel@localhost.localdomain> <469F8342.7060000@goop.org>
+To: Olaf Kirch <olaf.kirch@oracle.com>
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Message-ID: <20070719160556.GA3330@elte.hu>
+References: <20070716091236.GA10718@elte.hu> <200707191144.24434.olaf.kirch@oracle.com> <20070719100135.GA2986@elte.hu> <200707191237.56455.olaf.kirch@oracle.com> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu> <20070719150728.GA17000@elte.hu> <20070719153217.GA25544@elte.hu> <20070719155230.GA31267@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <469F8342.7060000@goop.org>
+In-Reply-To: <20070719155230.GA31267@elte.hu>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -35,28 +36,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> >  /*
-> > - * Monotonic_clock - returns # of nanoseconds passed since time_init()
-> > + * Scheduler clock - returns current time in nanosec units.
-> > + * Now based on virtual cpu time to only account time the guest
-> > + * was actually running.
-> 
-> Runn*ing*?  Does it include time the VCPU spends idle/blocked?  If 
-> not, then the scheduler won't be able to tell how long a process has 
-> been asleep.  Maybe this doesn't matter (I had this problem in a 
-> version of Xen's sched_clock, and I can't say I saw an ill effects 
-> from it).
+> i'll now check whether removing ignore_on_loglevel (no other changes) 
+> makes the hang go away. Maybe ignore_on_loglevel is buggy - or it 
+> produces an immediate printk (going out to the interface) during a 
+> particularly sensitive period of network initialization.
 
-CFS does measure time elapsed across task-sleep periods (and does 
-something similar to what the old scheduler's 'sleep average' 
-interactivity mechanism did), but that mechanism measures "time spent 
-running during sleep", not "time spent idling".
-
-still, CFS needs time measurement across idle periods as well, for 
-another purpose: to be able to do precise task statistics for /proc. 
-(for top, ps, etc.) So it's still true that sched_clock() should include 
-idle periods too.
+nope, that didnt have any effect. I have another theory: i had a 
+network-intense stress-test going on in the past few hours on the same 
+network (not involving the laptop) and i stopped it recently. Perhaps 
+that network-intense test also produced periodic broadcast packets that 
+got the e1000 out of its weird state before the tx timeout could hit. 
+Now that i've stopped the test, the network is quiescent again and the 
+e1000 hangs.
 
 	Ingo
