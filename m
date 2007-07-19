@@ -1,54 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936057AbXGSPTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938998AbXGSPTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936057AbXGSPTY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935648AbXGSPS5
+	id S938998AbXGSPTq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939088AbXGSPTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:18:57 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38859 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934570AbXGSPSz (ORCPT
+	Thu, 19 Jul 2007 11:19:22 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:57793 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S939053AbXGSPTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:18:55 -0400
-Message-ID: <469F80E3.3040007@bull.net>
-Date: Thu, 19 Jul 2007 17:18:59 +0200
-From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
-X-Accept-Language: en-us, en, fr, hu
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, tony.luck@intel.com, nickpiggin@yahoo.com.au,
-       mike@stroyan.net, dmosberger@gmail.com, y-goto@jp.fujitsu.com
-Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
-References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>	<20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>	<469F5372.7010703@bull.net>	<20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>	<469F71E7.4050200@bull.net> <20070719235157.9715baff.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070719235157.9715baff.kamezawa.hiroyu@jp.fujitsu.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 19/07/2007 17:23:25,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 19/07/2007 17:23:27,
-	Serialize complete at 19/07/2007 17:23:27
+	Thu, 19 Jul 2007 11:19:18 -0400
+Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org
+In-Reply-To: <469F75A4.8050301@googlemail.com>
+References: <469C10F6.3050008@googlemail.com>
+	 <20070717100921W.fujita.tomonori@lab.ntt.co.jp>
+	 <469C1E2A.8010508@googlemail.com>
+	 <20070719082516W.fujita.tomonori@lab.ntt.co.jp>
+	 <1184853770.3464.85.camel@localhost.localdomain>
+	 <469F75A4.8050301@googlemail.com>
+Content-Type: text/plain
+Date: Thu, 19 Jul 2007 10:19:16 -0500
+Message-Id: <1184858356.3464.96.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
+On Thu, 2007-07-19 at 16:31 +0200, Gabriel C wrote:
+> No is not an SATA controller.
+> 
+> sda and sdb are SCSI disks connected to an Adaptec AIC-7892P U160/m
+> controller using the aic7xxx driver.
 
-> Hmm...but the current code flushes the page. just do it in "lazy" way.
-> much difference ?
+OK, this definitely works for me, that's what my root disk is on.  I
+think this isn't a kernel problem ... I think it's a udev name clash
+problem.  Try the attached patch, which corrects the names:
 
-I agree the current code flushes the I-cache for all kinds of file
-systems (for PTEs with the exec bit on).
+> sdc is an ATA-7 disk connected to an IDE controller ( 82801BA IDE U100
+> )  using libata and the ata_piix driver.
 
-The error is that it does it after the PTE is written.
 
-In addition, I wanted to optimize it to gain a few %.
-Apparently this idea is not much welcome.
+James
 
-I can agree that flushing the I-cache (if the architecture requires it)
-before setting the PTE eliminates the error.
+---
 
-Thanks,
+Index: BUILD-2.6/block/Kconfig
+===================================================================
+--- BUILD-2.6.orig/block/Kconfig	2007-07-18 11:34:20.000000000 -0500
++++ BUILD-2.6/block/Kconfig	2007-07-18 11:36:24.000000000 -0500
+@@ -53,7 +53,7 @@ endif # BLOCK
+ 
+ config BLK_DEV_BSG
+ 	bool "Block layer SG support v4 (EXPERIMENTAL)"
+-	depends on (SCSI=y) && EXPERIMENTAL
++ 	depends on EXPERIMENTAL
+ 	---help---
+ 	Saying Y here will enable generic SG (SCSI generic) v4 support
+ 	for any block device.
+Index: BUILD-2.6/block/bsg.c
+===================================================================
+--- BUILD-2.6.orig/block/bsg.c	2007-07-18 11:34:20.000000000 -0500
++++ BUILD-2.6/block/bsg.c	2007-07-18 11:36:24.000000000 -0500
+@@ -1009,29 +1009,6 @@ err:
+ }
+ EXPORT_SYMBOL_GPL(bsg_register_queue);
+ 
+-static int bsg_add(struct class_device *cl_dev, struct class_interface *cl_intf)
+-{
+-	int ret;
+-	struct scsi_device *sdp = to_scsi_device(cl_dev->dev);
+-	struct request_queue *rq = sdp->request_queue;
+-
+-	if (rq->kobj.parent)
+-		ret = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
+-	else
+-		ret = bsg_register_queue(rq, kobject_name(&sdp->sdev_gendev.kobj));
+-	return ret;
+-}
+-
+-static void bsg_remove(struct class_device *cl_dev, struct class_interface *cl_intf)
+-{
+-	bsg_unregister_queue(to_scsi_device(cl_dev->dev)->request_queue);
+-}
+-
+-static struct class_interface bsg_intf = {
+-	.add	= bsg_add,
+-	.remove	= bsg_remove,
+-};
+-
+ static struct cdev bsg_cdev = {
+ 	.kobj   = {.name = "bsg", },
+ 	.owner  = THIS_MODULE,
+@@ -1069,16 +1046,9 @@ static int __init bsg_init(void)
+ 	if (ret)
+ 		goto unregister_chrdev;
+ 
+-	ret = scsi_register_interface(&bsg_intf);
+-	if (ret)
+-		goto remove_cdev;
+-
+ 	printk(KERN_INFO BSG_DESCRIPTION " version " BSG_VERSION
+ 	       " loaded (major %d)\n", bsg_major);
+ 	return 0;
+-remove_cdev:
+-	printk(KERN_ERR "bsg: failed register scsi interface %d\n", ret);
+-	cdev_del(&bsg_cdev);
+ unregister_chrdev:
+ 	unregister_chrdev_region(MKDEV(bsg_major, 0), BSG_MAX_DEVS);
+ destroy_bsg_class:
+Index: BUILD-2.6/drivers/scsi/scsi_sysfs.c
+===================================================================
+--- BUILD-2.6.orig/drivers/scsi/scsi_sysfs.c	2007-07-18 11:36:02.000000000 -0500
++++ BUILD-2.6/drivers/scsi/scsi_sysfs.c	2007-07-19 10:10:50.000000000 -0500
+@@ -715,6 +715,7 @@ static int attr_add(struct device *dev, 
+ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+ {
+ 	int error, i;
++	struct request_queue *rq = sdev->request_queue;
+ 
+ 	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
+ 		return error;
+@@ -734,6 +735,17 @@ int scsi_sysfs_add_sdev(struct scsi_devi
+ 	/* take a reference for the sdev_classdev; this is
+ 	 * released by the sdev_class .release */
+ 	get_device(&sdev->sdev_gendev);
++
++	error = bsg_register_queue(rq, sdev->sdev_gendev.bus_id);
++
++	if (error)
++		sdev_printk(KERN_INFO, sdev,
++			    "Failed to register bsg queue, errno=%d\n", error);
++
++	/* we're treating error on bsg register as non-fatal, so pretend
++	 * nothing went wrong */
++	error = 0;
++
+ 	if (sdev->host->hostt->sdev_attrs) {
+ 		for (i = 0; sdev->host->hostt->sdev_attrs[i]; i++) {
+ 			error = attr_add(&sdev->sdev_gendev,
+@@ -780,6 +792,7 @@ void __scsi_remove_device(struct scsi_de
+ 	if (scsi_device_set_state(sdev, SDEV_CANCEL) != 0)
+ 		return;
+ 
++	bsg_unregister_queue(sdev->request_queue);
+ 	class_device_unregister(&sdev->sdev_classdev);
+ 	transport_remove_device(dev);
+ 	device_del(dev);
 
-Zoltan
+
+
