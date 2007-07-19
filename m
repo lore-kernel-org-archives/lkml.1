@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764644AbXGSJsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbXGSJvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764644AbXGSJsa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbXGSJsN
+	id S1758220AbXGSJvP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXGSJu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:48:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59983 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755352AbXGSJsM (ORCPT
+	Thu, 19 Jul 2007 05:50:57 -0400
+Received: from smtp-dmz-234-thursday.dmz.nerim.net ([195.5.254.234]:57299 "EHLO
+	kellthuzad.dmz.nerim.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752120AbXGSJu5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:48:12 -0400
-Date: Thu, 19 Jul 2007 02:47:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
-Message-Id: <20070719024730.03609f1f.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.62.0707191137470.8661@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.529280000@pademelon.sonytel.be>
-	<20070718164351.a92ec032.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0707191100270.8661@pademelon.sonytel.be>
-	<20070719021752.35cb7daa.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0707191137470.8661@pademelon.sonytel.be>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 19 Jul 2007 05:50:57 -0400
+X-Greylist: delayed 4000 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 05:50:56 EDT
+Date: Thu, 19 Jul 2007 09:42:59 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Andreas Schwab <schwab@suse.de>
+Cc: Greg KH <gregkh@suse.de>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sysfs root link count broken in 2.6.22-git5
+Message-ID: <20070719094259.6f654707@hyperion.delvare>
+In-Reply-To: <jeir8hqxmj.fsf@sykes.suse.de>
+References: <20070715124232.4e371bf9@hyperion.delvare>
+	<20070717034844.GB11602@suse.de>
+	<20070717131255.71b7e72e@hyperion.delvare>
+	<20070717183652.GG9702@suse.de>
+	<20070717230530.64d9a896@hyperion.delvare>
+	<20070718033828.GA8582@suse.de>
+	<20070718220652.15ad2c4b@hyperion.delvare>
+	<jeir8hqxmj.fsf@sykes.suse.de>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 11:39:32 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+Hi Andreas,
 
-> > Oh dear.
-> > 
-> > 	ps3rom_priv(dev) = host;
-> > 
-> > that's 'orrid.  We have an identifier pretending to be a function, only we
-> > go and treat it as an lvalue.
-> > 
-> > I mean, C code should look like C code, and the above just doesn't.
-> > 
-> > Sigh.
+On Wed, 18 Jul 2007 22:12:52 +0200, Andreas Schwab wrote:
+> Jean Delvare <khali@linux-fr.org> writes:
+> > Maybe getmntent(3)? Sure I could use this, but how expensive compared
+> > to a single stat(2).
 > 
-> Do you prefer
-> 
-> static inline struct ps3rom_private *ps3rom_priv_get(struct ps3_storage_device
-> *dev)
-> {
-> 	return dev->sbd.core.driver_data;
-> }
-> 
-> static inline void ps3rom_priv_set(struct ps3_storage_device *dev,
-> 				   struct ps3rom_private *priv)
-> {
-> 	dev->sbd.core.driver_data = priv;
-> }
-> 
-> instead?
+> How about comparing the device numbers of /sys and its parent?  If they
+> are different then /sys is a mount point.
 
-Yes.  Not that it's a terribly important issue, particularly down in the
-dark and dusty corners where this code lurks.  The "function" as an lvalue
-thing would be more obnoxious in some top-level interface.  We probably
-already have some :(
+Nice trick, thanks. It's slightly more expensive than my current code
+(two calls to stat(2) instead of one) but also more reliable. I'll
+consider it when we get rid of libsysfs.
 
-If it were mine I'd open-code the "set" and do the "get" as a static
-inline.  Or you could leave it as-is and go off and do something more
-important ;)
+-- 
+Jean Delvare
