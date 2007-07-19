@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935992AbXGSRxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940479AbXGSR6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935992AbXGSRxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965263AbXGSRxN
+	id S940479AbXGSR6V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbXGSR6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:53:13 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:34147 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965213AbXGSRxL (ORCPT
+	Thu, 19 Jul 2007 13:58:07 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:39049 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751926AbXGSR6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:53:11 -0400
-From: Olaf Kirch <olaf.kirch@oracle.com>
-Organization: Oracle
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Date: Thu, 19 Jul 2007 19:51:14 +0200
-User-Agent: KMail/1.9.1
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net,
-       Auke Kok <auke-jan.h.kok@intel.com>
-References: <20070716091236.GA10718@elte.hu> <20070719160556.GA3330@elte.hu> <200707191936.12646.olaf.kirch@oracle.com>
-In-Reply-To: <200707191936.12646.olaf.kirch@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 19 Jul 2007 13:58:06 -0400
+Subject: Re: [PATCH] [scsi] lpfc: potential leak in
+	lpfc_sli_hbqbuf_fill_hbqs
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: James.Smart@Emulex.Com
+Cc: Florin Malita <fmalita@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <469FA312.7070702@emulex.com>
+References: <469F884B.6010402@gmail.com>  <469FA312.7070702@emulex.com>
+Content-Type: text/plain
+Date: Thu, 19 Jul 2007 12:58:03 -0500
+Message-Id: <1184867884.3464.101.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707191951.15675.olaf.kirch@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 19:36, Olaf Kirch wrote:
-> Can you confirm this by spraying the laptop with arp packets
-> or broadcast pings while it's booting?
+On Thu, 2007-07-19 at 13:44 -0400, James Smart wrote:
+> Florin,
+> 
+> Thanks for the effort to create this patch.  Turns out we have already
+> fixed this, and have it included in our 8.2.2 patch set, which we will be
+> posting within the next week.
 
-Sorry for the noise - didn't see your other message where you
-described just that.
+The 2.6.23 merge window is estimated to close on Sunday (22 July) ...
 
-This sounds more like a hardware issue - Rx interrupt seems to
-go through (triggering all the usual NAPI cleanup), but the Tx
-descriptor writeback interrupt doesn't.
+> So James, don't pick this patch up, take the larger patch set instead.
 
-Olaf
--- 
-Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
-okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
+OK, will wait.
+
+James
+
+
