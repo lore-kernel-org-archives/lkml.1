@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764285AbXGSN3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765321AbXGSNa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764285AbXGSN3D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 09:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbXGSN2v
+	id S1765321AbXGSNa7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 09:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbXGSNav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:28:51 -0400
-Received: from khc.piap.pl ([195.187.100.11]:34655 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754016AbXGSN2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:28:50 -0400
-To: Patrick McHardy <kaber@trash.net>
-Cc: andrei radulescu-banu <iubica2@yahoo.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <878246.51044.qm@web56608.mail.re3.yahoo.com>
-	<469E9AC8.3090603@trash.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 19 Jul 2007 15:28:46 +0200
-In-Reply-To: <469E9AC8.3090603@trash.net> (Patrick McHardy's message of "Thu, 19 Jul 2007 00:57:12 +0200")
-Message-ID: <m3zm1sbjzl.fsf@maximus.localdomain>
+	Thu, 19 Jul 2007 09:30:51 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:28030 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbXGSNar (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 09:30:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JkBQzgVke4dKj+2fc1JHa2rnZyRO3vR1y5laVN7LxqT7GGrjEg/C4KxZftBOlmtOrzqgg2PGO339YfAgvFyctiLcbUjcmlSS4faz3ZHzQPTR9clI9Eoo5YVEq7HLerqTlTz1RAQZCg58dx1ZyWnkj/eq3lqn0bW69F/mMQB7cQQ=
+Message-ID: <7b69d1470707190630r322eb8bfka7b0dbd1677b7396@mail.gmail.com>
+Date: Thu, 19 Jul 2007 08:30:44 -0500
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Cc: "James Morris" <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+       "Christian Ehrhardt" <lk@c--e.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Chris Wright" <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       "Stephen Smalley" <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <20070719141535.4a9c8581@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Line.LNX.4.64.0707141233490.26711@d.namei>
+	 <20070718183503.541026f8.akpm@linux-foundation.org>
+	 <20070719073948.GI18840@lisa.in-ulm.de>
+	 <20070719122424.GA5186@vino.hallyn.com>
+	 <Line.LNX.4.64.0707190832290.4303@d.namei>
+	 <7b69d1470707190556n78e52232y7dfea1fd6f47ced@mail.gmail.com>
+	 <20070719141535.4a9c8581@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy <kaber@trash.net> writes:
+On 7/19/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>
+> > Please distinguish between "cater to" and "support". If the kernel
+> > didn't worry about supporting out-of-tree code, then why would there
+> > be loadable module at all?
+>
+> Memory usage, flexibility, debugging.
+>
+> Module support was not added for external modules.
+>
 
-> Your suggestion of disabling VLAN acceleration in promiscous
-> mode sounds like a reasonable solution until then ..
+Code that is being debugged is, often [usually, I hope], out-of-tree
+code, though it may be aimed at future inclusion.
 
->From a user perspective:
+However, I do agree that there is value to having loadable modules for
+in-tree functionality, too.
 
-I'm not sure promiscous mode is related to the problem.
-Tcpdump without promiscous mode makes perfect sense.
-
-I don't know very well VLAN code internals, but I think
-the VLAN # is used for looking up the interface, so
-presenting the "original" packet on the trunk device
-would IMHO involve some skb cloning, and perhaps some
-ethtool option could probably control that.
-
-Not sure about untagged frames vs. tagged frames with
-the default VLAN id - can the hardware at all differentiate
-between them?
-
-
-Or, perhaps it should be left (almost) as is - with "software"
-VLANs the traffic always goes through the master interface,
-but with "accelerated" mode it only goes through logical
-interfaces and doesn't show up on master? Probably with
-exception of invalid VLANs, which could be injected back to
-master (because no logical device exists)?
+scott
 -- 
-Krzysztof Halasa
+scott preece
