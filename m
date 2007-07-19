@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765894AbXGSKIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936366AbXGSKIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765894AbXGSKIJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbXGSJz2
+	id S936366AbXGSKIi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759569AbXGSJza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:55:28 -0400
-Received: from mail.suse.de ([195.135.220.2]:35368 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 05:55:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35373 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbXGSJzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:55:14 -0400
+	id S1751125AbXGSJzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:55:15 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
-To: chrisw@sous-sol.org, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [23/58] i386: remove pit_interrupt_hook
-Message-Id: <20070719095508.70C1C14E06@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:08 +0200 (CEST)
+To: chrisw@sous-sol.org, johnstul@us.ibm.com, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [24/58] x86_64: Untangle asm/hpet.h from asm/timex.h
+Message-Id: <20070719095509.807A014E06@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:09 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Chris Wright <chrisw@sous-sol.org>
 
-Remove pit_interrupt_hook as it adds just an extra layer.
+When making changes to x86_64 timers, I noticed that touching hpet.h triggered
+an unreasonably large rebuild.  Untangling it from timex.h quiets the extra
+rebuild quite a bit.
 
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: john stultz <johnstul@us.ibm.com>
 
 ---
 
- include/asm-i386/i8253.h                 |   11 -----------
- include/asm-i386/mach-default/do_timer.h |    2 +-
- include/asm-i386/mach-voyager/do_timer.h |    2 +-
- 3 files changed, 2 insertions(+), 13 deletions(-)
+ drivers/char/rtc.c         |    2 +-
+ include/asm-x86_64/apic.h  |    2 ++
+ include/asm-x86_64/hpet.h  |    1 -
+ include/asm-x86_64/timex.h |    1 -
+ 4 files changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux/include/asm-i386/i8253.h
+Index: linux/drivers/char/rtc.c
 ===================================================================
---- linux.orig/include/asm-i386/i8253.h
-+++ linux/include/asm-i386/i8253.h
-@@ -7,15 +7,4 @@ extern spinlock_t i8253_lock;
+--- linux.orig/drivers/char/rtc.c
++++ linux/drivers/char/rtc.c
+@@ -82,7 +82,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
  
- extern struct clock_event_device *global_clock_event;
+-#if defined(__i386__)
++#ifdef CONFIG_X86
+ #include <asm/hpet.h>
+ #endif
  
--/**
-- * pit_interrupt_hook - hook into timer tick
-- * @regs:	standard registers from interrupt
-- *
-- * Call the global clock event handler.
-- **/
--static inline void pit_interrupt_hook(void)
--{
--	global_clock_event->event_handler(global_clock_event);
--}
--
- #endif	/* __ASM_I8253_H__ */
-Index: linux/include/asm-i386/mach-default/do_timer.h
+Index: linux/include/asm-x86_64/apic.h
 ===================================================================
---- linux.orig/include/asm-i386/mach-default/do_timer.h
-+++ linux/include/asm-i386/mach-default/do_timer.h
-@@ -12,5 +12,5 @@
+--- linux.orig/include/asm-x86_64/apic.h
++++ linux/include/asm-x86_64/apic.h
+@@ -86,6 +86,8 @@ extern void setup_apic_routing(void);
+ extern void setup_APIC_extened_lvt(unsigned char lvt_off, unsigned char vector,
+ 				   unsigned char msg_type, unsigned char mask);
  
- static inline void do_timer_interrupt_hook(void)
- {
--	pit_interrupt_hook();
-+	global_clock_event->event_handler(global_clock_event);
- }
-Index: linux/include/asm-i386/mach-voyager/do_timer.h
++extern int apic_is_clustered_box(void);
++
+ #define K8_APIC_EXT_LVT_BASE    0x500
+ #define K8_APIC_EXT_INT_MSG_FIX 0x0
+ #define K8_APIC_EXT_INT_MSG_SMI 0x2
+Index: linux/include/asm-x86_64/hpet.h
 ===================================================================
---- linux.orig/include/asm-i386/mach-voyager/do_timer.h
-+++ linux/include/asm-i386/mach-voyager/do_timer.h
-@@ -12,7 +12,7 @@
-  **/
- static inline void do_timer_interrupt_hook(void)
- {
--	pit_interrupt_hook();
-+	global_clock_event->event_handler(global_clock_event);
- 	voyager_timer_interrupt();
- }
+--- linux.orig/include/asm-x86_64/hpet.h
++++ linux/include/asm-x86_64/hpet.h
+@@ -55,7 +55,6 @@
  
+ extern int is_hpet_enabled(void);
+ extern int hpet_rtc_timer_init(void);
+-extern int apic_is_clustered_box(void);
+ extern int hpet_arch_init(void);
+ extern int hpet_timer_stop_set_go(unsigned long tick);
+ extern int hpet_reenable(void);
+Index: linux/include/asm-x86_64/timex.h
+===================================================================
+--- linux.orig/include/asm-x86_64/timex.h
++++ linux/include/asm-x86_64/timex.h
+@@ -9,7 +9,6 @@
+ #include <asm/8253pit.h>
+ #include <asm/msr.h>
+ #include <asm/vsyscall.h>
+-#include <asm/hpet.h>
+ #include <asm/system.h>
+ #include <asm/processor.h>
+ #include <asm/tsc.h>
