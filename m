@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935976AbXGSBvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbXGSB61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935976AbXGSBvA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 21:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbXGSBuu
+	id S1758283AbXGSB61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 21:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbXGSB6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 21:50:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53292 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752849AbXGSBuu (ORCPT
+	Wed, 18 Jul 2007 21:58:17 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:45222 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbXGSB6R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 21:50:50 -0400
-Date: Wed, 18 Jul 2007 18:50:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, adaplas@gmail.com,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [git patches] two warning fixes
-In-Reply-To: <20070718184101.1d31db9c.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0707181848060.27353@woody.linux-foundation.org>
-References: <20070718235504.GA9601@havoc.gtf.org> <200707190159.22654.ak@suse.de>
- <469EAABD.4010504@garzik.org> <1184807945.25235.289.camel@localhost.localdomain>
- <20070718184101.1d31db9c.akpm@linux-foundation.org>
+	Wed, 18 Jul 2007 21:58:17 -0400
+Message-ID: <469EC4E7.3060007@gmail.com>
+Date: Thu, 19 Jul 2007 03:56:55 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrea Arcangeli <andrea@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ray Lee <ray-lk@madrabbit.org>, Bodo Eggert <7eggert@gmx.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+References: <Pine.LNX.4.58.0707161523500.25779@be1.lrz> <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org> <469BFB73.3070105@gmail.com> <20070716232755.GD11115@waste.org> <20070719001539.GC29728@v2.random> <20070719013955.1bedc423@the-village.bc.nu> <20070719013358.GD29728@v2.random> <20070719013725.GP11115@waste.org>
+In-Reply-To: <20070719013725.GP11115@waste.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/19/2007 03:37 AM, Matt Mackall wrote:
 
-
-On Wed, 18 Jul 2007, Andrew Morton wrote:
+> Here's a way to make forward progress on this whole thing:
 > 
-> The only reason why the sysfs creation would fail is a kernel bug,
-> so the consequence of your proposal is in fact unfixed kernel bugs.
+> Turn on irqstacks when using 8k stacks
 
-Well, the thing is, I suspect we have created way more bugs by having that 
-stupid "you must check the return value even if you don't care", than by 
-just letting it go.
+WLI: are you submitting? Makes great sense regardless of anything and 
+they've been tested silly with 4KSTACKS already...
 
-> Now, we can talk about making those sysfs core functions generate warnings
-> themselves, and we can talk about generating new wrappers around them which
-> generate warnings and which return void, then migrating code over to use
-> those.
+> Detect when usage with 8k stacks would overrun a 4k stack when doing
+> our stack switch and do a WARN_ONCE
 
-If the only valid reason to fail is a kernel bug, it damn well should be 
-that sysfs function itself that should complain. It's the only thing that 
-knows and cares.
+Our stack switch?
 
-> And we can also talk about blithely ignoring these errors and not telling
-> anyone about our bugs, but nobody should listen to such scandalous ideas.
+> Fix up the damn bugs
 
-Here's a question: do you always check the return value of "printf()"?
+DM ofcourse is fairly "layered-by-design" so I _hope_ they can be classified 
+simple bugs...
 
-Nobody does. It's not worth it. Trying to do so just creates messy code, 
-and MORE BUGS.
-
-So yes, I think we should ignore return values when they have absolutely 
-zero interest level to us.
-
-		Linus
+Rene.
