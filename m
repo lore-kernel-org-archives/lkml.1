@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939521AbXGSPtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939612AbXGSPtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939521AbXGSPtK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932675AbXGSPsz
+	id S939612AbXGSPtl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:49:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932675AbXGSPtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:48:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33238 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933353AbXGSPsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:48:53 -0400
-Subject: Re: [PATCH] Fix memory leak in dlm_add_member() when
-	dlm_node_weight() returns less than zero
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Teigland <teigland@redhat.com>
-In-Reply-To: <200707190027.43195.jesper.juhl@gmail.com>
-References: <200707190027.43195.jesper.juhl@gmail.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Thu, 19 Jul 2007 16:48:28 +0100
-Message-Id: <1184860108.8765.396.camel@quoit>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Thu, 19 Jul 2007 11:49:20 -0400
+Received: from mga07.intel.com ([143.182.124.22]:1581 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S937618AbXGSPtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:49:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,557,1175497200"; 
+   d="scan'208";a="252398991"
+Message-ID: <469F8784.3030700@linux.intel.com>
+Date: Thu, 19 Jul 2007 08:47:16 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
+References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain> <469F749F.8030606@s5r6.in-berlin.de> <469F7918.3000503@linux.intel.com> <Pine.LNX.4.64.0707191133100.7047@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707191133100.7047@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Now in the GFS2 git tree. Thanks,
-
-Steve.
-
-On Thu, 2007-07-19 at 00:27 +0200, Jesper Juhl wrote:
-> Greetings,
+Robert P. J. Day wrote:
+> On Thu, 19 Jul 2007, Arjan van de Ven wrote:
 > 
-> There's a memory leak in fs/dlm/member.c::dlm_add_member().
+>> Stefan Richter wrote:
+>>> Robert P. J. Day wrote:
+>>> ...
+>>>> it's not clear if that means that it was a *one-time* transition
+>>>> aid which is now unnecessary, or whether it's an *ongoing* aid which
+>>>> might be used at any time.  currently, there are no invocations of
+>>>> EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
+>>>> this feature can be tossed?  or might it still be used every so often?
+>> it's one of those pieces of infrastructure that get used from time
+>> to time to phase out symbol exports... we should be more agressive
+>> about that; about 1/3rd of the exports is not used by anything in
+>> linux, yet each symbol costs about 100 bytes of memory at runtime.
 > 
-> If "dlm_node_weight(ls->ls_name, nodeid)" returns < 0, then 
-> we'll return without freeing the memory allocated to the (at 
-> that point yet unused) 'memb'.
-> This patch frees the allocated memory in that case and thus 
-> avoids the leak.
-> 
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> ---
-> 
->  fs/dlm/member.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/dlm/member.c b/fs/dlm/member.c
-> index 073599d..d099775 100644
-> --- a/fs/dlm/member.c
-> +++ b/fs/dlm/member.c
-> @@ -56,8 +56,10 @@ static int dlm_add_member(struct dlm_ls *ls, int nodeid)
->  		return -ENOMEM;
->  
->  	w = dlm_node_weight(ls->ls_name, nodeid);
-> -	if (w < 0)
-> +	if (w < 0) {
-> +		kfree(memb);
->  		return w;
-> +	}
->  
->  	memb->nodeid = nodeid;
->  	memb->weight = w;
+> ok, so maybe its removal file entry should be deleted if it's going to
+> hang around.  your call.
 > 
 
+the removal entry is/was for the symbols *marked*, not for the 
+infrastructure....
