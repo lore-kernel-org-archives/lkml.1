@@ -1,57 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764866AbXGSMAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763896AbXGSMFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764866AbXGSMAp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbXGSMAf
+	id S1763896AbXGSMFS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbXGSMFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:00:35 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:53238 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757384AbXGSMAe (ORCPT
+	Thu, 19 Jul 2007 08:05:05 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50339 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758063AbXGSMFC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:00:34 -0400
-Date: Thu, 19 Jul 2007 14:00:38 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-Message-ID: <20070719140038.606abd44@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <Pine.LNX.4.62.0707191132150.8661@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.392129000@pademelon.sonytel.be>
-	<20070718163637.3f0e0164.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
-	<20070719112602.5e3cb21a@gondolin.boeblingen.de.ibm.com>
-	<Pine.LNX.4.62.0707191132150.8661@pademelon.sonytel.be>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Jul 2007 08:05:02 -0400
+Message-ID: <469F5372.7010703@bull.net>
+Date: Thu, 19 Jul 2007 14:05:06 +0200
+From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
+X-Accept-Language: en-us, en, fr, hu
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "tony.luck@intel.com" <tony.luck@intel.com>,
+       nickpiggin@yahoo.com.au, mike@stroyan.net, dmosberger@gmail.com,
+       GOTO <y-goto@jp.fujitsu.com>
+Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
+References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com> <20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/07/2007 14:09:33,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/07/2007 14:09:35,
+	Serialize complete at 19/07/2007 14:09:35
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 11:36:31 +0200 (CEST),
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+KAMEZAWA Hiroyuki wrote:
 
-> We have a probe thread that checks for new storage devices and adds them to the
-> bus with ps3_system_bus_device_register(), which calls device_register().
+> Then, what should I do more for fixing this SIGILL problem ?
 > 
-> I guess the actual bus probe() routine gets called through the notifier call
-> chain? That's where I got lost...
+> -Kame
 
-No, ->probe() is called from device_register() directly. If you just
-have one probe thread, you should have enough serialization.
+I can think of a relatively cheap solution:
 
-(Unless you're doing something interesting from the bus_notifier, which
-is called via the notifier chain before ->probe()...)
+New pages are allocated with the bit PG_arch_1 off, see
+page_cache_read() ... prep_new_page(), i.e. the I-cache is
+not coherent with the D-cache.
+
+page_cache_read() should add a macro, say:
+
+	ARCH_PREP_PAGE_BEFORE_READ(page);
+
+before actually calling mapping->a_ops->readpage(file, page).
+
+This macro can be for ia64 something like:
+
+do { if (CPU_has_split_L2_I_cache) set_bit(PG_arch_1, &page->flags); }
+
+and empty for the the architectures non concerned.
+
+The file systems which are identified not to use HW tools to
+avoid split I-cache incoherency, e.g. nfs_readpage(), are required
+to add a macro, say:
+
+	ARCH_CHECK_READ_PAGE_COHERENCY(page);
+
+This macro can be for ia64:
+
+do { if (CPU_has_split_L2_I_cache) clear_bit(PG_arch_1, &page->flags); }
+
+and empty for the the architectures non concerned.
+
+Back to do_no_page():
+if the new PTE includes the exec bit and PG_arch_1 is set,
+the page has to be flushed from the I-cache before the PTE is
+made globally visible.
+
+File systems using local block devices with DMA are considered
+to be safe, with the exceptions of the bounce buffers.
+
+When you copy into the destination page, another macro should be
+added, say:
+
+	ARCH_CHECK_BOUNCE_READ_COHERENCY(bio_vec);
+
+#define ARCH_CHECK_BOUNCE_READ_COHERENCY(bio_vec) \
+		ARCH_CHECK_READ_PAGE_COHERENCY(bio_vec->bv_page)
+
+Remote DMA based network file systems, e.g. Lustre on Quadrics,
+Infiniband are also considered to be safe.
+
+Thanks,
+
+Zoltan
