@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938636AbXGSR1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940799AbXGSR1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938636AbXGSR1Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765861AbXGSR1P
+	id S940799AbXGSR1o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765363AbXGSR1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:27:15 -0400
-Received: from mail.tmr.com ([64.65.253.246]:60381 "EHLO posidon.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755860AbXGSR1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:27:15 -0400
-Message-ID: <469F9EC3.8090306@tmr.com>
-Date: Thu, 19 Jul 2007 13:26:27 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Reply-To: davidsen@posidon.tmr.com
-Organization: TMR Associates, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
+	Thu, 19 Jul 2007 13:27:33 -0400
+Received: from h146-az.mvista.com ([65.200.49.156]:65099 "EHLO
+	zipcode.az.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S940095AbXGSR1c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:27:32 -0400
+Date: Thu, 19 Jul 2007 10:30:12 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 3/4] serial: MPSC: Remove duplicate SUPPORT_SYSRQ definition
+Message-ID: <20070719173012.GC589@mag.az.mvista.com>
+References: <20070719172617.GA589@mag.az.mvista.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ian Kent <raven@themaw.net>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v19
-References: <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com> <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu> <1184648474.3188.33.camel@raven.themaw.net> <20070717074537.GA13539@elte.hu> <alpine.LFD.0.999.0707180852540.27353@woody.linux-foundation.org> <469E8821.3070700@tmr.com> <20070719143214.GA6387@elte.hu> <469F9A2E.5020107@tmr.com>
-In-Reply-To: <469F9A2E.5020107@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719172617.GA589@mag.az.mvista.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> Ingo Molnar wrote:
->> * Bill Davidsen <davidsen@tmr.com> wrote:
->>
->>>> Does the patch below help?
->
-> Doesn't seem to apply against 2.6.22.1, I'm trying 2.6.22.6 as soon as 
-> I recreate it.
+Remove the duplicate definition of SUPPORT_SYSRQ in mpsc driver.
 
-Applied to 2.6.22-git9, building now.
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
+ drivers/serial/mpsc.c |    4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/drivers/serial/mpsc.c b/drivers/serial/mpsc.c
+index 0d75505..1311433 100644
+--- a/drivers/serial/mpsc.c
++++ b/drivers/serial/mpsc.c
+@@ -74,10 +74,6 @@
+ #include <asm/io.h>
+ #include <asm/irq.h>
+ 
+-#if defined(CONFIG_SERIAL_MPSC_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
+-#define SUPPORT_SYSRQ
+-#endif
+-
+ #define	MPSC_NUM_CTLRS		2
+ 
+ /*
