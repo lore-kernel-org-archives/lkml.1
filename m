@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940799AbXGSR1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940815AbXGSR21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940799AbXGSR1o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765363AbXGSR1d
+	id S940815AbXGSR21 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937340AbXGSR2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:27:33 -0400
-Received: from h146-az.mvista.com ([65.200.49.156]:65099 "EHLO
-	zipcode.az.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S940095AbXGSR1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:27:32 -0400
-Date: Thu, 19 Jul 2007 10:30:12 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 3/4] serial: MPSC: Remove duplicate SUPPORT_SYSRQ definition
-Message-ID: <20070719173012.GC589@mag.az.mvista.com>
-References: <20070719172617.GA589@mag.az.mvista.com>
+	Thu, 19 Jul 2007 13:28:08 -0400
+Received: from lisa.in-ulm.de ([217.10.8.8]:54666 "HELO mail.in-ulm.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S938022AbXGSR2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:28:06 -0400
+Date: Thu, 19 Jul 2007 19:24:20 +0200
+From: Christian Ehrhardt <lk@c--e.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Christian Ehrhardt <lk@c--e.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Message-ID: <20070719172420.GA5914@lisa.in-ulm.de>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de> <20070719122424.GA5186@vino.hallyn.com> <1184864070.2694.3.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="uAKRQypu60I7Lcqm"
 Content-Disposition: inline
-In-Reply-To: <20070719172617.GA589@mag.az.mvista.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1184864070.2694.3.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the duplicate definition of SUPPORT_SYSRQ in mpsc driver.
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
----
- drivers/serial/mpsc.c |    4 ----
- 1 file changed, 4 deletions(-)
+--uAKRQypu60I7Lcqm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/serial/mpsc.c b/drivers/serial/mpsc.c
-index 0d75505..1311433 100644
---- a/drivers/serial/mpsc.c
-+++ b/drivers/serial/mpsc.c
-@@ -74,10 +74,6 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- 
--#if defined(CONFIG_SERIAL_MPSC_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
--#define SUPPORT_SYSRQ
--#endif
--
- #define	MPSC_NUM_CTLRS		2
- 
- /*
+On Thu, Jul 19, 2007 at 09:54:30AM -0700, Arjan van de Ven wrote:
+> the next step after this patch is to have an option to get rid of all
+> the function pointer chasing (which is expensive) for the case where you
+> know you only want one security module (which you then can turn on or
+> off)... that advantage is a performance gain for a lot of people....
+
+I'm pretty sure that at least the security_ops function pointers could be
+resolved statically with some proprocessor trickery right now.
+
+E.g. define macros for the security_* hooks in the single security module that
+is configured statically and include those defines in security.h instead
+of the prototypes for the inline functions. Am I missing something?
+
+If a distribution enables such an option there is no way to load a
+security module, true. This is what we have right now if the distro disables
+loadable module support or disables security modules.
+
+       regards   Christian
+
+
+--uAKRQypu60I7Lcqm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGn55EDWylJVHJF/wRAiGkAKC9jMOPn+iGLXGEmSPG7oNz2BrKywCgwrPV
+ggGqe7umrYHO4JFXyVgFA/I=
+=AWY8
+-----END PGP SIGNATURE-----
+
+--uAKRQypu60I7Lcqm--
