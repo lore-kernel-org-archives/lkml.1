@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935768AbXGSALP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764285AbXGSAPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935768AbXGSALP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 20:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763712AbXGSAK7
+	id S1764285AbXGSAPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 20:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbXGSAPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 20:10:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:11678 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759974AbXGSAK6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 20:10:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N5qMpymyocR74N+PsCYWkdZuiuHs5KF1R7HoIaXNUM8bkNidPs/oDMduwmSJM2JA44X34YJU9v+ikcvGHOEqVydQN5dw8V2zfGFC34DbdgWkjJJorRN/HSUp1iBjlWFjzk3Z8wvlprHno1ttzcaNNs3Uz2seyKmljakspAF7vJo=
-Message-ID: <9a8748490707181710h39a4f102j36855f853f46b743@mail.gmail.com>
-Date: Thu, 19 Jul 2007 02:10:58 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Tony Borras" <tonyb@sysdev.org>
-Subject: Re: Linux 2.4.35 tree abandoned/delayed?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070718160309.530d2ca7.tonyb@sysdev.org>
+	Wed, 18 Jul 2007 20:15:43 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33025 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754021AbXGSAPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 20:15:42 -0400
+Date: Thu, 19 Jul 2007 02:15:39 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Rene Herman <rene.herman@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
+       Bodo Eggert <7eggert@gmx.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+Message-ID: <20070719001539.GC29728@v2.random>
+References: <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz> <469A5D7C.5010904@gmail.com> <Pine.LNX.4.58.0707161523500.25779@be1.lrz> <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org> <469BFB73.3070105@gmail.com> <20070716232755.GD11115@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8HOJx-2nt-21@gated-at.bofh.it> <8HOJx-2nt-23@gated-at.bofh.it>
-	 <8HOJx-2nt-25@gated-at.bofh.it> <8HPFA-3Pn-17@gated-at.bofh.it>
-	 <8I29I-6CE-21@gated-at.bofh.it>
-	 <20070718160309.530d2ca7.tonyb@sysdev.org>
+In-Reply-To: <20070716232755.GD11115@waste.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/07/07, Tony Borras <tonyb@sysdev.org> wrote:
-> On Tue, 17 Jul 2007 22:50:10 +0200
-> Willy Tarreau <w@1wt.eu> wrote:
->
-> > Hi Tony,
-> >
-> > [ first, please always keep people in CC on LKML since it's
-> > very easy to
-> >   miss a thread ]
-> >
-> > On Mon, Jul 16, 2007 at 11:23:57PM -0800, Tony Borras wrote:
-> > > On Tue, 17 Jul 2007 07:20:06 +0200
-> > > Willy Tarreau <w@1wt.eu> wrote:
-> > >
-> > > > could you please report what the problem was, in case it's
-> > > > not fixed yet ?
-> > >
-> > > Ok, reproduced error at ./net/ipv4/fib_semantics.c
-> > >   line 436 changed label:
-> > >                    errout -> err_inval
-> >
-> > I don't know where you downloaded 2.4.35-pre5 from, but I've
-> > checked the sources and could not find any reference to
-> > "errout" here in any version!
-> >
-> > Or what is possible is that your 2.4.34 kernel got corrupted
-> > on your disk after applying any patch. Sometimes, some shell
-> > scripts providede with some
->
-> Negatory on that, Willy!
->
-> Here is what I have verified:
->   At kernel.org:/pub/linux/v2.4
->
-> file: patch-2.4.34.3.bz2 has the corruption at line 213:
->   goto errout
->
-> That is where that came from, when I patched my 2.4.34 to arrive
-> at 2.4.34.5, before applying the 2.4.35.rc5 patch!
->
-That sounds wrong. To the best of my knowledge, the 2.4.35-rc5 patch
-should be applied on top of 2.4.34, not on top of 2.4.34.5 ...
+On Mon, Jul 16, 2007 at 06:27:55PM -0500, Matt Mackall wrote:
+> So it's absolutely no help in fixing our order-1 allocation problem
+> because we don't want to force large pages on people.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Using kmalloc(8k) instead of alloc_page() doesn't sound a too big deal
+and that will solve the problem. The whole idea is to avoid the memcpy
++ pte mangling of defrag while hopefully lowering cpu utilization in
+allocations at the same time.
+
+About 4k stacks I was generally against them, much better to fail in
+fork than to risk corruption. The per-irq stack part is great feature
+instead (too bad it wasn't enabled for the safer 8k stacks).
+
+Failing in a do_no_page with variable order page size allocation is a
+fatal event (the task will be killed), failing in fork is graceful,
+userland can retry etc... Fork can fail for different reasons, ulimit
+itself is the most likely source of fork failures. I don't think the
+8k stacks have ever been a problem, yes you will run out of stack
+sooner (sooner also because the 4k stacks takes less memory) but
+nothing is terribly wrong if the 8k allocation fails.
