@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935645AbXGSDoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933553AbXGSDrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935645AbXGSDoi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 23:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbXGSDoa
+	id S933553AbXGSDrZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 23:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757162AbXGSDrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 23:44:30 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:16898 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754289AbXGSDo2 (ORCPT
+	Wed, 18 Jul 2007 23:47:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59456 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758209AbXGSDrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 23:44:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=PrKj9vQeeziXIr6AzCrQAXnlGi9n5dyFrfaWq4nfEOewMKxFDd+MTA6zyOql3uFjo3m/rejaAeR9LG+oMbHsA5HTjufcel9HDfO0S32mmuppD8Nbno3EGF18cpngN7ud8cCBCDau91Tn1Gv+cAqtf+I05bXdfZyrwpG2d+VAs1A=
-Message-ID: <661de9470707182044h16623776ma70bf3a078cead8d@mail.gmail.com>
-Date: Thu, 19 Jul 2007 09:14:28 +0530
-From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Subject: Re: Containers: css_put() dilemma
-Cc: dhaval@linux.vnet.ibm.com, "Pavel Emelianov" <xemul@sw.ru>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Paul Jackson" <pj@sgi.com>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <6599ad830707181615w4f2e4078j58473090691e36eb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 18 Jul 2007 23:47:17 -0400
+Date: Wed, 18 Jul 2007 20:47:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: early_printk accessing __log_buf
+Message-Id: <20070718204706.42a02272.akpm@linux-foundation.org>
+In-Reply-To: <200707182337.34767.rgetz@blackfin.uclinux.org>
+References: <200707181756.44074.rgetz@blackfin.uclinux.org>
+	<200707181939.46910.rgetz@blackfin.uclinux.org>
+	<8bd0f97a0707181653j3d44aab2tf8b6d24689458023@mail.gmail.com>
+	<200707182337.34767.rgetz@blackfin.uclinux.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <469BBE00.8000709@linux.vnet.ibm.com>
-	 <469C99D1.7090807@linux.vnet.ibm.com>
-	 <6599ad830707170849v11fe8cecs6d172cd38d247e09@mail.gmail.com>
-	 <469CFF2B.1080702@linux.vnet.ibm.com>
-	 <6599ad830707171044u38c0a940r12d2bc80b475ead4@mail.gmail.com>
-	 <469D066B.6050606@linux.vnet.ibm.com>
-	 <6599ad830707171126o7c431277p84f532d0122a8a98@mail.gmail.com>
-	 <469D9728.2080701@linux.vnet.ibm.com>
-	 <469DA57F.9050302@linux.vnet.ibm.com>
-	 <6599ad830707181615w4f2e4078j58473090691e36eb@mail.gmail.com>
-X-Google-Sender-Auth: db9f4178d5d97c9b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/19/07, Paul Menage <menage@google.com> wrote:
-> On 7/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >
-> > Thinking out loud again, can we add can_destroy() callbacks?
-> >
->
-> What would the exact semantics of such a callback be?
->
-> Since for proper interaction with release agents we need the subsystem
-> to notify the framework when a subsystem object becomes releasable
-> (currently as part of css_put()), what would a can_destroy() callback
-> let you do that you couldn't do just by taking an extra css refcount
-> to prevent destruction and releasing that refcount to allow
-> destruction?
+On Wed, 18 Jul 2007 23:37:34 -0400 Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-I was thinking along those lines before you mentioned that the next
-version of css_put() will not block. The advantage I see of
-can_destory() is that it allows subsystems to do their own reference
-counting and decide whether they are ready to be deleted or not. The
-other advantage I see is that it can act like a prepare to be deleted
-phase for the controller, the controller might decide to take some
-action in the can_destroy() phase, like the memory controller could
-decide to start reclaiming all  the remaining page cache pages.
+> On Wed 18 Jul 2007 19:53, Mike Frysinger pondered:
+> > On 7/18/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> > > On Wed 18 Jul 2007 18:16, Andrew Morton pondered:
+> > > > I'd suggest that any interface into here should be via function calls,
+> > > > not via direct access to printk internals: think up some nice
+> > > > copy_me_some_of_the_log_buffer() interface.
+> > >
+> > > If so - I would still like to put it in:
+> > >  - ifdef CONFIG_EARLY_PRINTK
+> > >  - and define as __init
+> > >
+> > > so that people don't use it when they shouldn't (when the kernel is up an
+> > > running).
+> > >
+> > > Something simple like - early_copy_log_buff(void *dest, size_t n)
+> > >
+> > > copies n bytes from log_buf to memory area dest. Returns number of bytes that
+> > > could not be copied. Can find out how many bytes are in the log_buff by
+> > > calling with zero size.
+> > >
+> > > This is not destructive to existing interfaces (log_start and con_start are
+> > > not updated/used). This should ensure that if booting does work - that normal
+> > > messages come out the standard method.
+> > >
+> > > Any other suggestions?
+> > 
+> > maybe something as cheesy as early_get_log_buf() ?  that way you dont
+> > have to do any buffer management, you can just operate read-only on
+> > the string ...
+> 
+> I actually thought I might just do something like:
+> 
+>   char *c;
+>   while (early_copy_log_buff(c, 1))
+> 	out_early_serial_byte(c);
+> 
+> that way - I don't need to be very complex in the arch code.
+> 
+> That is about as cheesy/easy as I could think of...
+> 
 
-BTW, do you know upfront as to when the next set of container
-enhancement patches will be ready? The css_put() issue is blocking us
-currently.
+Let's forget the "early" stuff - there are applications of this at
+oops-time as well, and that's as late as it gets ;)
 
-Balbir
+
+How about
+
+	int log_buf_read(int index, char *my_char);
+
+You pass it a zero to start off, and it returns 0 or -1 if `index' is out
+of bounds.
+
+Probably we'd also need a log_buf_size(int) to find out how much is in there
+at present (for people who want to read the last 1000 bytes).
+
+
+Something simple and general, anyway.
+
