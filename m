@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938578AbXGSKa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765128AbXGSKbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938578AbXGSKa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933113AbXGSKBy
+	id S1765128AbXGSKbf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932403AbXGSKCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 06:01:54 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33462 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765359AbXGSKBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 06:01:52 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Christoph Lameter <clameter@sgi.com>, torvalds@osdl.org
-Subject: kmalloc zero size changes break i386
-Date: Thu, 19 Jul 2007 12:01:35 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
+	Thu, 19 Jul 2007 06:02:17 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:2343 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765641AbXGSKCO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 06:02:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=EYVMNExtB/fvGgqmXSBLHuE/0mIQm7hOcIkMRBHDGT1gCV3SgRJmJjKycPYOlALb+DIXlhE4SYA/237S/H8YnG7UlB95gkPNowmnpUoxf6fvDGRD9WPd39Qep71Z3RKIfCsX3s7QUDdUWrsoDo5Ze7eDTDkpGVDv4WPpucEQF+c=
+Message-ID: <af3ea28a0707190301l5d8a801aj260a259a08360de1@mail.gmail.com>
+Date: Thu, 19 Jul 2007 18:01:52 +0800
+From: "ye janboe" <janboe.ye@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: jffs2 statfs issue
+Cc: dwmw2@infradead.org, jffs-dev@axis.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707191201.35777.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+jffs2 can not return correct free space amount.
+I checked jffs2_statfs, there is problem.
 
-qemu testing and booting test machines with i386 kernels wasn't very successfull
-with recent git kernels. I got either BUGs because of failing sysfs initialization
-or oopses in kmalloc, but no user land.
+	avail = c->dirty_size + c->free_size;
+	if (avail > c->sector_size * c->resv_blocks_write)
+		avail -= c->sector_size * c->resv_blocks_write;
+	else
+		avail = 0;
 
-I bisected it down to this commit.
+But in jffs2_reserve_space, c->dirty_size will compare to
+c->nospc_dirty_size. If dirty < c->nospc_dirty_size, it will return
+nospace error.
 
-To reproduce: try to boot a 386 defconfig kernel, compiled with gcc 4.1, in qemu
+So I change above code to
+	dirty = c->dirty_size + c->erasing_size - c->nr_erasing_blocks *
+c->sector_size + c->unchecked_size;
+	if (dirty > c->nospc_dirty_size)
+		avail = c->dirty_size + c->free_size - c->nospc_dirty_size;
+	else
+		avail = c->free_size;
 
--Andi 
+Do this make sense?
 
-6cb8f91320d3e720351c21741da795fed580b21b is first bad commit
-commit 6cb8f91320d3e720351c21741da795fed580b21b
-Author: Christoph Lameter <clameter@sgi.com>
-Date:   Tue Jul 17 04:03:22 2007 -0700
+Thanks a lot!
 
-    Slab allocators: consistent ZERO_SIZE_PTR support and NULL result semantics
-    
-    Define ZERO_OR_NULL_PTR macro to be able to remove the checks from the
-    allocators.  Move ZERO_SIZE_PTR related stuff into slab.h.
-    
-    Make ZERO_SIZE_PTR work for all slab allocators and get rid of the
-    WARN_ON_ONCE(size == 0) that is still remaining in SLAB.
-    
-    Make slub return NULL like the other allocators if a too large memory segmen
-t
-    is requested via __kmalloc.
-    
-    Signed-off-by: Christoph Lameter <clameter@sgi.com>
-    Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
+Janboe
