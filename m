@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934680AbXGSVdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbXGSVid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934680AbXGSVdc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 17:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934468AbXGSVcz
+	id S932303AbXGSVid (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 17:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbXGSViX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 17:32:55 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:47792 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934444AbXGSVcy (ORCPT
+	Thu, 19 Jul 2007 17:38:23 -0400
+Received: from web56601.mail.re3.yahoo.com ([66.196.97.45]:34222 "HELO
+	web56601.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753454AbXGSViW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 17:32:54 -0400
-Date: Thu, 19 Jul 2007 16:30:35 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, tchicks@us.ibm.com,
-       trevor.highland@gmail.com, pregan@ic.sunysb.edu, toml@us.ibm.com,
-       sergeh@us.ibm.com, mike@halcrow.us
-Subject: [PATCH 8/8] eCryptfs: Update comment and debug statement
-Message-ID: <20070719213035.GI13821@halcrow.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <20070719212453.GA13821@halcrow.austin.ibm.com>
+	Thu, 19 Jul 2007 17:38:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=OnqDOf1BfK8oY+nz1BYKIg9LwVRaqTJ5qVe4GSg19Y0ttm53K+iOoe0nvFrYRpSd4VtTvdNti5Bj13pvJSjZVhgKxYrPoyM45cjZ4bGFV1L4QOTzYefkITZh9Ug7Nl13Y56y5g9kHeVFJo5z8+F9b9ac1lBd8BUxY6DfqGJZAKE=;
+X-YMail-OSG: HbMLBB0VM1ma1ZFgNqoH.6VGyZ00x2ovqwLzr9eFNrGnoMH7nhluJ1oHiOpxqA.ZNDGfWHbciclIblWajwfRkdpZle7qGh_Thp4gGMeCR1UBlqYTY5woLygTVxmJeL7qY7cX1qFdCYW4lBsRzdEhZk8I8Q--
+X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.41.16
+Date: Thu, 19 Jul 2007 14:38:20 -0700 (PDT)
+From: andrei radulescu-banu <iubica2@yahoo.com>
+Subject: Re: Linux, tcpdump and vlan
+To: Patrick McHardy <kaber@trash.net>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719212453.GA13821@halcrow.austin.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=ascii
+Message-ID: <930446.33248.qm@web56601.mail.re3.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trivial updates to comment and debug statement.
+During debugging, I noticed that dev_queue_xmit() is called twice for tx vlan frames. This results in a frame being passed twice to a packet socket bound to 'any' interface. If the packet socket is bound to a specific interface, though, it will get only one copy of the tx frame, which is good.
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/ecryptfs/crypto.c |    2 --
- fs/ecryptfs/debug.c  |    2 --
- 2 files changed, 0 insertions(+), 4 deletions(-)
+In more detail: suppose we're tx'ing a frame, and the route table lookup yields a vlan outgoing device eth0.2. dev_queue_xmit() is called, which calls dev_queue_xmit_nit() for dev = eth0.2 then dev->hard_start_xmit() for dev = eth0.2. 
 
-diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
-index 4f7d895..129ed13 100644
---- a/fs/ecryptfs/crypto.c
-+++ b/fs/ecryptfs/crypto.c
-@@ -1267,8 +1267,6 @@ static int ecryptfs_read_header_region(char *data, struct dentry *dentry,
- 	lower_file->f_pos = 0;
- 	oldfs = get_fs();
- 	set_fs(get_ds());
--	/* For releases 0.1 and 0.2, all of the header information
--	 * fits in the first data extent-sized region. */
- 	rc = lower_file->f_op->read(lower_file, (char __user *)data,
- 			      ECRYPTFS_DEFAULT_EXTENT_SIZE, &lower_file->f_pos);
- 	set_fs(oldfs);
-diff --git a/fs/ecryptfs/debug.c b/fs/ecryptfs/debug.c
-index 434c7ef..3d2bdf5 100644
---- a/fs/ecryptfs/debug.c
-+++ b/fs/ecryptfs/debug.c
-@@ -38,8 +38,6 @@ void ecryptfs_dump_auth_tok(struct ecryptfs_auth_tok *auth_tok)
- 			auth_tok);
- 	if (auth_tok->flags & ECRYPTFS_PRIVATE_KEY) {
- 		ecryptfs_printk(KERN_DEBUG, " * private key type\n");
--		ecryptfs_printk(KERN_DEBUG, " * (NO PRIVATE KEY SUPPORT "
--				"IN ECRYPTFS VERSION 0.1)\n");
- 	} else {
- 		ecryptfs_printk(KERN_DEBUG, " * passphrase type\n");
- 		ecryptfs_to_hex(salt, auth_tok->token.password.salt,
--- 
-1.4.4.4
+The latter call gets into the vlan layer, which attaches the vlan id 2 (accelerated or not... in my e1000 case accelerated) then calls dev_queue_xmit() again. This time around dev_queue_xmit_nit() is called for dev = eth0, and dev->hard_start_xmit() actually calls the ethernet driver.
+
+The net result is that dev_queue_xmit_nit() is called twice, once for dev=eth0.2 then for dev=eth0.
+
+
+
+      ____________________________________________________________________________________
+Shape Yahoo! in your own image.  Join our Network Research Panel today!   http://surveylink.yahoo.com/gmrs/yahoo_panel_invite.asp?a=7 
+
 
