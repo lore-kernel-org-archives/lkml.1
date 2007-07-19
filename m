@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937968AbXGSJfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937982AbXGSJgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937968AbXGSJfk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759524AbXGSJfR
+	id S937982AbXGSJgp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935763AbXGSJge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:35:17 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:26275 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759396AbXGSJfO (ORCPT
+	Thu, 19 Jul 2007 05:36:34 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41409 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932672AbXGSJgd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:35:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=mycB7EMYtGLPc+Exx2dexl2zqMoq3HtGHc02yAUeFaFkOFexKGcKG5UTMfRPyoTI2A2AKZYZ/uweGIegd9dAlB8XbSiMhISN+fGKS4c3zXdN5q8thLfG+BvisL9RkNFwBN3Bg3yv2csC1gjuej6zQxQMImAVbHD/qqdJWZ49N2o=
-From: Denis Cheng <crquan@gmail.com>
-To: Paul Clements <Paul.Clements@steeleye.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Steven Whitehouse <steve@chygwyn.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Denis Cheng <crquan@gmail.com>
-Subject: [PATCH 2/2] nbd: change a parameter's type to remove a memcpy call
-Date: Thu, 19 Jul 2007 17:34:31 +0800
-Message-Id: <11848377013773-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11848376711601-git-send-email-crquan@gmail.com>
-References: <11848376711601-git-send-email-crquan@gmail.com>
+	Thu, 19 Jul 2007 05:36:33 -0400
+Date: Thu, 19 Jul 2007 11:36:31 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+In-Reply-To: <20070719112602.5e3cb21a@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.62.0707191132150.8661@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+ <20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
+ <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
+ <20070719112602.5e3cb21a@gondolin.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-43406202-1184837791=:8661"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this memcpy looks so strange, in fact it's merely a pointer dereference,
-so I change the parameter's type to refer it more directly,
-this could make the memcpy not needed anymore.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-in the function nbd_read_stat where nbd_find_request is only once called,
-the parameter served should be transformed accordingly.
+---584337861-43406202-1184837791=:8661
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- drivers/block/nbd.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
+On Thu, 19 Jul 2007, Cornelia Huck wrote:
+> On Thu, 19 Jul 2007 10:57:53 +0200 (CEST),
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> 
+> > Were .probe()/.remove() made concurrent again? I thought that idea was dropped
+> > because it caused too many problems?
+> 
+> Well, for a given device, ->probe()/->remove() are locked by dev->sem,
+> so that there cannot be two probes/removes for the same device at the
+> same time. However, if you have multiple hotplug events pending at the
 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index 86639c0..a4d8508 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -235,14 +235,11 @@ error_out:
- 	return 1;
- }
+OK.
+
+> same time, it depends on your bus whether it does some serialization or
+> whether it allows multiple probes/removes running for different devices.
+> (Initial probing of a bus and probing of all devices with a new driver
+> is done serialized again, I think that's what you're referring to.)
+
+We have a probe thread that checks for new storage devices and adds them to the
+bus with ps3_system_bus_device_register(), which calls device_register().
+
+I guess the actual bus probe() routine gets called through the notifier call
+chain? That's where I got lost...
+
+With kind regards,
  
--static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
-+static struct request *nbd_find_request(struct nbd_device *lo, struct request *xreq)
- {
- 	struct request *req, *n;
--	struct request *xreq;
- 	int err;
- 
--	memcpy(&xreq, handle, sizeof(xreq));
--
- 	err = wait_event_interruptible(lo->active_wq, lo->active_req != xreq);
- 	if (unlikely(err))
- 		goto out;
-@@ -297,7 +294,7 @@ static struct request *nbd_read_stat(struct nbd_device *lo)
- 		goto harderror;
- 	}
- 
--	req = nbd_find_request(lo, reply.handle);
-+	req = nbd_find_request(lo, *(struct request **)reply.handle);
- 	if (unlikely(IS_ERR(req))) {
- 		result = PTR_ERR(req);
- 		if (result != -ENOENT)
--- 
-1.5.2.2
+Geert Uytterhoeven
+Software Architect
 
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-43406202-1184837791=:8661--
