@@ -1,381 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938956AbXGSODu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965036AbXGSOEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938956AbXGSODu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765193AbXGSNtI
+	id S965036AbXGSOEX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762622AbXGSNtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:49:08 -0400
-Received: from ns2.suse.de ([195.135.220.15]:48663 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 09:49:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48670 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760451AbXGSNtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764923AbXGSNtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Jul 2007 09:49:04 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070719348.540885000@suse.de>
 In-Reply-To: <20070719348.540885000@suse.de>
-To: dilinger@queued.net, ak@suse.de, alan@lxorguk.ukuu.org.uk,
-       david-b@pacbell.net, linux-kernel@vger.kernel.org
-Subject: [PATCH for review] [31/48] i386: basic infrastructure support for AMD geode-class  machines
-Message-Id: <20070719134901.8493B14E6E@wotan.suse.de>
-Date: Thu, 19 Jul 2007 15:49:01 +0200 (CEST)
+To: adurbin@google.com, johnstul@us.ibm.com, tglx@linutronix.de, ak@suse.de,
+       lenb@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH for review] [32/48] i386: insert HPET firmware resource after PCI enumeration has completed
+Message-Id: <20070719134902.94CA814E6E@wotan.suse.de>
+Date: Thu, 19 Jul 2007 15:49:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Andres Salomon <dilinger@queued.net>
+From: Aaron Durbin <adurbin@google.com>
 
-This builds upon the existing geode infrastructure, but adds southbridge
-support, some GPIO functions, and a header file (asm-i386/geode.h) with some
-useful GX/LX detection tests.
+Insert HPET resources after pci probing has been completed in order to
+avoid resource conflicts with PCI resource reservation.  With this change
+the HPET firmware resources will be identified, but it should also not
+cause issues when the HPET address falls on a BAR in a PCI device, and the
+PCI enumeration cannot reserve the resources.
 
-The majority of this code was written by Jordan Crouse.
-
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
-Signed-off-by: Andres Salomon <dilinger@debian.org>
+Signed-off-by: Aaron Durbin <adurbin@google.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: john stultz <johnstul@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Andi Kleen <ak@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: David Brownell <david-b@pacbell.net>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/i386/kernel/Makefile |    1 
- arch/i386/kernel/geode.c  |  155 ++++++++++++++++++++++++++++++++++++++++++++
- include/asm-i386/geode.h  |  159 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 315 insertions(+)
+ arch/i386/kernel/acpi/boot.c |   36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-Index: linux/arch/i386/kernel/Makefile
+Index: linux/arch/i386/kernel/acpi/boot.c
 ===================================================================
---- linux.orig/arch/i386/kernel/Makefile
-+++ linux/arch/i386/kernel/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_VM86)		+= vm86.o
- obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
- obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
- obj-$(CONFIG_K8_NB)		+= k8.o
-+obj-$(CONFIG_MGEODE_LX)		+= geode.o
+--- linux.orig/arch/i386/kernel/acpi/boot.c
++++ linux/arch/i386/kernel/acpi/boot.c
+@@ -618,6 +618,8 @@ static int __init acpi_parse_sbf(struct 
+ #ifdef CONFIG_HPET_TIMER
+ #include <asm/hpet.h>
  
- obj-$(CONFIG_VMI)		+= vmi.o vmiclock.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt.o
-Index: linux/arch/i386/kernel/geode.c
-===================================================================
---- /dev/null
-+++ linux/arch/i386/kernel/geode.c
-@@ -0,0 +1,155 @@
-+/*
-+ * AMD Geode southbridge support code
-+ * Copyright (C) 2006, Advanced Micro Devices, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ */
++static struct __initdata resource *hpet_res;
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/ioport.h>
-+#include <linux/io.h>
-+#include <asm/msr.h>
-+#include <asm/geode.h>
+ static int __init acpi_parse_hpet(struct acpi_table_header *table)
+ {
+ 	struct acpi_table_hpet *hpet_tbl;
+@@ -638,8 +640,42 @@ static int __init acpi_parse_hpet(struct
+ 	printk(KERN_INFO PREFIX "HPET id: %#x base: %#lx\n",
+ 	       hpet_tbl->id, hpet_address);
+ 
++	/*
++	 * Allocate and initialize the HPET firmware resource for adding into
++	 * the resource tree during the lateinit timeframe.
++	 */
++#define HPET_RESOURCE_NAME_SIZE 9
++	hpet_res = alloc_bootmem(sizeof(*hpet_res) + HPET_RESOURCE_NAME_SIZE);
 +
-+static struct {
-+	char *name;
-+	u32 msr;
-+	int size;
-+	u32 base;
-+} lbars[] = {
-+	{ "geode-pms",   MSR_LBAR_PMS, LBAR_PMS_SIZE, 0 },
-+	{ "geode-acpi",  MSR_LBAR_ACPI, LBAR_ACPI_SIZE, 0 },
-+	{ "geode-gpio",  MSR_LBAR_GPIO, LBAR_GPIO_SIZE, 0 },
-+	{ "geode-mfgpt", MSR_LBAR_MFGPT, LBAR_MFGPT_SIZE, 0 }
-+};
-+
-+static void __init init_lbars(void)
-+{
-+	u32 lo, hi;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(lbars); i++) {
-+		rdmsr(lbars[i].msr, lo, hi);
-+		if (hi & 0x01)
-+			lbars[i].base = lo & 0x0000ffff;
-+
-+		if (lbars[i].base == 0)
-+			printk(KERN_ERR "geode:  Couldn't initialize '%s'\n",
-+					lbars[i].name);
-+	}
-+}
-+
-+int geode_get_dev_base(unsigned int dev)
-+{
-+	BUG_ON(dev >= ARRAY_SIZE(lbars));
-+	return lbars[dev].base;
-+}
-+EXPORT_SYMBOL_GPL(geode_get_dev_base);
-+
-+/* === GPIO API === */
-+
-+void geode_gpio_set(unsigned int gpio, unsigned int reg)
-+{
-+	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
-+
-+	if (!base)
-+		return;
-+
-+	if (gpio < 16)
-+		outl(1 << gpio, base + reg);
-+	else
-+		outl(1 << (gpio - 16), base + 0x80 + reg);
-+}
-+EXPORT_SYMBOL_GPL(geode_gpio_set);
-+
-+void geode_gpio_clear(unsigned int gpio, unsigned int reg)
-+{
-+	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
-+
-+	if (!base)
-+		return;
-+
-+	if (gpio < 16)
-+		outl(1 << (gpio + 16), base + reg);
-+	else
-+		outl(1 << gpio, base + 0x80 + reg);
-+}
-+EXPORT_SYMBOL_GPL(geode_gpio_clear);
-+
-+int geode_gpio_isset(unsigned int gpio, unsigned int reg)
-+{
-+	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
-+
-+	if (!base)
++	if (!hpet_res)
 +		return 0;
 +
-+	if (gpio < 16)
-+		return (inl(base + reg) & (1 << gpio)) ? 1 : 0;
-+	else
-+		return (inl(base + 0x80 + reg) & (1 << (gpio - 16))) ? 1 : 0;
-+}
-+EXPORT_SYMBOL_GPL(geode_gpio_isset);
++	memset(hpet_res, 0, sizeof(*hpet_res));
++	hpet_res->name = (void *)&hpet_res[1];
++	hpet_res->flags = IORESOURCE_MEM;
++	snprintf((char *)hpet_res->name, HPET_RESOURCE_NAME_SIZE, "HPET %u",
++		 hpet_tbl->sequence);
 +
-+void geode_gpio_set_irq(unsigned int group, unsigned int irq)
-+{
-+	u32 lo, hi;
++	hpet_res->start = hpet_address;
++	hpet_res->end = hpet_address + (1 * 1024) - 1;
 +
-+	if (group > 7 || irq > 15)
-+		return;
-+
-+	rdmsr(MSR_PIC_ZSEL_HIGH, lo, hi);
-+
-+	lo &= ~(0xF << (group * 4));
-+	lo |= (irq & 0xF) << (group * 4);
-+
-+	wrmsr(MSR_PIC_ZSEL_HIGH, lo, hi);
-+}
-+EXPORT_SYMBOL_GPL(geode_gpio_set_irq);
-+
-+void geode_gpio_setup_event(unsigned int gpio, int pair, int pme)
-+{
-+	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
-+	u32 offset, shift, val;
-+
-+	if (gpio >= 24)
-+		offset = GPIO_MAP_W;
-+	else if (gpio >= 16)
-+		offset = GPIO_MAP_Z;
-+	else if (gpio >= 8)
-+		offset = GPIO_MAP_Y;
-+	else
-+		offset = GPIO_MAP_X;
-+
-+	shift = (gpio % 8) * 4;
-+
-+	val = inl(base + offset);
-+
-+	/* Clear whatever was there before */
-+	val &= ~(0xF << shift);
-+
-+	/* And set the new value */
-+
-+	val |= ((pair & 7) << shift);
-+
-+	/* Set the PME bit if this is a PME event */
-+
-+	if (pme)
-+		val |= (1 << (shift + 3));
-+
-+	outl(val, base + offset);
-+}
-+EXPORT_SYMBOL_GPL(geode_gpio_setup_event);
-+
-+static int __init geode_southbridge_init(void)
-+{
-+	if (!is_geode())
-+		return -ENODEV;
-+
-+	init_lbars();
-+	return 0;
-+}
-+
-+postcore_initcall(geode_southbridge_init);
-Index: linux/include/asm-i386/geode.h
-===================================================================
---- /dev/null
-+++ linux/include/asm-i386/geode.h
-@@ -0,0 +1,159 @@
-+/*
-+ * AMD Geode definitions
-+ * Copyright (C) 2006, Advanced Micro Devices, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ */
-+
-+#ifndef _ASM_GEODE_H_
-+#define _ASM_GEODE_H_
-+
-+#include <asm/processor.h>
-+#include <linux/io.h>
-+
-+/* Generic southbridge functions */
-+
-+#define GEODE_DEV_PMS 0
-+#define GEODE_DEV_ACPI 1
-+#define GEODE_DEV_GPIO 2
-+#define GEODE_DEV_MFGPT 3
-+
-+extern int geode_get_dev_base(unsigned int dev);
-+
-+/* Useful macros */
-+#define geode_pms_base()	geode_get_dev_base(GEODE_DEV_PMS)
-+#define geode_acpi_base()	geode_get_dev_base(GEODE_DEV_ACPI)
-+#define geode_gpio_base()	geode_get_dev_base(GEODE_DEV_GPIO)
-+#define geode_mfgpt_base()	geode_get_dev_base(GEODE_DEV_MFGPT)
-+
-+/* MSRS */
-+
-+#define GX_GLCP_SYS_RSTPLL	0x4C000014
-+
-+#define MSR_LBAR_SMB		0x5140000B
-+#define MSR_LBAR_GPIO		0x5140000C
-+#define MSR_LBAR_MFGPT		0x5140000D
-+#define MSR_LBAR_ACPI		0x5140000E
-+#define MSR_LBAR_PMS		0x5140000F
-+
-+#define MSR_PIC_YSEL_LOW	0x51400020
-+#define MSR_PIC_YSEL_HIGH	0x51400021
-+#define MSR_PIC_ZSEL_LOW	0x51400022
-+#define MSR_PIC_ZSEL_HIGH	0x51400023
-+
-+#define MFGPT_IRQ_MSR		0x51400028
-+#define MFGPT_NR_MSR		0x51400029
-+
-+/* Resource Sizes */
-+
-+#define LBAR_GPIO_SIZE		0xFF
-+#define LBAR_MFGPT_SIZE		0x40
-+#define LBAR_ACPI_SIZE		0x40
-+#define LBAR_PMS_SIZE		0x80
-+
-+/* ACPI registers (PMS block) */
+ 	return 0;
+ }
 +
 +/*
-+ * PM1_EN is only valid when VSA is enabled for 16 bit reads.
-+ * When VSA is not enabled, *always* read both PM1_STS and PM1_EN
-+ * with a 32 bit read at offset 0x0
++ * hpet_insert_resource inserts the HPET resources used into the resource
++ * tree.
 + */
-+
-+#define PM1_STS			0x00
-+#define PM1_EN			0x02
-+#define PM1_CNT			0x08
-+#define PM2_CNT			0x0C
-+#define PM_TMR			0x10
-+#define PM_GPE0_STS		0x18
-+#define PM_GPE0_EN		0x1C
-+
-+/* PMC registers (PMS block) */
-+
-+#define PM_SSD			0x00
-+#define PM_SCXA			0x04
-+#define PM_SCYA			0x08
-+#define PM_OUT_SLPCTL		0x0C
-+#define PM_SCLK			0x10
-+#define PM_SED			0x1
-+#define PM_SCXD			0x18
-+#define PM_SCYD			0x1C
-+#define PM_IN_SLPCTL		0x20
-+#define PM_WKD			0x30
-+#define PM_WKXD			0x34
-+#define PM_RD			0x38
-+#define PM_WKXA			0x3C
-+#define PM_FSD			0x40
-+#define PM_TSD			0x44
-+#define PM_PSD			0x48
-+#define PM_NWKD			0x4C
-+#define PM_AWKD			0x50
-+#define PM_SSC			0x54
-+
-+/* GPIO */
-+
-+#define GPIO_OUTPUT_VAL		0x00
-+#define GPIO_OUTPUT_ENABLE	0x04
-+#define GPIO_OUTPUT_OPEN_DRAIN	0x08
-+#define GPIO_OUTPUT_INVERT	0x0C
-+#define GPIO_OUTPUT_AUX1	0x10
-+#define GPIO_OUTPUT_AUX2	0x14
-+#define GPIO_PULL_UP		0x18
-+#define GPIO_PULL_DOWN		0x1C
-+#define GPIO_INPUT_ENABLE	0x20
-+#define GPIO_INPUT_INVERT	0x24
-+#define GPIO_INPUT_FILTER	0x28
-+#define GPIO_INPUT_EVENT_COUNT	0x2C
-+#define GPIO_READ_BACK		0x30
-+#define GPIO_INPUT_AUX1		0x34
-+#define GPIO_EVENTS_ENABLE	0x38
-+#define GPIO_LOCK_ENABLE	0x3C
-+#define GPIO_POSITIVE_EDGE_EN	0x40
-+#define GPIO_NEGATIVE_EDGE_EN	0x44
-+#define GPIO_POSITIVE_EDGE_STS	0x48
-+#define GPIO_NEGATIVE_EDGE_STS	0x4C
-+
-+#define GPIO_MAP_X		0xE0
-+#define GPIO_MAP_Y		0xE4
-+#define GPIO_MAP_Z		0xE8
-+#define GPIO_MAP_W		0xEC
-+
-+extern void geode_gpio_set(unsigned int, unsigned int);
-+extern void geode_gpio_clear(unsigned int, unsigned int);
-+extern int geode_gpio_isset(unsigned int, unsigned int);
-+extern void geode_gpio_setup_event(unsigned int, int, int);
-+extern void geode_gpio_set_irq(unsigned int, unsigned int);
-+
-+static inline void geode_gpio_event_irq(unsigned int gpio, int pair)
++static __init int hpet_insert_resource(void)
 +{
-+	geode_gpio_setup_event(gpio, pair, 0);
++	if (!hpet_res)
++		return 1;
++
++	return insert_resource(&iomem_resource, hpet_res);
 +}
 +
-+static inline void geode_gpio_event_pme(unsigned int gpio, int pair)
-+{
-+	geode_gpio_setup_event(gpio, pair, 1);
-+}
++late_initcall(hpet_insert_resource);
 +
-+/* Specific geode tests */
-+
-+static inline int is_geode_gx(void)
-+{
-+	return ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC) &&
-+		(boot_cpu_data.x86 == 5) &&
-+		(boot_cpu_data.x86_model == 5));
-+}
-+
-+static inline int is_geode_lx(void)
-+{
-+	return ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
-+		(boot_cpu_data.x86 == 5) &&
-+		(boot_cpu_data.x86_model == 10));
-+}
-+
-+static inline int is_geode(void)
-+{
-+	return (is_geode_gx() || is_geode_lx());
-+}
-+
-+#endif
+ #else
+ #define	acpi_parse_hpet	NULL
+ #endif
