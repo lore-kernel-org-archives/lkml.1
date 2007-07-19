@@ -1,205 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964860AbXGSJqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764644AbXGSJsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964860AbXGSJqs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbXGSJqg
+	id S1764644AbXGSJsa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbXGSJsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:46:36 -0400
-Received: from nn7.de ([85.214.94.156]:40261 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755178AbXGSJqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:46:34 -0400
-Subject: Re: [PATCH] appletouch powersaving - please apply for 2.6.23-rc1 -
-	take #4
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-usb-devel@lists.sourceforge.net,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nicolas Boichat <nicolas@boichat.ch>,
-       Michael Hanselmann <linux-kernel@hansmi.ch>,
-       Peter Osterlund <petero2@telia.com>,
-       Frank Arnold <frank@scirocco-5v-turbo.de>,
-       Stelian Pop <stelian@popies.net>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Greg Kroah-Hartman <greg@kroah.com>
-In-Reply-To: <20070718155758.072db90d.akpm@linux-foundation.org>
-References: <1184656218.14051.43.camel@localhost>
-	 <20070718155758.072db90d.akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary="=-3hYnW4VnuAOR5uLENRfi"
-Date: Thu, 19 Jul 2007 03:35:54 +0000
-Message-Id: <1184816154.6161.187.camel@localhost>
+	Thu, 19 Jul 2007 05:48:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59983 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755352AbXGSJsM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:48:12 -0400
+Date: Thu, 19 Jul 2007 02:47:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
+Message-Id: <20070719024730.03609f1f.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.62.0707191137470.8661@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.529280000@pademelon.sonytel.be>
+	<20070718164351.a92ec032.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707191100270.8661@pademelon.sonytel.be>
+	<20070719021752.35cb7daa.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707191137470.8661@pademelon.sonytel.be>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 19 Jul 2007 11:39:32 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
---=-3hYnW4VnuAOR5uLENRfi
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Wed, 2007-07-18 at 15:57 -0700, Andrew Morton wrote:
-> On Tue, 17 Jul 2007 09:10:18 +0200
-> Soeren Sonnenburg <kernel@nn7.de> wrote:
-> 
-> > the attached minimally intrusive patch is based on Matthew Garret's
-> > patch 'Make appletouch shut up when it has nothing to say' patches (e.g.
-> > http://lkml.org/lkml/2007/5/13/117): Matthews description follows /
-> > second paragraph lists my additional changes.
+> > Oh dear.
 > > 
-> > The appletouch geyser3 devices found in the Intel Macs (and possibly some later 
-> > PPC ones?) send a constant stream of packets after the first touch. This 
-> > results in the kernel waking up around once every couple of milliseconds 
-> > to process them, making it almost impossible to spend any significant 
-> > period of time in C3 state on a dynamic HZ kernel. Sending the mode 
-> > initialization code makes the device shut up until it's touched again. 
-> > This patch does so after receiving 10 packets with no interesting 
-> > content.
+> > 	ps3rom_priv(dev) = host;
 > > 
-> > In addition it now empties the work queue via cancel_work_sync on module
-> > exit, keeps all error checking and only reports BTN_LEFT presses if bit
-> > 1 in the status byte (last byte in packet) is set. This fixes the random
-> > left clicks issue. Furthermore it invalidates touchpad data before the
-> > mode switch, which fixes the touchpad runs amok issue.
+> > that's 'orrid.  We have an identifier pretending to be a function, only we
+> > go and treat it as an lvalue.
+> > 
+> > I mean, C code should look like C code, and the above just doesn't.
+> > 
+> > Sigh.
 > 
-> Please feed this through scripts/checkpatch.pl and consider addressing
-> all the things which it reports.
+> Do you prefer
+> 
+> static inline struct ps3rom_private *ps3rom_priv_get(struct ps3_storage_device
+> *dev)
+> {
+> 	return dev->sbd.core.driver_data;
+> }
+> 
+> static inline void ps3rom_priv_set(struct ps3_storage_device *dev,
+> 				   struct ps3rom_private *priv)
+> {
+> 	dev->sbd.core.driver_data = priv;
+> }
+> 
+> instead?
 
-So I did. Updated patch which differs in
+Yes.  Not that it's a terribly important issue, particularly down in the
+dark and dusty corners where this code lurks.  The "function" as an lvalue
+thing would be more obnoxious in some top-level interface.  We probably
+already have some :(
 
-dev->valid = 0; (note the space around =) and further removed debug code
-(which never got triggered but checkpatch.pl complained about)
-                                                                                                                                          
-attached.
-
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
-
---=-3hYnW4VnuAOR5uLENRfi
-Content-Disposition: attachment; filename=appletouch4.patch
-Content-Type: text/x-patch; name=appletouch4.patch; charset=ISO-8859-15
-Content-Transfer-Encoding: base64
-
-VGhlIGF0dGFjaGVkIHBhdGNoIGlzIGJhc2VkIG9uIE1hdHRoZXcgR2FycmV0J3MgcGF0Y2ggJ01h
-a2UgYXBwbGV0b3VjaCBzaHV0DQp1cCB3aGVuIGl0IGhhcyBub3RoaW5nIHRvIHNheScgcGF0Y2hl
-cyAoZS5nLiANCmh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDcvNS8xMy8xMTcpOiBNYXR0aGV3cyBk
-ZXNjcmlwdGlvbiBmb2xsb3dzIC8gc2Vjb25kDQpwYXJhZ3JhcGggbGlzdHMgbXkgYWRkaXRpb25h
-bCBjaGFuZ2VzLg0KDQpUaGUgYXBwbGV0b3VjaCBnZXlzZXIzIGRldmljZXMgZm91bmQgaW4gdGhl
-IEludGVsIE1hY3MgKGFuZCBwb3NzaWJseSBzb21lDQpsYXRlciBQUEMgb25lcz8pIHNlbmQgYSBj
-b25zdGFudCBzdHJlYW0gb2YgcGFja2V0cyBhZnRlciB0aGUgZmlyc3QgdG91Y2guIA0KVGhpcyBy
-ZXN1bHRzIGluIHRoZSBrZXJuZWwgd2FraW5nIHVwIGFyb3VuZCBvbmNlIGV2ZXJ5IGNvdXBsZSBv
-Zg0KbWlsbGlzZWNvbmRzIHRvIHByb2Nlc3MgdGhlbSwgbWFraW5nIGl0IGFsbW9zdCBpbXBvc3Np
-YmxlIHRvIHNwZW5kIGFueQ0Kc2lnbmlmaWNhbnQgcGVyaW9kIG9mIHRpbWUgaW4gQzMgc3RhdGUg
-b24gYSBkeW5hbWljIEhaIGtlcm5lbC4gIFNlbmRpbmcgdGhlDQptb2RlIGluaXRpYWxpemF0aW9u
-IGNvZGUgbWFrZXMgdGhlIGRldmljZSBzaHV0IHVwIHVudGlsIGl0J3MgdG91Y2hlZCBhZ2Fpbi4N
-CiBUaGlzIHBhdGNoIGRvZXMgc28gYWZ0ZXIgcmVjZWl2aW5nIDEwIHBhY2tldHMgd2l0aCBubyBp
-bnRlcmVzdGluZyBjb250ZW50Lg0KDQpJbiBhZGRpdGlvbiBpdCBub3cgZW1wdGllcyB0aGUgd29y
-ayBxdWV1ZSB2aWEgY2FuY2VsX3dvcmtfc3luYyBvbiBtb2R1bGUNCmV4aXQsIGtlZXBzIGFsbCBl
-cnJvciBjaGVja2luZyBhbmQgb25seSByZXBvcnRzIEJUTl9MRUZUIHByZXNzZXMgaWYgYml0IDEN
-CmluIHRoZSBzdGF0dXMgYnl0ZSAobGFzdCBieXRlIGluIHBhY2tldCkgaXMgc2V0LiAgVGhpcyBm
-aXhlcyB0aGUgcmFuZG9tDQpsZWZ0IGNsaWNrcyBpc3N1ZS4gIEZ1cnRoZXJtb3JlIGl0IGludmFs
-aWRhdGVzIHRvdWNocGFkIGRhdGEgYmVmb3JlIHRoZQ0KbW9kZSBzd2l0Y2gsIHdoaWNoIGZpeGVz
-IHRoZSB0b3VjaHBhZCBydW5zIGFtb2sgaXNzdWUuDQoNCkNyZWRpdHM6DQpTdmVuIEFuZGVycyBm
-b3VuZCBvdXQgdGhhdCBvbmUgc2hvdWxkIG9ubHkgY2hlY2sgZm9yIGJpdCAxIGZvciBCVE5fTEVG
-VC4NCk1hdHRoZXcgR2FycmV0dCBkaWQgdGhlIGluaXRpYWwgJ01ha2UgYXBwbGV0b3VjaCBzaHV0
-IHVwIHdoZW4gaXQgaGFzDQpub3RoaW5nIHRvIHNheScgc28gSSBhbSBhZGRpbmcgaGltIHRvIHRo
-ZSBzaWduZWQtb2ZmIGxpbmVzIChob3BlIHRoYXQgaXMNCnRoZSBjb3JyZWN0IHdheSkuDQoNClNp
-Z25lZC1vZmYtYnk6IFNvZXJlbiBTb25uZW5idXJnIDxrZXJuZWxAbm43LmRlPg0KU2lnbmVkLW9m
-Zi1ieTogTWF0dGhldyBHYXJyZXR0IDxtamc1OUBzcmNmLnVjYW0ub3JnPg0KQ2M6IE5pY29sYXMg
-Qm9pY2hhdCA8bmljb2xhc0Bib2ljaGF0LmNoPg0KQ2M6IE1pY2hhZWwgSGFuc2VsbWFubiA8bGlu
-dXgta2VybmVsQGhhbnNtaS5jaD4NCkNjOiBQZXRlciBPc3Rlcmx1bmQgPHBldGVybzJAdGVsaWEu
-Y29tPg0KQ2M6IEZyYW5rIEFybm9sZCA8ZnJhbmtAc2Npcm9jY28tNXYtdHVyYm8uZGU+DQpDYzog
-U3RlbGlhbiBQb3AgPHN0ZWxpYW5AcG9waWVzLm5ldD4NCkNjOiBKb2hhbm5lcyBCZXJnIDxqb2hh
-bm5lc0BzaXBzb2x1dGlvbnMubmV0Pg0KQ2M6IEdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ0Brcm9h
-aC5jb20+DQpDYzogRG1pdHJ5IFRvcm9raG92IDxkdG9yQG1haWwucnU+DQpTaWduZWQtb2ZmLWJ5
-OiBBbmRyZXcgTW9ydG9uIDxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnPg0KDQpkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9pbnB1dC9tb3VzZS9hcHBsZXRvdWNoLmMgYi9kcml2ZXJzL2lucHV0L21vdXNl
-L2FwcGxldG91Y2guYw0KaW5kZXggZTMyMTUyNi4uZjMzNmI3YiAxMDA2NDQNCi0tLSBhL2RyaXZl
-cnMvaW5wdXQvbW91c2UvYXBwbGV0b3VjaC5jDQorKysgYi9kcml2ZXJzL2lucHV0L21vdXNlL2Fw
-cGxldG91Y2guYw0KQEAgLTE1NSw2ICsxNTUsOCBAQCBzdHJ1Y3QgYXRwIHsNCiAJaW50CQkJeHlf
-YWNjW0FUUF9YU0VOU09SUyArIEFUUF9ZU0VOU09SU107DQogCWludAkJCW92ZXJmbG93d2FybjsJ
-Lyogb3ZlcmZsb3cgd2FybmluZyBwcmludGVkPyAqLw0KIAlpbnQJCQlkYXRhbGVuOwkvKiBzaXpl
-IG9mIGFuIFVTQiB1cmIgdHJhbnNmZXIgKi8NCisJaW50CQkJaWRsZWNvdW50OyAgICAgIC8qIG51
-bWJlciBvZiBlbXB0eSBwYWNrZXRzICovDQorCXN0cnVjdCB3b3JrX3N0cnVjdCAgICAgIHdvcms7
-DQogfTsNCiANCiAjZGVmaW5lIGRiZ19kdW1wKG1zZywgdGFiKSBcDQpAQCAtMjA4LDYgKzIxMCw1
-NSBAQCBzdGF0aWMgaW5saW5lIGludCBhdHBfaXNfZ2V5c2VyXzMoc3RydWN0IGF0cCAqZGV2KQ0K
-IAkJKHByb2R1Y3RJZCA9PSBHRVlTRVI0X0pJU19QUk9EVUNUX0lEKTsNCiB9DQogDQorLyoNCisg
-KiBCeSBkZWZhdWx0IEdleXNlciAzIGRldmljZSBzZW5kcyBzdGFuZGFyZCBVU0IgSElEIG1vdXNl
-DQorICogcGFja2V0cyAoUmVwb3J0IElEIDIpLiBUaGlzIGNvZGUgY2hhbmdlcyBkZXZpY2UgbW9k
-ZSwgc28gaXQNCisgKiBzZW5kcyByYXcgc2Vuc29yIHJlcG9ydHMgKFJlcG9ydCBJRCA1KS4NCisg
-Ki8NCitzdGF0aWMgaW50IGF0cF9nZXlzZXIzX2luaXQoc3RydWN0IHVzYl9kZXZpY2UgKnVkZXYp
-DQorew0KKwljaGFyIGRhdGFbOF07DQorCWludCBzaXplOw0KKw0KKwlzaXplID0gdXNiX2NvbnRy
-b2xfbXNnKHVkZXYsIHVzYl9yY3ZjdHJscGlwZSh1ZGV2LCAwKSwNCisJCQlBVFBfR0VZU0VSM19N
-T0RFX1JFQURfUkVRVUVTVF9JRCwNCisJCQlVU0JfRElSX0lOIHwgVVNCX1RZUEVfQ0xBU1MgfCBV
-U0JfUkVDSVBfSU5URVJGQUNFLA0KKwkJCUFUUF9HRVlTRVIzX01PREVfUkVRVUVTVF9WQUxVRSwN
-CisJCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfSU5ERVgsICZkYXRhLCA4LCA1MDAwKTsNCisN
-CisJaWYgKHNpemUgIT0gOCkgew0KKwkJZXJyKCJDb3VsZCBub3QgZG8gbW9kZSByZWFkIHJlcXVl
-c3QgZnJvbSBkZXZpY2UiDQorCQkgICAgIiAoR2V5c2VyIDMgbW9kZSkiKTsNCisJCXJldHVybiAt
-RUlPOw0KKwl9DQorDQorCS8qIEFwcGx5IHRoZSBtb2RlIHN3aXRjaCAqLw0KKwlkYXRhWzBdID0g
-QVRQX0dFWVNFUjNfTU9ERV9WRU5ET1JfVkFMVUU7DQorDQorCXNpemUgPSB1c2JfY29udHJvbF9t
-c2codWRldiwgdXNiX3NuZGN0cmxwaXBlKHVkZXYsIDApLA0KKwkJCUFUUF9HRVlTRVIzX01PREVf
-V1JJVEVfUkVRVUVTVF9JRCwNCisJCQlVU0JfRElSX09VVCB8IFVTQl9UWVBFX0NMQVNTIHwgVVNC
-X1JFQ0lQX0lOVEVSRkFDRSwNCisJCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfVkFMVUUsDQor
-CQkJQVRQX0dFWVNFUjNfTU9ERV9SRVFVRVNUX0lOREVYLCAmZGF0YSwgOCwgNTAwMCk7DQorDQor
-CWlmIChzaXplICE9IDgpIHsNCisJCWVycigiQ291bGQgbm90IGRvIG1vZGUgd3JpdGUgcmVxdWVz
-dCB0byBkZXZpY2UiDQorCQkgICAgIiAoR2V5c2VyIDMgbW9kZSkiKTsNCisJCXJldHVybiAtRUlP
-Ow0KKwl9DQorCXJldHVybiAwOw0KK30NCisNCisvKiBSZWluaXRpYWxpc2UgdGhlIGRldmljZSBp
-ZiBpdCdzIGEgZ2V5c2VyIDMgKi8NCitzdGF0aWMgdm9pZCBhdHBfcmVpbml0KHN0cnVjdCB3b3Jr
-X3N0cnVjdCAqd29yaykNCit7DQorCXN0cnVjdCBhdHAgKmRldiA9IGNvbnRhaW5lcl9vZih3b3Jr
-LCBzdHJ1Y3QgYXRwLCB3b3JrKTsNCisJc3RydWN0IHVzYl9kZXZpY2UgKnVkZXYgPSBkZXYtPnVk
-ZXY7DQorDQorCWRldi0+aWRsZWNvdW50ID0gMDsNCisJYXRwX2dleXNlcjNfaW5pdCh1ZGV2KTsN
-Cit9DQorDQogc3RhdGljIGludCBhdHBfY2FsY3VsYXRlX2FicyhpbnQgKnh5X3NlbnNvcnMsIGlu
-dCBuYl9zZW5zb3JzLCBpbnQgZmFjdCwNCiAJCQkgICAgIGludCAqeiwgaW50ICpmaW5nZXJzKQ0K
-IHsNCkBAIC00NDksMTEgKzUwMCwyMSBAQCBzdGF0aWMgdm9pZCBhdHBfY29tcGxldGUoc3RydWN0
-IHVyYiogdXJiKQ0KIA0KIAkJLyogcmVzZXQgdGhlIGFjY3VtdWxhdG9yIG9uIHJlbGVhc2UgKi8N
-CiAJCW1lbXNldChkZXYtPnh5X2FjYywgMCwgc2l6ZW9mKGRldi0+eHlfYWNjKSk7DQotCX0NCiAN
-Ci0JaW5wdXRfcmVwb3J0X2tleShkZXYtPmlucHV0LCBCVE5fTEVGVCwNCi0JCQkgISFkZXYtPmRh
-dGFbZGV2LT5kYXRhbGVuIC0gMV0pOw0KKwkJLyogR2V5c2VyIDMgd2lsbCBjb250aW51ZSB0byBz
-ZW5kIHBhY2tldHMgY29udGludWFsbHkgYWZ0ZXINCisJCSAgIHRoZSBmaXJzdCB0b3VjaCB1bmxl
-c3MgcmVpbml0aWFsaXNlZC4gRG8gc28gaWYgaXQncyBiZWVuDQorCQkgICBpZGxlIGZvciBhIHdo
-aWxlIGluIG9yZGVyIHRvIGF2b2lkIHdha2luZyB0aGUga2VybmVsIHVwDQorCQkgICBzZXZlcmFs
-IGh1bmRyZWQgdGltZXMgYSBzZWNvbmQgKi8NCisJCWlmIChhdHBfaXNfZ2V5c2VyXzMoZGV2KSkg
-ew0KKwkJCWRldi0+aWRsZWNvdW50Kys7DQorCQkJaWYgKGRldi0+aWRsZWNvdW50ID09IDEwKSB7
-DQorCQkJCWRldi0+dmFsaWQgPSAwOw0KKwkJCQlzY2hlZHVsZV93b3JrICgmZGV2LT53b3JrKTsN
-CisJCQl9DQorCQl9DQorCX0NCiANCisJaW5wdXRfcmVwb3J0X2tleShkZXYtPmlucHV0LCBCVE5f
-TEVGVCwgZGV2LT5kYXRhW2Rldi0+ZGF0YWxlbi0xXSAmIDEpOw0KIAlpbnB1dF9zeW5jKGRldi0+
-aW5wdXQpOw0KIA0KIGV4aXQ6DQpAQCAtNDgwLDYgKzU0MSw3IEBAIHN0YXRpYyB2b2lkIGF0cF9j
-bG9zZShzdHJ1Y3QgaW5wdXRfZGV2ICppbnB1dCkNCiAJc3RydWN0IGF0cCAqZGV2ID0gaW5wdXRf
-Z2V0X2RydmRhdGEoaW5wdXQpOw0KIA0KIAl1c2Jfa2lsbF91cmIoZGV2LT51cmIpOw0KKwljYW5j
-ZWxfd29ya19zeW5jKCZkZXYtPndvcmspOw0KIAlkZXYtPm9wZW4gPSAwOw0KIH0NCiANCkBAIC01
-MjgsNDAgKzU5MCwxMCBAQCBzdGF0aWMgaW50IGF0cF9wcm9iZShzdHJ1Y3QgdXNiX2ludGVyZmFj
-ZSAqaWZhY2UsIGNvbnN0IHN0cnVjdCB1c2JfZGV2aWNlX2lkICppZA0KIAkJZGV2LT5kYXRhbGVu
-ID0gODE7DQogDQogCWlmIChhdHBfaXNfZ2V5c2VyXzMoZGV2KSkgew0KLQkJLyoNCi0JCSAqIEJ5
-IGRlZmF1bHQgR2V5c2VyIDMgZGV2aWNlIHNlbmRzIHN0YW5kYXJkIFVTQiBISUQgbW91c2UNCi0J
-CSAqIHBhY2tldHMgKFJlcG9ydCBJRCAyKS4gVGhpcyBjb2RlIGNoYW5nZXMgZGV2aWNlIG1vZGUs
-IHNvIGl0DQotCQkgKiBzZW5kcyByYXcgc2Vuc29yIHJlcG9ydHMgKFJlcG9ydCBJRCA1KS4NCi0J
-CSAqLw0KLQkJY2hhciBkYXRhWzhdOw0KLQkJaW50IHNpemU7DQotDQotCQlzaXplID0gdXNiX2Nv
-bnRyb2xfbXNnKHVkZXYsIHVzYl9yY3ZjdHJscGlwZSh1ZGV2LCAwKSwNCi0JCQlBVFBfR0VZU0VS
-M19NT0RFX1JFQURfUkVRVUVTVF9JRCwNCi0JCQlVU0JfRElSX0lOIHwgVVNCX1RZUEVfQ0xBU1Mg
-fCBVU0JfUkVDSVBfSU5URVJGQUNFLA0KLQkJCUFUUF9HRVlTRVIzX01PREVfUkVRVUVTVF9WQUxV
-RSwNCi0JCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1RfSU5ERVgsICZkYXRhLCA4LCA1MDAwKTsN
-Ci0NCi0JCWlmIChzaXplICE9IDgpIHsNCi0JCQllcnIoIkNvdWxkIG5vdCBkbyBtb2RlIHJlYWQg
-cmVxdWVzdCBmcm9tIGRldmljZSINCi0JCQkJCQkJIiAoR2V5c2VyIDMgbW9kZSkiKTsNCisJCS8q
-IHN3aXRjaCB0byByYXcgc2Vuc29yIG1vZGUgKi8NCisJCWlmIChhdHBfZ2V5c2VyM19pbml0KHVk
-ZXYpKQ0KIAkJCWdvdG8gZXJyX2ZyZWVfZGV2czsNCi0JCX0NCi0NCi0JCS8qIEFwcGx5IHRoZSBt
-b2RlIHN3aXRjaCAqLw0KLQkJZGF0YVswXSA9IEFUUF9HRVlTRVIzX01PREVfVkVORE9SX1ZBTFVF
-Ow0KLQ0KLQkJc2l6ZSA9IHVzYl9jb250cm9sX21zZyh1ZGV2LCB1c2Jfc25kY3RybHBpcGUodWRl
-diwgMCksDQotCQkJQVRQX0dFWVNFUjNfTU9ERV9XUklURV9SRVFVRVNUX0lELA0KLQkJCVVTQl9E
-SVJfT1VUIHwgVVNCX1RZUEVfQ0xBU1MgfCBVU0JfUkVDSVBfSU5URVJGQUNFLA0KLQkJCUFUUF9H
-RVlTRVIzX01PREVfUkVRVUVTVF9WQUxVRSwNCi0JCQlBVFBfR0VZU0VSM19NT0RFX1JFUVVFU1Rf
-SU5ERVgsICZkYXRhLCA4LCA1MDAwKTsNCiANCi0JCWlmIChzaXplICE9IDgpIHsNCi0JCQllcnIo
-IkNvdWxkIG5vdCBkbyBtb2RlIHdyaXRlIHJlcXVlc3QgdG8gZGV2aWNlIg0KLQkJCQkJCQkiIChH
-ZXlzZXIgMyBtb2RlKSIpOw0KLQkJCWdvdG8gZXJyX2ZyZWVfZGV2czsNCi0JCX0NCiAJCXByaW50
-aygiYXBwbGV0b3VjaCBHZXlzZXIgMyBpbml0ZWQuXG4iKTsNCiAJfQ0KIA0KQEAgLTYzNiw2ICs2
-NjgsOCBAQCBzdGF0aWMgaW50IGF0cF9wcm9iZShzdHJ1Y3QgdXNiX2ludGVyZmFjZSAqaWZhY2Us
-IGNvbnN0IHN0cnVjdCB1c2JfZGV2aWNlX2lkICppZA0KIAkvKiBzYXZlIG91ciBkYXRhIHBvaW50
-ZXIgaW4gdGhpcyBpbnRlcmZhY2UgZGV2aWNlICovDQogCXVzYl9zZXRfaW50ZmRhdGEoaWZhY2Us
-IGRldik7DQogDQorCUlOSVRfV09SSygmZGV2LT53b3JrLCBhdHBfcmVpbml0KTsNCisNCiAJcmV0
-dXJuIDA7DQogDQogIGVycl9mcmVlX2J1ZmZlcjoNCg==
-
-
---=-3hYnW4VnuAOR5uLENRfi--
+If it were mine I'd open-code the "set" and do the "get" as a static
+inline.  Or you could leave it as-is and go off and do something more
+important ;)
