@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939403AbXGSQas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939039AbXGSQbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939403AbXGSQas (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765408AbXGSQak
+	id S939039AbXGSQbU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765729AbXGSQa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:30:40 -0400
-Received: from gw.goop.org ([64.81.55.164]:37004 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764176AbXGSQaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:30:39 -0400
-Message-ID: <469F9178.7060801@goop.org>
-Date: Thu, 19 Jul 2007 09:29:44 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 19 Jul 2007 12:30:57 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:28158 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765408AbXGSQa4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:30:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N7xmgY2VjvBRBPM5L/1kQ4Zs6w10n62h/onv8GGBdlqlwLPwdbiFMCiFLUGu1zowaZJSKcEpPzVqdLuJawPfaAavRfa1/r9TRscA9TkC6CPNRTIFROQvlBLPID3SMK78V9EVZZcsIdGgMFIdO3tLi+YvPP8GXgobX/eV0hiMSb8=
+Message-ID: <625fc13d0707190930j381ea4f2x462a8269db269388@mail.gmail.com>
+Date: Thu, 19 Jul 2007 11:30:54 -0500
+From: "Josh Boyer" <jwboyer@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm 0/5] Freezer update
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>, "Pavel Machek" <pavel@ucw.cz>
+In-Reply-To: <20070718010353.27965df7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Jan Glauber <jang@linux.vnet.ibm.com>, Andi Kleen <ak@suse.de>,
-       Zachary Amsden <zach@vmware.com>
-Subject: Re: [patch] sched: implement cpu_clock(cpu) high-speed time source,
- take #2
-References: <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu> <469F7D7A.204@goop.org> <20070719150955.GA19373@elte.hu> <469F8179.2060802@goop.org> <20070719154254.GA24225@elte.hu> <20070719154449.GA28998@elte.hu> <469F8D28.1010304@goop.org> <20070719161643.GA5153@elte.hu> <469F8EBE.5020703@goop.org> <20070719162114.GA6154@elte.hu>
-In-Reply-To: <20070719162114.GA6154@elte.hu>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707180929.31511.rjw@sisk.pl>
+	 <20070718010353.27965df7.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> that's still an important question, but these changes are still needed 
-> nevertheless, to unbreak softlockup.c 
+On 7/18/07, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Well, I'm happy with using jiffies as the backport fix for softlockup
-(if sched_clock is indeed a problem there), but mainly because it won't
-affect Xen.  I don't know what effect it will have on vmi though.
+> > so please consider them as 2.6.23 material.
+>
+> The door for new 2.6.23 material shut two weeks ago.  Here, at least.
 
-cpu_clock seems like a good approach for .23 onwards.  I guess I should
-test it at some point...
+So do you have a general guideline as to when you'd like patches sent
+to you for the next merge window?  The releases are fairly
+predictable, so perhaps something like one of the later -rc candidates
+for the upcoming release?
 
-    J
+E.g. patches for 2.6.24 should be to you by 2.6.23-rc<N>?
 
+Of course, this is assuming they go through you.  I'm not trying to
+complicate things.  Just trying to get an understanding of how you'd
+like it to work.
 
+josh
