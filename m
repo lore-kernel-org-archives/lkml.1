@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940521AbXGSRYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940412AbXGSR0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940521AbXGSRYr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933981AbXGSRYW
+	id S940412AbXGSR0b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765363AbXGSR0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:24:22 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:26093 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940296AbXGSRYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:24:20 -0400
-Date: Thu, 19 Jul 2007 19:24:03 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Jan Glauber <jang@linux.vnet.ibm.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch] sched: implement cpu_clock(cpu) high-speed time
-	source,  take #2
-Message-ID: <20070719172403.GU11657@kernel.dk>
-References: <469F75AF.5080000@goop.org> <20070719143528.GA8278@elte.hu> <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu> <469F7D7A.204@goop.org> <20070719150955.GA19373@elte.hu> <469F8179.2060802@goop.org> <20070719154254.GA24225@elte.hu> <20070719154449.GA28998@elte.hu> <469F8D28.1010304@goop.org>
+	Thu, 19 Jul 2007 13:26:22 -0400
+Received: from h146-az.mvista.com ([65.200.49.156]:64999 "EHLO
+	zipcode.az.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762395AbXGSR0W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:26:22 -0400
+Date: Thu, 19 Jul 2007 10:29:02 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: stephane@artesyncp.com, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 2/4] serial: MPSC: Stop rx engine when CREAD cleared
+Message-ID: <20070719172902.GB589@mag.az.mvista.com>
+References: <20070719172617.GA589@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <469F8D28.1010304@goop.org>
+In-Reply-To: <20070719172617.GA589@mag.az.mvista.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19 2007, Jeremy Fitzhardinge wrote:
-> > Index: linux/block/blktrace.c
-> > ===================================================================
-> > --- linux.orig/block/blktrace.c
-> > +++ linux/block/blktrace.c
-> > @@ -41,7 +41,7 @@ static void trace_note(struct blk_trace 
-> >  		const int cpu = smp_processor_id();
-> >  
-> >  		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
-> > -		t->time = sched_clock() - per_cpu(blk_trace_cpu_offset, cpu);
-> > +		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
-> >  		t->device = bt->dev;
-> >  		t->action = action;
-> >  		t->pid = pid;
-> > @@ -159,7 +159,7 @@ void __blk_add_trace(struct blk_trace *b
-> >  
-> >  		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
-> >  		t->sequence = ++(*sequence);
-> > -		t->time = sched_clock() - per_cpu(blk_trace_cpu_offset, cpu);
-> > +		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
-> >   
-> 
-> What's this measuring here?  Time spend in IO?  Wouldn't it be better
-> off with a measurement of real monotonic time?
+From: Stephane Chazelas <stephane@artesyncp.com>
 
-It's not time spent in IO, it wants a nanosecond timestamp.
+Currently, the MPSC driver doesn't stop recieving characters when the
+CREAD flag in termios->c_cflag is cleared.  It should.  Also, only start
+receiving if its not already started.
 
--- 
-Jens Axboe
+Signed-off-by: Stephane Chazelas <stephane@artesyncp.com>
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
+ drivers/serial/mpsc.c |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/serial/mpsc.c b/drivers/serial/mpsc.c
+index 99715fe..108fa4c 100644
+--- a/drivers/serial/mpsc.c
++++ b/drivers/serial/mpsc.c
+@@ -1536,7 +1536,6 @@ mpsc_set_termios(struct uart_port *port, struct ktermios *termios,
+ 	mpsc_set_baudrate(pi, baud);
+ 
+ 	/* Characters/events to read */
+-	pi->rcv_data = 1;
+ 	pi->port.read_status_mask = SDMA_DESC_CMDSTAT_OR;
+ 
+ 	if (termios->c_iflag & INPCK)
+@@ -1560,11 +1559,15 @@ mpsc_set_termios(struct uart_port *port, struct ktermios *termios,
+ 			pi->port.ignore_status_mask |= SDMA_DESC_CMDSTAT_OR;
+ 	}
+ 
+-	/* Ignore all chars if CREAD not set */
+-	if (!(termios->c_cflag & CREAD))
++	if ((termios->c_cflag & CREAD)) {
++		if (!pi->rcv_data) {
++			pi->rcv_data = 1;
++			mpsc_start_rx(pi);
++		}
++	} else if (pi->rcv_data) {
++		mpsc_stop_rx(port);
+ 		pi->rcv_data = 0;
+-	else
+-		mpsc_start_rx(pi);
++	}
+ 
+ 	spin_unlock_irqrestore(&pi->port.lock, flags);
+ 	return;
 
