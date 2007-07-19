@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbXGSCSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760838AbXGSCcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933064AbXGSCSm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 22:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758653AbXGSCSe
+	id S1760838AbXGSCcZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 22:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbXGSCcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 22:18:34 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:49809 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753553AbXGSCSe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 22:18:34 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Subject: Re: which signal is sent to freeze process?
-Date: Thu, 19 Jul 2007 12:18:32 +1000
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com>
+	Wed, 18 Jul 2007 22:32:15 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34984 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750847AbXGSCcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 22:32:14 -0400
+Message-ID: <469ECD29.2010909@garzik.org>
+Date: Wed, 18 Jul 2007 22:32:09 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1242082.qHtJv7LF1z";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+Subject: Re: [git patches] two warning fixes
+References: <20070718235504.GA9601@havoc.gtf.org> <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707191218.32730.nigel@nigel.suspend2.net>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1242082.qHtJv7LF1z
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Linus Torvalds wrote:
+> So let's make a new rule:
+> 
+>   We absolutely NEVER add things like "must_check" unless not checking 
+>   causes a real and obvious SECURITY ISSUE.
+> 
+>   And we absolutely *never* add crap like "deprecated", where the only 
+>   point of the warning is to effectively hide *real* problems.
+> 
+> So realistically, the only thing that needs must_check is pretty much 
+> things like "get_user()" and quite frankly, I'm not sure even about that 
+> one.
+> 
+> Ok?
 
-Hi.
 
-On Thursday 19 July 2007 09:42:02 Agarwal, Lomesh wrote:
-> My understanding is that Linux kernel sends a signal to freeze processes
-> during suspend2ram operation. Which signal is used to achieve this?
-> The problem I am facing is that some of the system calls are failing
-> with EINTR errno during suspend operation and I want to install a signal
-> handler for freeze signal with SA_RESTART flag. That should make the
-> kernel to retry the system calls. Right?
+Sounds great to me...  My overall goal is killing useless warnings that 
+continually obscure real ones.
 
-No signal is sent. We tell affected processes that they have a signal pendi=
-ng,=20
-and capture them in the signal handling code while the suspend to ram is=20
-occuring. After the suspend to ram is finished, we recalculate whether they=
-=20
-have a signal pending, and let them continue.
+	Jeff
 
-Not being a guru on signal handling itself, I won't try to answer the quest=
-ion=20
-itself :\.
 
-Regards,
-
-Nigel
-
---nextPart1242082.qHtJv7LF1z
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGnsn4N0y+n1M3mo0RAg0FAJ4odLWIGG3wuHouyag19YyDsISgLwCeJJqy
-zd9KF3v3Ta87sUeue5WWjYk=
-=Y2lX
------END PGP SIGNATURE-----
-
---nextPart1242082.qHtJv7LF1z--
