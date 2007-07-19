@@ -1,249 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939199AbXGSOKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939179AbXGSOLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939199AbXGSOKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938173AbXGSNzZ
+	id S939179AbXGSOLB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938326AbXGSN4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:55:25 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:43807 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S938105AbXGSNzW (ORCPT
+	Thu, 19 Jul 2007 09:56:51 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:59057 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938314AbXGSN4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:55:22 -0400
-Date: Thu, 19 Jul 2007 15:55:20 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andy Whitcroft <apw@shadowen.org>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 4/4] ps3flash: updates after final review
-In-Reply-To: <Pine.LNX.4.62.0707191548070.8661@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0707191554590.8661@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
- <20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
- <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
- <20070719021045.c0b994ca.akpm@linux-foundation.org>
- <Pine.LNX.4.62.0707191548070.8661@pademelon.sonytel.be>
+	Thu, 19 Jul 2007 09:56:50 -0400
+Date: Thu, 19 Jul 2007 15:56:11 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Rob Landley <rob@landley.net>
+cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3][try 1] init: enable system-on-initramfs
+In-Reply-To: <200707181754.05560.rob@landley.net>
+Message-ID: <Pine.LNX.4.58.0707191442440.2138@be1.lrz>
+References: <Pine.LNX.4.58.0707132039080.3222@be1.lrz> <200707181754.05560.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1387873921-1184853320=:8661"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+zBPcvgwiQVHjMA2gwNWV0s6CthYT3LoG1wQE
+ Mdbx6wd09ydS4OC4zQLoMFle8ZrVU8QEpYhBesoEbf5EePbu9R
+ 8iW/gCLCW1vPHWXwJsz1w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, 18 Jul 2007, Rob Landley wrote:
+> On Friday 13 July 2007 2:56:00 pm Bodo Eggert wrote:
 
----584337861-1387873921-1184853320=:8661
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+> > I toyed with setting up a diskless system in initramfs. In the process, I
+> > came across some things:
+> >
+> > 1)  There is no way to have the kernel not mount a filesystem,
+> >     unless you use /init or rdinit=.
+> 
+> Er, yes.  By design.
+> 
+> The kernel has to run an init program in order to hand off control to 
+> userspace.  In initramfs, this is defined as /init.  It looks in exactly one 
+> documented place.
+> 
+> The older root= mechanism fell back to a half-dozen places (eventually trying 
+> things like /bin/sh if it couldn't find anything else).  This is because 
+> there wasn't a documented standard for what should be executed, like there is 
+> with initramfs.
 
-ps3flash: updates after final review:
-  o Kill confusing ps3flash_priv() macro, open code it instead
-  o ps3flash_llseek(): Add missing locking (using i_mutex)
-  o Replace do_div_llr() by `/' and `%'
-  o ps3flash_read(): Use a common return for the error path
-  o Minor coding style fixes not reported by checkpatch
+Ever since I started using linux in 1997, the first program to run from an
+installed system was /sbin/init. (I might think about removing the other 
+paths.)
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/char/ps3flash.c |   59 ++++++++++++++++++++++++++++--------------------
- 1 files changed, 35 insertions(+), 24 deletions(-)
+The ramfs' /init was intended for system setup, which is a separate job.
+It is not intended to be the program running the system. Mixing those two
+up just does not feel right. Setting root= in order to change the root
+directory is much more natural.
 
---- a/drivers/char/ps3flash.c
-+++ b/drivers/char/ps3flash.c
-@@ -34,7 +34,6 @@
- struct ps3flash_private {
- 	struct mutex mutex;	/* Bounce buffer mutex */
- };
--#define ps3flash_priv(dev)	((dev)->sbd.core.driver_data)
- 
- static struct ps3_storage_device *ps3flash_dev;
- 
-@@ -81,28 +80,35 @@ static ssize_t ps3flash_write_chunk(stru
- static loff_t ps3flash_llseek(struct file *file, loff_t offset, int origin)
- {
- 	struct ps3_storage_device *dev = ps3flash_dev;
--	u64 size = dev->regions[dev->region_idx].size*dev->blk_size;
-+	loff_t res;
- 
-+	mutex_lock(&file->f_mapping->host->i_mutex);
- 	switch (origin) {
- 	case 1:
- 		offset += file->f_pos;
- 		break;
- 	case 2:
--		offset += size;
-+		offset += dev->regions[dev->region_idx].size*dev->blk_size;
- 		break;
- 	}
--	if (offset < 0)
--		return -EINVAL;
-+	if (offset < 0) {
-+		res = -EINVAL;
-+		goto out;
-+	}
- 
- 	file->f_pos = offset;
--	return file->f_pos;
-+	res = file->f_pos;
-+
-+out:
-+	mutex_unlock(&file->f_mapping->host->i_mutex);
-+	return res;
- }
- 
- static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
- 			     loff_t *pos)
- {
- 	struct ps3_storage_device *dev = ps3flash_dev;
--	struct ps3flash_private *priv = ps3flash_priv(dev);
-+	struct ps3flash_private *priv = dev->sbd.core.driver_data;
- 	u64 size, start_sector, end_sector, offset;
- 	ssize_t sectors_read;
- 	size_t remaining, n;
-@@ -115,15 +121,16 @@ static ssize_t ps3flash_read(struct file
- 	if (*pos >= size || !count)
- 		return 0;
- 
--	if (*pos+count > size) {
-+	if (*pos + count > size) {
- 		dev_dbg(&dev->sbd.core,
- 			"%s:%u Truncating count from %zu to %llu\n", __func__,
- 			__LINE__, count, size - *pos);
- 		count = size - *pos;
- 	}
- 
--	start_sector = do_div_llr(*pos, dev->blk_size, &offset);
--	end_sector = DIV_ROUND_UP(*pos+count, dev->blk_size);
-+	start_sector = *pos / dev->blk_size;
-+	offset = *pos % dev->blk_size;
-+	end_sector = DIV_ROUND_UP(*pos + count, dev->blk_size);
- 
- 	remaining = count;
- 	do {
-@@ -134,7 +141,7 @@ static ssize_t ps3flash_read(struct file
- 						     0);
- 		if (sectors_read < 0) {
- 			mutex_unlock(&priv->mutex);
--			return sectors_read;
-+			goto fail;
- 		}
- 
- 		n = min(remaining, sectors_read*dev->blk_size-offset);
-@@ -143,7 +150,8 @@ static ssize_t ps3flash_read(struct file
- 			__func__, __LINE__, n, dev->bounce_buf+offset, buf);
- 		if (copy_to_user(buf, dev->bounce_buf+offset, n)) {
- 			mutex_unlock(&priv->mutex);
--			return -EFAULT;
-+			sectors_read = -EFAULT;
-+			goto fail;
- 		}
- 
- 		mutex_unlock(&priv->mutex);
-@@ -156,13 +164,16 @@ static ssize_t ps3flash_read(struct file
- 	} while (remaining > 0);
- 
- 	return count;
-+
-+fail:
-+	return sectors_read;
- }
- 
- static ssize_t ps3flash_write(struct file *file, const char __user *buf,
- 			      size_t count, loff_t *pos)
- {
- 	struct ps3_storage_device *dev = ps3flash_dev;
--	struct ps3flash_private *priv = ps3flash_priv(dev);
-+	struct ps3flash_private *priv = dev->sbd.core.driver_data;
- 	u64 size, chunk_sectors, start_write_sector, end_write_sector,
- 	    end_read_sector, start_read_sector, head, tail, offset;
- 	ssize_t res;
-@@ -177,7 +188,7 @@ static ssize_t ps3flash_write(struct fil
- 	if (*pos >= size || !count)
- 		return 0;
- 
--	if (*pos+count > size) {
-+	if (*pos + count > size) {
- 		dev_dbg(&dev->sbd.core,
- 			"%s:%u Truncating count from %zu to %llu\n", __func__,
- 			__LINE__, count, size - *pos);
-@@ -186,13 +197,13 @@ static ssize_t ps3flash_write(struct fil
- 
- 	chunk_sectors = dev->bounce_size / dev->blk_size;
- 
--	start_write_sector = do_div_llr(*pos, dev->bounce_size, &offset) *
--			     chunk_sectors;
--	end_write_sector = DIV_ROUND_UP(*pos+count, dev->bounce_size) *
-+	start_write_sector = *pos / dev->bounce_size * chunk_sectors;
-+	offset = *pos % dev->bounce_size;
-+	end_write_sector = DIV_ROUND_UP(*pos + count, dev->bounce_size) *
- 			   chunk_sectors;
- 
- 	end_read_sector = DIV_ROUND_UP(*pos, dev->blk_size);
--	start_read_sector = (*pos+count) / dev->blk_size;
-+	start_read_sector = (*pos + count) / dev->blk_size;
- 
- 	/*
- 	 * As we have to write in 256 KiB chunks, while we can read in blk_size
-@@ -204,8 +215,8 @@ static ssize_t ps3flash_write(struct fil
- 	 * All of this is complicated by using only one 256 KiB bounce buffer.
- 	 */
- 
--	head = end_read_sector-start_write_sector;
--	tail = end_write_sector-start_read_sector;
-+	head = end_read_sector - start_write_sector;
-+	tail = end_write_sector - start_read_sector;
- 
- 	remaining = count;
- 	do {
-@@ -355,7 +366,7 @@ static int __devinit ps3flash_probe(stru
- 		goto fail;
- 	}
- 
--	ps3flash_priv(dev) = priv;
-+	dev->sbd.core.driver_data = priv;
- 	mutex_init(&priv->mutex);
- 
- 	dev->bounce_size = ps3flash_bounce_buffer.size;
-@@ -381,7 +392,7 @@ fail_teardown:
- 	ps3stor_teardown(dev);
- fail_free_priv:
- 	kfree(priv);
--	ps3flash_priv(dev) = NULL;
-+	dev->sbd.core.driver_data = NULL;
- fail:
- 	ps3flash_dev = NULL;
- 	return error;
-@@ -393,8 +404,8 @@ static int ps3flash_remove(struct ps3_sy
- 
- 	misc_deregister(&ps3flash_misc);
- 	ps3stor_teardown(dev);
--	kfree(ps3flash_priv(dev));
--	ps3flash_priv(dev) = NULL;
-+	kfree(dev->sbd.core.driver_data);
-+	dev->sbd.core.driver_data = NULL;
- 	ps3flash_dev = NULL;
- 	return 0;
- }
+> > 1a) In the process of writing these patches, I found prepare_namespace not
+> > to be called if /init is present. prepare_namespace will call
+> >     security_sb_post_mountroot after mounting the root fs. I did not yet
+> > see a way to call this from /init, and grepping kinit for "security" did
+> > not help, too.
+> 
+> I don't use selinux.  I'm neither a Fortune 500 company nor the NSA.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+That's no reason for keeping bugs in that part.
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1387873921-1184853320=:8661--
+> However, if you don't trust your own initramfs, where everything starts out 
+> running as root, you have bigger problems.
+
+Using that argument, you can deduce that nobody would need selinux at all.
+Obviously some people disagree, and maybe some of them are no fools,
+therefore we should try to DTRT for them and do the callback when it's
+supposed to happen.
+
+BTW: The problems start as soon as you have to do "reflections on trusting 
+trust".
+
+> >    This is probably a bug, but using the features of this patchset, you'll
+> >    avoid hitting it. Therefore this patchset does nothing about that.
+> >
+> > 2)  If you want to use tmpfs, you need a script which essentially
+> > duplicates the work the kernel just did: Mount the root fs, unpack or move
+> > the files.
+> 
+> mkdir sub
+> mount -t tmpfs sub sub
+> cp -ax / sub
+> switch_root sub /init-stage-2
+> 
+> I haven't tried it but it really doesn't sound like brain surgery.  If your 
+> switch_root is statically linked, you can use mv instead of cp.
+
+Why should I have to do that if I can do the right thing in the first 
+place with in each respect negative costs?
+
+> > Using tmpfs instead for the first root mount is as cheap as 
+> > using ramfs, as long as tmpfs is used anyway (and most likely it is).
+> 
+> *shrug*  I don't object to doing so, but I've heard nebulous technical 
+> objections from people who know more about the implementation details fo 
+> tmpfs than I do.
+
+Obviously these problems were solved.
+
+> > 2a) I figured if you prepared the root fs to contain a running system, you
+> >     woud probably also set up a runnable system on it.
+> 
+> *scratches head*
+> 
+> That's a tautology, right?
+
+You may also use the same kernel with the same initramfs in order to start
+a classic system, just by changing root=. This may be nice for rescue
+systems. Off cause after applying the third patch, you may also unselect
+that feature.
+
+> >     Therefore I changed 
+> >     the default to boot from tmpfs if there was no /init nor a root=
+> > option. (If there is a /init, it will be executed as usural.)
+> 
+> I have no idea what you just said.  If there's an /init, we boot from it.  If 
+> there's no /init, they just violated the spec and we don't know what to boot 
+> from.
+
+These patches changes the spec in order to support system-on-rootfs:
+
+If there is an init, it will run. No change from the current situation 
+ever, at least if not using rdev.
+
+If you use root=rootfs, a system-on-rootfs will run.
+
+If you use rootfs=tmpfs, root= will default to rootfs, and I did it in a 
+way disabeling that obsolete rdev.
+
+> They made an initramfs.  They constructed it, explicitly, for the Linux 
+> kernel, and /init is what the kernel will try to boot.  I documented this 
+> years ago.  If they chose not to put an /init, then they didn't want us to 
+> boot from initramfs.  (Maybe they're supplying firmware and an /sbin/hotplug 
+> for a statically linked device.  I dunno.)
+
+Not booting /using/ an intramfs differs from not booting /from/ an 
+intramfs. Mixing them works by accident.
+
+> >     Unfortunately the way I do it, this will override the rdev setting, but
+> >     that should be OK, since rdev is dead. Isn't it?
+> >
+> > 3)  While I was at it, I figured I would not need most of the init/mount*
+> >     code anymore. Therefore I made patch 3, which ifdefs it out as far as
+> >     possible while still aiming for a small change.
+> >
+> > Patch 1 adds the capability to use root=rootfs.
+> 
+> I've been using initramfs since back around 2.6.12.  It works fine.  Why are 
+> you patching the kernel for something that already works?
+
+Why do you build a way if walking through the fields already works?
+Besides that, using all these features safes about 3KB.
+-- 
+bus error. passengers dumped.
