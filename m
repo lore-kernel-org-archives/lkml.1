@@ -1,239 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940551AbXGSRth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940825AbXGSRuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940551AbXGSRth (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758652AbXGSRtZ
+	id S940825AbXGSRuT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934857AbXGSRt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:49:25 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:49469 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbXGSRtY (ORCPT
+	Thu, 19 Jul 2007 13:49:57 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:37252 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932669AbXGSRt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:49:24 -0400
-Date: Fri, 20 Jul 2007 02:40:03 +0900 (JST)
-Message-Id: <20070720.024003.35011995.tshibata@ab.jp.nec.com>
-To: jesper.juhl@gmail.com
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com,
-       tshibata@ab.jp.nec.com
-Subject: Re: [PATCH 1/5] HOWTO: add Japanese translation of
- Documentation/HOWTO
-From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-In-Reply-To: <20070720.023534.23010405.tshibata@ab.jp.nec.com>
-References: <11848012031961-git-send-email-gregkh@suse.de>
-	<9a8748490707181643v2ad6b0d0ld44226a367a6f937@mail.gmail.com>
-	<20070720.023534.23010405.tshibata@ab.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
- =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
-Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
- boundary="--Next_Part(Fri_Jul_20_02_40_03_2007_057)--"
+	Thu, 19 Jul 2007 13:49:56 -0400
+Message-ID: <469FA312.7070702@emulex.com>
+Date: Thu, 19 Jul 2007 13:44:50 -0400
+From: James Smart <James.Smart@Emulex.Com>
+Reply-To: James.Smart@Emulex.Com
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Florin Malita <fmalita@gmail.com>
+CC: James.Bottomley@SteelEye.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Smart <James.Smart@Emulex.Com>
+Subject: Re: [PATCH] [scsi] lpfc: potential leak in lpfc_sli_hbqbuf_fill_hbqs
+References: <469F884B.6010402@gmail.com>
+In-Reply-To: <469F884B.6010402@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Jul 2007 17:44:50.0964 (UTC) FILETIME=[81DFAD40:01C7CA2C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-----Next_Part(Fri_Jul_20_02_40_03_2007_057)--
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Florin,
 
-On Thu, 19 Jul 2007 01:43:14 +0200, jesper.juhl wrote:
-> On 19/07/07, Greg Kroah-Hartman <gregkh@suse.de> wrote:
-> > From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-> >
-> > Add the japanese translation of the Documentation/HOWTO file.
-> >
+Thanks for the effort to create this patch.  Turns out we have already
+fixed this, and have it included in our 8.2.2 patch set, which we will be
+posting within the next week.
+
+So James, don't pick this patch up, take the larger patch set instead.
+
+Thanks.
+
+-- james s
+
+Florin Malita wrote:
+> If lpfc_hbq_alloc() fails, an hbq_buffer is leaked. Found by Coverity 
+> (1775).
 > 
-> A few comments below.
-
-Jesper, Thank you very much for your comment.
-I applied the comment and added a few translated part changed
-for 2.6.22. (ie. Git URLs for each subsystems)
-I made an updated patch against Greg's one as same as Munehiro.
-Due to my email software issue handing UTF-8, I'd attach it. sorry.
-For your convenience, Here is top part of the patch.
-
-
->From 7b03c283c14b6d1bf44d05277bb93e2b87508131 Mon Sep 17 00:00:00 2001
-From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-Date: Thu, 19 Jul 2007 11:24:54 +0900
-Subject: [PATCH] sync Japanese HOWTO for 2.6.22
-
-Signed-off-by: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
----
- Documentation/ja_JP/HOWTO |   66 ++++++++++++++++++++++++---------------------
- 1 files changed, 35 insertions(+), 31 deletions(-)
-
-diff --git a/Documentation/ja_JP/HOWTO b/Documentation/ja_JP/HOWTO
-index b2446a0..9f08dab 100644
---- a/Documentation/ja_JP/HOWTO
-+++ b/Documentation/ja_JP/HOWTO
-@@ -1,23 +1,24 @@
--NOTE:
--This is Japanese translated version of "Documentation/HOWTO".
--This one is maintained by Tsugikazu Shibata <tshibata@ab.jp.nec.com>
--and JF Project team <www.linux.or.jp/JF>.
--If you find difference with original file or problem in translation,
--please contact maintainer of this file or JF project.
--
--Please also note that purpose of this file is easier to read for non
--English natives and not to be intended to fork. So, if you have any
--comments or updates of this file, please try to update Original(English)
--file at first.
--
--Last Updated: 2007/06/04
-+NOTE:
-+This is a version of Documentation/HOWTO translated into Japanese.
-+This document is maintained by Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-+and the JF Project team <www.linux.or.jp/JF>.
-+If you find any difference between this document and the original file
-+or a problem with the translation,
-+please contact the maintainer of this file or JF project.
-+
-+Please also note that the purpose of this file is to be easier to read
-+for non English (read: Japanese) speakers and is not intended as a
-+fork. So if you have any comments or updates for this file, please try
-+to update the original English file first.
-+
-...
-
-
-----Next_Part(Fri_Jul_20_02_40_03_2007_057)--
-Content-Type: Application/Octet-Stream
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="0001-sync-Japanese-HOWTO-for-2.6.22-2.txt"
-
-RnJvbSA3YjAzYzI4M2MxNGI2ZDFiZjQ0ZDA1Mjc3YmI5M2UyYjg3NTA4MTMxIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBUc3VnaWthenUgU2hpYmF0YSA8dHNoaWJhdGFAYWIuanAubmVj
-LmNvbT4KRGF0ZTogVGh1LCAxOSBKdWwgMjAwNyAxMToyNDo1NCArMDkwMApTdWJqZWN0OiBbUEFU
-Q0hdIHN5bmMgSmFwYW5lc2UgSE9XVE8gZm9yIDIuNi4yMgoKClNpZ25lZC1vZmYtYnk6IFRzdWdp
-a2F6dSBTaGliYXRhIDx0c2hpYmF0YUBhYi5qcC5uZWMuY29tPgotLS0KIERvY3VtZW50YXRpb24v
-amFfSlAvSE9XVE8gfCAgIDY2ICsrKysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0t
-LS0tLS0tLQogMSBmaWxlcyBjaGFuZ2VkLCAzNSBpbnNlcnRpb25zKCspLCAzMSBkZWxldGlvbnMo
-LSkKCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2phX0pQL0hPV1RPIGIvRG9jdW1lbnRhdGlv
-bi9qYV9KUC9IT1dUTwppbmRleCBiMjQ0NmEwLi45ZjA4ZGFiIDEwMDY0NAotLS0gYS9Eb2N1bWVu
-dGF0aW9uL2phX0pQL0hPV1RPCisrKyBiL0RvY3VtZW50YXRpb24vamFfSlAvSE9XVE8KQEAgLTEs
-MjMgKzEsMjQgQEAKLU5PVEU6Ci1UaGlzIGlzIEphcGFuZXNlIHRyYW5zbGF0ZWQgdmVyc2lvbiBv
-ZiAiRG9jdW1lbnRhdGlvbi9IT1dUTyIuCi1UaGlzIG9uZSBpcyBtYWludGFpbmVkIGJ5IFRzdWdp
-a2F6dSBTaGliYXRhIDx0c2hpYmF0YUBhYi5qcC5uZWMuY29tPgotYW5kIEpGIFByb2plY3QgdGVh
-bSA8d3d3LmxpbnV4Lm9yLmpwL0pGPi4KLUlmIHlvdSBmaW5kIGRpZmZlcmVuY2Ugd2l0aCBvcmln
-aW5hbCBmaWxlIG9yIHByb2JsZW0gaW4gdHJhbnNsYXRpb24sCi1wbGVhc2UgY29udGFjdCBtYWlu
-dGFpbmVyIG9mIHRoaXMgZmlsZSBvciBKRiBwcm9qZWN0LgotCi1QbGVhc2UgYWxzbyBub3RlIHRo
-YXQgcHVycG9zZSBvZiB0aGlzIGZpbGUgaXMgZWFzaWVyIHRvIHJlYWQgZm9yIG5vbgotRW5nbGlz
-aCBuYXRpdmVzIGFuZCBub3QgdG8gYmUgaW50ZW5kZWQgdG8gZm9yay4gU28sIGlmIHlvdSBoYXZl
-IGFueQotY29tbWVudHMgb3IgdXBkYXRlcyBvZiB0aGlzIGZpbGUsIHBsZWFzZSB0cnkgdG8gdXBk
-YXRlIE9yaWdpbmFsKEVuZ2xpc2gpCi1maWxlIGF0IGZpcnN0LgotCi1MYXN0IFVwZGF0ZWQ6IDIw
-MDcvMDYvMDQKK05PVEU6CitUaGlzIGlzIGEgdmVyc2lvbiBvZiBEb2N1bWVudGF0aW9uL0hPV1RP
-IHRyYW5zbGF0ZWQgaW50byBKYXBhbmVzZS4KK1RoaXMgZG9jdW1lbnQgaXMgbWFpbnRhaW5lZCBi
-eSBUc3VnaWthenUgU2hpYmF0YSA8dHNoaWJhdGFAYWIuanAubmVjLmNvbT4KK2FuZCB0aGUgSkYg
-UHJvamVjdCB0ZWFtIDx3d3cubGludXgub3IuanAvSkY+LgorSWYgeW91IGZpbmQgYW55IGRpZmZl
-cmVuY2UgYmV0d2VlbiB0aGlzIGRvY3VtZW50IGFuZCB0aGUgb3JpZ2luYWwgZmlsZQorb3IgYSBw
-cm9ibGVtIHdpdGggdGhlIHRyYW5zbGF0aW9uLAorcGxlYXNlIGNvbnRhY3QgdGhlIG1haW50YWlu
-ZXIgb2YgdGhpcyBmaWxlIG9yIEpGIHByb2plY3QuCisKK1BsZWFzZSBhbHNvIG5vdGUgdGhhdCB0
-aGUgcHVycG9zZSBvZiB0aGlzIGZpbGUgaXMgdG8gYmUgZWFzaWVyIHRvIHJlYWQKK2ZvciBub24g
-RW5nbGlzaCAocmVhZDogSmFwYW5lc2UpIHNwZWFrZXJzIGFuZCBpcyBub3QgaW50ZW5kZWQgYXMg
-YQorZm9yay4gU28gaWYgeW91IGhhdmUgYW55IGNvbW1lbnRzIG9yIHVwZGF0ZXMgZm9yIHRoaXMg
-ZmlsZSwgcGxlYXNlIHRyeQordG8gdXBkYXRlIHRoZSBvcmlnaW5hbCBFbmdsaXNoIGZpbGUgZmly
-c3QuCisKK0xhc3QgVXBkYXRlZDogMjAwNy8wNy8xOAogPT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PQog44GT44KM44Gv44CBCi1saW51eC0yLjYuMjEvRG9jdW1lbnRhdGlvbi9IT1dU
-TworbGludXgtMi42LjIyL0RvY3VtZW50YXRpb24vSE9XVE8KIOOBruWSjOios+OBp+OBmeOAggog
-CiDnv7voqLPlm6PkvZPvvJogSkYg44OX44Ot44K444Kn44Kv44OIIDwgaHR0cDovL3d3dy5saW51
-eC5vci5qcC9KRi8gPgot57+76Kiz5pel77yaIDIwMDcvMDYvMDQKK+e/u+ios+aXpe+8miAyMDA3
-LzA3LzE2CiDnv7voqLPogIXvvJogVHN1Z2lrYXp1IFNoaWJhdGEgPHRzaGliYXRhIGF0IGFiIGRv
-dCBqcCBkb3QgbmVjIGRvdCBjb20+CiDmoKHmraPogIXvvJog5p2+5YCJ44GV44KTIDxuYmgtLW1h
-dHMgYXQgbmlmdHkgZG90IGNvbT4KICAgICAgICAgIOWwj+aelyDpm4XlhbjjgZXjgpMgKE1hc2Fu
-b3JpIEtvYmF5YXNpKSA8emFwMDMyMTYgYXQgbmlmdHkgZG90IG5lIGRvdCBqcD4KQEAgLTUyLDYg
-KzUzLDcgQEAgTGludXgg44Kr44O844ON44Or6ZaL55m644Kz44Of44Ol44OL44OG44Kj44Go5YWx
-44Gr5rS75YuV44GZ44KL44KE44KK5pa544KS5a2m44GKIOOBvuOBn+OAgeOBk+OBruOCs+ODn+OD
-peODi+ODhuOCo+OBjOOBquOBnOS7iuOBhuOBvuOBj+OBvuOCj+OBo+OBpuOBhOOCi+OBruOBi+OB
-qOOBhOOBhueQhueUseOBruS4gOmDqOOCggog6Kqs5piO44GX44KI44GG44Go6Kmm44G/44Gm44GE
-44G+44GZ44CCCiAKKwog44Kr44O844ON44Or44GvIOWwkemHj+OBruOCouODvOOCreODhuOCr+OD
-geODo+S+neWtmOmDqOWIhuOBjOOCouOCu+ODs+ODluODquiogOiqnuOBp+abuOOBi+OCjOOBpuOB
-hOOCiwog5Lul5aSW44Gv5aSn6YOo5YiG44GvIEMg6KiA6Kqe44Gn5pu444GL44KM44Gm44GE44G+
-44GZ44CCQ+iogOiqnuOCkuOCiOOBj+eQhuino+OBl+OBpuOBhOOCi+OBk+OBqOOBr+OCq+ODvAog
-44ON44Or6ZaL55m66ICF44Gr44Gv5b+F6KaB44Gn44GZ44CC44Ki44O844Kt44OG44Kv44OB44Oj
-5ZCR44GR44Gu5L2O44Os44OZ44Or6YOo5YiG44Gu6ZaL55m644KS44GZ44KL44GuCkBAIC0xNDEs
-NiArMTQzLDcgQEAgTGludXgg44Kr44O844ON44Or44K944O844K544OE44Oq44O844Gv5bmF5bqD
-44GE56+E5Zuy44Gu44OJ44Kt44Ol44Oh44Oz44OI44KS5ZCKICAgICAg44GT44KM44KJ44Gu44Or
-44O844Or44Gr5b6T44GI44Gw44GG44G+44GP44GE44GP44GT44Go44KS5L+d6Ki844GZ44KL44GT
-44Go44Gn44Gv44GC44KK44G+44Gb44KTCiAgICAgIOOBjCAo44GZ44G544Gm44Gu44OR44OD44OB
-44Gv5YaF5a6544Go44K544K/44Kk44Or44Gr44Gk44GE44Gm57K+5p+744KS5Y+X44GR44KL44Gu
-44GnKeOAgQogICAgICDjg6vjg7zjg6vjgavlvpPjgo/jgarjgZHjgozjgbDplpPpgZXjgYTjgarj
-gY/jgYbjgb7jgY/jgYTjgYvjgarjgYTjgafjgZfjgofjgYbjgIIKKwogICAgICDjgZPjga7ku5bj
-gavjg5Hjg4Pjg4HjgpLkvZzjgovmlrnms5XjgavjgaTjgYTjgabjga7jgojjgY/jgafjgY3jgZ/o
-qJjov7Djga8tCiAKIAkiVGhlIFBlcmZlY3QgUGF0Y2giCkBAIC0zNjAsNDQgKzM2Myw0MiBAQCBs
-aW51eC1rZXJuZWwg44Oh44O844Oq44Oz44Kw44Oq44K544OI44Gn5Y+O6ZuG44GV44KM44Gf5aSa
-5pWw44Gu44OR44OD44OB44Go5ZCMPwogICBnaXQg44OE44Oq44O8LQogICAgIC0gS2J1aWxkIOOB
-rumWi+eZuuODhOODquODvOOAgVNhbSBSYXZuYm9yZyA8c2FtQHJhdm5ib3JnLm9yZz4KLQlrZXJu
-ZWwub3JnOi9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvc2FtL2tidWlsZC5naXQKKwlnaXQua2Vy
-bmVsLm9yZzovcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3NhbS9rYnVpbGQuZ2l0CiAKICAgICAt
-IEFDUEkg44Gu6ZaL55m644OE44Oq44O844CBIExlbiBCcm93biA8bGVuLmJyb3duQGludGVsLmNv
-bT4KLQlrZXJuZWwub3JnOi9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbGVuYi9saW51eC1hY3Bp
-LTIuNi5naXQKKwlnaXQua2VybmVsLm9yZzovcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L2xlbmIv
-bGludXgtYWNwaS0yLjYuZ2l0CiAKICAgICAtIEJsb2NrIOOBrumWi+eZuuODhOODquODvOOAgUpl
-bnMgQXhib2UgPGF4Ym9lQHN1c2UuZGU+Ci0Ja2VybmVsLm9yZzovcHViL3NjbS9saW51eC9rZXJu
-ZWwvZ2l0L2F4Ym9lL2xpbnV4LTIuNi1ibG9jay5naXQKKwlnaXQua2VybmVsLm9yZzovcHViL3Nj
-bS9saW51eC9rZXJuZWwvZ2l0L2F4Ym9lL2xpbnV4LTIuNi1ibG9jay5naXQKIAogICAgIC0gRFJN
-IOOBrumWi+eZuuODhOODquODvOOAgURhdmUgQWlybGllIDxhaXJsaWVkQGxpbnV4LmllPgotCWtl
-cm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9haXJsaWVkL2RybS0yLjYuZ2l0CisJ
-Z2l0Lmtlcm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9haXJsaWVkL2RybS0yLjYu
-Z2l0CiAKICAgICAtIGlhNjQg44Gu6ZaL55m644OE44Oq44O844CBVG9ueSBMdWNrIDx0b255Lmx1
-Y2tAaW50ZWwuY29tPgotCWtlcm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9hZWds
-L2xpbnV4LTIuNi5naXQKLQotICAgIC0gaWVlZTEzOTQg44Gu6ZaL55m644OE44Oq44O844CBSm9k
-eSBNY0ludHlyZSA8c2Nqb2R5QG1vZGVybmR1Y2suY29tPgotCWtlcm5lbC5vcmc6L3B1Yi9zY20v
-bGludXgva2VybmVsL2dpdC9zY2pvZHkvaWVlZTEzOTQuZ2l0CisJZ2l0Lmtlcm5lbC5vcmc6L3B1
-Yi9zY20vbGludXgva2VybmVsL2dpdC9hZWdsL2xpbnV4LTIuNi5naXQKIAogICAgIC0gaW5maW5p
-YmFuZCwgUm9sYW5kIERyZWllciA8cm9sYW5kZEBjaXNjby5jb20+Ci0Ja2VybmVsLm9yZzovcHVi
-L3NjbS9saW51eC9rZXJuZWwvZ2l0L3JvbGFuZC9pbmZpbmliYW5kLmdpdAorCWdpdC5rZXJuZWwu
-b3JnOi9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvcm9sYW5kL2luZmluaWJhbmQuZ2l0CiAKICAg
-ICAtIGxpYmF0YSwgSmVmZiBHYXJ6aWsgPGpnYXJ6aWtAcG9ib3guY29tPgotCWtlcm5lbC5vcmc6
-L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9qZ2FyemlrL2xpYmF0YS1kZXYuZ2l0CisJZ2l0Lmtl
-cm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9qZ2FyemlrL2xpYmF0YS1kZXYuZ2l0
-CiAKICAgICAtIOODjeODg+ODiOODr+ODvOOCr+ODieODqeOCpOODkCwgSmVmZiBHYXJ6aWsgPGpn
-YXJ6aWtAcG9ib3guY29tPgotCWtlcm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9q
-Z2FyemlrL25ldGRldi0yLjYuZ2l0CisJZ2l0Lmtlcm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2Vy
-bmVsL2dpdC9qZ2FyemlrL25ldGRldi0yLjYuZ2l0CiAKICAgICAtIHBjbWNpYSwgRG9taW5payBC
-cm9kb3dza2kgPGxpbnV4QGRvbWluaWticm9kb3dza2kubmV0PgotCWtlcm5lbC5vcmc6L3B1Yi9z
-Y20vbGludXgva2VybmVsL2dpdC9icm9kby9wY21jaWEtMi42LmdpdAorCWdpdC5rZXJuZWwub3Jn
-Oi9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvYnJvZG8vcGNtY2lhLTIuNi5naXQKIAogICAgIC0g
-U0NTSSwgSmFtZXMgQm90dG9tbGV5IDxKYW1lcy5Cb3R0b21sZXlAU3RlZWxFeWUuY29tPgotCWtl
-cm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9qZWpiL3Njc2ktbWlzYy0yLjYuZ2l0
-Ci0KLSAg44Gd44Gu5LuW44GuIGdpdCDjgqvjg7zjg43jg6vjg4Tjg6rjg7zjga8gaHR0cDovL2tl
-cm5lbC5vcmcvZ2l0IOOBq+S4gOimp+ihqOOBjOOBguOCiuOBvgotICDjgZnjgIIKKwlnaXQua2Vy
-bmVsLm9yZzovcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L2plamIvc2NzaS1taXNjLTIuNi5naXQK
-IAogICBxdWlsdCDjg4Tjg6rjg7wtCiAgICAgLSBVU0IsIFBDSSDjg4njg6njgqTjg5DjgrPjgqLj
-gaggSTJDLCBHcmVnIEtyb2FoLUhhcnRtYW4gPGdyZWdraEBzdXNlLmRlPgogCWtlcm5lbC5vcmcv
-cHViL2xpbnV4L2tlcm5lbC9wZW9wbGUvZ3JlZ2toL2dyZWdraC0yLjYvCisgICAgLSB4ODYtNjQg
-44GoIGkzODYg44Gu5Luy6ZaTIEFuZGkgS2xlZW4gPGFrQHN1c2UuZGU+CisKKyAg44Gd44Gu5LuW
-44Gu44Kr44O844ON44Or44OE44Oq44O844GvIGh0dHA6Ly9naXQua2VybmVsLm9yZy8g44GoIE1B
-SU5UQUlORVJTIOODleOCoQorICDjgqTjg6vjgavkuIDopqfooajjgYzjgYLjgorjgb7jgZnjgIIK
-IAog44OQ44Kw44Os44Od44O844OICiAtLS0tLS0tLS0tLS0tCkBAIC01MDgsNiArNTA5LDcgQEAg
-TUFJTlRBSU5FUlMg44OV44Kh44Kk44Or44Gr44Oq44K544OI44GM44GC44KK44G+44GZ44Gu44Gn
-5Y+C54Wn44GX44Gm44GP44Gg44GV44GKIOOBm+OCkyrjgILljZjjgavoh6rliIbjga7jg5Hjg4Pj
-g4Hjgavlr77jgZfjgabmjIfmkZjjgZXjgozjgZ/llY/poYzjgpLlhajjgabkv67mraPjgZfjgabl
-ho3pgIHjgZnjgozjgbAKIOOBhOOBhOOBruOBp+OBmeOAggogCisKIOOCq+ODvOODjeODq+OCs+OD
-n+ODpeODi+ODhuOCo+OBqOS8gealree1hOe5lOOBruOBoeOBjOOBhAogLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIApAQCAt
-NTc3LDYgKzU3OSw3IEBAIExpbnV4IOOCq+ODvOODjeODq+OCs+ODn+ODpeODi+ODhuOCo+OBr+OA
-geS4gOW6puOBq+Wkp+mHj+OBruOCs+ODvOODieOBruWhiuOCkuWWiiAgICDjgYvjgZfjgIE1MDDo
-oYzjga7jg5Hjg4Pjg4Hjga/jgIHmraPjgZfjgYTjgZPjgajjgpLjg6zjg5Pjg6Xjg7zjgZnjgovj
-ga7jgavmlbDmmYLplpPjgYvjgYvjgovjgYvjgoIKICAgIOOBl+OCjOOBvuOBm+OCkyjmmYLplpPj
-ga/jg5Hjg4Pjg4Hjga7jgrXjgqTjgrrjgarjganjgavjgojjgormjIfmlbDplqLmlbDjgavmr5Tk
-vovjgZfjgabjgYvjgYvjgorjgb4KICAgIOOBmSkKKwogICAg5bCP44GV44GE44OR44OD44OB44Gv
-5L2V44GL44GC44Gj44Gf44Go44GN44Gr44OH44OQ44OD44Kw44KC44Go44Gm44KC57Ch5Y2Y44Gr
-44Gq44KK44G+44GZ44CC44OR44ODCiAgICDjg4HjgpIx5YCLMeWAi+WPluOCiumZpOOBj+OBruOB
-r+OAgeOBqOOBpuOCguWkp+OBjeOBquODkeODg+ODgeOCkuW9k+OBpuOBn+W+jOOBqyjjgYvjgaTj
-gIHkvZXjgYvjgYoKICAgIOOBi+OBl+OBj+OBquOBo+OBn+W+jOOBpynop6PliZbjgZnjgovjga7j
-gavmr5TjgbnjgozjgbDjgajjgabjgoLnsKHljZjjgafjgZnjgIIKQEAgLTU5MSw2ICs1OTQsNyBA
-QCBMaW51eCDjgqvjg7zjg43jg6vjgrPjg5/jg6Xjg4vjg4bjgqPjga/jgIHkuIDluqbjgavlpKfp
-h4/jga7jgrPjg7zjg4njga7loYrjgpLlloogICAgICAgICDjgYbjgILlhYjnlJ/jga/nsKHmvZTj
-garmnIDpq5jjga7op6PjgpLjgb/jgZ/jgYTjga7jgafjgZnjgILoia/jgYTnlJ/lvpLjga/jgZPj
-gozjgpLnn6XjgaPjgaYKICAgICAgICAg44GK44KK44CB44Gd44GX44Gm5pyA57WC6Kej44Gu5YmN
-44Gu5Lit6ZaT5L2c5qWt44KS5o+Q5Ye644GZ44KL44GT44Go44Gv5rG644GX44Gm44Gq44GE44Gu
-44GnCiAgICAgICAgIOOBmSIKKwogICAgICAgICDjgqvjg7zjg43jg6vplovnmbrjgafjgoLjgZPj
-gozjga/lkIzjgZjjgafjgZnjgILjg6Hjg7Pjg4bjg4rjg7zpgZTjgajjg6zjg5Pjg6Xjg7zjgqLp
-gZTjga/jgIEKICAgICAgICAg5ZWP6aGM44KS6Kej5rG644GZ44KL6Kej44Gu6IOM5b6M44Gr44Gq
-44KL5oCd6ICD44OX44Ot44K744K544KS44G/44Gf44GE44Go44Gv5oCd44GE44G+44Gb44KT44CC
-CiAgICAgICAgIOW9vOOCieOBr+WNmOe0lOOBp+OBguOBluOChOOBi+OBquino+axuuaWueazleOC
-kuOBv+OBn+OBhOOBruOBp+OBmeOAggotLSAKMS40LjQuNAoK
-
-----Next_Part(Fri_Jul_20_02_40_03_2007_057)----
+> Signed-off-by: Florin Malita <fmalita@gmail.com>
+> ---
+> 
+> drivers/scsi/lpfc/lpfc_sli.c |    4 +++-
+> 1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
+> index f4d5a6b..fe16b0c 100644
+> --- a/drivers/scsi/lpfc/lpfc_sli.c
+> +++ b/drivers/scsi/lpfc/lpfc_sli.c
+> @@ -622,8 +622,10 @@ lpfc_sli_hbqbuf_fill_hbqs(struct lpfc_hba *phba, 
+> uint32_t hbqno, uint32_t count)
+>             return 1;
+>         hbq_buffer->dbuf.virt = lpfc_hbq_alloc(phba, MEM_PRI,
+>                             &hbq_buffer->dbuf.phys);
+> -        if (hbq_buffer->dbuf.virt == NULL)
+> +        if (hbq_buffer->dbuf.virt == NULL) {
+> +            kfree(hbq_buffer);
+>             return 1;
+> +        }
+>         hbq_buffer->tag = (i | (hbqno << 16));
+>         lpfc_sli_hbq_to_firmware(phba, hbqno, hbq_buffer);
+>         lpfc_hbq_defs[hbqno]->buffer_count++;
+> 
+> 
