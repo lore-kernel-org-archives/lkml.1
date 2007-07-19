@@ -1,203 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937778AbXGSKNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937534AbXGSKNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937778AbXGSKNI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:13:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760955AbXGSJzl
+	id S937534AbXGSKNm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbXGSJzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:55:41 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33083 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 05:55:42 -0400
+Received: from ns.suse.de ([195.135.220.2]:35399 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759028AbXGSJzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759202AbXGSJzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Jul 2007 05:55:22 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
 To: tglx@linutronix.de, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [31/58] x86_64: apic.c coding style janitor work
-Message-Id: <20070719095516.E65AD14E06@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:16 +0200 (CEST)
+Subject: [PATCH] [32/58] x86_64: time.c white space wreckage cleanup
+Message-Id: <20070719095518.009CA14E0B@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:17 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Thomas Gleixner <tglx@linutronix.de>
-Fix coding style, white space wreckage and remove unused code.
-
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/apic.c |   73 ++++++++++++++++++----------------------------
- 1 file changed, 30 insertions(+), 43 deletions(-)
+ arch/x86_64/kernel/time.c |   88 +++++++++++++++++++++++-----------------------
+ 1 file changed, 44 insertions(+), 44 deletions(-)
 
-Index: linux/arch/x86_64/kernel/apic.c
+Index: linux/arch/x86_64/kernel/time.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/apic.c
-+++ linux/arch/x86_64/kernel/apic.c
-@@ -92,8 +92,9 @@ unsigned int safe_apic_wait_icr_idle(voi
- void enable_NMI_through_LVT0 (void * dummy)
- {
- 	unsigned int v;
--	
--	v = APIC_DM_NMI;                        /* unmask and set to NMI */
-+
-+	/* unmask and set to NMI */
-+	v = APIC_DM_NMI;
- 	apic_write(APIC_LVT0, v);
- }
+--- linux.orig/arch/x86_64/kernel/time.c
++++ linux/arch/x86_64/kernel/time.c
+@@ -220,7 +220,7 @@ unsigned long read_persistent_clock(void
+ 	/*
+ 	 * We know that x86-64 always uses BCD format, no need to check the
+ 	 * config register.
+- 	 */
++	 */
  
-@@ -120,7 +121,7 @@ void ack_bad_irq(unsigned int irq)
- 	 * holds up an irq slot - in excessive cases (when multiple
- 	 * unexpected vectors occur) that might lock up the APIC
- 	 * completely.
--  	 * But don't ack when the APIC is disabled. -AK
-+	 * But don't ack when the APIC is disabled. -AK
- 	 */
- 	if (!disable_apic)
- 		ack_APIC_irq();
-@@ -616,7 +617,7 @@ early_param("apic", apic_set_verbosity);
-  * Detect and enable local APICs on non-SMP boards.
-  * Original code written by Keir Fraser.
-  * On AMD64 we trust the BIOS - if it says no APIC it is likely
-- * not correctly set up (usually the APIC timer won't work etc.) 
-+ * not correctly set up (usually the APIC timer won't work etc.)
-  */
- 
- static int __init detect_init_APIC (void)
-@@ -789,13 +790,13 @@ static void setup_APIC_timer(unsigned in
- 	local_irq_save(flags);
- 
- 	/* wait for irq slice */
-- 	if (hpet_address && hpet_use_timer) {
-- 		int trigger = hpet_readl(HPET_T0_CMP);
-- 		while (hpet_readl(HPET_COUNTER) >= trigger)
-- 			/* do nothing */ ;
-- 		while (hpet_readl(HPET_COUNTER) <  trigger)
-- 			/* do nothing */ ;
-- 	} else {
-+	if (hpet_address && hpet_use_timer) {
-+		int trigger = hpet_readl(HPET_T0_CMP);
-+		while (hpet_readl(HPET_COUNTER) >= trigger)
-+			/* do nothing */ ;
-+		while (hpet_readl(HPET_COUNTER) <  trigger)
-+			/* do nothing */ ;
+ 	BCD_TO_BIN(sec);
+ 	BCD_TO_BIN(min);
+@@ -233,11 +233,11 @@ unsigned long read_persistent_clock(void
+ 		BCD_TO_BIN(century);
+ 		year += century * 100;
+ 		printk(KERN_INFO "Extended CMOS year: %d\n", century * 100);
+-	} else { 
 +	} else {
- 		int c1, c2;
- 		outb_p(0x00, 0x43);
- 		c2 = inb_p(0x40);
-@@ -881,10 +882,10 @@ static unsigned int calibration_result;
+ 		/*
+ 		 * x86-64 systems only exists since 2002.
+ 		 * This will work up to Dec 31, 2100
+-	 	 */
++		 */
+ 		year += 2000;
+ 	}
  
- void __init setup_boot_APIC_clock (void)
+@@ -249,45 +249,45 @@ unsigned long read_persistent_clock(void
+ #define TICK_COUNT 100000000
+ static unsigned int __init tsc_calibrate_cpu_khz(void)
  {
--	if (disable_apic_timer) { 
--		printk(KERN_INFO "Disabling APIC timer\n"); 
--		return; 
--	} 
-+	if (disable_apic_timer) {
-+		printk(KERN_INFO "Disabling APIC timer\n");
-+		return;
+-       int tsc_start, tsc_now;
+-       int i, no_ctr_free;
+-       unsigned long evntsel3 = 0, pmc3 = 0, pmc_now = 0;
+-       unsigned long flags;
+-
+-       for (i = 0; i < 4; i++)
+-               if (avail_to_resrv_perfctr_nmi_bit(i))
+-                       break;
+-       no_ctr_free = (i == 4);
+-       if (no_ctr_free) {
+-               i = 3;
+-               rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
+-               wrmsrl(MSR_K7_EVNTSEL3, 0);
+-               rdmsrl(MSR_K7_PERFCTR3, pmc3);
+-       } else {
+-               reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i);
+-               reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+-       }
+-       local_irq_save(flags);
+-       /* start meauring cycles, incrementing from 0 */
+-       wrmsrl(MSR_K7_PERFCTR0 + i, 0);
+-       wrmsrl(MSR_K7_EVNTSEL0 + i, 1 << 22 | 3 << 16 | 0x76);
+-       rdtscl(tsc_start);
+-       do {
+-               rdmsrl(MSR_K7_PERFCTR0 + i, pmc_now);
+-               tsc_now = get_cycles_sync();
+-       } while ((tsc_now - tsc_start) < TICK_COUNT);
+-
+-       local_irq_restore(flags);
+-       if (no_ctr_free) {
+-               wrmsrl(MSR_K7_EVNTSEL3, 0);
+-               wrmsrl(MSR_K7_PERFCTR3, pmc3);
+-               wrmsrl(MSR_K7_EVNTSEL3, evntsel3);
+-       } else {
+-               release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
+-               release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+-       }
++	int tsc_start, tsc_now;
++	int i, no_ctr_free;
++	unsigned long evntsel3 = 0, pmc3 = 0, pmc_now = 0;
++	unsigned long flags;
++
++	for (i = 0; i < 4; i++)
++		if (avail_to_resrv_perfctr_nmi_bit(i))
++			break;
++	no_ctr_free = (i == 4);
++	if (no_ctr_free) {
++		i = 3;
++		rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
++		wrmsrl(MSR_K7_EVNTSEL3, 0);
++		rdmsrl(MSR_K7_PERFCTR3, pmc3);
++	} else {
++		reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i);
++		reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
++	}
++	local_irq_save(flags);
++	/* start meauring cycles, incrementing from 0 */
++	wrmsrl(MSR_K7_PERFCTR0 + i, 0);
++	wrmsrl(MSR_K7_EVNTSEL0 + i, 1 << 22 | 3 << 16 | 0x76);
++	rdtscl(tsc_start);
++	do {
++		rdmsrl(MSR_K7_PERFCTR0 + i, pmc_now);
++		tsc_now = get_cycles_sync();
++	} while ((tsc_now - tsc_start) < TICK_COUNT);
++
++	local_irq_restore(flags);
++	if (no_ctr_free) {
++		wrmsrl(MSR_K7_EVNTSEL3, 0);
++		wrmsrl(MSR_K7_PERFCTR3, pmc3);
++		wrmsrl(MSR_K7_EVNTSEL3, evntsel3);
++	} else {
++		release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
++		release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
 +	}
  
- 	printk(KERN_INFO "Using local APIC timer interrupts.\n");
- 	using_apic_timer = 1;
-@@ -1128,20 +1129,6 @@ asmlinkage void smp_spurious_interrupt(v
- 	if (v & (1 << (SPURIOUS_APIC_VECTOR & 0x1f)))
- 		ack_APIC_irq();
- 
--#if 0
--	static unsigned long last_warning; 
--	static unsigned long skipped; 
--
--	/* see sw-dev-man vol 3, chapter 7.4.13.5 */
--	if (time_before(last_warning+30*HZ,jiffies)) { 
--		printk(KERN_INFO "spurious APIC interrupt on CPU#%d, %ld skipped.\n",
--		       smp_processor_id(), skipped);
--		last_warning = jiffies; 
--		skipped = 0;
--	} else { 
--		skipped++; 
--	} 
--#endif 
- 	irq_exit();
+-       return pmc_now * tsc_khz / (tsc_now - tsc_start);
++	return pmc_now * tsc_khz / (tsc_now - tsc_start);
  }
- 
-@@ -1173,11 +1160,11 @@ asmlinkage void smp_error_interrupt(void
- 	   7: Illegal register address
- 	*/
- 	printk (KERN_DEBUG "APIC error on CPU%d: %02x(%02x)\n",
--	        smp_processor_id(), v , v1);
-+		smp_processor_id(), v , v1);
- 	irq_exit();
- }
- 
--int disable_apic; 
-+int disable_apic;
  
  /*
-  * This initializes the IO-APIC and APIC hardware if this is
-@@ -1185,11 +1172,11 @@ int disable_apic; 
-  */
- int __init APIC_init_uniprocessor (void)
- {
--	if (disable_apic) { 
-+	if (disable_apic) {
- 		printk(KERN_INFO "Apic disabled\n");
--		return -1; 
-+		return -1;
- 	}
--	if (!cpu_has_apic) { 
-+	if (!cpu_has_apic) {
- 		disable_apic = 1;
- 		printk(KERN_INFO "Apic disabled by BIOS\n");
- 		return -1;
-@@ -1211,8 +1198,8 @@ int __init APIC_init_uniprocessor (void)
- 	return 0;
+@@ -315,7 +315,7 @@ static unsigned int __init pit_calibrate
+ 	end = get_cycles_sync();
+ 
+ 	spin_unlock_irqrestore(&i8253_lock, flags);
+-	
++
+ 	return (end - start) / 50;
  }
  
--static __init int setup_disableapic(char *str) 
--{ 
-+static __init int setup_disableapic(char *str)
-+{
- 	disable_apic = 1;
- 	clear_bit(X86_FEATURE_APIC, boot_cpu_data.x86_capability);
- 	return 0;
-@@ -1220,10 +1207,10 @@ static __init int setup_disableapic(char
- early_param("disableapic", setup_disableapic);
+@@ -360,7 +360,7 @@ static struct irqaction irq0 = {
+ 	.handler	= timer_interrupt,
+ 	.flags		= IRQF_DISABLED | IRQF_IRQPOLL,
+ 	.mask		= CPU_MASK_NONE,
+-	.name 		= "timer"
++	.name		= "timer"
+ };
  
- /* same as disableapic, for compatibility */
--static __init int setup_nolapic(char *str) 
--{ 
-+static __init int setup_nolapic(char *str)
-+{
- 	return setup_disableapic(str);
--} 
-+}
- early_param("nolapic", setup_nolapic);
+ void __init time_init(void)
+@@ -373,7 +373,7 @@ void __init time_init(void)
  
- static int __init parse_lapic_timer_c2_ok(char *arg)
-@@ -1233,13 +1220,13 @@ static int __init parse_lapic_timer_c2_o
- }
- early_param("lapic_timer_c2_ok", parse_lapic_timer_c2_ok);
- 
--static __init int setup_noapictimer(char *str) 
--{ 
-+static __init int setup_noapictimer(char *str)
-+{
- 	if (str[0] != ' ' && str[0] != 0)
- 		return 0;
- 	disable_apic_timer = 1;
- 	return 1;
--} 
-+}
- 
- static __init int setup_apicmaintimer(char *str)
- {
-@@ -1264,5 +1251,5 @@ static __init int setup_apicpmtimer(char
- }
- __setup("apicpmtimer", setup_apicpmtimer);
- 
--__setup("noapictimer", setup_noapictimer); 
-+__setup("noapictimer", setup_noapictimer);
- 
+ 	if (hpet_use_timer) {
+ 		/* set tick_nsec to use the proper rate for HPET */
+-	  	tick_nsec = TICK_NSEC_HPET;
++		tick_nsec = TICK_NSEC_HPET;
+ 		tsc_khz = hpet_calibrate_tsc();
+ 		timename = "HPET";
+ 	} else {
