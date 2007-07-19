@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938423AbXGSOp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937340AbXGSOqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938423AbXGSOp5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760842AbXGSOpr
+	id S937340AbXGSOqt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXGSOqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:45:47 -0400
-Received: from smtp108.sbc.mail.mud.yahoo.com ([68.142.198.207]:27823 "HELO
-	smtp108.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755468AbXGSOpq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:45:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=o233rGZGjP4ztbFWJ3VagnxJNjiwjWKUn6Cc7P8RjqCzvH2ii0tEa/tkkXeZ+gSwdb+t9MP7JDv0EHX2N0Zl2qUsl/mIVD8F98CgBtkjOAv3EGh6VAZRzgsrTknbEQvgvUeOFXK+CAje9OoDHIBo3i7VWAP7kN7PbkNtjLnTdYk=  ;
-X-YMail-OSG: wlZGP.AVM1nUg0zFjNbYvnu1yr1SBTQrLJ0Z2fC7xQsY.0WTP.v.eeZ4SGA_pv6O4h1fphLe9w--
-From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH 1/1] Driver for the Atmel on-chip SSC on AT32AP and AT91.
-Date: Thu, 19 Jul 2007 07:45:42 -0700
-User-Agent: KMail/1.9.6
-Cc: Hans-Christian Egtvedt <hcegtvedt@atmel.com>,
-       Andrew Victor <andrew@sanpeople.com>,
-       kernel-avr32 <kernel@avr32linux.org>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
-       Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <1184568752.15535.9.camel@localhost.localdomain> <20070719110122.262c2778@dhcp-255-175.norway.atmel.com> <20070719113136.4d0a951f@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20070719113136.4d0a951f@dhcp-255-175.norway.atmel.com>
+	Thu, 19 Jul 2007 10:46:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37831 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751521AbXGSOqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 10:46:38 -0400
+Date: Thu, 19 Jul 2007 10:46:31 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andi Kleen <ak@suse.de>
+Cc: wli@holomorphy.com, lkml@rtr.ca, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for review] [7/48] i386: divorce CONFIG_X86_PAE from
+	CONFIG_HIGHMEM64G
+Message-ID: <20070719144631.GA14938@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
+	wli@holomorphy.com, lkml@rtr.ca, linux-kernel@vger.kernel.org
+References: <20070719348.540885000@suse.de> <20070719134836.0C54214E6E@wotan.suse.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707190745.43151.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070719134836.0C54214E6E@wotan.suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007, Haavard Skinnemoen wrote:
+On Thu, Jul 19, 2007 at 03:48:36PM +0200, Andi Kleen wrote:
+ 
+ > Some users may want NX
+ > or expanded swapspace support without the overhead or instability of
+ > highmem. 
 
-> > So the protocol drivers need some kind of resource management in order
-> > to not step on each others' toes, and that's the reason for the export
-> > of ssc_request() and ssc_free().
-> > 
-> > I'm not sure if anyone would have been very mad at me for sneaking this
-> > in through the avr32 tree, but I'd really like to know what others, in
-> > particular the AT91 people and David, think of this kind of thing
-> > before it ends up in mainline.
+NX is still going to need the larger PTEs, so I don't see how this
+change removes any 'overhead' or potential 'instability'.
+I'm not necessarily disagreeing with the change, but this part
+of the changelog seems to be false advertising.
 
-Does this work with both AT91 and AVR32 instances of SSC-to-at73c213
-audio output hardware?  Clearly it "should".
+	Dave
 
-This "kind of thing" seems pretty routine.  I see it all the time with
-timer modules and DMA channels ... as well as flexible serial links like
-this "SSC" module.  (Other serial-link examples include McBSP on OMAP,
-SSP on PXA, and lots of non-AC97 audio data stream links.)
-
-In this case a simple request/free interface is enough, since only one
-module will hook up to the external hardware.  (Here, a Codec/AMP chip.)
-In other cases the request may imply a more complex choice algorithm
-than just matching IDs:  the particular DMA channel or timer returned
-may not matter.  So for now I think hardware-specific APIs are OK.
-
-Thing is, these don't fit very nicely into the driver model since not
-all instances of that silicon module will use the same driver.  One
-instance might manage a bidirectional audio stream through a codec;
-another might implement the control interface to that code using SPI;
-while a third might manage a custom data acquisition interface.
-
-- Dave
+-- 
+http://www.codemonkey.org.uk
