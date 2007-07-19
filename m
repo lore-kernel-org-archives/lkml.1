@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965125AbXGSOIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965082AbXGSOIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965125AbXGSOIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765673AbXGSNxB
+	id S965082AbXGSOIg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938135AbXGSNxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:53:01 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49049 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765679AbXGSNw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:52:59 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH for review] [31/48] i386: basic infrastructure support for AMD geode-class  machines
-Date: Thu, 19 Jul 2007 15:47:38 +0200
-User-Agent: KMail/1.9.6
-Cc: dilinger@queued.net, david-b@pacbell.net, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-References: <20070719317.317927000@suse.de> <20070719131756.4E41714E5F@wotan.suse.de> <20070719144136.4fd007ba@the-village.bc.nu>
-In-Reply-To: <20070719144136.4fd007ba@the-village.bc.nu>
+	Thu, 19 Jul 2007 09:53:47 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:43777 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S937869AbXGSNxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 09:53:45 -0400
+Date: Thu, 19 Jul 2007 15:53:44 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Olaf Hering <olaf@aepfle.de>, Andy Whitcroft <apw@shadowen.org>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 1/4] ps3disk: use correct bio vector size
+In-Reply-To: <Pine.LNX.4.62.0707191548070.8661@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0707191552420.8661@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+ <20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
+ <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
+ <20070719021045.c0b994ca.akpm@linux-foundation.org>
+ <Pine.LNX.4.62.0707191548070.8661@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707191547.39131.ak@suse.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1731197132-1184853188=:8661"
+Content-ID: <Pine.LNX.4.62.0707191553220.8661@pademelon.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> > +/* Specific geode tests */
-> > +
-> > +static inline int is_geode_gx(void)
-> > +{
-> > +	return ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC) &&
-> > +		(boot_cpu_data.x86 == 5) &&
-> > +		(boot_cpu_data.x86_model == 5));
-> > +}
-> 
-> My docs imply this could also be 5,5,VENDOR_CYRIX ?
-> 
-> Mot sure it matters for the I/O stuff
+---584337861-1731197132-1184853188=:8661
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0707191553221.8661@pademelon.sonytel.be>
 
-I guess i'll wait for someone with that hardware to submit a tested patch.
-Just changing it blind seems too risky.
+ps3disk: use correct bio vector size
 
--Andi
+This fixes the O_DIRECT corruptions, as reported by Olaf Hering (triggered by
+e.g. parted >= 1.8.0).
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/block/ps3disk.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -108,7 +108,7 @@ static void ps3disk_scatter_gather(struc
+ 			__func__, __LINE__, i, bio_segments(bio),
+ 			bio_sectors(bio), sector);
+ 		bio_for_each_segment(bvec, bio, j) {
+-			size = bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE;
++			size = bvec->bv_len;
+ 			buf = __bio_kmap_atomic(bio, j, KM_IRQ0);
+ 			if (gather)
+ 				memcpy(dev->bounce_buf+offset, buf, size);
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1731197132-1184853188=:8661--
