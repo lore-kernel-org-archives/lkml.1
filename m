@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936424AbXGSAUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936069AbXGSA0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936424AbXGSAUo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 20:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934480AbXGSAUL
+	id S936069AbXGSA0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 20:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932555AbXGSA0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 20:20:11 -0400
-Received: from stinky.trash.net ([213.144.137.162]:51668 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932791AbXGSAUI (ORCPT
+	Wed, 18 Jul 2007 20:26:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60440 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932471AbXGSA0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 20:20:08 -0400
-Message-ID: <469EAE0F.5090607@trash.net>
-Date: Thu, 19 Jul 2007 02:19:27 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Ben Greear <greearb@candelatech.com>
-CC: andrei radulescu-banu <iubica2@yahoo.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <878246.51044.qm@web56608.mail.re3.yahoo.com> <469E9AC8.3090603@trash.net> <469EA0D1.6020406@candelatech.com> <469EA370.8000103@trash.net> <469EA9BF.4040603@candelatech.com>
-In-Reply-To: <469EA9BF.4040603@candelatech.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 18 Jul 2007 20:26:36 -0400
+Date: Wed, 18 Jul 2007 17:26:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: early_printk accessing __log_buf
+Message-Id: <20070718172603.231351ea.akpm@linux-foundation.org>
+In-Reply-To: <200707181939.46910.rgetz@blackfin.uclinux.org>
+References: <200707181756.44074.rgetz@blackfin.uclinux.org>
+	<20070718151617.fe6a2943.akpm@linux-foundation.org>
+	<200707181939.46910.rgetz@blackfin.uclinux.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Greear wrote:
-> Patrick McHardy wrote:
-> 
->> Its actually more a problem on the RX path. VLAN acceleration
->> works (at least with some drivers) by enabling HW header striping
->> and using the VLAN ID for an immediate lookup in the VLAN devices
->> configured on that device. So if the VLAN is not configured on the
->> real device but something like macvlan, it will get the packet
->> without a header and without any indication that this was a VLAN
->> packet. This is also what causes the tcpdump problem.
->>   
-> 
-> This reminded me of something:
-> 
-> If we are using VLAN HW-Accel, then the skb hits the mac-vlan check with
-> the skb->dev == vlan-device.
-> So, in this case, we can put mac-vlans on top of 802.1Q VLANs.
-> 
-> But, if we are not using VLAN hw-accel, the skb hits the mac-vlan check
-> with skb->dev == ethernet-device.
-> In this case, we could NOT have the mac-vlan on top of the 802.1Q VLAN,
-> but we can have a MAC-VLAN
-> on the raw ethernet and we could add 802.1Q vlans on top of the
-> mac-vlan.  This is because the
-> .1Q vlan will only be found once we go into the protocol handler logic,
-> which is necessarily after the
-> MAC-VLAN check logic.
-> 
-> Unless I am confused in my conjecture above, this is likely to confuse
-> others who try to mix and
-> match MAC-VLANs and 802.1Q VLANs.
+On Wed, 18 Jul 2007 19:39:46 -0400
+Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
+> On Wed 18 Jul 2007 18:16, Andrew Morton pondered:
+> > 
+> > I'd suggest that any interface into here should be via function calls,
+> > not via direct access to printk internals: think up some nice
+> > copy_me_some_of_the_log_buffer() interface.
+> 
+> If so - I would still like to put it in:
+>  - ifdef CONFIG_EARLY_PRINTK
+>  - and define as __init
+> 
+> so that people don't use it when they shouldn't (when the kernel is up an 
+> running).
+> 
+> Something simple like - early_copy_log_buff(void *dest, size_t n) 
+> 
+> copies n bytes from log_buf to memory area dest. Returns number of bytes that 
+> could not be copied. Can find out how many bytes are in the log_buff by 
+> calling with zero size.
+> 
+> This is not destructive to existing interfaces (log_start and con_start are 
+> not updated/used). This should ensure that if booting does work - that normal 
+> messages come out the standard method.
+> 
+> Any other suggestions?
+> 
 
-The current code doesn't use hardware acceleration and works fine
-in all combinations where only vlan *or* macvlan devices are used
-on the underlying device.
+When I was at $EARLIER_EMPLOYER, we had code in there to copy the last
+kilobyte-odd of the log buffer into flash when the box oopsed.
 
-If you mix them macvlan won't get to see vlan headers anymore,
-same as for tcpdump, bridge devices, or anything else that
-might care. A bridge eating VLAN headers should be a clearer
-indication of a bug than an inaccurate tcpdump ..
-
-The real problem is that the device removes the header for all
-vlans, not only for those that are configured on the device.
-This is a result of how the hardware works. But since we don't
-have the data available later, we can't even fix it up in
-software.
+So there's one instance proof that something more general would be needed. 
+Probably there are others, but they'll mainly be in the consumer/embedded
+area, and those sorts of engineers don't read this mailing list much.
 
