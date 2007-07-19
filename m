@@ -1,75 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940444AbXGSRTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939222AbXGSRU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940444AbXGSRTp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938348AbXGSRTU
+	id S939222AbXGSRU1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940486AbXGSRTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:19:20 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:51810 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938117AbXGSRTR (ORCPT
+	Thu, 19 Jul 2007 13:19:52 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:17118 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S940418AbXGSRTs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:19:17 -0400
-Date: Thu, 19 Jul 2007 12:19:13 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Christian Ehrhardt <lk@c--e.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-Message-ID: <20070719171913.GA1275@sergelap.austin.ibm.com>
-References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de> <20070719122424.GA5186@vino.hallyn.com> <1184864070.2694.3.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184864070.2694.3.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 19 Jul 2007 13:19:48 -0400
+Subject: Re: [PATCH] [15/58] i386: Rewrite sched_clock
+From: Daniel Walker <dwalker@mvista.com>
+To: Andi Kleen <ak@suse.de>
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200707191913.27946.ak@suse.de>
+References: <200707191154.642492000@suse.de>
+	 <20070719095459.E60AD14E11@wotan.suse.de>
+	 <1184863904.6458.17.camel@dhcp193.mvista.com>
+	 <200707191913.27946.ak@suse.de>
+Content-Type: text/plain
+Date: Thu, 19 Jul 2007 10:15:38 -0700
+Message-Id: <1184865339.6458.21.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Arjan van de Ven (arjan@infradead.org):
+On Thu, 2007-07-19 at 19:13 +0200, Andi Kleen wrote:
+> > What about using the cycles2ns() clocksource helpers, it would eliminate
+> > the duplication of the shift/multiply math .
 > 
-> > Right, the ability to boot with security.capability=disabpled (or
-> > whatever) and then load a custom module without having to use a whole
-> > new kernel is something I'm sure end-users want.
-> > 
-> > Especially since compiling a kernel which works with, say, a default
-> > fedora install, with lvm etc, is not imo for a novice (where novice
-> > != security novice).
-> 
-> the next step after this patch is to have an option to get rid of all
-> the function pointer chasing (which is expensive) for the case where you
-> know you only want one security module (which you then can turn on or
-> off)... that advantage is a performance gain for a lot of people.... but
-> if the person configuring the kernel selects this, it does mean there's
-> no way to load modules. I don't know what Fedora will do, but they might
-> select such an option. That's CHOICE...
+> They are completely different from what clocksource provides.
 
-War is peace
-Freedom is slavery
-Ignorance is strength
-	-1984
+How so?
 
-:)
+Daniel
 
-Actually, given that when lsm was being introduced, lsm seemed to
-improve performance overall, have you taken any measurements to show
-that this is actually the case?  Of course it makes sense that it would,
-but witjout measurements we do not know.
-
-> they chose a performance
-
-> improvement over enabling external kernel modules that they don't ship
-> anyway...
-> 
-> but is it really worth blocking such clear improvements in performance?
-
-I'm blocking nothing.
-
-In fact I concede that this patch might force any out of tree module
-authors to come to the table, which is a good thing.
-
--serge
