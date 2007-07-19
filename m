@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937733AbXGSJAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764123AbXGSJFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937733AbXGSJAB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933269AbXGSI7u
+	id S1764123AbXGSJFx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbXGSJFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 04:59:50 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:60009 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763849AbXGSI7t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 04:59:49 -0400
-Date: Thu, 19 Jul 2007 09:19:10 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: cmpxchg is not available to generic code
-In-Reply-To: <20070719011055.1392c7d2.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707190917330.21859@skynet.skynet.ie>
-References: <20070719000549.1e57b5b2.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0707190900320.19586@skynet.skynet.ie>
- <20070719011055.1392c7d2.akpm@linux-foundation.org>
+	Thu, 19 Jul 2007 05:05:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58605 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752715AbXGSJFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:05:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
+Date: Thu, 19 Jul 2007 11:13:21 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com> <20070718180420.02352d4f.akpm@linux-foundation.org> <1184827403.15756.14.camel@caritas-dev.intel.com>
+In-Reply-To: <1184827403.15756.14.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707191113.22711.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, 19 July 2007 08:43, Huang, Ying wrote:
+> On Wed, 2007-07-18 at 18:04 -0700, Andrew Morton wrote:
+> > I like the idea but I think I'll let people chat about it a bit more
+> > before looking at merging the patches, OK?
+> 
+> I think maybe we should wait for Rafael to separate the device hibernate
+> (quiesce and state save) from device suspend.
 
->
->> they need to grow a userpsace
->> cmpxchg as davem mentioned to go along with this, changing the drm now
->> isn't possible due to backwards compat..
->
-> For reference purposes, that position is not acceptable.  We _never_ accept the
-> "oh I can't change my proposed kernel interface because I already have
-> userspace relying on it" argument.
+Well, I'm afraid that will take some time ...
 
-Yes it is, I thought breaking userspace API was the worst crime in kernel 
-history, (unless you are sysfs...) the userspace DRM has been around since 
-2.2 days at least, so there are lots of legacy userspaces to break..
+> Without that, the ACPI issue can not be resolved.
 
-> Hopefully that won't be an issue here.  I guess DRM now needs a
-> `depends on !ARM'.
+Yes, it seems so.
 
-Possibly the answer..
+Greetings,
+Rafael
 
-Dave.
 
 -- 
-David Airlie, Software Engineer
-http://www.skynet.ie/~airlied / airlied at skynet.ie
-Linux kernel - DRI, VAX / pam_smb / ILUG
-
+"Premature optimization is the root of all evil." - Donald Knuth
