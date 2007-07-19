@@ -1,42 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940329AbXGSRe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939902AbXGSRgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940329AbXGSRe4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935280AbXGSRem
+	id S939902AbXGSRgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbXGSRf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:34:42 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:48712 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933353AbXGSRel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:34:41 -0400
-Date: Thu, 19 Jul 2007 10:34:07 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Serge E. Hallyn" <serge@hallyn.com>, Christian Ehrhardt <lk@c--e.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-Message-ID: <20070719173407.GA3672@sequoia.sous-sol.org>
-References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de> <20070719122424.GA5186@vino.hallyn.com> <1184864070.2694.3.camel@laptopd505.fenrus.org> <20070719171913.GA1275@sergelap.austin.ibm.com>
+	Thu, 19 Jul 2007 13:35:57 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:60523 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754667AbXGSRfz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:35:55 -0400
+Message-ID: <469FA0F9.9090001@steeleye.com>
+Date: Thu, 19 Jul 2007 13:35:53 -0400
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719171913.GA1275@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Denis Cheng <crquan@gmail.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Steven Whitehouse <steve@chygwyn.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] nbd: change a parameter's type to remove a memcpy
+ call
+References: <11848376711601-git-send-email-crquan@gmail.com> <11848377013773-git-send-email-crquan@gmail.com>
+In-Reply-To: <11848377013773-git-send-email-crquan@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Serge E. Hallyn (serue@us.ibm.com) wrote:
-> Actually, given that when lsm was being introduced, lsm seemed to
-> improve performance overall, have you taken any measurements to show
-> that this is actually the case?  Of course it makes sense that it would,
-> but witjout measurements we do not know.
+Denis Cheng wrote:
+> this memcpy looks so strange, in fact it's merely a pointer dereference,
+> so I change the parameter's type to refer it more directly,
+> this could make the memcpy not needed anymore.
+> 
+> in the function nbd_read_stat where nbd_find_request is only once called,
+> the parameter served should be transformed accordingly.
 
-Yes, it does.  I have measured it as have others (esp. after Kurt
-Garloff pointed out issues on ia64).
+This is really a matter of preference. The generated code ends up being 
+about the same, I think, while your patch makes the call to 
+nbd_find_request kind of obtuse. Also, the memcpy's are balanced between 
+send_req and find_request, so you can quickly see how the data is being 
+transferred (from req into handle, and then back again). Your patch 
+makes this less clear, at least to me.
 
-thanks,
--chris
+--
+Paul
+
+
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+>  drivers/block/nbd.c |    7 ++-----
+>  1 files changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+> index 86639c0..a4d8508 100644
+> --- a/drivers/block/nbd.c
+> +++ b/drivers/block/nbd.c
+> @@ -235,14 +235,11 @@ error_out:
+>  	return 1;
+>  }
+>  
+> -static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
+> +static struct request *nbd_find_request(struct nbd_device *lo, struct request *xreq)
+>  {
+>  	struct request *req, *n;
+> -	struct request *xreq;
+>  	int err;
+>  
+> -	memcpy(&xreq, handle, sizeof(xreq));
+> -
+>  	err = wait_event_interruptible(lo->active_wq, lo->active_req != xreq);
+>  	if (unlikely(err))
+>  		goto out;
+> @@ -297,7 +294,7 @@ static struct request *nbd_read_stat(struct nbd_device *lo)
+>  		goto harderror;
+>  	}
+>  
+> -	req = nbd_find_request(lo, reply.handle);
+> +	req = nbd_find_request(lo, *(struct request **)reply.handle);
+>  	if (unlikely(IS_ERR(req))) {
+>  		result = PTR_ERR(req);
+>  		if (result != -ENOENT)
+
