@@ -1,66 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbXGSJvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbXGSJy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760886AbXGSJvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbXGSJvG
+	id S1755830AbXGSJy7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbXGSJyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:51:06 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:43892 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755755AbXGSJvE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:51:04 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 19 Jul 2007 05:49:00 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Remove R/W semaphore content from generic semaphore.h
- headers.
-In-Reply-To: <Pine.LNX.4.64.0707190530040.19703@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0707190546260.20463@localhost.localdomain>
-References: <Pine.LNX.4.64.0707190530040.19703@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 19 Jul 2007 05:54:46 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33021 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751322AbXGSJyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:54:45 -0400
+From: Andi Kleen <ak@suse.de>
+Message-Id: <200707191154.642492000@suse.de>
+To: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [0/58] First batch of x86 patches for .23
+Date: Thu, 19 Jul 2007 11:54:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Robert P. J. Day wrote:
 
-.... blah blah ...
+- Some more improvements for AMD family 10
+- Some help for gcc 4.3
+- Out of line string functions for i386 (saves >20k text) 
+- x86-64 vDSO
+- improved fake numa node code from David Rientjes
+- various machine checking handling improvements from Tim H.
+- timer cleanups and fixes from Thomas Gleixner
+- various other cleanup and fixes
 
-once upon a time, i *did* scan the source tree to verify that any
-source file that used a R/W semaphore did, in fact, include the
-rwsem.h file, and i found only one file that needed tweaking:
+Please review. I plan to send them off relatively quickly
+because I'm very late with this merge.
 
-commit ae4472aa03d38b11f334dc0030b82e0c9f249af9
-Author: Robert P. J. Day <rpjday@mindspring.com>
-Date:   Mon Feb 12 00:51:52 2007 -0800
-
-    [PATCH] QUOTA: Have <linux/quota.h> include <linux/rwsem.h> explicitly
-
-    Since quota.h declares a R/W semaphore, it should include rwsem.h
-    explicitly.
-
-    Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-    Acked-by: Jan Kara <jack@suse.cz>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-that suggests that any breakage should be minimal.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+-Andi
