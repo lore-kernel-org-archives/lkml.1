@@ -1,104 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938337AbXGSOzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938842AbXGSO5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938337AbXGSOzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbXGSOzp
+	id S938842AbXGSO5I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbXGSO4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:55:45 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:44280 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755058AbXGSOzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:55:44 -0400
-Message-ID: <469F7B4C.5050502@openvz.org>
-Date: Thu, 19 Jul 2007 18:55:08 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 19 Jul 2007 10:56:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:60133 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756631AbXGSO4y convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 10:56:54 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [Cbe-oss-dev] [patch 11/13] cell: driver for DDR2 memory on AXON
+Date: Thu, 19 Jul 2007 16:49:27 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070718160439.723093835@arndb.de> <200707190048.09686.arnd@arndb.de> <20070719101230.GA4553@lst.de>
+In-Reply-To: <20070719101230.GA4553@lst.de>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: devel@openvz.org
-Subject: [PATCH] Cleanup elevator_ops->trim function
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707191649.27976.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18eej+Fo5moU3DZKVuU6CvqY/Ey3dOget5qCGB
+ /VQzYHN45ZGqgs8dW051/SKtPaAZOtmbbZi40DHJ0aHihJzTru
+ LROHCRF/0g34msSqd8g1g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The elevator_ops's member "trim" is declared and called not like
-all the other ones. Was this deliberate?
+On Thursday 19 July 2007, Christoph Hellwig wrote:
+> 
+> > None of these seems to make any difference whatsoever, except for BLKBSZGET
+> > returning non-zero on a ramdisk or dcssblk device. I think we'd be best
+> > off removing bd_block_size from the kernel altogether, and I'll remove
+> > it from the axon-ram driver now.
+> 
+> Yes, please.  I even have patches that only pass struct gendisk to block
+> device ->open, so this couldn't work anymore anyway.  And yes, the
+> ramdisk driver is doing some really odd things.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Any suggestion on what BLKBSZGET should return?
 
----
+1) blocksize = 0 (same as it does already for most devices)
+2) return -EINVAL
+3) same as BLKSSZGET
+4) return -ENOTTY
 
- block/as-iosched.c       |    2 +-
- block/cfq-iosched.c      |    2 +-
- block/elevator.c         |    4 ++--
- include/linux/elevator.h |    3 ++-
- 4 files changed, 6 insertions(+), 5 deletions(-)
+It probably doesn't matter much as any user of BLKBSZGET is
+already broken, but it would be good to do the right thing
+since it is a documented interface.
 
-diff --git a/block/as-iosched.c b/block/as-iosched.c
-index 3e316dd..add524c 100644
---- a/block/as-iosched.c
-+++ b/block/as-iosched.c
-@@ -1451,7 +1451,7 @@ static struct elevator_type iosched_as =
- 		.elevator_may_queue_fn =	as_may_queue,
- 		.elevator_init_fn =		as_init_queue,
- 		.elevator_exit_fn =		as_exit_queue,
--		.trim =				as_trim,
-+		.elevator_trim_fn =		as_trim,
- 	},
- 
- 	.elevator_attrs = as_attrs,
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 9755a3c..5ee8c39 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -2237,7 +2237,7 @@ static struct elevator_type iosched_cfq 
- 		.elevator_may_queue_fn =	cfq_may_queue,
- 		.elevator_init_fn =		cfq_init_queue,
- 		.elevator_exit_fn =		cfq_exit_queue,
--		.trim =				cfq_free_io_context,
-+		.elevator_trim_fn =		cfq_free_io_context,
- 	},
- 	.elevator_attrs =	cfq_attrs,
- 	.elevator_name =	"cfq",
-diff --git a/block/elevator.c b/block/elevator.c
-index d265963..ae7601f 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -983,12 +983,12 @@ void elv_unregister(struct elevator_type
- 	/*
- 	 * Iterate every thread in the process to remove the io contexts.
- 	 */
--	if (e->ops.trim) {
-+	if (e->ops.elevator_trim_fn) {
- 		read_lock(&tasklist_lock);
- 		do_each_thread(g, p) {
- 			task_lock(p);
- 			if (p->io_context)
--				e->ops.trim(p->io_context);
-+				e->ops.elevator_trim_fn(p->io_context);
- 			task_unlock(p);
- 		} while_each_thread(g, p);
- 		read_unlock(&tasklist_lock);
-diff --git a/include/linux/elevator.h b/include/linux/elevator.h
-index e88fcbc..896831a 100644
---- a/include/linux/elevator.h
-+++ b/include/linux/elevator.h
-@@ -29,6 +29,7 @@ typedef void (elevator_deactivate_req_fn
- 
- typedef void *(elevator_init_fn) (request_queue_t *);
- typedef void (elevator_exit_fn) (elevator_t *);
-+typedef void (elevator_trim_fn) (struct io_context *);
- 
- struct elevator_ops
- {
-@@ -55,7 +56,7 @@ struct elevator_ops
- 
- 	elevator_init_fn *elevator_init_fn;
- 	elevator_exit_fn *elevator_exit_fn;
--	void (*trim)(struct io_context *);
-+	elevator_trim_fn *elevator_trim_fn;
- };
- 
- #define ELV_NAME_MAX	(16)
+	Arnd <><
