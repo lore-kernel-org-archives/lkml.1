@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939488AbXGSQGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938906AbXGSQHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939488AbXGSQGX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765793AbXGSQGH
+	id S938906AbXGSQHj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761540AbXGSQH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:06:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54948 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Jul 2007 12:07:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50000 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937331AbXGSQGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:06:06 -0400
-Date: Thu, 19 Jul 2007 18:05:56 +0200
+	id S1761294AbXGSQHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:07:24 -0400
+Date: Thu, 19 Jul 2007 18:07:13 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Olaf Kirch <olaf.kirch@oracle.com>, Jarek Poplawski <jarkao2@o2.pl>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net,
-       Auke Kok <auke-jan.h.kok@intel.com>
+       linux-kernel@vger.kernel.org, davem@davemloft.net
 Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070719160556.GA3330@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <200707191144.24434.olaf.kirch@oracle.com> <20070719100135.GA2986@elte.hu> <200707191237.56455.olaf.kirch@oracle.com> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu> <20070719150728.GA17000@elte.hu> <20070719153217.GA25544@elte.hu> <20070719155230.GA31267@elte.hu>
+Message-ID: <20070719160713.GA3807@elte.hu>
+References: <20070716091236.GA10718@elte.hu> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu> <200707191452.09609.olaf.kirch@oracle.com> <469F867C.7020707@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070719155230.GA31267@elte.hu>
+In-Reply-To: <469F867C.7020707@intel.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -36,19 +35,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
 
-> i'll now check whether removing ignore_on_loglevel (no other changes) 
-> makes the hang go away. Maybe ignore_on_loglevel is buggy - or it 
-> produces an immediate printk (going out to the interface) during a 
-> particularly sensitive period of network initialization.
+> > I don't have a fix ready yet - I hope I'll have something later this 
+> > afternoon.
+> 
+> interesting, you seem to found the cause allright. I can't confirm the 
+> problem but I know that netpoll and NAPI has historically been an 
+> issue. I look forward to your suggestions...
 
-nope, that didnt have any effect. I have another theory: i had a 
-network-intense stress-test going on in the past few hours on the same 
-network (not involving the laptop) and i stopped it recently. Perhaps 
-that network-intense test also produced periodic broadcast packets that 
-got the e1000 out of its weird state before the tx timeout could hit. 
-Now that i've stopped the test, the network is quiescent again and the 
-e1000 hangs.
+because i dont seem to be able to trigger Olaf's WARN_ON(), can you see 
+anything in the ethtool output that i sent in the previous mail(s)?
 
 	Ingo
