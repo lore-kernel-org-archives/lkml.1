@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932904AbXGSU0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933276AbXGSUbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932904AbXGSU0p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 16:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760078AbXGSU0e
+	id S933276AbXGSUbV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 16:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932266AbXGSUbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 16:26:34 -0400
-Received: from asia.telenet-ops.be ([195.130.137.74]:51857 "EHLO
-	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760013AbXGSU0d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 16:26:33 -0400
-Date: Thu, 19 Jul 2007 22:26:26 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: 2.6.22-git* regression: Kconfig prompts without help text
-In-Reply-To: <Pine.LNX.4.64.0707181916410.5385@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0707192219380.18342@anakin>
-References: <469BBDAD.2010908@s5r6.in-berlin.de>
- <Pine.LNX.4.64.0707181634100.5385@fbirervta.pbzchgretzou.qr>
- <20070718094119.4a26ae03.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0707181916410.5385@fbirervta.pbzchgretzou.qr>
+	Thu, 19 Jul 2007 16:31:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:53595 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932260AbXGSUbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 16:31:11 -0400
+Message-ID: <469FC9D4.5070604@goop.org>
+Date: Thu, 19 Jul 2007 13:30:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, jbeulich@novell.com,
+       "S. P. Prasanna" <prasanna@in.ibm.com>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org, Zachary Amsden <zach@vmware.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: new text patching for review
+References: <200707191105.44056.ak@suse.de> <20070719133852.GA5490@Krystal>	<200707191546.08919.ak@suse.de> <20070719173502.GB12955@Krystal> <p73d4yow0ys.fsf@bingen.suse.de>
+In-Reply-To: <p73d4yow0ys.fsf@bingen.suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Jan Engelhardt wrote:
-> Add some help texts to recently-introduced kconfig items
-> 
-> Index: linux-2.6.23/drivers/macintosh/Kconfig
-> ===================================================================
-> --- linux-2.6.23.orig/drivers/macintosh/Kconfig
-> +++ linux-2.6.23/drivers/macintosh/Kconfig
-> @@ -3,6 +3,12 @@ menuconfig MACINTOSH_DRIVERS
->  	bool "Macintosh device drivers"
->  	depends on PPC || MAC || X86
->  	default y if (PPC_PMAC || MAC)
-> +	---help---
-> +	  Say Y here to get to see options for devices used with Macintosh
-> +	  computers, both PPC and Intel based. This option alone does not add
-                                  ^^^^^
-> +	  any kernel code.
-> +
-> +	  If you say N, all options in this submenu will be skipped and disabled.
+Andi Kleen wrote:
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+>   
+>> I see that IRQs are disabled in alternative_instructions(), but it does
+>> not protect against NMIs, which could come at a very inappropriate
+>> moment. MCE and SMIs would potentially cause the same kind of trouble.
+>>
+>> So unless you can guarantee that any code from NMI handler won't call
+>> basic things such as get_cycles() (nor MCE, nor SMIs), you can't insure
+>> it won't execute an illegal instruction. Also, the option of temporarily
+>> disabling the NMI for the duration of the update simply adds unwanted
+>> latency to the NMI handler which could be unacceptable in some setups.
+>>     
+>
+> Ok it's a fair point.  But how would you address it ?
+>
+> Even if we IPIed the other CPUs NMIs or MCEs could still happen.
+>
+> BTW Jeremy, have you ever considered that problem with paravirt ops
+> patching? 
+>   
 
-`MAC' is the symbol for m68k Macs.
+I remember Zach was thinking about it when he was thinking of making vmi
+a kernel module, but I don't think we discussed it with respect to the
+current patching mechanism.  Though he did discover that at one point
+alternative_instructions() was being run with interrupts enabled, which
+caused surprisingly few problems...
 
->From a quick look at drivers/macintosh/Kconfig, all of the entries are for m68k
-and PPC Macs only.  The only thing that depends on X86 is the main menu...
+But, yeah, it seems like it could be a problem.
 
-Gr{oetje,eeting}s,
+> - smp lock patching only ever changes a single byte (lock prefix) of
+> a single instruction
+> - kprobes only ever change a single byte
+>
+> For the immediate value patching it also cannot happen because
+> you'll never modify multiple instructions and all immediate values
+> can be changed atomically. 
+>   
 
-						Geert
+Are misaligned/cross-cache-line updates atomic?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+    J
