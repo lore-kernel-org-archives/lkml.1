@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936764AbXGSBWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936435AbXGSB3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936764AbXGSBWB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 21:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763455AbXGSBVt
+	id S936435AbXGSB3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 21:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762223AbXGSB3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 21:21:49 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46859 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762640AbXGSBVt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 21:21:49 -0400
-Message-ID: <469EBC63.9020803@zytor.com>
-Date: Wed, 18 Jul 2007 18:20:35 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 18 Jul 2007 21:29:16 -0400
+Received: from waste.org ([66.93.16.53]:53695 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759301AbXGSB3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 21:29:15 -0400
+Date: Wed, 18 Jul 2007 20:28:48 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Andrea Arcangeli <andrea@suse.de>, Ray Lee <ray-lk@madrabbit.org>,
+       Bodo Eggert <7eggert@gmx.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+Message-ID: <20070719012848.GO11115@waste.org>
+References: <Pine.LNX.4.58.0707161523500.25779@be1.lrz> <469BF104.1040703@gmail.com> <2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com> <469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org> <469BFB73.3070105@gmail.com> <20070716232755.GD11115@waste.org> <20070719001539.GC29728@v2.random> <20070719004129.GN11115@waste.org> <469EB4E5.2040300@gmail.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Avi Kivity <avi@qumranet.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       caglar@pardus.org.tr
-Subject: Re: [PATCH] i386: Decouple PAE from CONFIG_CMPXCHG64
-References: <11847764879-git-send-email-avi@qumranet.com> <20070718181829.GA3848@one.firstfloor.org>
-In-Reply-To: <20070718181829.GA3848@one.firstfloor.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469EB4E5.2040300@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>
->> No processors that support KVM exist that also do not support CMPXCHG64,
->> so no additional check is necessary.  This setup allows for a single kernel
->> that will boot on i486 and also support KVM if available.
+On Thu, Jul 19, 2007 at 02:48:37AM +0200, Rene Herman wrote:
+> On 07/19/2007 02:41 AM, Matt Mackall wrote:
 > 
-> The CONFIG should only control the early CPUID checks, which are needed for PAE
-> kernels.
+> >On Thu, Jul 19, 2007 at 02:15:39AM +0200, Andrea Arcangeli wrote:
 > 
-> But for something late like KVM the correct fix is really to drop
-> the ifdefs around the macro and check boot_cpu_has() yourself.
+> >>Using kmalloc(8k) instead of alloc_page() doesn't sound a too big deal
+> >>and that will solve the problem.
+> >
+> >How do you figure?
+> >
+> >If you're saying that soft pages helps our 8k stack allocations, it
+> >doesn't. The memory overhead of soft pages will be higher (5-15%,
+> >mostly due to file tails in pagecache) than the level at which 8k
+> >stacks currently run into trouble (1-2% free?).
+> >
+> >Not helpful.
 > 
+> With tail-packing it is.
 
-He's checking for the appropriate functionality at runtime.  What this
-does is makes it impossible to select KVM when you have already selected
-a CPU that doesn't support CX8.
+Tail packing is a whole new can of worms. Especially as it's very
+likely to make performance suffer on small files (the common case).
 
-One can, of course, question the utility, since the CPU set that
-supports KVM all support CX8, but not vice versa...
+On the other hand, if someone can demonstrate that tail-packed page
+cache doesn't suck, we should put it in mainline pronto. The poor
+architectures that are stuck with real 64k pages are sure to
+appreciate it.
 
-	-hpa
+-- 
+Mathematics is the supreme nostalgia of our time.
