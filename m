@@ -1,76 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933531AbXGSXW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762783AbXGSXXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933531AbXGSXW5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 19:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbXGSXWv
+	id S1762783AbXGSXXl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 19:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbXGSXXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 19:22:51 -0400
-Received: from mga02.intel.com ([134.134.136.20]:17443 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755099AbXGSXWu convert rfc822-to-8bit (ORCPT
+	Thu, 19 Jul 2007 19:23:35 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42237 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756335AbXGSXXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 19:22:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,558,1175497200"; 
-   d="scan'208";a="268369969"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: which signal is sent to freeze process?
-Date: Thu, 19 Jul 2007 16:22:36 -0700
-Message-ID: <A3258B497F1C1441AD36A2E8B45FD628550F96@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <200707200819.16100.nigel@nigel.suspend2.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: which signal is sent to freeze process?
-thread-index: AcfKUt4P+NlmrEyVQ3Gpl5WRJVCangACE1EQ
-References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707191459.20998.nigel@nigel.suspend2.net> <A3258B497F1C1441AD36A2E8B45FD628550DD6@scsmsx412.amr.corp.intel.com> <200707200819.16100.nigel@nigel.suspend2.net>
-From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-To: <nigel@suspend2.net>
-Cc: "Rafael Wysocki" <rjw@sisk.pl>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 19 Jul 2007 23:22:38.0617 (UTC) FILETIME=[B2561890:01C7CA5B]
+	Thu, 19 Jul 2007 19:23:34 -0400
+Date: Fri, 20 Jul 2007 00:23:31 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, jaharkes@cs.cmu.edu,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] coda breakage
+Message-ID: <20070719232331.GY21668@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am using Linux in an embedded platform with x86. Applications don't do
-anything special. The system call which is returning EINTR is poll. Also
-in one of the thread read is returning ENODATA after resume. If I just
-try the system calls again in case of EINTR or ENODATA everything works
-fine.
->From your mail it looks like freezer is not supposed to be interrupting
-system calls. Is that true?
+	a) switch by loff_t == __cmpdi2 use.  Replaced with a couple
+of obvious ifs; update of ->f_pos in the first one makes sure that we
+do the right thing in all cases.
+	b) block_signals() and unblock_signals() are globals on UML.
+Renamed coda ones; in principle UML probably ought to do rename as
+well, but that's another story.
 
------Original Message-----
-From: Nigel Cunningham [mailto:nigel@nigel.suspend2.net] 
-Sent: Thursday, July 19, 2007 3:19 PM
-To: Agarwal, Lomesh
-Cc: nigel@suspend2.net; Rafael Wysocki; linux-kernel@vger.kernel.org
-Subject: Re: which signal is sent to freeze process?
-
-Hi.
-
-On Friday 20 July 2007 07:06:01 Agarwal, Lomesh wrote:
-> So basically I can not install a signal handler to catch freeze signal
-> in the process. Right?
-> Is there any other way to solve the problem I am facing? After resume
-> some of the system calls are failing in some of my applications with
-> errno set as EINTR. I wanted to explore a way to not check for this
-> error all over the place and somehow retry failed system call. Any
-> ideas?
-
-Well, if you tell us which syscalls are returning with EINTR, maybe we
-can do 
-something on our side. The freezer is supposed to be as transparent as 
-possible to userspace, so it may be the case that we can do something to
-
-continue waiting or whatever you were doing after the freezing is done.
-
-Regards,
-
-Nigel
--- 
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/fs/coda/dir.c b/fs/coda/dir.c
+index 04a3dd8..8e61236 100644
+--- a/fs/coda/dir.c
++++ b/fs/coda/dir.c
+@@ -510,20 +510,20 @@ static int coda_venus_readdir(struct file *coda_file, void *buf,
+ 	vdir = kmalloc(sizeof(*vdir), GFP_KERNEL);
+ 	if (!vdir) return -ENOMEM;
+ 
+-	switch (coda_file->f_pos) {
+-	case 0:
++	if (coda_file->f_pos == 0) {
+ 		ret = filldir(buf, ".", 1, 0, de->d_inode->i_ino, DT_DIR);
+-		if (ret < 0) break;
++		if (ret < 0)
++			goto out;
+ 		result++;
+ 		coda_file->f_pos++;
+-		/* fallthrough */
+-	case 1:
++	}
++	if (coda_file->f_pos == 1) {
+ 		ret = filldir(buf, "..", 2, 1, de->d_parent->d_inode->i_ino, DT_DIR);
+-		if (ret < 0) break;
++		if (ret < 0)
++			goto out;
+ 		result++;
+ 		coda_file->f_pos++;
+-		/* fallthrough */
+-	default:
++	}
+ 	while (1) {
+ 		/* read entries from the directory file */
+ 		ret = kernel_read(host_file, coda_file->f_pos - 2, (char *)vdir,
+@@ -578,7 +578,7 @@ static int coda_venus_readdir(struct file *coda_file, void *buf,
+ 		 * we've already established it is non-zero. */
+ 		coda_file->f_pos += vdir->d_reclen;
+ 	}
+-	}
++out:
+ 	kfree(vdir);
+ 	return result ? result : ret;
+ }
+diff --git a/fs/coda/upcall.c b/fs/coda/upcall.c
+index e4e766e..cd561d2 100644
+--- a/fs/coda/upcall.c
++++ b/fs/coda/upcall.c
+@@ -632,7 +632,7 @@ int venus_statfs(struct dentry *dentry, struct kstatfs *sfs)
+ /*
+  * coda_upcall and coda_downcall routines.
+  */
+-static void block_signals(sigset_t *old)
++static void coda_block_signals(sigset_t *old)
+ {
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	*old = current->blocked;
+@@ -646,7 +646,7 @@ static void block_signals(sigset_t *old)
+ 	spin_unlock_irq(&current->sighand->siglock);
+ }
+ 
+-static void unblock_signals(sigset_t *old)
++static void coda_unblock_signals(sigset_t *old)
+ {
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	current->blocked = *old;
+@@ -672,7 +672,7 @@ static inline void coda_waitfor_upcall(struct upc_req *req)
+ 	sigset_t old;
+ 	int blocked;
+ 
+-	block_signals(&old);
++	coda_block_signals(&old);
+ 	blocked = 1;
+ 
+ 	add_wait_queue(&req->uc_sleep, &wait);
+@@ -689,7 +689,7 @@ static inline void coda_waitfor_upcall(struct upc_req *req)
+ 		if (blocked && time_after(jiffies, timeout) &&
+ 		    CODA_INTERRUPTIBLE(req))
+ 		{
+-			unblock_signals(&old);
++			coda_unblock_signals(&old);
+ 			blocked = 0;
+ 		}
+ 
+@@ -704,7 +704,7 @@ static inline void coda_waitfor_upcall(struct upc_req *req)
+ 			schedule();
+ 	}
+ 	if (blocked)
+-		unblock_signals(&old);
++		coda_unblock_signals(&old);
+ 
+ 	remove_wait_queue(&req->uc_sleep, &wait);
+ 	set_current_state(TASK_RUNNING);
