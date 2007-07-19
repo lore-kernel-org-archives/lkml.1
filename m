@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932817AbXGSNYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764285AbXGSN3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932817AbXGSNYQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 09:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbXGSNYE
+	id S1764285AbXGSN3D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 09:29:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbXGSN2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:24:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55542 "EHLO mx1.redhat.com"
+	Thu, 19 Jul 2007 09:28:51 -0400
+Received: from khc.piap.pl ([195.187.100.11]:34655 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752283AbXGSNYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:24:03 -0400
-Date: Thu, 19 Jul 2007 08:20:03 -0500
-From: David Teigland <teigland@redhat.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix memory leak in dlm_add_member() when dlm_node_weight() returns less than zero
-Message-ID: <20070719132003.GA782@redhat.com>
-References: <200707190027.43195.jesper.juhl@gmail.com>
-Mime-Version: 1.0
+	id S1754016AbXGSN2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 09:28:50 -0400
+To: Patrick McHardy <kaber@trash.net>
+Cc: andrei radulescu-banu <iubica2@yahoo.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Linux, tcpdump and vlan
+References: <878246.51044.qm@web56608.mail.re3.yahoo.com>
+	<469E9AC8.3090603@trash.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 19 Jul 2007 15:28:46 +0200
+In-Reply-To: <469E9AC8.3090603@trash.net> (Patrick McHardy's message of "Thu, 19 Jul 2007 00:57:12 +0200")
+Message-ID: <m3zm1sbjzl.fsf@maximus.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707190027.43195.jesper.juhl@gmail.com>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 12:27:43AM +0200, Jesper Juhl wrote:
-> Greetings,
-> 
-> There's a memory leak in fs/dlm/member.c::dlm_add_member().
-> 
-> If "dlm_node_weight(ls->ls_name, nodeid)" returns < 0, then 
-> we'll return without freeing the memory allocated to the (at 
-> that point yet unused) 'memb'.
-> This patch frees the allocated memory in that case and thus 
-> avoids the leak.
+Patrick McHardy <kaber@trash.net> writes:
 
-Yep, thanks.
+> Your suggestion of disabling VLAN acceleration in promiscous
+> mode sounds like a reasonable solution until then ..
 
-Dave
+>From a user perspective:
 
+I'm not sure promiscous mode is related to the problem.
+Tcpdump without promiscous mode makes perfect sense.
+
+I don't know very well VLAN code internals, but I think
+the VLAN # is used for looking up the interface, so
+presenting the "original" packet on the trunk device
+would IMHO involve some skb cloning, and perhaps some
+ethtool option could probably control that.
+
+Not sure about untagged frames vs. tagged frames with
+the default VLAN id - can the hardware at all differentiate
+between them?
+
+
+Or, perhaps it should be left (almost) as is - with "software"
+VLANs the traffic always goes through the master interface,
+but with "accelerated" mode it only goes through logical
+interfaces and doesn't show up on master? Probably with
+exception of invalid VLANs, which could be injected back to
+master (because no logical device exists)?
+-- 
+Krzysztof Halasa
