@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936753AbXGSPF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937681AbXGSPI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936753AbXGSPF4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763252AbXGSPF0
+	id S937681AbXGSPI0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763252AbXGSPIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:05:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:53309 "EHLO mail.goop.org"
+	Thu, 19 Jul 2007 11:08:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35904 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965083AbXGSPFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:05:21 -0400
-Message-ID: <469F7D7A.204@goop.org>
-Date: Thu, 19 Jul 2007 08:04:26 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	id S1761491AbXGSPIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:08:14 -0400
+Date: Thu, 19 Jul 2007 17:07:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Olaf Kirch <olaf.kirch@oracle.com>
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Message-ID: <20070719150728.GA17000@elte.hu>
+References: <20070716091236.GA10718@elte.hu> <200707191144.24434.olaf.kirch@oracle.com> <20070719100135.GA2986@elte.hu> <200707191237.56455.olaf.kirch@oracle.com> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patch] fix the softlockup watchdog to actually work
-References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070719002231.069ebbdd.akpm@linux-foundation.org> <20070719075152.GB12760@elte.hu> <469F75AF.5080000@goop.org> <20070719143528.GA8278@elte.hu> <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu>
-In-Reply-To: <20070719145058.GA11971@elte.hu>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719105816.GA15852@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> no, the return value after idling can be completely random on some 
-> boxes, on a 64-bit scale - triggering the softlockup watchdog randomly. 
-> (some boxes return random TSC values, etc.) Again, it's fine for the 
-> scheduler's purpose, that's why i named it sched_clock().
->
-> the proper clocksource use within the kernel is ktime_get() [or 
-> ktime_get_ts()]. Do not abuse sched_clock() for such things.
 
-Well, my observation is that both softlockup and the scheduler really
-want to measure unstolen time, so it seemed to me that sched_clock was a
-nice common place to implement that, rather than implementing a whole
-new time interface.  At the time that seemed OK, and nobody had any
-objections.
+ugh. Something really weird happened with this e1000 problem.
 
-But it's a bit beside the point unless it does turn out to be making
-Andrew's Vaio sad.
+i crashed the laptop in a weird way and had to power-cycle it in an 
+unusual fashion. After that i wanted to try your latest BUG_ON() theory 
+but the network hang went away!
 
-    J
+For 3 hours i tried to reproduce the hang (i went back to the original 
+git tree and the .config under which i found it, i power cycled it 
+again, i unplugged the power cord to make it go off battery, unplugged 
+the ethernet, recreated a completely new tree, etc. etc.) but with no 
+success! Total Heisenbug - and the really annoying thing is that you 
+just had a good theory about what might be happening. I'm now at kernel 
+build iteration #75 in this tree ...
+
+maybe it's not the power-cycling that somehow brought the e1000 out of 
+its weird state but the ethtool ops (and the related firmware readouts, 
+etc.)?
+
+(i have your BUG_ON() applied (as a WARN_ON()), but it doesnt trigger. 
+Not that this means anything under these circumstances ...)
+
+	Ingo
