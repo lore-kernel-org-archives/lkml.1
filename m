@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbXGSONw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965519AbXGSOOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965475AbXGSONw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938799AbXGSOC4
+	id S965519AbXGSOOY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965001AbXGSOEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:02:56 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:53222 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S937955AbXGSOCy (ORCPT
+	Thu, 19 Jul 2007 10:04:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60219 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938794AbXGSOEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:02:54 -0400
-Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: nix.or.die@googlemail.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, torvalds@linux-foundation.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20070719082516W.fujita.tomonori@lab.ntt.co.jp>
-References: <469C10F6.3050008@googlemail.com>
-	 <20070717100921W.fujita.tomonori@lab.ntt.co.jp>
-	 <469C1E2A.8010508@googlemail.com>
-	 <20070719082516W.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 09:02:50 -0500
-Message-Id: <1184853770.3464.85.camel@localhost.localdomain>
+	Thu, 19 Jul 2007 10:04:13 -0400
+Date: Thu, 19 Jul 2007 15:04:11 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <ak@suse.de>
+Cc: will_schmidt@vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH for review] [11/48] x86_64: During VM oom condition, kill all threads in process group
+Message-ID: <20070719140411.GD16279@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andi Kleen <ak@suse.de>, will_schmidt@vnet.ibm.com,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+References: <20070719348.540885000@suse.de> <20070719134840.47B5114E6E@wotan.suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719134840.47B5114E6E@wotan.suse.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 08:25 +0900, FUJITA Tomonori wrote:
-> From: Gabriel C <nix.or.die@googlemail.com>
-> Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-> Date: Tue, 17 Jul 2007 03:40:58 +0200
+On Thu, Jul 19, 2007 at 03:48:40PM +0200, Andi Kleen wrote:
 > 
-> > FUJITA Tomonori wrote:
-> > > From: Gabriel C <nix.or.die@googlemail.com>
-> > > Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
-> > > Date: Tue, 17 Jul 2007 02:44:38 +0200
-> > >
-> > >   
-> > >> Gabriel C wrote:
-> > >>     
-> > >>> Hello,
-> > >>>
-> > >>> sdparm and hdparm are broken for me on git (
-> > >>> abce891a10559343d8ac9f79b46d78afdba63a40 )
-> > >>>
-> > >>>
-> > >>> ~$ sudo hdparm  /dev/sdc
-> > >>>
-> > >>> /dev/sdc:
-> > >>>  BLKROGET failed: Inappropriate ioctl for device
-> > >>>  BLKRAGET failed: Inappropriate ioctl for device
-> > >>>  BLKGETSIZE failed: Inappropriate ioctl for device
-> > >>>
-> > >>>
-> > >>> ~$ sudo sdparm  --all /dev/sdc
-> > >>> unable to access /dev/sdc, ATA disk?
-> > >>>
-> > >>>   
-> > >>>       
-> > >> Well it is bsg , setting BLK_DEV_BSG=n fixed all this errors.
+> From: Will Schmidt <will_schmidt@vnet.ibm.com>
 > 
-> I've not tested this yet (need to find sata drives in my workplace),
-> but James Bottomley told me that both works for him with bsg enabled.
-> It might worth trying the latest git tree.
+> During a VM oom condition, kill all threads in the process group.
+> 
+> We have had complaints where a threaded application is left in a bad state
+> after one of it's threads is killed when we hit a VM: out_of_memory condition.
+> 
+> Killing just one of the process threads can leave the application in a bad
+> state, whereas killing the entire process group would allow for the
+> application to restart, or otherwise handled, and makes it very obvious that
+> something has gone wrong.
+> 
+> This change allows the entire process group to be taken down, rather than just
+> the one thread.
 
-It certainly does work for me.  However, my ATA devices are connected to
-an aic94xx SAS controller.  Although this uses libata, the ioctl path is
-probably slightly different from the libata one. I assume you're using a
-SATA controller?  Unfortunately I have no ability to test on a SATA
-controller, but I'd suggest looking at the ioctl and REQ_BLOCK_PC paths
-in libata for clues.
+Shouldn't we have one patc hthat does this for every architecture instead
+of going through arch maintainers and probably losing half of them?
 
-James
-
-
+> Index: linux/arch/x86_64/mm/fault.c
+> ===================================================================
+> --- linux.orig/arch/x86_64/mm/fault.c
+> +++ linux/arch/x86_64/mm/fault.c
+> @@ -569,7 +569,7 @@ out_of_memory:
+>  	}
+>  	printk("VM: killing process %s\n", tsk->comm);
+>  	if (error_code & 4)
+> -		do_exit(SIGKILL);
+> +		do_group_exit(SIGKILL);
+>  	goto no_context;
+>  
+>  do_sigbus:
