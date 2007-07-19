@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937384AbXGSJ0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964866AbXGSJ03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937384AbXGSJ0E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXGSJZx
+	id S964866AbXGSJ03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937678AbXGSJ0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:25:53 -0400
-Received: from ns2.suse.de ([195.135.220.15]:59235 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752551AbXGSJZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:25:53 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Juergen Beisert <juergen127@kreuzholzen.de>
-Subject: Re: [PATCH 1/1] i386: Geode's TSC is not neccessary to mark tu unstable
-Date: Thu, 19 Jul 2007 11:25:46 +0200
-User-Agent: KMail/1.9.6
-Cc: Andres Salomon <dilinger@queued.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       TAKADA Yoshihito <takada@mbf.nifty.com>, linux-kernel@vger.kernel.org,
-       Jordan Crouse <jordan.crouse@amd.com>,
-       Andres Salomon <dilinger@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20070715.210036.157242351.takada@mbf.nifty.com> <200707191022.44572.ak@suse.de> <200707191052.50047.juergen127@kreuzholzen.de>
-In-Reply-To: <200707191052.50047.juergen127@kreuzholzen.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 19 Jul 2007 05:26:09 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:52001 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937474AbXGSJ0F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:26:05 -0400
+Date: Thu, 19 Jul 2007 11:26:02 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+Message-ID: <20070719112602.5e3cb21a@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707191125.47079.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 10:52:48 Juergen Beisert wrote:
-> On Thursday 19 July 2007 10:22, Andi Kleen wrote:
-> > > Wow, that's a really cool bug; nice work!  Don't forget to update
-> > > arch/i386/kernel/cpu/mtrr/state.c, though; it uses setCx86() as well.  It
-> > > needs to include processor-cyrix.h.
-> >
-> > It also needs some big fat comments
-> 
-> No problem. Where to add?
+On Thu, 19 Jul 2007 10:57:53 +0200 (CEST),
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-Where the inlines are defined.
+> Were .probe()/.remove() made concurrent again? I thought that idea was dropped
+> because it caused too many problems?
 
-Also can you please resubmit full patches with full description
-and Signed off lines, not incrementals? Thanks.
-
--Andi
+Well, for a given device, ->probe()/->remove() are locked by dev->sem,
+so that there cannot be two probes/removes for the same device at the
+same time. However, if you have multiple hotplug events pending at the
+same time, it depends on your bus whether it does some serialization or
+whether it allows multiple probes/removes running for different devices.
+(Initial probing of a bus and probing of all devices with a new driver
+is done serialized again, I think that's what you're referring to.)
