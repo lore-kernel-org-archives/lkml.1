@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765983AbXGSPFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936753AbXGSPF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765983AbXGSPFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932844AbXGSPEU
+	id S936753AbXGSPF4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763252AbXGSPF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:04:20 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:59703 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932236AbXGSPES (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:04:18 -0400
-Subject: Re: [PATCH for review] [11/48] x86_64: During VM oom condition,
-	kill all threads in process group
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Reply-To: will_schmidt@vnet.ibm.com
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0707191614180.7377@anakin>
-References: <20070719348.540885000@suse.de>
-	 <20070719134840.47B5114E6E@wotan.suse.de>
-	 <20070719140411.GD16279@infradead.org>
-	 <Pine.LNX.4.64.0707191614180.7377@anakin>
-Content-Type: text/plain
-Organization: IBM
-Date: Thu, 19 Jul 2007 10:03:09 -0500
-Message-Id: <1184857389.22237.20.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 19 Jul 2007 11:05:26 -0400
+Received: from gw.goop.org ([64.81.55.164]:53309 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965083AbXGSPFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:05:21 -0400
+Message-ID: <469F7D7A.204@goop.org>
+Date: Thu, 19 Jul 2007 08:04:26 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch] fix the softlockup watchdog to actually work
+References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070719002231.069ebbdd.akpm@linux-foundation.org> <20070719075152.GB12760@elte.hu> <469F75AF.5080000@goop.org> <20070719143528.GA8278@elte.hu> <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu>
+In-Reply-To: <20070719145058.GA11971@elte.hu>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 16:14 +0200, Geert Uytterhoeven wrote:
-> On Thu, 19 Jul 2007, Christoph Hellwig wrote:
-> > On Thu, Jul 19, 2007 at 03:48:40PM +0200, Andi Kleen wrote:
-> > > From: Will Schmidt <will_schmidt@vnet.ibm.com>
-> > > 
-> > > During a VM oom condition, kill all threads in the process group.
-> > > 
-> > > We have had complaints where a threaded application is left in a bad state
-> > > after one of it's threads is killed when we hit a VM: out_of_memory condition.
-> > > 
-> > > Killing just one of the process threads can leave the application in a bad
-> > > state, whereas killing the entire process group would allow for the
-> > > application to restart, or otherwise handled, and makes it very obvious that
-> > > something has gone wrong.
-> > > 
-> > > This change allows the entire process group to be taken down, rather than just
-> > > the one thread.
-> > 
-> > Shouldn't we have one patc hthat does this for every architecture instead
-> > of going through arch maintainers and probably losing half of them?
-> 
-> Yes, please ;-)
+Ingo Molnar wrote:
+> no, the return value after idling can be completely random on some 
+> boxes, on a 64-bit scale - triggering the softlockup watchdog randomly. 
+> (some boxes return random TSC values, etc.) Again, it's fine for the 
+> scheduler's purpose, that's why i named it sched_clock().
+>
+> the proper clocksource use within the kernel is ktime_get() [or 
+> ktime_get_ts()]. Do not abuse sched_clock() for such things.
 
-Ok, i'm convinced. :-)      I'll spin up an all-arch encompassing patch
-in the next day or so. 
+Well, my observation is that both softlockup and the scheduler really
+want to measure unstolen time, so it seemed to me that sched_clock was a
+nice common place to implement that, rather than implementing a whole
+new time interface.  At the time that seemed OK, and nobody had any
+objections.
 
--Will
+But it's a bit beside the point unless it does turn out to be making
+Andrew's Vaio sad.
 
-
-
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> return -EMAINTAINER_TOO_BUSY
-
+    J
