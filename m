@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764772AbXGSSla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936185AbXGSSpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764772AbXGSSla (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 14:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758292AbXGSSlW
+	id S936185AbXGSSpt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 14:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbXGSSpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 14:41:22 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:38374 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757032AbXGSSlV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 14:41:21 -0400
-Message-ID: <469FAFF7.6050801@googlemail.com>
-Date: Thu, 19 Jul 2007 20:39:51 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+	Thu, 19 Jul 2007 14:45:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44588 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751926AbXGSSpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 14:45:41 -0400
+Date: Thu, 19 Jul 2007 20:45:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       shai@scalex86.org
+Subject: Re: [patch] Change softlockup trigger limit using a kernel
+	parameter
+Message-ID: <20070719184536.GB10940@elte.hu>
+References: <20070716222650.GA5947@localdomain> <20070718160858.75865461.akpm@linux-foundation.org> <20070719054121.GA15074@localdomain> <20070718230907.741ae56c.akpm@linux-foundation.org> <20070719091142.GA28723@elte.hu> <20070719183129.GB20298@localdomain>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Tejun Heo <htejun@gmail.com>, Avi Kivity <avi@qumranet.com>,
-       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>,
-       Jens Axboe <axboe@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       dri-devel@lists.sourceforge.net, Dave Airlie <airlied@linux.ie>,
-       =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@tungstengraphics.com>,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
-       Charles Gagalac <charles.gagalac@gmail.com>
-Subject: Re: [1/2] 2.6.22-git: known regressions
-References: <469F92A1.5070203@googlemail.com> <a781481a0707191005n6657251ah7ac4e078a4e628c1@mail.gmail.com> <469F9C3B.3040503@googlemail.com>
-In-Reply-To: <469F9C3B.3040503@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719183129.GB20298@localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
->>   
->>     
->>> Subject         : Oops while modprobing phy fixed module
->>> References      : http://lkml.org/lkml/2007/7/14/63
->>> Last known good : ?
->>> Submitter       : Gabriel C <nix.or.die@googlemail.com>
->>> Caused-By       : Tejun Heo <htejun@gmail.com>
->>>                   commit 3007e997de91ec59af39a3f9c91595b31ae6e08b
->>> Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
->>>                   Tejun Heo <htejun@gmail.com>
->>> Status          : unknown
->>>     
->>>       
->> This thread consisted of two unrelated/different oops stack traces :-)
->>
->> One of them was fixed by Tejun,
->> a1da4dfe35bc36c3bc9716d995c85b7983c38a76
->>
->> The other is SLUB related, I think.
->>
->>   
->>     
->
-> Yes SLAB/SLUB traces.
->
-> I will test the SLAB fix ( noone told me is fixed ) and I'll test the
-> same with SLUB to see whatever is fixed in current git , later.
->
->
->   
 
-Both looks fixed on current git head I cannot reproduce the Oops'es
-anymore here.
+* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
 
-Just the phy fixed driver is still broken.
+> > also, i think the valid threshold should be between 1 and 60 seconds 
+> > i think.
+> 
+> 60 seconds!  Is that not a pretty high threshold?  The reason for 
+> lowering the tolerance threshold from 10s is to catch bugs early in 
+> lab environments, but why do we need to raise the tolerance thresh 
+> beyond 10s?
 
+just in case someone sees false positives and wants to turn it off.
 
-Gabriel
-
-
+	Ingo
