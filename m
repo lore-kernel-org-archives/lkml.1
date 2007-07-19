@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936400AbXGSBie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935121AbXGSBlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936400AbXGSBie (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 21:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934314AbXGSBiR
+	id S935121AbXGSBlc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 21:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXGSBlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 21:38:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55975 "EHLO
+	Wed, 18 Jul 2007 21:41:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44491 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934215AbXGSBiP (ORCPT
+	by vger.kernel.org with ESMTP id S1752849AbXGSBlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 21:38:15 -0400
-Date: Wed, 18 Jul 2007 18:37:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
-       linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+	Wed, 18 Jul 2007 21:41:23 -0400
+Date: Wed, 18 Jul 2007 18:41:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net
 Subject: Re: [git patches] two warning fixes
-In-Reply-To: <20070718235504.GA9601@havoc.gtf.org>
-Message-ID: <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
+Message-Id: <20070718184101.1d31db9c.akpm@linux-foundation.org>
+In-Reply-To: <1184807945.25235.289.camel@localhost.localdomain>
 References: <20070718235504.GA9601@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	<200707190159.22654.ak@suse.de>
+	<469EAABD.4010504@garzik.org>
+	<1184807945.25235.289.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 19 Jul 2007 11:19:05 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
+> In general, I share paulus point of view here that forcing us to test
+> all those result code from sysfs file creation functions is just a major
+> PITA and adds bloat all over the kernel. There are many many cases where
+> the "obvious" thing of erroring out is actually not good policy. In many
+> cases, the failure to create some random sysfs file shouldn't prevent
+> the driver from operating, because the consequences of doing the later
+> are worse than the consequences of not having that sysfs file in the
+> first place. 
 
-On Wed, 18 Jul 2007, Jeff Garzik wrote:
-> 
-> Please pull from 'warnings' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git warnings
-> 
-> to receive the following updates:
+The only reason why the sysfs creation would fail is a kernel bug,
+so the consequence of your proposal is in fact unfixed kernel bugs.
 
-Quite frankly, I think a *lot* better fix for warnings would be to remove 
-those damn broken "must_check" things on functions that don't at all need 
-checking!
+Plus, of course, a driver which doesn't offer the interfaces which
+it is supposed to offer.
 
-I'm pretty fed up with random "must_check" and "deprecated". They have 
-never *ever* helped anybody, afaik. There are some very few functions that 
-really do need to have their error returns checked (because not checking 
-it is a security issue), but people seem to think "must_check" is a good 
-approximation of "I think most of the time it makes sense to check".
+Now, we can talk about making those sysfs core functions generate warnings
+themselves, and we can talk about generating new wrappers around them which
+generate warnings and which return void, then migrating code over to use
+those.
 
-So let's make a new rule:
-
-  We absolutely NEVER add things like "must_check" unless not checking 
-  causes a real and obvious SECURITY ISSUE.
-
-  And we absolutely *never* add crap like "deprecated", where the only 
-  point of the warning is to effectively hide *real* problems.
-
-So realistically, the only thing that needs must_check is pretty much 
-things like "get_user()" and quite frankly, I'm not sure even about that 
-one.
-
-Ok?
-
-			Linus
+And we can also talk about blithely ignoring these errors and not telling
+anyone about our bugs, but nobody should listen to such scandalous ideas.
