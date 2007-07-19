@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940794AbXGSSO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939403AbXGSSSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940794AbXGSSO0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 14:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762299AbXGSSOQ
+	id S939403AbXGSSSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 14:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932403AbXGSSSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 14:14:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33364 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756401AbXGSSOQ (ORCPT
+	Thu, 19 Jul 2007 14:18:35 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:51311 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932094AbXGSSSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 14:14:16 -0400
-Date: Thu, 19 Jul 2007 11:11:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Subject: Re: kmalloc zero size changes break i386
-In-Reply-To: <adamyxsfmnc.fsf@cisco.com>
-Message-ID: <alpine.LFD.0.999.0707191107570.27353@woody.linux-foundation.org>
-References: <200707191201.35777.ak@suse.de> <84144f020707190708p1c4d63cnbb0397a602c3527d@mail.gmail.com>
- <adamyxsfmnc.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 19 Jul 2007 14:18:34 -0400
+Date: Fri, 20 Jul 2007 03:06:36 +0900 (JST)
+Message-Id: <20070720.030636.68037027.tshibata@ab.jp.nec.com>
+To: leo@zh-kernel.org
+Cc: rob@landley.net, gh@us.ibm.com, hpa@zytor.com, kunai@linux-foundation.jp,
+       holzheu@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       tshibata@ab.jp.nec.com
+Subject: Re: [PATCH] Chinese Language Maintainer
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
+ =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Jul 2007 00:24:07 +0800, leo wrote:
+(snip)
+> Here is the helper process I propose to help more people to participate. 
+>   Suggestions and comments are welcomed.
 
+I think this seems mostly good. I will try to comment a bit.
 
-On Thu, 19 Jul 2007, Roland Dreier wrote:
->
-> I think the oops below is related -- Michael reports that avoiding
-> kmalloc(0) in the mlx4_ib driver makes it go away.
+> 1) Developer who can't speak English or has a problem going through the 
 
-Ok, I think I see it: I think the mm/slab.c conversion of kmalloc(0) is
-totally broken.
+I think early stage of developer may have "difficulty of using
+English". I think this may better than "can't speak".
 
-The problem? It returns ZERO_SIZE_PTR from __find_general_cachep(), not 
-from __kmalloc(). So anythign that uses __find_general_cachep() will get 
-an invalid cachep pointer, which was not the point.
+> submission process sends patches to the Language maintainer and cc the 
+> local mail list provided.
+> 2) Language maintainer and experienced Linux developer on the local mail 
+> list can review the patch and give comments in native language.
 
-We're deprecating SLAB, and a lot of people are already using SLUB, 
-which hid this. 
+In the review process, translated document of HOWTO,
+SubmittingPatches, CodingStyle and SummitChecklist are used in the
+local mail list.
 
-Does something like this fix it?
-
-Christoph, please go over this and see if there are other cases like that.
-
-		Linus
-
----
-diff --git a/mm/slab.c b/mm/slab.c
-index 88bc633..4bc4bc0 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -775,8 +775,6 @@ static inline struct kmem_cache *__find_general_cachep(size_t size,
- 	 */
- 	BUG_ON(malloc_sizes[INDEX_AC].cs_cachep == NULL);
- #endif
--	if (!size)
--		return ZERO_SIZE_PTR;
- 
- 	while (size > csizep->cs_size)
- 		csizep++;
-@@ -3684,6 +3682,9 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
- {
- 	struct kmem_cache *cachep;
- 
-+	if (!size)
-+		return ZERO_SIZE_PTR;
-+
- 	/* If you want to save a few bytes .text space: replace
- 	 * __ with kmem_.
- 	 * Then kmalloc uses the uninlined functions instead of the inline
+> 3) When the language maintainer thinks the patch is good in general, he 
+> will pass the patch onto corresponding subsystem maintainer and mail 
+> list for further review, cc the author and local list.
+> 4) The author communicates directly with the community.
+> 5) If the author has a problem understanding the comments or expressing 
+> himself in English, he can ask for help in native language on the local 
+> list.  The language maintainer and the developers on the list are 
+> responsible to help out.
+> 6) When the developer gets familiar with the submission process and can 
+> go through it with no problem, he can then submit patch directly without 
+> the helper process and probably join the mail list to help other new 
+> developer.
+> 
+> - Leo
+> 
