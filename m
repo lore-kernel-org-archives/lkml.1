@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939739AbXGSSUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938423AbXGSSVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939739AbXGSSUd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 14:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759309AbXGSSUY
+	id S938423AbXGSSVK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 14:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940126AbXGSSUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 14:20:24 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:18611 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754165AbXGSSUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 14:20:23 -0400
-Date: Thu, 19 Jul 2007 20:20:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Jan Glauber <jang@linux.vnet.ibm.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch] sched: implement cpu_clock(cpu) high-speed time
-	source,   take #2
-Message-ID: <20070719182007.GB11657@kernel.dk>
-References: <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu> <469F7D7A.204@goop.org> <20070719150955.GA19373@elte.hu> <469F8179.2060802@goop.org> <20070719154254.GA24225@elte.hu> <20070719154449.GA28998@elte.hu> <469F8D28.1010304@goop.org> <20070719172403.GU11657@kernel.dk> <469FA908.8090804@goop.org>
+	Thu, 19 Jul 2007 14:20:46 -0400
+Received: from web56605.mail.re3.yahoo.com ([66.196.97.49]:23362 "HELO
+	web56605.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S937137AbXGSSUp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 14:20:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=BCjCthmJsp5KWAFwwMaPLY/+SpoKJ+31n2U2170Heq5g8xAO869orctjeOekuiJ2hTHMwnpn+/nGkCG6pZ1E6wwJXEEH09a2G/kC6RTZUi8qTwar8nc1Hsikunz/6oYymK5xeRB6ardUufT51Dld5/PlGpNz4MHQCFVHz/wBNN4=;
+X-YMail-OSG: 4Jk5CecVM1l3hylk0jWtKafyvapO6O9Uj0BqMVdG142rskaHckSHOivOs6uvFNbRwYzyzaoQSyD5vhoHzQk5O70dD8E7cuQsTuV.mRQFfLPo8L3.HTlMMVjGA_je3NuOkAs.5EiQgE5gXbCay5IbZfGoOg--
+X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.41.16
+Date: Thu, 19 Jul 2007 11:20:43 -0700 (PDT)
+From: andrei radulescu-banu <iubica2@yahoo.com>
+Subject: Re: Linux, tcpdump and vlan
+To: Ben Greear <greearb@candelatech.com>
+Cc: Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <469FA908.8090804@goop.org>
+Content-Type: text/plain; charset=ascii
+Message-ID: <839334.9648.qm@web56605.mail.re3.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19 2007, Jeremy Fitzhardinge wrote:
-> Jens Axboe wrote:
-> > On Thu, Jul 19 2007, Jeremy Fitzhardinge wrote:
-> >   
-> >>> Index: linux/block/blktrace.c
-> >>> ===================================================================
-> >>> --- linux.orig/block/blktrace.c
-> >>> +++ linux/block/blktrace.c
-> >>> @@ -41,7 +41,7 @@ static void trace_note(struct blk_trace 
-> >>>  		const int cpu = smp_processor_id();
-> >>>  
-> >>>  		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
-> >>> -		t->time = sched_clock() - per_cpu(blk_trace_cpu_offset, cpu);
-> >>> +		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
-> >>>  		t->device = bt->dev;
-> >>>  		t->action = action;
-> >>>  		t->pid = pid;
-> >>> @@ -159,7 +159,7 @@ void __blk_add_trace(struct blk_trace *b
-> >>>  
-> >>>  		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
-> >>>  		t->sequence = ++(*sequence);
-> >>> -		t->time = sched_clock() - per_cpu(blk_trace_cpu_offset, cpu);
-> >>> +		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
-> >>>   
-> >>>       
-> >> What's this measuring here?  Time spend in IO?  Wouldn't it be better
-> >> off with a measurement of real monotonic time?
-> >>     
-> >
-> > It's not time spent in IO, it wants a nanosecond timestamp.
-> >   
-> 
-> What kind of nanoseconds?  Real?  Virtual?
-> 
-> sched_clock() (and now cpu_clock()) measure the number of nanoseconds
-> available for running CPU instructions (regardless of whether it chooses
-> to use them or not), and so in a virtual environment doesn't include
-> time stolen by the hypervisor for other VCPUs.
+> [Ben] If tcpdump and/or bridging needs to disable the hw-accel, then it can 
+explicitly do so by some API.  That is better than overloading
+the promisc flag in my opinion.  
 
-Real time, it's a timestamp that the user tools can use to see the time
-delta between A and B.
+I guess I could be persuaded in the end. But let me still play devil advocate. The semantics of 'promiscuous', in my opinion, mean 'receive everything', including vlan.
 
-So I guess blktrace currently doesn't work so well inside a gues...
+> [Ben] This is especially true since promisc 
+is not easily readable by user-space and things like tcpdump
+cannot have full control of promisc (if a mac-vlan has the NIC in 
+promisc mode, for instance, then tcpdump can never disable it.)
 
--- 
-Jens Axboe
+I agree with all the above. For example when you run 'ifconfig' during 'tcpdump', the interface does not have the promiscuous flag set!! 
 
+This confused me for a while, until I realized that tcpdump's packet socket was using an obscure packet_dev_mc() API (af_packet.c) to get the interface in promiscuous mode. The reason for this is that packet_mc_add() implements a reference counted mechanism for promiscuous. So that:
+- starting tcpdump instance 1 sets promiscuous mode
+- starting tcpdump instance 2 bumps the ref count in packet_mc_add()
+- killing tcpdump instance 1 bumps down the ref count, the interface stays promiscuous
+- killing tcpdump instance 2 truly clear promiscuous mode.
+
+The trick here is that when you kill tcpdump, the kernel clears the packet socket, and in process bumps down the ref count. Had tcpdump manually set/cleared the promisc flag, the interface would have stayed promisc after tcpdump was killed.
+
+(The mac-vlan driver must have this corner problem as well. If a mac-vlan interface is disabled while tcpdump runs, it may yank promiscuousness from under tcpdump.)
+
+So if you want to create an ethtool API to set vlan-promiscuous mode, one problem to grapple is that we need a similar mechanism to the above, so you can run two concurrent tcpdump's (or tcpdump while bridging vlans) and the vlan-promiscuous mode gets set correctly each time.  For tcpdump at least, the new ethtool API needs to be called from packet_mc_add().
+
+
+
+
+
+
+
+
+       
+____________________________________________________________________________________
+Yahoo! oneSearch: Finally, mobile search 
+that gives answers, not web links. 
+http://mobile.yahoo.com/mobileweb/onesearch?refer=1ONXIC
