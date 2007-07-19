@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938652AbXGSOsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938844AbXGSOsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938652AbXGSOsE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765301AbXGSOrS
+	id S938844AbXGSOsl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765988AbXGSOrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:47:18 -0400
-Received: from gw.goop.org ([64.81.55.164]:50026 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757701AbXGSOrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:47:17 -0400
-Message-ID: <469F793E.6030006@goop.org>
-Date: Thu, 19 Jul 2007 07:46:22 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 19 Jul 2007 10:47:49 -0400
+Received: from mga06.intel.com ([134.134.136.21]:42503 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764491AbXGSOrr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 10:47:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,557,1175497200"; 
+   d="scan'208";a="268175082"
+Message-ID: <469F7918.3000503@linux.intel.com>
+Date: Thu, 19 Jul 2007 07:45:44 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patch] fix the softlockup watchdog to actually work
-References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070719002231.069ebbdd.akpm@linux-foundation.org> <20070719075152.GB12760@elte.hu> <469F75AF.5080000@goop.org> <20070719143528.GA8278@elte.hu>
-In-Reply-To: <20070719143528.GA8278@elte.hu>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
+References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain> <469F749F.8030606@s5r6.in-berlin.de>
+In-Reply-To: <469F749F.8030606@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> sched_clock(), as its name suggests it, is meant for the scheduler's 
-> use. The scheduler generally only needs to measure time when the CPU is 
-> busy - not across idle periods. So sched_clock() can (and will) break 
-> across certain types of ACPI idle methods.
->   
+Stefan Richter wrote:
+> Robert P. J. Day wrote:
+> ...
+>> it's not clear if that means that it was a *one-time* transition
+>> aid which is now unnecessary, or whether it's an *ongoing* aid which
+>> might be used at any time.  currently, there are no invocations of
+>> EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
+>> this feature can be tossed?  or might it still be used every so often?
 
-Hm, or more specifically, why would that be a problem for softlockup? 
-Do you mean it doesn't measure time during ACPI idle?   That would just
-make it trigger later than it would otherwise.
-
-Andrew is reporting that it is triggering very early, and making the
-machine feel jerky.  How can that be related to sched_clock's quality,
-unless its too broken to be useful to anyone for anything?
-
-    J
+it's one of those pieces of infrastructure that get used from time to 
+time to phase out symbol exports... we should be more agressive about 
+that; about 1/3rd of the exports is not used by anything in linux, yet 
+each symbol costs about 100 bytes of memory at runtime.
