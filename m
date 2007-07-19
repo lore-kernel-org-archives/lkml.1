@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940245AbXGSQ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940113AbXGSQ7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940245AbXGSQ5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935310AbXGSQ44
+	id S940113AbXGSQ7b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbXGSQ7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:56:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51503 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934863AbXGSQ4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:56:55 -0400
-Date: Thu, 19 Jul 2007 18:56:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>
-Subject: [patch] afs: build fix
-Message-ID: <20070719165646.GA18436@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 19 Jul 2007 12:59:22 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33638 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754783AbXGSQ7V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:59:21 -0400
+Date: Thu, 19 Jul 2007 09:58:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Bill Irwin <bill.irwin@oracle.com>, nacc@us.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] hugetlbfs read() support
+Message-Id: <20070719095850.6e09b0e8.akpm@linux-foundation.org>
+In-Reply-To: <1184860309.18188.90.camel@dyn9047017100.beaverton.ibm.com>
+References: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com>
+	<20070718221950.35bbdb76.akpm@linux-foundation.org>
+	<1184860309.18188.90.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: afs: build fix
-From: Ingo Molnar <mingo@elte.hu>
+On Thu, 19 Jul 2007 08:51:49 -0700 Badari Pulavarty <pbadari@us.ibm.com> wrote:
 
-this fresh commit:
+> > > +		}
+> > > +
+> > > +		offset += ret;
+> > > +		retval += ret;
+> > > +		len -= ret;
+> > > +		index += offset >> HPAGE_SHIFT;
+> > > +		offset &= ~HPAGE_MASK;
+> > > +
+> > > +		page_cache_release(page);
+> > > +		if (ret == nr && len)
+> > > +			continue;
+> > > +		goto out;
+> > > +	}
+> > > +out:
+> > > +	return retval;
+> > > +}
+> > 
+> > This code doesn't have all the ghastly tricks which we deploy to handle
+> > concurrent truncate.
+> 
+> Do I need to ? Baaahh!!  I don't want to deal with them. 
 
- commit e8d6c554126b830217c5e9f549e0e21f865a0a8a
- Author: David Howells <dhowells@redhat.com>
- Date:   Sun Jul 15 23:40:12 2007 -0700
+Nick, can you think of any serious consequences of a read/truncate race in
+there?  I can't..
 
-     AFS: implement file locking
+> All I want is a simple read() to get my oprofile working.
+> Please advise.
 
-     Implement file locking for AFS.
-
-did not even build (in an allyesconfig) because it forgot to take this
-recent commit into account:
-
- commit 6d34ac199a4af5c678a3a8f3275aeb2586b72da3
- Author: J. Bruce Fields <bfields@citi.umich.edu>
- Date:   Fri May 11 16:09:32 2007 -0400
-
-     locks: make posix_test_lock() interface more consistent
-
-the fix is trivial.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- fs/afs/flock.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux/fs/afs/flock.c
-===================================================================
---- linux.orig/fs/afs/flock.c
-+++ linux/fs/afs/flock.c
-@@ -456,7 +456,8 @@ static int afs_do_getlk(struct file *fil
- 
- 	/* check local lock records first */
- 	ret = 0;
--	if (posix_test_lock(file, fl) == 0) {
-+	posix_test_lock(file, fl);
-+	if (fl->fl_type == F_UNLCK) {
- 		/* no local locks; consult the server */
- 		ret = afs_vnode_fetch_status(vnode, NULL, key);
- 		if (ret < 0)
+Did you consider changing oprofile userspace to read the executable with
+mmap?
