@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965741AbXGSTL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939420AbXGSTQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965741AbXGSTL6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 15:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935406AbXGSTLF
+	id S939420AbXGSTQn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 15:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933856AbXGSTQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 15:11:05 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:54026 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764986AbXGSTLA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 15:11:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=WttX6DzIPGl4Uh05cT2/xH2vSkJou/AcVGdzmUVtOIJGlx41pD6YYmUljeQQWNpW3sN7tkwedVEc42cslum1MA2enSBeE2m2Qjjs7AQecN+z1ZMVpzMMtGD7Lp0fywtQc4YYFhZQT5Uy30GwOC+6Xc1WHIBZ39fOmoXqJ8WOd/s=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [2/2] 2.6.22-git: known regressions
-Date: Thu, 19 Jul 2007 21:27:06 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
-       Mingming Cao <cmm@us.ibm.com>, Doug Chapman <doug.chapman@hp.com>,
-       Vasily Tarasov <vtaras@openvz.org>, linux-ide@vger.kernel.org,
-       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Jean Delvare <khali@linux-fr.org>,
-       Tejun Heo <htejun@gmail.com>
-References: <469F9125.8040502@googlemail.com> <469F92AF.10405@googlemail.com>
-In-Reply-To: <469F92AF.10405@googlemail.com>
+	Thu, 19 Jul 2007 15:16:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:59302 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933737AbXGSTQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 15:16:34 -0400
+Message-ID: <469FB856.6030000@goop.org>
+Date: Thu, 19 Jul 2007 12:15:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: drzeus-sdhci@drzeus.cx
+CC: sdhci-devel@list.drzeus.cx,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: SDHCI: mmc0: Unexpected interrupt 0x00008000.
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707192127.07238.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007, Michal Piotrowski wrote:
+I'm getting this with current GIT kernels when I plug an SD card into
+the side of my machine.  It appears to see the filesystem OK anyway, but
+for some reason all the hal/gnome desktop stuff isn't seeing it.  Was
+working last week.
 
-> IDE
-> 
-> Subject         : compile error if CONFIG_BLOCK not enabled related to linux/ide.h include
-> References      : http://lkml.org/lkml/2007/7/18/11
-> Last known good : ?
-> Submitter       : Kumar Gala <galak@kernel.crashing.org>
-> Caused-By       : ?
-> Handled-By      : Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Status          : unknown
+The message is:
 
-Not a 2.6.22-git regression (CONFIG_BLOCK was added on September 2006) and
-Kumar should have a fix really soon - could be removed from the list IMO.
+mmc0: Unexpected interrupt 0x00008000.
+sdhci: ============== REGISTER DUMP ==============
+sdhci: Sys addr: 0x2d7d4600 | Version:  0x00000200
+sdhci: Blk size: 0x00007200 | Blk cnt:  0x00000000
+sdhci: Argument: 0x000001aa | Trn mode: 0x00000033
+sdhci: Present:  0x01ff0001 | Host ctl: 0x00000001
+sdhci: Power:    0x0000000f | Blk gap:  0x00000000
+sdhci: Wake-up:  0x00000000 | Clock:    0x00008007
+sdhci: Timeout:  0x00000009 | Int stat: 0x00000000
+sdhci: Int enab: 0x00ff00fb | Sig enab: 0x00ff00fb
+sdhci: AC12 err: 0x00000000 | Slot int: 0x00000000
+sdhci: Caps:     0x018021a1 | Max curr: 0x00000040
+sdhci: ===========================================
+PM: Adding info for mmc:mmc0:b368
+mmcblk0: mmc0:b368 LEXAR 999936KiB 
+ mmcblk0: p1
 
-Thanks,
-Bart
+
+The machine is a Thinkpad X60, and the SD device is:
+
+15:00.2 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 18)
+        Subsystem: Lenovo Thinkpad X60s
+        Flags: bus master, medium devsel, latency 64, IRQ 22
+        Memory at e4301800 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+
+
+Seems to work OK if I manually mount it.  To be honest, I don't know if
+this message was always appearing or not; I only checked because it
+didn't seem to be working.
+
+    J
