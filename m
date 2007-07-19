@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940631AbXGSRXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940674AbXGSRY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940631AbXGSRXw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938769AbXGSRXk
+	id S940674AbXGSRY3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936432AbXGSRYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:23:40 -0400
-Received: from h146-az.mvista.com ([65.200.49.156]:64813 "EHLO
-	zipcode.az.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934056AbXGSRXi (ORCPT
+	Thu, 19 Jul 2007 13:24:04 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:61415 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933132AbXGSRYB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:23:38 -0400
-Date: Thu, 19 Jul 2007 10:26:17 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: carlos.sanchez@gecoinc.com, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 1/4] serial: MPSC: Remove race between Rx stop & restart
-Message-ID: <20070719172617.GA589@mag.az.mvista.com>
+	Thu, 19 Jul 2007 13:24:01 -0400
+Date: Thu, 19 Jul 2007 19:22:43 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+cc: Bodo Eggert <7eggert@gmx.de>, Rob Landley <rob@landley.net>,
+       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 0/3][try 1] init: enable system-on-initramfs
+In-Reply-To: <1184856088.17338.513.camel@moss-spartans.epoch.ncsc.mil>
+Message-ID: <Pine.LNX.4.58.0707191921230.3442@be1.lrz>
+References: <Pine.LNX.4.58.0707132039080.3222@be1.lrz>  <200707181754.05560.rob@landley.net>
+  <Pine.LNX.4.58.0707191442440.2138@be1.lrz> <1184856088.17338.513.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+pBpVgKKrf1rVGe66sHG14QM0xT6yGg/IPMzR
+ I+jyLwSQe3iahfLiudEKUfu0TgM3UivhG2ZOGXyv4Zn+9lduSP
+ r4gqhwXxqqiKbdVX1UdVg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Carlos Sanchez <carlos.sanchez@gecoinc.com>
+On Thu, 19 Jul 2007, Stephen Smalley wrote:
 
-The patch in commit ID f7232056bff5fe2d3bfeab35252a66ebaeb5bbde
-stops (aborts) the MPSC's receive engine just before restarting it.
-Unfortunately, it doesn't wait for the abort to complete before
-restarting it which creates a race between the abort and the restart.
-If the restart occurs first, the in-progress abort stops it again
-and the rx engine remains stopped.
+> Not wanting to get into any flamewars here about selinux, but just FYI:
+> security_sb_post_mountroot is obsolete and can be removed without harm
+> to selinux; it is a leftover of selinux before we moved the initial
+> policy load to userspace.  These days, initial policy load is done
+> by /sbin/init in most distros that support selinux, although I'd prefer
+> to do it earlier from the initramfs (the Fedora folks didn't like that
+> idea though at the time, so /sbin/init got patched instead - but that
+> was back in 2003, so maybe things have changed).
 
-Instead, do the abort when the SDMA engine is being stopped.  Make
-sure to wait for the abort to complete before continuing.
-
-Signed-off-by: Carlos Sanchez <carlos.sanchez@gecoinc.com>
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
----
- drivers/serial/mpsc.c |   16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/serial/mpsc.c b/drivers/serial/mpsc.c
-index 00924fe..567fa78 100644
---- a/drivers/serial/mpsc.c
-+++ b/drivers/serial/mpsc.c
-@@ -1363,8 +1363,6 @@ mpsc_start_rx(struct mpsc_port_info *pi)
- {
- 	pr_debug("mpsc_start_rx[%d]: Starting...\n", pi->port.line);
- 
--	/* Issue a Receive Abort to clear any receive errors */
--	writel(MPSC_CHR_2_RA, pi->mpsc_base + MPSC_CHR_2);
- 	if (pi->rcv_data) {
- 		mpsc_enter_hunt(pi);
- 		mpsc_sdma_cmd(pi, SDMA_SDCM_ERD);
-@@ -1379,6 +1377,20 @@ mpsc_stop_rx(struct uart_port *port)
- 
- 	pr_debug("mpsc_stop_rx[%d]: Stopping...\n", port->line);
- 
-+	if (pi->mirror_regs) {
-+		writel(pi->MPSC_CHR_2_m | MPSC_CHR_2_RA,
-+				pi->mpsc_base + MPSC_CHR_2);
-+		/* Erratum prevents reading CHR_2 so just delay for a while */
-+		udelay(100);
-+	}
-+	else {
-+		writel(readl(pi->mpsc_base + MPSC_CHR_2) | MPSC_CHR_2_RA,
-+			pi->mpsc_base + MPSC_CHR_2);
-+
-+		while (readl(pi->mpsc_base + MPSC_CHR_2) & MPSC_CHR_2_RA)
-+			udelay(10);
-+	}
-+
- 	mpsc_sdma_cmd(pi, SDMA_SDCM_AR);
- 	return;
- }
+Thanks, that information will help a lot.
+-- 
+Funny quotes:
+7. You have the right to remain silent. Anything you say will be misquoted,
+   then used against you.
