@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937288AbXGSIo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933587AbXGSIp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937288AbXGSIo7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 04:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762191AbXGSIor
+	id S933587AbXGSIp3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 04:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936504AbXGSIov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 04:44:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34828 "EHLO mx2.mail.elte.hu"
+	Thu, 19 Jul 2007 04:44:51 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:57227 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761878AbXGSIoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 04:44:46 -0400
-Date: Thu, 19 Jul 2007 10:44:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] kernel/sched.c: remove 2 unused exports
-Message-ID: <20070719084439.GA22825@elte.hu>
-References: <20070712235211.GS3492@stusta.de> <20070717192233.GG26283@elte.hu> <20070719061051.GO3801@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S935337AbXGSIou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 04:44:50 -0400
+Date: Thu, 19 Jul 2007 12:44:12 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       olaf.kirch@oracle.com
+Subject: Re: [PATCH][RFC] network splice receive v3
+Message-ID: <20070719084412.GD6216@2ka.mipt.ru>
+References: <20070711091927.GQ4587@kernel.dk> <20070712170247.GA18469@2ka.mipt.ru> <20070713122058.GL5328@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20070719061051.GO3801@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070713122058.GL5328@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-* Adrian Bunk <bunk@stusta.de> wrote:
-
-> On Tue, Jul 17, 2007 at 09:22:33PM +0200, Ingo Molnar wrote:
-> > 
-> > * Adrian Bunk <bunk@stusta.de> wrote:
-> > 
-> > > This patch removes the following unused exports:
-> > > - EXPORT_SYMBOL(cond_resched_softirq);
-> > > - EXPORT_SYMBOL_GPL(__wake_up_sync);
-> > 
-> > these are there for API completeness - their counterparts are exported.
+On Fri, Jul 13, 2007 at 02:21:00PM +0200, Jens Axboe (jens.axboe@oracle.com) wrote:
+> > It really looks like the last tree we tested, so if you think additional
+> > one will not hurt, feel free to ping, so I will completely rebase
+> > testing tree.
 > 
-> Why is something with a comment "For internal use only" part of the 
-> API?
+> It would be great if you could retest! There are some minor changes in
+> there, and some extra testing definitely will not hurt.
 
-yeah, you are right about __wake_up_sync. We'll likely remove sync 
-wakeups anyway, and the export is GPL, so it's not a big issue.
+I've just tested it with 2.6.22
+(e1c1e98d2a3f57b22a0d4136c8160e54404aa437 commit) and did not found any
+problems - after qute big files were transferred there is no observed 
+previously skb leak, no crashes (quite a few debug options are turned on 
+in config) and files are correct on both peers, so it works good.
 
-The point remains for cond_resched_softirq() though - it's a symmetric 
-export to cond_resched()'s export. (I think you should smarten your 
-scripts about such 'API family' exports, to avoid false positives.)
+> -- 
+> Jens Axboe
 
-	Ingo
+-- 
+	Evgeniy Polyakov
