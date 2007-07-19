@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934832AbXGSNdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935968AbXGSNhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934832AbXGSNdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 09:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbXGSNdO
+	id S935968AbXGSNhj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 09:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759029AbXGSNhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:33:14 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47046 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754618AbXGSNdN (ORCPT
+	Thu, 19 Jul 2007 09:37:31 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:53522 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758586AbXGSNha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:33:13 -0400
-Date: Thu, 19 Jul 2007 22:32:08 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Zoltan.Menyhart@bull.net, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, tony.luck@intel.com,
-       nickpiggin@yahoo.com.au, mike@stroyan.net, dmosberger@gmail.com,
-       y-goto@jp.fujitsu.com
-Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
-Message-Id: <20070719223208.87383731.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
-	<469F5372.7010703@bull.net>
-	<20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 09:37:30 -0400
+Date: Thu, 19 Jul 2007 08:37:27 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Message-ID: <20070719133727.GC32313@sergelap.austin.ibm.com>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de> <20070719122424.GA5186@vino.hallyn.com> <Line.LNX.4.64.0707190832290.4303@d.namei> <20070719124244.GA7219@vino.hallyn.com> <Line.LNX.4.64.0707190847020.4393@d.namei>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Line.LNX.4.64.0707190847020.4393@d.namei>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 22:01:18 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> On Thu, 19 Jul 2007 14:05:06 +0200
-> Zoltan Menyhart <Zoltan.Menyhart@bull.net> wrote:
+Quoting James Morris (jmorris@namei.org):
+> On Thu, 19 Jul 2007, Serge E. Hallyn wrote:
 > 
-> > KAMEZAWA Hiroyuki wrote:
+> > > It's already pretty clear.
 > > 
-> > > Then, what should I do more for fixing this SIGILL problem ?
-> > > 
-> > > -Kame
+> > I doubt anyone not on lkml or linux-security-module has heard of this.
 > > 
-> > I can think of a relatively cheap solution:
+> > So we'll see.
 > > 
-> Maybe I should take performance numbers with the patch.
+> > (I was, obviously, talking about end-users)
 > 
-> But is it too costly that flushing icache page only if a page is newly
-> installed into the system (PG_arch1) && it is mapped as executable ?
+> If distributions are shipping binary modules and other out of tree code to 
+> their users, then they should bear responsibility for supporting and 
+> maintaining the infrastructure required for it, and not expect upstream 
+> maintainers to do it for them.
 > 
-> I don't want to leak this (stupid) corner case to the file system layer.
-> Hmm...can't we do clever flushing (like your idea) in VM layer ?
+> Additionally, if they want to expose their users to risks arising from 
+> broken and unecessary infrastructure, then they should bear the cost and 
+> responsibility of doing that and not expect others to do so as well.
 > 
-A bit new idea.  How about this ?
-==
-- Set PG_arch_1 if  "icache is *not* coherent"
-- make flush_dcache_page() to be empty func.
-- For Montecito, add kmap_atomic(). This function just set PG_arch1.
-  Then, "the page which is copied by the kernel" is marked as "not icache coherent page"
-- icache_flush_page() just flushes a page which has PG_arch_1.
-- Anonymous page is always has PG_arch_1. Tkae care of Copy-On-Write.
-==
+> I don't see how this is even slightly difficult to understand.
 
-looks easy ?
+I'm not talking about distros - I don't see how this is even slightly
+difficult to understand  :)
 
--Kame
+The situation I have in mind is someone who decideds to use, say, SLIM,
+but wants to otherwise use the distro kernel.
 
- 
+James, relax, I'm done arguing against your patch, I just think
+end-users/customers might complain.
+
+-serge
