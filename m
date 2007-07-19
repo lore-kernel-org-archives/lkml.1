@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763684AbXGSKPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937973AbXGSKQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763684AbXGSKPW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761819AbXGSJzu
+	id S937973AbXGSKQH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761276AbXGSJzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:55:50 -0400
-Received: from mail.suse.de ([195.135.220.2]:35408 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 05:55:51 -0400
+Received: from ns.suse.de ([195.135.220.2]:35410 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758906AbXGSJz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:55:28 -0400
+	id S1754879AbXGSJza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:55:30 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
 To: jbeulich@novell.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [36/58] x86_64: minor exception trace variables cleanup
-Message-Id: <20070719095522.3D89314E06@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:22 +0200 (CEST)
+Subject: [PATCH] [37/58] x86_64: remove unused variable maxcpus
+Message-Id: <20070719095523.44B0314E06@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: "Jan Beulich" <jbeulich@novell.com>
+.. and adjust documentation to properly reflect options that are
+x86-64 specific.
+
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
- arch/x86_64/mm/fault.c |    2 +-
- arch/x86_64/mm/init.c  |    2 --
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ Documentation/x86_64/boot-options.txt |    6 ------
+ arch/x86_64/kernel/mpparse.c          |    1 -
+ 2 files changed, 7 deletions(-)
 
-Index: linux/arch/x86_64/mm/fault.c
+Index: linux/Documentation/x86_64/boot-options.txt
 ===================================================================
---- linux.orig/arch/x86_64/mm/fault.c
-+++ linux/arch/x86_64/mm/fault.c
-@@ -301,7 +301,7 @@ static int vmalloc_fault(unsigned long a
- 	return 0;
- }
+--- linux.orig/Documentation/x86_64/boot-options.txt
++++ linux/Documentation/x86_64/boot-options.txt
+@@ -134,12 +134,6 @@ Non Executable Mappings
  
--int page_fault_trace = 0;
-+static int page_fault_trace;
- int exception_trace = 1;
+ SMP
+ 
+-  nosmp	Only use a single CPU
+-
+-  maxcpus=NUMBER only use upto NUMBER CPUs
+-
+-  cpumask=MASK   only use cpus with bits set in mask
+-
+   additional_cpus=NUM Allow NUM more CPUs for hotplug
+ 		 (defaults are specified by the BIOS, see Documentation/x86_64/cpu-hotplug-spec)
+ 
+Index: linux/arch/x86_64/kernel/mpparse.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/mpparse.c
++++ linux/arch/x86_64/kernel/mpparse.c
+@@ -32,7 +32,6 @@
+ 
+ /* Have we found an MP table */
+ int smp_found_config;
+-unsigned int __initdata maxcpus = NR_CPUS;
  
  /*
-Index: linux/arch/x86_64/mm/init.c
-===================================================================
---- linux.orig/arch/x86_64/mm/init.c
-+++ linux/arch/x86_64/mm/init.c
-@@ -700,8 +700,6 @@ int kern_addr_valid(unsigned long addr) 
- #ifdef CONFIG_SYSCTL
- #include <linux/sysctl.h>
- 
--extern int exception_trace, page_fault_trace;
--
- static ctl_table debug_table2[] = {
- 	{
- 		.ctl_name	= 99,
+  * Various Linux-internal data structures created from the
