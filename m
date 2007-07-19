@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964942AbXGSJbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937806AbXGSJfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964942AbXGSJbt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760526AbXGSJbk
+	id S937806AbXGSJfA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760526AbXGSJep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:31:40 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:56632 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755717AbXGSJbj convert rfc822-to-8bit (ORCPT
+	Thu, 19 Jul 2007 05:34:45 -0400
+Received: from qb-out-0506.google.com ([72.14.204.237]:35445 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbXGSJeo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:31:39 -0400
-Date: Thu, 19 Jul 2007 11:31:36 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Hans-Christian Egtvedt <hcegtvedt@atmel.com>,
-       David Brownell <david-b@pacbell.net>,
-       Andrew Victor <andrew@sanpeople.com>,
-       kernel-avr32 <kernel@avr32linux.org>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
-       Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
+	Thu, 19 Jul 2007 05:34:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=FWig4Tk83OmXnt+a/j/oqM9t7DpbvZk46C6JKI+3YmNA1Nv/h8aLSj0TWpluhKj1jWwrJ8kG8VJMG4xPhD99KtgyhjDzSbfUWg+KF00lDOF0jpGrXct9MBvhum2cnypXSJ642mMj4yrctxJ/Cpr3VRcRQGB9wTHbtc1ZdrrB0kI=
+From: Denis Cheng <crquan@gmail.com>
+To: Paul Clements <Paul.Clements@steeleye.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Steven Whitehouse <steve@chygwyn.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] Driver for the Atmel on-chip SSC on AT32AP and
- AT91.
-Message-ID: <20070719113136.4d0a951f@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20070719110122.262c2778@dhcp-255-175.norway.atmel.com>
-References: <1184568752.15535.9.camel@localhost.localdomain>
-	<20070718170120.8a031cdf.akpm@linux-foundation.org>
-	<469F0A78.3040808@atmel.com>
-	<20070719110122.262c2778@dhcp-255-175.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Denis Cheng <crquan@gmail.com>
+Subject: [PATCH 1/2] nbd: use list_for_each_entry_safe to make it more consolidated and readable
+Date: Thu, 19 Jul 2007 17:34:30 +0800
+Message-Id: <11848376711601-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Whoops, didn't notice that Andrew and LKML fell off Cc. Sorry.
+Thus the traverse of the loop may delete nodes, use the safe version.
 
-Håvard
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ drivers/block/nbd.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-On Thu, 19 Jul 2007 11:01:22 +0200
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+index c129510..86639c0 100644
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -237,8 +237,7 @@ error_out:
+ 
+ static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
+ {
+-	struct request *req;
+-	struct list_head *tmp;
++	struct request *req, *n;
+ 	struct request *xreq;
+ 	int err;
+ 
+@@ -249,8 +248,7 @@ static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
+ 		goto out;
+ 
+ 	spin_lock(&lo->queue_lock);
+-	list_for_each(tmp, &lo->queue_head) {
+-		req = list_entry(tmp, struct request, queuelist);
++	list_for_each_entry_safe(req, n, &lo->queue_head, queuelist) {
+ 		if (req != xreq)
+ 			continue;
+ 		list_del_init(&req->queuelist);
+-- 
+1.5.2.2
 
-> On Thu, 19 Jul 2007 08:53:44 +0200
-> Hans-Christian Egtvedt <hcegtvedt@atmel.com> wrote:
-> 
-> > >> +EXPORT_SYMBOL(ssc_request);
-> > >>       
-> > >
-> > > All exports need justification, please.  An additional paragraph in the
-> > > changelog would suit.
-> > >     
-> > How are exports justified? Can they be removed since the user have to 
-> > include <linux/atmel-ssc.h> anyway?
-> 
-> No, we do need these since modules are going to link to them.
-> 
-> The idea is that other drivers call these functions to obtain a
-> reference to one of the SSC instances in the system. Such drivers
-> typically implement some sort of serial frame-based protocol, e.g. i2s,
-> by programming the SSC controller directly. This driver is out of the
-> way after a protocol driver has successfully requested an instance.
-> 
-> So the protocol drivers need some kind of resource management in order
-> to not step on each others' toes, and that's the reason for the export
-> of ssc_request() and ssc_free().
-> 
-> I'm not sure if anyone would have been very mad at me for sneaking this
-> in through the avr32 tree, but I'd really like to know what others, in
-> particular the AT91 people and David, think of this kind of thing
-> before it ends up in mainline.
-> 
-> Feel free to add
-> 
-> Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
-> 
-> to both patches (the driver and the fix) though. It's been through a
-> few rounds of internal review.
-> 
-> Håvard
-> _______________________________________________
-> Kernel mailing list
-> Kernel@avr32linux.org
-> http://duppen.flaskehals.net/cgi-bin/mailman/listinfo/kernel
