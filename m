@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939526AbXGSP5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965132AbXGSP6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939526AbXGSP5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761316AbXGSP5b
+	id S965132AbXGSP6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939810AbXGSP5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:57:31 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:33566 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755204AbXGSP5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:57:30 -0400
-Subject: MMC/SD Root filesystem suspend/resume problems
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 16:53:39 +0100
-Message-Id: <1184860419.29634.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 11:57:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37351 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S939813AbXGSP5q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:57:46 -0400
+Date: Thu, 19 Jul 2007 08:57:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: kmalloc zero size changes break i386
+In-Reply-To: <200707191201.35777.ak@suse.de>
+Message-ID: <alpine.LFD.0.999.0707190856550.27353@woody.linux-foundation.org>
+References: <200707191201.35777.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
 
-Lots of Linux handhelds use MMC/SD devices as the root file system. This
-has worked quite reliably for many kernel versions. In 2.6.22, it seems
-that if you suspend such a system then resume it, the device locks up.
-Trying to execute anything on the filesystem results in a "Permission
-Denied" message. I did see a message from the MMC subsystem saying it
-had redetected the card. There are also messages on the console like
-"MMC: killing requests for dead queue" each time you suspend/resume.
 
-I'm away from my serial cables at the moment but I may be able to
-provide more debug when I have them over the weekend. Have you any ideas
-on why this is breaking?
+On Thu, 19 Jul 2007, Andi Kleen wrote:
+> 
+> qemu testing and booting test machines with i386 kernels wasn't very successfull
+> with recent git kernels. I got either BUGs because of failing sysfs initialization
+> or oopses in kmalloc, but no user land.
 
-For reference, I've reproduced the problem with both the PXA host driver
-and different driver not merged into mainline (ASIC3).
+Can you send in the oopses and BUGs? The bug is almost certainly not the 
+commit you point to, but some bad kernel code that that commit just shows.
 
-Cheers,
-
-Richard
-
+		Linus
