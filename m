@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965238AbXGSQDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939287AbXGSQEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965238AbXGSQDT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937158AbXGSQCt
+	id S939287AbXGSQEN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:04:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965022AbXGSQDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:02:49 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50684 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933009AbXGSQCq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:02:46 -0400
-Date: Thu, 19 Jul 2007 18:02:45 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jean Delvare <khali@linux-fr.org>
-cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
-       Tejun Heo <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sysfs root link count broken in 2.6.22-git5
-In-Reply-To: <20070719104150.6c5c5165@hyperion.delvare>
-Message-ID: <Pine.LNX.4.64.0707191802050.31013@fbirervta.pbzchgretzou.qr>
-References: <20070715124232.4e371bf9@hyperion.delvare> <20070717034844.GB11602@suse.de>
- <20070717131255.71b7e72e@hyperion.delvare> <20070717183652.GG9702@suse.de>
- <20070717230530.64d9a896@hyperion.delvare> <20070718033828.GA8582@suse.de>
- <20070718220652.15ad2c4b@hyperion.delvare> <3ae72650707181744l47d6cbc6m75b7d9292959a245@mail.gmail.com>
- <20070719104150.6c5c5165@hyperion.delvare>
+	Thu, 19 Jul 2007 12:03:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37419 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964964AbXGSQDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:03:51 -0400
+Date: Thu, 19 Jul 2007 18:00:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jan Glauber <jang@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       vatsa@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com, efault@gmx.de,
+       dmitry.adamushko@gmail.com, paulus@samba.org, anton@samba.org
+Subject: Re: [PATCH] virtual sched_clock() for s390
+Message-ID: <20070719160025.GA31815@elte.hu>
+References: <1184842661.6546.14.camel@localhost.localdomain> <469F8342.7060000@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469F8342.7060000@goop.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jul 19 2007 10:41, Jean Delvare wrote:
->> Well, just check if /sys/devices/ exists, that should be cheap enough. :)
->
->Yes, this is a possibility, and one I had considered at first. But I
->wasn't sure which subdirectory to check. sysfs isn't well known for its
->stability, and I didn't know which directories exist since the
->early days of sysfs, and which do not. For example, fs, kernel and
->module were not present in 2.6.5. I am also not sure if directories
->which exist today are guaranteed to exist forever. This is the reason
->why I decided to check the link count instead, basically checking that
->at least one subdirectory exists, without having to name it.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-If anything exists, it is likely to be mounted.
-opendir, 3x readdir, exit the loop, done :)
+> >  /*
+> > - * Monotonic_clock - returns # of nanoseconds passed since time_init()
+> > + * Scheduler clock - returns current time in nanosec units.
+> > + * Now based on virtual cpu time to only account time the guest
+> > + * was actually running.
+> 
+> Runn*ing*?  Does it include time the VCPU spends idle/blocked?  If 
+> not, then the scheduler won't be able to tell how long a process has 
+> been asleep.  Maybe this doesn't matter (I had this problem in a 
+> version of Xen's sched_clock, and I can't say I saw an ill effects 
+> from it).
 
+CFS does measure time elapsed across task-sleep periods (and does 
+something similar to what the old scheduler's 'sleep average' 
+interactivity mechanism did), but that mechanism measures "time spent 
+running during sleep", not "time spent idling".
 
-	Jan
--- 
+still, CFS needs time measurement across idle periods as well, for 
+another purpose: to be able to do precise task statistics for /proc. 
+(for top, ps, etc.) So it's still true that sched_clock() should include 
+idle periods too.
+
+	Ingo
