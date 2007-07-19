@@ -1,599 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764467AbXGSKAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765098AbXGSKAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764467AbXGSKAR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbXGSJy6
+	id S1765098AbXGSKAz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbXGSJzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:54:58 -0400
-Received: from ns.suse.de ([195.135.220.2]:35340 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 05:55:00 -0400
+Received: from ns.suse.de ([195.135.220.2]:35342 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754798AbXGSJy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:54:56 -0400
+	id S1755979AbXGSJy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:54:58 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
-To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [10/58] i386: Move all simple string operations out of line
-Message-Id: <20070719095454.621C614E04@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:54:54 +0200 (CEST)
+To: jh@suse.cz, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [11/58] x86: Support __attribute__((__cold__)) in gcc 4.3
+Message-Id: <20070719095455.A8C6714E05@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:54:55 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The compiler generally generates reasonable inline code for the simple
-cases and for the rest it's better for code size for them to be out of line.
-Also there they can be potentially optimized more in the future.
+gcc 4.3 supports a new __attribute__((__cold__)) to mark functions cold. Any 
+path directly leading to a call of this function will be unlikely. And gcc
+will try to generate smaller code for the function itself.
 
-In fact they probably should be in a .S file because they're all pure
-assembly, but that's for another day.
+Please use with care. The code generation advantage isn't large and in most
+cases it is not worth uglifying code with this.
 
-Also some code style cleanup on them while I was on it (this seems
-to be the last untouched really early Linux code) 
+This patch marks some common error functions like panic(), printk(), BUG()
+as cold.  This will longer term make many unlikely()s unnecessary, although
+we can keep them for now for older compilers.
 
-This saves ~12k text for a defconfig kernel with gcc 4.1.
+Also all __init and __exit functions are marked cold. With a non -Os
+build this will tell the compiler to generate slightly smaller code
+for them. I think it currently only uses less alignments for labels,
+but that might change in the future.
 
+One disadvantage over *likely() is that they cannot be easily instrumented 
+to verify them.
 
+Another drawback is that only the latest gcc 4.3 snapshots support this. 
+Unfortunately we cannot detect this using the preprocessor. This means older 
+snapshots will fail now. I don't think that's a problem because they are 
+unreleased compilers that nobody should be using.
+
+gcc also has a __hot__ attribute, but I don't see any sense in using
+this in the kernel right now. But someday I hope gcc will be able
+to use more aggressive optimizing for hot functions even in -Os,
+if that happens it should be added.
+
+Includes compile fix from Thomas Gleixner.
+
+TBD wait for COLD()
+
+Cc: jh@suse.cz
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/lib/Makefile    |    2 
- arch/i386/lib/string.c    |  233 ++++++++++++++++++++++++++++++++++++++++++++
- include/asm-i386/string.h |  243 ++--------------------------------------------
- 3 files changed, 247 insertions(+), 231 deletions(-)
+ include/asm-generic/bug.h     |    1 +
+ include/asm-i386/bug.h        |    4 ++++
+ include/asm-x86_64/bug.h      |    8 ++++++--
+ include/linux/compiler-gcc4.h |   23 +++++++++++++++++++++++
+ include/linux/compiler.h      |   12 ++++++++++++
+ include/linux/init.h          |    8 ++++----
+ include/linux/kernel.h        |    8 ++++----
+ 7 files changed, 54 insertions(+), 10 deletions(-)
 
-Index: linux/include/asm-i386/string.h
+Index: linux/include/asm-generic/bug.h
 ===================================================================
---- linux.orig/include/asm-i386/string.h
-+++ linux/include/asm-i386/string.h
-@@ -2,203 +2,35 @@
- #define _I386_STRING_H_
+--- linux.orig/include/asm-generic/bug.h
++++ linux/include/asm-generic/bug.h
+@@ -22,6 +22,7 @@ struct bug_entry {
  
- #ifdef __KERNEL__
--/*
-- * On a 486 or Pentium, we are better off not using the
-- * byte string operations. But on a 386 or a PPro the
-- * byte string ops are faster than doing it by hand
-- * (MUCH faster on a Pentium).
-- */
--
--/*
-- * This string-include defines all string functions as inline
-- * functions. Use gcc. It also assumes ds=es=data space, this should be
-- * normal. Most of the string-functions are rather heavily hand-optimized,
-- * see especially strsep,strstr,str[c]spn. They should work, but are not
-- * very easy to understand. Everything is done entirely within the register
-- * set, making the functions fast and clean. String instructions have been
-- * used through-out, making for "slightly" unclear code :-)
-- *
-- *		NO Copyright (C) 1991, 1992 Linus Torvalds,
-- *		consider these trivial functions to be PD.
-- */
+ #ifndef HAVE_ARCH_BUG
+ #define BUG() do { \
++	COLD(); \
+ 	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
+ 	panic("BUG!"); \
+ } while (0)
+Index: linux/include/asm-i386/bug.h
+===================================================================
+--- linux.orig/include/asm-i386/bug.h
++++ linux/include/asm-i386/bug.h
+@@ -10,9 +10,12 @@
+ #ifdef CONFIG_BUG
+ #define HAVE_ARCH_BUG
  
--/* AK: in fact I bet it would be better to move this stuff all out of line.
-- */
-+/* Let gcc decide wether to inline or use the out of line functions */
++#include <linux/compiler.h>
++
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
+ #define BUG()								\
+ 	do {								\
++		COLD();							\
+ 		asm volatile("1:\tud2\n"				\
+ 			     ".pushsection __bug_table,\"a\"\n"		\
+ 			     "2:\t.long 1b, %c0\n"			\
+@@ -27,6 +30,7 @@
+ #else
+ #define BUG()								\
+ 	do {								\
++		COLD();							\
+ 		asm volatile("ud2");					\
+ 		for(;;) ;						\
+ 	} while(0)
+Index: linux/include/asm-x86_64/bug.h
+===================================================================
+--- linux.orig/include/asm-x86_64/bug.h
++++ linux/include/asm-x86_64/bug.h
+@@ -4,9 +4,12 @@
+ #ifdef CONFIG_BUG
+ #define HAVE_ARCH_BUG
  
- #define __HAVE_ARCH_STRCPY
--static inline char * strcpy(char * dest,const char *src)
--{
--int d0, d1, d2;
--__asm__ __volatile__(
--	"1:\tlodsb\n\t"
--	"stosb\n\t"
--	"testb %%al,%%al\n\t"
--	"jne 1b"
--	: "=&S" (d0), "=&D" (d1), "=&a" (d2)
--	:"0" (src),"1" (dest) : "memory");
--return dest;
--}
-+extern char *strcpy(char *dest, const char *src);
++#include <linux/compiler.h>
++
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
+ #define BUG()								\
+ 	do {								\
++		COLD();							\
+ 		asm volatile("1:\tud2\n"				\
+ 			     ".pushsection __bug_table,\"a\"\n"		\
+ 			     "2:\t.quad 1b, %c0\n"			\
+@@ -20,14 +23,15 @@
+ #else
+ #define BUG()								\
+ 	do {								\
++		COLD();							\
+ 		asm volatile("ud2");					\
+ 		for(;;) ;						\
+ 	} while(0)
+ #endif
  
- #define __HAVE_ARCH_STRNCPY
--static inline char * strncpy(char * dest,const char *src,size_t count)
--{
--int d0, d1, d2, d3;
--__asm__ __volatile__(
--	"1:\tdecl %2\n\t"
--	"js 2f\n\t"
--	"lodsb\n\t"
--	"stosb\n\t"
--	"testb %%al,%%al\n\t"
--	"jne 1b\n\t"
--	"rep\n\t"
--	"stosb\n"
--	"2:"
--	: "=&S" (d0), "=&D" (d1), "=&c" (d2), "=&a" (d3)
--	:"0" (src),"1" (dest),"2" (count) : "memory");
--return dest;
--}
-+extern char *strncpy(char *dest, const char *src, size_t count);
+-void out_of_line_bug(void);
++void out_of_line_bug(void) __cold;
+ #else
+-static inline void out_of_line_bug(void) { }
++static inline void out_of_line_bug(void) __cold { }
+ #endif
  
- #define __HAVE_ARCH_STRCAT
--static inline char * strcat(char * dest,const char * src)
--{
--int d0, d1, d2, d3;
--__asm__ __volatile__(
--	"repne\n\t"
--	"scasb\n\t"
--	"decl %1\n"
--	"1:\tlodsb\n\t"
--	"stosb\n\t"
--	"testb %%al,%%al\n\t"
--	"jne 1b"
--	: "=&S" (d0), "=&D" (d1), "=&a" (d2), "=&c" (d3)
--	: "0" (src), "1" (dest), "2" (0), "3" (0xffffffffu):"memory");
--return dest;
--}
-+extern char *strcat(char *dest, const char *src);
- 
- #define __HAVE_ARCH_STRNCAT
--static inline char * strncat(char * dest,const char * src,size_t count)
--{
--int d0, d1, d2, d3;
--__asm__ __volatile__(
--	"repne\n\t"
--	"scasb\n\t"
--	"decl %1\n\t"
--	"movl %8,%3\n"
--	"1:\tdecl %3\n\t"
--	"js 2f\n\t"
--	"lodsb\n\t"
--	"stosb\n\t"
--	"testb %%al,%%al\n\t"
--	"jne 1b\n"
--	"2:\txorl %2,%2\n\t"
--	"stosb"
--	: "=&S" (d0), "=&D" (d1), "=&a" (d2), "=&c" (d3)
--	: "0" (src),"1" (dest),"2" (0),"3" (0xffffffffu), "g" (count)
--	: "memory");
--return dest;
--}
-+extern char *strncat(char *dest, const char *src, size_t count);
- 
- #define __HAVE_ARCH_STRCMP
--static inline int strcmp(const char * cs,const char * ct)
--{
--int d0, d1;
--register int __res;
--__asm__ __volatile__(
--	"1:\tlodsb\n\t"
--	"scasb\n\t"
--	"jne 2f\n\t"
--	"testb %%al,%%al\n\t"
--	"jne 1b\n\t"
--	"xorl %%eax,%%eax\n\t"
--	"jmp 3f\n"
--	"2:\tsbbl %%eax,%%eax\n\t"
--	"orb $1,%%al\n"
--	"3:"
--	:"=a" (__res), "=&S" (d0), "=&D" (d1)
--	:"1" (cs),"2" (ct)
--	:"memory");
--return __res;
--}
-+extern int strcmp(const char *cs, const char *ct);
- 
- #define __HAVE_ARCH_STRNCMP
--static inline int strncmp(const char * cs,const char * ct,size_t count)
--{
--register int __res;
--int d0, d1, d2;
--__asm__ __volatile__(
--	"1:\tdecl %3\n\t"
--	"js 2f\n\t"
--	"lodsb\n\t"
--	"scasb\n\t"
--	"jne 3f\n\t"
--	"testb %%al,%%al\n\t"
--	"jne 1b\n"
--	"2:\txorl %%eax,%%eax\n\t"
--	"jmp 4f\n"
--	"3:\tsbbl %%eax,%%eax\n\t"
--	"orb $1,%%al\n"
--	"4:"
--	:"=a" (__res), "=&S" (d0), "=&D" (d1), "=&c" (d2)
--	:"1" (cs),"2" (ct),"3" (count)
--	:"memory");
--return __res;
--}
-+extern int strncmp(const char *cs, const char *ct, size_t count);
- 
- #define __HAVE_ARCH_STRCHR
--static inline char * strchr(const char * s, int c)
--{
--int d0;
--register char * __res;
--__asm__ __volatile__(
--	"movb %%al,%%ah\n"
--	"1:\tlodsb\n\t"
--	"cmpb %%ah,%%al\n\t"
--	"je 2f\n\t"
--	"testb %%al,%%al\n\t"
--	"jne 1b\n\t"
--	"movl $1,%1\n"
--	"2:\tmovl %1,%0\n\t"
--	"decl %0"
--	:"=a" (__res), "=&S" (d0)
--	:"1" (s),"0" (c)
--	:"memory");
--return __res;
--}
-+extern char *strchr(const char *s, int c);
- 
- #define __HAVE_ARCH_STRRCHR
--static inline char * strrchr(const char * s, int c)
--{
--int d0, d1;
--register char * __res;
--__asm__ __volatile__(
--	"movb %%al,%%ah\n"
--	"1:\tlodsb\n\t"
--	"cmpb %%ah,%%al\n\t"
--	"jne 2f\n\t"
--	"leal -1(%%esi),%0\n"
--	"2:\ttestb %%al,%%al\n\t"
--	"jne 1b"
--	:"=g" (__res), "=&S" (d0), "=&a" (d1)
--	:"0" (0),"1" (s),"2" (c)
--	:"memory");
--return __res;
--}
-+extern char *strrchr(const char *s, int c);
- 
- #define __HAVE_ARCH_STRLEN
--static inline size_t strlen(const char * s)
--{
--int d0;
--register int __res;
--__asm__ __volatile__(
--	"repne\n\t"
--	"scasb\n\t"
--	"notl %0\n\t"
--	"decl %0"
--	:"=c" (__res), "=&D" (d0)
--	:"1" (s),"a" (0), "0" (0xffffffffu)
--	:"memory");
--return __res;
--}
-+extern size_t strlen(const char *s);
- 
- static __always_inline void * __memcpy(void * to, const void * from, size_t n)
- {
-@@ -207,9 +39,7 @@ __asm__ __volatile__(
- 	"rep ; movsl\n\t"
- 	"movl %4,%%ecx\n\t"
- 	"andl $3,%%ecx\n\t"
--#if 1	/* want to pay 2 byte penalty for a chance to skip microcoded rep? */
- 	"jz 1f\n\t"
--#endif
- 	"rep ; movsb\n\t"
- 	"1:"
- 	: "=&c" (d0), "=&D" (d1), "=&S" (d2)
-@@ -328,23 +158,7 @@ void *memmove(void * dest,const void * s
- #define memcmp __builtin_memcmp
- 
- #define __HAVE_ARCH_MEMCHR
--static inline void * memchr(const void * cs,int c,size_t count)
--{
--int d0;
--register void * __res;
--if (!count)
--	return NULL;
--__asm__ __volatile__(
--	"repne\n\t"
--	"scasb\n\t"
--	"je 1f\n\t"
--	"movl $1,%0\n"
--	"1:\tdecl %0"
--	:"=D" (__res), "=&c" (d0)
--	:"a" (c),"0" (cs),"1" (count)
--	:"memory");
--return __res;
--}
-+extern void *memchr(const void * cs,int c,size_t count);
- 
- static inline void * __memset_generic(void * s, char c,size_t count)
- {
-@@ -386,29 +200,10 @@ return (s);	
- 
- /* Added by Gertjan van Wingerde to make minix and sysv module work */
- #define __HAVE_ARCH_STRNLEN
--static inline size_t strnlen(const char * s, size_t count)
--{
--int d0;
--register int __res;
--__asm__ __volatile__(
--	"movl %2,%0\n\t"
--	"jmp 2f\n"
--	"1:\tcmpb $0,(%0)\n\t"
--	"je 3f\n\t"
--	"incl %0\n"
--	"2:\tdecl %1\n\t"
--	"cmpl $-1,%1\n\t"
--	"jne 1b\n"
--	"3:\tsubl %2,%0"
--	:"=a" (__res), "=&d" (d0)
--	:"c" (s),"1" (count)
--	:"memory");
--return __res;
--}
-+extern size_t strnlen(const char * s, size_t count);
- /* end of additional stuff */
- 
- #define __HAVE_ARCH_STRSTR
--
- extern char *strstr(const char *cs, const char *ct);
- 
- /*
-@@ -474,19 +269,7 @@ __asm__  __volatile__( \
-  * find the first occurrence of byte 'c', or 1 past the area if none
+ #include <asm-generic/bug.h>
+Index: linux/include/linux/compiler-gcc4.h
+===================================================================
+--- linux.orig/include/linux/compiler-gcc4.h
++++ linux/include/linux/compiler-gcc4.h
+@@ -23,3 +23,26 @@
+  * code
   */
- #define __HAVE_ARCH_MEMSCAN
--static inline void * memscan(void * addr, int c, size_t size)
--{
--	if (!size)
--		return addr;
--	__asm__("repnz; scasb\n\t"
--		"jnz 1f\n\t"
--		"dec %%edi\n"
--		"1:"
--		: "=D" (addr), "=c" (size)
--		: "0" (addr), "1" (size), "a" (c)
--		: "memory");
--	return addr;
--}
-+extern void *memscan(void * addr, int c, size_t size);
- 
- #endif /* __KERNEL__ */
- 
-Index: linux/arch/i386/lib/Makefile
+ #define uninitialized_var(x) x = x
++
++#if !(__GNUC__ == 4 && __GNUC_MINOR__ < 3)
++/* Mark functions as cold. gcc will assume any path leading to a call
++   to them will be unlikely.  This means a lot of manual unlikely()s
++   are unnecessary now for any paths leading to the usual suspects
++   like BUG(), printk(), panic() etc. [but let's keep them for now for
++   older compilers]
++
++   Early snapshots of gcc 4.3 don't support this and we can't detect this
++   in the preprocessor, but we can live with this because they're unreleased.
++   Maketime probing would be overkill here.
++
++   gcc also has a __attribute__((__hot__)) to move hot functions into
++   a special section, but I don't see any sense in this right now in
++   the kernel context */
++#define __cold			__attribute__((__cold__))
++
++/* Use this to mark a path cold that isn't a function call
++   Use with care. The code generation advantage isn't large and it is rarely
++   worth it to uglify your code with this. */
++static inline void __cold cold_inline(void) {}
++#define COLD()			cold_inline();
++#endif
+Index: linux/include/linux/compiler.h
 ===================================================================
---- linux.orig/arch/i386/lib/Makefile
-+++ linux/arch/i386/lib/Makefile
-@@ -4,7 +4,7 @@
+--- linux.orig/include/linux/compiler.h
++++ linux/include/linux/compiler.h
+@@ -174,4 +174,16 @@ extern void __chk_io_ptr(const void __io
+ # define __attribute_const__	/* unimplemented */
+ #endif
  
- 
- lib-y = checksum.o delay.o usercopy.o getuser.o putuser.o memcpy.o strstr.o \
--	bitops.o semaphore.o
-+	bitops.o semaphore.o string.o
- 
- lib-$(CONFIG_X86_USE_3DNOW) += mmx.o
- 
-Index: linux/arch/i386/lib/string.c
-===================================================================
---- /dev/null
-+++ linux/arch/i386/lib/string.c
-@@ -0,0 +1,233 @@
 +/*
-+ * Most of the string-functions are rather heavily hand-optimized,
-+ * see especially strsep,strstr,str[c]spn. They should work, but are not
-+ * very easy to understand. Everything is done entirely within the register
-+ * set, making the functions fast and clean. String instructions have been
-+ * used through-out, making for "slightly" unclear code :-)
-+ *
-+ * AK: On P4 and K7 using non string instruction implementations might be faster
-+ * for large memory blocks. But most of them are unlikely to be used on any
-+ * of thse.
++ * Tell gcc if a function is cold. The compiler will assume any path
++ * directly leading to the call is unlikely.
 + */
 +
-+#include <linux/string.h>
-+#include <linux/module.h>
++#ifndef __cold
++#define __cold
++#endif
++#ifndef COLD
++#define COLD() do {} while (0)
++#endif
 +
-+char *strcpy(char * dest,const char *src)
-+{
-+	int d0, d1, d2;
-+	asm( "1:\tlodsb\n\t"
-+		"stosb\n\t"
-+		"testb %%al,%%al\n\t"
-+		"jne 1b"
-+		: "=&S" (d0), "=&D" (d1), "=&a" (d2)
-+		:"0" (src),"1" (dest) : "memory");
-+	return dest;
-+}
-+EXPORT_SYMBOL(strcpy);
-+
-+char *strncpy(char * dest,const char *src,size_t count)
-+{
-+	int d0, d1, d2, d3;
-+	asm( "1:\tdecl %2\n\t"
-+		"js 2f\n\t"
-+		"lodsb\n\t"
-+		"stosb\n\t"
-+		"testb %%al,%%al\n\t"
-+		"jne 1b\n\t"
-+		"rep\n\t"
-+		"stosb\n"
-+		"2:"
-+		: "=&S" (d0), "=&D" (d1), "=&c" (d2), "=&a" (d3)
-+		:"0" (src),"1" (dest),"2" (count) : "memory");
-+	return dest;
-+}
-+EXPORT_SYMBOL(strncpy);
-+
-+char *strcat(char * dest,const char * src)
-+{
-+	int d0, d1, d2, d3;
-+	asm( "repne\n\t"
-+		"scasb\n\t"
-+		"decl %1\n"
-+		"1:\tlodsb\n\t"
-+		"stosb\n\t"
-+		"testb %%al,%%al\n\t"
-+		"jne 1b"
-+		: "=&S" (d0), "=&D" (d1), "=&a" (d2), "=&c" (d3)
-+		: "0" (src), "1" (dest), "2" (0), "3" (0xffffffffu):"memory");
-+	return dest;
-+}
-+EXPORT_SYMBOL(strcat);
-+
-+char *strncat(char * dest,const char * src,size_t count)
-+{
-+	int d0, d1, d2, d3;
-+	asm( "repne\n\t"
-+		"scasb\n\t"
-+		"decl %1\n\t"
-+		"movl %8,%3\n"
-+		"1:\tdecl %3\n\t"
-+		"js 2f\n\t"
-+		"lodsb\n\t"
-+		"stosb\n\t"
-+		"testb %%al,%%al\n\t"
-+		"jne 1b\n"
-+		"2:\txorl %2,%2\n\t"
-+		"stosb"
-+		: "=&S" (d0), "=&D" (d1), "=&a" (d2), "=&c" (d3)
-+		: "0" (src),"1" (dest),"2" (0),"3" (0xffffffffu), "g" (count)
-+		: "memory");
-+	return dest;
-+}
-+EXPORT_SYMBOL(strncat);
-+
-+int strcmp(const char * cs,const char * ct)
-+{
-+	int d0, d1;
-+	int res;
-+	asm( "1:\tlodsb\n\t"
-+		"scasb\n\t"
-+		"jne 2f\n\t"
-+		"testb %%al,%%al\n\t"
-+		"jne 1b\n\t"
-+		"xorl %%eax,%%eax\n\t"
-+		"jmp 3f\n"
-+		"2:\tsbbl %%eax,%%eax\n\t"
-+		"orb $1,%%al\n"
-+		"3:"
-+		:"=a" (res), "=&S" (d0), "=&D" (d1)
-+		:"1" (cs),"2" (ct)
-+		:"memory");
-+	return res;
-+}
-+EXPORT_SYMBOL(strcmp);
-+
-+int strncmp(const char * cs,const char * ct,size_t count)
-+{
-+	int res;
-+	int d0, d1, d2;
-+	asm( "1:\tdecl %3\n\t"
-+		"js 2f\n\t"
-+		"lodsb\n\t"
-+		"scasb\n\t"
-+		"jne 3f\n\t"
-+		"testb %%al,%%al\n\t"
-+		"jne 1b\n"
-+		"2:\txorl %%eax,%%eax\n\t"
-+		"jmp 4f\n"
-+		"3:\tsbbl %%eax,%%eax\n\t"
-+		"orb $1,%%al\n"
-+		"4:"
-+		:"=a" (res), "=&S" (d0), "=&D" (d1), "=&c" (d2)
-+		:"1" (cs),"2" (ct),"3" (count)
-+		:"memory");
-+	return res;
-+}
-+EXPORT_SYMBOL(strncmp);
-+
-+char *strchr(const char * s, int c)
-+{
-+	int d0;
-+	char * res;
-+	asm( "movb %%al,%%ah\n"
-+		"1:\tlodsb\n\t"
-+		"cmpb %%ah,%%al\n\t"
-+		"je 2f\n\t"
-+		"testb %%al,%%al\n\t"
-+		"jne 1b\n\t"
-+		"movl $1,%1\n"
-+		"2:\tmovl %1,%0\n\t"
-+		"decl %0"
-+		:"=a" (res), "=&S" (d0)
-+		:"1" (s),"0" (c)
-+		:"memory");
-+	return res;
-+}
-+EXPORT_SYMBOL(strchr);
-+
-+char *strrchr(const char * s, int c)
-+{
-+	int d0, d1;
-+	char * res;
-+	asm( "movb %%al,%%ah\n"
-+		"1:\tlodsb\n\t"
-+		"cmpb %%ah,%%al\n\t"
-+		"jne 2f\n\t"
-+		"leal -1(%%esi),%0\n"
-+		"2:\ttestb %%al,%%al\n\t"
-+		"jne 1b"
-+		:"=g" (res), "=&S" (d0), "=&a" (d1)
-+		:"0" (0),"1" (s),"2" (c)
-+		:"memory");
-+	return res;
-+}
-+EXPORT_SYMBOL(strrchr);
-+
-+size_t strlen(const char * s)
-+{
-+	int d0;
-+	int res;
-+	asm( "repne\n\t"
-+		"scasb\n\t"
-+		"notl %0\n\t"
-+		"decl %0"
-+		:"=c" (res), "=&D" (d0)
-+		:"1" (s),"a" (0), "0" (0xffffffffu)
-+		:"memory");
-+	return res;
-+}
-+EXPORT_SYMBOL(strlen);
-+
-+void *memchr(const void *cs,int c,size_t count)
-+{
-+	int d0;
-+	void *res;
-+	if (!count)
-+		return NULL;
-+	asm( "repne\n\t"
-+		"scasb\n\t"
-+		"je 1f\n\t"
-+		"movl $1,%0\n"
-+		"1:\tdecl %0"
-+		:"=D" (res), "=&c" (d0)
-+		:"a" (c),"0" (cs),"1" (count)
-+		:"memory");
-+	return res;
-+}
-+EXPORT_SYMBOL(memchr);
-+
-+void *memscan(void * addr, int c, size_t size)
-+{
-+	if (!size)
-+		return addr;
-+	asm("repnz; scasb\n\t"
-+	    "jnz 1f\n\t"
-+	    "dec %%edi\n"
-+	    "1:"
-+	    : "=D" (addr), "=c" (size)
-+	    : "0" (addr), "1" (size), "a" (c)
-+	    : "memory");
-+	return addr;
-+}
-+EXPORT_SYMBOL(memscan);
-+
-+size_t strnlen(const char *s, size_t count)
-+{
-+	int d0;
-+	int res;
-+	asm( "movl %2,%0\n\t"
-+		"jmp 2f\n"
-+		"1:\tcmpb $0,(%0)\n\t"
-+		"je 3f\n\t"
-+		"incl %0\n"
-+		"2:\tdecl %1\n\t"
-+		"cmpl $-1,%1\n\t"
-+		"jne 1b\n"
-+		"3:\tsubl %2,%0"
-+		:"=a" (res), "=&d" (d0)
-+		:"c" (s),"1" (count)
-+		:"memory");
-+	return res;
-+}
-+EXPORT_SYMBOL(strnlen);
+ #endif /* __LINUX_COMPILER_H */
+Index: linux/include/linux/init.h
+===================================================================
+--- linux.orig/include/linux/init.h
++++ linux/include/linux/init.h
+@@ -40,10 +40,10 @@
+ 
+ /* These are for everybody (although not all archs will actually
+    discard it in modules) */
+-#define __init		__attribute__ ((__section__ (".init.text")))
++#define __init		__attribute__ ((__section__ (".init.text"))) __cold
+ #define __initdata	__attribute__ ((__section__ (".init.data")))
+ #define __exitdata	__attribute__ ((__section__(".exit.data")))
+-#define __exit_call	__attribute_used__ __attribute__ ((__section__ (".exitcall.exit")))
++#define __exit_call	__attribute_used__ __attribute__ ((__section__ (".exitcall.exit"))) __cold
+ 
+ /* modpost check for section mismatches during the kernel build.
+  * A section mismatch happens when there are references from a
+@@ -59,9 +59,9 @@
+ #define __initdata_refok          __attribute__ ((__section__ (".data.init.refok")))
+ 
+ #ifdef MODULE
+-#define __exit		__attribute__ ((__section__(".exit.text")))
++#define __exit		__attribute__ ((__section__(".exit.text"))) __cold
+ #else
+-#define __exit		__attribute_used__ __attribute__ ((__section__(".exit.text")))
++#define __exit		__attribute_used__ __attribute__ ((__section__(".exit.text"))) __cold
+ #endif
+ 
+ /* For assembly routines */
+Index: linux/include/linux/kernel.h
+===================================================================
+--- linux.orig/include/linux/kernel.h
++++ linux/include/linux/kernel.h
+@@ -106,7 +106,7 @@ extern int cond_resched(void);
+ extern struct atomic_notifier_head panic_notifier_list;
+ extern long (*panic_blink)(long time);
+ NORET_TYPE void panic(const char * fmt, ...)
+-	__attribute__ ((NORET_AND format (printf, 1, 2)));
++	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
+ extern void oops_enter(void);
+ extern void oops_exit(void);
+ extern int oops_may_print(void);
+@@ -155,14 +155,14 @@ extern void dump_thread(struct pt_regs *
+ asmlinkage int vprintk(const char *fmt, va_list args)
+ 	__attribute__ ((format (printf, 1, 0)));
+ asmlinkage int printk(const char * fmt, ...)
+-	__attribute__ ((format (printf, 1, 2)));
++	__attribute__ ((format (printf, 1, 2))) __cold;
+ #else
+ static inline int vprintk(const char *s, va_list args)
+ 	__attribute__ ((format (printf, 1, 0)));
+ static inline int vprintk(const char *s, va_list args) { return 0; }
+ static inline int printk(const char *s, ...)
+ 	__attribute__ ((format (printf, 1, 2)));
+-static inline int printk(const char *s, ...) { return 0; }
++static inline int __cold printk(const char *s, ...) { return 0; }
+ #endif
+ 
+ unsigned long int_sqrt(unsigned long);
+@@ -212,7 +212,7 @@ extern enum system_states {
+ #define TAINT_USER			(1<<6)
+ #define TAINT_DIE			(1<<7)
+ 
+-extern void dump_stack(void);
++extern void dump_stack(void) __cold;
+ 
+ enum {
+ 	DUMP_PREFIX_NONE,
