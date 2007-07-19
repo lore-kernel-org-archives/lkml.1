@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938243AbXGSKYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933160AbXGSKZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938243AbXGSKYv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762780AbXGSJ4K
+	id S933160AbXGSKZh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759388AbXGSJ4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:56:10 -0400
-Received: from mx1.suse.de ([195.135.220.2]:35443 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 05:56:12 -0400
+Received: from ns.suse.de ([195.135.220.2]:35448 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754947AbXGSJzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760885AbXGSJzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Jul 2007 05:55:47 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
-To: trux@truxton.com, lee-in-berlin@web.de, ak@suse.de, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [51/58] i386: fix machine rebooting
-Message-Id: <20070719095538.2965B14E05@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:38 +0200 (CEST)
+To: sam@ravnborg.org, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [52/58] i386: fix section mismatch warnings in mtrr
+Message-Id: <20070719095539.3950814E06@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Truxton Fulton <trux@truxton.com>
+From: Sam Ravnborg <sam@ravnborg.org>
 
-59f4e7d572980a521b7bdba74ab71b21f5995538 fixed machine rebooting on Truxton's
-machine (when no keyboard was present).  But it broke it on Lee's machine.
+Following section mismatch warnings were reported by Andrey Borzenkov:
 
-The patch reinstates the old (pre-59f4e7d572980a521b7bdba74ab71b21f5995538)
-code and if that doesn't work out, try the new,
-post-59f4e7d572980a521b7bdba74ab71b21f5995538 code instead.
+WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:amd_init_mtrr from .text between 'mtrr_bp_init' (at offset 0x967a) and 'mtrr_attrib_to_str'
+WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:cyrix_init_mtrr from .text between 'mtrr_bp_init' (at offset 0x967f) and 'mtrr_attrib_to_str'
+WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:centaur_init_mtrr from .text between 'mtrr_bp_init' (at offset 0x9684) and 'mtrr_attrib_to_str'
+WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text: from .text between 'get_mtrr_state' (at offset 0xa735) and 'generic_get_mtrr'
+WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text: from .text between 'get_mtrr_state' (at offset 0xa749) and 'generic_get_mtrr'
+WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text: from .text between 'get_mtrr_state' (at offset 0xa770) and 'generic_get_mtrr'
 
-Cc: Lee Garrett <lee-in-berlin@web.de>
-Cc: Andi Kleen <ak@suse.de>
+It was tracked down to a few functions missing __init tag.
+Compile tested only.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
 
- include/asm-i386/mach-default/mach_reboot.h |   25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+ arch/i386/kernel/cpu/mtrr/generic.c |    2 +-
+ arch/i386/kernel/cpu/mtrr/main.c    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux/include/asm-i386/mach-default/mach_reboot.h
+Index: linux/arch/i386/kernel/cpu/mtrr/generic.c
 ===================================================================
---- linux.orig/include/asm-i386/mach-default/mach_reboot.h
-+++ linux/include/asm-i386/mach-default/mach_reboot.h
-@@ -19,14 +19,37 @@ static inline void kb_wait(void)
- static inline void mach_reboot(void)
+--- linux.orig/arch/i386/kernel/cpu/mtrr/generic.c
++++ linux/arch/i386/kernel/cpu/mtrr/generic.c
+@@ -79,7 +79,7 @@ static void print_fixed(unsigned base, u
+ }
+ 
+ /*  Grab all of the MTRR state for this CPU into *state  */
+-void get_mtrr_state(void)
++void __init get_mtrr_state(void)
  {
- 	int i;
-+
-+	/* old method, works on most machines */
- 	for (i = 0; i < 10; i++) {
- 		kb_wait();
- 		udelay(50);
-+		outb(0xfe, 0x64);	/* pulse reset low */
-+		udelay(50);
-+	}
-+
-+	/* New method: sets the "System flag" which, when set, indicates
-+	 * successful completion of the keyboard controller self-test (Basic
-+	 * Assurance Test, BAT).  This is needed for some machines with no
-+	 * keyboard plugged in.  This read-modify-write sequence sets only the
-+	 * system flag
-+	 */
-+	for (i = 0; i < 10; i++) {
-+		int cmd;
-+
-+		outb(0x20, 0x64);	/* read Controller Command Byte */
-+		udelay(50);
-+		kb_wait();
-+		udelay(50);
-+		cmd = inb(0x60);
-+		udelay(50);
-+		kb_wait();
-+		udelay(50);
- 		outb(0x60, 0x64);	/* write Controller Command Byte */
- 		udelay(50);
- 		kb_wait();
- 		udelay(50);
--		outb(0x14, 0x60);	/* set "System flag" */
-+		outb(cmd | 0x04, 0x60);	/* set "System flag" */
- 		udelay(50);
- 		kb_wait();
- 		udelay(50);
+ 	unsigned int i;
+ 	struct mtrr_var_range *vrs;
+Index: linux/arch/i386/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux.orig/arch/i386/kernel/cpu/mtrr/main.c
++++ linux/arch/i386/kernel/cpu/mtrr/main.c
+@@ -643,7 +643,7 @@ static struct sysdev_driver mtrr_sysdev_
+  * initialized (i.e. before smp_init()).
+  * 
+  */
+-__init void mtrr_bp_init(void)
++void __init mtrr_bp_init(void)
+ {
+ 	init_ifs();
+ 
