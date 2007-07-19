@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939258AbXGSP3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbXGSPaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939258AbXGSP3b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbXGSP3V
+	id S1762199AbXGSPaZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765495AbXGSPaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:29:21 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:56626 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756190AbXGSP3U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:29:20 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 19 Jul 2007 11:27:11 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Christoph Hellwig <hch@infradead.org>
-cc: Karel Zak <kzak@redhat.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH][RFC] Delete export of tty.h to userspace.
-In-Reply-To: <20070719135707.GA16279@infradead.org>
-Message-ID: <Pine.LNX.4.64.0707191126100.6804@localhost.localdomain>
-References: <Pine.LNX.4.64.0707180520040.19434@localhost.localdomain>
- <469E7599.4060608@gmail.com> <Pine.LNX.4.64.0707181631340.14452@localhost.localdomain>
- <20070718223820.GF3181@petra.dvoda.cz> <Pine.LNX.4.64.0707190715320.25024@localhost.localdomain>
- <20070719135707.GA16279@infradead.org>
+	Thu, 19 Jul 2007 11:30:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:49075 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756514AbXGSPaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:30:00 -0400
+Message-ID: <469F8342.7060000@goop.org>
+Date: Thu, 19 Jul 2007 08:29:06 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Jan Glauber <jang@linux.vnet.ibm.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       vatsa@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com, efault@gmx.de,
+       dmitry.adamushko@gmail.com, paulus@samba.org, anton@samba.org
+Subject: Re: [PATCH] virtual sched_clock() for s390
+References: <1184842661.6546.14.camel@localhost.localdomain>
+In-Reply-To: <1184842661.6546.14.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Christoph Hellwig wrote:
-
-> On Thu, Jul 19, 2007 at 07:17:07AM -0400, Robert P. J. Day wrote:
-> > so you're saying you'll drop that include from util-linux, is that
-> > it? but it's still a good plan to generate a warning whenever
-> > userspace includes that file, so i'll submit a quick patch to
-> > generate that, based on jiri's suggestion.
+Jan Glauber wrote:
+> This patch introduces a cpu time clock for s390 (only ticking
+> if the virtual cpu is running) and bases the s390 implementation
+> of sched_clock() on it.
 >
-> Not exporting it at all gives an error which is a lot better.  Just
-> look at all the warnings most userspace spews, they'd never even
-> notice it otherwise.
+> The times lice length on a virtual cpu can be anything
+> between the calculated time slice and zero. In reality
+> this doesn't seem to be problem, since the scheduler is fair
+> enough to not let a single process starve but the current
+> implementation can lead to inefficient short time slices.
+>
+> By providing a 'virtual' sched_clock() we guarantee that a
+> process can get its time slice regardless of scheduling
+> decisions from the hypervisor.
+>
+> Patch applies to 2.6.22 git and works fine with CFS.
+>   
 
-i'm fine either way, i just didn't want to gratuitously break
-userspace.  someone higher up the food chain is welcome to make the
-decision here.
+The Xen sched_clock implementation is very similar, and it seems to work
+well.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+>  /*
+> - * Monotonic_clock - returns # of nanoseconds passed since time_init()
+> + * Scheduler clock - returns current time in nanosec units.
+> + * Now based on virtual cpu time to only account time the guest
+> + * was actually running.
+>   
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Runn*ing*?  Does it include time the VCPU spends idle/blocked?  If not,
+then the scheduler won't be able to tell how long a process has been
+asleep.  Maybe this doesn't matter (I had this problem in a version of
+Xen's sched_clock, and I can't say I saw an ill effects from it).
+
+    J
