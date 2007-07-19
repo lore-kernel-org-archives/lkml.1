@@ -1,60 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937681AbXGSPI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938502AbXGSPIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937681AbXGSPI0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763252AbXGSPIP
+	id S938502AbXGSPIq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937487AbXGSPIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:08:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35904 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761491AbXGSPIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:08:14 -0400
-Date: Thu, 19 Jul 2007 17:07:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net,
-       Auke Kok <auke-jan.h.kok@intel.com>
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070719150728.GA17000@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <200707191144.24434.olaf.kirch@oracle.com> <20070719100135.GA2986@elte.hu> <200707191237.56455.olaf.kirch@oracle.com> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719105816.GA15852@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 19 Jul 2007 11:08:25 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37857 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S937289AbXGSPIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:08:23 -0400
+Date: Thu, 19 Jul 2007 16:15:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Cbe-oss-dev] [patch 11/13] cell: driver for DDR2 memory on
+ AXON
+Message-ID: <20070719161503.304c4037@the-village.bc.nu>
+In-Reply-To: <200707191649.27976.arnd@arndb.de>
+References: <20070718160439.723093835@arndb.de>
+	<200707190048.09686.arnd@arndb.de>
+	<20070719101230.GA4553@lst.de>
+	<200707191649.27976.arnd@arndb.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Any suggestion on what BLKBSZGET should return?
+> 
+> 1) blocksize = 0 (same as it does already for most devices)
 
-ugh. Something really weird happened with this e1000 problem.
-
-i crashed the laptop in a weird way and had to power-cycle it in an 
-unusual fashion. After that i wanted to try your latest BUG_ON() theory 
-but the network hang went away!
-
-For 3 hours i tried to reproduce the hang (i went back to the original 
-git tree and the .config under which i found it, i power cycled it 
-again, i unplugged the power cord to make it go off battery, unplugged 
-the ethernet, recreated a completely new tree, etc. etc.) but with no 
-success! Total Heisenbug - and the really annoying thing is that you 
-just had a good theory about what might be happening. I'm now at kernel 
-build iteration #75 in this tree ...
-
-maybe it's not the power-cycling that somehow brought the e1000 out of 
-its weird state but the ethtool ops (and the related firmware readouts, 
-etc.)?
-
-(i have your BUG_ON() applied (as a WARN_ON()), but it doesnt trigger. 
-Not that this means anything under these circumstances ...)
-
-	Ingo
+This is what tools like df expect
