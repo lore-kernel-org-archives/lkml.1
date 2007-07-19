@@ -1,79 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbXGSLnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762575AbXGSLug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbXGSLnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 07:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbXGSLnJ
+	id S1762575AbXGSLug (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 07:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXGSLu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 07:43:09 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:50081 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756783AbXGSLnI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 07:43:08 -0400
-Message-ID: <469F4E47.4020809@grupopie.com>
-Date: Thu, 19 Jul 2007 12:43:03 +0100
-From: Rui Santos <rsantos@grupopie.com>
-Organization: GrupoPIE, Portugal SA
-User-Agent: Thunderbird 2.0.0.4 (X11/20070613)
+	Thu, 19 Jul 2007 07:50:26 -0400
+Received: from depni.sinp.msu.ru ([213.131.7.21]:58026 "EHLO depni.sinp.msu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753796AbXGSLuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 07:50:25 -0400
+To: Andi Kleen <ak@suse.de>
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/58] x86_64: Tell gcc to only align stack to 8 bytes
+References: <200707191154.642492000@suse.de>
+	<20070719095445.DC94514E04@wotan.suse.de>
+From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Date: Thu, 19 Jul 2007 15:50:20 +0400
+In-Reply-To: <20070719095445.DC94514E04@wotan.suse.de> (Andi Kleen's message of "Thu\, 19 Jul 2007 11\:54\:45 +0200 \(CEST\)")
+Message-ID: <87wswwsjcz.fsf@depni.sinp.msu.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
 MIME-Version: 1.0
-To: koan <koan00@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Slow Soft-RAID 5 performance
-References: <64d833020707180707i1bbbbcbao783e33a2487c9e2b@mail.gmail.com>	 <469E4A70.1000306@grupopie.com> <64d833020707181107o705ff16ava129e91fcf68a8ef@mail.gmail.com>
-In-Reply-To: <64d833020707181107o705ff16ava129e91fcf68a8ef@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-koan wrote:
-> Are you sure about that chunk size? In you initial posting you show
-> /proc/mdstat reporting:
->
-> "md2 : active raid5 sdc3[2] sda3[0] sdb3[1]
->      780083968 blocks level 5, 128k chunk, algorithm 2 [3/3] [UUU]"
->
-> Which would seem to state a 128K chunk, and thus with a 4k block size
-> you would need a stride of 32.
+Andi Kleen <ak@suse.de> writes:
 
-Hi Koan,
+> Don't need 16 byte alignment because kernel doesn't use SSE2
+>
+...
+>  cflags-y += -maccumulate-outgoing-args
+> +cflags-y += -mpreferred-stack-boundary=4
+>  
 
-Yes, I'm sure... Those 128K chunk was my initial setup, before the
-enlightenment from http://tldp.org/HOWTO/Software-RAID-HOWTO-5.html
-My reported test setup is by using 256K chunk.
+>From gcc manpage:
 
->
->
->
-> On 7/18/07, Rui Santos <rsantos@grupopie.com> wrote:
->> koan wrote:
->> > How did you create the ext3 filesystem?
->>
->> The chunk_size is at 256KB, ext3 block size is 4k. I believe the correct
->> option that should be passed trough to --stride is 64.
->> Am I correct ?
->>
->> I've also tested ( after sending my first report ) with xfs.
->> I've also increases readahead to 65535 on all HD's
->> I've also increases the stripe_cache_size to 16384.
->>
->> I can now get ~100MB/sec...
->>
->> >
->> > Did you use the appropriate --stride option as noted here:
->> > http://tldp.org/HOWTO/Software-RAID-HOWTO-5.html (#5.11)
->> > -
->> > To unsubscribe from this list: send the line "unsubscribe
->> > linux-kernel" in
->> > the body of a message to majordomo@vger.kernel.org
->> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> > Please read the FAQ at  http://www.tux.org/lkml/
->> >
->> >
->> >
->>
->>
->
->
->
+       -mpreferred-stack-boundary=num
+           Attempt to keep the stack boundary aligned to a 2 raised to num
+           byte boundary.  If -mpreferred-stack-boundary is not specified, the
+           default is 4 (16 bytes or 128 bits), except when optimizing for
+           code size (-Os), in which case the default is the minimum correct
+           alignment (4 bytes for x86, and 8 bytes for x86-64).
 
+So -mpreferred-stack-boundary=4 is the default and to align stack
+to 8 bytes you want -mpreferred-stack-boundary=3, not 4, IIUC.
