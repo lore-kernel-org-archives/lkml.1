@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940758AbXGSRiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940641AbXGSRjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940758AbXGSRiq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760124AbXGSRiU
+	id S940641AbXGSRjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939244AbXGSRiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:38:20 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:24633 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762400AbXGSRiR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:38:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bslT84mcy7MljJ3rnKX02xQPY1OFTlz7lK3nnnVSZ4LxpuQgyCF63ztO+9RkLZGHCvK97EHWv8W1HMG8Upu1pgkhT9gNLtCl2SeKvzZ6neHSiD2dpfRz3pzempAQqbhGJp9hbCwkQyap1sq8MyWboFiHAcwJw1UiA6lsgMWEMWc=
-Message-ID: <86802c440707191038x7b37f949i6e1ff903ccc51b4f@mail.gmail.com>
-Date: Thu, 19 Jul 2007 10:38:16 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH] [7/58] x86_64: various cleanups in NUMA scan node
-Cc: rientjes@google.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200707191921.22909.ak@suse.de>
+	Thu, 19 Jul 2007 13:38:24 -0400
+Received: from ns2.suse.de ([195.135.220.15]:38086 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762501AbXGSRiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:38:22 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH] [15/58] i386: Rewrite sched_clock
+Date: Thu, 19 Jul 2007 19:38:18 +0200
+User-Agent: KMail/1.9.6
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <200707191154.642492000@suse.de> <200707191922.34388.ak@suse.de> <1184866316.6458.31.camel@dhcp193.mvista.com>
+In-Reply-To: <1184866316.6458.31.camel@dhcp193.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200707191154.642492000@suse.de>
-	 <20070719095451.3578E14E04@wotan.suse.de>
-	 <86802c440707191015u4c6b0e72u17c7674593fb1085@mail.gmail.com>
-	 <200707191921.22909.ak@suse.de>
+Message-Id: <200707191938.18988.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/19/07, Andi Kleen <ak@suse.de> wrote:
->
-> > do we need to put __initdata just before =?
->
-> AFAIK gcc __attribute__ syntax allows both. It certainly seems to compile.
+On Thursday 19 July 2007 19:31:56 Daniel Walker wrote:
 
-in include/linux/init.h
+> >From my perspective a downside to sched_clock is that the math is
+> duplicated per architecture .. I think it would be a win to use the
+> generic functions if it's possible..
 
-it said
+They can't be used because they're not cpu local. The whole basic 
+concept behind the new sched_clock is to be cpu local. 
 
-"
- * For initialized data:
- * You should insert __initdata between the variable name and equal
- * sign followed by value, e.g.:
- *
- * static int init_variable __initdata = 0;
- * static char linux_logo[] __initdata = { 0x32, 0x36, ... };
-"
-
-or we need to update these lines?
-
-YH
+-Andi
+ 
