@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761365AbXGSCmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762829AbXGSDAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761365AbXGSCmY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 22:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbXGSCmO
+	id S1762829AbXGSDAd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 23:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbXGSDAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 22:42:14 -0400
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:56313 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbXGSCmN (ORCPT
+	Wed, 18 Jul 2007 23:00:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37966 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757767AbXGSDAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 22:42:13 -0400
-Date: Wed, 18 Jul 2007 22:42:09 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-In-Reply-To: <20070718183503.541026f8.akpm@linux-foundation.org>
-Message-ID: <Line.LNX.4.64.0707182226070.10682@d.namei>
-References: <Line.LNX.4.64.0707141233490.26711@d.namei>
- <20070718183503.541026f8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 18 Jul 2007 23:00:24 -0400
+Date: Wed, 18 Jul 2007 19:59:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Stable Team <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] X86_64: hpet tsc calibration fix broken smi detection
+ logic
+Message-Id: <20070718195932.ea72e6f0.akpm@linux-foundation.org>
+In-Reply-To: <1184402499.12353.340.camel@chaos>
+References: <1184402499.12353.340.camel@chaos>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007, Andrew Morton wrote:
+On Sat, 14 Jul 2007 10:41:39 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> > The SECURITY_FRAMEWORK_VERSION macro has also been removed.
+> The current SMI detection logic in read_hpet_tsc() makes sure,
+> that when a SMI happens between the read of the HPET counter and
+> the read of the TSC, this wrong value is used for TSC calibration.
 > 
-> I'd like to understand who is (or claims to be) adversely affected by this
-> change, and what their complaints (if any) will be.
+> This is not the intention of the function. The comparison must ensure,
+> that we do _NOT_ use such a value.
 > 
-> Because I prefer my flamewars pre- rather than post-merge.
-
-This was already discussed and resolved during previous postings of the 
-patch.
-
-In a nutshell, there is no safe way to unload an LSM.  The modular 
-interface is thus unecessary and broken infrastructure.  It is used only 
-by out-of-tree modules, which are often binary-only, illegal, abusive of 
-the API and dangerous, e.g. silently re-vectoring SELinux.
-
-Chris has already agreed to take the patch:  
-http://lkml.org/lkml/2007/6/24/152
-
-
-> aww man, you passed over an opportunity to fix vast amounts of coding style
-> cruftiness.
-
-GregKH-esque :-)
-
-> <does whizzy things>
+> Fix the check to use calibration values where delta of the two TSC reads
+> is smaller than a reasonable threshold.
 > 
-> Here you go..
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> --- a/arch/x86_64/kernel/hpet.c
+> +++ b/arch/x86_64/kernel/hpet.c
+> @@ -190,7 +190,7 @@ int hpet_reenable(void)
+>   */
+>  
+>  #define TICK_COUNT 100000000
+> -#define TICK_MIN   5000
+> +#define SMI_THRESHOLD 50000
+>  #define MAX_TRIES  5
+>  
+>  /*
+> @@ -205,7 +205,7 @@ static void __init read_hpet_tsc(int *hpet, int *tsc)
+>  		tsc1 = get_cycles_sync();
+>  		hpet1 = hpet_readl(HPET_COUNTER);
+>  		tsc2 = get_cycles_sync();
+> -		if (tsc2 - tsc1 > TICK_MIN)
+> +		if ((tsc2 - tsc1) < SMI_TRESHOLD)
+>  			break;
+>  	}
+>  	*hpet = hpet1;
+> 
 
-Thanks.
+So I queued this, and then another patch to revert it so that the
+x86_64-clockevents conversion would apply.  But I was unable to locate the
+corresponding bug in the post-x86_64-clockevents tree.  Did it get fixed by
+other means in there?
 
-
--- 
-James Morris
-<jmorris@namei.org>
