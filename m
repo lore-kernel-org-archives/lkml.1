@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937226AbXGSKQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763035AbXGSKRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937226AbXGSKQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbXGSJzw
+	id S1763035AbXGSKRT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXGSJzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:55:52 -0400
-Received: from ns1.suse.de ([195.135.220.2]:35412 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 05:55:54 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33103 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759453AbXGSJza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:55:30 -0400
+	id S1752350AbXGSJzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:55:32 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
 To: jbeulich@novell.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [38/58] i386: smp-alt-once option is only useful with  HOTPLUG_CPU
-Message-Id: <20070719095524.57FBC14E06@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:24 +0200 (CEST)
+Subject: [PATCH] [39/58] i386: minor nx handling adjustment
+Message-Id: <20070719095525.6424314E05@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: "Jan Beulich" <jbeulich@novell.com>
-Hence remove its handling in the opposite case.
+Constrain __supported_pte_mask and NX handling to just the PAE kernel.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
- arch/i386/kernel/alternative.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ arch/i386/mm/init.c     |    7 ++++---
+ include/asm-i386/page.h |    1 -
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux/arch/i386/kernel/alternative.c
+Index: linux/arch/i386/mm/init.c
 ===================================================================
---- linux.orig/arch/i386/kernel/alternative.c
-+++ linux/arch/i386/kernel/alternative.c
-@@ -5,9 +5,8 @@
- #include <asm/alternative.h>
- #include <asm/sections.h>
- 
--static int noreplace_smp     = 0;
--static int smp_alt_once      = 0;
--static int debug_alternative = 0;
-+#ifdef CONFIG_HOTPLUG_CPU
-+static int smp_alt_once;
- 
- static int __init bootonly(char *str)
- {
-@@ -15,6 +14,11 @@ static int __init bootonly(char *str)
- 	return 1;
+--- linux.orig/arch/i386/mm/init.c
++++ linux/arch/i386/mm/init.c
+@@ -471,6 +471,10 @@ void zap_low_mappings (void)
+ 	flush_tlb_all();
  }
- __setup("smp-alt-boot", bootonly);
-+#else
-+#define smp_alt_once 1
-+#endif
-+
-+static int debug_alternative;
  
- static int __init debug_alt(char *str)
- {
-@@ -23,6 +27,8 @@ static int __init debug_alt(char *str)
++int nx_enabled = 0;
++
++#ifdef CONFIG_X86_PAE
++
+ static int disable_nx __initdata = 0;
+ u64 __supported_pte_mask __read_mostly = ~_PAGE_NX;
+ EXPORT_SYMBOL_GPL(__supported_pte_mask);
+@@ -500,9 +504,6 @@ static int __init noexec_setup(char *str
  }
- __setup("debug-alternative", debug_alt);
+ early_param("noexec", noexec_setup);
  
-+static int noreplace_smp;
-+
- static int __init setup_noreplace_smp(char *str)
+-int nx_enabled = 0;
+-#ifdef CONFIG_X86_PAE
+-
+ static void __init set_nx(void)
  {
- 	noreplace_smp = 1;
-@@ -376,8 +382,6 @@ void __init alternative_instructions(voi
- #ifdef CONFIG_HOTPLUG_CPU
- 	if (num_possible_cpus() < 2)
- 		smp_alt_once = 1;
--#else
--	smp_alt_once = 1;
- #endif
+ 	unsigned int v[4], l, h;
+Index: linux/include/asm-i386/page.h
+===================================================================
+--- linux.orig/include/asm-i386/page.h
++++ linux/include/asm-i386/page.h
+@@ -44,7 +44,6 @@
+ extern int nx_enabled;
  
- #ifdef CONFIG_SMP
+ #ifdef CONFIG_X86_PAE
+-extern unsigned long long __supported_pte_mask;
+ typedef struct { unsigned long pte_low, pte_high; } pte_t;
+ typedef struct { unsigned long long pmd; } pmd_t;
+ typedef struct { unsigned long long pgd; } pgd_t;
