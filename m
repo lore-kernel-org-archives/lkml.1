@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937272AbXGSJPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764940AbXGSJP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937272AbXGSJPj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761460AbXGSJP3
+	id S1764940AbXGSJP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933184AbXGSJPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:15:29 -0400
+	Thu, 19 Jul 2007 05:15:31 -0400
 Received: from maxwell.spina.si ([193.77.104.223]:56727 "EHLO maxwell.spina.si"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757674AbXGSJPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:15:25 -0400
+	id S1763560AbXGSJPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:15:30 -0400
 X-Greylist: delayed 2079 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 05:15:24 EDT
-Message-ID: <469F2BAA.2010703@kanardia.eu>
-Date: Thu, 19 Jul 2007 11:15:22 +0200
+Message-ID: <469F1CDA.8080304@kanardia.eu>
+Date: Thu, 19 Jul 2007 10:12:10 +0200
 From: Rok Markovic <kernel@kanardia.eu>
 User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
@@ -19,12 +19,12 @@ To: LKML <linux-kernel@vger.kernel.org>
 CC: linux-arm-kernel@lists.arm.linux.org.uk
 Subject: Oops on arm pxa270 2.6.22
 Content-Type: multipart/mixed;
- boundary="------------070208030105010508010500"
+ boundary="------------000204090101020708080001"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------070208030105010508010500
+--------------000204090101020708080001
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -177,8 +177,7 @@ Backtrace:
 Code: e3a03000 e5823000 059030b8 e1a06000 (07935107)
 Kernel panic - not syncing: Attempted to kill init!
 
-
---------------070208030105010508010500
+--------------000204090101020708080001
 Content-Type: text/plain;
  name="cmx270.config"
 Content-Transfer-Encoding: base64
@@ -606,4 +605,4 @@ eSByb3V0aW5lcwojCkNPTkZJR19CSVRSRVZFUlNFPXkKQ09ORklHX0NSQ19DQ0lUVD15CkNP
 TkZJR19DUkMxNj15CkNPTkZJR19DUkNfSVRVX1Q9eQpDT05GSUdfQ1JDMzI9eQpDT05GSUdf
 TElCQ1JDMzJDPXkKQ09ORklHX1BMSVNUPXkKQ09ORklHX0hBU19JT01FTT15CkNPTkZJR19I
 QVNfSU9QT1JUPXkKQ09ORklHX0hBU19ETUE9eQo=
---------------070208030105010508010500--
+--------------000204090101020708080001--
