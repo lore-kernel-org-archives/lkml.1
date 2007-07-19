@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965581AbXGSORe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965753AbXGSORv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965581AbXGSORe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939157AbXGSOO4
+	id S965753AbXGSORv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939254AbXGSOPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:14:56 -0400
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:60257 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939162AbXGSOOx (ORCPT
+	Thu, 19 Jul 2007 10:15:06 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43752 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939243AbXGSOPA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:14:53 -0400
-Date: Thu, 19 Jul 2007 16:14:50 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andi Kleen <ak@suse.de>, will_schmidt@vnet.ibm.com,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH for review] [11/48] x86_64: During VM oom condition, kill
- all threads in process group
-In-Reply-To: <20070719140411.GD16279@infradead.org>
-Message-ID: <Pine.LNX.4.64.0707191614180.7377@anakin>
-References: <20070719348.540885000@suse.de> <20070719134840.47B5114E6E@wotan.suse.de>
- <20070719140411.GD16279@infradead.org>
+	Thu, 19 Jul 2007 10:15:00 -0400
+Message-ID: <469F71E7.4050200@bull.net>
+Date: Thu, 19 Jul 2007 16:15:03 +0200
+From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
+X-Accept-Language: en-us, en, fr, hu
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tony.luck@intel.com, nickpiggin@yahoo.com.au,
+       mike@stroyan.net, dmosberger@gmail.com, y-goto@jp.fujitsu.com
+Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
+References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>	<20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>	<469F5372.7010703@bull.net> <20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/07/2007 16:19:30,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/07/2007 16:19:33,
+	Serialize complete at 19/07/2007 16:19:33
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Christoph Hellwig wrote:
-> On Thu, Jul 19, 2007 at 03:48:40PM +0200, Andi Kleen wrote:
-> > From: Will Schmidt <will_schmidt@vnet.ibm.com>
-> > 
-> > During a VM oom condition, kill all threads in the process group.
-> > 
-> > We have had complaints where a threaded application is left in a bad state
-> > after one of it's threads is killed when we hit a VM: out_of_memory condition.
-> > 
-> > Killing just one of the process threads can leave the application in a bad
-> > state, whereas killing the entire process group would allow for the
-> > application to restart, or otherwise handled, and makes it very obvious that
-> > something has gone wrong.
-> > 
-> > This change allows the entire process group to be taken down, rather than just
-> > the one thread.
-> 
-> Shouldn't we have one patc hthat does this for every architecture instead
-> of going through arch maintainers and probably losing half of them?
+KAMEZAWA Hiroyuki wrote:
 
-Yes, please ;-)
+> But is it too costly that flushing icache page only if a page is newly
+> installed into the system (PG_arch1) && it is mapped as executable ?
 
-Gr{oetje,eeting}s,
+Well it was a bit long time ago, I measured on a Tiger box with
+CPUs of 1.3 GHz:
 
-						Geert
+Flushing a page of 64 Kbytes, with modified data in D-cache
+(it's slower that not having modified data in the D-cache):
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+13.1 ... 14.7 usec.
 
-return -EMAINTAINER_TOO_BUSY
+You may have quicker machines, but having more CPUs or a NUMA architecture
+can slow it down considerably:
+- more CPUs have to agree that that's the moment to carry out a flush
+- NUMA adds delay
+
+We may have, say 1 Gbyte / sec local i/o activity (using some RAIDs).
+Assume a few % of this 1 Gbyte is the program execution, or program swap in.
+It gives some hundreds of new exec pages / sec =>
+some msec-s can be lost each sec.
+
+I can agree that it should not be a big deal :-)
+
+> I don't want to leak this (stupid) corner case to the file system layer.
+> Hmm...can't we do clever flushing (like your idea) in VM layer ?
+
+As the VM layer is designed to be independent of the page read in stuff...
+
+Thanks,
+
+Zoltan
