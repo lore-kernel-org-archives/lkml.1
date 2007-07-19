@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965519AbXGSOOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939092AbXGSOOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965519AbXGSOOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965001AbXGSOEQ
+	id S939092AbXGSOOv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965221AbXGSOIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:04:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60219 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938794AbXGSOEN (ORCPT
+	Thu, 19 Jul 2007 10:08:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:31814 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965215AbXGSOIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:04:13 -0400
-Date: Thu, 19 Jul 2007 15:04:11 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andi Kleen <ak@suse.de>
-Cc: will_schmidt@vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH for review] [11/48] x86_64: During VM oom condition, kill all threads in process group
-Message-ID: <20070719140411.GD16279@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andi Kleen <ak@suse.de>, will_schmidt@vnet.ibm.com,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20070719348.540885000@suse.de> <20070719134840.47B5114E6E@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 19 Jul 2007 10:08:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=gqVVqKvz5t0Anauo0MnwbS0zjGs5fMmzdpSGoHRt37Gkfk1U1l1PjaDJZjJmr3/51WWiLAySuDETneEfdT8Z/8nQJIdkUrMuJMTKBbK0pva5mtRZE3itu+wRcUuUFTTXzafvwXrhzeq1ValFrnhMLPxisdReWmqDv2c1ZpViMWQ=
+Message-ID: <84144f020707190708p1c4d63cnbb0397a602c3527d@mail.gmail.com>
+Date: Thu, 19 Jul 2007 17:08:34 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: kmalloc zero size changes break i386
+Cc: "Christoph Lameter" <clameter@sgi.com>, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200707191201.35777.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070719134840.47B5114E6E@wotan.suse.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <200707191201.35777.ak@suse.de>
+X-Google-Sender-Auth: 8174b5c92eafac01
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 03:48:40PM +0200, Andi Kleen wrote:
-> 
-> From: Will Schmidt <will_schmidt@vnet.ibm.com>
-> 
-> During a VM oom condition, kill all threads in the process group.
-> 
-> We have had complaints where a threaded application is left in a bad state
-> after one of it's threads is killed when we hit a VM: out_of_memory condition.
-> 
-> Killing just one of the process threads can leave the application in a bad
-> state, whereas killing the entire process group would allow for the
-> application to restart, or otherwise handled, and makes it very obvious that
-> something has gone wrong.
-> 
-> This change allows the entire process group to be taken down, rather than just
-> the one thread.
+Hi Andi,
 
-Shouldn't we have one patc hthat does this for every architecture instead
-of going through arch maintainers and probably losing half of them?
+On 7/19/07, Andi Kleen <ak@suse.de> wrote:
+> qemu testing and booting test machines with i386 kernels wasn't very successfull
+> with recent git kernels. I got either BUGs because of failing sysfs initialization
+> or oopses in kmalloc, but no user land.
+>
+> I bisected it down to this commit.
+>
+> To reproduce: try to boot a 386 defconfig kernel, compiled with gcc 4.1, in qemu
 
-> Index: linux/arch/x86_64/mm/fault.c
-> ===================================================================
-> --- linux.orig/arch/x86_64/mm/fault.c
-> +++ linux/arch/x86_64/mm/fault.c
-> @@ -569,7 +569,7 @@ out_of_memory:
->  	}
->  	printk("VM: killing process %s\n", tsk->comm);
->  	if (error_code & 4)
-> -		do_exit(SIGKILL);
-> +		do_group_exit(SIGKILL);
->  	goto no_context;
->  
->  do_sigbus:
+[snip]
+
+> 6cb8f91320d3e720351c21741da795fed580b21b is first bad commit
+> commit 6cb8f91320d3e720351c21741da795fed580b21b
+> Author: Christoph Lameter <clameter@sgi.com>
+> Date:   Tue Jul 17 04:03:22 2007 -0700
+>
+>     Slab allocators: consistent ZERO_SIZE_PTR support and NULL result semantics
+
+I have i386 defconfig kernel + qemu + busybox userland image + GCC
+4.1.2 booting ok here. Did you manage to capture the oops? Is the
+userland image available somewhere?
+
+                                             Pekka
