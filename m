@@ -1,40 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935797AbXGSIka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762571AbXGSIlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935797AbXGSIka (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 04:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761652AbXGSIkT
+	id S1762571AbXGSIlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 04:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763035AbXGSIkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 04:40:19 -0400
-Received: from edu.joroinen.fi ([194.89.68.130]:53193 "EHLO edu.joroinen.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759696AbXGSIkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 04:40:17 -0400
-Date: Thu, 19 Jul 2007 11:40:15 +0300
-From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-To: dean gaudet <dean@arctic.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, dave@thedillows.org
-Subject: Re: [RFT][PATCH v7] sata_mv: convert to new EH
-Message-ID: <20070719084014.GB4106@edu.joroinen.fi>
-References: <20070711200538.GA7374@havoc.gtf.org> <Pine.LNX.4.64.0707120212210.25837@twinlark.arctic.org> <46960225.5000502@garzik.org> <Pine.LNX.4.64.0707121140560.29365@twinlark.arctic.org> <46967B3C.708@garzik.org> <Pine.LNX.4.64.0707121323570.29365@twinlark.arctic.org> <20070718092351.GY4106@edu.joroinen.fi> <Pine.LNX.4.64.0707180938420.16002@twinlark.arctic.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0707180938420.16002@twinlark.arctic.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 19 Jul 2007 04:40:43 -0400
+Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:4584 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762577AbXGSIkm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 04:40:42 -0400
+Date: Thu, 19 Jul 2007 10:41:50 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Greg KH" <gregkh@suse.de>, "Tejun Heo" <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sysfs root link count broken in 2.6.22-git5
+Message-ID: <20070719104150.6c5c5165@hyperion.delvare>
+In-Reply-To: <3ae72650707181744l47d6cbc6m75b7d9292959a245@mail.gmail.com>
+References: <20070715124232.4e371bf9@hyperion.delvare>
+	<20070717034844.GB11602@suse.de>
+	<20070717131255.71b7e72e@hyperion.delvare>
+	<20070717183652.GG9702@suse.de>
+	<20070717230530.64d9a896@hyperion.delvare>
+	<20070718033828.GA8582@suse.de>
+	<20070718220652.15ad2c4b@hyperion.delvare>
+	<3ae72650707181744l47d6cbc6m75b7d9292959a245@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 09:40:33AM -0700, dean gaudet wrote:
-> On Wed, 18 Jul 2007, Pasi Kärkkäinen wrote:
-> 
-> > What brand/model your sata_mv controller is? Would be nice to know to be
-> > able to get a "known-to-work" one.. 
-> 
-> http://supermicro.com/products/accessories/addon/AoC-SAT2-MV8.cfm
-> 
+Hi Kay,
 
-Thanks! In fact I was thinking of exactly this model :-)
+On Thu, 19 Jul 2007 02:44:54 +0200, Kay Sievers wrote:
+> On 7/18/07, Jean Delvare <khali@linux-fr.org> wrote:
+> > On Tue, 17 Jul 2007 20:38:28 -0700, Greg KH wrote:
+> > > On Tue, Jul 17, 2007 at 11:05:30PM +0200, Jean Delvare wrote:
+> > > > The code looks like:
+> > > >
+> > > >        if (sysfs_get_mnt_path(sensors_sysfs_mount, NAME_MAX)
+> > > >          || stat(sensors_sysfs_mount, &statbuf) < 0
+> > > >          || statbuf.st_nlink <= 2)      /* Empty directory */
+> > > >                 return 0;           /* Failure */
+> > > >
+> > > > This works OK with 2.6.22.1, but the last test fails with the current
+> > > > git kernel even when sysfs is mounted.
+> > >
+> > > Yeah, but is checking the number of hard links in the directory a safe
+> > > way to always verify that it isn't empty?
+> >
+> > I think so, yes. To the best of my knowledge, it has worked on all
+> > Unix-like systems for decades. There are other ways, but this is by far
+> > the less expensive.
+> 
+> Well, just check if /sys/devices/ exists, that should be cheap enough. :)
 
--- Pasi
+Yes, this is a possibility, and one I had considered at first. But I
+wasn't sure which subdirectory to check. sysfs isn't well known for its
+stability, and I didn't know which directories exist since the
+early days of sysfs, and which do not. For example, fs, kernel and
+module were not present in 2.6.5. I am also not sure if directories
+which exist today are guaranteed to exist forever. This is the reason
+why I decided to check the link count instead, basically checking that
+at least one subdirectory exists, without having to name it.
+
+-- 
+Jean Delvare
