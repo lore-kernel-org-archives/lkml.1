@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbXGSPk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938451AbXGSPnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758288AbXGSPk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765975AbXGSPkS
+	id S938451AbXGSPnQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757982AbXGSPnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:40:18 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:57205 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758394AbXGSPkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:40:16 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 19 Jul 2007 11:32:26 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
-In-Reply-To: <469F749F.8030606@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0707191131040.7047@localhost.localdomain>
-References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
- <469F749F.8030606@s5r6.in-berlin.de>
+	Thu, 19 Jul 2007 11:43:00 -0400
+Received: from mga01.intel.com ([192.55.52.88]:20884 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757655AbXGSPm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:42:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,557,1175497200"; 
+   d="scan'208";a="270329299"
+Message-ID: <469F867C.7020707@intel.com>
+Date: Thu, 19 Jul 2007 08:42:52 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Olaf Kirch <olaf.kirch@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+References: <20070716091236.GA10718@elte.hu> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu> <200707191452.09609.olaf.kirch@oracle.com>
+In-Reply-To: <200707191452.09609.olaf.kirch@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Jul 2007 15:42:54.0097 (UTC) FILETIME=[78AE6010:01C7CA1B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Stefan Richter wrote:
+Olaf Kirch wrote:
+> On Thursday 19 July 2007 12:58, Ingo Molnar wrote:
+>> i.e. it's the classic 'eth0 got stuck somehow' tx/rx state machine 
+>> hickup symptoms, with no other bad symptoms such as lockups or crashes.
+> 
+> Duh, I found it.
+> 
+> The e1000 poll routine does this to leave polling mode.
+> 
+> 	netif_rx_complete(poll_dev);
+>         e1000_irq_enable(adapter);
+>         return 0;
+> 
+> Which looks innocent enough, except that e1000_irq_enable has
+> this little irq_sem counter:
+> 
+> 	if (likely(atomic_dec_and_test(&adapter->irq_sem))) {
+>                 E1000_WRITE_REG(&adapter->hw, IMS, IMS_ENABLE_MASK);
+>                 E1000_WRITE_FLUSH(&adapter->hw);
+>         }
+> 
+> So as poll_napi calls the poll() routine repeatedly, the irq_sem
+> counter is decremented by one each time. During the first call,
+> it re-enables the interrupt. During the next calls, irq_sem goes
+> negative.
+> 
+> Then an interrupt comes in, e1000_intr disables the interrupt,
+> increments irq_sem by one, and schedules the device for rx_action.
+> rx_action calls dev->poll(), which finishes cleaning rx/rx rings,
+> and when it finds there's no more work, it calls rx_complete and
+> irq_enable. Except irq_enable doesn't enable anything now, since
+> irq_sem is <= 0, and dec_and_test returns false.
+> 
+> The whole irq_sem accounting in the e1000 does not rhyme well with
+> netpoll's way of exercising dev->poll().
 
-> Robert P. J. Day wrote:
-> ...
-> > it's not clear if that means that it was a *one-time* transition
-> > aid which is now unnecessary, or whether it's an *ongoing* aid which
-> > might be used at any time.  currently, there are no invocations of
-> > EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
-> > this feature can be tossed?  or might it still be used every so often?
->
-> git-blame (or qgit, which I actually used) points from this part of
-> lib/Kconfig.debug to the following chunk in
-> Documentation/feature-removal-schedule.txt:
->
-> What:	Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL exports
-> 	(temporary transition config option provided until then)
-> 	The transition config option will also be removed at the same time.
-> When:	before 2.6.19
-> Why:	Unused symbols are both increasing the size of the kernel binary
-> 	and are often a sign of "wrong API"
-> Who:	Arjan van de Ven <arjan@linux.intel.com>
+it's been accused of worse things ;)
 
-argh.  i should have checked there first.  sorry for the noise.  i can
-patch that baby out unless arjan wants to do it.
+> The reason my patch triggers
+> the problem reliably for you is that now, we always get at least
+> two invocations of dev->poll: once from poll_napi - where we do not
+> remove the device from the poll list any longer - and another one
+> from net_rx_action.
+> 
+> I don't have a fix ready yet - I hope I'll have something later
+> this afternoon.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+interesting, you seem to found the cause allright. I can't confirm the problem 
+but I know that netpoll and NAPI has historically been an issue. I look forward 
+to your suggestions...
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Cheers,
+
+Auke
