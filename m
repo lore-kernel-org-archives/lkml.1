@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764588AbXGSVDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764860AbXGSVE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764588AbXGSVDr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 17:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbXGSVDl
+	id S1764860AbXGSVE1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 17:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755808AbXGSVEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 17:03:41 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50310 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 17:04:20 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55945 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755808AbXGSVDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 17:03:40 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: kmalloc zero size changes break i386
-Date: Thu, 19 Jul 2007 23:03:35 +0200
-User-Agent: KMail/1.9.6
-Cc: Roland Dreier <rdreier@cisco.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <200707191201.35777.ak@suse.de> <alpine.LFD.0.999.0707191107570.27353@woody.linux-foundation.org> <alpine.LFD.0.999.0707191218470.27353@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707191218470.27353@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1757514AbXGSVET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 17:04:19 -0400
+In-Reply-To: <20070719131348.170443bb.akpm@linux-foundation.org>
+References: <20070714012033.GC31649@Krystal> <20070718223034.7388e59f.akpm@linux-foundation.org> <D9805F9D-04B0-4422-81F1-958B15482A93@kernel.crashing.org> <20070719131348.170443bb.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E7820A72-36A3-4B4D-A497-974409D3EBDE@kernel.crashing.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707192303.35743.ak@suse.de>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
+Date: Thu, 19 Jul 2007 16:04:38 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 21:19:29 Linus Torvalds wrote:
-> 
-> On Thu, 19 Jul 2007, Linus Torvalds wrote:
-> > 
-> > Does something like this fix it?
-> > 
-> > Christoph, please go over this and see if there are other cases like that.
-> 
-> Actually, here's a better version, I think.
-> 
-> Andi, does this patch fix your problem?
+>> Andrew,
+>>
+>> Are you sending this to linus directly or should this go via paul and
+>> me?
+>>
+>
+> I queued it up for Paul.  I can send it over to Linus today if we  
+> have a
+> reason for that.  It's just that I dont understand the patch: does  
+> it fix
+> -mm-only breakage?  Does it fix something which already got fixed,  
+> or what?
 
-No, unfortunately not.
+I'm seeing the same breakage in my tree.
 
-e.g. I see it in a git checkout (with head 589f1e81bde732dd0b1bc5d01b6bddd4bcb4527b),
-but not in plain -git12, but when I readd my x86 patchkit to -git12 it happens 
-again. I also switched to slub in the config and I also still see it. 
-Trying to bisect that right now.
+> One might think "gee, it's trivial, just slam it in", but these nested
+> includes are often not-trivial and something else can explode as a  
+> result.
 
--Andi
+I'll do a git-bisect and see if I can find the patch that causes this  
+breakage so we know what's going on.
+
+- k
+
