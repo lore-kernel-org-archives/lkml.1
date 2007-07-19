@@ -1,53 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940125AbXGSRE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939315AbXGSRE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940125AbXGSRE2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933756AbXGSRET
+	id S939315AbXGSRE7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934857AbXGSREs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:04:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48814 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933574AbXGSRES (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:04:18 -0400
-Date: Thu, 19 Jul 2007 10:03:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Josh Boyer" <jwboyer@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: [PATCH -mm 0/5] Freezer update
-Message-Id: <20070719100346.a9e8b12b.akpm@linux-foundation.org>
-In-Reply-To: <625fc13d0707190930j381ea4f2x462a8269db269388@mail.gmail.com>
-References: <200707180929.31511.rjw@sisk.pl>
-	<20070718010353.27965df7.akpm@linux-foundation.org>
-	<625fc13d0707190930j381ea4f2x462a8269db269388@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 13:04:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58340 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933756AbXGSREq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:04:46 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070719165646.GA18436@elte.hu>
+References: <20070719165646.GA18436@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] afs: build fix
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Thu, 19 Jul 2007 18:04:35 +0100
+Message-ID: <5293.1184864675@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 11:30:54 -0500 "Josh Boyer" <jwboyer@gmail.com> wrote:
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> On 7/18/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > so please consider them as 2.6.23 material.
-> >
-> > The door for new 2.6.23 material shut two weeks ago.  Here, at least.
-> 
-> So do you have a general guideline as to when you'd like patches sent
-> to you for the next merge window?  The releases are fairly
-> predictable, so perhaps something like one of the later -rc candidates
-> for the upcoming release?
-> 
-> E.g. patches for 2.6.24 should be to you by 2.6.23-rc<N>?
+> -	if (posix_test_lock(file, fl) == 0) {
+> +	posix_test_lock(file, fl);
+> +	if (fl->fl_type == F_UNLCK) {
 
-That sounds about right.  But nothing is cast in stone here: one needs
-to take into account the urgency/desirability of the change, the perceived
-benefit and risk, etc.
+Yep.  Andrew Morton already has a patch of this form.
 
-I do prefer that material has been out in at least one -mm release before
-it goes mainline.
-
+David
