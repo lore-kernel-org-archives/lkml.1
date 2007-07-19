@@ -1,40 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939497AbXGSQTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965149AbXGSQTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939497AbXGSQTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762199AbXGSQTB
+	id S965149AbXGSQTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938269AbXGSQTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:19:01 -0400
-Received: from gw.goop.org ([64.81.55.164]:35759 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757982AbXGSQTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:19:00 -0400
-Message-ID: <469F8EBE.5020703@goop.org>
-Date: Thu, 19 Jul 2007 09:18:06 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 19 Jul 2007 12:19:10 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:56905 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938046AbXGSQTJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:19:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=rS4b2q13pjwIe3qXMeMM9IMAdv0MuC46XTb8s4k5o/DxS81+hkkjmmnJyp6Aehphdw5FA//kvAFvI+OHyTh910aGG/gE9pD7BWsq6PM96ZVBIG3S+FdiGZtLNbMH98ezm15BW0sw7bqWMRK1QcO3Xsl+3/R7j9Qe7AGkae2awkM=
+Message-ID: <1a297b360707190919v510ba8b3t90ddf4d19313351e@mail.gmail.com>
+Date: Thu, 19 Jul 2007 20:19:07 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: D state
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Jan Glauber <jang@linux.vnet.ibm.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch] sched: implement cpu_clock(cpu) high-speed time	source,
- take #2
-References: <469F75AF.5080000@goop.org> <20070719143528.GA8278@elte.hu> <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu> <469F7D7A.204@goop.org> <20070719150955.GA19373@elte.hu> <469F8179.2060802@goop.org> <20070719154254.GA24225@elte.hu> <20070719154449.GA28998@elte.hu> <469F8D28.1010304@goop.org> <20070719161643.GA5153@elte.hu>
-In-Reply-To: <20070719161643.GA5153@elte.hu>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> yeah, that's the idea.
->   
+Hi,
 
-Good.  But the real question: does it help Andrew?
+When a device is in D3 state, is it possible to read from the PCI
+config space header ? Or does a D3 state imply that the whole PC
+itself is in standby ?
 
-    J
+I am trying to relate whether a device that i have, a new device that
+i am working upon, starts up in D3 state. whether that could be the
+cause of some weirdness.
+
+Thanks,
+Manu
