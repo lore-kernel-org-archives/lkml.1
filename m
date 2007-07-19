@@ -1,51 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761980AbXGSUQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbXGSUT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761980AbXGSUQy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 16:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761325AbXGSUQZ
+	id S932165AbXGSUT3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 16:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbXGSUTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 16:16:25 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49266 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760576AbXGSUPT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 16:15:19 -0400
-Date: Thu, 19 Jul 2007 13:09:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch] slub crashes with recent -git
-In-Reply-To: <20070719194234.GA27917@elte.hu>
-Message-ID: <alpine.LFD.0.999.0707191307220.27249@woody.linux-foundation.org>
-References: <20070719194234.GA27917@elte.hu>
+	Thu, 19 Jul 2007 16:19:09 -0400
+Received: from ns.suse.de ([195.135.220.2]:56879 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756662AbXGSUTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 16:19:05 -0400
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: jbeulich@novell.com, "S. P. Prasanna" <prasanna@in.ibm.com>,
+       linux-kernel@vger.kernel.org, patches@x86-64.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: new text patching for review
+References: <200707191105.44056.ak@suse.de> <20070719133852.GA5490@Krystal>
+	<200707191546.08919.ak@suse.de> <20070719173502.GB12955@Krystal>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 19 Jul 2007 23:14:03 +0200
+In-Reply-To: <20070719173502.GB12955@Krystal>
+Message-ID: <p73d4yow0ys.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
 
-
-On Thu, 19 Jul 2007, Ingo Molnar wrote:
+> * Andi Kleen (ak@suse.de) wrote:
+> > 
+> > > Ewwwwwwwwwww.... you plan to run this in SMP ? So you actually go byte
+> > > by byte changing pieces of instructions non atomically and doing
+> > > non-Intel's errata friendly XMC. You are really looking for trouble
+> > > there :) Two distinct errors can occur: 
+> > 
+> > In this case it is ok because this only happens when transitioning
+> > from 1 CPU to 2 CPUs or vice versa and in both cases the other CPUs
+> > are essentially stopped.
+> > 
 > 
-> i had to apply the patch below to make the kernel boot again.
+> I agree that it's ok with SMP, but another problem arises: it's not only
+> a matter of being protected from SMP access, but also a matter of
+> reentrancy wrt interrupt handlers.
+> 
+> i.e.: if, as we are patching nops non atomically, we have a non maskable
+> interrupt coming which calls get_cycles_sync() which uses the
 
-A better patch should be the appended. Does that work for you too?
+Hmm, i didn't think NMI handlers called that. e.g. nmi watchdog just
+uses jiffies.
 
-		Linus
----
- mm/slub.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+get_cycles_sync patching happens only relatively early at boot, so oprofile
+cannot be running yet.
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 52a4f44..322f3a5 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2394,7 +2394,7 @@ size_t ksize(const void *object)
- 	struct page *page;
- 	struct kmem_cache *s;
- 
--	if (object == ZERO_SIZE_PTR)
-+	if (ZERO_OR_NULL_PTR(object))
- 		return 0;
- 
- 	page = get_object_page(object);
+> I see that IRQs are disabled in alternative_instructions(), but it does
+> not protect against NMIs, which could come at a very inappropriate
+> moment. MCE and SMIs would potentially cause the same kind of trouble.
+> 
+> So unless you can guarantee that any code from NMI handler won't call
+> basic things such as get_cycles() (nor MCE, nor SMIs), you can't insure
+> it won't execute an illegal instruction. Also, the option of temporarily
+> disabling the NMI for the duration of the update simply adds unwanted
+> latency to the NMI handler which could be unacceptable in some setups.
+
+Ok it's a fair point.  But how would you address it ?
+
+Even if we IPIed the other CPUs NMIs or MCEs could still happen.
+
+BTW Jeremy, have you ever considered that problem with paravirt ops
+patching? 
+
+> 
+> Another potential problem comes from preemption: if a thread is
+> preempted in the middle of the instructions you are modifying, let's say
+> we originally have 4 * 1 byte instructions that we replace with 1 * 4
+> byte instruction, a thread could iret in the middle of the new
+> instruction when it will be scheduled again, thus executing an illegal
+> instruction. This problem could be overcomed by putting the threads in
+> the freezer. See the djprobe project for details about this.
+
+This cannot happen for the current code: 
+- full alternative patching happen only at boot when the other CPUs
+are not running
+- smp lock patching only ever changes a single byte (lock prefix) of
+a single instruction
+- kprobes only ever change a single byte
+
+For the immediate value patching it also cannot happen because
+you'll never modify multiple instructions and all immediate values
+can be changed atomically. 
+
+
+
+> In the end, I think the safest solution would be to limit ourselves to
+> one of these 2 solutions:
+> - If the update can be done atomically and leaves the site in a coherent
+>   state after each atomic modification, while keeping the same
+>   instruction size, it could be done on the spot.
+> - If not, care should be taken to first do a copy of the code to modify
+>   into a "bypass", making sure that instructions can be relocated, so
+>   that any context that would try to execute the site during the
+>   modification would execute a breakpoint which would execute the bypass
+>   while we modify the instructions.
+
+kprobes does that, but to write the break point it uses text_poke() 
+with my patch.
+
+> Because of the tricks that must be done to do code modification on a
+> live system (as explained above), I don't think it makes sense to
+> provide a falsely-safe infrastructure that would allow code modification
+> in a non-atomic manner.
+
+Hmm, perhaps it would make sense to add a comment warning about
+the limitations of the current text_poke. Can you supply one?
+
+-Andi
