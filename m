@@ -1,116 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936739AbXGSHWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936761AbXGSHYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936739AbXGSHWz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 03:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761736AbXGSHWo
+	id S936761AbXGSHYA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 03:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762371AbXGSHXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 03:22:44 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38251 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757591AbXGSHWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 03:22:42 -0400
-Date: Thu, 19 Jul 2007 00:22:40 -0700
-From: sukadev@us.ibm.com
-To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Cc: Containers <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: [PATCH 5/5] [V2] Move alloc_pid() to copy_process()
-Message-ID: <20070719072240.GE28216@us.ibm.com>
-References: <20070719071206.GE10195@us.ibm.com>
+	Thu, 19 Jul 2007 03:23:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44113 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757591AbXGSHXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 03:23:50 -0400
+Date: Thu, 19 Jul 2007 00:22:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch] fix the softlockup watchdog to actually work
+Message-Id: <20070719002231.069ebbdd.akpm@linux-foundation.org>
+In-Reply-To: <20070717154934.GA24231@elte.hu>
+References: <20070717114453.GA8212@elte.hu>
+	<469CCF8F.4010107@goop.org>
+	<20070717154934.GA24231@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719071206.GE10195@us.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 17 Jul 2007 17:49:34 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+
+> Subject: fix the softlockup watchdog to actually work
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> this Xen related commit:
+> 
+>    commit 966812dc98e6a7fcdf759cbfa0efab77500a8868
+>    Author: Jeremy Fitzhardinge <jeremy@goop.org>
+>    Date:   Tue May 8 00:28:02 2007 -0700
+> 
+>        Ignore stolen time in the softlockup watchdog
+> 
+> broke the softlockup watchdog to never report any lockups. (!)
+> 
+> print_timestamp defaults to 0, this makes the following condition
+> always true:
+> 
+> 	if (print_timestamp < (touch_timestamp + 1) ||
+> 
+> and we'll in essence never report soft lockups.
+> 
+> apparently the functionality of the soft lockup watchdog was never
+> actually tested with that patch applied ...
+> 
+> [this is -stable material too.]
+
+This seems terribly sensitive.
+
+Someone has broken the Vaio (shock, horror).  It now has mysterious
+jerkiness: when leaning on autorepeat it stalls for maybe 0.25 seconds
+every 1.5 seconds.  The stalls are far less than a second.  Yet this
+is enough to trigger random softlockup warnings.
+
+Some of those warnings are below.  Note that the traces are all pretty
+useless, as softlockup warnings so often seem to be.
+
+Of course, it could be that whatever is causing these pauses really _is_
+stalling for a whole second occasionally, dunno.  But I didn't notice any
+long stalls in the console output when a particular storm of softlockup
+warnings came out.
+
+But I'll sit on this patch for a while until this gets sorted out. 
+Meanwhile, please double-check the elapsed-time arithmetic in there,
+maybe do a bit of runtime testing?
 
 
-Subject: [PATCH 5/5] Move alloc_pid call to copy_process
 
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+[   78.820961] BUG: soft lockup detected on CPU#0!
+[   78.821083]  [<c0122475>] update_process_times+0x32/0x54
+[   78.821216]  [<c012fe7a>] tick_sched_timer+0x61/0x9c
+[   78.821340]  [<c012c2e7>] hrtimer_interrupt+0x142/0x1d4
+[   78.821463]  [<c012fe19>] tick_sched_timer+0x0/0x9c
+[   78.821587]  [<c012f74a>] tick_do_broadcast+0x1f/0x3f
+[   78.821707]  [<c012fa01>] tick_handle_oneshot_broadcast+0x47/0x72
+[   78.821852]  [<c01067ca>] timer_interrupt+0x1a/0x20
+[   78.821968]  [<c014291e>] handle_IRQ_event+0x1a/0x3f
+[   78.822089]  [<c0143521>] handle_edge_irq+0x9d/0xcc
+[   78.822206]  [<c0105d7b>] do_IRQ+0x53/0x6c
+[   78.822307]  [<c012f4f0>] tick_notify+0x15c/0x208
+[   78.822422]  [<c01044cf>] common_interrupt+0x23/0x28
+[   78.822539]  [<c012f1d4>] clockevents_notify+0x8/0x36
+[   78.822663]  [<c020d199>] acpi_processor_idle+0x1d2/0x36d
+[   78.822798]  [<c0102345>] cpu_idle+0x44/0x5e
+[   78.822900]  [<c03baa8d>] start_kernel+0x26d/0x275
+[   78.823017]  [<c03ba3fe>] unknown_bootoption+0x0/0x202
+[   78.823142]  =======================
+[  106.282830] BUG: soft lockup detected on CPU#0!
+[  106.282967]  [<c0122475>] update_process_times+0x32/0x54
+[  106.283116]  [<c012fe7a>] tick_sched_timer+0x61/0x9c
+[  106.283255]  [<c012c2e7>] hrtimer_interrupt+0x142/0x1d4
+[  106.283391]  [<c012fe19>] tick_sched_timer+0x0/0x9c
+[  106.283530]  [<c012f74a>] tick_do_broadcast+0x1f/0x3f
+[  106.283663]  [<c012fa01>] tick_handle_oneshot_broadcast+0x47/0x72
+[  106.283821]  [<c01067ca>] timer_interrupt+0x1a/0x20
+[  106.283949]  [<c014291e>] handle_IRQ_event+0x1a/0x3f
+[  106.284084]  [<c0143521>] handle_edge_irq+0x9d/0xcc
+[  106.284215]  [<c0105d7b>] do_IRQ+0x53/0x6c
+[  106.284326]  [<c012f4f0>] tick_notify+0x15c/0x208
+[  106.284455]  [<c01044cf>] common_interrupt+0x23/0x28
+[  106.284587]  [<c012f1d4>] clockevents_notify+0x8/0x36
+[  106.284725]  [<c020d199>] acpi_processor_idle+0x1d2/0x36d
+[  106.284875]  [<c0102345>] cpu_idle+0x44/0x5e
+[  106.284988]  [<c03baa8d>] start_kernel+0x26d/0x275
+[  106.285117]  [<c03ba3fe>] unknown_bootoption+0x0/0x202
+[  106.285257]  =======================
+[  109.266423] BUG: soft lockup detected on CPU#0!
+[  109.266558]  [<c0122475>] update_process_times+0x32/0x54
+[  109.266703]  [<c012fe7a>] tick_sched_timer+0x61/0x9c
+[  109.270745]  [<c012c2e7>] hrtimer_interrupt+0x142/0x1d4
+[  109.274790]  [<c012fe19>] tick_sched_timer+0x0/0x9c
+[  109.278865]  [<c012f74a>] tick_do_broadcast+0x1f/0x3f
+[  109.282950]  [<c012fa01>] tick_handle_oneshot_broadcast+0x47/0x72
+[  109.287026]  [<c01067ca>] timer_interrupt+0x1a/0x20
+[  109.291012]  [<c014291e>] handle_IRQ_event+0x1a/0x3f
+[  109.294950]  [<c0143521>] handle_edge_irq+0x9d/0xcc
+[  109.298864]  [<c0105d7b>] do_IRQ+0x53/0x6c
+[  109.302818]  [<c012f4f0>] tick_notify+0x15c/0x208
+[  109.306740]  [<c01044cf>] common_interrupt+0x23/0x28
+[  109.310641]  [<c012f1d4>] clockevents_notify+0x8/0x36
+[  109.314543]  [<c020d199>] acpi_processor_idle+0x1d2/0x36d
+[  109.318461]  [<c0102345>] cpu_idle+0x44/0x5e
+[  109.322348]  [<c03baa8d>] start_kernel+0x26d/0x275
+[  109.326267]  [<c03ba3fe>] unknown_bootoption+0x0/0x202
+[  109.330188]  =======================
 
-Move alloc_pid() into copy_process(). This will keep all pid and pid
-namespace code together and simplify error handling when we support
-multiple pid namespaces.
+(ah, the Vaio breakage seems to be -mm-only, whew)
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-
-Cc: Pavel Emelianov <xemul@openvz.org>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>
-Cc: Serge Hallyn <serue@us.ibm.com>
-Cc: Herbert Poetzel <herbert@13thfloor.at>
----
- kernel/fork.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
-
-Index: lx26-22-rc6-mm1a/kernel/fork.c
-===================================================================
---- lx26-22-rc6-mm1a.orig/kernel/fork.c	2007-07-16 12:55:13.000000000 -0700
-+++ lx26-22-rc6-mm1a/kernel/fork.c	2007-07-17 10:08:12.000000000 -0700
-@@ -1029,6 +1029,12 @@ static struct task_struct *copy_process(
- 	if (p->binfmt && !try_module_get(p->binfmt->module))
- 		goto bad_fork_cleanup_put_domain;
- 
-+	if (pid != &init_struct_pid) {
-+		pid = alloc_pid();
-+		if (!pid)
-+			goto bad_fork_put_binfmt_module;
-+	}
-+
- 	p->did_exec = 0;
- 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
- 	copy_flags(clone_flags, p);
-@@ -1316,6 +1322,9 @@ bad_fork_cleanup_container:
- #endif
- 	container_exit(p, container_callbacks_done);
- 	delayacct_tsk_free(p);
-+	if (pid != &init_struct_pid)
-+		free_pid(pid);
-+bad_fork_put_binfmt_module:
- 	if (p->binfmt)
- 		module_put(p->binfmt->module);
- bad_fork_cleanup_put_domain:
-@@ -1380,19 +1389,16 @@ long do_fork(unsigned long clone_flags,
- {
- 	struct task_struct *p;
- 	int trace = 0;
--	struct pid *pid = alloc_pid();
- 	long nr;
- 
--	if (!pid)
--		return -EAGAIN;
--	nr = pid->nr;
- 	if (unlikely(current->ptrace)) {
- 		trace = fork_traceflag (clone_flags);
- 		if (trace)
- 			clone_flags |= CLONE_PTRACE;
- 	}
- 
--	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, pid);
-+	p = copy_process(clone_flags, stack_start, regs, stack_size,
-+			parent_tidptr, child_tidptr, NULL);
- 	/*
- 	 * Do this prior waking up the new thread - the thread pointer
- 	 * might get invalid after that point, if the thread exits quickly.
-@@ -1400,6 +1406,8 @@ long do_fork(unsigned long clone_flags,
- 	if (!IS_ERR(p)) {
- 		struct completion vfork;
- 
-+		nr = pid_nr(task_pid(p));
-+
- 		if (clone_flags & CLONE_VFORK) {
- 			p->vfork_done = &vfork;
- 			init_completion(&vfork);
-@@ -1433,7 +1441,6 @@ long do_fork(unsigned long clone_flags,
- 			}
- 		}
- 	} else {
--		free_pid(pid);
- 		nr = PTR_ERR(p);
- 	}
- 	return nr;
