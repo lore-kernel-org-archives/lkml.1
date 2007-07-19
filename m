@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939154AbXGSPfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939440AbXGSPgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939154AbXGSPfw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761853AbXGSPfo
+	id S939440AbXGSPgi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932094AbXGSPg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:35:44 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:40738 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758498AbXGSPfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:35:43 -0400
-Date: Thu, 19 Jul 2007 11:35:36 -0400
-To: Neil Brown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [NFS] [PATCH 013 of 20] knfsd: nfsd: factor out code from
-	show_expflags
-Message-ID: <20070719153536.GB23093@fieldses.org>
-References: <20070710121949.12548.patches@notabene> <1070710022737.13509@suse.de> <20070713002933.f15724a7.akpm@linux-foundation.org> <20070718230555.GN7111@fieldses.org> <18078.44366.961344.428533@notabene.brown>
+	Thu, 19 Jul 2007 11:36:28 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:57036 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765899AbXGSPg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:36:27 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 19 Jul 2007 11:34:21 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
+In-Reply-To: <469F7918.3000503@linux.intel.com>
+Message-ID: <Pine.LNX.4.64.0707191133100.7047@localhost.localdomain>
+References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
+ <469F749F.8030606@s5r6.in-berlin.de> <469F7918.3000503@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18078.44366.961344.428533@notabene.brown>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 10:16:14AM +1000, Neil Brown wrote:
-> On Wednesday July 18, bfields@fieldses.org wrote:
-> > On Fri, Jul 13, 2007 at 12:29:33AM -0700, Andrew Morton wrote:
-> > > On Tue, 10 Jul 2007 12:27:37 +1000 NeilBrown <neilb@suse.de> wrote:
-> > > 
-> > > > +static void exp_flags(struct seq_file *m, int flag, int fsid,
-> > > > +		uid_t anonu, uid_t anong, struct nfsd4_fs_locations *fsloc)
-> > > > +{
-> > > > +	show_expflags(m, flag, NFSEXP_ALLFLAGS);
-> > > >  	if (flag & NFSEXP_FSID)
-> > > > -		seq_printf(m, "%sfsid=%d", first++?",":"", fsid);
-> > > > +		seq_printf(m, ",fsid=%d", fsid);
-> > > >  	if (anonu != (uid_t)-2 && anonu != (0x10000-2))
-> > > > -		seq_printf(m, "%sanonuid=%d", first++?",":"", anonu);
-> > > > +		seq_printf(m, ",sanonuid=%d", anonu);
-> > > 
-> > > It's a bit presumptuous to print a uid_t with "%d".  Fortunately it
-> > > will work OK with all the present architectures.
-> > > 
-> > > But in general: be cautious when feeding opaque types to printk.
-> > 
-> > OK, here I'm still confused--what should we be doing instead?
-> 
-> Cast the variable to a type that printf knows about.
->        seq_printf(m, ",anonuid=%d", (int)anonu);
-> 
-> Or maybe cast it to (long) and use %ld, just in case...
+On Thu, 19 Jul 2007, Arjan van de Ven wrote:
 
-OK.  In the event that uid_t some day ceases to eventually become an
-int, will the casts help, or will they just suppress useful warnings?
+> Stefan Richter wrote:
+> > Robert P. J. Day wrote:
+> > ...
+> > > it's not clear if that means that it was a *one-time* transition
+> > > aid which is now unnecessary, or whether it's an *ongoing* aid which
+> > > might be used at any time.  currently, there are no invocations of
+> > > EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
+> > > this feature can be tossed?  or might it still be used every so often?
+>
+> it's one of those pieces of infrastructure that get used from time
+> to time to phase out symbol exports... we should be more agressive
+> about that; about 1/3rd of the exports is not used by anything in
+> linux, yet each symbol costs about 100 bytes of memory at runtime.
 
-> Note the stray 's' in the current patch, after the comma!
+ok, so maybe its removal file entry should be deleted if it's going to
+hang around.  your call.
 
-Sharp eyes, thanks!  I'll make a patch.  Uh, any objection if I print
-all those uid's as unsigned while I'm at it?
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
---b.
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
