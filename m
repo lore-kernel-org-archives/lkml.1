@@ -1,113 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbXGSAB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936794AbXGSACh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932468AbXGSAB7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 20:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXGSABP
+	id S936794AbXGSACh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 20:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936151AbXGSACG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 20:01:15 -0400
-Received: from ns2.lanforge.com ([66.165.47.211]:47373 "EHLO ns2.lanforge.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762758AbXGSABM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 20:01:12 -0400
-Message-ID: <469EA9BF.4040603@candelatech.com>
-Date: Wed, 18 Jul 2007 17:01:03 -0700
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: andrei radulescu-banu <iubica2@yahoo.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <878246.51044.qm@web56608.mail.re3.yahoo.com> <469E9AC8.3090603@trash.net> <469EA0D1.6020406@candelatech.com> <469EA370.8000103@trash.net>
-In-Reply-To: <469EA370.8000103@trash.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 18 Jul 2007 20:02:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58975 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S937117AbXGSACE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 20:02:04 -0400
+Date: Wed, 18 Jul 2007 17:01:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       rubini@vision.unipv.it, kernel-avr32 <kernel@avr32linux.org>
+Subject: Re: [PATCH 1/1] Driver for the Atmel on-chip SSC on AT32AP and
+ AT91.
+Message-Id: <20070718170120.8a031cdf.akpm@linux-foundation.org>
+In-Reply-To: <1184568752.15535.9.camel@localhost.localdomain>
+References: <1184568752.15535.9.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
-> Ben Greear wrote:
->   
->> Patrick McHardy wrote:
->>
->>     
->>> Put another way, once you enable VLAN header stripping, you
->>> won't see the headers for *any* VLAN, not only for those you're
->>> actually running locally. This is also a problem for devices
->>> like macvlan, where it would be desirable to make use of
->>> hardware VLAN accerlation. I was thinking about storing the
->>> information somewhere in the packets meta-data on both RX and
->>> TX paths, that would also allow tcpdump to properly display
->>> packets.
->>>   
->>>       
->> MAC-VLAN could gather this information based on it's parent
->> device (ie, if parent-dev has VID 7, then add VID 7 to the meta
->> data.  There would be no need for any driver changes I think.
->>     
->
->
-> Its actually more a problem on the RX path. VLAN acceleration
-> works (at least with some drivers) by enabling HW header striping
-> and using the VLAN ID for an immediate lookup in the VLAN devices
-> configured on that device. So if the VLAN is not configured on the
-> real device but something like macvlan, it will get the packet
-> without a header and without any indication that this was a VLAN
-> packet. This is also what causes the tcpdump problem.
->   
-This reminded me of something:
+On Mon, 16 Jul 2007 08:52:32 +0200
+Hans-Christian Egtvedt <hcegtvedt@atmel.com> wrote:
 
-If we are using VLAN HW-Accel, then the skb hits the mac-vlan check with 
-the skb->dev == vlan-device.
-So, in this case, we can put mac-vlans on top of 802.1Q VLANs.
+> The Synchronous Serial Controller (SSC) on Atmel microprocessors are capable of
+> tranceiving many frame based protocols, like I2S. Tested on the
+> AT32AP7000/ATSTK1000.
+> 
+> This driver is used in the ALSA sound driver for the AT73C213 external DAC on
+> the ATSTK1000 development board for AVR32. This sound driver will be submitted
+> soon.
+> 
+> Hardware documentation can be found in the AT32AP7000 data sheet, which can be
+> downloaded from http://www.atmel.com/dyn/products/datasheets.asp?family_id=682
+> 
+> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+> index 616eee9..0810d83 100644
+> --- a/drivers/misc/Kconfig
+> +++ b/drivers/misc/Kconfig
+> @@ -187,5 +187,15 @@ config THINKPAD_ACPI_BAY
+>  
+>  	  If you are not sure, say Y here.
+>  
+> +config ATMEL_SSC
+> +	tristate "Device driver for Atmel SSC peripheral"
+> +	depends on AVR32 || ARCH_AT91
+> +	---help---
+> +	  This option enables device driver support for Atmel Syncronized
+> +	  Serial Communication peripheral (SSC).
+> +
+> +	  The SSC peripheral supports a wide variety of serial frame based
+> +	  communications, i.e. I2S, SPI, etc.
+>  
+> +	  If unsure, say N.
+>  endmenu
+> diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+> index 8abbf2f..2d52cc6 100644
+> --- a/drivers/misc/Makefile
+> +++ b/drivers/misc/Makefile
+> @@ -14,3 +14,4 @@ obj-$(CONFIG_PHANTOM)		+= phantom.o
+>  obj-$(CONFIG_SGI_IOC4)		+= ioc4.o
+>  obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
+>  obj-$(CONFIG_THINKPAD_ACPI)	+= thinkpad_acpi.o
+> +obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
+> diff --git a/drivers/misc/atmel-ssc.c b/drivers/misc/atmel-ssc.c
+> new file mode 100644
+> index 0000000..240a538
+> --- /dev/null
+> +++ b/drivers/misc/atmel-ssc.c
+> @@ -0,0 +1,175 @@
+> +/*
+> + * Atmel SSC driver
+> + *
+> + * Copyright (C) 2007 Atmel Corporation
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/platform_device.h>
+> +#include <linux/list.h>
+> +#include <linux/clk.h>
+> +#include <linux/err.h>
+> +#include <linux/io.h>
+> +#include <linux/list.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/atmel-ssc.h>
+> +
+> +/* Serialize access to ssc_list and user count */
+> +static spinlock_t user_lock;
 
-But, if we are not using VLAN hw-accel, the skb hits the mac-vlan check 
-with skb->dev == ethernet-device.
-In this case, we could NOT have the mac-vlan on top of the 802.1Q VLAN, 
-but we can have a MAC-VLAN
-on the raw ethernet and we could add 802.1Q vlans on top of the 
-mac-vlan.  This is because the
-.1Q vlan will only be found once we go into the protocol handler logic, 
-which is necessarily after the
-MAC-VLAN check logic.
+Use DEFINE_SPINLOCK() here, remove the runtime initialisation.
 
-Unless I am confused in my conjecture above, this is likely to confuse 
-others who try to mix and
-match MAC-VLANs and 802.1Q VLANs.
+> +static LIST_HEAD(ssc_list);
+> +
+> +struct ssc_device *ssc_request(unsigned int ssc_num)
+> +{
+> +	int ssc_valid = 0;
+> +	struct ssc_device *ssc;
+> +
+> +	spin_lock(&user_lock);
+> +	list_for_each_entry(ssc, &ssc_list, list) {
+> +		if (ssc->pdev->id == ssc_num) {
+> +			ssc_valid = 1;
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (!ssc_valid) {
+> +		spin_unlock(&user_lock);
+> +		dev_dbg(&ssc->pdev->dev, "could not find requested device\n");
+> +		return ERR_PTR(-ENODEV);
+> +	}
+> +
+> +	if (ssc->user) {
+> +		spin_unlock(&user_lock);
+> +		dev_dbg(&ssc->pdev->dev, "module busy\n");
+> +		return ERR_PTR(-EBUSY);
+> +	}
+> +	ssc->user++;
+> +	spin_unlock(&user_lock);
+> +
+> +	clk_enable(ssc->clk);
+> +
+> +	return ssc;
+> +}
+> +EXPORT_SYMBOL(ssc_request);
 
->>> I have planned to look into this when I find some time.
->>> Your suggestion of disabling VLAN acceleration in promiscous
->>> mode sounds like a reasonable solution until then ..
->>>   
->>>       
->> I think a better method would be to allow disabling VLAN HW accel for a
->> NIC with
->> ethtool.  Then, the packets will be received by the software stack with
->> the vlan
->> header intact.  Something sniffing on the physical dev will
->> automatically get the
->> VLAN header.
->>     
->
->
-> That would also be fine. But considering that the TX path is
-> problematic too, a clean solution for all of this would be
-> to store the VLAN id in the skb. And we do have some holes
-> to plug currently :)
->   
+All exports need justification, please.  An additional paragraph in the
+changelog would suit.
 
-With VLAN HW accel disabled, the skb will have the VLAN header in it by 
-the time it
-hits the ethX interface, so sniffing there should still show the 
-header.  It won't show
-when sniffing the VLAN device, but I think that is OK.
+I added this:
 
-Thanks,
-Ben
-
--- 
-Ben Greear <greearb@candelatech.com> 
-Candela Technologies Inc  http://www.candelatech.com
-
+--- a/drivers/misc/atmel-ssc.c~driver-for-the-atmel-on-chip-ssc-on-at32ap-and-at91-fix
++++ a/drivers/misc/atmel-ssc.c
+@@ -18,7 +18,7 @@
+ #include <linux/atmel-ssc.h>
+ 
+ /* Serialize access to ssc_list and user count */
+-static spinlock_t user_lock;
++static DEFINE_SPINLOCK(user_lock);
+ static LIST_HEAD(ssc_list);
+ 
+ struct ssc_device *ssc_request(unsigned int ssc_num)
+@@ -159,7 +159,6 @@ static struct platform_driver ssc_driver
+ 
+ static int __init ssc_init(void)
+ {
+-	spin_lock_init(&user_lock);
+ 	return platform_driver_probe(&ssc_driver, ssc_probe);
+ }
+ module_init(ssc_init);
 
