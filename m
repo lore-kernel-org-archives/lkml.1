@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936185AbXGSFct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936560AbXGSFdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936185AbXGSFct (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 01:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbXGSFci
+	id S936560AbXGSFdm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 01:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933120AbXGSFdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 01:32:38 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:59581 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754912AbXGSFch convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 01:32:37 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 19 Jul 2007 01:33:25 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9297 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752411AbXGSFdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 01:33:23 -0400
+Date: Thu, 19 Jul 2007 07:33:02 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Andy Whitcroft <apw@shadowen.org>, Paul Mackerras <paulus@samba.org>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+Message-ID: <20070719053302.GO11657@kernel.dk>
+References: <20070716161539.075822000@pademelon.sonytel.be> <20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 3/5] HOWTO: add Chinese translation ofDocumentation/HOWTO
-Date: Thu, 19 Jul 2007 13:32:31 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890F063EF@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20070719050102.GA853@suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/5] HOWTO: add Chinese translation ofDocumentation/HOWTO
-Thread-Index: AcfJxbIIQ5AG2hXgR1W6w1JnkMOUdgAAHLug
-References: <20070718232346.GB4620@kroah.com> <11848012031961-git-send-email-gregkh@suse.de> <11848012093296-git-send-email-gregkh@suse.de> <11848012151444-git-send-email-gregkh@suse.de> <9a8748490707181646k1e062a75n86408cd88ef16193@mail.gmail.com> <20070719051254.GA2736@localhost.localdomain> <20070719050102.GA853@suse.de>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Greg KH" <gregkh@suse.de>, "WANG Cong" <xiyou.wangcong@gmail.com>
-Cc: "Jesper Juhl" <jesper.juhl@gmail.com>, <linux-kernel@vger.kernel.org>,
-       "TripleX Chung" <xxx.phy@gmail.com>,
-       "Maggie Chen" <chenqi@beyondsoft.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070718163637.3f0e0164.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Greg KH [mailto:gregkh@suse.de] 
-> Sent: Thursday, July 19, 2007 1:01 PM
-> To: WANG Cong
-> Cc: Jesper Juhl; linux-kernel@vger.kernel.org; Li 
-> Yang-r58472; TripleX Chung; Maggie Chen
-> Subject: Re: [PATCH 3/5] HOWTO: add Chinese translation 
-> ofDocumentation/HOWTO
+On Wed, Jul 18 2007, Andrew Morton wrote:
+> On Mon, 16 Jul 2007 18:15:40 +0200
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 > 
-> On Thu, Jul 19, 2007 at 01:12:54PM +0800, WANG Cong wrote:
+> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 > > 
-> > Since these docs are not in the mainline tree yet, I don't 
-> have a copy.
+> > Add a Disk Storage Driver for the PS3:
 > 
-> They are there now.
+> Your patchset significantly hits powerpc, scsi and block.  So who gets to
+> merge this?  Jens?  James?  Paul?
+> 
+> Me, I guess ;)
 
-Thanks.
+I think Paul was going to take it, or at least Geert hinted as such.
 
-- Leo
+> > +#define PS3DISK_MAX_DISKS	16
+> > +#define PS3DISK_MINORS		16
+> > +
+> > +#define KERNEL_SECTOR_SIZE	512
+> 
+> Sigh.  We have at least ten separate definitions of SECTOR_SIZE< none of
+> them in the right place.  Cleanup opportunity for someone.
+
+Indeed, it's universally 512 or << 9, just use that...
+
+> > +#ifdef DEBUG
+> > +	unsigned int n = 0;
+> > +	struct bio *bio;
+> > +	rq_for_each_bio(bio, req)
+> > +		n++;
+> 
+> I'm surprised that the block core doesn't have a helper to count the number
+> of bios in a request.
+
+What would be the point of such a helper? I've never seen a need for it.
+Geert uses it as debug code here, but the fact is that the number of
+bios in a request is a pretty pointless number. It doesn't tell you
+anything. There's no 1:1 mapping between bios and segments (or anything
+else for that matter), so the exercise is purely pointless.
+
+-- 
+Jens Axboe
+
