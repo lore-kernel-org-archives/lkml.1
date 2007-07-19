@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938263AbXGSOmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938384AbXGSOmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938263AbXGSOmY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764546AbXGSOmJ
+	id S938384AbXGSOmz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764388AbXGSOmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:42:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35786 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762435AbXGSOmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:42:07 -0400
-Message-ID: <469F7838.9000201@redhat.com>
-Date: Thu, 19 Jul 2007 10:42:00 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/58] x86_64: Tell gcc to only align stack to 8 bytes
-References: <200707191154.642492000@suse.de> <20070719095445.DC94514E04@wotan.suse.de>
-In-Reply-To: <20070719095445.DC94514E04@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 Jul 2007 10:42:38 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:52267 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765524AbXGSOmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 10:42:37 -0400
+Subject: Re: [PATCH 0/3][try 1] init: enable system-on-initramfs
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <Pine.LNX.4.58.0707191442440.2138@be1.lrz>
+References: <Pine.LNX.4.58.0707132039080.3222@be1.lrz>
+	 <200707181754.05560.rob@landley.net>
+	 <Pine.LNX.4.58.0707191442440.2138@be1.lrz>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Thu, 19 Jul 2007 10:41:28 -0400
+Message-Id: <1184856088.17338.513.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/19/2007 05:54 AM, Andi Kleen wrote:
-> Don't need 16 byte alignment because kernel doesn't use SSE2
+On Thu, 2007-07-19 at 15:56 +0200, Bodo Eggert wrote:
+> On Wed, 18 Jul 2007, Rob Landley wrote:
+> > On Friday 13 July 2007 2:56:00 pm Bodo Eggert wrote:
 > 
-> Signed-off-by: Andi Kleen <ak@suse.de>
+> > > I toyed with setting up a diskless system in initramfs. In the process, I
+> > > came across some things:
+> > >
+> > > 1)  There is no way to have the kernel not mount a filesystem,
+> > >     unless you use /init or rdinit=.
+> > 
+> > Er, yes.  By design.
+> > 
+> > The kernel has to run an init program in order to hand off control to 
+> > userspace.  In initramfs, this is defined as /init.  It looks in exactly one 
+> > documented place.
+> > 
+> > The older root= mechanism fell back to a half-dozen places (eventually trying 
+> > things like /bin/sh if it couldn't find anything else).  This is because 
+> > there wasn't a documented standard for what should be executed, like there is 
+> > with initramfs.
 > 
-> ---
->  arch/x86_64/Makefile |    1 +
->  1 file changed, 1 insertion(+)
+> Ever since I started using linux in 1997, the first program to run from an
+> installed system was /sbin/init. (I might think about removing the other 
+> paths.)
 > 
-> Index: linux/arch/x86_64/Makefile
-> ===================================================================
-> --- linux.orig/arch/x86_64/Makefile
-> +++ linux/arch/x86_64/Makefile
-> @@ -55,6 +55,7 @@ cflags-y += $(call cc-option,-mno-sse -m
->  # this works around some issues with generating unwind tables in older gccs
->  # newer gccs do it by default
->  cflags-y += -maccumulate-outgoing-args
-> +cflags-y += -mpreferred-stack-boundary=4
+> The ramfs' /init was intended for system setup, which is a separate job.
+> It is not intended to be the program running the system. Mixing those two
+> up just does not feel right. Setting root= in order to change the root
+> directory is much more natural.
+> 
+> > > 1a) In the process of writing these patches, I found prepare_namespace not
+> > > to be called if /init is present. prepare_namespace will call
+> > >     security_sb_post_mountroot after mounting the root fs. I did not yet
+> > > see a way to call this from /init, and grepping kinit for "security" did
+> > > not help, too.
+> > 
+> > I don't use selinux.  I'm neither a Fortune 500 company nor the NSA.
+> 
+> That's no reason for keeping bugs in that part.
+> 
+> > However, if you don't trust your own initramfs, where everything starts out 
+> > running as root, you have bigger problems.
+> 
+> Using that argument, you can deduce that nobody would need selinux at all.
+> Obviously some people disagree, and maybe some of them are no fools,
+> therefore we should try to DTRT for them and do the callback when it's
+> supposed to happen.
 
-Should be:
+Not wanting to get into any flamewars here about selinux, but just FYI:
+security_sb_post_mountroot is obsolete and can be removed without harm
+to selinux; it is a leftover of selinux before we moved the initial
+policy load to userspace.  These days, initial policy load is done
+by /sbin/init in most distros that support selinux, although I'd prefer
+to do it earlier from the initramfs (the Fedora folks didn't like that
+idea though at the time, so /sbin/init got patched instead - but that
+was back in 2003, so maybe things have changed).
 
-+cflags-y += -mpreferred-stack-boundary=3
+-- 
+Stephen Smalley
+National Security Agency
 
->  
->  # do binutils support CFI?
->  cflags-y += $(call as-instr,.cfi_startproc\n.cfi_endproc,-DCONFIG_AS_CFI=1,)
