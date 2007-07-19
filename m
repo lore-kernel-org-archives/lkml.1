@@ -1,44 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbXGSMUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759680AbXGSMYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984AbXGSMUK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764400AbXGSMTt
+	id S1759680AbXGSMYi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbXGSMYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:19:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43027 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762695AbXGSMTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:19:48 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: [PATCH] [19/58] x86_64: Don't use softirq save locks in smp_call_function
-Date: Thu, 19 Jul 2007 14:19:43 +0200
-User-Agent: KMail/1.9.6
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200707191154.642492000@suse.de> <20070719095504.376B614E06@wotan.suse.de> <a781481a0707190516m651cc7bbs7ac8fc3510d8f5d6@mail.gmail.com>
-In-Reply-To: <a781481a0707190516m651cc7bbs7ac8fc3510d8f5d6@mail.gmail.com>
+	Thu, 19 Jul 2007 08:24:30 -0400
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:46657 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751192AbXGSMY3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:24:29 -0400
+X-YMail-OSG: 6FNg0VgVM1kFkpTzzl3tVlGwQ6qklbpYzG8qByQ1yLRYwsMtKHCzVJ2ZizhB5C5mWSDDwukbcw--
+Date: Thu, 19 Jul 2007 07:24:24 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Christian Ehrhardt <lk@c--e.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Message-ID: <20070719122424.GA5186@vino.hallyn.com>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707191419.44020.ak@suse.de>
+In-Reply-To: <20070719073948.GI18840@lisa.in-ulm.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 14:16:48 Satyam Sharma wrote:
-
->
-> > Can't do a WARN_ON unfortunately because it could trigger in the
-> > panic case.
+Quoting Christian Ehrhardt (lk@c--e.de):
+> On Wed, Jul 18, 2007 at 06:35:03PM -0700, Andrew Morton wrote:
+> > On Sat, 14 Jul 2007 12:37:01 -0400 (EDT)
+> > James Morris <jmorris@namei.org> wrote:
+> > 
+> > > Convert LSM into a static interface, as the ability to unload a security
+> > > module is not required by in-tree users and potentially complicates the
+> > > overall security architecture.
+> > > 
+> > > Needlessly exported LSM symbols have been unexported, to help reduce API
+> > > abuse.
+> > > 
+> > > Parameters for the capability and root_plug modules are now specified
+> > > at boot.
+> > > 
+> > > The SECURITY_FRAMEWORK_VERSION macro has also been removed.
+> > 
+> > I'd like to understand who is (or claims to be) adversely affected by this
+> > change, and what their complaints (if any) will be.
 > 
-> But this is not true at all. This function doesn't come anywhere
-> on the panic codepath.
+> I am currently loading and unloading a prototype like security module
+> on a regular basis. The fact that such a module can be loaded and
+> unloaded (albeit in an unsecure way) greatly simplifies development.
+> Thus this change will adversely affect me and probably also others that
+> develop LSMs.
+> 
+> Additionally deployment of and choice among legitimate security modules
+> that may or may not (yet) be part of the main kernel tree is simplified by
+> an option to load these security modules (e.g. at boot time) into a running
 
+Right, the ability to boot with security.capability=disabpled (or
+whatever) and then load a custom module without having to use a whole
+new kernel is something I'm sure end-users want.
 
-You're wrong.
+Especially since compiling a kernel which works with, say, a default
+fedora install, with lvm etc, is not imo for a novice (where novice
+!= security novice).
 
--Andi
+Maybe there are no out of tree modules being used this way, or maybe
+there are but I just don't know about them, or maybe like James says
+they are all illegal modules and kill a puppy every time they are
+loaded.
 
+> kernel. This way a distribution can provide AppArmor, SELinux, SecLevl and
+> whatever as options very much in the same way that this works for a driver.
+> 
+> > Because I prefer my flamewars pre- rather than post-merge.
+> 
+> You asked for oppinion. I do not plan to engage in any flamewars.
 
+Ditto.  There is very loud support for this - which may mean there is
+*broad* support for it.
+
+If we could get a few (non-afilliated :) people who work with
+customers in the security field to tell us whether this is being
+used, that would be very helpful.  Not sure how to get that.
+
+Or we just apply the patch and see who yells  :)
+
+-serge
