@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965334AbXGSQsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939769AbXGSQtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965334AbXGSQsq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937872AbXGSQsd
+	id S939769AbXGSQtU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933360AbXGSQtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:48:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:6311 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933233AbXGSQsb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:48:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bfjy3ApXCSzD3H82Qc/61BVPfpPMgmNjZdEQfoy6CsoztlyRridRJ0tKoOH/EMwCaCKBgM6JeQhmcqntq1Qju4WL5UB+rthkuUrObK6sC5BFOAPsX55GBrgz7OTmYNUlDo89MHQN3Stk2go5Ca2Yz/Xilxi2NNMZPCVMk6eooy4=
-Message-ID: <91b13c310707190948j4eee14eauf53dd1c72c7fdb8a@mail.gmail.com>
-Date: Fri, 20 Jul 2007 00:48:29 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Paul Clements" <paul.clements@steeleye.com>
-Subject: Re: [PATCH 1/2] nbd: use list_for_each_entry_safe to make it more consolidated and readable
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Pavel Machek" <pavel@ucw.cz>, "Steven Whitehouse" <steve@chygwyn.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, debra <chdebra@gmail.com>
-In-Reply-To: <91b13c310707190855h6fee9604pcc86b6712d2c76f8@mail.gmail.com>
+	Thu, 19 Jul 2007 12:49:03 -0400
+Received: from il.qumranet.com ([82.166.9.18]:54593 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935902AbXGSQtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:49:00 -0400
+Message-ID: <469F9603.8050603@qumranet.com>
+Date: Thu, 19 Jul 2007 19:49:07 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11848376711601-git-send-email-crquan@gmail.com>
-	 <469F7F58.4080709@steeleye.com>
-	 <91b13c310707190855h6fee9604pcc86b6712d2c76f8@mail.gmail.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<ukleinek@informatik.uni-freiburg.de>,
+       Jens Axboe <axboe@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       dri-devel@lists.sourceforge.net, Dave Airlie <airlied@linux.ie>,
+       =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@tungstengraphics.com>,
+       =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>,
+       Charles Gagalac <charles.gagalac@gmail.com>
+Subject: Re: [1/2] 2.6.22-git: known regressions
+References: <469F92A1.5070203@googlemail.com>
+In-Reply-To: <469F92A1.5070203@googlemail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/19/07, rae l <crquan@gmail.com> wrote:
-> On 7/19/07, Paul Clements <paul.clements@steeleye.com> wrote:
-> > Could you name "n" as "tmp" (as in the previous code) so that it's clear
-> > that's only a temporary variable. Other than that, this looks good.
-> Sure. I just use the name "n" as in the declaration of
-> list_for_each_entry_safe in the header file <linux/list.h>
-> I'll resend it a little later.
+Michal Piotrowski wrote:
+>
+> Unclassified
+>
+> Subject         : a52b1752c07 broke !SMP: error: implicit declaration of function `WARN_ON'
+> References      : http://lkml.org/lkml/2007/7/17/600
+> Last known good : ?
+> Submitter       : Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
+> Caused-By       : Avi Kivity <avi@qumranet.com>
+>                   commit a52b1752c077cb919b71167c54968a0b91673281
+> Handled-By      : ?
+> Status          : unknown
+>   
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- drivers/block/nbd.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+This has been fixed by Al Viro, 
+8dfd588c3180b7403c402b4545164ee4543f8f86, in mainline.
 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index c129510..86639c0 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -237,8 +237,7 @@ error_out:
+I am now working on kvm and slub intensely disliking each other.
 
- static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
- {
--	struct request *req;
--	struct list_head *tmp;
-+	struct request *req, *tmp;
- 	struct request *xreq;
- 	int err;
-
-@@ -249,8 +248,7 @@ static struct request *nbd_find_request(struct
-nbd_device *lo, char *handle)
- 		goto out;
-
- 	spin_lock(&lo->queue_lock);
--	list_for_each(tmp, &lo->queue_head) {
--		req = list_entry(tmp, struct request, queuelist);
-+	list_for_each_entry_safe(req, tmp, &lo->queue_head, queuelist) {
- 		if (req != xreq)
- 			continue;
- 		list_del_init(&req->queuelist);
+Note: the wiki page is immutable, so I could not update it.
 
 -- 
-Denis Cheng
-Linux Application Developer
+error compiling committee.c: too many arguments to function
 
-"One of my most productive days was throwing away 1000 lines of code."
- - Ken Thompson.
