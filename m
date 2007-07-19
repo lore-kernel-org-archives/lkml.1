@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939619AbXGSPvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939734AbXGSPwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939619AbXGSPvh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939575AbXGSPus
+	id S939734AbXGSPwv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935902AbXGSPwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:50:48 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:53467 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939590AbXGSPup (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:50:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=Wiu9AW+Ron2gryp+31zu4m73bNb53bFNP0S3j5QcuYD/sbHaGVcazViR+xpn/VpkUNmHKk9N6zAdhjzjKL4cTBp1yuy2Qx9cFNx0VS0UcXBD42dv6Imc8/NgT+lN5Dm46rPDgQLpzsDNgyfNBXUdkjg+9cc7KK/IxfdWPKgwXos=
-Message-ID: <469F884B.6010402@gmail.com>
-Date: Thu, 19 Jul 2007 11:50:35 -0400
-From: Florin Malita <fmalita@gmail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Thu, 19 Jul 2007 11:52:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53771 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758850AbXGSPwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:52:42 -0400
+Date: Thu, 19 Jul 2007 17:52:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Olaf Kirch <olaf.kirch@oracle.com>
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
+Message-ID: <20070719155230.GA31267@elte.hu>
+References: <20070716091236.GA10718@elte.hu> <200707191144.24434.olaf.kirch@oracle.com> <20070719100135.GA2986@elte.hu> <200707191237.56455.olaf.kirch@oracle.com> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu> <20070719150728.GA17000@elte.hu> <20070719153217.GA25544@elte.hu>
 MIME-Version: 1.0
-To: James.Smart@emulex.com
-CC: James.Bottomley@SteelEye.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [scsi] lpfc: potential leak in lpfc_sli_hbqbuf_fill_hbqs
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719153217.GA25544@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If lpfc_hbq_alloc() fails, an hbq_buffer is leaked. Found by Coverity 
-(1775).
 
-Signed-off-by: Florin Malita <fmalita@gmail.com>
----
+* Ingo Molnar <mingo@elte.hu> wrote:
 
- drivers/scsi/lpfc/lpfc_sli.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+> ah! Just found the reason: the bug apparently depends on the precise 
+> kernel command-line contents. I accidentally dropped ignore_loglevel 
+> (found this while comparing with the older logs i sent to you), adding 
+> it back in produces hung networking too. So it appears that a 
+> netconsole printout while e1000 is initializing (or while some other 
+> networking component is initializing) might be the culprit?
 
-diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
-index f4d5a6b..fe16b0c 100644
---- a/drivers/scsi/lpfc/lpfc_sli.c
-+++ b/drivers/scsi/lpfc/lpfc_sli.c
-@@ -622,8 +622,10 @@ lpfc_sli_hbqbuf_fill_hbqs(struct lpfc_hba *phba, uint32_t hbqno, uint32_t count)
- 			return 1;
- 		hbq_buffer->dbuf.virt = lpfc_hbq_alloc(phba, MEM_PRI,
- 							&hbq_buffer->dbuf.phys);
--		if (hbq_buffer->dbuf.virt == NULL)
-+		if (hbq_buffer->dbuf.virt == NULL) {
-+			kfree(hbq_buffer);
- 			return 1;
-+		}
- 		hbq_buffer->tag = (i | (hbqno << 16));
- 		lpfc_sli_hbq_to_firmware(phba, hbqno, hbq_buffer);
- 		lpfc_hbq_defs[hbqno]->buffer_count++;
+and the WARN_ON() below does not seem to trigger.
 
+i'll now check whether removing ignore_on_loglevel (no other changes) 
+makes the hang go away. Maybe ignore_on_loglevel is buggy - or it 
+produces an immediate printk (going out to the interface) during a 
+particularly sensitive period of network initialization.
+
+	Ingo
+
+----------------->
+Index: linux/drivers/net/e1000/e1000_main.c
+===================================================================
+--- linux.orig/drivers/net/e1000/e1000_main.c
++++ linux/drivers/net/e1000/e1000_main.c
+@@ -358,6 +358,7 @@ e1000_irq_enable(struct e1000_adapter *a
+ 		E1000_WRITE_REG(&adapter->hw, IMS, IMS_ENABLE_MASK);
+ 		E1000_WRITE_FLUSH(&adapter->hw);
+ 	}
++	WARN_ON_ONCE(atomic_read(&adapter->irq_sem) < 0);
+ }
+ 
+ static void
