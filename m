@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938423AbXGSSVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938105AbXGSSbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938423AbXGSSVK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 14:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940126AbXGSSUq
+	id S938105AbXGSSbr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 14:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759283AbXGSSbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 14:20:46 -0400
-Received: from web56605.mail.re3.yahoo.com ([66.196.97.49]:23362 "HELO
-	web56605.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S937137AbXGSSUp (ORCPT
+	Thu, 19 Jul 2007 14:31:37 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:46759 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756413AbXGSSbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 14:20:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=BCjCthmJsp5KWAFwwMaPLY/+SpoKJ+31n2U2170Heq5g8xAO869orctjeOekuiJ2hTHMwnpn+/nGkCG6pZ1E6wwJXEEH09a2G/kC6RTZUi8qTwar8nc1Hsikunz/6oYymK5xeRB6ardUufT51Dld5/PlGpNz4MHQCFVHz/wBNN4=;
-X-YMail-OSG: 4Jk5CecVM1l3hylk0jWtKafyvapO6O9Uj0BqMVdG142rskaHckSHOivOs6uvFNbRwYzyzaoQSyD5vhoHzQk5O70dD8E7cuQsTuV.mRQFfLPo8L3.HTlMMVjGA_je3NuOkAs.5EiQgE5gXbCay5IbZfGoOg--
-X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.41.16
-Date: Thu, 19 Jul 2007 11:20:43 -0700 (PDT)
-From: andrei radulescu-banu <iubica2@yahoo.com>
-Subject: Re: Linux, tcpdump and vlan
-To: Ben Greear <greearb@candelatech.com>
-Cc: Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
+	Thu, 19 Jul 2007 14:31:36 -0400
+Date: Thu, 19 Jul 2007 11:31:29 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       shai@scalex86.org
+Subject: Re: [patch] Change softlockup trigger limit using a kernel parameter
+Message-ID: <20070719183129.GB20298@localdomain>
+References: <20070716222650.GA5947@localdomain> <20070718160858.75865461.akpm@linux-foundation.org> <20070719054121.GA15074@localdomain> <20070718230907.741ae56c.akpm@linux-foundation.org> <20070719091142.GA28723@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
-Message-ID: <839334.9648.qm@web56605.mail.re3.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719091142.GA28723@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> [Ben] If tcpdump and/or bridging needs to disable the hw-accel, then it can 
-explicitly do so by some API.  That is better than overloading
-the promisc flag in my opinion.  
+On Thu, Jul 19, 2007 at 11:11:42AM +0200, Ingo Molnar wrote:
+>
+>* Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>> > +softlockup_thresh:
+>> > +
+>> > +This value can be used to lower the softlockup tolerance
+>> > +threshold. The default threshold is 10s.  If a cpu is locked up
+>> > +for 10s, the kernel complains.  Valid values are 1-10s.
+>> > +
+>> 
+>> neato.
+>
+>please make sure this is applied after the softlockup watchdog patches i 
+>already did. (in particular the cleanup patch, which this could interact 
+>with)
+>
+>also, i think the valid threshold should be between 1 and 60 seconds i 
+>think.
 
-I guess I could be persuaded in the end. But let me still play devil advocate. The semantics of 'promiscuous', in my opinion, mean 'receive everything', including vlan.
+60 seconds!  Is that not a pretty high threshold?  The reason for lowering
+the tolerance threshold from 10s is to catch bugs early in lab environments,
+but why do we need to raise the tolerance thresh beyond 10s?
 
-> [Ben] This is especially true since promisc 
-is not easily readable by user-space and things like tcpdump
-cannot have full control of promisc (if a mac-vlan has the NIC in 
-promisc mode, for instance, then tcpdump can never disable it.)
-
-I agree with all the above. For example when you run 'ifconfig' during 'tcpdump', the interface does not have the promiscuous flag set!! 
-
-This confused me for a while, until I realized that tcpdump's packet socket was using an obscure packet_dev_mc() API (af_packet.c) to get the interface in promiscuous mode. The reason for this is that packet_mc_add() implements a reference counted mechanism for promiscuous. So that:
-- starting tcpdump instance 1 sets promiscuous mode
-- starting tcpdump instance 2 bumps the ref count in packet_mc_add()
-- killing tcpdump instance 1 bumps down the ref count, the interface stays promiscuous
-- killing tcpdump instance 2 truly clear promiscuous mode.
-
-The trick here is that when you kill tcpdump, the kernel clears the packet socket, and in process bumps down the ref count. Had tcpdump manually set/cleared the promisc flag, the interface would have stayed promisc after tcpdump was killed.
-
-(The mac-vlan driver must have this corner problem as well. If a mac-vlan interface is disabled while tcpdump runs, it may yank promiscuousness from under tcpdump.)
-
-So if you want to create an ethtool API to set vlan-promiscuous mode, one problem to grapple is that we need a similar mechanism to the above, so you can run two concurrent tcpdump's (or tcpdump while bridging vlans) and the vlan-promiscuous mode gets set correctly each time.  For tcpdump at least, the new ethtool API needs to be called from packet_mc_add().
-
-
-
-
-
-
-
-
-       
-____________________________________________________________________________________
-Yahoo! oneSearch: Finally, mobile search 
-that gives answers, not web links. 
-http://mobile.yahoo.com/mobileweb/onesearch?refer=1ONXIC
+Thanks,
+Kiran
