@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939362AbXGSPcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939340AbXGSPdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939362AbXGSPcm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765796AbXGSPcb
+	id S939340AbXGSPdK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939327AbXGSPcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:32:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34713 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Jul 2007 11:32:36 -0400
+Received: from il.qumranet.com ([82.166.9.18]:49773 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756579AbXGSPc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:32:28 -0400
-Date: Thu, 19 Jul 2007 17:32:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net,
-       Auke Kok <auke-jan.h.kok@intel.com>
-Subject: Re: [patch] revert: [NET]: Fix races in net_rx_action vs netpoll
-Message-ID: <20070719153217.GA25544@elte.hu>
-References: <20070716091236.GA10718@elte.hu> <200707191144.24434.olaf.kirch@oracle.com> <20070719100135.GA2986@elte.hu> <200707191237.56455.olaf.kirch@oracle.com> <20070719104756.GA13769@elte.hu> <20070719105816.GA15852@elte.hu> <20070719150728.GA17000@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719150728.GA17000@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S937211AbXGSPce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:32:34 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: tony.luck@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>
+Subject: [PATCH] ia64: Allow smp_call_function_single() to current cpu
+Date: Thu, 19 Jul 2007 18:32:43 +0300
+Message-Id: <11848591631239-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This removes the requirement for callers to get_cpu() to check in simple
+cases.  i386 and x86_64 already received a similar treatment.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ arch/ia64/kernel/smp.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-> ugh. Something really weird happened with this e1000 problem.
-> 
-> i crashed the laptop in a weird way and had to power-cycle it in an 
-> unusual fashion. After that i wanted to try your latest BUG_ON() 
-> theory but the network hang went away!
-> 
-> For 3 hours i tried to reproduce the hang (i went back to the original 
-> git tree and the .config under which i found it, i power cycled it 
-> again, i unplugged the power cord to make it go off battery, unplugged 
-> the ethernet, recreated a completely new tree, etc. etc.) but with no 
-> success! Total Heisenbug - and the really annoying thing is that you 
-> just had a good theory about what might be happening. I'm now at 
-> kernel build iteration #75 in this tree ...
-
-ah! Just found the reason: the bug apparently depends on the precise 
-kernel command-line contents. I accidentally dropped ignore_loglevel 
-(found this while comparing with the older logs i sent to you), adding 
-it back in produces hung networking too. So it appears that a netconsole 
-printout while e1000 is initializing (or while some other networking 
-component is initializing) might be the culprit?
-
-	Ingo
+diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+index b3a47f9..381f9bf 100644
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -346,7 +346,7 @@ smp_flush_tlb_mm (struct mm_struct *mm)
+ }
+ 
+ /*
+- * Run a function on another CPU
++ * Run a function on a specific CPU
+  *  <func>	The function to run. This must be fast and non-blocking.
+  *  <info>	An arbitrary pointer to pass to the function.
+  *  <nonatomic>	Currently unused.
+@@ -366,9 +366,11 @@ smp_call_function_single (int cpuid, void (*func) (void *info), void *info, int
+ 	int me = get_cpu(); /* prevent preemption and reschedule on another processor */
+ 
+ 	if (cpuid == me) {
+-		printk(KERN_INFO "%s: trying to call self\n", __FUNCTION__);
++		local_irq_disable();
++		func(info);
++		local_irq_enable();
+ 		put_cpu();
+-		return -EBUSY;
++		return 0;
+ 	}
+ 
+ 	data.func = func;
+-- 
+1.5.2.4
 
