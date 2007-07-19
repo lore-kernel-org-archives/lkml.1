@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbXGSMm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXGSMsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbXGSMm7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbXGSMmu
+	id S1764933AbXGSMsi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758586AbXGSMs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:42:50 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:43209 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753599AbXGSMmt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:42:49 -0400
-X-YMail-OSG: 3VOB8hMVM1nnWUfHoCaA5S6xcI66yTtvNwWU3BNcqYdqY5JRebB93Kn2mFtUZpxzg5QgTVP1Pg--
-Date: Thu, 19 Jul 2007 07:42:44 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: James Morris <jmorris@namei.org>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Christian Ehrhardt <lk@c--e.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-Message-ID: <20070719124244.GA7219@vino.hallyn.com>
-References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de> <20070719122424.GA5186@vino.hallyn.com> <Line.LNX.4.64.0707190832290.4303@d.namei>
+	Thu, 19 Jul 2007 08:48:29 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:48988 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758539AbXGSMs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:48:29 -0400
+Date: Thu, 19 Jul 2007 08:48:22 -0400
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: AFS compile broken
+Message-ID: <20070719124822.GA13180@fieldses.org>
+References: <Pine.SOC.4.64.0707191516120.18397@math.ut.ee> <20070719143556.795cb458@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Line.LNX.4.64.0707190832290.4303@d.namei>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070719143556.795cb458@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting James Morris (jmorris@namei.org):
-> On Thu, 19 Jul 2007, Serge E. Hallyn wrote:
+On Thu, Jul 19, 2007 at 02:35:56PM +0200, Cornelia Huck wrote:
+> On Thu, 19 Jul 2007 15:19:40 +0300 (EEST),
+> Meelis Roos <mroos@linux.ee> wrote:
 > 
-> > If we could get a few (non-afilliated :) people who work with
-> > customers in the security field to tell us whether this is being
-> > used, that would be very helpful.  Not sure how to get that.
+> > Trying to compile todays git with modular AFS and gcc 4.1.3 prerelease 
+> > in Debian unstable (gcc version 4.1.3 20070629 (prerelease) (Debian 
+> > 4.1.2-13)):
+> > 
+> >   CC [M]  fs/afs/flock.o
+> > fs/afs/flock.c: In function 'afs_do_getlk':
+> > fs/afs/flock.c:459: error: void value not ignored as it ought to be
+> > make[3]: *** [fs/afs/flock.o] Error 1
 > 
-> The mainline kernel does not cater to out of tree code.
+> Should probably be something like this, but I have no idea whether this
+> is correct.
 
-(Must... resist...)
+That's correct, and Andrew has the same patch.  (And the breakage was my
+fault, apologies.)
 
-> > Or we just apply the patch and see who yells  :)
+--b.
+
 > 
+> ---
+>  fs/afs/flock.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletion(-)
 > 
-> It's already pretty clear.
-
-I doubt anyone not on lkml or linux-security-module has heard of this.
-
-So we'll see.
-
-(I was, obviously, talking about end-users)
-
--serge
+> --- linux-2.6.22.orig/fs/afs/flock.c
+> +++ linux-2.6.22/fs/afs/flock.c
+> @@ -456,7 +456,8 @@ static int afs_do_getlk(struct file *fil
+>  
+>  	/* check local lock records first */
+>  	ret = 0;
+> -	if (posix_test_lock(file, fl) == 0) {
+> +	posix_test_lock(file, fl);
+> +	if (fl->fl_type == F_UNLCK) {
+>  		/* no local locks; consult the server */
+>  		ret = afs_vnode_fetch_status(vnode, NULL, key);
+>  		if (ret < 0)
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
