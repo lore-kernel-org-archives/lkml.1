@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935914AbXGSDzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbXGSEKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935914AbXGSDzR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 23:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbXGSDzA
+	id S1752411AbXGSEKS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 00:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXGSEKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 23:55:00 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:35511 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757057AbXGSDzA (ORCPT
+	Thu, 19 Jul 2007 00:10:07 -0400
+Received: from mga02.intel.com ([134.134.136.20]:40148 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750714AbXGSEKF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 23:55:00 -0400
-X-IronPort-AV: i="4.16,553,1175486400"; 
-   d="scan'208"; a="45903023:sNHT25575326"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: early_printk accessing __log_buf
-Date: Wed, 18 Jul 2007 23:58:24 -0400
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, "Greg Ungerer" <gerg@snapgear.com>,
-       "Russell King" <rmk@arm.linux.org.uk>, Paul Mundt <lethal@linux-sh.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Tim Bird" <tim.bird@am.sony.com>, bryan.wu@analog.com
-References: <200707181756.44074.rgetz@blackfin.uclinux.org> <200707181939.46910.rgetz@blackfin.uclinux.org> <20070718172603.231351ea.akpm@linux-foundation.org>
-In-Reply-To: <20070718172603.231351ea.akpm@linux-foundation.org>
+	Thu, 19 Jul 2007 00:10:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,553,1175497200"; 
+   d="scan'208";a="268009481"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707182358.24984.rgetz@blackfin.uclinux.org>
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Jul 2007 03:54:49.0467 (UTC) FILETIME=[8DDE4CB0:01C7C9B8]
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: which signal is sent to freeze process?
+Date: Wed, 18 Jul 2007 21:09:56 -0700
+Message-ID: <A3258B497F1C1441AD36A2E8B45FD6285508CB@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <200707191218.32730.nigel@nigel.suspend2.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: which signal is sent to freeze process?
+thread-index: AcfJqx3jv5AjWBzCS+KUwHCZUtMJLwAD0CMQ
+References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707191218.32730.nigel@nigel.suspend2.net>
+From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+To: "Nigel Cunningham" <nigel@nigel.suspend2.net>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 19 Jul 2007 04:09:57.0982 (UTC) FILETIME=[AB62AFE0:01C7C9BA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 18 Jul 2007 20:26, Andrew Morton pondered:
-> Robin Getz wrote:
-> > [need to access _log_buf from external for early debugging code]
-> > 
-> > Something simple like - early_copy_log_buff(void *dest, size_t n) 
-> > 
-> > copies n bytes from log_buf to memory area dest. Returns number of
-> > bytes that could not be copied. Can find out how many bytes are in
-> > the log_buff by calling with zero size.
-> 
-> When I was at $EARLIER_EMPLOYER, we had code in there to copy the last
-> kilobyte-odd of the log buffer into flash when the box oopsed.
-> 
+Can you point me to code where kernel captures process in signal
+handling and code which runs after suspend to ram is finished?
 
-Hmm - I think that if you call with NULL dest, and have it advance the 
-pointer, you could do the same thing with something like:
+-----Original Message-----
+From: Nigel Cunningham [mailto:nigel@nigel.suspend2.net] 
+Sent: Wednesday, July 18, 2007 7:19 PM
+To: Agarwal, Lomesh
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: which signal is sent to freeze process?
 
- /* see how many bytes are in the buff */
- length = early_copy_log_buff(NULL, NULL);
- /* advance the pointer, so we only copy the last 1k */
- if (length >= 1024 )
-    left = early_copy_log_buff(NULL, length - 1024);
- /* copy to temp buffer, to save to flash */
- early_copy_log_buff(buff, 1024);
- save_buff_to_flash(buff);
+Hi.
 
-That way - you can put this in the standard places for failure, and still have 
-only one function polluting printk.c (Although if you want to use it for 
-failure trapping - it's up for "normal" run time use, and doesn't go into 
-__init. 
+On Thursday 19 July 2007 09:42:02 Agarwal, Lomesh wrote:
+> My understanding is that Linux kernel sends a signal to freeze
+processes
+> during suspend2ram operation. Which signal is used to achieve this?
+> The problem I am facing is that some of the system calls are failing
+> with EINTR errno during suspend operation and I want to install a
+signal
+> handler for freeze signal with SA_RESTART flag. That should make the
+> kernel to retry the system calls. Right?
 
-> Probably there are others, but they'll mainly be in the consumer/embedded
->  area, and those sorts of engineers don't read this mailing list much.
+No signal is sent. We tell affected processes that they have a signal
+pending, 
+and capture them in the signal handling code while the suspend to ram is
 
-Adding a few more 'embedded' folks - who might have some thoughts/opinions.
+occuring. After the suspend to ram is finished, we recalculate whether
+they 
+have a signal pending, and let them continue.
 
--Robin
+Not being a guru on signal handling itself, I won't try to answer the
+question 
+itself :\.
 
+Regards,
+
+Nigel
