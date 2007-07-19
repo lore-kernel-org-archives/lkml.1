@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938866AbXGSQYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939846AbXGSQYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938866AbXGSQYD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760316AbXGSQXw
+	id S939846AbXGSQYp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765824AbXGSQY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:23:52 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:60732 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752961AbXGSQXv (ORCPT
+	Thu, 19 Jul 2007 12:24:27 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:58918 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760316AbXGSQY0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:23:51 -0400
-Date: Thu, 19 Jul 2007 12:23:50 -0400
-To: Avi Kivity <avi@qumranet.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dor Laor <dor.laor@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [RFC] Deferred interrupt handling.
-Message-ID: <20070719162350.GD5623@csclub.uwaterloo.ca>
-References: <005901c7c921$79c006c0$6d401440$@com> <20070718123040.615795b7@the-village.bc.nu> <64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net> <20070718174736.0baf6d0e@the-village.bc.nu> <469E43D5.70802@qumranet.com> <20070718191433.GB24545@csclub.uwaterloo.ca> <469F2D8C.7020805@qumranet.com> <20070719131718.GC5623@csclub.uwaterloo.ca> <469F6941.9010901@qumranet.com>
+	Thu, 19 Jul 2007 12:24:26 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 19 Jul 2007 12:22:01 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
+In-Reply-To: <469F8784.3030700@linux.intel.com>
+Message-ID: <Pine.LNX.4.64.0707191221200.11972@localhost.localdomain>
+References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
+ <469F749F.8030606@s5r6.in-berlin.de> <469F7918.3000503@linux.intel.com>
+ <Pine.LNX.4.64.0707191133100.7047@localhost.localdomain> <469F8784.3030700@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <469F6941.9010901@qumranet.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 04:38:09PM +0300, Avi Kivity wrote:
-> Looking at two random servers here and a desktop, interrupts are 
-> unshared except for usb.  A laptop was not so lucky.  So "no chance" is 
-> a bit extreme.
-> 
-> I agree it's far from optimal, but it is less limited than you imply.
+On Thu, 19 Jul 2007, Arjan van de Ven wrote:
 
-Well with 4 PCI interrupts, it doesn't take that many PCI devices before
-you must be sharing.  Of course it seems some higher end systems split
-up the PCI bus in some way and run different IRQs from the APIC to
-different slots.  I suspect that is how I see IRQ's of 177, 185, 193,
-201, 209, etc on some systems.
+> the removal entry is/was for the symbols *marked*, not for the
+> infrastructure....
 
-If you have a server with an IO APIC then I suppose you have a rather
-good chance of avoiding shared IRQs for the most part.
+ah, gotcha.  so the infrastructure itself is still useful from time to
+time, then.  ok.
 
---
-Len Sorensen
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
