@@ -1,80 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933364AbXGSH3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764071AbXGSHqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933364AbXGSH3B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 03:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759648AbXGSH2y
+	id S1764071AbXGSHqT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 03:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758734AbXGSHqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 03:28:54 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:37700 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758210AbXGSH2y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 03:28:54 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 19 Jul 2007 09:28:42 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 2.6.22.y] firewire: fix memory leak of fw_request instances
-To: stable@kernel.org
-cc: linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-Message-ID: <tkrat.25648a77ea40c9e3@s5r6.in-berlin.de>
+	Thu, 19 Jul 2007 03:46:11 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:29870 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758646AbXGSHqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 03:46:10 -0400
+Message-ID: <469F166F.9000501@openvz.org>
+Date: Thu, 19 Jul 2007 11:44:47 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: INLINE
+To: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>
+CC: linux-kernel@vger.kernel.org, Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH 5/5] [V2] Move alloc_pid() to copy_process()
+References: <20070719071206.GE10195@us.ibm.com> <20070719072240.GE28216@us.ibm.com>
+In-Reply-To: <20070719072240.GE28216@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Date: Tue, 17 Jul 2007 02:15:36 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: firewire: fix memory leak of fw_request instances
+sukadev@us.ibm.com wrote:
+> 
+> Subject: [PATCH 5/5] Move alloc_pid call to copy_process
+> 
+> From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+> 
+> Move alloc_pid() into copy_process(). This will keep all pid and pid
+> namespace code together and simplify error handling when we support
+> multiple pid namespaces.
 
-Found and debugged by Jay Fenlason <fenlason@redhat.com>.
-The bug was especially noticeable with direct I/O over fw-sbp2.
+I would add smth like this to the comment:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Signed-off-by: Kristian Høgsberg <krh@redhat.com>
----
-Same as commit 9c9bdf4d50730fd04b06077e22d7a83b585f26b5.
+When a task creates a new pid namespace, its init (i.e. this task's
+child) will have pids with extra info inside - the new numerical id,
+that represent this new task in this new namespace. Thus, we have 
+to allocate this new pid only after the namespace creation to find 
+out which namespace this pid will live in.
 
- drivers/firewire/fw-transaction.c |    4 +++-
- drivers/firewire/fw-transaction.h |    4 ++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
+Hope, I expressed my idea cleanly.
 
-Index: linux-2.6.22/drivers/firewire/fw-transaction.c
-===================================================================
---- linux-2.6.22.orig/drivers/firewire/fw-transaction.c
-+++ linux-2.6.22/drivers/firewire/fw-transaction.c
-@@ -605,8 +605,10 @@ fw_send_response(struct fw_card *card, s
- 	 * check is sufficient to ensure we don't send response to
- 	 * broadcast packets or posted writes.
- 	 */
--	if (request->ack != ACK_PENDING)
-+	if (request->ack != ACK_PENDING) {
-+		kfree(request);
- 		return;
-+	}
- 
- 	if (rcode == RCODE_COMPLETE)
- 		fw_fill_response(&request->response, request->request_header,
-Index: linux-2.6.22/drivers/firewire/fw-transaction.h
-===================================================================
---- linux-2.6.22.orig/drivers/firewire/fw-transaction.h
-+++ linux-2.6.22/drivers/firewire/fw-transaction.h
-@@ -124,6 +124,10 @@ typedef void (*fw_transaction_callback_t
- 					  size_t length,
- 					  void *callback_data);
- 
-+/*
-+ * Important note:  The callback must guarantee that either fw_send_response()
-+ * or kfree() is called on the @request.
-+ */
- typedef void (*fw_address_callback_t)(struct fw_card *card,
- 				      struct fw_request *request,
- 				      int tcode, int destination, int source,
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
 
--- 
-Stefan Richter
--=====-=-=== -=== =--==
-http://arcgraph.de/sr/
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+> 
+> Cc: Pavel Emelianov <xemul@openvz.org>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> Cc: Cedric Le Goater <clg@fr.ibm.com>
+> Cc: Dave Hansen <haveblue@us.ibm.com>
+> Cc: Serge Hallyn <serue@us.ibm.com>
+> Cc: Herbert Poetzel <herbert@13thfloor.at>
+> ---
+>  kernel/fork.c |   19 +++++++++++++------
+>  1 file changed, 13 insertions(+), 6 deletions(-)
+> 
+> Index: lx26-22-rc6-mm1a/kernel/fork.c
+> ===================================================================
+> --- lx26-22-rc6-mm1a.orig/kernel/fork.c	2007-07-16 12:55:13.000000000 -0700
+> +++ lx26-22-rc6-mm1a/kernel/fork.c	2007-07-17 10:08:12.000000000 -0700
+> @@ -1029,6 +1029,12 @@ static struct task_struct *copy_process(
+>  	if (p->binfmt && !try_module_get(p->binfmt->module))
+>  		goto bad_fork_cleanup_put_domain;
+>  
+> +	if (pid != &init_struct_pid) {
+> +		pid = alloc_pid();
+> +		if (!pid)
+> +			goto bad_fork_put_binfmt_module;
+> +	}
+> +
+>  	p->did_exec = 0;
+>  	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
+>  	copy_flags(clone_flags, p);
+> @@ -1316,6 +1322,9 @@ bad_fork_cleanup_container:
+>  #endif
+>  	container_exit(p, container_callbacks_done);
+>  	delayacct_tsk_free(p);
+> +	if (pid != &init_struct_pid)
+> +		free_pid(pid);
+> +bad_fork_put_binfmt_module:
+>  	if (p->binfmt)
+>  		module_put(p->binfmt->module);
+>  bad_fork_cleanup_put_domain:
+> @@ -1380,19 +1389,16 @@ long do_fork(unsigned long clone_flags,
+>  {
+>  	struct task_struct *p;
+>  	int trace = 0;
+> -	struct pid *pid = alloc_pid();
+>  	long nr;
+>  
+> -	if (!pid)
+> -		return -EAGAIN;
+> -	nr = pid->nr;
+>  	if (unlikely(current->ptrace)) {
+>  		trace = fork_traceflag (clone_flags);
+>  		if (trace)
+>  			clone_flags |= CLONE_PTRACE;
+>  	}
+>  
+> -	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, pid);
+> +	p = copy_process(clone_flags, stack_start, regs, stack_size,
+> +			parent_tidptr, child_tidptr, NULL);
+>  	/*
+>  	 * Do this prior waking up the new thread - the thread pointer
+>  	 * might get invalid after that point, if the thread exits quickly.
+> @@ -1400,6 +1406,8 @@ long do_fork(unsigned long clone_flags,
+>  	if (!IS_ERR(p)) {
+>  		struct completion vfork;
+>  
+> +		nr = pid_nr(task_pid(p));
+> +
+>  		if (clone_flags & CLONE_VFORK) {
+>  			p->vfork_done = &vfork;
+>  			init_completion(&vfork);
+> @@ -1433,7 +1441,6 @@ long do_fork(unsigned long clone_flags,
+>  			}
+>  		}
+>  	} else {
+> -		free_pid(pid);
+>  		nr = PTR_ERR(p);
+>  	}
+>  	return nr;
+> 
 
