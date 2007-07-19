@@ -1,115 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759804AbXGSKJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936586AbXGSKKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759804AbXGSKJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbXGSJzd
+	id S936586AbXGSKKm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760079AbXGSJzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:55:33 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33072 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 05:55:35 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35384 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751524AbXGSJzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:55:16 -0400
+	id S1758691AbXGSJzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:55:17 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
-To: tglx@linutronix.de, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [26/58] x86_64: Use generic xtime init
-Message-Id: <20070719095511.9C83214E06@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:11 +0200 (CEST)
+To: tglx@linutronix.de, johnstul@us.ibm.com, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [27/58] x86_64: Remove dead code and other janitor work in  tsc.c
+Message-Id: <20070719095512.AABFE14E06@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:12 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Thomas Gleixner <tglx@linutronix.de>
-xtime can be initialized including the cmos update from the generic
-timekeeping code. Remove the arch specific implementation.
+Remove unused code and variables and do some codingstyle / whitespace
+cleanups while at it.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Andi Kleen <ak@suse.de>
-
+Cc: john stultz <johnstul@us.ibm.com>
 ---
- arch/x86_64/kernel/time.c |   40 +---------------------------------------
- 1 file changed, 1 insertion(+), 39 deletions(-)
 
-Index: linux/arch/x86_64/kernel/time.c
+ arch/x86_64/kernel/tsc.c |   39 +++++++++++----------------------------
+ 1 file changed, 11 insertions(+), 28 deletions(-)
+
+Index: linux/arch/x86_64/kernel/tsc.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/time.c
-+++ linux/arch/x86_64/kernel/time.c
-@@ -193,7 +193,7 @@ static irqreturn_t timer_interrupt(int i
- 	return IRQ_HANDLED;
- }
- 
--static unsigned long get_cmos_time(void)
-+unsigned long read_persistent_clock(void)
- {
- 	unsigned int year, mon, day, hour, min, sec;
- 	unsigned long flags;
-@@ -367,11 +367,6 @@ void __init time_init(void)
- {
- 	if (nohpet)
- 		hpet_address = 0;
--	xtime.tv_sec = get_cmos_time();
--	xtime.tv_nsec = 0;
--
--	set_normalized_timespec(&wall_to_monotonic,
--	                        -xtime.tv_sec, -xtime.tv_nsec);
- 
- 	if (hpet_arch_init())
- 		hpet_address = 0;
-@@ -408,54 +403,21 @@ void __init time_init(void)
- 	setup_irq(0, &irq0);
- }
- 
--
--static long clock_cmos_diff;
--static unsigned long sleep_start;
--
- /*
-  * sysfs support for the timer.
+--- linux.orig/arch/x86_64/kernel/tsc.c
++++ linux/arch/x86_64/kernel/tsc.c
+@@ -36,25 +36,9 @@ static inline int check_tsc_unstable(voi
+  * first tick after the change will be slightly wrong.
   */
  
- static int timer_suspend(struct sys_device *dev, pm_message_t state)
- {
--	/*
--	 * Estimate time zone so that set_time can update the clock
--	 */
--	long cmos_time =  get_cmos_time();
+-#include <linux/workqueue.h>
 -
--	clock_cmos_diff = -cmos_time;
--	clock_cmos_diff += get_seconds();
--	sleep_start = cmos_time;
- 	return 0;
- }
- 
- static int timer_resume(struct sys_device *dev)
- {
--	unsigned long flags;
--	unsigned long sec;
--	unsigned long ctime = get_cmos_time();
--	long sleep_length = (ctime - sleep_start) * HZ;
+-static unsigned int cpufreq_delayed_issched = 0;
+-static unsigned int cpufreq_init = 0;
+-static struct work_struct cpufreq_delayed_get_work;
 -
--	if (sleep_length < 0) {
--		printk(KERN_WARNING "Time skew detected in timer resume!\n");
--		/* The time after the resume must not be earlier than the time
--		 * before the suspend or some nasty things will happen
--		 */
--		sleep_length = 0;
--		ctime = sleep_start;
+-static void handle_cpufreq_delayed_get(struct work_struct *v)
+-{
+-	unsigned int cpu;
+-	for_each_online_cpu(cpu) {
+-		cpufreq_get(cpu);
 -	}
- 	if (hpet_address)
- 		hpet_reenable();
- 	else
- 		i8254_timer_resume();
+-	cpufreq_delayed_issched = 0;
+-}
 -
--	sec = ctime + clock_cmos_diff;
--	write_seqlock_irqsave(&xtime_lock,flags);
--	xtime.tv_sec = sec;
--	xtime.tv_nsec = 0;
--	jiffies += sleep_length;
--	write_sequnlock_irqrestore(&xtime_lock,flags);
--	touch_softlockup_watchdog();
+-static unsigned int  ref_freq = 0;
+-static unsigned long loops_per_jiffy_ref = 0;
+-
+-static unsigned long tsc_khz_ref = 0;
++static unsigned int  ref_freq;
++static unsigned long loops_per_jiffy_ref;
++static unsigned long tsc_khz_ref;
+ 
+ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 				 void *data)
+@@ -98,10 +82,8 @@ static struct notifier_block time_cpufre
+ 
+ static int __init cpufreq_tsc(void)
+ {
+-	INIT_WORK(&cpufreq_delayed_get_work, handle_cpufreq_delayed_get);
+-	if (!cpufreq_register_notifier(&time_cpufreq_notifier_block,
+-				       CPUFREQ_TRANSITION_NOTIFIER))
+-		cpufreq_init = 1;
++	cpufreq_register_notifier(&time_cpufreq_notifier_block,
++				  CPUFREQ_TRANSITION_NOTIFIER);
  	return 0;
  }
  
+@@ -123,17 +105,18 @@ __cpuinit int unsynchronized_tsc(void)
+ #endif
+ 	/* Most intel systems have synchronized TSCs except for
+ 	   multi node systems */
+- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) {
++	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) {
+ #ifdef CONFIG_ACPI
+ 		/* But TSC doesn't tick in C3 so don't use it there */
+-		if (acpi_gbl_FADT.header.length > 0 && acpi_gbl_FADT.C3latency < 1000)
++		if (acpi_gbl_FADT.header.length > 0 &&
++		    acpi_gbl_FADT.C3latency < 1000)
+ 			return 1;
+ #endif
+- 		return 0;
++		return 0;
+ 	}
+ 
+- 	/* Assume multi socket systems are not synchronized */
+- 	return num_present_cpus() > 1;
++	/* Assume multi socket systems are not synchronized */
++	return num_present_cpus() > 1;
+ }
+ 
+ int __init notsc_setup(char *s)
