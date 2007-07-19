@@ -1,38 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764633AbXGSAQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935022AbXGSAUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764633AbXGSAQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 20:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbXGSAQ2
+	id S935022AbXGSAUQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 20:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761652AbXGSAUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 20:16:28 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33095 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754243AbXGSAQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 20:16:27 -0400
-From: Neil Brown <neilb@suse.de>
+	Wed, 18 Jul 2007 20:20:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54663 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761954AbXGSAUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jul 2007 20:20:03 -0400
+Date: Wed, 18 Jul 2007 17:18:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: "J. Bruce Fields" <bfields@fieldses.org>
-Date: Thu, 19 Jul 2007 10:16:14 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18078.44366.961344.428533@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net,
+Cc: NeilBrown <neilb@suse.de>, nfs@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
 Subject: Re: [NFS] [PATCH 013 of 20] knfsd: nfsd: factor out code from
-	show_expflags
-In-Reply-To: message from J. Bruce Fields on Wednesday July 18
+ show_expflags
+Message-Id: <20070718171859.8d1276fd.akpm@linux-foundation.org>
+In-Reply-To: <20070718230555.GN7111@fieldses.org>
 References: <20070710121949.12548.patches@notabene>
 	<1070710022737.13509@suse.de>
 	<20070713002933.f15724a7.akpm@linux-foundation.org>
 	<20070718230555.GN7111@fieldses.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday July 18, bfields@fieldses.org wrote:
+On Wed, 18 Jul 2007 19:05:55 -0400
+"J. Bruce Fields" <bfields@fieldses.org> wrote:
+
 > On Fri, Jul 13, 2007 at 12:29:33AM -0700, Andrew Morton wrote:
 > > On Tue, 10 Jul 2007 12:27:37 +1000 NeilBrown <neilb@suse.de> wrote:
 > > 
@@ -53,12 +53,10 @@ On Wednesday July 18, bfields@fieldses.org wrote:
 > > But in general: be cautious when feeding opaque types to printk.
 > 
 > OK, here I'm still confused--what should we be doing instead?
+> 
 
-Cast the variable to a type that printf knows about.
-       seq_printf(m, ",anonuid=%d", (int)anonu);
+Nothing? I was just having a little self-muse.
 
-Or maybe cast it to (long) and use %ld, just in case...
+If one was really anal, one could typecast it to an unsigned long long in
+the printk, then feel smug when we switch to 64-bit uid's.
 
-Note the stray 's' in the current patch, after the comma!
-
-NeilBrown
