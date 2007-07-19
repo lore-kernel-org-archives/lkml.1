@@ -1,199 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758471AbXGSL0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764161AbXGSLaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758471AbXGSL0R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 07:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764300AbXGSLZv
+	id S1764161AbXGSLaU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 07:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbXGSLaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 07:25:51 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:42291 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759614AbXGSLZt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 07:25:49 -0400
-Date: Thu, 19 Jul 2007 13:25:47 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andy Whitcroft <apw@shadowen.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 3/3] ps3: FLASH ROM Storage Driver
-In-Reply-To: <20070718165222.e504d92e.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0707191106310.8661@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
- <20070716162206.723142000@pademelon.sonytel.be> <20070718165222.e504d92e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1837770057-1184837142=:8661"
-Content-ID: <Pine.LNX.4.62.0707191139380.8661@pademelon.sonytel.be>
+	Thu, 19 Jul 2007 07:30:08 -0400
+Received: from il.qumranet.com ([82.166.9.18]:39196 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752984AbXGSLaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 07:30:06 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, caglar@pardus.org.tr,
+       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
+       Avi Kivity <avi@qumranet.com>
+Subject: [PATCH] i386: Allow KVM on i386 nonpae
+Date: Thu, 19 Jul 2007 14:30:14 +0300
+Message-Id: <11848446144085-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Currently, CONFIG_X86_CMPXCHG64 both enables boot-time checking of
+the cmpxchg64b feature and enables compilation of the set_64bit() family.
+Since the option is dependent on PAE, and since KVM depends on set_64bit(),
+this effectively disables KVM on i386 nopae.
 
----584337861-1837770057-1184837142=:8661
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0707191139381.8661@pademelon.sonytel.be>
+Simplify by removing the config option altogether: the boot check is made
+dependent on CONFIG_X86_PAE directly, and the set_64bit() family is exposed
+without constraints.  It is up to users to check for the feature flag (KVM
+does not as virtualiation extensions imply its existence).
 
-	Hi Andrew,
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 
-On Wed, 18 Jul 2007, Andrew Morton wrote:
-> > +struct ps3flash_private {
-> > +	struct mutex mutex;	/* Bounce buffer mutex */
-> > +};
-> > +#define ps3flash_priv(dev)	((dev)->sbd.core.driver_data)
-> 
-> bzzzt!
-
-Same defense as ps3rom ;-)
-
-> > +static loff_t ps3flash_llseek(struct file *file, loff_t offset, int origin)
-> > +{
-> > +	struct ps3_storage_device *dev = ps3flash_dev;
-> > +	u64 size = dev->regions[dev->region_idx].size*dev->blk_size;
-> > +
-> > +	switch (origin) {
-> > +	case 1:
-> > +		offset += file->f_pos;
-> > +		break;
-> > +	case 2:
-> > +		offset += size;
-> > +		break;
-> > +	}
-> > +	if (offset < 0)
-> > +		return -EINVAL;
-> > +
-> > +	file->f_pos = offset;
-> > +	return file->f_pos;
-> > +}
-> 
-> lseek implementations usually need locking.  file->f_mapping->host->i_mutex
-> would be typical.
-> 
-> That locking mostly protects 64-bit f_pos on 32-bit architectures so you
-> can perahps kinda get away with it here.  However the code is a bit racy
-> even on 64-bit, for silly userspace.
-> 
-> That being said, I'd have thought that you could use one of our many
-> generic lseek library fucntions here, or even an newly-exported
-> block_llseek().  That assumes that i_size is correct, which I trust is the
-> case.
-
-You mean generic_file_llseek()?
-
-Who is responsible for setting i_size in that case? This is not a file, but a
-character device, so currently i_size is always zero.
-
-So I'll just add the missing locks.
-
-> > +static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
-> > +			     loff_t *pos)
-> > +{
-> > +	struct ps3_storage_device *dev = ps3flash_dev;
-> > +	struct ps3flash_private *priv = ps3flash_priv(dev);
-> > +	u64 size, start_sector, end_sector, offset;
-> > +	ssize_t sectors_read;
-> > +	size_t remaining, n;
-> > +
-> > +	dev_dbg(&dev->sbd.core,
-> > +		"%s:%u: Reading %zu bytes at position %lld to user 0x%p\n",
-> > +		__func__, __LINE__, count, *pos, buf);
-> > +
-> > +	size = dev->regions[dev->region_idx].size*dev->blk_size;
-> > +	if (*pos >= size || !count)
-> > +		return 0;
-> > +
-> > +	if (*pos+count > size) {
-> > +		dev_dbg(&dev->sbd.core,
-> > +			"%s:%u Truncating count from %zu to %llu\n", __func__,
-> > +			__LINE__, count, size - *pos);
-> > +		count = size - *pos;
-> > +	}
-> > +
-> > +	start_sector = do_div_llr(*pos, dev->blk_size, &offset);
-> > +	end_sector = DIV_ROUND_UP(*pos+count, dev->blk_size);
-> > +
-> > +	remaining = count;
-> > +	do {
-> > +		mutex_lock(&priv->mutex);
-> > +
-> > +		sectors_read = ps3flash_read_sectors(dev, start_sector,
-> > +						     end_sector-start_sector,
-> > +						     0);
-> > +		if (sectors_read < 0) {
-> > +			mutex_unlock(&priv->mutex);
-> > +			return sectors_read;
-> > +		}
-> > +
-> > +		n = min(remaining, sectors_read*dev->blk_size-offset);
-> > +		dev_dbg(&dev->sbd.core,
-> > +			"%s:%u: copy %lu bytes from 0x%p to user 0x%p\n",
-> > +			__func__, __LINE__, n, dev->bounce_buf+offset, buf);
-> > +		if (copy_to_user(buf, dev->bounce_buf+offset, n)) {
-> > +			mutex_unlock(&priv->mutex);
-> > +			return -EFAULT;
-> > +		}
-> > +
-> > +		mutex_unlock(&priv->mutex);
-> > +
-> > +		*pos += n;
-> > +		buf += n;
-> > +		remaining -= n;
-> > +		start_sector += sectors_read;
-> > +		offset = 0;
-> > +	} while (remaining > 0);
-> > +
-> > +	return count;
-> > +}
-> 
-> There are several nasty deeply-embedded return points in this function.
-
-Will change to `goto fail' and common error return.
-
-> > +	if (*pos+count > size) {
-> 
-> checkpatch missed stuff here.
-
-Checkpatch is silent...
-
-> > +		dev_dbg(&dev->sbd.core,
-> > +			"%s:%u Truncating count from %zu to %llu\n", __func__,
-> > +			__LINE__, count, size - *pos);
-> > +		count = size - *pos;
-> > +	}
-> > +
-> > +	chunk_sectors = dev->bounce_size / dev->blk_size;
-> > +
-> > +	start_write_sector = do_div_llr(*pos, dev->bounce_size, &offset) *
-> > +			     chunk_sectors;
-> 
-> It's strange to see a do_div_llr() in the middle of all this 64-bit-only
-> code.  Could use / and %?
-
-Sure.
-
-Note that in theory do_div_llr() could do the division and modulo in one
-instruction on architectures that support that (hmm, that's div_long_long_rem).
-
-With kind regards,
+diff --git a/arch/i386/Kconfig.cpu b/arch/i386/Kconfig.cpu
+index 9cbe76c..11a24d5 100644
+--- a/arch/i386/Kconfig.cpu
++++ b/arch/i386/Kconfig.cpu
+@@ -297,11 +297,6 @@ config X86_POPAD_OK
+ 	depends on !M386
+ 	default y
  
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+-config X86_CMPXCHG64
+-	bool
+-	depends on X86_PAE
+-	default y
+-
+ config X86_ALIGNMENT_16
+ 	bool
+ 	depends on MWINCHIP3D || MWINCHIP2 || MWINCHIPC6 || MCYRIXIII || X86_ELAN || MK6 || M586MMX || M586TSC || M586 || M486 || MVIAC3_2 || MGEODEGX1
+diff --git a/arch/i386/defconfig b/arch/i386/defconfig
+index 1a3a221..0ac62cd 100644
+--- a/arch/i386/defconfig
++++ b/arch/i386/defconfig
+@@ -166,7 +166,6 @@ CONFIG_X86_WP_WORKS_OK=y
+ CONFIG_X86_INVLPG=y
+ CONFIG_X86_BSWAP=y
+ CONFIG_X86_POPAD_OK=y
+-CONFIG_X86_CMPXCHG64=y
+ CONFIG_X86_GOOD_APIC=y
+ CONFIG_X86_INTEL_USERCOPY=y
+ CONFIG_X86_USE_PPRO_CHECKSUM=y
+diff --git a/arch/um/defconfig b/arch/um/defconfig
+index a25cd25..1e0f677 100644
+--- a/arch/um/defconfig
++++ b/arch/um/defconfig
+@@ -52,7 +52,6 @@ CONFIG_X86_WP_WORKS_OK=y
+ CONFIG_X86_INVLPG=y
+ CONFIG_X86_BSWAP=y
+ CONFIG_X86_POPAD_OK=y
+-CONFIG_X86_CMPXCHG64=y
+ CONFIG_X86_GOOD_APIC=y
+ CONFIG_X86_USE_PPRO_CHECKSUM=y
+ CONFIG_X86_TSC=y
+diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
+index 33fa28a..2f661e5 100644
+--- a/drivers/kvm/Kconfig
++++ b/drivers/kvm/Kconfig
+@@ -11,7 +11,6 @@ if VIRTUALIZATION
+ config KVM
+ 	tristate "Kernel-based Virtual Machine (KVM) support"
+ 	depends on X86 && EXPERIMENTAL
+-	depends on X86_CMPXCHG64 || 64BIT
+ 	---help---
+ 	  Support hosting fully virtualized guest machines using hardware
+ 	  virtualization extensions.  You will need a fairly recent
+diff --git a/include/asm-i386/cmpxchg.h b/include/asm-i386/cmpxchg.h
+index 7adcef0..64dcdf4 100644
+--- a/include/asm-i386/cmpxchg.h
++++ b/include/asm-i386/cmpxchg.h
+@@ -3,14 +3,16 @@
  
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1837770057-1184837142=:8661--
+ #include <linux/bitops.h> /* for LOCK_PREFIX */
+ 
++/*
++ * Note: if you use set64_bit(), __cmpxchg64(), or their variants, you
++ *       you need to test for the feature in boot_cpu_data.
++ */
++
+ #define xchg(ptr,v) ((__typeof__(*(ptr)))__xchg((unsigned long)(v),(ptr),sizeof(*(ptr))))
+ 
+ struct __xchg_dummy { unsigned long a[100]; };
+ #define __xg(x) ((struct __xchg_dummy *)(x))
+ 
+-
+-#ifdef CONFIG_X86_CMPXCHG64
+-
+ /*
+  * The semantics of XCHGCMP8B are a bit strange, this is why
+  * there is a loop and the loading of %%eax and %%edx has to
+@@ -65,8 +67,6 @@ static inline void __set_64bit_var (unsigned long long *ptr,
+  __set_64bit(ptr, (unsigned int)(value), (unsigned int)((value)>>32ULL) ) : \
+  __set_64bit(ptr, ll_low(value), ll_high(value)) )
+ 
+-#endif
+-
+ /*
+  * Note: no "lock" prefix even on SMP: xchg always implies lock anyway
+  * Note 2: xchg has side effect, so that attribute volatile is necessary,
+@@ -252,8 +252,6 @@ static inline unsigned long cmpxchg_386(volatile void *ptr, unsigned long old,
+ })
+ #endif
+ 
+-#ifdef CONFIG_X86_CMPXCHG64
+-
+ static inline unsigned long long __cmpxchg64(volatile void *ptr, unsigned long long old,
+ 				      unsigned long long new)
+ {
+@@ -289,5 +287,3 @@ static inline unsigned long long __cmpxchg64_local(volatile void *ptr,
+ 	((__typeof__(*(ptr)))__cmpxchg64_local((ptr),(unsigned long long)(o),\
+ 					(unsigned long long)(n)))
+ #endif
+-
+-#endif
+diff --git a/include/asm-i386/required-features.h b/include/asm-i386/required-features.h
+index 65848a0..618feb9 100644
+--- a/include/asm-i386/required-features.h
++++ b/include/asm-i386/required-features.h
+@@ -29,7 +29,7 @@
+ # define NEED_CMOV	0
+ #endif
+ 
+-#ifdef CONFIG_X86_CMPXCHG64
++#ifdef CONFIG_X86_PAE
+ # define NEED_CX8	(1<<(X86_FEATURE_CX8 & 31))
+ #else
+ # define NEED_CX8	0
