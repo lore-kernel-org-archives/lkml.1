@@ -1,35 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934536AbXGSMzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932163AbXGSM4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934536AbXGSMzn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbXGSMzb
+	id S932163AbXGSM4L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760387AbXGSMzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:55:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42424 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758133AbXGSMza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:55:30 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070719090620.GA14799@kernel.sg>
-References: <20070719090620.GA14799@kernel.sg>
-To: Eugene Teo <eugeneteo@kernel.sg>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs/afs/flock.c: posix_test_lock() returns void
-X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
-Date: Thu, 19 Jul 2007 13:55:26 +0100
-Message-ID: <26568.1184849726@redhat.com>
+	Thu, 19 Jul 2007 08:55:49 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:50063 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765628AbXGSMzr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:55:47 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 19 Jul 2007 08:53:43 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: does CONFIG_UNUSED_SYMBOLS have any value anymore?
+Message-ID: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eugene Teo <eugeneteo@kernel.sg> wrote:
 
-> posix_test_lock() returns void, so there is no need to test the return value.
-> Checking fl->fl_type for F_UNLCK instead.
+  just curious -- under kernel hacking, there is the option
+UNUSED_SYMBOLS to "Enable unused/obsolete exported symbols" using
+EXPORT_UNUSED_SYMBOL[_GPL].  reads the help text (in part):
 
-Yep, thanks.  Andrew Morton already has a patch for this.
+"This option is provided temporarily to provide a transition period in
+case some external kernel module needs one of these symbols anyway."
 
-David
+but it's not clear if that means that it was a *one-time* transition
+aid which is now unnecessary, or whether it's an *ongoing* aid which
+might be used at any time.  currently, there are no invocations of
+EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
+this feature can be tossed?  or might it still be used every so often?
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
