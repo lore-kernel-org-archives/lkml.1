@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937733AbXGSJ1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937891AbXGSJ2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937733AbXGSJ1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760665AbXGSJ1h
+	id S937891AbXGSJ2a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbXGSJ2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:27:37 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:35415 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752510AbXGSJ1g (ORCPT
+	Thu, 19 Jul 2007 05:28:17 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:43302 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbXGSJ2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:27:36 -0400
-Date: Thu, 19 Jul 2007 10:16:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ian Kent <raven@themaw.net>, Chuck Ebbert <cebbert@redhat.com>,
-       Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v19
-Message-ID: <20070719081650.GA14299@elte.hu>
-References: <20070706173319.GA2356@elte.hu> <1184054902.12336.19.camel@Homer.simpson.net> <469512C1.6090406@tmr.com> <20070711205556.GA27266@elte.hu> <4697EC49.4070303@tmr.com> <469BE462.9030004@redhat.com> <20070716215541.GA27171@elte.hu> <1184648474.3188.33.camel@raven.themaw.net> <20070717074537.GA13539@elte.hu> <alpine.LFD.0.999.0707180852540.27353@woody.linux-foundation.org>
+	Thu, 19 Jul 2007 05:28:15 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 19 Jul 2007 05:25:30 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Adrian Bunk <bunk@stusta.de>, Jeff Garzik <jeff@garzik.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Gabriel C <crazy@pimpmylinux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+In-Reply-To: <469F240E.9040205@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
+References: <469E75AA.7040109@pimpmylinux.org>
+ <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
+ <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
+ <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+ <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
+ <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
+ <469F240E.9040205@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707180852540.27353@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 19 Jul 2007, Stefan Richter wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> Robert P. J. Day wrote:
+> > On Thu, 19 Jul 2007, Adrian Bunk wrote:
+> >
+> > ...
+> >> I would consider it more ugly to special case this and that in the
+> >> kconfig code when plain dependencies already offer exactly the same
+> >> functionality...
+> >
+> > well, this is the *third* time i've proposed adding this kind of
+> > feature so, at this point, i've really given up caring about it.  if
+> > someone wants to do this, have at it.  i have better things to do than
+> > to keep suggesting it and getting nowhere with it.
+>
+> For better or worse, it can often be observed that feature requests
+> don't set anything in motion until a first patch is sent.  Even a
+> patch that is far from perfect can get things going really quickly.
+> (If the requested feature makes sense to other people.)
 
-> > ah! It passes in a low-res time source into a high-res time 
-> > interface (pthread_cond_timedwait()). Could you change the 
-> > time(NULL) + 1 to time(NULL) + 2, or change it to:
-> > 
-> > 	gettimeofday(&wait, NULL);
-> > 	wait.tv_sec++;
-> 
-> This is wrong. It's wrong for two reasons:
-> 
->  - it really shouldn't be needed. I don't think "time()" has to be 
->    *exactly* in sync, but I don't think it can be off by a third of a 
->    second or whatever (as the "30% CPU load" would seem to imply)
-> 
->  - gettimeofday works on a timeval, pthread_cond_timedwait() works on a 
->    timespec.
+i *did* submit a preliminary patch once upon a time, and it
+(predictably) went nowhere.  so, if someone else wants to pick this up
+and do something with it, you have my blessing.  life's too short to
+keep wasting time on this.
 
-ah, i didnt notice that automount mixed up timespec with timeval! That 
-is nasty and the tv_nsec field (which really is ts_usec to 
-pthread_cond_timewait()) must stay cleared - or rather, to avoid bugs of 
-this type, a timespec variable should be used for all this.
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-> So if it actually makes a difference, it makes a difference for the 
-> *wrong* reason: the time is still totally nonsensical in the tv_nsec 
-> field (because it actually got filled in with msecs!), but now the 
-> tv_sec field is in sync, so it hides the bug.
-> 
-> Anyway, hopefully the patch below might help. But we probably should make 
-> this whole thing a much more generic routine (ie we have our internal 
-> "getnstimeofday()" that still is missing the second-overflow logic, and 
-> that is quite possibly the one that triggers the "30% off" behaviour).
-
-yeah, i'll generalize it, but our internal getnstimeofday() used on most 
-architectures is using __get_realtime_clock_ns(), and the patch you 
-attached already adds the second-overflow logic to it.
-
-there are two versions of getnstimeofday(), a TIME_INTERPOLATION one and 
-a !TIME_INTERPOLATION one. TIME_INTERPOLATION is only used on ia64 at 
-the moment - and that one indeed does not have the second overflow 
-logic.
-
-> Ingo, I'd suggest:
->  - ger rid of "timespec_add_ns()", or at least make it return a return 
->    value for when it overflows.
->  - make all the people who overflow into tv_sec call a "fix_up_seconds()" 
->    thing that does the xtime overflow handling.
-
-ok, i'll do something clean.
-
-	Ingo
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
