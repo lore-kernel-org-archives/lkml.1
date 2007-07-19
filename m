@@ -1,39 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932466AbXGSMGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765352AbXGSMJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932466AbXGSMGt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761725AbXGSMGg
+	id S1765352AbXGSMJS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757716AbXGSMJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:06:36 -0400
-Received: from ns.suse.de ([195.135.220.2]:46486 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 08:09:07 -0400
+Received: from mail.suse.de ([195.135.220.2]:46673 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765128AbXGSMGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:06:35 -0400
+	id S1753106AbXGSMJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:09:06 -0400
 From: Andi Kleen <ak@suse.de>
 Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Subject: Re: [PATCH] [2/58] x86_64: Tell gcc to only align stack to 8 bytes
-Date: Thu, 19 Jul 2007 14:06:31 +0200
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: [PATCH] [14/58] x86_64: Add on_cpu_single
+Date: Thu, 19 Jul 2007 14:07:27 +0200
 User-Agent: KMail/1.9.6
 Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200707191154.642492000@suse.de> <20070719095445.DC94514E04@wotan.suse.de> <87wswwsjcz.fsf@depni.sinp.msu.ru>
-In-Reply-To: <87wswwsjcz.fsf@depni.sinp.msu.ru>
+References: <200707191154.642492000@suse.de> <20070719095458.DB13914E06@wotan.suse.de> <a781481a0707190409r73fc0220g835fe818eeb2f6ac@mail.gmail.com>
+In-Reply-To: <a781481a0707190409r73fc0220g835fe818eeb2f6ac@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707191406.31857.ak@suse.de>
+Message-Id: <200707191407.27915.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 13:50:20 Serge Belyshev wrote:
 
-> So -mpreferred-stack-boundary=4 is the default and to align stack
-> to 8 bytes you want -mpreferred-stack-boundary=3, not 4, IIUC.
+> But probably you should just drop this ... with smp_call_function_single's
+> new semantics, I don't see this function growing any users.
 
-Fixed thanks
+The new sched-clock uses it, but i'll update it to use smp_call_function_single
+
+Thanks
 
 -Andi
-
-
