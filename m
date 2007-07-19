@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937758AbXGSJCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937824AbXGSJEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937758AbXGSJCV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 05:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761448AbXGSJCK
+	id S937824AbXGSJEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764007AbXGSJEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:02:10 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:40830 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758087AbXGSJCI (ORCPT
+	Thu, 19 Jul 2007 05:04:36 -0400
+Received: from yue.linux-ipv6.org ([203.178.140.15]:49018 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763937AbXGSJEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:02:08 -0400
-Date: Thu, 19 Jul 2007 11:02:07 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
-In-Reply-To: <20070718164351.a92ec032.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0707191100270.8661@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
- <20070716162206.529280000@pademelon.sonytel.be> <20070718164351.a92ec032.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1835406229-1184835727=:8661"
+	Thu, 19 Jul 2007 05:04:35 -0400
+Date: Thu, 19 Jul 2007 18:05:18 +0900 (JST)
+Message-Id: <20070719.180518.79100322.yoshfuji@linux-ipv6.org>
+To: jens.axboe@oracle.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       olaf.kirch@oracle.com, johnpol@2ka.mipt.ru, yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH][RFC] network splice receive v3
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <20070711091927.GQ4587@kernel.dk>
+References: <20070711091927.GQ4587@kernel.dk>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hello.
 
----584337861-1835406229-1184835727=:8661
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In article <20070711091927.GQ4587@kernel.dk> (at Wed, 11 Jul 2007 11:19:27 +0200), Jens Axboe <jens.axboe@oracle.com> says:
 
-On Wed, 18 Jul 2007, Andrew Morton wrote:
-> > +struct ps3rom_private {
-> > +	struct ps3_storage_device *dev;
-> > +	struct scsi_cmnd *curr_cmd;
-> > +};
-> > +#define ps3rom_priv(dev)	((dev)->sbd.core.driver_data)
-> > +
-> 
-> Someone should invent a keyboard which delivers an electric shock when the
-> operator types "#define".   In the meanwhile, I get to do the honours.
-> 
-> Please don't implement in a macro anything which can be implemented in C.
+> @@ -835,6 +835,7 @@ const struct proto_ops inet_stream_ops = {
+>  	.recvmsg	   = sock_common_recvmsg,
+>  	.mmap		   = sock_no_mmap,
+>  	.sendpage	   = tcp_sendpage,
+> +	.splice_read	   = tcp_splice_read,
+>  #ifdef CONFIG_COMPAT
+>  	.compat_setsockopt = compat_sock_common_setsockopt,
+>  	.compat_getsockopt = compat_sock_common_getsockopt,
 
-All I needed was a shorthand to access driver_data, for both read and write
-access (you cannot do the latter with C, unless you decouple read and write).
+Please add similar bits in net/ipv6/af_inet6.c
+unless there are any dependency on IPv4.
+(And if there are, it is not good.)
 
-> > +			kaddr = kmap_atomic(sgpnt->page, KM_IRQ0);
-> > +			if (!kaddr)
-> > +				return -1;
-> 
-> kmap_atomic() cannot fail.  On i386, at least.  If it can fail on any other
-> arch then we have a biiiiig problem.  (Multiple instances of this)
-
-Thanks, fixed!
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1835406229-1184835727=:8661--
+--yoshfuji
