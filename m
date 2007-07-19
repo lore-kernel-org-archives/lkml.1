@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936422AbXGSNBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936720AbXGSNBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936422AbXGSNBF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 09:01:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760077AbXGSNAt
+	id S936720AbXGSNBc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 09:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763285AbXGSNAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:00:49 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:54060 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757889AbXGSNAr (ORCPT
+	Thu, 19 Jul 2007 09:00:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:14098 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760000AbXGSNAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:00:47 -0400
-Date: Thu, 19 Jul 2007 09:00:45 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: "Serge E. Hallyn" <serge@hallyn.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-In-Reply-To: <20070719124244.GA7219@vino.hallyn.com>
-Message-ID: <Line.LNX.4.64.0707190847020.4393@d.namei>
-References: <Line.LNX.4.64.0707141233490.26711@d.namei>
- <20070718183503.541026f8.akpm@linux-foundation.org> <20070719073948.GI18840@lisa.in-ulm.de>
- <20070719122424.GA5186@vino.hallyn.com> <Line.LNX.4.64.0707190832290.4303@d.namei>
- <20070719124244.GA7219@vino.hallyn.com>
+	Thu, 19 Jul 2007 09:00:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=V0cH+/yphHkyYiOrmBgddCuWsjNi3qMmfMjrmg0jDCU5Vml84qtLDTipbVQ/evl2YtlIg8NsSa0osLiZzifxFk6dJyuTfXFBahY6UG+IC6sW9IPmX8D8LQ9x4EZuHrAA5/fHaLujdxIH9XzvFcaa3Qaa8QcxXXWYLIAzjgCHiDc=
+Message-ID: <3d0408630707190600r3c630db8h3dcc6550e93cfb27@mail.gmail.com>
+Date: Thu, 19 Jul 2007 21:00:46 +0800
+From: "Yan Zheng" <ukernel@gmail.com>
+To: linux-ext4@vger.kernel.org
+Subject: Why max_debt isn't used in ext4's find_group_orlov(...) ?
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Serge E. Hallyn wrote:
+Hi all
 
-> > It's already pretty clear.
-> 
-> I doubt anyone not on lkml or linux-security-module has heard of this.
-> 
-> So we'll see.
-> 
-> (I was, obviously, talking about end-users)
+max_debt is used in ext2's find_group_orlov .  In ext4's
+find_group_orlov, max_debt is only computed, but not used.  I wonder
+whether it's a typo,  Can anyone give me a answer? The kernel source I
+read is 2.6.22.
 
-If distributions are shipping binary modules and other out of tree code to 
-their users, then they should bear responsibility for supporting and 
-maintaining the infrastructure required for it, and not expect upstream 
-maintainers to do it for them.
+Thanks in advance.
 
-Additionally, if they want to expose their users to risks arising from 
-broken and unecessary infrastructure, then they should bear the cost and 
-responsibility of doing that and not expect others to do so as well.
+----------------
+Best Regards
 
-I don't see how this is even slightly difficult to understand.
-
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+YZ
