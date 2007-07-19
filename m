@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936242AbXGSX6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXGTAAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936242AbXGSX6i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 19:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759898AbXGSX63
+	id S932403AbXGTAAK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 20:00:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934283AbXGSX7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 19:58:29 -0400
-Received: from mail.clusterfs.com ([74.0.229.162]:60931 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755289AbXGSX61 (ORCPT
+	Thu, 19 Jul 2007 19:59:55 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:30334 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933768AbXGSX7y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 19:58:27 -0400
-Date: Thu, 19 Jul 2007 17:58:25 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, tytso@mit.edu, cmm@us.ibm.com, suparna@in.ibm.com,
-       dgc@sgi.com, michael.kerrisk@gmx.net
-Subject: Re: [PATCH 1/5][TAKE8] manpage for fallocate
-Message-ID: <20070719235825.GY5992@schatzie.adilger.int>
-Mail-Followup-To: Mark Fasheh <mark.fasheh@oracle.com>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, tytso@mit.edu,
-	cmm@us.ibm.com, suparna@in.ibm.com, dgc@sgi.com,
-	michael.kerrisk@gmx.net
-References: <20070713184125.GA12156@amitarora.in.ibm.com> <20070713184625.GB12156@amitarora.in.ibm.com> <20070719034155.GE32734@ca-server1.us.oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 19 Jul 2007 19:59:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Mais9dBFvPy9A7uJDu/eBSm8o1mVJ7Rybe8GTVtT+3AS+LDisDBCIR2tei5DUn2YPK3V9i+JtKDCpcyyA4bhXPv2hu6HOzLBScYdjYcGhl/1FyTcKRgVf5jph4oJ+Qz8XBJUSIOExP0ableqeU2LTCmYK9RT2OU08oDIuALnPec=
+Message-ID: <ab18d8520707191659l3c176429iee35d00817778711@mail.gmail.com>
+Date: Fri, 20 Jul 2007 07:59:53 +0800
+From: "Fengwei Yin" <yfw.kernel@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: About get_page for compound page
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1184881172.20032.160.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070719034155.GE32734@ca-server1.us.oracle.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <ab18d8520707190854v50216497mcc2be291d1a99ab2@mail.gmail.com>
+	 <1184881172.20032.160.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 18, 2007  20:41 -0700, Mark Fasheh wrote:
-> On Sat, Jul 14, 2007 at 12:16:25AM +0530, Amit K. Arora wrote:
-> > After a successful call, subsequent writes are guaranteed not to fail
-> > because of lack of disk space.
->   
-> If a write to an unwritten region requires a node split, that could result
-> in the allocation of new meta data which obviously could fail if the disk is
-> truly full.
-> 
-> Granted that's unlikely to happen but maybe we should be conservative and
-> say something like:
-> 
-> "After a successful call, subsequent writes are guaranteed to never require
-> allocation of file data." ?
->         --Mark
+On 7/20/07, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, 2007-07-19 at 23:54 +0800, Fengwei Yin wrote:
+> > Hi,
+> > In get_page(), the parameter page is changed by
+> >          page = compound_head(page);
+> > if the page is not the first page of compound pages.
+> >
+> > My question: is this behavior correct?
+>
+> Yes it is, in general the page state of a compound page is kept in the
+> first page of the set.
+>
+Yes. I know this. But
+static inline void get_page(struct page *page)
+                                                     ~~~~~~ changed by
+this function.
+{
+         page = compound_head(page);
+                    ~~~~~~~~~~~~~~~~~~~~~~~
+         VM_BUG_ON(atomic_read(&page->_count) == 0);
+         atomic_inc(&page->_count);
+}
 
-In the worst case, the unwritten extent could be zero-filled before the write
-is done, so no exent split is needed.  We discussed this recently for the
-ext4 fallocate, but didn't consider it important enough to hold the code.
+As I understand, just need update the first page reference count.
+Or the caller aware of this bahavior?
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+Or change it to
+static inline void get_page(struct page *page)
+{
+         struct page *head_page = compound_head(page);
+         VM_BUG_ON(atomic_read(&head_page->_count) == 0);
+         atomic_inc(&head_page->_count);
+}
 
+Regards
+Yin, Fengwei
