@@ -1,135 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765314AbXGSWcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765462AbXGSWiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765314AbXGSWcW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 18:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760409AbXGSWcM
+	id S1765462AbXGSWiU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 18:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756498AbXGSWiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 18:32:12 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:44396 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753134AbXGSWcK (ORCPT
+	Thu, 19 Jul 2007 18:38:09 -0400
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:59798 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756228AbXGSWiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 18:32:10 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 19 Jul 2007 18:28:11 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Simon Arlott <simon@fire.lp0.eu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Adrian Bunk <bunk@stusta.de>, Jeff Garzik <jeff@garzik.org>,
-       Gabriel C <crazy@pimpmylinux.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-In-Reply-To: <469FE045.3070403@simon.arlott.org.uk>
-Message-ID: <Pine.LNX.4.64.0707191813490.5581@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
- <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
- <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
- <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
- <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
- <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
- <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
- <20070719083109.13b2ab56.rdunlap@xenotime.net>
- <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
- <469FE045.3070403@simon.arlott.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 19 Jul 2007 18:38:07 -0400
+Date: Thu, 19 Jul 2007 18:32:54 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       wli@holomorphy.com, sparclinux@vger.kernel.org
+Subject: Re: Powerpc - Include pagemap.h in asm/powerpc/tlb.h
+Message-ID: <20070719223254.GA30383@Krystal>
+References: <20070714012033.GC31649@Krystal> <20070718223034.7388e59f.akpm@linux-foundation.org> <D9805F9D-04B0-4422-81F1-958B15482A93@kernel.crashing.org> <20070719131348.170443bb.akpm@linux-foundation.org> <E7820A72-36A3-4B4D-A497-974409D3EBDE@kernel.crashing.org> <20070719143020.5e0b7474.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070719143020.5e0b7474.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:17:57 up 2 days, 16:52,  2 users,  load average: 0.68, 0.31, 0.30
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Simon Arlott wrote:
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Thu, 19 Jul 2007 16:04:38 -0500
+> Kumar Gala <galak@kernel.crashing.org> wrote:
+> 
+> > >> Andrew,
+> > >>
+> > >> Are you sending this to linus directly or should this go via paul and
+> > >> me?
+> > >>
+> > >
+> > > I queued it up for Paul.  I can send it over to Linus today if we  
+> > > have a
+> > > reason for that.  It's just that I dont understand the patch: does  
+> > > it fix
+> > > -mm-only breakage?  Does it fix something which already got fixed,  
+> > > or what?
+> > 
+> > I'm seeing the same breakage in my tree.
+> 
+> Oh, OK.  Let's just merge it.
+> 
+> > > One might think "gee, it's trivial, just slam it in", but these nested
+> > > includes are often not-trivial and something else can explode as a  
+> > > result.
+> > 
+> > I'll do a git-bisect and see if I can find the patch that causes this  
+> > breakage so we know what's going on.
+> 
+> eh, don't bother.
 
-> On 19/07/07 17:19, Robert P. J. Day wrote:
-> > On Thu, 19 Jul 2007, Randy Dunlap wrote:
-> >> I think that Stefan means a patch to the kconfig source code,
-> >> not the the Kconfig files.  Good luck.  I'd still like to see it.
-> >
-> > yes, i understand what he wanted now.  as a first step (that
-> > theoretically shouldn't change any behaviour), i'd patch the Kconfig
-> > structure to add a new attribute ("maturity") which would be allowed
-> > to be set to *exactly one* of a pre-defined set of values (say,
-> > OBSOLETE, DEPRECATED, EXPERIMENTAL, and STILLBLEEDING).  and that's
-> > it, nothing more.
-> >
-> > don't try to do anything with any of that just yet, just add the
-> > infrastructure to support the (optional) association of a maturity
-> > level with a config option.  that's step one.
->
-> What about something like this? I'm not sure if the addition to sym_init
-> is desirable... I also had to prefix _ to the name for now otherwise it
-> conflicts badly with the current symbols. It probably should stop
-> "depends on _BROKEN" etc. too.
->
-> ---
-> diff --git a/init/Kconfig b/init/Kconfig
-> diff --git a/net/Kconfig b/net/Kconfig
-> index cdba08c..5e2f4db 100644
-> --- a/net/Kconfig
-> +++ b/net/Kconfig
-> @@ -6,6 +6,7 @@ menu "Networking"
->
->  config NET
->  	bool "Networking support"
-> +	maturity _BROKEN
+Hrm, I still think it's kind of interesting to see what happens there.
 
-just as a bit of a digression, "BROKEN" is not what i would call a
-maturity level, and i would explicitly *not* allow that as a possible
-maturity because that just makes a mess of the design.
+So the sane way to make sure it's fixed would be to turn the macros
+free_page_and_swap_cache() and free_pages_and_swap_cache() into an
+inline function (just to make sure the compiler complains), but that
+would require to include linux/pagemap.h from linux/swap.h. But let's
+just see what happens on sparc if we include linux/pagemap.h from
+swap.h.
 
-i specifically wanted to define a maturity level so that any feature
-could be categorized as belonging to *at most* one maturity level.
-that is, you can't be both EXPERIMENTAL and DEPRECATED at the same
-time -- that just makes no sense.
+I just tested compiling on sparc, here is the result:
 
-once you tag some features with a maturity level, then part of the
-build would involve selecting which subset of maturity levels you
-wanted to see.  by default, you'd get to see those features that
-weren't tagged at all, but you might also make a selection like this:
 
-  [*] EXPERIMENTAL
-  [*] DEPRECATED
-  [ ] OBSOLETE
+  /opt/crosstool/gcc-4.1.1-glibc-2.3.6/sparc-unknown-linux-gnu/bin/sparc-unknown-linux-gnu-gcc -Wp,-MD,init/.main.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.1.1-glibc-2.3.6/sparc-unknown-linux-gnu/lib/gcc/sparc-unknown-linux-gnu/4.1.1/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h -I/home/compudj/git/linux-2.6-lttng/init -Iinit -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7 -fomit-frame-pointer -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(main)"  -D"KBUILD_MODNAME=KBUILD_STR(main)" -c -o init/.tmp_main.o /home/compudj/git/linux-2.6-lttng/init/main.c
+In file included from /home/compudj/git/linux-2.6-lttng/include/linux/highmem.h:24,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:10,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/swap.h:9,
+                 from include2/asm/pgtable.h:15,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/mm.h:38,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/rmap.h:9,
+                 from /home/compudj/git/linux-2.6-lttng/init/main.c:49:
+include2/asm/highmem.h: In function 'kmap':
+include2/asm/highmem.h:60: error: implicit declaration of function 'PageHighMem'
+include2/asm/highmem.h:61: error: implicit declaration of function 'page_address'
+include2/asm/highmem.h:61: warning: return makes pointer from integer without a cast
+In file included from /home/compudj/git/linux-2.6-lttng/include/linux/swap.h:9,
+                 from include2/asm/pgtable.h:15,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/mm.h:38,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/rmap.h:9,
+                 from /home/compudj/git/linux-2.6-lttng/init/main.c:49:
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h: In function 'linear_page_index':
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:153: error: dereferencing pointer to incomplete type
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:154: error: dereferencing pointer to incomplete type
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h: In function 'lock_page':
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:168: error: implicit declaration of function 'TestSetPageLocked'
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h: In function 'wait_on_page_locked':
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:198: error: implicit declaration of function 'PageLocked'
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:199: error: 'PG_locked' undeclared (first use in this function)
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:199: error: (Each undeclared identifier is reported only once
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:199: error: for each function it appears in.)
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h: In function 'wait_on_page_writeback':
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:207: error: implicit declaration of function 'PageWriteback'
+/home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:208: error: 'PG_writeback' undeclared (first use in this function)
+In file included from /home/compudj/git/linux-2.6-lttng/include/linux/rmap.h:9,
+                 from /home/compudj/git/linux-2.6-lttng/init/main.c:49:
+/home/compudj/git/linux-2.6-lttng/include/linux/mm.h: At top level:
+/home/compudj/git/linux-2.6-lttng/include/linux/mm.h:605: error: conflicting types for 'page_address'
+include2/asm/highmem.h:61: error: previous implicit declaration of 'page_address' was here
 
-in other words, you wanted the choice of stuff in the first two
-categories, but not the third.  (you would, of course, always get to
-choose from non-tagged stuff, which would be your *normal* content,
-exactly as it is now).
+PageHighMem is declared in linux/page-flags.h, which is included in
+linux/mm.h with the following comment:
 
-so what about BROKEN?  i would invent a whole new attribute for that,
-called maybe "status":
+/*
+ * FIXME: take this include out, include page-flags.h in
+ * files which need it (119 of them)
+ */
+#include <linux/page-flags.h>
 
-config FUBAR
-	depends on ...
-	maturity DEPRECATED
-	status BROKEN
-	...
+(linux/mm.h is included from linux/highmem.h)
 
-"status" is a totally orthogonal attribute to maturity.  status might
-be one of BROKEN, BROKEN_ON_SMP, FLAKEY_AS HELL, etc.  and, once
-again, any feature can fall into *at most* one status category.  once
-you have the infrastructure to support a single attribute like
-maturity, you get any additional ones for free.  and rather than
-defining all those things as simple dependencies, by creating new
-objects called "attributes", you can play all sorts of interesting new
-games, and the attribute infrastructure can enforce that you're using
-it properly.
+Actually, we get a circular inclusion there:
 
-now i'll go away and read the rest of your post.  :-)
+In file included from /home/compudj/git/linux-2.6-lttng/include/linux/highmem.h:24,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/pagemap.h:10,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/swap.h:9,
+                 from include2/asm/pgtable.h:15,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/mm.h:38,
+                 from /home/compudj/git/linux-2.6-lttng/include/linux/rmap.h:9,
+                 from /home/compudj/git/linux-2.6-lttng/init/main.c:49:
 
-rday
+
+mm.h includes asm-sparc/pgtable.h includes linux/swap.h includes
+linux/pagemap.h (which I have added myself) includes linux/highmem.h
+includes mm.h.....
+
+Is it me or it all looks like a fubarish mess ? :(
+
+Why is asm-sparc/pgtable.h including linux/swap.h ? Perharps the sparc
+devs will be able to enlighten us...
+
+Mathieu
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
