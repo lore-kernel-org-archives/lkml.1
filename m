@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932643AbXGSUYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbXGSUY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932643AbXGSUYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 16:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760362AbXGSUYP
+	id S932774AbXGSUY6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 16:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbXGSUYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 16:24:15 -0400
-Received: from www.osadl.org ([213.239.205.134]:48962 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759641AbXGSUYO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 16:24:14 -0400
-From: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [PATCH 3/3] UIO: Hilscher CIF card driver
-Date: Thu, 19 Jul 2007 22:24:09 +0200
-User-Agent: KMail/1.9.5
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-References: <20070718232332.GA4620@kroah.com> <200707192128.45595.hjk@linutronix.de> <Pine.LNX.4.64.0707192201260.31013@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0707192201260.31013@fbirervta.pbzchgretzou.qr>
+	Thu, 19 Jul 2007 16:24:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38229 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753437AbXGSUYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 16:24:49 -0400
+Date: Thu, 19 Jul 2007 22:24:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] slub crashes with recent -git
+Message-ID: <20070719202443.GA7475@elte.hu>
+References: <20070719194234.GA27917@elte.hu> <alpine.LFD.0.999.0707191307220.27249@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707192224.09062.hjk@linutronix.de>
+In-Reply-To: <alpine.LFD.0.999.0707191307220.27249@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 19 Juli 2007 22:02 schrieb Jan Engelhardt:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Thu, 19 Jul 2007, Ingo Molnar wrote:
+> > 
+> > i had to apply the patch below to make the kernel boot again.
 > 
-> On Jul 19 2007 21:28, Hans-Jürgen Koch wrote:
-> >Am Donnerstag 19 Juli 2007 18:33 schrieb Jan Engelhardt:
-> >> On Jul 18 2007 16:26, Greg Kroah-Hartman wrote:
-> >> >
-> >> >http://www.tglx.de/private/hjk/cif-orig-2.6.tar.bz2
-> >> >
-> >> >WARNING: Don't look at the code for too long, you might become sick :-)
-> >> 
-> >> Taking precautions for people? I get a 404...
-> >
-> >Now it's there.
-> 
-> aaaa, my eyes... ("Microsoft" is a good summary of the codingstyle...)
+> A better patch should be the appended. Does that work for you too?
 
-It's not just coding style, it's also concept. This was written with
-the only goal to get a card working at one particular time. What happens
-in future is not important. Would you like to port this driver to 2.6.22?
-Would you like to post it on lkml, signed-off by you?
+yeah, works fine!
 
-The concept is bad because the authors of that driver never tried to
-find out how a driver should look like and what has to be done to get
-it into mainline. Allright, with such a big driver for a relatively
-unknown card(?) it's not easy to include that in mainline. That's
-why we now have UIO... It greatly simplifies tasks like that.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-I really hope that UIO will soon be used for industrial cards like
-this one, and that we can fill drivers/uio/ with lots of small
-kernel modules. And yes, these programmers in industry who wrote
-drivers like the above, they will still be doing what they want and
-what they're able to. But, hopefully, they'll now do it in userspace.
-
-Thanks,
-Hans
- 
+	Ingo
