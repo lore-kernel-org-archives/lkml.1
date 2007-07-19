@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939414AbXGSPnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939119AbXGSPpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939414AbXGSPnw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936917AbXGSPnh
+	id S939119AbXGSPpa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbXGSPpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:43:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56669 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Jul 2007 11:45:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39796 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935504AbXGSPnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:43:35 -0400
-Date: Thu, 19 Jul 2007 17:42:54 +0200
+	id S1762287AbXGSPpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 11:45:07 -0400
+Date: Thu, 19 Jul 2007 17:44:49 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
        Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch] sched: implement cpu_clock(cpu) high-speed time source
-Message-ID: <20070719154254.GA24225@elte.hu>
-References: <20070717154934.GA24231@elte.hu> <20070719002231.069ebbdd.akpm@linux-foundation.org> <20070719075152.GB12760@elte.hu> <469F75AF.5080000@goop.org> <20070719143528.GA8278@elte.hu> <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu> <469F7D7A.204@goop.org> <20070719150955.GA19373@elte.hu> <469F8179.2060802@goop.org>
+Subject: [patch] sched: implement cpu_clock(cpu) high-speed time source,
+	take #2
+Message-ID: <20070719154449.GA28998@elte.hu>
+References: <20070719002231.069ebbdd.akpm@linux-foundation.org> <20070719075152.GB12760@elte.hu> <469F75AF.5080000@goop.org> <20070719143528.GA8278@elte.hu> <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu> <469F7D7A.204@goop.org> <20070719150955.GA19373@elte.hu> <469F8179.2060802@goop.org> <20070719154254.GA24225@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <469F8179.2060802@goop.org>
+In-Reply-To: <20070719154254.GA24225@elte.hu>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -36,24 +37,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > yeah. But then it should not be using sched_clock() but CFS's new 
-> > rq_clock() method - which does try to construct a globally valid 
-> > timesource out of sched_clock(). [that fix is not backportable 
-> > though]
+> > Hm, that doesn't look quite right.  Doesn't rq_clock measure time 
+> > spent running?  Unstolen time includes idle time too (it just 
+> > excludes time in which a VCPU is runnable but not actually running).
 > 
-> Hm, that doesn't look quite right.  Doesn't rq_clock measure time 
-> spent running?  Unstolen time includes idle time too (it just excludes 
-> time in which a VCPU is runnable but not actually running).
+> generally rq_clock() also includes idle time, so it should work fine 
+> for this purpose. So, what do you think about the patch below - does 
+> it suit Xen's purposes?
 
-generally rq_clock() also includes idle time, so it should work fine for 
-this purpose. So, what do you think about the patch below - does it suit 
-Xen's purposes?
+how about the patch below instead? (which, unlike the first one, happens 
+to build and boot ;-)
 
 	Ingo
 
--------------------->
+-------------->
 Subject: sched: implement cpu_clock(cpu) high-speed time source
 From: Ingo Molnar <mingo@elte.hu>
 
@@ -61,7 +60,7 @@ Implement the cpu_clock(cpu) interface for kernel-internal use:
 high-speed (but slightly incorrect) per-cpu clock constructed from
 sched_clock().
 
-fix up blktrace and softlockup-watchdog to use this new interface.
+update blktrace and the softlockup-watchdog to use this new interface.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
@@ -158,10 +157,11 @@ Index: linux/kernel/sched.c
 ===================================================================
 --- linux.orig/kernel/sched.c
 +++ linux/kernel/sched.c
-@@ -365,6 +365,23 @@ static inline unsigned long long rq_cloc
- }
+@@ -379,6 +379,23 @@ static inline unsigned long long rq_cloc
+ #define task_rq(p)		cpu_rq(task_cpu(p))
+ #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
  
- /*
++/*
 + * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
 + * clock constructed from sched_clock():
 + */
@@ -178,10 +178,9 @@ Index: linux/kernel/sched.c
 +	return now;
 +}
 +
-+/*
-  * The domain tree (rq->sd) is protected by RCU's quiescent state transition.
-  * See detach_destroy_domains: synchronize_sched for details.
-  *
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ /* Change a task's ->cfs_rq if it moves across CPUs */
+ static inline void set_task_cfs_rq(struct task_struct *p)
 Index: linux/kernel/softlockup.c
 ===================================================================
 --- linux.orig/kernel/softlockup.c
