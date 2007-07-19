@@ -1,200 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939652AbXGSPu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939588AbXGSPu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939652AbXGSPu0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937570AbXGSPuD
+	id S939588AbXGSPu6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937921AbXGSPuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:50:03 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:53344 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937487AbXGSPuA (ORCPT
+	Thu, 19 Jul 2007 11:50:11 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:50434 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937982AbXGSPuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:50:00 -0400
-Subject: Re: [PATCH] hugetlbfs read() support
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bill Irwin <bill.irwin@oracle.com>, nacc@us.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20070718221950.35bbdb76.akpm@linux-foundation.org>
-References: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070718221950.35bbdb76.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 08:51:49 -0700
-Message-Id: <1184860309.18188.90.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+	Thu, 19 Jul 2007 11:50:09 -0400
+Message-ID: <469F87D8.9020404@googlemail.com>
+Date: Thu, 19 Jul 2007 17:48:40 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org
+Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
+References: <469C10F6.3050008@googlemail.com>	 <20070717100921W.fujita.tomonori@lab.ntt.co.jp>	 <469C1E2A.8010508@googlemail.com>	 <20070719082516W.fujita.tomonori@lab.ntt.co.jp>	 <1184853770.3464.85.camel@localhost.localdomain>	 <469F75A4.8050301@googlemail.com> <1184858356.3464.96.camel@localhost.localdomain>
+In-Reply-To: <1184858356.3464.96.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-18 at 22:19 -0700, Andrew Morton wrote:
-> On Fri, 13 Jul 2007 18:23:33 -0700 Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> 
-> > Hi Andrew,
-> > 
-> > Here is the patch to support read() for hugetlbfs, needed to get
-> > oprofile working on executables backed by largepages. 
-> > 
-> > If you plan to consider Christoph Lameter's pagecache cleanup patches,
-> > I will re-write this. Otherwise, please consider this for -mm.
-> > 
-> > Thanks,
-> > Badari
-> > 
-> > Support for reading from hugetlbfs files. libhugetlbfs lets application
-> > text/data to be placed in large pages. When we do that, oprofile doesn't
-> > work - since libbfd tries to read from it.
-> > 
-> > This code is very similar to what do_generic_mapping_read() does, but
-> > I can't use it since it has PAGE_CACHE_SIZE assumptions.
-> > 
-> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > Acked-by: William Irwin <bill.irwin@oracle.com>
-> > Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
-> > 
-> >  fs/hugetlbfs/inode.c |  113 +++++++++++++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 113 insertions(+)
-> > 
-> > Index: linux-2.6.22/fs/hugetlbfs/inode.c
-> > ===================================================================
-> > --- linux-2.6.22.orig/fs/hugetlbfs/inode.c	2007-07-08 16:32:17.000000000 -0700
-> > +++ linux-2.6.22/fs/hugetlbfs/inode.c	2007-07-13 19:24:36.000000000 -0700
-> > @@ -156,6 +156,118 @@ full_search:
-> >  }
-> >  #endif
-> >  
-> > +static int
-> > +hugetlbfs_read_actor(struct page *page, unsigned long offset,
-> > +			char __user *buf, unsigned long count,
-> > +			unsigned long size)
-> > +{
-> > +	char *kaddr;
-> > +	unsigned long left, copied = 0;
-> > +	int i, chunksize;
-> > +
-> > +	if (size > count)
-> > +		size = count;
-> > +
-> > +	/* Find which 4k chunk and offset with in that chunk */
-> > +	i = offset >> PAGE_CACHE_SHIFT;
-> > +	offset = offset & ~PAGE_CACHE_MASK;
-> > +
-> > +	while (size) {
-> > +		chunksize = PAGE_CACHE_SIZE;
-> > +		if (offset)
-> > +			chunksize -= offset;
-> > +		if (chunksize > size)
-> > +			chunksize = size;
-> > +		kaddr = kmap(&page[i]);
-> > +		left = __copy_to_user(buf, kaddr + offset, chunksize);
-> > +		kunmap(&page[i]);
-> > +		if (left) {
-> > +			copied += (chunksize - left);
-> > +			break;
-> > +		}
-> > +		offset = 0;
-> > +		size -= chunksize;
-> > +		buf += chunksize;
-> > +		copied += chunksize;
-> > +		i++;
-> > +	}
-> > +	return copied ? copied : -EFAULT;
-> > +}
-> 
-> This returns -EFAULT when asked to read zero bytes.  The caller prevents
-> that, but it's a little bit ugly.  Livable with.
+James Bottomley wrote:
+> On Thu, 2007-07-19 at 16:31 +0200, Gabriel C wrote:
+>   
+>> No is not an SATA controller.
+>>
+>> sda and sdb are SCSI disks connected to an Adaptec AIC-7892P U160/m
+>> controller using the aic7xxx driver.
+>>     
+>
+> OK, this definitely works for me, that's what my root disk is on.  I
+> think this isn't a kernel problem ... I think it's a udev name clash
+> problem.  Try the attached patch, which corrects the names:
+>   
 
-I can fix that, but I didn't want to come here if length == 0 - so
-took a shortcut.
+Thx, your patch fixes the problem for me.
 
-> 
-> > +/*
-> > + * Support for read() - Find the page attached to f_mapping and copy out the
-> > + * data. Its *very* similar to do_generic_mapping_read(), we can't use that
-> > + * since it has PAGE_CACHE_SIZE assumptions.
-> > + */
-> > +ssize_t
-> > +hugetlbfs_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
-> > +{
-> > +	struct address_space *mapping = filp->f_mapping;
-> > +	struct inode *inode = mapping->host;
-> > +	unsigned long index = *ppos >> HPAGE_SHIFT;
-> > +	unsigned long end_index;
-> > +	loff_t isize;
-> > +	unsigned long offset;
-> > +	ssize_t retval = 0;
-> > +
-> > +	/* validate length */
-> > +	if (len == 0)
-> > +		goto out;
-> > +
-> > +	isize = i_size_read(inode);
-> > +	if (!isize)
-> > +		goto out;
-> > +
-> > +	offset = *ppos & ~HPAGE_MASK;
-> > +	end_index = (isize - 1) >> HPAGE_SHIFT;
-> > +	for (;;) {
-> > +		struct page *page;
-> > +		int nr, ret;
-> > +
-> > +		/* nr is the maximum number of bytes to copy from this page */
-> > +		nr = HPAGE_SIZE;
-> > +		if (index >= end_index) {
-> > +			if (index > end_index)
-> > +				goto out;
-> > +			nr = ((isize - 1) & ~HPAGE_MASK) + 1;
-> > +			if (nr <= offset) {
-> > +				goto out;
-> > +			}
-> > +		}
-> > +		nr = nr - offset;
-> > +
-> > +		/* Find the page */
-> > +		page = find_get_page(mapping, index);
-> > +		if (unlikely(page == NULL)) {
-> > +			/*
-> > +			 * We can't find the page in the cache - bail out ?
-> > +			 */
-> > +			goto out;
-> > +		}
-> > +		/*
-> > +		 * Ok, we have the page, copy it to user space buffer.
-> > +		 */
-> > +		ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
-> > +		if (ret < 0) {
-> > +			retval = retval ? : ret;
-> > +			goto out;
-> 
-> Missing put_page().
-
-Yes. Thanks for catching it.
-
-> 
-> > +		}
-> > +
-> > +		offset += ret;
-> > +		retval += ret;
-> > +		len -= ret;
-> > +		index += offset >> HPAGE_SHIFT;
-> > +		offset &= ~HPAGE_MASK;
-> > +
-> > +		page_cache_release(page);
-> > +		if (ret == nr && len)
-> > +			continue;
-> > +		goto out;
-> > +	}
-> > +out:
-> > +	return retval;
-> > +}
-> 
-> This code doesn't have all the ghastly tricks which we deploy to handle
-> concurrent truncate.
-
-Do I need to ? Baaahh!!  I don't want to deal with them. 
-All I want is a simple read() to get my oprofile working.
-Please advise.
-
-Thanks,
-Badari
+>   
+>> sdc is an ATA-7 disk connected to an IDE controller ( 82801BA IDE U100
+>> )  using libata and the ata_piix driver.
+>>     
+>
+>
+> James
+>
+> ---
+>
+> Index: BUILD-2.6/block/Kconfig
+> ===================================================================
+> --- BUILD-2.6.orig/block/Kconfig	2007-07-18 11:34:20.000000000 -0500
+> +++ BUILD-2.6/block/Kconfig	2007-07-18 11:36:24.000000000 -0500
+> @@ -53,7 +53,7 @@ endif # BLOCK
+>  
+>  config BLK_DEV_BSG
+>  	bool "Block layer SG support v4 (EXPERIMENTAL)"
+> -	depends on (SCSI=y) && EXPERIMENTAL
+> + 	depends on EXPERIMENTAL
+>  	---help---
+>  	Saying Y here will enable generic SG (SCSI generic) v4 support
+>  	for any block device.
+> Index: BUILD-2.6/block/bsg.c
+> ===================================================================
+> --- BUILD-2.6.orig/block/bsg.c	2007-07-18 11:34:20.000000000 -0500
+> +++ BUILD-2.6/block/bsg.c	2007-07-18 11:36:24.000000000 -0500
+> @@ -1009,29 +1009,6 @@ err:
+>  }
+>  EXPORT_SYMBOL_GPL(bsg_register_queue);
+>  
+> -static int bsg_add(struct class_device *cl_dev, struct class_interface *cl_intf)
+> -{
+> -	int ret;
+> -	struct scsi_device *sdp = to_scsi_device(cl_dev->dev);
+> -	struct request_queue *rq = sdp->request_queue;
+> -
+> -	if (rq->kobj.parent)
+> -		ret = bsg_register_queue(rq, kobject_name(rq->kobj.parent));
+> -	else
+> -		ret = bsg_register_queue(rq, kobject_name(&sdp->sdev_gendev.kobj));
+> -	return ret;
+> -}
+> -
+> -static void bsg_remove(struct class_device *cl_dev, struct class_interface *cl_intf)
+> -{
+> -	bsg_unregister_queue(to_scsi_device(cl_dev->dev)->request_queue);
+> -}
+> -
+> -static struct class_interface bsg_intf = {
+> -	.add	= bsg_add,
+> -	.remove	= bsg_remove,
+> -};
+> -
+>  static struct cdev bsg_cdev = {
+>  	.kobj   = {.name = "bsg", },
+>  	.owner  = THIS_MODULE,
+> @@ -1069,16 +1046,9 @@ static int __init bsg_init(void)
+>  	if (ret)
+>  		goto unregister_chrdev;
+>  
+> -	ret = scsi_register_interface(&bsg_intf);
+> -	if (ret)
+> -		goto remove_cdev;
+> -
+>  	printk(KERN_INFO BSG_DESCRIPTION " version " BSG_VERSION
+>  	       " loaded (major %d)\n", bsg_major);
+>  	return 0;
+> -remove_cdev:
+> -	printk(KERN_ERR "bsg: failed register scsi interface %d\n", ret);
+> -	cdev_del(&bsg_cdev);
+>  unregister_chrdev:
+>  	unregister_chrdev_region(MKDEV(bsg_major, 0), BSG_MAX_DEVS);
+>  destroy_bsg_class:
+> Index: BUILD-2.6/drivers/scsi/scsi_sysfs.c
+> ===================================================================
+> --- BUILD-2.6.orig/drivers/scsi/scsi_sysfs.c	2007-07-18 11:36:02.000000000 -0500
+> +++ BUILD-2.6/drivers/scsi/scsi_sysfs.c	2007-07-19 10:10:50.000000000 -0500
+> @@ -715,6 +715,7 @@ static int attr_add(struct device *dev, 
+>  int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+>  {
+>  	int error, i;
+> +	struct request_queue *rq = sdev->request_queue;
+>  
+>  	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
+>  		return error;
+> @@ -734,6 +735,17 @@ int scsi_sysfs_add_sdev(struct scsi_devi
+>  	/* take a reference for the sdev_classdev; this is
+>  	 * released by the sdev_class .release */
+>  	get_device(&sdev->sdev_gendev);
+> +
+> +	error = bsg_register_queue(rq, sdev->sdev_gendev.bus_id);
+> +
+> +	if (error)
+> +		sdev_printk(KERN_INFO, sdev,
+> +			    "Failed to register bsg queue, errno=%d\n", error);
+> +
+> +	/* we're treating error on bsg register as non-fatal, so pretend
+> +	 * nothing went wrong */
+> +	error = 0;
+> +
+>  	if (sdev->host->hostt->sdev_attrs) {
+>  		for (i = 0; sdev->host->hostt->sdev_attrs[i]; i++) {
+>  			error = attr_add(&sdev->sdev_gendev,
+> @@ -780,6 +792,7 @@ void __scsi_remove_device(struct scsi_de
+>  	if (scsi_device_set_state(sdev, SDEV_CANCEL) != 0)
+>  		return;
+>  
+> +	bsg_unregister_queue(sdev->request_queue);
+>  	class_device_unregister(&sdev->sdev_classdev);
+>  	transport_remove_device(dev);
+>  	device_del(dev);
+>
+>
+>
+>
+>   
 
