@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937711AbXGSI6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937758AbXGSJCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937711AbXGSI6n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 04:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934789AbXGSI6b
+	id S937758AbXGSJCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 05:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761448AbXGSJCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 04:58:31 -0400
-Received: from za-gw.sanpeople.com ([196.211.225.226]:1614 "EHLO
-	za-gw.sanpeople.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934690AbXGSI63 (ORCPT
+	Thu, 19 Jul 2007 05:02:10 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:40830 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758087AbXGSJCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 04:58:29 -0400
-X-Greylist: delayed 778 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 04:58:28 EDT
-Subject: Re: [PATCH 1/1][RESEND] Driver for the Atmel on-chip SSC on AT32AP
-	and AT91.
-From: Andrew Victor <andrew@sanpeople.com>
-To: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kernel-avr32 <kernel@avr32linux.org>,
-       David Brownell <david-b@pacbell.net>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Hans-Christian Egtvedt <egtvedt@samfundet.no>
-In-Reply-To: <469E6C00.3060506@atmel.com>
-References: <469E6C00.3060506@atmel.com>
-Content-Type: text/plain
-Organization: Multenet Technologies (Pty) Ltd
-Message-Id: <1184833759.15007.33.camel@fuzzie.sanpeople.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.2.2 
-Date: 19 Jul 2007 10:29:19 +0200
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 05:02:08 -0400
+Date: Thu, 19 Jul 2007 11:02:07 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 2/3] ps3: BD/DVD/CD-ROM Storage Driver
+In-Reply-To: <20070718164351.a92ec032.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.62.0707191100270.8661@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+ <20070716162206.529280000@pademelon.sonytel.be> <20070718164351.a92ec032.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1835406229-1184835727=:8661"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi Hans-Christian,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> This driver is used in the ALSA sound driver for the AT73C213 external DAC on
-> the ATSTK1000 development board for AVR32. This sound driver will be submitted
-> soon.
+---584337861-1835406229-1184835727=:8661
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Seems to be more of an SCC unit allocation library, but OK.
+On Wed, 18 Jul 2007, Andrew Morton wrote:
+> > +struct ps3rom_private {
+> > +	struct ps3_storage_device *dev;
+> > +	struct scsi_cmnd *curr_cmd;
+> > +};
+> > +#define ps3rom_priv(dev)	((dev)->sbd.core.driver_data)
+> > +
+> 
+> Someone should invent a keyboard which delivers an electric shock when the
+> operator types "#define".   In the meanwhile, I get to do the honours.
+> 
+> Please don't implement in a macro anything which can be implemented in C.
 
-I've also forwarded a copy of the patch to Frank Mandarino
-<fmandarino@endrelia.com> for his comments.  He maintains the current
-AT91 SSC & ALSA support.  <sound/soc/at91/>
+All I needed was a shorthand to access driver_data, for both read and write
+access (you cannot do the latter with C, unless you decouple read and write).
 
+> > +			kaddr = kmap_atomic(sgpnt->page, KM_IRQ0);
+> > +			if (!kaddr)
+> > +				return -1;
+> 
+> kmap_atomic() cannot fail.  On i386, at least.  If it can fail on any other
+> arch then we have a biiiiig problem.  (Multiple instances of this)
 
-> +/* SSC Receive Clock Mode Register */
-> +#define SSC_RCMR			0x00000010
-> +#define SSC_RCMR_CKG_SIZE			 2
-> +#define SSC_RCMR_CKG_OFFSET			 6
-> +#define SSC_RCMR_CKI_SIZE			 1
-> +#define SSC_RCMR_CKI_OFFSET			 5
-> +#define SSC_RCMR_CKO_SIZE			 3
+Thanks, fixed!
 
-I'm personally not a fan of the register & bit definition format the
-AVR32 driver seem to use.
-Can we not rather move the existing include/asm-arm/arch-at91/at91_ssc.h
-to somewhere shared as atmel_ssc.h ?
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-
-Regards,
-  Andrew Victor
-
-
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1835406229-1184835727=:8661--
