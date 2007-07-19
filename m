@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937699AbXGSO1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936936AbXGSOcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937699AbXGSO1D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761491AbXGSO0w
+	id S936936AbXGSOcW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759880AbXGSOcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:26:52 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53099 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756905AbXGSO0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:26:51 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <469F749F.8030606@s5r6.in-berlin.de>
-Date: Thu, 19 Jul 2007 16:26:39 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Thu, 19 Jul 2007 10:32:10 -0400
+Received: from gw.goop.org ([64.81.55.164]:35183 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760842AbXGSOcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 10:32:08 -0400
+Message-ID: <469F75AF.5080000@goop.org>
+Date: Thu, 19 Jul 2007 07:31:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
-References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
-X-Enigmail-Version: 0.94.1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch] fix the softlockup watchdog to actually work
+References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070719002231.069ebbdd.akpm@linux-foundation.org> <20070719075152.GB12760@elte.hu>
+In-Reply-To: <20070719075152.GB12760@elte.hu>
+X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-...
-> it's not clear if that means that it was a *one-time* transition
-> aid which is now unnecessary, or whether it's an *ongoing* aid which
-> might be used at any time.  currently, there are no invocations of
-> EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
-> this feature can be tossed?  or might it still be used every so often?
+Ingo Molnar wrote:
+> btw., could you apply the patch below as well? Maybe sched_clock() is 
+> misbehaving on your box? (with this i have 5 softlockup patches in my 
+> tree - and they are working fine so far.)
+>
+> 	Ingo
+>
+> ---------------->
+> Subject: [patch] softlockup: use a reliable global time source
+> From: Ingo Molnar <mingo@elte.hu>
+>
+> using sched_clock() for the soft-lockups was a bad idea, sched_clock()
+> is not a reliable global time-source.
+>   
 
-git-blame (or qgit, which I actually used) points from this part of
-lib/Kconfig.debug to the following chunk in
-Documentation/feature-removal-schedule.txt:
+How reliable does it need to be?  All we need is to measure "about 10
+seconds"; if we can't get that out of it, how can it be good for
+anything else?
 
-What:	Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL exports
-	(temporary transition config option provided until then)
-	The transition config option will also be removed at the same time.
-When:	before 2.6.19
-Why:	Unused symbols are both increasing the size of the kernel binary
-	and are often a sign of "wrong API"
-Who:	Arjan van de Ven <arjan@linux.intel.com>
--- 
-Stefan Richter
--=====-=-=== -=== =--==
-http://arcgraph.de/sr/
+    J
