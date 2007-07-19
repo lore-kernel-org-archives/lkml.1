@@ -1,298 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764309AbXGSKYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938243AbXGSKYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764309AbXGSKYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbXGSJ4J
+	id S938243AbXGSKYv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762780AbXGSJ4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:56:09 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33128 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 05:56:10 -0400
+Received: from mx1.suse.de ([195.135.220.2]:35443 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760805AbXGSJzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:55:46 -0400
+	id S1754947AbXGSJzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:55:47 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
-To: thockin@google.com, ak@suse.de, patches@x86-64.org,
+To: trux@truxton.com, lee-in-berlin@web.de, ak@suse.de, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [50/58] x86_64: mcelog tolerant level cleanup
-Message-Id: <20070719095537.1295614E06@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:37 +0200 (CEST)
+Subject: [PATCH] [51/58] i386: fix machine rebooting
+Message-Id: <20070719095538.2965B14E05@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:38 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Tim Hockin <thockin@google.com>
+From: Truxton Fulton <trux@truxton.com>
 
-Background:
- The MCE handler has several paths that it can take, depending on various
- conditions of the MCE status and the value of the 'tolerant' knob.  The
- exact semantics are not well defined and the code is a bit twisty.
+59f4e7d572980a521b7bdba74ab71b21f5995538 fixed machine rebooting on Truxton's
+machine (when no keyboard was present).  But it broke it on Lee's machine.
 
-Description:
- This patch makes the MCE handler's behavior more clear by documenting the
- behavior for various 'tolerant' levels.  It also fixes or enhances
- several small things in the handler.  Specifically:
-     * If RIPV is set it is not safe to restart, so set the 'no way out'
-       flag rather than the 'kill it' flag.
-     * Don't panic() on correctable MCEs.
-     * If the _OVER bit is set *and* the _UC bit is set (meaning possibly
-       dropped uncorrected errors), set the 'no way out' flag.
-     * Use EIPV for testing whether an app can be killed (SIGBUS) rather
-       than RIPV.  According to docs, EIPV indicates that the error is
-       related to the IP, while RIPV simply means the IP is valid to
-       restart from.
-     * Don't clear the MCi_STATUS registers until after the panic() path.
-       This leaves the status bits set after the panic() so clever BIOSes
-       can find them (and dumb BIOSes can do nothing).
+The patch reinstates the old (pre-59f4e7d572980a521b7bdba74ab71b21f5995538)
+code and if that doesn't work out, try the new,
+post-59f4e7d572980a521b7bdba74ab71b21f5995538 code instead.
 
- This patch also calls nonseekable_open() in mce_open (as suggested by akpm).
-
-Result:
- Tolerant levels behave almost identically to how they always have, but
- not it's well defined.  There's a slightly higher chance of panic()ing
- when multiple errors happen (a good thing, IMHO).  If you take an MBE and
- panic(), the error status bits are not cleared.
-
-Alternatives:
- None.
-
-Testing:
- I used software to inject correctable and uncorrectable errors.  With
- tolerant = 3, the system usually survives.  With tolerant = 2, the system
- usually panic()s (PCC) but not always.  With tolerant = 1, the system
- always panic()s.  When the system panic()s, the BIOS is able to detect
- that the cause of death was an MC4.  I was not able to reproduce the
- case of a non-PCC error in userspace, with EIPV, with (tolerant < 3).
- That will be rare at best.
-
-Signed-off-by: Tim Hockin <thockin@google.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Lee Garrett <lee-in-berlin@web.de>
 Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
 ---
 
- Documentation/x86_64/boot-options.txt |    8 +-
- Documentation/x86_64/machinecheck     |   14 ++--
- arch/x86_64/kernel/mce.c              |  101 ++++++++++++++++++++++------------
- 3 files changed, 80 insertions(+), 43 deletions(-)
+ include/asm-i386/mach-default/mach_reboot.h |   25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
 
-Index: linux/Documentation/x86_64/boot-options.txt
+Index: linux/include/asm-i386/mach-default/mach_reboot.h
 ===================================================================
---- linux.orig/Documentation/x86_64/boot-options.txt
-+++ linux/Documentation/x86_64/boot-options.txt
-@@ -14,9 +14,11 @@ Machine check
-    mce=nobootlog
- 		Disable boot machine check logging.
-    mce=tolerancelevel (number)
--		0: always panic, 1: panic if deadlock possible,
--		2: try to avoid panic, 3: never panic or exit (for testing)
--		default is 1
-+		0: always panic on uncorrected errors, log corrected errors
-+		1: panic or SIGBUS on uncorrected errors, log corrected errors
-+		2: SIGBUS or log uncorrected errors, log corrected errors
-+		3: never panic or SIGBUS, log all errors (for testing only)
-+		Default is 1
- 		Can be also set using sysfs which is preferable.
- 
-    nomce (for compatibility with i386): same as mce=off
-Index: linux/Documentation/x86_64/machinecheck
-===================================================================
---- linux.orig/Documentation/x86_64/machinecheck
-+++ linux/Documentation/x86_64/machinecheck
-@@ -49,12 +49,14 @@ tolerant
- 	Since machine check exceptions can happen any time it is sometimes
- 	risky for the kernel to kill a process because it defies
- 	normal kernel locking rules. The tolerance level configures
--	how hard the kernel tries to recover even at some risk of deadlock.
--
--	0: always panic,
--	1: panic if deadlock possible,
--	2: try to avoid panic,
--   	3: never panic or exit (for testing only)
-+	how hard the kernel tries to recover even at some risk of
-+	deadlock.  Higher tolerant values trade potentially better uptime
-+	with the risk of a crash or even corruption (for tolerant >= 3).
-+
-+	0: always panic on uncorrected errors, log corrected errors
-+	1: panic or SIGBUS on uncorrected errors, log corrected errors
-+	2: SIGBUS or log uncorrected errors, log corrected errors
-+	3: never panic or SIGBUS, log all errors (for testing only)
- 
- 	Default: 1
- 
-Index: linux/arch/x86_64/kernel/mce.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/mce.c
-+++ linux/arch/x86_64/kernel/mce.c
-@@ -37,8 +37,13 @@ atomic_t mce_entry;
- 
- static int mce_dont_init;
- 
--/* 0: always panic, 1: panic if deadlock possible, 2: try to avoid panic,
--   3: never panic or exit (for testing only) */
-+/*
-+ * Tolerant levels:
-+ *   0: always panic on uncorrected errors, log corrected errors
-+ *   1: panic or SIGBUS on uncorrected errors, log corrected errors
-+ *   2: SIGBUS or log uncorrected errors (if possible), log corrected errors
-+ *   3: never panic or SIGBUS, log all errors (for testing only)
-+ */
- static int tolerant = 1;
- static int banks;
- static unsigned long bank[NR_BANKS] = { [0 ... NR_BANKS-1] = ~0UL };
-@@ -132,9 +137,6 @@ static void mce_panic(char *msg, struct 
- { 
- 	int i;
- 
--	if (tolerant >= 3)
--		return;
--
- 	oops_begin();
- 	for (i = 0; i < MCE_LOG_LEN; i++) {
- 		unsigned long tsc = mcelog.entry[i].tsc;
-@@ -178,11 +180,19 @@ static inline void mce_get_rip(struct mc
- void do_machine_check(struct pt_regs * regs, long error_code)
+--- linux.orig/include/asm-i386/mach-default/mach_reboot.h
++++ linux/include/asm-i386/mach-default/mach_reboot.h
+@@ -19,14 +19,37 @@ static inline void kb_wait(void)
+ static inline void mach_reboot(void)
  {
- 	struct mce m, panicm;
--	int nowayout = (tolerant < 1); 
--	int kill_it = 0;
- 	u64 mcestart = 0;
  	int i;
- 	int panicm_found = 0;
-+	/*
-+	 * If no_way_out gets set, there is no safe way to recover from this
-+	 * MCE.  If tolerant is cranked up, we'll try anyway.
-+	 */
-+	int no_way_out = 0;
-+	/*
-+	 * If kill_it gets set, there might be a way to recover from this
-+	 * error.
-+	 */
-+	int kill_it = 0;
- 
- 	atomic_inc(&mce_entry);
- 
-@@ -194,8 +204,9 @@ void do_machine_check(struct pt_regs * r
- 	memset(&m, 0, sizeof(struct mce));
- 	m.cpu = smp_processor_id();
- 	rdmsrl(MSR_IA32_MCG_STATUS, m.mcgstatus);
-+	/* if the restart IP is not valid, we're done for */
- 	if (!(m.mcgstatus & MCG_STATUS_RIPV))
--		kill_it = 1;
-+		no_way_out = 1;
- 	
- 	rdtscll(mcestart);
- 	barrier();
-@@ -214,10 +225,18 @@ void do_machine_check(struct pt_regs * r
- 			continue;
- 
- 		if (m.status & MCI_STATUS_EN) {
--			/* In theory _OVER could be a nowayout too, but
--			   assume any overflowed errors were no fatal. */
--			nowayout |= !!(m.status & MCI_STATUS_PCC);
--			kill_it |= !!(m.status & MCI_STATUS_UC);
-+			/* if PCC was set, there's no way out */
-+			no_way_out |= !!(m.status & MCI_STATUS_PCC);
-+			/*
-+			 * If this error was uncorrectable and there was
-+			 * an overflow, we're in trouble.  If no overflow,
-+			 * we might get away with just killing a task.
-+			 */
-+			if (m.status & MCI_STATUS_UC) {
-+				if (tolerant < 1 || m.status & MCI_STATUS_OVER)
-+					no_way_out = 1;
-+				kill_it = 1;
-+			}
- 		}
- 
- 		if (m.status & MCI_STATUS_MISCV)
-@@ -228,7 +247,6 @@ void do_machine_check(struct pt_regs * r
- 		mce_get_rip(&m, regs);
- 		if (error_code >= 0)
- 			rdtscll(m.tsc);
--		wrmsrl(MSR_IA32_MC0_STATUS + i*4, 0);
- 		if (error_code != -2)
- 			mce_log(&m);
- 
-@@ -251,37 +269,52 @@ void do_machine_check(struct pt_regs * r
- 	   the last one (shouldn't happen, just being safe). */
- 	if (!panicm_found)
- 		panicm = m;
--	if (nowayout)
 +
-+	/*
-+	 * If we have decided that we just CAN'T continue, and the user
-+	 *  has not set tolerant to an insane level, give up and die.
-+	 */
-+	if (no_way_out && tolerant < 3)
- 		mce_panic("Machine check", &panicm, mcestart);
--	if (kill_it) {
++	/* old method, works on most machines */
+ 	for (i = 0; i < 10; i++) {
+ 		kb_wait();
+ 		udelay(50);
++		outb(0xfe, 0x64);	/* pulse reset low */
++		udelay(50);
++	}
 +
-+	/*
-+	 * If the error seems to be unrecoverable, something should be
-+	 * done.  Try to kill as little as possible.  If we can kill just
-+	 * one task, do that.  If the user has set the tolerance very
-+	 * high, don't try to do anything at all.
++	/* New method: sets the "System flag" which, when set, indicates
++	 * successful completion of the keyboard controller self-test (Basic
++	 * Assurance Test, BAT).  This is needed for some machines with no
++	 * keyboard plugged in.  This read-modify-write sequence sets only the
++	 * system flag
 +	 */
-+	if (kill_it && tolerant < 3) {
- 		int user_space = 0;
- 
--		if (m.mcgstatus & MCG_STATUS_RIPV)
-+		/*
-+		 * If the EIPV bit is set, it means the saved IP is the
-+		 * instruction which caused the MCE.
-+		 */
-+		if (m.mcgstatus & MCG_STATUS_EIPV)
- 			user_space = panicm.rip && (panicm.cs & 3);
--		
--		/* When the machine was in user space and the CPU didn't get
--		   confused it's normally not necessary to panic, unless you 
--		   are paranoid (tolerant == 0)
--
--		   RED-PEN could be more tolerant for MCEs in idle,
--		   but most likely they occur at boot anyways, where
--		   it is best to just halt the machine. */
--		if ((!user_space && (panic_on_oops || tolerant < 2)) ||
--		    (unsigned)current->pid <= 1)
--			mce_panic("Uncorrected machine check", &panicm, mcestart);
--
--		/* do_exit takes an awful lot of locks and has as
--		   slight risk of deadlocking. If you don't want that
--		   don't set tolerant >= 2 */
--		if (tolerant < 3)
++	for (i = 0; i < 10; i++) {
++		int cmd;
 +
-+		/*
-+		 * If we know that the error was in user space, send a
-+		 * SIGBUS.  Otherwise, panic if tolerance is low.
-+		 *
-+		 * do_exit() takes an awful lot of locks and has a slight
-+		 * risk of deadlocking.
-+		 */
-+		if (user_space) {
- 			do_exit(SIGBUS);
-+		} else if (panic_on_oops || tolerant < 2) {
-+			mce_panic("Uncorrected machine check",
-+				&panicm, mcestart);
-+		}
- 	}
- 
- 	/* notify userspace ASAP */
- 	set_thread_flag(TIF_MCE_NOTIFY);
- 
-  out:
--	/* Last thing done in the machine check exception to clear state. */
-+	/* the last thing we do is clear state */
-+	for (i = 0; i < banks; i++)
-+		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
- 	wrmsrl(MSR_IA32_MCG_STATUS, 0);
-  out2:
- 	atomic_dec(&mce_entry);
-@@ -506,7 +539,7 @@ static int mce_open(struct inode *inode,
- 
- 	spin_unlock(&mce_state_lock);
- 
--	return 0;
-+	return nonseekable_open(inode, file);
- }
- 
- static int mce_release(struct inode *inode, struct file *file)
++		outb(0x20, 0x64);	/* read Controller Command Byte */
++		udelay(50);
++		kb_wait();
++		udelay(50);
++		cmd = inb(0x60);
++		udelay(50);
++		kb_wait();
++		udelay(50);
+ 		outb(0x60, 0x64);	/* write Controller Command Byte */
+ 		udelay(50);
+ 		kb_wait();
+ 		udelay(50);
+-		outb(0x14, 0x60);	/* set "System flag" */
++		outb(cmd | 0x04, 0x60);	/* set "System flag" */
+ 		udelay(50);
+ 		kb_wait();
+ 		udelay(50);
