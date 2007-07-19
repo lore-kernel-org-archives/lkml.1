@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936560AbXGSFdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936479AbXGSFh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936560AbXGSFdm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 01:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933120AbXGSFdZ
+	id S936479AbXGSFh7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 01:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbXGSFhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 01:33:25 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9297 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752411AbXGSFdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 01:33:23 -0400
-Date: Thu, 19 Jul 2007 07:33:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Andy Whitcroft <apw@shadowen.org>, Paul Mackerras <paulus@samba.org>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-Message-ID: <20070719053302.GO11657@kernel.dk>
-References: <20070716161539.075822000@pademelon.sonytel.be> <20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
+	Thu, 19 Jul 2007 01:37:47 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:30911 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153AbXGSFhp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 01:37:45 -0400
+Date: Wed, 18 Jul 2007 22:31:56 -0700
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: David Chinner <dgc@sgi.com>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, tytso@mit.edu, cmm@us.ibm.com, suparna@in.ibm.com,
+       adilger@clusterfs.com, michael.kerrisk@gmx.net
+Subject: Re: [PATCH 1/5][TAKE8] manpage for fallocate
+Message-ID: <20070719053156.GF32734@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20070713184125.GA12156@amitarora.in.ibm.com> <20070713184625.GB12156@amitarora.in.ibm.com> <20070719034155.GE32734@ca-server1.us.oracle.com> <20070719051052.GE12413810@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070718163637.3f0e0164.akpm@linux-foundation.org>
+In-Reply-To: <20070719051052.GE12413810@sgi.com>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18 2007, Andrew Morton wrote:
-> On Mon, 16 Jul 2007 18:15:40 +0200
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Thu, Jul 19, 2007 at 03:10:52PM +1000, David Chinner wrote:
+> % git-log 84e1e99f112dead8f9ba036c02d24a9f5ce7f544 |head -10
+> commit 84e1e99f112dead8f9ba036c02d24a9f5ce7f544
+> Author: David Chinner <dgc@sgi.com>
+> Date:   Mon Jun 18 16:50:27 2007 +1000
 > 
-> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> > 
-> > Add a Disk Storage Driver for the PS3:
+>     [XFS] Prevent ENOSPC from aborting transactions that need to succeed
 > 
-> Your patchset significantly hits powerpc, scsi and block.  So who gets to
-> merge this?  Jens?  James?  Paul?
+>     During delayed allocation extent conversion or unwritten extent
+>     conversion, we need to reserve some blocks for transactions reservations.
+>     We need to reserve these blocks in case a btree split occurs and we need
+>     to allocate some blocks.
 > 
-> Me, I guess ;)
-
-I think Paul was going to take it, or at least Geert hinted as such.
-
-> > +#define PS3DISK_MAX_DISKS	16
-> > +#define PS3DISK_MINORS		16
-> > +
-> > +#define KERNEL_SECTOR_SIZE	512
+> ------
 > 
-> Sigh.  We have at least ten separate definitions of SECTOR_SIZE< none of
-> them in the right place.  Cleanup opportunity for someone.
+> IOWs, XFS didn't provide this guarantee until about a month ago....
 
-Indeed, it's universally 512 or << 9, just use that...
+Ok, once again XFS is ahead of the curve ;)
 
-> > +#ifdef DEBUG
-> > +	unsigned int n = 0;
-> > +	struct bio *bio;
-> > +	rq_for_each_bio(bio, req)
-> > +		n++;
-> 
-> I'm surprised that the block core doesn't have a helper to count the number
-> of bios in a request.
+Comment rescinded then...
+	--Mark
 
-What would be the point of such a helper? I've never seen a need for it.
-Geert uses it as debug code here, but the fact is that the number of
-bios in a request is a pretty pointless number. It doesn't tell you
-anything. There's no 1:1 mapping between bios and segments (or anything
-else for that matter), so the exercise is purely pointless.
-
--- 
-Jens Axboe
-
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
