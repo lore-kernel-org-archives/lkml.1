@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938286AbXGSPM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938622AbXGSPQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938286AbXGSPM6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938922AbXGSPM1
+	id S938622AbXGSPQe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbXGSPQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:12:27 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:39619 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S938895AbXGSPMZ (ORCPT
+	Thu, 19 Jul 2007 11:16:24 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:40309 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754667AbXGSPQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:12:25 -0400
-Message-ID: <469F7F58.4080709@steeleye.com>
-Date: Thu, 19 Jul 2007 11:12:24 -0400
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Denis Cheng <crquan@gmail.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Steven Whitehouse <steve@chygwyn.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] nbd: use list_for_each_entry_safe to make it more
- consolidated and readable
-References: <11848376711601-git-send-email-crquan@gmail.com>
-In-Reply-To: <11848376711601-git-send-email-crquan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Jul 2007 11:16:22 -0400
+Subject: Re: [PATCH] ext2 statfs improvement for block and inode free count
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andreas Dilger <adilger@clusterfs.com>,
+       lkml <linux-kernel@vger.kernel.org>, ext4 <linux-ext4@vger.kernel.org>
+In-Reply-To: <20070718201808.ccc7bdf5.akpm@linux-foundation.org>
+References: <1184377014.15968.14.camel@dyn9047017100.beaverton.ibm.com>
+	 <20070718201808.ccc7bdf5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 19 Jul 2007 08:18:02 -0700
+Message-Id: <1184858282.18188.83.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Cheng wrote:
-> Thus the traverse of the loop may delete nodes, use the safe version.
+On Wed, 2007-07-18 at 20:18 -0700, Andrew Morton wrote:
+> On Fri, 13 Jul 2007 18:36:54 -0700 Badari Pulavarty <pbadari@us.ibm.com> wrote:
 > 
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
-> ---
->  drivers/block/nbd.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
+> > More statfs() improvements for ext2. ext2 already maintains
+> > percpu counters for free blocks and inodes. Derive free
+> > block count and inode count by summing up percpu counters,
+> > instead of counting up all the groups in the filesystem
+> > each time.
+> > 
 > 
-> diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-> index c129510..86639c0 100644
-> --- a/drivers/block/nbd.c
-> +++ b/drivers/block/nbd.c
-> @@ -237,8 +237,7 @@ error_out:
->  
->  static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
->  {
-> -	struct request *req;
-> -	struct list_head *tmp;
-> +	struct request *req, *n;
->  	struct request *xreq;
->  	int err;
->  
-> @@ -249,8 +248,7 @@ static struct request *nbd_find_request(struct nbd_device *lo, char *handle)
->  		goto out;
->  
->  	spin_lock(&lo->queue_lock);
-> -	list_for_each(tmp, &lo->queue_head) {
-> -		req = list_entry(tmp, struct request, queuelist);
-> +	list_for_each_entry_safe(req, n, &lo->queue_head, queuelist) {
->  		if (req != xreq)
->  			continue;
->  		list_del_init(&req->queuelist);
+> hm, another speedup patch with no measurements which demonstrate its
+> benefit.
 
-Could you name "n" as "tmp" (as in the previous code) so that it's clear 
-that's only a temporary variable. Other than that, this looks good.
+In my setups (4 & 8-way), I didn't measure any significant performance
+improvements (in any reasonable workload). I see some decent
+improvements on cooked-up (1 million stats) tests :(
+> 
+> > 
+> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > Acked-by: Andreas Dilger <adilger@clusterfs.com>
+> > 
+> >  fs/ext2/super.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6.22/fs/ext2/super.c
+> > ===================================================================
+> > --- linux-2.6.22.orig/fs/ext2/super.c	2007-07-13 20:06:38.000000000 -0700
+> > +++ linux-2.6.22/fs/ext2/super.c	2007-07-13 20:06:51.000000000 -0700
+> > @@ -1136,12 +1136,12 @@ static int ext2_statfs (struct dentry * 
+> >  	buf->f_type = EXT2_SUPER_MAGIC;
+> >  	buf->f_bsize = sb->s_blocksize;
+> >  	buf->f_blocks = le32_to_cpu(es->s_blocks_count) - overhead;
+> > -	buf->f_bfree = ext2_count_free_blocks(sb);
+> > + 	buf->f_bfree = percpu_counter_sum(&sbi->s_freeblocks_counter);
+> >  	buf->f_bavail = buf->f_bfree - le32_to_cpu(es->s_r_blocks_count);
+> >  	if (buf->f_bfree < le32_to_cpu(es->s_r_blocks_count))
+> >  		buf->f_bavail = 0;
+> >  	buf->f_files = le32_to_cpu(es->s_inodes_count);
+> > -	buf->f_ffree = ext2_count_free_inodes(sb);
+> > + 	buf->f_ffree = percpu_counter_sum(&sbi->s_freeinodes_counter);
+> >  	buf->f_namelen = EXT2_NAME_LEN;
+> >  	fsid = le64_to_cpup((void *)es->s_uuid) ^
+> >  	       le64_to_cpup((void *)es->s_uuid + sizeof(u64));
+> > 
+> 
+> Well there's a tradeoff here.  At large CPU counts, percpu_counter_sum()
+> becomes quite expensive - it takes a global lock and then goes off fishing
+> in every CPU's percpu_alloced memory.
+> 
+> So there is some value of (num_online_cpus / sb->s_groups_count) at which
+> this change becomes a loss.  Where does that value lie?
+
+Yes. I debated long time whether I should submit this or not - due to
+very reason. Old code wasn't holding any locks. I don't have any high
+count CPU machine (>8way) with me. I will request for time on one.
+
+> 
+> Bear in mind that the global lock in percpu_counter_sum() will tilt the
+> scales quite a bit.
+
+Noticed that too. I added WARN_ON() to see if percpu sum doesn't match
+computed sum. I saw few stacks in a 24 hour run of fsx runs. 
 
 Thanks,
-Paul
+Badari
+
