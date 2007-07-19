@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938366AbXGSOwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938924AbXGSOxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938366AbXGSOwm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758539AbXGSOwe
+	id S938924AbXGSOxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938804AbXGSOww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:52:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35108 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786AbXGSOwd (ORCPT
+	Thu, 19 Jul 2007 10:52:52 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49445 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938777AbXGSOwt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:52:33 -0400
-Date: Thu, 19 Jul 2007 15:52:29 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andi Kleen <ak@suse.de>
-Cc: wli@holomorphy.com, lkml@rtr.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for review] [7/48] i386: divorce CONFIG_X86_PAE from CONFIG_HIGHMEM64G
-Message-ID: <20070719145229.GA19858@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andi Kleen <ak@suse.de>, wli@holomorphy.com, lkml@rtr.ca,
-	linux-kernel@vger.kernel.org
-References: <20070719348.540885000@suse.de> <20070719134836.0C54214E6E@wotan.suse.de>
+	Thu, 19 Jul 2007 10:52:49 -0400
+Date: Thu, 19 Jul 2007 23:51:57 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tony.luck@intel.com, nickpiggin@yahoo.com.au,
+       mike@stroyan.net, dmosberger@gmail.com, y-goto@jp.fujitsu.com
+Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
+Message-Id: <20070719235157.9715baff.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <469F71E7.4050200@bull.net>
+References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
+	<469F5372.7010703@bull.net>
+	<20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>
+	<469F71E7.4050200@bull.net>
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719134836.0C54214E6E@wotan.suse.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 03:48:36PM +0200, Andi Kleen wrote:
-> 
-> From: William Lee Irwin III <wli@holomorphy.com>
-> 
-> PAE is useful for more than supporting more than 4GB RAM.  It supports
-> expanded swapspace and NX executable protections.  Some users may want NX
-> or expanded swapspace support without the overhead or instability of
-> highmem.  For these reasons, the following patch divorces CONFIG_X86_PAE
-> from CONFIG_HIGHMEM64G.
+On Thu, 19 Jul 2007 16:15:03 +0200
+Zoltan Menyhart <Zoltan.Menyhart@bull.net> wrote:
 
-What overhead of instability of highmem?  Sorry folks but this is utter
-bollocks.  Back in the Caldera days we did a lot of measurement on highmem
-overhead, and CONFIG_HIGHMEM has no measurable overhead at all on a system
-that doesn't use it.  CONFIG_HIGHMEM64G on the other hand has
-a quite visible overhead on small systems, but that's entirely due to the
-bigger page table entries that you need for NX.
+> We may have, say 1 Gbyte / sec local i/o activity (using some RAIDs).
+> Assume a few % of this 1 Gbyte is the program execution, or program swap in.
+> It gives some hundreds of new exec pages / sec =>
+> some msec-s can be lost each sec.
+> 
+> I can agree that it should not be a big deal :-)
+> 
+Hmm...but the current code flushes the page. just do it in "lazy" way.
+much difference ?
 
+-Kame
