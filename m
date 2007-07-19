@@ -1,40 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964956AbXGSONN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbXGSONw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964956AbXGSONN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938030AbXGSOCc
+	id S965475AbXGSONw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938799AbXGSOC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:02:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44220 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938817AbXGSOCa (ORCPT
+	Thu, 19 Jul 2007 10:02:56 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:53222 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S937955AbXGSOCy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:02:30 -0400
-Date: Thu, 19 Jul 2007 15:02:26 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       hch@infradead.org, devel@openvz.org
-Subject: Re: [PATCH] Consolidate PTRACE_DETACH
-Message-ID: <20070719140226.GC16279@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Alexey Dobriyan <adobriyan@sw.ru>, akpm@osdl.org,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	devel@openvz.org
-References: <20070719123800.GA31240@localhost.sw.ru>
+	Thu, 19 Jul 2007 10:02:54 -0400
+Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: nix.or.die@googlemail.com, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, torvalds@linux-foundation.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20070719082516W.fujita.tomonori@lab.ntt.co.jp>
+References: <469C10F6.3050008@googlemail.com>
+	 <20070717100921W.fujita.tomonori@lab.ntt.co.jp>
+	 <469C1E2A.8010508@googlemail.com>
+	 <20070719082516W.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Thu, 19 Jul 2007 09:02:50 -0500
+Message-Id: <1184853770.3464.85.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719123800.GA31240@localhost.sw.ru>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 04:38:01PM +0400, Alexey Dobriyan wrote:
-> Identical handlers of PTRACE_DETACH go into ptrace_request().
-> Not touching compat code.
-> Not touching archs that don't call ptrace_request.
+On Thu, 2007-07-19 at 08:25 +0900, FUJITA Tomonori wrote:
+> From: Gabriel C <nix.or.die@googlemail.com>
+> Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
+> Date: Tue, 17 Jul 2007 03:40:58 +0200
+> 
+> > FUJITA Tomonori wrote:
+> > > From: Gabriel C <nix.or.die@googlemail.com>
+> > > Subject: Re: Someone ( bsg merge ? ) broke {sd,hd}parm on current git
+> > > Date: Tue, 17 Jul 2007 02:44:38 +0200
+> > >
+> > >   
+> > >> Gabriel C wrote:
+> > >>     
+> > >>> Hello,
+> > >>>
+> > >>> sdparm and hdparm are broken for me on git (
+> > >>> abce891a10559343d8ac9f79b46d78afdba63a40 )
+> > >>>
+> > >>>
+> > >>> ~$ sudo hdparm  /dev/sdc
+> > >>>
+> > >>> /dev/sdc:
+> > >>>  BLKROGET failed: Inappropriate ioctl for device
+> > >>>  BLKRAGET failed: Inappropriate ioctl for device
+> > >>>  BLKGETSIZE failed: Inappropriate ioctl for device
+> > >>>
+> > >>>
+> > >>> ~$ sudo sdparm  --all /dev/sdc
+> > >>> unable to access /dev/sdc, ATA disk?
+> > >>>
+> > >>>   
+> > >>>       
+> > >> Well it is bsg , setting BLK_DEV_BSG=n fixed all this errors.
+> 
+> I've not tested this yet (need to find sata drives in my workplace),
+> but James Bottomley told me that both works for him with bsg enabled.
+> It might worth trying the latest git tree.
 
-Looks very nice, thanks.
+It certainly does work for me.  However, my ATA devices are connected to
+an aic94xx SAS controller.  Although this uses libata, the ioctl path is
+probably slightly different from the libata one. I assume you're using a
+SATA controller?  Unfortunately I have no ability to test on a SATA
+controller, but I'd suggest looking at the ioctl and REQ_BLOCK_PC paths
+in libata for clues.
+
+James
+
+
