@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933572AbXGSDeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934863AbXGSDi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933572AbXGSDeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jul 2007 23:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbXGSDeD
+	id S934863AbXGSDi6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jul 2007 23:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbXGSDiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jul 2007 23:34:03 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:16962 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758113AbXGSDeC (ORCPT
+	Wed, 18 Jul 2007 23:38:50 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:58176
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758448AbXGSDit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jul 2007 23:34:02 -0400
-X-IronPort-AV: i="4.16,553,1175486400"; 
-   d="scan'208"; a="35202988:sNHT25602738"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: early_printk accessing __log_buf
-Date: Wed, 18 Jul 2007 23:37:34 -0400
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200707181756.44074.rgetz@blackfin.uclinux.org> <200707181939.46910.rgetz@blackfin.uclinux.org> <8bd0f97a0707181653j3d44aab2tf8b6d24689458023@mail.gmail.com>
-In-Reply-To: <8bd0f97a0707181653j3d44aab2tf8b6d24689458023@mail.gmail.com>
+	Wed, 18 Jul 2007 23:38:49 -0400
+Date: Wed, 18 Jul 2007 20:30:47 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: nigel@suspend2.net
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based
+ hibernation
+In-Reply-To: <200707191215.05245.nigel@nigel.suspend2.net>
+Message-ID: <Pine.LNX.4.64.0707182026130.19248@asgard.lang.hm>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+ <20070718180420.02352d4f.akpm@linux-foundation.org>
+ <200707191215.05245.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707182337.34767.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 19 Jul 2007 03:33:59.0631 (UTC) FILETIME=[A4E875F0:01C7C9B5]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 18 Jul 2007 19:53, Mike Frysinger pondered:
-> On 7/18/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> > On Wed 18 Jul 2007 18:16, Andrew Morton pondered:
-> > > I'd suggest that any interface into here should be via function calls,
-> > > not via direct access to printk internals: think up some nice
-> > > copy_me_some_of_the_log_buffer() interface.
-> >
-> > If so - I would still like to put it in:
-> >  - ifdef CONFIG_EARLY_PRINTK
-> >  - and define as __init
-> >
-> > so that people don't use it when they shouldn't (when the kernel is up an
-> > running).
-> >
-> > Something simple like - early_copy_log_buff(void *dest, size_t n)
-> >
-> > copies n bytes from log_buf to memory area dest. Returns number of bytes that
-> > could not be copied. Can find out how many bytes are in the log_buff by
-> > calling with zero size.
-> >
-> > This is not destructive to existing interfaces (log_start and con_start are
-> > not updated/used). This should ensure that if booting does work - that normal
-> > messages come out the standard method.
-> >
-> > Any other suggestions?
-> 
-> maybe something as cheesy as early_get_log_buf() ?  that way you dont
-> have to do any buffer management, you can just operate read-only on
-> the string ...
+On Thu, 19 Jul 2007, Nigel Cunningham wrote:
 
-I actually thought I might just do something like:
+> Hi.
+>
+> On Thursday 19 July 2007 11:04:20 Andrew Morton wrote:
+>> On Sun, 15 Jul 2007 15:13:13 +0800
+>> "Huang, Ying" <ying.huang@intel.com> wrote:
+>>
+>>>
+>>> The changelog between v1 and v2
+>>>
+>>> 1. The kexec jump implementation is put into the kexec/kdump
+>>>    framework instead of software suspend framework. The device
+>>>    and CPU state save/restore code of software suspend is called
+>>>    when needed.
+>>>
+>>> 2. The same code path is used for both kexec a new kernel and jump
+>>>    back to original kernel.
+>>
+>> I like the idea but I think I'll let people chat about it a bit more
+>> before looking at merging the patches, OK?
+>
+> Please wait until you see a complete implementation that actually works. I'm
+> sitting here quietly, following (and now breaking) the "If you can't say
+> anything positive, don't say anything at all" line because I think that the
+> more into the implementation details people get, the uglier this is going to
+> show itself to be. I'm perfectly willing to be proven wrong, but haven't seen
+> anything so far that's even begun to convince me otherwise.
 
-  char *c;
-  while (early_copy_log_buff(c, 1))
-	out_early_serial_byte(c);
+as someone who's eager to have this work, I have to agree with Nigel that 
+it's premature to talk about merging anything.
 
-that way - I don't need to be very complex in the arch code.
+the only exception I could see is if there are other uses for this 
+functionality. but even then, let things settle out a little bit.
 
-That is about as cheesy/easy as I could think of...
-
--Robin
+David Lang
