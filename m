@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937226AbXGSInZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937344AbXGSIns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937226AbXGSInZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 04:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXGSInL
+	id S937344AbXGSIns (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 04:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXGSIna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 04:43:11 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:36447 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763105AbXGSInK (ORCPT
+	Thu, 19 Jul 2007 04:43:30 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:51375 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937250AbXGSIn3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 04:43:10 -0400
-Date: Thu, 19 Jul 2007 09:02:03 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: cmpxchg is not available to generic code
-In-Reply-To: <20070719000549.1e57b5b2.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707190900320.19586@skynet.skynet.ie>
-References: <20070719000549.1e57b5b2.akpm@linux-foundation.org>
+	Thu, 19 Jul 2007 04:43:29 -0400
+Message-ID: <469F240E.9040205@s5r6.in-berlin.de>
+Date: Thu, 19 Jul 2007 10:42:54 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Adrian Bunk <bunk@stusta.de>, Jeff Garzik <jeff@garzik.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Gabriel C <crazy@pimpmylinux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org> <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain> <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain> <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Robert P. J. Day wrote:
+> On Thu, 19 Jul 2007, Adrian Bunk wrote:
+> 
+> ...
+>> I would consider it more ugly to special case this and that in the
+>> kconfig code when plain dependencies already offer exactly the same
+>> functionality...
+> 
+> well, this is the *third* time i've proposed adding this kind of
+> feature so, at this point, i've really given up caring about it.  if
+> someone wants to do this, have at it.  i have better things to do than
+> to keep suggesting it and getting nowhere with it.
 
-
-> arm:
->
-> drivers/char/drm/drm_lock.c: In function `drm_lock_take':
-> drivers/char/drm/drm_lock.c:221: error: implicit declaration of function `cmpxchg'
->
-> You might be able to use atomic_cmpxchg, which _is_ present
-> on all architectures.  Or use a spinlock.
->
-> What's that code doing anyway?  driver-private locking primitives?
-
-When did arm suddenly start wanting DRM? they need to grow a userpsace 
-cmpxchg as davem mentioned to go along with this, changing the drm now 
-isn't possible due to backwards compat..
-
-Dave.
-
+For better or worse, it can often be observed that feature requests
+don't set anything in motion until a first patch is sent.  Even a patch
+that is far from perfect can get things going really quickly.  (If the
+requested feature makes sense to other people.)
 -- 
-David Airlie, Software Engineer
-http://www.skynet.ie/~airlied / airlied at skynet.ie
-Linux kernel - DRI, VAX / pam_smb / ILUG
-
+Stefan Richter
+-=====-=-=== -=== =--==
+http://arcgraph.de/sr/
