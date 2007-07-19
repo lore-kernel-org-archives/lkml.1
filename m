@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938366AbXGSOva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938366AbXGSOwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938366AbXGSOva (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760158AbXGSOvV
+	id S938366AbXGSOwm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758539AbXGSOwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 10:51:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44311 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759287AbXGSOvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 10:51:20 -0400
-Date: Thu, 19 Jul 2007 16:50:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patch] fix the softlockup watchdog to actually work
-Message-ID: <20070719145058.GA11971@elte.hu>
-References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070719002231.069ebbdd.akpm@linux-foundation.org> <20070719075152.GB12760@elte.hu> <469F75AF.5080000@goop.org> <20070719143528.GA8278@elte.hu> <469F793E.6030006@goop.org>
-MIME-Version: 1.0
+	Thu, 19 Jul 2007 10:52:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35108 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786AbXGSOwd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 10:52:33 -0400
+Date: Thu, 19 Jul 2007 15:52:29 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <ak@suse.de>
+Cc: wli@holomorphy.com, lkml@rtr.ca, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for review] [7/48] i386: divorce CONFIG_X86_PAE from CONFIG_HIGHMEM64G
+Message-ID: <20070719145229.GA19858@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andi Kleen <ak@suse.de>, wli@holomorphy.com, lkml@rtr.ca,
+	linux-kernel@vger.kernel.org
+References: <20070719348.540885000@suse.de> <20070719134836.0C54214E6E@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <469F793E.6030006@goop.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070719134836.0C54214E6E@wotan.suse.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 19, 2007 at 03:48:36PM +0200, Andi Kleen wrote:
+> 
+> From: William Lee Irwin III <wli@holomorphy.com>
+> 
+> PAE is useful for more than supporting more than 4GB RAM.  It supports
+> expanded swapspace and NX executable protections.  Some users may want NX
+> or expanded swapspace support without the overhead or instability of
+> highmem.  For these reasons, the following patch divorces CONFIG_X86_PAE
+> from CONFIG_HIGHMEM64G.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+What overhead of instability of highmem?  Sorry folks but this is utter
+bollocks.  Back in the Caldera days we did a lot of measurement on highmem
+overhead, and CONFIG_HIGHMEM has no measurable overhead at all on a system
+that doesn't use it.  CONFIG_HIGHMEM64G on the other hand has
+a quite visible overhead on small systems, but that's entirely due to the
+bigger page table entries that you need for NX.
 
-> Hm, or more specifically, why would that be a problem for softlockup? 
-> Do you mean it doesn't measure time during ACPI idle?  That would just 
-> make it trigger later than it would otherwise.
-
-no, the return value after idling can be completely random on some 
-boxes, on a 64-bit scale - triggering the softlockup watchdog randomly. 
-(some boxes return random TSC values, etc.) Again, it's fine for the 
-scheduler's purpose, that's why i named it sched_clock().
-
-the proper clocksource use within the kernel is ktime_get() [or 
-ktime_get_ts()]. Do not abuse sched_clock() for such things.
-
-	Ingo
