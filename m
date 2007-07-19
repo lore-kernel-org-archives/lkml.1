@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXGSMsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933625AbXGSMwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764933AbXGSMsi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 08:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758586AbXGSMs3
+	id S933625AbXGSMwW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 08:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbXGSMwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 08:48:29 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:48988 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758539AbXGSMs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 08:48:29 -0400
-Date: Thu, 19 Jul 2007 08:48:22 -0400
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: AFS compile broken
-Message-ID: <20070719124822.GA13180@fieldses.org>
-References: <Pine.SOC.4.64.0707191516120.18397@math.ut.ee> <20070719143556.795cb458@gondolin.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719143556.795cb458@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Thu, 19 Jul 2007 08:52:13 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:32101 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753859AbXGSMwL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 08:52:11 -0400
+Date: Thu, 19 Jul 2007 14:52:33 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+Message-ID: <20070719145233.6c66e584@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.62.0707191411060.8661@pademelon.sonytel.be>
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
+	<20070719112602.5e3cb21a@gondolin.boeblingen.de.ibm.com>
+	<Pine.LNX.4.62.0707191132150.8661@pademelon.sonytel.be>
+	<20070719140038.606abd44@gondolin.boeblingen.de.ibm.com>
+	<Pine.LNX.4.62.0707191411060.8661@pademelon.sonytel.be>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 02:35:56PM +0200, Cornelia Huck wrote:
-> On Thu, 19 Jul 2007 15:19:40 +0300 (EEST),
-> Meelis Roos <mroos@linux.ee> wrote:
-> 
-> > Trying to compile todays git with modular AFS and gcc 4.1.3 prerelease 
-> > in Debian unstable (gcc version 4.1.3 20070629 (prerelease) (Debian 
-> > 4.1.2-13)):
-> > 
-> >   CC [M]  fs/afs/flock.o
-> > fs/afs/flock.c: In function 'afs_do_getlk':
-> > fs/afs/flock.c:459: error: void value not ignored as it ought to be
-> > make[3]: *** [fs/afs/flock.o] Error 1
-> 
-> Should probably be something like this, but I have no idea whether this
-> is correct.
+On Thu, 19 Jul 2007 14:13:33 +0200 (CEST),
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-That's correct, and Andrew has the same patch.  (And the breakage was my
-fault, apologies.)
+> Any chance this will change? I already added a mutex to ps3disk to protect
+> against this.
 
---b.
-
-> 
-> ---
->  fs/afs/flock.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.22.orig/fs/afs/flock.c
-> +++ linux-2.6.22/fs/afs/flock.c
-> @@ -456,7 +456,8 @@ static int afs_do_getlk(struct file *fil
->  
->  	/* check local lock records first */
->  	ret = 0;
-> -	if (posix_test_lock(file, fl) == 0) {
-> +	posix_test_lock(file, fl);
-> +	if (fl->fl_type == F_UNLCK) {
->  		/* no local locks; consult the server */
->  		ret = afs_vnode_fetch_status(vnode, NULL, key);
->  		if (ret < 0)
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Probably not in the near future. A mutex looks like a good idea though,
+since one never knows (and the driver core generally doesn't make many
+guarantees regarding serialization).
