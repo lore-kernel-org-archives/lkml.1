@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761037AbXGSWy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbXGSW6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761037AbXGSWy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 18:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbXGSWys
+	id S1762214AbXGSW6h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 18:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbXGSW6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 18:54:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41401 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754884AbXGSWys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 18:54:48 -0400
-Subject: [PATCH] Use wbinvd() macro instead of raw inline assembly in .c
-	files
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: ak@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Red Hat
-Date: Thu, 19 Jul 2007 19:55:40 -0300
-Message-Id: <1184885740.16311.19.camel@t60>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 18:58:30 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45089 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755060AbXGSW6a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 18:58:30 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 19 Jul 2007 18:56:34 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jirislaby@gmail.com
+Subject: Re: [PATCH] Warn userspace about including an empty linux/tty.h.
+In-Reply-To: <20070719152035.1cb98525.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707191855410.7525@localhost.localdomain>
+References: <Pine.LNX.4.64.0707190721520.25369@localhost.localdomain>
+ <20070719152035.1cb98525.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses the already-existant wbinvd() macro to replace
-raw assembly to perform this very same task in some .c files
-    
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+On Thu, 19 Jul 2007, Andrew Morton wrote:
 
-diff --git a/arch/x86_64/kernel/tce.c b/arch/x86_64/kernel/tce.c
-index f61fb8e..afbb951 100644
---- a/arch/x86_64/kernel/tce.c
-+++ b/arch/x86_64/kernel/tce.c
-@@ -42,7 +42,7 @@ static inline void flush_tce(void* tceaddr)
- 	if (cpu_has_clflush)
- 		asm volatile("clflush (%0)" :: "r" (tceaddr));
- 	else
--		asm volatile("wbinvd":::"memory");
-+		wbinvd();
- }
- 
- void tce_build(struct iommu_table *tbl, unsigned long index,
-diff --git a/arch/x86_64/mm/pageattr.c b/arch/x86_64/mm/pageattr.c
-index 9148f4a..0a75790 100644
---- a/arch/x86_64/mm/pageattr.c
-+++ b/arch/x86_64/mm/pageattr.c
-@@ -77,7 +77,7 @@ static void flush_kernel_map(void *arg)
- 	   much cheaper than WBINVD. Disable clflush for now because
- 	   the high level code is not ready yet */
- 	if (1 || !cpu_has_clflush)
--		asm volatile("wbinvd" ::: "memory");
-+		wbinvd();
- 	else list_for_each_entry(pg, l, lru) {
- 		void *adr = page_address(pg);
- 		if (cpu_has_clflush)
+> On Thu, 19 Jul 2007 07:23:46 -0400 (EDT)
+> "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+>
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> >
+> > ---
+> >
+> >   what subsystem would something like this belong to?
+> >
+> >
+> > diff --git a/include/linux/tty.h b/include/linux/tty.h
+> > index 691a174..fd67da8 100644
+> > --- a/include/linux/tty.h
+> > +++ b/include/linux/tty.h
+> > @@ -5,6 +5,10 @@
+> >   * 'tty.h' defines some structures used by tty_io.c and some defines.
+> >   */
+> >
+> > +#ifndef __KERNEL__
+> > +#warning "Please don't include this file from userspace, it's empty."
+> > +#endif
+> > +
+>
+> this seems pointless?
 
+it was one of the suggestions that was made.  the other was just to
+stop exporting tty.h to userspace entirely, but that might break
+something in userspace.  i really had no strong opinion either way.
 
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
