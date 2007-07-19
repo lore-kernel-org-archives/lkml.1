@@ -1,84 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965082AbXGSOIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965070AbXGSOJC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965082AbXGSOIg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938135AbXGSNxr
+	id S965070AbXGSOJC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:09:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938160AbXGSNyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:53:47 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:43777 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S937869AbXGSNxp (ORCPT
+	Thu, 19 Jul 2007 09:54:01 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:52217 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938156AbXGSNyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:53:45 -0400
-Date: Thu, 19 Jul 2007 15:53:44 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Olaf Hering <olaf@aepfle.de>, Andy Whitcroft <apw@shadowen.org>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 1/4] ps3disk: use correct bio vector size
-In-Reply-To: <Pine.LNX.4.62.0707191548070.8661@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0707191552420.8661@pademelon.sonytel.be>
-References: <20070716161539.075822000@pademelon.sonytel.be>
- <20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
- <Pine.LNX.4.62.0707191039430.8661@pademelon.sonytel.be>
- <20070719021045.c0b994ca.akpm@linux-foundation.org>
- <Pine.LNX.4.62.0707191548070.8661@pademelon.sonytel.be>
+	Thu, 19 Jul 2007 09:54:00 -0400
+Message-ID: <469F6CD5.5010505@s5r6.in-berlin.de>
+Date: Thu, 19 Jul 2007 15:53:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1731197132-1184853188=:8661"
-Content-ID: <Pine.LNX.4.62.0707191553220.8661@pademelon.sonytel.be>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Adrian Bunk <bunk@stusta.de>, Jeff Garzik <jeff@garzik.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Gabriel C <crazy@pimpmylinux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org> <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain> <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain> <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain> <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Robert P. J. Day wrote:
+> i *did* submit a preliminary patch once upon a time, and it
+> (predictably) went nowhere.
 
----584337861-1731197132-1184853188=:8661
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.62.0707191553221.8661@pademelon.sonytel.be>
-
-ps3disk: use correct bio vector size
-
-This fixes the O_DIRECT corruptions, as reported by Olaf Hering (triggered by
-e.g. parted >= 1.8.0).
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/block/ps3disk.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/block/ps3disk.c
-+++ b/drivers/block/ps3disk.c
-@@ -108,7 +108,7 @@ static void ps3disk_scatter_gather(struc
- 			__func__, __LINE__, i, bio_segments(bio),
- 			bio_sectors(bio), sector);
- 		bio_for_each_segment(bvec, bio, j) {
--			size = bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE;
-+			size = bvec->bv_len;
- 			buf = __bio_kmap_atomic(bio, j, KM_IRQ0);
- 			if (gather)
- 				memcpy(dev->bounce_buf+offset, buf, size);
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1731197132-1184853188=:8661--
+A patch which pulls the word "experimental" into prompts or adds a
+dedicated directive for tagging of options?  Can't find it in archives.
+-- 
+Stefan Richter
+-=====-=-=== -=== =--==
+http://arcgraph.de/sr/
