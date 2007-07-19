@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940725AbXGSSE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941087AbXGSSFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940725AbXGSSE4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 14:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765652AbXGSSEn
+	id S941087AbXGSSFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 14:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759825AbXGSSFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 14:04:43 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:48032 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754299AbXGSSEm (ORCPT
+	Thu, 19 Jul 2007 14:05:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41580 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936158AbXGSSFR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 14:04:42 -0400
-Subject: Re: [PATCH] [15/58] i386: Rewrite sched_clock
-From: Daniel Walker <dwalker@mvista.com>
-To: Andi Kleen <ak@suse.de>
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200707192000.13164.ak@suse.de>
-References: <200707191154.642492000@suse.de> <200707191938.18988.ak@suse.de>
-	 <1184867029.6458.40.camel@dhcp193.mvista.com>
-	 <200707192000.13164.ak@suse.de>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 11:00:01 -0700
-Message-Id: <1184868002.6458.43.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 14:05:17 -0400
+Date: Thu, 19 Jul 2007 11:04:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+Subject: Re: [git patches] two warning fixes
+In-Reply-To: <m3r6n4bjgg.fsf@maximus.localdomain>
+Message-ID: <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
+References: <20070718235504.GA9601@havoc.gtf.org>
+ <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
+ <469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 20:00 +0200, Andi Kleen wrote:
-> On Thursday 19 July 2007 19:43:49 Daniel Walker wrote:
-> > On Thu, 2007-07-19 at 19:38 +0200, Andi Kleen wrote:
-> > > On Thursday 19 July 2007 19:31:56 Daniel Walker wrote:
-> > > 
-> > > > >From my perspective a downside to sched_clock is that the math is
-> > > > duplicated per architecture .. I think it would be a win to use the
-> > > > generic functions if it's possible..
-> > > 
-> > > They can't be used because they're not cpu local. The whole basic 
-> > > concept behind the new sched_clock is to be cpu local. 
-> > 
-> > Your not following me .. 
+
+
+On Thu, 19 Jul 2007, Krzysztof Halasa wrote:
+>
+> Jeff Garzik <jeff@garzik.org> writes:
 > 
-> Because you don't make much sense. You're really asking me to factor
-> an single multiplication and a shift (two CPU instructions!) out to share?
+> > My overall goal is killing useless warnings
+> > that continually obscure real ones.
+> 
+> Precisely, the goal should be to make must_check (and similar things)
+> warn only in real cases.
 
-Yes, but I also said that was only part of the duplication. Your already
-doing a re-write, there is no reason not to add this..
+.. the problem with that mentality is that it's not how people work.
 
-Daniel
+People shut up warnings by adding code.
 
+Adding code tends to add bugs.
+
+People don't generally think "maybe that warning was bogus".
+
+More people *should* generally ask themselves: "was the warning worth it?" 
+and then, if the answer is "no", they shouldn't add code, they should 
+remove the thing that causes the warning in the first place.
+
+For example, for compiler options, the correct thign is often to just say 
+"that option was broken", and not use "-fsign-warning", for example. We've 
+literally have had bugs *added* because people "fixed" a sign warning. 
+More than once, in fact.
+
+Every time you see a warning, you should ask yourself: is the warning 
+interesting, correct and valid? And if it isn't all three, then the 
+problem is whatever *causes* the warning, not the code itself.
+
+			Linus
