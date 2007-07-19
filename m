@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939440AbXGSPgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939171AbXGSPi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939440AbXGSPgi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932094AbXGSPg2
+	id S939171AbXGSPi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932094AbXGSPiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:36:28 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:57036 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765899AbXGSPg1 (ORCPT
+	Thu, 19 Jul 2007 11:38:50 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:58923 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765639AbXGSPit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:36:27 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 19 Jul 2007 11:34:21 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
-In-Reply-To: <469F7918.3000503@linux.intel.com>
-Message-ID: <Pine.LNX.4.64.0707191133100.7047@localhost.localdomain>
-References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain>
- <469F749F.8030606@s5r6.in-berlin.de> <469F7918.3000503@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 19 Jul 2007 11:38:49 -0400
+Date: Thu, 19 Jul 2007 21:18:20 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jan Glauber <jang@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, mschwid2@linux.vnet.ibm.com, efault@gmx.de,
+       dmitry.adamushko@gmail.com, paulus@samba.org, anton@samba.org
+Subject: Re: [PATCH] virtual sched_clock() for s390
+Message-ID: <20070719154820.GM2216@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <1184842661.6546.14.camel@localhost.localdomain> <469F8342.7060000@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469F8342.7060000@goop.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007, Arjan van de Ven wrote:
+On Thu, Jul 19, 2007 at 08:29:06AM -0700, Jeremy Fitzhardinge wrote:
+> > - * Monotonic_clock - returns # of nanoseconds passed since time_init()
+> > + * Scheduler clock - returns current time in nanosec units.
+> > + * Now based on virtual cpu time to only account time the guest
+> > + * was actually running.
+> >   
+> 
+> Runn*ing*?  Does it include time the VCPU spends idle/blocked?  If not,
+> then the scheduler won't be able to tell how long a process has been
+> asleep.
 
-> Stefan Richter wrote:
-> > Robert P. J. Day wrote:
-> > ...
-> > > it's not clear if that means that it was a *one-time* transition
-> > > aid which is now unnecessary, or whether it's an *ongoing* aid which
-> > > might be used at any time.  currently, there are no invocations of
-> > > EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
-> > > this feature can be tossed?  or might it still be used every so often?
->
-> it's one of those pieces of infrastructure that get used from time
-> to time to phase out symbol exports... we should be more agressive
-> about that; about 1/3rd of the exports is not used by anything in
-> linux, yet each symbol costs about 100 bytes of memory at runtime.
+Good point ..
 
-ok, so maybe its removal file entry should be deleted if it's going to
-hang around.  your call.
+I think we need a measure of both virtual and real time here - 
+virtual for accounting task-execution time and real for
+accounting sleep (and perhaps rq-wait?) time.
 
-rday
+>  Maybe this doesn't matter (I had this problem in a version of
+> Xen's sched_clock, and I can't say I saw an ill effects from it).
+
+I guess it will show up as some corner case behaviour, which people are
+yet to discover on virtual env.
+
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Regards,
+vatsa
