@@ -1,41 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965581AbXGSRWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940631AbXGSRXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965581AbXGSRWy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940618AbXGSRWk
+	id S940631AbXGSRXw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938769AbXGSRXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:22:40 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37065 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940532AbXGSRWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:22:38 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH] [15/58] i386: Rewrite sched_clock
-Date: Thu, 19 Jul 2007 19:22:34 +0200
-User-Agent: KMail/1.9.6
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200707191154.642492000@suse.de> <200707191913.27946.ak@suse.de> <1184865339.6458.21.camel@dhcp193.mvista.com>
-In-Reply-To: <1184865339.6458.21.camel@dhcp193.mvista.com>
+	Thu, 19 Jul 2007 13:23:40 -0400
+Received: from h146-az.mvista.com ([65.200.49.156]:64813 "EHLO
+	zipcode.az.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934056AbXGSRXi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 13:23:38 -0400
+Date: Thu, 19 Jul 2007 10:26:17 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: carlos.sanchez@gecoinc.com, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 1/4] serial: MPSC: Remove race between Rx stop & restart
+Message-ID: <20070719172617.GA589@mag.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707191922.34388.ak@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 July 2007 19:15:38 Daniel Walker wrote:
-> On Thu, 2007-07-19 at 19:13 +0200, Andi Kleen wrote:
-> > > What about using the cycles2ns() clocksource helpers, it would eliminate
-> > > the duplication of the shift/multiply math .
-> > 
-> > They are completely different from what clocksource provides.
-> 
-> How so?
+From: Carlos Sanchez <carlos.sanchez@gecoinc.com>
 
-The new sched_clock's works CPU local and relative to the last sync point. 
+The patch in commit ID f7232056bff5fe2d3bfeab35252a66ebaeb5bbde
+stops (aborts) the MPSC's receive engine just before restarting it.
+Unfortunately, it doesn't wait for the abort to complete before
+restarting it which creates a race between the abort and the restart.
+If the restart occurs first, the in-progress abort stops it again
+and the rx engine remains stopped.
 
--Andi
+Instead, do the abort when the SDMA engine is being stopped.  Make
+sure to wait for the abort to complete before continuing.
+
+Signed-off-by: Carlos Sanchez <carlos.sanchez@gecoinc.com>
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
+ drivers/serial/mpsc.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/serial/mpsc.c b/drivers/serial/mpsc.c
+index 00924fe..567fa78 100644
+--- a/drivers/serial/mpsc.c
++++ b/drivers/serial/mpsc.c
+@@ -1363,8 +1363,6 @@ mpsc_start_rx(struct mpsc_port_info *pi)
+ {
+ 	pr_debug("mpsc_start_rx[%d]: Starting...\n", pi->port.line);
+ 
+-	/* Issue a Receive Abort to clear any receive errors */
+-	writel(MPSC_CHR_2_RA, pi->mpsc_base + MPSC_CHR_2);
+ 	if (pi->rcv_data) {
+ 		mpsc_enter_hunt(pi);
+ 		mpsc_sdma_cmd(pi, SDMA_SDCM_ERD);
+@@ -1379,6 +1377,20 @@ mpsc_stop_rx(struct uart_port *port)
+ 
+ 	pr_debug("mpsc_stop_rx[%d]: Stopping...\n", port->line);
+ 
++	if (pi->mirror_regs) {
++		writel(pi->MPSC_CHR_2_m | MPSC_CHR_2_RA,
++				pi->mpsc_base + MPSC_CHR_2);
++		/* Erratum prevents reading CHR_2 so just delay for a while */
++		udelay(100);
++	}
++	else {
++		writel(readl(pi->mpsc_base + MPSC_CHR_2) | MPSC_CHR_2_RA,
++			pi->mpsc_base + MPSC_CHR_2);
++
++		while (readl(pi->mpsc_base + MPSC_CHR_2) & MPSC_CHR_2_RA)
++			udelay(10);
++	}
++
+ 	mpsc_sdma_cmd(pi, SDMA_SDCM_AR);
+ 	return;
+ }
