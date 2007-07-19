@@ -1,101 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbXGSGlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763433AbXGSGoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762051AbXGSGlT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 02:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbXGSGlJ
+	id S1763433AbXGSGoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 02:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbXGSGoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 02:41:09 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:42874 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754495AbXGSGlI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 02:41:08 -0400
-Message-ID: <469F0770.2090309@cateee.net>
-Date: Thu, 19 Jul 2007 08:40:48 +0200
-From: Giacomo Catenazzi <cate@cateee.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: regression: disk error loop (panic?) ide_do_rw_disk-bad:
-References: <469D1D5E.8050609@cateee.net> <alpine.LFD.0.999.0707181313100.27353@woody.linux-foundation.org> <20070718202740.GN11657@kernel.dk> <200707190053.24578.bzolnier@gmail.com> <alpine.LFD.0.999.0707181618340.27353@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707181618340.27353@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 Jul 2007 02:44:12 -0400
+Received: from mga09.intel.com ([134.134.136.24]:33252 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754929AbXGSGoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 02:44:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,554,1175497200"; 
+   d="scan'208";a="107715342"
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based
+	hibernation
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <20070718180420.02352d4f.akpm@linux-foundation.org>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+	 <20070718180420.02352d4f.akpm@linux-foundation.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Thu, 19 Jul 2007 14:43:23 +0800
+Message-Id: <1184827403.15756.14.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 19 Jul 2007 06:44:06.0839 (UTC) FILETIME=[34224470:01C7C9D0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 19 Jul 2007, Bartlomiej Zolnierkiewicz wrote:
->> Thanks for finding and fixing this.
->>
->> The latest patch (with additional cleanups) also looks good and should be
->> safe enough (unchanged behavior for all non-pc requests) to merge it now.
->>
->> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> Ok, Jens - mind signing off on the patch you sent out, and writing an 
-> explanatory message? Feel free to just crib from my explanation of my 
-> original patch, or whatever.
-> 
-> And it would be beautiful if people who saw the bad behaviour before 
-> reverting the ide.c changes were to go back to that broken state, and try 
-> the patch, and just verify that it acts like it should (ie you should see 
-> just a few error messages, and it shouldn't cause the IDE layer to go 
-> ballistic any more).
+On Wed, 2007-07-18 at 18:04 -0700, Andrew Morton wrote:
+> I like the idea but I think I'll let people chat about it a bit more
+> before looking at merging the patches, OK?
 
-Ok, I tested a5fcaa210626a79465321e344c91a6a7dc3881fa , with
-the Jeans' patch with clean-up (Message-ID:
-<20070718201152.GL11657@kernel.dk>).
+I think maybe we should wait for Rafael to separate the device hibernate
+(quiesce and state save) from device suspend. Without that, the ACPI
+issue can not be resolved.
 
-I don't see the error loop. but only 4 errors (2 for each hd, at hddtemp
-start)
-
-Jul 19 08:22:19 catee kernel: hda: selected mode 0x45
-Jul 19 08:22:23 catee kernel: ide_do_rw_disk - bad command: dev hda:
-type=2, flags=104c8
-Jul 19 08:22:23 catee kernel:
-Jul 19 08:22:23 catee kernel: sector 14657019, nr/cnr 0/0
-Jul 19 08:22:23 catee kernel: bio c21a4780, biotail c21a4780, buffer
-00000000, data 00000000, len 36
-Jul 19 08:22:23 catee kernel: cdb: 12 00 00 00 24 00 00 00 00 00 00 00
-00 00 00 00
-Jul 19 08:22:23 catee kernel: ide_do_rw_disk - bad command: dev hdc:
-type=2, flags=104c8
-Jul 19 08:22:23 catee kernel:
-Jul 19 08:22:23 catee kernel: sector 34711027, nr/cnr 0/0
-Jul 19 08:22:23 catee kernel: bio c21a4740, biotail c21a4740, buffer
-00000000, data 00000000, len 36
-Jul 19 08:22:23 catee kernel: cdb: 12 00 00 00 24 00 00 00 00 00 00 00
-00 00 00 00
-Jul 19 08:22:23 catee kernel: ide_do_rw_disk - bad command: dev hdc:
-type=2, flags=104c8
-Jul 19 08:22:23 catee kernel:
-Jul 19 08:22:23 catee kernel: sector 7387152, nr/cnr 0/0
-Jul 19 08:22:23 catee kernel: bio c21a4900, biotail c21a4900, buffer
-00000000, data 00000000, len 36
-Jul 19 08:22:23 catee kernel: cdb: 12 00 00 00 24 00 00 00 00 00 00 00
-00 00 00 00
-Jul 19 08:22:23 catee kernel: ide_do_rw_disk - bad command: dev hda:
-type=2, flags=104c8
-Jul 19 08:22:23 catee kernel:
-Jul 19 08:22:23 catee kernel: sector 7387152, nr/cnr 0/0
-Jul 19 08:22:23 catee kernel: bio c21a4900, biotail c21a4900, buffer
-00000000, data 00000000, len 36
-Jul 19 08:22:23 catee kernel: cdb: 12 00 00 00 24 00 00 00 00 00 00 00
-00 00 00 00
-Jul 19 08:22:27 catee kernel: ttyS1: LSR safety check engaged!
-
-The last git tree give me no errors.
-
-patch in Message-ID: <20070718201152.GL11657@kernel.dk>
-
-Tested-By: Giacomo Catenazzi <cate@debian.org>
-
-ciao
-	cate
-
+Best Regards,
+Huang Ying
