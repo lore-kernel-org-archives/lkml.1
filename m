@@ -1,46 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938741AbXGSOLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965385AbXGSOMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938741AbXGSOLk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 10:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934812AbXGSN5P
+	id S965385AbXGSOMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 10:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765707AbXGSOBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 09:57:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48651 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938400AbXGSN5M (ORCPT
+	Thu, 19 Jul 2007 10:01:19 -0400
+Received: from stinky.trash.net ([213.144.137.162]:35137 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937018AbXGSOBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 09:57:12 -0400
-Date: Thu, 19 Jul 2007 14:57:08 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Karel Zak <kzak@redhat.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH][RFC] Delete export of tty.h to userspace.
-Message-ID: <20070719135707.GA16279@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Karel Zak <kzak@redhat.com>, Jiri Slaby <jirislaby@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <Pine.LNX.4.64.0707180520040.19434@localhost.localdomain> <469E7599.4060608@gmail.com> <Pine.LNX.4.64.0707181631340.14452@localhost.localdomain> <20070718223820.GF3181@petra.dvoda.cz> <Pine.LNX.4.64.0707190715320.25024@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707190715320.25024@localhost.localdomain>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 19 Jul 2007 10:01:16 -0400
+Message-ID: <469F6E73.30904@trash.net>
+Date: Thu, 19 Jul 2007 16:00:19 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Krzysztof Halasa <khc@pm.waw.pl>,
+       andrei radulescu-banu <iubica2@yahoo.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Linux, tcpdump and vlan
+References: <878246.51044.qm@web56608.mail.re3.yahoo.com>	<469E9AC8.3090603@trash.net>	<m3zm1sbjzl.fsf@maximus.localdomain> <20070719144131.0c230c8f@oldman.hamilton.local>
+In-Reply-To: <20070719144131.0c230c8f@oldman.hamilton.local>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 07:17:07AM -0400, Robert P. J. Day wrote:
-> so you're saying you'll drop that include from util-linux, is that it?
-> but it's still a good plan to generate a warning whenever userspace
-> includes that file, so i'll submit a quick patch to generate that,
-> based on jiri's suggestion.
+Stephen Hemminger wrote:
+> On Thu, 19 Jul 2007 15:28:46 +0200
+> Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> 
+>>>Your suggestion of disabling VLAN acceleration in promiscous
+>>>mode sounds like a reasonable solution until then ..
+>>
+>>From a user perspective:
+>>
+>>I'm not sure promiscous mode is related to the problem.
+>>Tcpdump without promiscous mode makes perfect sense.
 
-Not exporting it at all gives an error which is a lot better.  Just look
-at all the warnings most userspace spews, they'd never even notice it
-otherwise.
+
+Good point.
+
+>>I don't know very well VLAN code internals, but I think
+>>the VLAN # is used for looking up the interface, so
+>>presenting the "original" packet on the trunk device
+>>would IMHO involve some skb cloning, and perhaps some
+>>ethtool option could probably control that.
+>>
+>>Not sure about untagged frames vs. tagged frames with
+>>the default VLAN id - can the hardware at all differentiate
+>>between them?
+>>
+>>
+>>Or, perhaps it should be left (almost) as is - with "software"
+>>VLANs the traffic always goes through the master interface,
+>>but with "accelerated" mode it only goes through logical
+>>interfaces and doesn't show up on master? Probably with
+>>exception of invalid VLANs, which could be injected back to
+>>master (because no logical device exists)?
+
+
+The last case is the problematic one, the tag might be gone.
+
+> I don't claim to be a VLAN expert but there are really three cases
+> for handling tagged frames
+> 
+> 1) non-accelerated device 
+>     * all frames show in promiscious mode
+>     * tag is part of the frame that shows up
+>        in tcpdump, and then gets stripped by the 8021q module.
+> 2) rx tag stripping device
+>      * all frames show in promiscious mode
+>      * tag is in skb but NOT passed to tcpdump
+> 3) rx vlan acceleration
+>      * only frames that for vlan's that are registered show up
+>         in promisicous mode
+>      * tag is in skb but NOT passed to tcpdump
+> 
+> Unfortunately, the tag is lost as part of the VLAN acceleration process
+> so it is not a simple matter of changing code in AF_PACKET receive
+> to restore the tag.
+
+
+I think case 2) is not correct, the tag is stripped and is not in the
+skb. Check out sky2 for example :)
+
+        if (sky2->vlgrp && (status & GMR_FS_VLAN)) {
+                vlan_hwaccel_receive_skb(skb,
+
+                                         sky2->vlgrp,
+                                         be16_to_cpu(sky2->rx_tag));
+
+
+The tag it uses for the lookup comes from the descriptor. I don't
+know any examples for case 3), but I would expect that the header
+is also removed.
+
+Anyway, I think what we should do is store the VLAN tag in the skb
+meta data. That would not only allow tcpdump to reconstruct it, it
+would also fix the invalid use of skb->cb on the TX path. It would
+also fix the bridge eating VLAN headers case (bridge on eth0 + eth1,
+additionally eth0.1 on eth0 using vlan RX accerlation with header
+stripping) and would allow to simply forward the vlan tag to the
+outgoing device in case it supports hardware accererated vlan tagging.
 
