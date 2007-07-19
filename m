@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939403AbXGSSSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939739AbXGSSUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939403AbXGSSSq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 14:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932403AbXGSSSf
+	id S939739AbXGSSUd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 14:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759309AbXGSSUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 14:18:35 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:51311 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932094AbXGSSSe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 14:18:34 -0400
-Date: Fri, 20 Jul 2007 03:06:36 +0900 (JST)
-Message-Id: <20070720.030636.68037027.tshibata@ab.jp.nec.com>
-To: leo@zh-kernel.org
-Cc: rob@landley.net, gh@us.ibm.com, hpa@zytor.com, kunai@linux-foundation.jp,
-       holzheu@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       tshibata@ab.jp.nec.com
-Subject: Re: [PATCH] Chinese Language Maintainer
-From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
- =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 14:20:24 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:18611 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754165AbXGSSUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 14:20:23 -0400
+Date: Thu, 19 Jul 2007 20:20:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Jan Glauber <jang@linux.vnet.ibm.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [patch] sched: implement cpu_clock(cpu) high-speed time
+	source,   take #2
+Message-ID: <20070719182007.GB11657@kernel.dk>
+References: <469F793E.6030006@goop.org> <20070719145058.GA11971@elte.hu> <469F7D7A.204@goop.org> <20070719150955.GA19373@elte.hu> <469F8179.2060802@goop.org> <20070719154254.GA24225@elte.hu> <20070719154449.GA28998@elte.hu> <469F8D28.1010304@goop.org> <20070719172403.GU11657@kernel.dk> <469FA908.8090804@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469FA908.8090804@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007 00:24:07 +0800, leo wrote:
-(snip)
-> Here is the helper process I propose to help more people to participate. 
->   Suggestions and comments are welcomed.
-
-I think this seems mostly good. I will try to comment a bit.
-
-> 1) Developer who can't speak English or has a problem going through the 
-
-I think early stage of developer may have "difficulty of using
-English". I think this may better than "can't speak".
-
-> submission process sends patches to the Language maintainer and cc the 
-> local mail list provided.
-> 2) Language maintainer and experienced Linux developer on the local mail 
-> list can review the patch and give comments in native language.
-
-In the review process, translated document of HOWTO,
-SubmittingPatches, CodingStyle and SummitChecklist are used in the
-local mail list.
-
-> 3) When the language maintainer thinks the patch is good in general, he 
-> will pass the patch onto corresponding subsystem maintainer and mail 
-> list for further review, cc the author and local list.
-> 4) The author communicates directly with the community.
-> 5) If the author has a problem understanding the comments or expressing 
-> himself in English, he can ask for help in native language on the local 
-> list.  The language maintainer and the developers on the list are 
-> responsible to help out.
-> 6) When the developer gets familiar with the submission process and can 
-> go through it with no problem, he can then submit patch directly without 
-> the helper process and probably join the mail list to help other new 
-> developer.
+On Thu, Jul 19 2007, Jeremy Fitzhardinge wrote:
+> Jens Axboe wrote:
+> > On Thu, Jul 19 2007, Jeremy Fitzhardinge wrote:
+> >   
+> >>> Index: linux/block/blktrace.c
+> >>> ===================================================================
+> >>> --- linux.orig/block/blktrace.c
+> >>> +++ linux/block/blktrace.c
+> >>> @@ -41,7 +41,7 @@ static void trace_note(struct blk_trace 
+> >>>  		const int cpu = smp_processor_id();
+> >>>  
+> >>>  		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
+> >>> -		t->time = sched_clock() - per_cpu(blk_trace_cpu_offset, cpu);
+> >>> +		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
+> >>>  		t->device = bt->dev;
+> >>>  		t->action = action;
+> >>>  		t->pid = pid;
+> >>> @@ -159,7 +159,7 @@ void __blk_add_trace(struct blk_trace *b
+> >>>  
+> >>>  		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
+> >>>  		t->sequence = ++(*sequence);
+> >>> -		t->time = sched_clock() - per_cpu(blk_trace_cpu_offset, cpu);
+> >>> +		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
+> >>>   
+> >>>       
+> >> What's this measuring here?  Time spend in IO?  Wouldn't it be better
+> >> off with a measurement of real monotonic time?
+> >>     
+> >
+> > It's not time spent in IO, it wants a nanosecond timestamp.
+> >   
 > 
-> - Leo
+> What kind of nanoseconds?  Real?  Virtual?
 > 
+> sched_clock() (and now cpu_clock()) measure the number of nanoseconds
+> available for running CPU instructions (regardless of whether it chooses
+> to use them or not), and so in a virtual environment doesn't include
+> time stolen by the hypervisor for other VCPUs.
+
+Real time, it's a timestamp that the user tools can use to see the time
+delta between A and B.
+
+So I guess blktrace currently doesn't work so well inside a gues...
+
+-- 
+Jens Axboe
+
