@@ -1,53 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939612AbXGSPtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939652AbXGSPu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939612AbXGSPtl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 11:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932675AbXGSPtU
+	id S939652AbXGSPu0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 11:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937570AbXGSPuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 11:49:20 -0400
-Received: from mga07.intel.com ([143.182.124.22]:1581 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S937618AbXGSPtT (ORCPT
+	Thu, 19 Jul 2007 11:50:03 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:53344 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937487AbXGSPuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 11:49:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,557,1175497200"; 
-   d="scan'208";a="252398991"
-Message-ID: <469F8784.3030700@linux.intel.com>
-Date: Thu, 19 Jul 2007 08:47:16 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: does CONFIG_UNUSED_SYMBOLS have any value anymore?
-References: <Pine.LNX.4.64.0707190849450.30763@localhost.localdomain> <469F749F.8030606@s5r6.in-berlin.de> <469F7918.3000503@linux.intel.com> <Pine.LNX.4.64.0707191133100.7047@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0707191133100.7047@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Jul 2007 11:50:00 -0400
+Subject: Re: [PATCH] hugetlbfs read() support
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Bill Irwin <bill.irwin@oracle.com>, nacc@us.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20070718221950.35bbdb76.akpm@linux-foundation.org>
+References: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com>
+	 <20070718221950.35bbdb76.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 19 Jul 2007 08:51:49 -0700
+Message-Id: <1184860309.18188.90.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Thu, 19 Jul 2007, Arjan van de Ven wrote:
+On Wed, 2007-07-18 at 22:19 -0700, Andrew Morton wrote:
+> On Fri, 13 Jul 2007 18:23:33 -0700 Badari Pulavarty <pbadari@us.ibm.com> wrote:
 > 
->> Stefan Richter wrote:
->>> Robert P. J. Day wrote:
->>> ...
->>>> it's not clear if that means that it was a *one-time* transition
->>>> aid which is now unnecessary, or whether it's an *ongoing* aid which
->>>> might be used at any time.  currently, there are no invocations of
->>>> EXPORT_UNUSED_SYMBOL[_GPL] anywhere in the tree.  so does that mean
->>>> this feature can be tossed?  or might it still be used every so often?
->> it's one of those pieces of infrastructure that get used from time
->> to time to phase out symbol exports... we should be more agressive
->> about that; about 1/3rd of the exports is not used by anything in
->> linux, yet each symbol costs about 100 bytes of memory at runtime.
+> > Hi Andrew,
+> > 
+> > Here is the patch to support read() for hugetlbfs, needed to get
+> > oprofile working on executables backed by largepages. 
+> > 
+> > If you plan to consider Christoph Lameter's pagecache cleanup patches,
+> > I will re-write this. Otherwise, please consider this for -mm.
+> > 
+> > Thanks,
+> > Badari
+> > 
+> > Support for reading from hugetlbfs files. libhugetlbfs lets application
+> > text/data to be placed in large pages. When we do that, oprofile doesn't
+> > work - since libbfd tries to read from it.
+> > 
+> > This code is very similar to what do_generic_mapping_read() does, but
+> > I can't use it since it has PAGE_CACHE_SIZE assumptions.
+> > 
+> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > Acked-by: William Irwin <bill.irwin@oracle.com>
+> > Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> > 
+> >  fs/hugetlbfs/inode.c |  113 +++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 113 insertions(+)
+> > 
+> > Index: linux-2.6.22/fs/hugetlbfs/inode.c
+> > ===================================================================
+> > --- linux-2.6.22.orig/fs/hugetlbfs/inode.c	2007-07-08 16:32:17.000000000 -0700
+> > +++ linux-2.6.22/fs/hugetlbfs/inode.c	2007-07-13 19:24:36.000000000 -0700
+> > @@ -156,6 +156,118 @@ full_search:
+> >  }
+> >  #endif
+> >  
+> > +static int
+> > +hugetlbfs_read_actor(struct page *page, unsigned long offset,
+> > +			char __user *buf, unsigned long count,
+> > +			unsigned long size)
+> > +{
+> > +	char *kaddr;
+> > +	unsigned long left, copied = 0;
+> > +	int i, chunksize;
+> > +
+> > +	if (size > count)
+> > +		size = count;
+> > +
+> > +	/* Find which 4k chunk and offset with in that chunk */
+> > +	i = offset >> PAGE_CACHE_SHIFT;
+> > +	offset = offset & ~PAGE_CACHE_MASK;
+> > +
+> > +	while (size) {
+> > +		chunksize = PAGE_CACHE_SIZE;
+> > +		if (offset)
+> > +			chunksize -= offset;
+> > +		if (chunksize > size)
+> > +			chunksize = size;
+> > +		kaddr = kmap(&page[i]);
+> > +		left = __copy_to_user(buf, kaddr + offset, chunksize);
+> > +		kunmap(&page[i]);
+> > +		if (left) {
+> > +			copied += (chunksize - left);
+> > +			break;
+> > +		}
+> > +		offset = 0;
+> > +		size -= chunksize;
+> > +		buf += chunksize;
+> > +		copied += chunksize;
+> > +		i++;
+> > +	}
+> > +	return copied ? copied : -EFAULT;
+> > +}
 > 
-> ok, so maybe its removal file entry should be deleted if it's going to
-> hang around.  your call.
-> 
+> This returns -EFAULT when asked to read zero bytes.  The caller prevents
+> that, but it's a little bit ugly.  Livable with.
 
-the removal entry is/was for the symbols *marked*, not for the 
-infrastructure....
+I can fix that, but I didn't want to come here if length == 0 - so
+took a shortcut.
+
+> 
+> > +/*
+> > + * Support for read() - Find the page attached to f_mapping and copy out the
+> > + * data. Its *very* similar to do_generic_mapping_read(), we can't use that
+> > + * since it has PAGE_CACHE_SIZE assumptions.
+> > + */
+> > +ssize_t
+> > +hugetlbfs_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
+> > +{
+> > +	struct address_space *mapping = filp->f_mapping;
+> > +	struct inode *inode = mapping->host;
+> > +	unsigned long index = *ppos >> HPAGE_SHIFT;
+> > +	unsigned long end_index;
+> > +	loff_t isize;
+> > +	unsigned long offset;
+> > +	ssize_t retval = 0;
+> > +
+> > +	/* validate length */
+> > +	if (len == 0)
+> > +		goto out;
+> > +
+> > +	isize = i_size_read(inode);
+> > +	if (!isize)
+> > +		goto out;
+> > +
+> > +	offset = *ppos & ~HPAGE_MASK;
+> > +	end_index = (isize - 1) >> HPAGE_SHIFT;
+> > +	for (;;) {
+> > +		struct page *page;
+> > +		int nr, ret;
+> > +
+> > +		/* nr is the maximum number of bytes to copy from this page */
+> > +		nr = HPAGE_SIZE;
+> > +		if (index >= end_index) {
+> > +			if (index > end_index)
+> > +				goto out;
+> > +			nr = ((isize - 1) & ~HPAGE_MASK) + 1;
+> > +			if (nr <= offset) {
+> > +				goto out;
+> > +			}
+> > +		}
+> > +		nr = nr - offset;
+> > +
+> > +		/* Find the page */
+> > +		page = find_get_page(mapping, index);
+> > +		if (unlikely(page == NULL)) {
+> > +			/*
+> > +			 * We can't find the page in the cache - bail out ?
+> > +			 */
+> > +			goto out;
+> > +		}
+> > +		/*
+> > +		 * Ok, we have the page, copy it to user space buffer.
+> > +		 */
+> > +		ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
+> > +		if (ret < 0) {
+> > +			retval = retval ? : ret;
+> > +			goto out;
+> 
+> Missing put_page().
+
+Yes. Thanks for catching it.
+
+> 
+> > +		}
+> > +
+> > +		offset += ret;
+> > +		retval += ret;
+> > +		len -= ret;
+> > +		index += offset >> HPAGE_SHIFT;
+> > +		offset &= ~HPAGE_MASK;
+> > +
+> > +		page_cache_release(page);
+> > +		if (ret == nr && len)
+> > +			continue;
+> > +		goto out;
+> > +	}
+> > +out:
+> > +	return retval;
+> > +}
+> 
+> This code doesn't have all the ghastly tricks which we deploy to handle
+> concurrent truncate.
+
+Do I need to ? Baaahh!!  I don't want to deal with them. 
+All I want is a simple read() to get my oprofile working.
+Please advise.
+
+Thanks,
+Badari
+
