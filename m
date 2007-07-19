@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbXGSKk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937101AbXGSKmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbXGSKk7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbXGSKkr
+	id S937101AbXGSKmz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbXGSKmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 06:40:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50275 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754879AbXGSKkq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 06:40:46 -0400
-Date: Thu, 19 Jul 2007 11:45:29 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <ak@suse.de>
-Cc: bunk@stusta.de, ak@suse.de, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [58/58] x86: remove support for the Rise CPU
-Message-ID: <20070719114529.6fcd4022@the-village.bc.nu>
-In-Reply-To: <20070719095545.8AB5914E06@wotan.suse.de>
-References: <200707191154.642492000@suse.de>
-	<20070719095545.8AB5914E06@wotan.suse.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Jul 2007 06:42:46 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39093 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755019AbXGSKmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 06:42:45 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] [33/58] x86_64: Avoid too many remote cpu references due to /proc/stat
+Date: Thu, 19 Jul 2007 12:41:28 +0200
+User-Agent: KMail/1.9.6
+Cc: kiran@scalex86.org, patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <200707191154.642492000@suse.de> <20070719095519.10E4C14E11@wotan.suse.de> <20070719102149.GA7322@infradead.org>
+In-Reply-To: <20070719102149.GA7322@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707191241.28383.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Googling for the printk string "CPU: Rise iDragon" didn't find any dmesg
-> available online.
+On Thursday 19 July 2007 12:21:49 Christoph Hellwig wrote:
+> On Thu, Jul 19, 2007 at 11:55:19AM +0200, Andi Kleen wrote:
+> > 
+> > From: Ravikiran G Thirumalai <kiran@scalex86.org>
+> > Too many remote cpu references due to /proc/stat.
+> > 
+> > On x86_64, with newer kernel versions, kstat_irqs is a bit of a problem.
+> > On every call to kstat_irqs, the process brings in per-cpu data from all
+> > online cpus.  Doing this for NR_IRQS, which is now 256 + 32 * NR_CPUS
+> > results in (256+32*63) * 63 remote cpu references on a 64 cpu config.
+> > /proc/stat is parsed by common commands like top, who etc, causing
+> > lots of cacheline transfers
+> > 
+> > This statistic seems useless. Other 'big iron' arches disable this.
+> > Can we disable computing/reporting this statistic?  This piece of
+> > statistic is not human readable on x86_64 anymore,
+> > 
+> > If not, can we optimize computing this statistic so as to avoid
+> > too many remote references (patch to follow)
 > 
-> If it turns out that against all expectations there are actually users
-> reverting this patch would be easy.
-> 
-> This patch will make the kernel images smaller by a few bytes for all
-> i386 users.
+> If we disable this on x86_64 we should just kill it completely for consistency.
 
-Why bother. Its a tiny tiny amount of code and it requires no maintenance
-so it achieves nothing by leaving it alone and risks (slight I admit)
-breaking someones box.
+I guess it's fine on UP only architectures.  I will change it to !CONFIG_SMP
+unless someone complains.
 
-Alan
+-Andi
 
