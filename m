@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965137AbXGSRA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965433AbXGSRAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965137AbXGSRA0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 13:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934634AbXGSRAK
+	id S965433AbXGSRAq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 13:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965138AbXGSRA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 13:00:10 -0400
+	Thu, 19 Jul 2007 13:00:27 -0400
 Received: from wa-out-1112.google.com ([209.85.146.182]:63430 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765811AbXGSRAI convert rfc822-to-8bit (ORCPT
+	with ESMTP id S965096AbXGSRAZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 13:00:08 -0400
+	Thu, 19 Jul 2007 13:00:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Xo7KbP8nTSixUy/5WN7p97TOXGtitlng3KVvllAKnHWOx5GK6uobj1e8SnWU2pkAnjlvjcY4sGXINjam1tSbSTf7mq7D3ON8md3IpnzYev44JhgVP4FaoYPRwN2rXLhdjlmSFVtpXCYze1Lw7XF6WkHe08bkAIz96qtF9XC5kbw=
-Message-ID: <6bffcb0e0707191000m783db377r84a6c1eb42071793@mail.gmail.com>
-Date: Thu, 19 Jul 2007 19:00:07 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: Re: [1/2] 2.6.22-git: known regressions
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "=?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?=" 
-	<ukleinek@informatik.uni-freiburg.de>
-In-Reply-To: <469F9603.8050603@qumranet.com>
+        b=sZB613JcdlUAXZ0GC7NbVHm65P1ycwYsKYd+zUlDi8KXlET00wPd/YLnVk3/j5quoUj5zQ6M5OTqdwFoXxgkU2h/WOo6AX7Cn9IHVKyuyzQvOol4pxjNb1G8i5VXxzFBX4kj9Wx/bFKwRY3RISx4niN1g0e9oA+jQkQWGG7hhTc=
+Message-ID: <86802c440707191000w69026f1em991a4c4fce17301a@mail.gmail.com>
+Date: Thu, 19 Jul 2007 10:00:25 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH] [8/58] x86_64: Use string instruction memcpy/memset on AMD Fam10
+Cc: "Andi Kleen" <ak@suse.de>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0707191841220.31013@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <469F92A1.5070203@googlemail.com> <469F9603.8050603@qumranet.com>
+References: <200707191154.642492000@suse.de>
+	 <20070719095452.4419E14E04@wotan.suse.de>
+	 <Pine.LNX.4.64.0707191841220.31013@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/07/07, Avi Kivity <avi@qumranet.com> wrote:
-> Michal Piotrowski wrote:
-> >
-> > Unclassified
-> >
-> > Subject         : a52b1752c07 broke !SMP: error: implicit declaration of function `WARN_ON'
-> > References      : http://lkml.org/lkml/2007/7/17/600
-> > Last known good : ?
-> > Submitter       : Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
-> > Caused-By       : Avi Kivity <avi@qumranet.com>
-> >                   commit a52b1752c077cb919b71167c54968a0b91673281
-> > Handled-By      : ?
-> > Status          : unknown
-> >
+On 7/19/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
 >
-> This has been fixed by Al Viro,
-> 8dfd588c3180b7403c402b4545164ee4543f8f86, in mainline.
-
-Thanks!
-
+> On Jul 19 2007 11:54, Andi Kleen wrote:
 >
-> I am now working on kvm and slub intensely disliking each other.
+> >Subject: [PATCH] [8/58] x86_64: Use string instruction memcpy/memset on AMD
+> >    Fam10
 >
-> Note: the wiki page is immutable,
+> What processors carry 0x10?
 
-Yes, you need to create an account.
+Quad core Opteron.
 
-> so I could not update it.
->
-> --
-> error compiling committee.c: too many arguments to function
->
->
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+YH
