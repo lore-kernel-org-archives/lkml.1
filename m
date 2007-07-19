@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937535AbXGSKaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938578AbXGSKa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937535AbXGSKaW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763916AbXGSJ61
+	id S938578AbXGSKa4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933113AbXGSKBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:58:27 -0400
-Received: from www.rsbac.org ([81.169.139.228]:32768 "EHLO www.rsbac.org"
+	Thu, 19 Jul 2007 06:01:54 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33462 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764901AbXGSJ6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:58:24 -0400
-X-Greylist: delayed 1274 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 05:58:23 EDT
-From: Amon Ott <ao@rsbac.org>
-Organization: RSBAC
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [ANNOUNCE] RSBAC 1.3.5 released
-User-Agent: KMail/1.9.5
+	id S1765359AbXGSKBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 06:01:52 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Lameter <clameter@sgi.com>, torvalds@osdl.org
+Subject: kmalloc zero size changes break i386
+Date: Thu, 19 Jul 2007 12:01:35 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Thu, 19 Jul 2007 11:37:01 +0200
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707191137.02048.ao@rsbac.org>
+Content-Disposition: inline
+Message-Id: <200707191201.35777.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone!
 
-Rule Set Based Access Control (RSBAC) 1.3.5 has been released for both 
-Linux kernels 2.4.34.5 and 2.6.22.1.
-You can download the new version from http://www.rsbac.org
+qemu testing and booting test machines with i386 kernels wasn't very successfull
+with recent git kernels. I got either BUGs because of failing sysfs initialization
+or oopses in kmalloc, but no user land.
 
-RSBAC is one of the leading access control systems for the Linux 
-kernel with a good selection of access control models, see 
-http://www.rsbac.org/why for more details.
+I bisected it down to this commit.
 
-Important changes since 1.3.4:
-  * Fixes compilation errors with some configurations.
-  * Some safety measures with null pointers.
-  * Fixes an important bug with User Management password hashing,
-introduced with newer 2.6 kernel crypto API.
+To reproduce: try to boot a 386 defconfig kernel, compiled with gcc 4.1, in qemu
 
-Major improvements over the 1.2.x series:
+-Andi 
 
-Speed and scalability:
-  - Cache for inherited filesystem attribute values
-  - Automatically scaling hash tables for generic lists to minimize 
-list lookups
-  - Change network templates to handle up to 25 ip networks and up to 
-10 port ranges per template
-  - Various smaller optimizations
+6cb8f91320d3e720351c21741da795fed580b21b is first bad commit
+commit 6cb8f91320d3e720351c21741da795fed580b21b
+Author: Christoph Lameter <clameter@sgi.com>
+Date:   Tue Jul 17 04:03:22 2007 -0700
 
-More control:
-  - Fine grained setuid control also in RC (type of the target user) 
-and ACL (acl at the target user) models
-  - UNIX sockets as new filesystem target type, thus more fine grained 
-control with RC types and ACLs
-  - Further improved IPC communication control
-  - RSBAC User Management password history with configurable length to 
-avoid password reuse.
-  - New request type AUTHENTICATE against USER targets. No 
-authentication against RSBAC UM without this right in RC and ACL, so 
-even harder to brute force attack
-
-Amon.
--- 
-http://www.rsbac.org - GnuPG: 2048g/5DEAAA30 2002-10-22
+    Slab allocators: consistent ZERO_SIZE_PTR support and NULL result semantics
+    
+    Define ZERO_OR_NULL_PTR macro to be able to remove the checks from the
+    allocators.  Move ZERO_SIZE_PTR related stuff into slab.h.
+    
+    Make ZERO_SIZE_PTR work for all slab allocators and get rid of the
+    WARN_ON_ONCE(size == 0) that is still remaining in SLAB.
+    
+    Make slub return NULL like the other allocators if a too large memory segmen
+t
+    is requested via __kmalloc.
+    
+    Signed-off-by: Christoph Lameter <clameter@sgi.com>
+    Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
