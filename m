@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbXGSKXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764309AbXGSKYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758220AbXGSKXn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 06:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760570AbXGSJ4I
+	id S1764309AbXGSKYV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 06:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbXGSJ4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 05:56:08 -0400
-Received: from mx1.suse.de ([195.135.220.2]:35439 "EHLO mx1.suse.de"
+	Thu, 19 Jul 2007 05:56:09 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33128 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760376AbXGSJzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 05:55:43 -0400
+	id S1760805AbXGSJzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 05:55:46 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200707191154.642492000@suse.de>
 In-Reply-To: <200707191154.642492000@suse.de>
 To: thockin@google.com, ak@suse.de, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [49/58] x86_64: support poll() on /dev/mcelog
-Message-Id: <20070719095536.09ECB14E05@wotan.suse.de>
-Date: Thu, 19 Jul 2007 11:55:36 +0200 (CEST)
+Subject: [PATCH] [50/58] x86_64: mcelog tolerant level cleanup
+Message-Id: <20070719095537.1295614E06@wotan.suse.de>
+Date: Thu, 19 Jul 2007 11:55:37 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -24,368 +24,275 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Tim Hockin <thockin@google.com>
 
 Background:
- /dev/mcelog is typically polled manually.  This is less than optimal for
- situations where accurate accounting of MCEs is important.  Calling
- poll() on /dev/mcelog does not work.
+ The MCE handler has several paths that it can take, depending on various
+ conditions of the MCE status and the value of the 'tolerant' knob.  The
+ exact semantics are not well defined and the code is a bit twisty.
 
 Description:
- This patch adds support for poll() to /dev/mcelog.  This results in
- immediate wakeup of user apps whenever the poller finds MCEs.  Because
- the exception handler can not take any locks, it can not call the wakeup
- itself.  Instead, it uses a thread_info flag (TIF_MCE_NOTIFY) which is
- caught at the next return from interrupt or exit from idle, calling the
- mce_user_notify() routine.  This patch also disables the "fake panic"
- path of the mce_panic(), because it results in printk()s in the exception
- handler and crashy systems.
+ This patch makes the MCE handler's behavior more clear by documenting the
+ behavior for various 'tolerant' levels.  It also fixes or enhances
+ several small things in the handler.  Specifically:
+     * If RIPV is set it is not safe to restart, so set the 'no way out'
+       flag rather than the 'kill it' flag.
+     * Don't panic() on correctable MCEs.
+     * If the _OVER bit is set *and* the _UC bit is set (meaning possibly
+       dropped uncorrected errors), set the 'no way out' flag.
+     * Use EIPV for testing whether an app can be killed (SIGBUS) rather
+       than RIPV.  According to docs, EIPV indicates that the error is
+       related to the IP, while RIPV simply means the IP is valid to
+       restart from.
+     * Don't clear the MCi_STATUS registers until after the panic() path.
+       This leaves the status bits set after the panic() so clever BIOSes
+       can find them (and dumb BIOSes can do nothing).
 
- This patch also does some small cleanup for essentially unused variables,
- and moves the user notification into the body of the poller, so it is
- only called once per poll, rather than once per CPU.
+ This patch also calls nonseekable_open() in mce_open (as suggested by akpm).
 
 Result:
- Applications can now poll() on /dev/mcelog.  When an error is logged
- (whether through the poller or through an exception) the applications are
- woken up promptly.  This should not affect any previous behaviors.  If no
- MCEs are being logged, there is no overhead.
+ Tolerant levels behave almost identically to how they always have, but
+ not it's well defined.  There's a slightly higher chance of panic()ing
+ when multiple errors happen (a good thing, IMHO).  If you take an MBE and
+ panic(), the error status bits are not cleared.
 
 Alternatives:
- I considered simply supporting poll() through the poller and not using
- TIF_MCE_NOTIFY at all.  However, the time between an uncorrectable error
- happening and the user application being notified is *the*most* critical
- window for us.  Many uncorrectable errors can be logged to the network if
- given a chance.
-
- I also considered doing the MCE poll directly from the idle notifier, but
- decided that was overkill.
+ None.
 
 Testing:
- I used an error-injecting DIMM to create lots of correctable DRAM errors
- and verified that my user app is woken up in sync with the polling interval.
- I also used the northbridge to inject uncorrectable ECC errors, and
- verified (printk() to the rescue) that the notify routine is called and the
- user app does wake up.  I built with PREEMPT on and off, and verified
- that my machine survives MCEs.
+ I used software to inject correctable and uncorrectable errors.  With
+ tolerant = 3, the system usually survives.  With tolerant = 2, the system
+ usually panic()s (PCC) but not always.  With tolerant = 1, the system
+ always panic()s.  When the system panic()s, the BIOS is able to detect
+ that the cause of death was an MC4.  I was not able to reproduce the
+ case of a non-PCC error in userspace, with EIPV, with (tolerant < 3).
+ That will be rare at best.
 
-[wli@holomorphy.com: build fix]
 Signed-off-by: Tim Hockin <thockin@google.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: William Irwin <bill.irwin@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/x86_64/kernel/entry.S       |    6 +-
- arch/x86_64/kernel/mce.c         |  105 +++++++++++++++++++++++++--------------
- arch/x86_64/kernel/signal.c      |    7 ++
- include/asm-x86_64/mce.h         |    2 
- include/asm-x86_64/thread_info.h |    2 
- 5 files changed, 82 insertions(+), 40 deletions(-)
+ Documentation/x86_64/boot-options.txt |    8 +-
+ Documentation/x86_64/machinecheck     |   14 ++--
+ arch/x86_64/kernel/mce.c              |  101 ++++++++++++++++++++++------------
+ 3 files changed, 80 insertions(+), 43 deletions(-)
 
-Index: linux/arch/x86_64/kernel/entry.S
+Index: linux/Documentation/x86_64/boot-options.txt
 ===================================================================
---- linux.orig/arch/x86_64/kernel/entry.S
-+++ linux/arch/x86_64/kernel/entry.S
-@@ -282,7 +282,7 @@ sysret_careful:
- sysret_signal:
- 	TRACE_IRQS_ON
- 	sti
--	testl $(_TIF_SIGPENDING|_TIF_NOTIFY_RESUME|_TIF_SINGLESTEP),%edx
-+	testl $(_TIF_SIGPENDING|_TIF_NOTIFY_RESUME|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
- 	jz    1f
+--- linux.orig/Documentation/x86_64/boot-options.txt
++++ linux/Documentation/x86_64/boot-options.txt
+@@ -14,9 +14,11 @@ Machine check
+    mce=nobootlog
+ 		Disable boot machine check logging.
+    mce=tolerancelevel (number)
+-		0: always panic, 1: panic if deadlock possible,
+-		2: try to avoid panic, 3: never panic or exit (for testing)
+-		default is 1
++		0: always panic on uncorrected errors, log corrected errors
++		1: panic or SIGBUS on uncorrected errors, log corrected errors
++		2: SIGBUS or log uncorrected errors, log corrected errors
++		3: never panic or SIGBUS, log all errors (for testing only)
++		Default is 1
+ 		Can be also set using sysfs which is preferable.
  
- 	/* Really a signal */
-@@ -375,7 +375,7 @@ int_very_careful:
- 	jmp int_restore_rest
- 	
- int_signal:
--	testl $(_TIF_NOTIFY_RESUME|_TIF_SIGPENDING|_TIF_SINGLESTEP),%edx
-+	testl $(_TIF_NOTIFY_RESUME|_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
- 	jz 1f
- 	movq %rsp,%rdi		# &ptregs -> arg1
- 	xorl %esi,%esi		# oldset -> arg2
-@@ -599,7 +599,7 @@ retint_careful:
- 	jmp retint_check
- 	
- retint_signal:
--	testl $(_TIF_SIGPENDING|_TIF_NOTIFY_RESUME|_TIF_SINGLESTEP),%edx
-+	testl $(_TIF_SIGPENDING|_TIF_NOTIFY_RESUME|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
- 	jz    retint_swapgs
- 	TRACE_IRQS_ON
- 	sti
+    nomce (for compatibility with i386): same as mce=off
+Index: linux/Documentation/x86_64/machinecheck
+===================================================================
+--- linux.orig/Documentation/x86_64/machinecheck
++++ linux/Documentation/x86_64/machinecheck
+@@ -49,12 +49,14 @@ tolerant
+ 	Since machine check exceptions can happen any time it is sometimes
+ 	risky for the kernel to kill a process because it defies
+ 	normal kernel locking rules. The tolerance level configures
+-	how hard the kernel tries to recover even at some risk of deadlock.
+-
+-	0: always panic,
+-	1: panic if deadlock possible,
+-	2: try to avoid panic,
+-   	3: never panic or exit (for testing only)
++	how hard the kernel tries to recover even at some risk of
++	deadlock.  Higher tolerant values trade potentially better uptime
++	with the risk of a crash or even corruption (for tolerant >= 3).
++
++	0: always panic on uncorrected errors, log corrected errors
++	1: panic or SIGBUS on uncorrected errors, log corrected errors
++	2: SIGBUS or log uncorrected errors, log corrected errors
++	3: never panic or SIGBUS, log all errors (for testing only)
+ 
+ 	Default: 1
+ 
 Index: linux/arch/x86_64/kernel/mce.c
 ===================================================================
 --- linux.orig/arch/x86_64/kernel/mce.c
 +++ linux/arch/x86_64/kernel/mce.c
-@@ -18,6 +18,8 @@
- #include <linux/capability.h>
- #include <linux/cpu.h>
- #include <linux/percpu.h>
-+#include <linux/poll.h>
-+#include <linux/thread_info.h>
- #include <linux/ctype.h>
- #include <linux/kmod.h>
- #include <linux/kdebug.h>
-@@ -26,6 +28,7 @@
- #include <asm/mce.h>
- #include <asm/uaccess.h>
- #include <asm/smp.h>
-+#include <asm/idle.h>
+@@ -37,8 +37,13 @@ atomic_t mce_entry;
  
- #define MISC_MCELOG_MINOR 227
- #define NR_BANKS 6
-@@ -39,8 +42,7 @@ static int mce_dont_init;
+ static int mce_dont_init;
+ 
+-/* 0: always panic, 1: panic if deadlock possible, 2: try to avoid panic,
+-   3: never panic or exit (for testing only) */
++/*
++ * Tolerant levels:
++ *   0: always panic on uncorrected errors, log corrected errors
++ *   1: panic or SIGBUS on uncorrected errors, log corrected errors
++ *   2: SIGBUS or log uncorrected errors (if possible), log corrected errors
++ *   3: never panic or SIGBUS, log all errors (for testing only)
++ */
  static int tolerant = 1;
  static int banks;
  static unsigned long bank[NR_BANKS] = { [0 ... NR_BANKS-1] = ~0UL };
--static unsigned long console_logged;
--static int notify_user;
-+static unsigned long notify_user;
- static int rip_msr;
- static int mce_bootlog = 1;
- static atomic_t mce_events;
-@@ -48,6 +50,8 @@ static atomic_t mce_events;
- static char trigger[128];
- static char *trigger_argv[2] = { trigger, NULL };
- 
-+static DECLARE_WAIT_QUEUE_HEAD(mce_wait);
-+
- /*
-  * Lockless MCE logging infrastructure.
-  * This avoids deadlocks on printk locks without having to break locks. Also
-@@ -94,8 +98,7 @@ void mce_log(struct mce *mce)
- 	mcelog.entry[entry].finished = 1;
- 	wmb();
- 
--	if (!test_and_set_bit(0, &console_logged))
--		notify_user = 1;
-+	set_bit(0, &notify_user);
- }
- 
- static void print_mce(struct mce *m)
-@@ -128,6 +131,10 @@ static void print_mce(struct mce *m)
- static void mce_panic(char *msg, struct mce *backup, unsigned long start)
+@@ -132,9 +137,6 @@ static void mce_panic(char *msg, struct 
  { 
  	int i;
-+
-+	if (tolerant >= 3)
-+		return;
-+
+ 
+-	if (tolerant >= 3)
+-		return;
+-
  	oops_begin();
  	for (i = 0; i < MCE_LOG_LEN; i++) {
  		unsigned long tsc = mcelog.entry[i].tsc;
-@@ -139,10 +146,7 @@ static void mce_panic(char *msg, struct 
- 	}
- 	if (backup)
- 		print_mce(backup);
--	if (tolerant >= 3)
--		printk("Fake panic: %s\n", msg);
--	else
--		panic(msg);
-+	panic(msg);
- } 
- 
- static int mce_available(struct cpuinfo_x86 *c)
-@@ -167,17 +171,6 @@ static inline void mce_get_rip(struct mc
- 	}
- }
- 
--static void do_mce_trigger(void)
--{
--	static atomic_t mce_logged;
--	int events = atomic_read(&mce_events);
--	if (events != atomic_read(&mce_logged) && trigger[0]) {
--		/* Small race window, but should be harmless.  */
--		atomic_set(&mce_logged, events);
--		call_usermodehelper(trigger, trigger_argv, NULL, UMH_NO_WAIT);
--	}
--}
--
- /* 
-  * The actual machine check handler
-  */
-@@ -251,12 +244,8 @@ void do_machine_check(struct pt_regs * r
- 	}
- 
- 	/* Never do anything final in the polling timer */
--	if (!regs) {
--		/* Normal interrupt context here. Call trigger for any new
--		   events. */
--		do_mce_trigger();
-+	if (!regs)
- 		goto out;
--	}
- 
- 	/* If we didn't find an uncorrectable error, pick
- 	   the last one (shouldn't happen, just being safe). */
-@@ -288,6 +277,9 @@ void do_machine_check(struct pt_regs * r
- 			do_exit(SIGBUS);
- 	}
- 
-+	/* notify userspace ASAP */
-+	set_thread_flag(TIF_MCE_NOTIFY);
-+
-  out:
- 	/* Last thing done in the machine check exception to clear state. */
- 	wrmsrl(MSR_IA32_MCG_STATUS, 0);
-@@ -344,37 +336,67 @@ static void mcheck_timer(struct work_str
- 	on_each_cpu(mcheck_check_cpu, NULL, 1, 1);
- 
- 	/*
--	 * It's ok to read stale data here for notify_user and
--	 * console_logged as we'll simply get the updated versions
--	 * on the next mcheck_timer execution and atomic operations
--	 * on console_logged act as synchronization for notify_user
--	 * writes.
-+	 * Alert userspace if needed.  If we logged an MCE, reduce the
-+	 * polling interval, otherwise increase the polling interval.
- 	 */
--	if (notify_user && console_logged) {
-+	if (mce_notify_user()) {
-+		next_interval = max(next_interval/2, HZ/100);
-+	} else {
-+		next_interval = min(next_interval*2, check_interval*HZ);
-+	}
-+
-+	schedule_delayed_work(&mcheck_work, next_interval);
-+}
-+
-+/*
-+ * This is only called from process context.  This is where we do
-+ * anything we need to alert userspace about new MCEs.  This is called
-+ * directly from the poller and also from entry.S and idle, thanks to
-+ * TIF_MCE_NOTIFY.
-+ */
-+int mce_notify_user(void)
-+{
-+	clear_thread_flag(TIF_MCE_NOTIFY);
-+	if (test_and_clear_bit(0, &notify_user)) {
- 		static unsigned long last_print;
- 		unsigned long now = jiffies;
- 
--		/* if we logged an MCE, reduce the polling interval */
--		next_interval = max(next_interval/2, HZ/100);
--		notify_user = 0;
--		clear_bit(0, &console_logged);
-+		wake_up_interruptible(&mce_wait);
-+		if (trigger[0])
-+			call_usermodehelper(trigger, trigger_argv, NULL,
-+						UMH_NO_WAIT);
-+
- 		if (time_after_eq(now, last_print + (check_interval*HZ))) {
- 			last_print = now;
- 			printk(KERN_INFO "Machine check events logged\n");
- 		}
--	} else {
--		next_interval = min(next_interval*2, check_interval*HZ);
-+
-+		return 1;
- 	}
-+	return 0;
-+}
- 
--	schedule_delayed_work(&mcheck_work, next_interval);
-+/* see if the idle task needs to notify userspace */
-+static int
-+mce_idle_callback(struct notifier_block *nfb, unsigned long action, void *junk)
-+{
-+	/* IDLE_END should be safe - interrupts are back on */
-+	if (action == IDLE_END && test_thread_flag(TIF_MCE_NOTIFY))
-+		mce_notify_user();
-+
-+	return NOTIFY_OK;
- }
- 
-+static struct notifier_block mce_idle_notifier = {
-+	.notifier_call = mce_idle_callback,
-+};
- 
- static __init int periodic_mcheck_init(void)
- { 
- 	next_interval = check_interval * HZ;
- 	if (next_interval)
- 		schedule_delayed_work(&mcheck_work, next_interval);
-+	idle_notifier_register(&mce_idle_notifier);
- 	return 0;
- } 
- __initcall(periodic_mcheck_init);
-@@ -566,6 +588,14 @@ static ssize_t mce_read(struct file *fil
- 	return err ? -EFAULT : buf - ubuf; 
- }
- 
-+static unsigned int mce_poll(struct file *file, poll_table *wait)
-+{
-+	poll_wait(file, &mce_wait, wait);
-+	if (rcu_dereference(mcelog.next))
-+		return POLLIN | POLLRDNORM;
-+	return 0;
-+}
-+
- static int mce_ioctl(struct inode *i, struct file *f,unsigned int cmd, unsigned long arg)
+@@ -178,11 +180,19 @@ static inline void mce_get_rip(struct mc
+ void do_machine_check(struct pt_regs * regs, long error_code)
  {
- 	int __user *p = (int __user *)arg;
-@@ -592,6 +622,7 @@ static const struct file_operations mce_
- 	.open = mce_open,
- 	.release = mce_release,
- 	.read = mce_read,
-+	.poll = mce_poll,
- 	.ioctl = mce_ioctl,
- };
+ 	struct mce m, panicm;
+-	int nowayout = (tolerant < 1); 
+-	int kill_it = 0;
+ 	u64 mcestart = 0;
+ 	int i;
+ 	int panicm_found = 0;
++	/*
++	 * If no_way_out gets set, there is no safe way to recover from this
++	 * MCE.  If tolerant is cranked up, we'll try anyway.
++	 */
++	int no_way_out = 0;
++	/*
++	 * If kill_it gets set, there might be a way to recover from this
++	 * error.
++	 */
++	int kill_it = 0;
  
-Index: linux/arch/x86_64/kernel/signal.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/signal.c
-+++ linux/arch/x86_64/kernel/signal.c
-@@ -26,6 +26,7 @@
- #include <asm/i387.h>
- #include <asm/proto.h>
- #include <asm/ia32_unistd.h>
-+#include <asm/mce.h>
+ 	atomic_inc(&mce_entry);
  
- /* #define DEBUG_SIG 1 */
+@@ -194,8 +204,9 @@ void do_machine_check(struct pt_regs * r
+ 	memset(&m, 0, sizeof(struct mce));
+ 	m.cpu = smp_processor_id();
+ 	rdmsrl(MSR_IA32_MCG_STATUS, m.mcgstatus);
++	/* if the restart IP is not valid, we're done for */
+ 	if (!(m.mcgstatus & MCG_STATUS_RIPV))
+-		kill_it = 1;
++		no_way_out = 1;
+ 	
+ 	rdtscll(mcestart);
+ 	barrier();
+@@ -214,10 +225,18 @@ void do_machine_check(struct pt_regs * r
+ 			continue;
  
-@@ -472,6 +473,12 @@ do_notify_resume(struct pt_regs *regs, v
- 		clear_thread_flag(TIF_SINGLESTEP);
+ 		if (m.status & MCI_STATUS_EN) {
+-			/* In theory _OVER could be a nowayout too, but
+-			   assume any overflowed errors were no fatal. */
+-			nowayout |= !!(m.status & MCI_STATUS_PCC);
+-			kill_it |= !!(m.status & MCI_STATUS_UC);
++			/* if PCC was set, there's no way out */
++			no_way_out |= !!(m.status & MCI_STATUS_PCC);
++			/*
++			 * If this error was uncorrectable and there was
++			 * an overflow, we're in trouble.  If no overflow,
++			 * we might get away with just killing a task.
++			 */
++			if (m.status & MCI_STATUS_UC) {
++				if (tolerant < 1 || m.status & MCI_STATUS_OVER)
++					no_way_out = 1;
++				kill_it = 1;
++			}
+ 		}
+ 
+ 		if (m.status & MCI_STATUS_MISCV)
+@@ -228,7 +247,6 @@ void do_machine_check(struct pt_regs * r
+ 		mce_get_rip(&m, regs);
+ 		if (error_code >= 0)
+ 			rdtscll(m.tsc);
+-		wrmsrl(MSR_IA32_MC0_STATUS + i*4, 0);
+ 		if (error_code != -2)
+ 			mce_log(&m);
+ 
+@@ -251,37 +269,52 @@ void do_machine_check(struct pt_regs * r
+ 	   the last one (shouldn't happen, just being safe). */
+ 	if (!panicm_found)
+ 		panicm = m;
+-	if (nowayout)
++
++	/*
++	 * If we have decided that we just CAN'T continue, and the user
++	 *  has not set tolerant to an insane level, give up and die.
++	 */
++	if (no_way_out && tolerant < 3)
+ 		mce_panic("Machine check", &panicm, mcestart);
+-	if (kill_it) {
++
++	/*
++	 * If the error seems to be unrecoverable, something should be
++	 * done.  Try to kill as little as possible.  If we can kill just
++	 * one task, do that.  If the user has set the tolerance very
++	 * high, don't try to do anything at all.
++	 */
++	if (kill_it && tolerant < 3) {
+ 		int user_space = 0;
+ 
+-		if (m.mcgstatus & MCG_STATUS_RIPV)
++		/*
++		 * If the EIPV bit is set, it means the saved IP is the
++		 * instruction which caused the MCE.
++		 */
++		if (m.mcgstatus & MCG_STATUS_EIPV)
+ 			user_space = panicm.rip && (panicm.cs & 3);
+-		
+-		/* When the machine was in user space and the CPU didn't get
+-		   confused it's normally not necessary to panic, unless you 
+-		   are paranoid (tolerant == 0)
+-
+-		   RED-PEN could be more tolerant for MCEs in idle,
+-		   but most likely they occur at boot anyways, where
+-		   it is best to just halt the machine. */
+-		if ((!user_space && (panic_on_oops || tolerant < 2)) ||
+-		    (unsigned)current->pid <= 1)
+-			mce_panic("Uncorrected machine check", &panicm, mcestart);
+-
+-		/* do_exit takes an awful lot of locks and has as
+-		   slight risk of deadlocking. If you don't want that
+-		   don't set tolerant >= 2 */
+-		if (tolerant < 3)
++
++		/*
++		 * If we know that the error was in user space, send a
++		 * SIGBUS.  Otherwise, panic if tolerance is low.
++		 *
++		 * do_exit() takes an awful lot of locks and has a slight
++		 * risk of deadlocking.
++		 */
++		if (user_space) {
+ 			do_exit(SIGBUS);
++		} else if (panic_on_oops || tolerant < 2) {
++			mce_panic("Uncorrected machine check",
++				&panicm, mcestart);
++		}
  	}
  
-+#ifdef CONFIG_X86_MCE
-+	/* notify userspace of pending MCEs */
-+	if (thread_info_flags & _TIF_MCE_NOTIFY)
-+		mce_notify_user();
-+#endif /* CONFIG_X86_MCE */
-+
- 	/* deal with pending signal delivery */
- 	if (thread_info_flags & (_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK))
- 		do_signal(regs);
-Index: linux/include/asm-x86_64/mce.h
-===================================================================
---- linux.orig/include/asm-x86_64/mce.h
-+++ linux/include/asm-x86_64/mce.h
-@@ -105,6 +105,8 @@ extern atomic_t mce_entry;
+ 	/* notify userspace ASAP */
+ 	set_thread_flag(TIF_MCE_NOTIFY);
  
- extern void do_machine_check(struct pt_regs *, long);
+  out:
+-	/* Last thing done in the machine check exception to clear state. */
++	/* the last thing we do is clear state */
++	for (i = 0; i < banks; i++)
++		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
+ 	wrmsrl(MSR_IA32_MCG_STATUS, 0);
+  out2:
+ 	atomic_dec(&mce_entry);
+@@ -506,7 +539,7 @@ static int mce_open(struct inode *inode,
  
-+extern int mce_notify_user(void);
-+
- #endif
+ 	spin_unlock(&mce_state_lock);
  
- #endif
-Index: linux/include/asm-x86_64/thread_info.h
-===================================================================
---- linux.orig/include/asm-x86_64/thread_info.h
-+++ linux/include/asm-x86_64/thread_info.h
-@@ -115,6 +115,7 @@ static inline struct thread_info *stack_
- #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
- #define TIF_SECCOMP		8	/* secure computing */
- #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal */
-+#define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
- /* 16 free */
- #define TIF_IA32		17	/* 32bit process */ 
- #define TIF_FORK		18	/* ret_from_fork */
-@@ -133,6 +134,7 @@ static inline struct thread_info *stack_
- #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
- #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
-+#define _TIF_MCE_NOTIFY		(1<<TIF_MCE_NOTIFY)
- #define _TIF_IA32		(1<<TIF_IA32)
- #define _TIF_FORK		(1<<TIF_FORK)
- #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+-	return 0;
++	return nonseekable_open(inode, file);
+ }
+ 
+ static int mce_release(struct inode *inode, struct file *file)
