@@ -1,27 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965426AbXGSTjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940819AbXGSTmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965426AbXGSTjD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 15:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXGSTix
+	id S940819AbXGSTmw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 15:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932771AbXGSTmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 15:38:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55653 "EHLO mx2.mail.elte.hu"
+	Thu, 19 Jul 2007 15:42:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56189 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180AbXGSTiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 15:38:52 -0400
-Date: Thu, 19 Jul 2007 21:38:40 +0200
+	id S1762499AbXGSTmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 15:42:44 -0400
+Date: Thu, 19 Jul 2007 21:42:34 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jan Glauber <jang@linux.vnet.ibm.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-       vatsa@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com, efault@gmx.de,
-       dmitry.adamushko@gmail.com, paulus@samba.org, anton@samba.org
-Subject: Re: [PATCH] virtual sched_clock() for s390
-Message-ID: <20070719193840.GA29523@elte.hu>
-References: <1184842661.6546.14.camel@localhost.localdomain> <469F8342.7060000@goop.org> <20070719160025.GA31815@elte.hu> <1184872821.5516.10.camel@localhost.localdomain>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
+Subject: [patch] slub crashes with recent -git
+Message-ID: <20070719194234.GA27917@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184872821.5516.10.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -35,18 +31,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Glauber <jang@linux.vnet.ibm.com> wrote:
+Linus, Christoph,
 
-> > still, CFS needs time measurement across idle periods as well, for 
-> > another purpose: to be able to do precise task statistics for /proc. 
-> > (for top, ps, etc.) So it's still true that sched_clock() should 
-> > include idle periods too.
-> 
-> I'm not sure, s390 already has an implemetation for precise accounting 
-> in the architecture code, does CFS also improve accounting data?
+recent slub commits in -git cause this bootup crash:
 
-what kind of precise accounting does s390 have in the architecture code? 
-CFS changes task (and load) accounting to be sched_clock() driven in 
-essence.
+ Freeing unused kernel memory: 324k freed
+ Write protecting the kernel read-only data: 1294k
+ ------------[ cut here ]------------
+ kernel BUG at mm/slub.c:2401!
+ invalid opcode: 0000 [#1]
+ PREEMPT SMP 
+ Modules linked in:
+ CPU:    0
+ EIP:    0060:[<c017dac3>]    Not tainted VLI
+ EFLAGS: 00010046   (2.6.22 #1)
+ EIP is at ksize+0x13/0x42
+ eax: 00000000   ebx: 00000000   ecx: 00000020   edx: 00000000
+ esi: f76a4000   edi: 00000004   ebp: f7b11e74   esp: f7b11e74
+ ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+ Process udevd (pid: 824, ti=f7b11000 task=f7ca5000 task.ti=f7b11000)
+ Stack: f7b11e94 c016c28b f768cb00 00000020 f7ca5000 00000004 f76a4000 fffffff4 
+        f7b11eb4 c03cf158 00000002 f76a4000 00000020 f768cb00 f76a4000 f7b11ed8 
+        f7b11ed0 c03cfbc6 f768cb00 f768cb00 c046bf80 f768cb00 0000000c f7b11f6c 
+ Call Trace:
+  [<c0105e3e>] show_trace_log_lvl+0x19/0x2e
+  [<c0105ef0>] show_stack_log_lvl+0x9d/0xa5
+  [<c010628f>] show_registers+0x1f5/0x334
+  [<c01064e6>] die+0x118/0x1fc
+  [<c0426e7f>] do_trap+0x8e/0xa8
+  [<c0106ac3>] do_invalid_op+0x88/0x92
+  [<c0426a92>] error_code+0x72/0x78
+  [<c016c28b>] krealloc+0x27/0x6d
+  [<c03cf158>] netlink_realloc_groups+0x61/0xd9
+  [<c03cfbc6>] netlink_bind+0x4f/0x121
+  [<c03afe8d>] sys_bind+0x67/0x86
+  [<c03b11e3>] sys_socketcall+0x8f/0x244
+  [<c0104ef2>] sysenter_past_esp+0x6b/0xb5
+  =======================
+ Code: 40 02 00 75 03 8b 52 0c 8b 02 5d 84 c0 b8 00 00 00 00 0f 49 d0 89 d0 c3 55 31 d2 83 f8 10 89 e5 74 34 e8 bc ff ff ff 85 c0 75 04 <0f> 0b eb fe 8b 40 10 85 c0 75 04 0f 0b eb fe 8b 10 f6 c6 0c 74 
 
-	Ingo
+i had to apply the patch below to make the kernel boot again.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Index: linux/mm/slub.c
+===================================================================
+--- linux.orig/mm/slub.c
++++ linux/mm/slub.c
+@@ -2394,7 +2394,7 @@ size_t ksize(const void *object)
+ 	struct page *page;
+ 	struct kmem_cache *s;
+ 
+-	if (object == ZERO_SIZE_PTR)
++	if (object == ZERO_SIZE_PTR || !object)
+ 		return 0;
+ 
+ 	page = get_object_page(object);
