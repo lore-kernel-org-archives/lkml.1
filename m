@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933577AbXGSVjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934233AbXGSVlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933577AbXGSVjm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 17:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbXGSVjf
+	id S934233AbXGSVlg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 17:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760031AbXGSVl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 17:39:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37461 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754787AbXGSVjf (ORCPT
+	Thu, 19 Jul 2007 17:41:29 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:42956 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754957AbXGSVl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 17:39:35 -0400
-Subject: Re: About get_page for compound page
-From: Peter Zijlstra <peterz@infradead.org>
-To: Fengwei Yin <yfw.kernel@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <ab18d8520707190854v50216497mcc2be291d1a99ab2@mail.gmail.com>
-References: <ab18d8520707190854v50216497mcc2be291d1a99ab2@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 23:39:32 +0200
-Message-Id: <1184881172.20032.160.camel@twins>
+	Thu, 19 Jul 2007 17:41:29 -0400
+Date: Thu, 19 Jul 2007 17:41:16 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tchicks@us.ibm.com, trevor.highland@gmail.com, pregan@ic.sunysb.edu,
+       toml@us.ibm.com, sergeh@us.ibm.com, mike@halcrow.us
+Subject: Re: [PATCH 4/8] eCryptfs: Fix Tag 1 parsing code
+Message-ID: <20070719214116.GA4041@filer.fsl.cs.sunysb.edu>
+References: <20070719212453.GA13821@halcrow.austin.ibm.com> <20070719212801.GE13821@halcrow.austin.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070719212801.GE13821@halcrow.austin.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 23:54 +0800, Fengwei Yin wrote:
-> Hi,
-> In get_page(), the parameter page is changed by
->          page = compound_head(page);
-> if the page is not the first page of compound pages.
-> 
-> My question: is this behavior correct?
+On Thu, Jul 19, 2007 at 04:28:01PM -0500, Michael Halcrow wrote:
+> Fix up the Tag 1 parsing code to handle size limits and boundaries
+> more explicitly. Initialize the new auth_tok's flags.
+...
+> -	if (unlikely((*packet_size) + 3 > max_packet_size)) {
+> -		ecryptfs_printk(KERN_ERR, "Packet size exceeds max\n");
+> +	if (unlikely(max_packet_size < 12)) {
+> +		printk(KERN_ERR "Invalid max packet size; must be >=12\n");
 
-Yes it is, in general the page state of a compound page is kept in the
-first page of the set.
+Hardcoded 12?
 
+Josef 'Jeff' Sipek.
+
+-- 
+Humans were created by water to transport it upward.
