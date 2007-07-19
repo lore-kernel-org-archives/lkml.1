@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939759AbXGSQnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939498AbXGSQqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939759AbXGSQnh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 12:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937186AbXGSQnM
+	id S939498AbXGSQqQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 12:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764386AbXGSQqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 12:43:12 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:41102 "EHLO tim.rpsys.net"
+	Thu, 19 Jul 2007 12:46:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52057 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936366AbXGSQnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 12:43:10 -0400
-Subject: Re: MMC/SD Root filesystem suspend/resume problems
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1184860419.29634.10.camel@localhost.localdomain>
-References: <1184860419.29634.10.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 17:42:54 +0100
-Message-Id: <1184863375.29634.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	id S1764106AbXGSQp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 12:45:59 -0400
+Date: Thu, 19 Jul 2007 12:39:15 -0400
+From: Don Zickus <dzickus@redhat.com>
+To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Cc: vgoyal@in.ibm.com, Neil Horman <nhorman@redhat.com>,
+       Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Dan Aloni <da-x@monatomic.org>
+Subject: Re: Determine version of kernel that produced vmcore
+Message-ID: <20070719163915.GN9623@redhat.com>
+References: <20070716123633.GA10920@in.ibm.com> <20070718230740oomichi@mail.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070718230740oomichi@mail.jp.nec.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 16:57 +0100, Richard Purdie wrote:
-> Lots of Linux handhelds use MMC/SD devices as the root file system. This
-> has worked quite reliably for many kernel versions. In 2.6.22, it seems
-> that if you suspend such a system then resume it, the device locks up.
-> Trying to execute anything on the filesystem results in a "Permission
-> Denied" message. I did see a message from the MMC subsystem saying it
-> had redetected the card. There are also messages on the console like
-> "MMC: killing requests for dead queue" each time you suspend/resume.
+On Wed, Jul 18, 2007 at 11:07:40PM +0900, Ken'ichi Ohmichi wrote:
+> The content of mkdfinfo file has been increasing whenever adding
+> features and correcting bugs. The content is increasing even now.
+> And, the feature addition is done not only for new kernels but also
+> for old upstream kernels. When the content of mkdfinfo file is taken 
+> into the kernel and fixed, the feature addition in the future is
+> remarkably limited. So makedumpfile needs mkdfinfo file outside of
+> the kernel.
 > 
-> I'm away from my serial cables at the moment but I may be able to
-> provide more debug when I have them over the weekend. Have you any ideas
-> on why this is breaking?
+> I propose the solution including Dan's, Vivek's and Bernhard's opinions.
+> How about the following sequence for distributors ?
+> (It is not necessary to rebuild 2nd-kernel initrd even if 1st-kernel changes.
+>  A new option "--mkdfinfo" is added to kexec command.)
 > 
-> For reference, I've reproduced the problem with both the PXA host driver
-> and different driver not merged into mainline (ASIC3).
+> * On the kernel building system
+>   1. Create the kernel files.
+>      # cd linux-2.6.xx
+>      # make
+>   2. Create the mkdfinfo file from the vmlinux.
+>      # makedumpfile -g mkdfinfo-2.6.xx -x vmlinux
 
-Just to follow up, if I boot with a rootfs from elsewhere and mount the
-mmc card then suspend/resume, it corrupts the data on the card too so it
-looks like some general suspend/resume problem on mounted filesystems.
+I am not a big fan of this approach as it forces distros to require
+kexec-tools when building a kernel.  Even Joe Hacker who wants a custom
+kernel (and not interested in kexec) would have to not only download the
+kernel.src.rpm but kexec-tools just to build a kernel that probably
+doesn't have kexec enabled.
 
-Richard
+I had to deal with a similar experience when providing a build dependency
+on the unifdef package when create the kernel-headers rpm for RHEL-5.  A
+lot of people were confused and upset by this dependency.  Luckily
+upstream resolved this by just putting similar code in the kernel/scripts
+directory and thus removing the dependency (well not for RHEL-5).  I would
+rather not have to deal with this again unless I know there is a more
+permanent solution that would remove this dependency.
 
+After talking to Dave Anderson about this more, I start to understand why
+Ken'ichi prefers to implement the new features in userspace instead of the
+kernel (it makes things automatically work with older kernels), but I
+still am not a big fan of it.  I was hoping for a complete in kernel
+solution (that way you never need the vmlinux file).  Perhaps makedumpfile
+can support both vmlinux files (if provided) or interface with the kernel
+(if the vmlinux is not provided?).
+
+Just my input.  I might as well argue with Ken'ichi here than the
+bugzilla. :-)
+
+Cheers,
+Don
