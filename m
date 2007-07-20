@@ -1,98 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763094AbXGTLk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761662AbXGTLnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763094AbXGTLk5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 07:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760787AbXGTLkj
+	id S1761662AbXGTLnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 07:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXGTLnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 07:40:39 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:64639 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762360AbXGTLkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 07:40:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TqVqUdsuhXLz+0FxqIc5Pvwz6m4cTBh2E5SRlXmLUH8obiAxKNN7Efi91KrsRSceU1K6+24Ajnj0pgWrYNNVB9yJy0WAwIsvzUFmTgt4m2zwU3om+CWv5nCR5Hs+9Y+KQXqB+YufwfRTI5TB/il5Rzic6b0S3GQWMfvMUz/h+70=
-Message-ID: <a781481a0707200440v48dcf70fv621aec863562880c@mail.gmail.com>
-Date: Fri, 20 Jul 2007 17:10:34 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Chris Snook" <csnook@redhat.com>
-Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
-Cc: "clameter@sgi.com" <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org
-In-Reply-To: <46A09DB2.5040408@redhat.com>
+	Fri, 20 Jul 2007 07:43:08 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:55336 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751192AbXGTLnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 07:43:07 -0400
+Date: Fri, 20 Jul 2007 20:42:46 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mel Gorman <mel@skynet.ie>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
+Message-ID: <20070720114246.GA27391@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mel Gorman <mel@skynet.ie>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070720060342.GA24765@linux-sh.org> <20070720112025.GA14495@skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070531002047.702473071@sgi.com>
-	 <20070531003012.302019683@sgi.com>
-	 <a781481a0707200341o21381742rdb15e6a9dc770d27@mail.gmail.com>
-	 <46A097FE.3000701@redhat.com>
-	 <a781481a0707200427y7a29257fpfa5978c391eb3534@mail.gmail.com>
-	 <46A09DB2.5040408@redhat.com>
+In-Reply-To: <20070720112025.GA14495@skynet.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/20/07, Chris Snook <csnook@redhat.com> wrote:
-> Satyam Sharma wrote:
-> > On 7/20/07, Chris Snook <csnook@redhat.com> wrote:
-> >> Satyam Sharma wrote:
-> >> > [ Just cleaning up my inbox, and stumbled across this thread ... ]
-> >> >
-> >> >
-> >> > On 5/31/07, clameter@sgi.com <clameter@sgi.com> wrote:
-> >> >> Introduce CONFIG_STABLE to control checks only useful for development.
-> >> >>
-> >> >> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> >> >> [...]
-> >> >>  menu "General setup"
-> >> >>
-> >> >> +config STABLE
-> >> >> +       bool "Stable kernel"
-> >> >> +       help
-> >> >> +         If the kernel is configured to be a stable kernel then
-> >> various
-> >> >> +         checks that are only of interest to kernel development
-> >> will be
-> >> >> +         omitted.
-> >> >> +
-> >> >
-> >> >
-> >> > "A programmer who uses assertions during testing and turns them off
-> >> > during production is like a sailor who wears a life vest while drilling
-> >> > on shore and takes it off at sea."
-> >> >                                                - Tony Hoare
-> >> >
-> >> >
-> >> > Probably you meant to turn off debug _output_ (and not _checks_)
-> >> > with this config option? But we already have CONFIG_FOO_DEBUG_BAR
-> >> > for those situations ...
-> >>
-> >> There are plenty of validation and debugging features in the kernel
-> >> that go WAY
-> >> beyond mere assertions, often imposing significant overhead
-> >> (particularly when
-> >> you scale up) or creating interfaces you'd never use unless you were
-> >> doing
-> >> kernel development work.  You really do want these features completely
-> >> removed
-> >> from production kernels.
-> >
-> > As for entire such "development/debugging-related features", most (all,
-> > really)
-> > should anyway have their own config options.
->
-> They do.  With kconfig dependencies, we can ensure that those config options are
-> off when CONFIG_STABLE is set.  That way you only have to set one option to
-> ensure that all these expensive checks are disabled.
+On Fri, Jul 20, 2007 at 12:20:25PM +0100, Mel Gorman wrote:
+> On (20/07/07 15:03), Paul Mundt didst pronounce:
+> > zone_movable_pfn is presently marked as __initdata and referenced
+> > from adjust_zone_range_for_zone_movable(), which in turn is
+> > referenced by zone_spanned_pages_in_node(). Both of these are
+> > __meminit annotated. When memory hotplug is enabled, this will oops
+> > on a hot-add, due to zone_movable_pfn having been freed.
+> > 
+> 
+> First, can you confirm this is node hot-add please? I'm haven't looked at
+> the memory hot-add code in a while so I would like to be sure this problem
+> path only exists on node hot-add. If it is node hot-add, then everything
+> should be ok. The memory should get added to the same zone as it did in
+> older kernels.
+> 
+> Even if this is node hot-add, can you confirm that "ordinary" memory hot-add
+> is working as expected when ZONE_MOVABLE exists please? To test, add a boot
+> parameter kernelcore=N where N == 80% of memory and hot-add some memory to
+> an existing node.
+> 
+Normal memory hot-add does work as advertised. The problem in this case
+is really a corner case, as I pointed out to Kamezawa-san. The only way
+to enter the problematic code path (namely zone_spanned_pages_in_node())
+is via free_area_init_node(), which in this case is only triggered by
+hotadd_new_pgdat() if there's no existing pgdat.
 
-Oh, so you mean use this (the negation of this, actually) as a universal
-kconfig dependency of all other such development/debugging related stuff?
-Hmm, the name is quite misleading in that case.
+Kamezawa-san wasn't able to reproduce this particular problem due to the
+pgdat being preallocated, and I imagine that this is the common case for
+most users. I have a slightly different use case where we might tear down
+the node entirely, either to hand it off to another application, kernel,
+or explicit power gating. In which case we have to start over via the new
+pgdat path.
 
-Anyway, what surprised me was 4/4 in this patchset. Funny that we wouldn't
-want to corrupt memory / trash hard disks / follow invalid pointers on a
-developers testbox, but (knowingly) want to do that on a production website
-running Google.com's website :-)
+> I expect that the memory gets added to the same zone as historically but
+> when ZONE_MOVABLE is set, you'll see a situation where zones are overlapping
+> after memory hot-add.  i.e. Before memory hot-add, you'd see
+> 
+> DDDDMM
+> 
+> for ZONE_DMA and ZONE_MOVABLE and after hotadd, you'd see something like
+> 
+> DDDDMMDDDD
+> 
+> so /proc/zoneinfo will look unusual.  I'd like to be sure the memory exists
+> where you expect it to exist and that there are no problems after hot-add. To
+> test, a simple memory hot-add followed by a dd of a file the size of all
+> physical memory followed by a delete should do the trick. Also make sure
+> files like /proc/zoneinfo and /proc/meminfo are ok and particularly that
+> sysrq+m produces sensible output.
+> 
+It'll be Monday before I'm by a system I can test this out on, so perhaps
+someone else will beat me to it. If not, I'll give it some more testing
+and follow up then.
+
+> If other memory-hotadd users are watching, I'd appreciate a test and a report
+> with a recent -git kernel to confirm you're ok. Is there a way currently
+> of simulating memory-hotadd so I can try this out? Ages ago, one could boot
+> with mem= and "add" the remaining memory at run-time.
+> 
+That's probably something worth resurrecting if it's broken in current
+kernels. It should be pretty trivial to hook something like that up via
+sparsemem anyways.
