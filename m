@@ -1,320 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934252AbXGTHXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934065AbXGTHZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934252AbXGTHXh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764127AbXGTHXP
+	id S934065AbXGTHZc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757575AbXGTHZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:23:15 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:35855 "EHLO relay.sw.ru"
+	Fri, 20 Jul 2007 03:25:25 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53162 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763143AbXGTHXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:23:13 -0400
-Date: Fri, 20 Jul 2007 11:22:42 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH] Add kernel/notifier.c
-Message-ID: <20070720072242.GA11030@localhost.sw.ru>
-References: <20070719164611.GB31240@localhost.sw.ru> <20070719144859.efccbcc3.akpm@linux-foundation.org>
+	id S1753592AbXGTHZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 03:25:24 -0400
+Date: Fri, 20 Jul 2007 09:25:22 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Joachim Deguara <joachim.deguara@amd.com>
+Cc: ricklind@us.ibm.com, lkml List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Documentation update sched-stat.txt
+Message-ID: <20070720072522.GB27772@wotan.suse.de>
+References: <200707181111.31254.joachim.deguara@amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070719144859.efccbcc3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200707181111.31254.joachim.deguara@amd.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 02:48:59PM -0700, Andrew Morton wrote:
-> On Thu, 19 Jul 2007 20:46:11 +0400
-> Alexey Dobriyan <adobriyan@sw.ru> wrote:
+On Wed, Jul 18, 2007 at 11:11:30AM +0200, Joachim Deguara wrote:
+> While learning about schedstats I found that the documentation in the tree is 
+> old.  I updated it and found some interesting stuff like schedstats version 
+> 14 is the same as version and version 13 never saw a kernel release!  Also 
+> there are 6 fields in the current schedstats that are not used anymore.  Nick 
+> had made them irrelevant in commit 476d139c218e44e045e4bc6d4cc02b010b343939 
+> but never removed them.
 > 
-> > There is separate notifier header, but no separate notifier .c file.
-> >
-> > Extract notifier code out of kernel/sys.c which will remain for
-> > misc syscalls I hope. Merge kernel/die_notifier.c into kernel/notifier.c.
->
-> If you were running checkpatch (I hope you are)
+> Thanks to Rick's perl script who I borrowed some of the updated descriptions 
+> from.
 
-:)
+Ah, thanks, I actually didn't realise there was such good documentation
+there. Patch looks good.
 
-> then you'd find that we
-> copied over a whole pile of cruft.  We might as well fix that up while
-> we're moving the code around.
->
-> Also, your patch tried to add some trailing whitespace, but checkpatch
-> failed to notice that.
+BTW. I have a simple program to do a basic statistical summary of the
+multiprocessor balancing if you are interested and haven't seen it.
 
-It notices here:
+Acked-by: Nick Piggin <npiggin@suse.de>
 
-	$ ./scripts/checkpatch.pl ../notifier.patch | grep ERROR
-	ERROR: trailing whitespace
-	ERROR: trailing whitespace
-	ERROR: trailing whitespace
-	ERROR: trailing whitespace
-	ERROR: trailing whitespace
-	ERROR: "foo * bar" should be "foo *bar"
-	ERROR: trailing whitespace
-	ERROR: "foo * bar" should be "foo *bar"
-
-> (The code motion and the cleanups should really be separate patches, and
-> indeed they are, but I'll end up joining them before it hits git)
-
-Then take this cleanup which is based on yours;
-In particular, it fixes [Space][Tab][Space] places and removes lines
-between kernel-doc comment and function itself.
-
-
---- a/kernel/notifier.c
-+++ b/kernel/notifier.c
-@@ -10,7 +10,6 @@
-  *	at shutdown. This is used to stop any idling DMA operations
-  *	and the like.
-  */
--
- BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
- 
- /*
-@@ -50,13 +49,12 @@ static int notifier_chain_unregister(struct notifier_block **nl,
-  *	@val:		Value passed unmodified to notifier function
-  *	@v:		Pointer passed unmodified to notifier function
-  *	@nr_to_call:	Number of notifier functions to be called. Don't care
-- *		     	value of this parameter is -1.
-+ *			value of this parameter is -1.
-  *	@nr_calls:	Records the number of notifications sent. Don't care
-- *		   	value of this field is NULL.
-- * 	@returns:	notifier_call_chain returns the value returned by the
-+ *			value of this field is NULL.
-+ *	@returns:	notifier_call_chain returns the value returned by the
-  *			last notifier function called.
-  */
--
- static int __kprobes notifier_call_chain(struct notifier_block **nl,
- 					unsigned long val, void *v,
- 					int nr_to_call,	int *nr_calls)
-@@ -95,7 +93,6 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
-  *
-  *	Currently always returns zero.
-  */
--
- int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
- 		struct notifier_block *n)
- {
-@@ -107,7 +104,6 @@ int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
- 	spin_unlock_irqrestore(&nh->lock, flags);
- 	return ret;
- }
--
- EXPORT_SYMBOL_GPL(atomic_notifier_chain_register);
- 
- /**
-@@ -131,7 +127,6 @@ int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
- 	synchronize_rcu();
- 	return ret;
- }
--
- EXPORT_SYMBOL_GPL(atomic_notifier_chain_unregister);
- 
- /**
-@@ -153,7 +148,6 @@ EXPORT_SYMBOL_GPL(atomic_notifier_chain_unregister);
-  *	Otherwise the return value is the return value
-  *	of the last notifier function called.
-  */
--
- int __kprobes __atomic_notifier_call_chain(struct atomic_notifier_head *nh,
- 					unsigned long val, void *v,
- 					int nr_to_call, int *nr_calls)
-@@ -165,7 +159,6 @@ int __kprobes __atomic_notifier_call_chain(struct atomic_notifier_head *nh,
- 	rcu_read_unlock();
- 	return ret;
- }
--
- EXPORT_SYMBOL_GPL(__atomic_notifier_call_chain);
- 
- int __kprobes atomic_notifier_call_chain(struct atomic_notifier_head *nh,
-@@ -173,8 +166,8 @@ int __kprobes atomic_notifier_call_chain(struct atomic_notifier_head *nh,
- {
- 	return __atomic_notifier_call_chain(nh, val, v, -1, NULL);
- }
--
- EXPORT_SYMBOL_GPL(atomic_notifier_call_chain);
-+
- /*
-  *	Blocking notifier chain routines.  All access to the chain is
-  *	synchronized by an rwsem.
-@@ -190,7 +183,6 @@ EXPORT_SYMBOL_GPL(atomic_notifier_call_chain);
-  *
-  *	Currently always returns zero.
-  */
--
- int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
- 		struct notifier_block *n)
- {
-@@ -209,7 +201,6 @@ int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
- 	up_write(&nh->rwsem);
- 	return ret;
- }
--
- EXPORT_SYMBOL_GPL(blocking_notifier_chain_register);
- 
- /**
-@@ -240,7 +231,6 @@ int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
- 	up_write(&nh->rwsem);
- 	return ret;
- }
--
- EXPORT_SYMBOL_GPL(blocking_notifier_chain_unregister);
- 
- /**
-@@ -261,7 +251,6 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chain_unregister);
-  *	Otherwise the return value is the return value
-  *	of the last notifier function called.
-  */
--
- int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
- 				   unsigned long val, void *v,
- 				   int nr_to_call, int *nr_calls)
-@@ -305,13 +294,11 @@ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
-  *
-  *	Currently always returns zero.
-  */
--
- int raw_notifier_chain_register(struct raw_notifier_head *nh,
- 		struct notifier_block *n)
- {
- 	return notifier_chain_register(&nh->head, n);
- }
--
- EXPORT_SYMBOL_GPL(raw_notifier_chain_register);
- 
- /**
-@@ -329,7 +316,6 @@ int raw_notifier_chain_unregister(struct raw_notifier_head *nh,
- {
- 	return notifier_chain_unregister(&nh->head, n);
- }
--
- EXPORT_SYMBOL_GPL(raw_notifier_chain_unregister);
- 
- /**
-@@ -351,14 +337,12 @@ EXPORT_SYMBOL_GPL(raw_notifier_chain_unregister);
-  *	Otherwise the return value is the return value
-  *	of the last notifier function called.
-  */
--
- int __raw_notifier_call_chain(struct raw_notifier_head *nh,
- 			      unsigned long val, void *v,
- 			      int nr_to_call, int *nr_calls)
- {
- 	return notifier_call_chain(&nh->head, val, v, nr_to_call, nr_calls);
- }
--
- EXPORT_SYMBOL_GPL(__raw_notifier_call_chain);
- 
- int raw_notifier_call_chain(struct raw_notifier_head *nh,
-@@ -366,7 +350,6 @@ int raw_notifier_call_chain(struct raw_notifier_head *nh,
- {
- 	return __raw_notifier_call_chain(nh, val, v, -1, NULL);
- }
--
- EXPORT_SYMBOL_GPL(raw_notifier_call_chain);
- 
- /*
-@@ -384,7 +367,6 @@ EXPORT_SYMBOL_GPL(raw_notifier_call_chain);
-  *
-  *	Currently always returns zero.
-  */
--
- int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
- 		struct notifier_block *n)
- {
-@@ -403,7 +385,6 @@ int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
- 	mutex_unlock(&nh->mutex);
- 	return ret;
- }
--
- EXPORT_SYMBOL_GPL(srcu_notifier_chain_register);
- 
- /**
-@@ -435,7 +416,6 @@ int srcu_notifier_chain_unregister(struct srcu_notifier_head *nh,
- 	synchronize_srcu(&nh->srcu);
- 	return ret;
- }
--
- EXPORT_SYMBOL_GPL(srcu_notifier_chain_unregister);
- 
- /**
-@@ -456,7 +436,6 @@ EXPORT_SYMBOL_GPL(srcu_notifier_chain_unregister);
-  *	Otherwise the return value is the return value
-  *	of the last notifier function called.
-  */
--
- int __srcu_notifier_call_chain(struct srcu_notifier_head *nh,
- 			       unsigned long val, void *v,
- 			       int nr_to_call, int *nr_calls)
-@@ -490,7 +469,6 @@ EXPORT_SYMBOL_GPL(srcu_notifier_call_chain);
-  *	up by calling srcu_cleanup_notifier_head().  Otherwise the head's
-  *	per-cpu data (used by the SRCU mechanism) will leak.
-  */
--
- void srcu_init_notifier_head(struct srcu_notifier_head *nh)
- {
- 	mutex_init(&nh->mutex);
-@@ -498,7 +476,6 @@ void srcu_init_notifier_head(struct srcu_notifier_head *nh)
- 		BUG();
- 	nh->head = NULL;
- }
--
- EXPORT_SYMBOL_GPL(srcu_init_notifier_head);
- 
- /**
-@@ -511,12 +488,10 @@ EXPORT_SYMBOL_GPL(srcu_init_notifier_head);
-  *	Currently always returns zero, as blocking_notifier_chain_register()
-  *	always returns zero.
-  */
--
--int register_reboot_notifier(struct notifier_block * nb)
-+int register_reboot_notifier(struct notifier_block *nb)
- {
- 	return blocking_notifier_chain_register(&reboot_notifier_list, nb);
- }
--
- EXPORT_SYMBOL(register_reboot_notifier);
- 
- /**
-@@ -528,30 +503,25 @@ EXPORT_SYMBOL(register_reboot_notifier);
-  *
-  *	Returns zero on success, or %-ENOENT on failure.
-  */
--
--int unregister_reboot_notifier(struct notifier_block * nb)
-+int unregister_reboot_notifier(struct notifier_block *nb)
- {
- 	return blocking_notifier_chain_unregister(&reboot_notifier_list, nb);
- }
--
- EXPORT_SYMBOL(unregister_reboot_notifier);
- 
--
--
- static ATOMIC_NOTIFIER_HEAD(die_chain);
- 
- int notify_die(enum die_val val, const char *str,
- 	       struct pt_regs *regs, long err, int trap, int sig)
- {
- 	struct die_args args = {
--		.regs		= regs,
--		.str		= str,
--		.err		= err,
--		.trapnr		= trap,
--		.signr		= sig,
-+		.regs	= regs,
-+		.str	= str,
-+		.err	= err,
-+		.trapnr	= trap,
-+		.signr	= sig,
- 
- 	};
--
- 	return atomic_notifier_call_chain(&die_chain, val, &args);
- }
- 
-
+> 
+> -Joachim
+> 
+> --
+> Updating schedstats documentation from version 10 to 14.
+> 
+> Signed-off-by: Joachim Deguara <joachim.deguara@amd.com>
+> 
+> Index: kernel/Documentation/sched-stats.txt
+> ===================================================================
+> --- kernel.orig/Documentation/sched-stats.txt
+> +++ kernel/Documentation/sched-stats.txt
+> @@ -1,10 +1,11 @@
+> -Version 10 of schedstats includes support for sched_domains, which
+> -hit the mainline kernel in 2.6.7.  Some counters make more sense to be
+> -per-runqueue; other to be per-domain.  Note that domains (and their 
+> associated
+> -information) will only be pertinent and available on machines utilizing
+> -CONFIG_SMP.
+> +Version 14 of schedstats includes support for sched_domains, which hit the
+> +mainline kernel in 2.6.20 although it is identical to the stats from version
+> +12 which was in the kernel from 2.6.13-2.6.19 (version 13 never saw a kernel
+> +release).  Some counters make more sense to be per-runqueue; other to be
+> +per-domain.  Note that domains (and their associated information) will only
+> +be pertinent and available on machines utilizing CONFIG_SMP.
+>  
+> -In version 10 of schedstat, there is at least one level of domain
+> +In version 14 of schedstat, there is at least one level of domain
+>  statistics for each cpu listed, and there may well be more than one
+>  domain.  Domains have no particular names in this implementation, but
+>  the highest numbered one typically arbitrates balancing across all the
+> @@ -27,7 +28,7 @@ to write their own scripts, the fields a
+>  
+>  CPU statistics
+>  --------------
+> -cpu<N> 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 
+> 27 28
+> +cpu<N> 1 2 3 4 5 6 7 8 9 10 11 12
+>  
+>  NOTE: In the sched_yield() statistics, the active queue is considered empty
+>      if it has only one process in it, since obviously the process calling
+> @@ -39,48 +40,20 @@ First four fields are sched_yield() stat
+>       3) # of times just the expired queue was empty
+>       4) # of times sched_yield() was called
+>  
+> -Next four are schedule() statistics:
+> -     5) # of times the active queue had at least one other process on it
+> -     6) # of times we switched to the expired queue and reused it
+> -     7) # of times schedule() was called
+> -     8) # of times schedule() left the processor idle
+> -
+> -Next four are active_load_balance() statistics:
+> -     9) # of times active_load_balance() was called
+> -    10) # of times active_load_balance() caused this cpu to gain a task
+> -    11) # of times active_load_balance() caused this cpu to lose a task
+> -    12) # of times active_load_balance() tried to move a task and failed
+> -
+> -Next three are try_to_wake_up() statistics:
+> -    13) # of times try_to_wake_up() was called
+> -    14) # of times try_to_wake_up() successfully moved the awakening task
+> -    15) # of times try_to_wake_up() attempted to move the awakening task
+> -
+> -Next two are wake_up_new_task() statistics:
+> -    16) # of times wake_up_new_task() was called
+> -    17) # of times wake_up_new_task() successfully moved the new task
+> +Next three are schedule() statistics:
+> +     5) # of times we switched to the expired queue and reused it
+> +     6) # of times schedule() was called
+> +     7) # of times schedule() left the processor idle
+>  
+> -Next one is a sched_migrate_task() statistic:
+> -    18) # of times sched_migrate_task() was called
+> -
+> -Next one is a sched_balance_exec() statistic:
+> -    19) # of times sched_balance_exec() was called
+> +Next two are try_to_wake_up() statistics:
+> +     8) # of times try_to_wake_up() was called
+> +     9) # of times try_to_wake_up() was called to wake up the local cpu
+>  
+>  Next three are statistics describing scheduling latency:
+> -    20) sum of all time spent running by tasks on this processor (in ms)
+> -    21) sum of all time spent waiting to run by tasks on this processor (in 
+> ms)
+> -    22) # of tasks (not necessarily unique) given to the processor
+> -
+> -The last six are statistics dealing with pull_task():
+> -    23) # of times pull_task() moved a task to this cpu when newly idle
+> -    24) # of times pull_task() stole a task from this cpu when another cpu
+> -	was newly idle
+> -    25) # of times pull_task() moved a task to this cpu when idle
+> -    26) # of times pull_task() stole a task from this cpu when another cpu
+> -	was idle
+> -    27) # of times pull_task() moved a task to this cpu when busy
+> -    28) # of times pull_task() stole a task from this cpu when another cpu
+> -	was busy
+> +    10) sum of all time spent running by tasks on this processor (in jiffies)
+> +    11) sum of all time spent waiting to run by tasks on this processor (in
+> +        jiffies)
+> +    12) # of timeslices run on this cpu
+>  
+>  
+>  Domain statistics
+> @@ -89,65 +62,95 @@ One of these is produced per domain for 
+>  CONFIG_SMP is not defined, *no* domains are utilized and these lines
+>  will not appear in the output.)
+>  
+> -domain<N> 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+> +domain<N> <cpumask> 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 
+> 23 24 25 26 27 28 29 30 31 32 33 34 35 36
+>  
+>  The first field is a bit mask indicating what cpus this domain operates over.
+>  
+> -The next fifteen are a variety of load_balance() statistics:
+> -
+> -     1) # of times in this domain load_balance() was called when the cpu
+> -	was idle
+> -     2) # of times in this domain load_balance() was called when the cpu
+> -	was busy
+> -     3) # of times in this domain load_balance() was called when the cpu
+> -	was just becoming idle
+> -     4) # of times in this domain load_balance() tried to move one or more
+> -	tasks and failed, when the cpu was idle
+> -     5) # of times in this domain load_balance() tried to move one or more
+> -	tasks and failed, when the cpu was busy
+> -     6) # of times in this domain load_balance() tried to move one or more
+> -	tasks and failed, when the cpu was just becoming idle
+> -     7) sum of imbalances discovered (if any) with each call to
+> -	load_balance() in this domain when the cpu was idle
+> -     8) sum of imbalances discovered (if any) with each call to
+> -	load_balance() in this domain when the cpu was busy
+> -     9) sum of imbalances discovered (if any) with each call to
+> -	load_balance() in this domain when the cpu was just becoming idle
+> -    10) # of times in this domain load_balance() was called but did not find
+> -	a busier queue while the cpu was idle
+> -    11) # of times in this domain load_balance() was called but did not find
+> -	a busier queue while the cpu was busy
+> -    12) # of times in this domain load_balance() was called but did not find
+> -	a busier queue while the cpu was just becoming idle
+> -    13) # of times in this domain a busier queue was found while the cpu was
+> -	idle but no busier group was found
+> -    14) # of times in this domain a busier queue was found while the cpu was
+> -	busy but no busier group was found
+> -    15) # of times in this domain a busier queue was found while the cpu was
+> -	just becoming idle but no busier group was found
+> -
+> -Next two are sched_balance_exec() statistics:
+> -    17) # of times in this domain sched_balance_exec() successfully pushed
+> -	a task to a new cpu
+> -    18) # of times in this domain sched_balance_exec() tried but failed to
+> -	push a task to a new cpu
+> -
+> -Next two are try_to_wake_up() statistics:
+> -    19) # of times in this domain try_to_wake_up() tried to move a task based
+> -	on affinity and cache warmth
+> -    20) # of times in this domain try_to_wake_up() tried to move a task based
+> -	on load balancing
+> +The next 24 are a variety of load_balance() statistics in grouped into types
+> +of idleness (idle, busy, and newly idle):
+>  
+> +     1) # of times in this domain load_balance() was called when the
+> +        cpu was idle
+> +     2) # of times in this domain load_balance() checked but found
+> +        the load did not require balancing when the cpu was idle
+> +     3) # of times in this domain load_balance() tried to move one or
+> +        more tasks and failed, when the cpu was idle
+> +     4) sum of imbalances discovered (if any) with each call to
+> +        load_balance() in this domain when the cpu was idle
+> +     5) # of times in this domain pull_task() was called when the cpu
+> +        was idle
+> +     6) # of times in this domain pull_task() was called even though
+> +        the target task was cache-hot when idle
+> +     7) # of times in this domain load_balance() was called but did
+> +        not find a busier queue while the cpu was idle
+> +     8) # of times in this domain a busier queue was found while the
+> +        cpu was idle but no busier group was found
+> +
+> +     9) # of times in this domain load_balance() was called when the
+> +        cpu was busy
+> +    10) # of times in this domain load_balance() checked but found the
+> +        load did not require balancing when busy
+> +    11) # of times in this domain load_balance() tried to move one or
+> +        more tasks and failed, when the cpu was busy
+> +    12) sum of imbalances discovered (if any) with each call to
+> +        load_balance() in this domain when the cpu was busy
+> +    13) # of times in this domain pull_task() was called when busy
+> +    14) # of times in this domain pull_task() was called even though the
+> +        target task was cache-hot when busy
+> +    15) # of times in this domain load_balance() was called but did not
+> +        find a busier queue while the cpu was busy
+> +    16) # of times in this domain a busier queue was found while the cpu
+> +        was busy but no busier group was found
+> +
+> +    17) # of times in this domain load_balance() was called when the
+> +        cpu was just becoming idle
+> +    18) # of times in this domain load_balance() checked but found the
+> +        load did not require balancing when the cpu was just becoming idle
+> +    19) # of times in this domain load_balance() tried to move one or more
+> +        tasks and failed, when the cpu was just becoming idle
+> +    20) sum of imbalances discovered (if any) with each call to
+> +        load_balance() in this domain when the cpu was just becoming idle
+> +    21) # of times in this domain pull_task() was called when newly idle
+> +    22) # of times in this domain pull_task() was called even though the
+> +        target task was cache-hot when just becoming idle
+> +    23) # of times in this domain load_balance() was called but did not
+> +        find a busier queue while the cpu was just becoming idle
+> +    24) # of times in this domain a busier queue was found while the cpu
+> +        was just becoming idle but no busier group was found
+> +
+> +   Next three are active_load_balance() statistics:
+> +    25) # of times active_load_balance() was called
+> +    26) # of times active_load_balance() tried to move a task and failed
+> +    27) # of times active_load_balance() successfully moved a task
+> +
+> +   Next three are sched_balance_exec() statistics:
+> +    28) sbe_cnt is not used
+> +    29) sbe_balanced is not used
+> +    30) sbe_pushed is not used
+> +
+> +   Next three are sched_balance_fork() statistics:
+> +    31) sbf_cnt is not used
+> +    32) sbf_balanced is not used
+> +    33) sbf_pushed is not used
+> +
+> +   Next three are try_to_wake_up() statistics:
+> +    34) # of times in this domain try_to_wake_up() awoke a task that
+> +        last ran on a different cpu in this domain
+> +    35) # of times in this domain try_to_wake_up() moved a task to the
+> +        waking cpu because it was cache-cold on its own cpu anyway
+> +    36) # of times in this domain try_to_wake_up() started passive balancing
+>  
+>  /proc/<pid>/schedstat
+>  ----------------
+>  schedstats also adds a new /proc/<pid/schedstat file to include some of
+>  the same information on a per-process level.  There are three fields in
+> -this file correlating to fields 20, 21, and 22 in the CPU fields, but
+> -they only apply for that process.
+> +this file correlating for that process to:
+> +     1) time spent on the cpu
+> +     2) time spent waiting on a runqueue
+> +     3) # of timeslices run on this cpu
+>  
+>  A program could be easily written to make use of these extra fields to
+>  report on how well a particular process or set of processes is faring
+>  under the scheduler's policies.  A simple version of such a program is
+>  available at
+> -    http://eaglet.rain.com/rick/linux/schedstat/v10/latency.c
+> +    http://eaglet.rain.com/rick/linux/schedstat/v12/latency.c
+> 
