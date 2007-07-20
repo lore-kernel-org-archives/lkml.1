@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbXGTA27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761915AbXGTAdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761421AbXGTA27 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 20:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbXGTA2w
+	id S1761915AbXGTAdp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 20:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758289AbXGTAdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 20:28:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33836 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 20:33:38 -0400
+Received: from holomorphy.com ([66.93.40.71]:53426 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758014AbXGTA2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 20:28:51 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch] slub crashes with recent -git
-References: <20070719194234.GA27917@elte.hu>
-	<alpine.LFD.0.999.0707191307220.27249@woody.linux-foundation.org>
-	<alpine.LFD.0.999.0707191324020.27249@woody.linux-foundation.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 20 Jul 2007 03:23:50 +0200
-In-Reply-To: <alpine.LFD.0.999.0707191324020.27249@woody.linux-foundation.org>
-Message-ID: <p734pjzx3yx.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1755986AbXGTAdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 20:33:37 -0400
+Date: Thu, 19 Jul 2007 17:34:45 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       David Gibson <david@gibson.dropbear.id.au>,
+       Ken Chen <kenchen@google.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] Check for compound pages in set_page_dirty()
+Message-ID: <20070720003445.GN11781@holomorphy.com>
+References: <20070718141533.GA11657@kernel.dk> <Pine.LNX.4.64.0707181619200.23261@blonde.wat.veritas.com> <20070718182456.GE11657@kernel.dk> <20070718184006.GF11657@kernel.dk> <Pine.LNX.4.64.0707182052220.18926@blonde.wat.veritas.com> <20070719062934.GT11657@kernel.dk> <Pine.LNX.4.64.0707191720300.10512@blonde.wat.veritas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707191720300.10512@blonde.wat.veritas.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Thu, Jul 19, 2007 at 06:35:17PM +0100, Hugh Dickins wrote:
+> I started from your patch.  But it now seems to me a bugfix to remove
+> those PageCompound tests, because they're preventing a hugetlb page
+> from being marked dirty, when Ken needs it to be marked dirty so
+> /proc/sys/vm/drop_caches doesn't drop the data read in by DIO.
+> (His original patch went into -stable: would the patch fixing
+> this all up need to go into -stable?)
 
-> On Thu, 19 Jul 2007, Linus Torvalds wrote:
-> > 
-> > A better patch should be the appended. Does that work for you too?
-> 
-> Btw, I already committed this as obvious. 
-> 
-> I did the same for the SLAB __do_kmalloc() thing. Let's hope that that was 
-> the extent of the damage.
+This needs to be done some other way. The dirty bit should not be
+significant for pseudofs's with no backing store. The consequences
+of making it so are becoming apparent in the IO path, and it
+caused performance regressions elsewhere as well. ramfs, for instance,
+doesn't require anything of this sort to cope with drop_caches.
 
-My 32bit crashes seem to be gone with latest git head, both
-for slab and for slub. Even the serial console seems to work again. 
-Thanks
 
--Andi
+-- wli
