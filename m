@@ -1,108 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932380AbXGTHvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbXGTHxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932380AbXGTHvL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbXGTHvA
+	id S932515AbXGTHxw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757736AbXGTHxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:51:00 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49140 "EHLO gate.crashing.org"
+	Fri, 20 Jul 2007 03:53:44 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:57377 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757313AbXGTHu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:50:59 -0400
-Date: Fri, 20 Jul 2007 11:50:39 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [updated] PHY fixed driver: rework release path and
- update phy_id notation
-Message-ID: <20070720115039.05f50f0f@localhost.localdomain>
-In-Reply-To: <20070719232337.184942e0.akpm@linux-foundation.org>
-References: <20070718233804.24451.22543.stgit@localhost.localdomain>
-	<20070719232337.184942e0.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757490AbXGTHxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 03:53:43 -0400
+Date: Fri, 20 Jul 2007 16:53:22 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Greg Ungerer <gerg@uclinux.org>, David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] nommu: vmalloc_32_user()/vm_insert_page() and symbol exports.
+Message-ID: <20070720075322.GC26080@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Greg Ungerer <gerg@uclinux.org>,
+	David Howells <dhowells@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 23:23:37 -0700
-Andrew Morton wrote:
+Trying to survive an allmodconfig on a nommu platform results in
+many screen lengths of module unhappiness. Many of the mmap
+related things that binfmt_flat hooks in to are never exported
+despite being global, and there are also missing definitions for
+vmalloc_32_user() and vm_insert_page().
 
-> On Thu, 19 Jul 2007 03:38:04 +0400 Vitaly Bordug
-> <vitb@kernel.crashing.org> wrote:
-> 
-> > 
-> > device_bind_driver() error code returning has been fixed.  
-> > release() function has been written, so that to free resources 
-> > in correct way; the release path is now clean. 
-> >  
-> > Before the rework, it used to cause 
-> >  Device 'fixed@100:1' does not have a release() function, it is
-> > broken and must be fixed. 
-> >  BUG: at drivers/base/core.c:104 device_release() 
-> >   
-> >  Call Trace:   
-> >   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e 
-> >   [<ffffffff802ec3ab>] kobject_release+0x0/0x9 
-> >   [<ffffffff802ecf3f>] kref_put+0x74/0x81 
-> >   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265 
-> >   [<ffffffff80564d31>] fixed_init+0x1f/0x35 
-> >   [<ffffffff802071a4>] init+0x147/0x2fb 
-> >   [<ffffffff80223b6e>] schedule_tail+0x36/0x92 
-> >   [<ffffffff8020a678>] child_rip+0xa/0x12 
-> >   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83 
-> >   [<ffffffff8020705d>] init+0x0/0x2fb 
-> >   [<ffffffff8020a66e>] child_rip+0x0/0x12   
-> >  
-> >  
-> > Also changed the notation of the fixed phy definition on 
-> > mdio bus to the form of <speed>+<duplex> to make it able to be used
-> > by gianfar and ucc_geth that define phy_id strictly as "%d:%d" and
-> > cleaned up the whitespace issues.
-> >  
-> 
-> Confused.  Does the above refer to the difference between this patch
-> and the previous version, or does it just describe this patch?
-> Hopefully the latter, because the former isn't interesting, long-term.
-> 
-Latter. IOW, that does mean, that mdio bus registered by this driver, now uses
-same naming conventioun that other PHYLIB things use. Hereby it will make it able to be used in 
-NIC drivers other than fs_enet (and gianfar and ucc_geth are now points of interest).
+I've implemented vmalloc_32_user() trying to stick as close to
+the mm/vmalloc.c implementation as possible, though we don't
+have any need for VM_USERMAP, so groveling for the VMA can be
+skipped. vm_insert_page() has been stubbed for now in order to
+keep the build happy.
 
-> If is _is_ a full standalone description of this patch then it's a
-> bit hard to follow ;)
-> 
-Hmm -so what are my options - change the description and resubmit?
-> > +config FIXED_MII_1000_FDX
-> > +	bool "Emulation for 1000M Fdx fixed PHY behavior"
-> > +	depends on FIXED_PHY
-> > +
-> > +config FIXED_MII_AMNT
-> > +        int "Number of emulated PHYs to allocate "
-> > +        depends on FIXED_PHY
-> > +        default "1"
-> > +        ---help---
-> > +        Sometimes it is required to have several independent
-> > emulated
-> > +        PHYs on the bus (in case of multi-eth but phy-less HW for
-> > instance).
-> > +        This control will have specified number allocated for each
-> > fixed
-> > +        PHY type enabled.
-> 
-> Shouldn't these be runtime options (ie: module parameters)?
-> 
-I thought about it but this thing is more like the one that will never tend/required to change while\
-configured.. Will add if you see it appropriate though.
-> >
-> > ...
-> >
-> > + *  Private information hoder for mii_bus
-> 
-> tpyo.
-ok
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
--- 
-Sincerely, Vitaly
+--
+
+ mm/nommu.c |   45 +++++++++++++++++++++++++++++++++------------
+ 1 file changed, 33 insertions(+), 12 deletions(-)
+
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 1b105d2..9eef6a3 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -54,12 +54,6 @@ DECLARE_RWSEM(nommu_vma_sem);
+ struct vm_operations_struct generic_file_vm_ops = {
+ };
+ 
+-EXPORT_SYMBOL(vfree);
+-EXPORT_SYMBOL(vmalloc_to_page);
+-EXPORT_SYMBOL(vmalloc_32);
+-EXPORT_SYMBOL(vmap);
+-EXPORT_SYMBOL(vunmap);
+-
+ /*
+  * Handle all mappings that got truncated by a "truncate()"
+  * system call.
+@@ -168,7 +162,6 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ finish_or_fault:
+ 	return i ? : -EFAULT;
+ }
+-
+ EXPORT_SYMBOL(get_user_pages);
+ 
+ DEFINE_RWLOCK(vmlist_lock);
+@@ -178,6 +171,7 @@ void vfree(void *addr)
+ {
+ 	kfree(addr);
+ }
++EXPORT_SYMBOL(vfree);
+ 
+ void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
+ {
+@@ -186,17 +180,19 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
+ 	 */
+ 	return kmalloc(size, (gfp_mask | __GFP_COMP) & ~__GFP_HIGHMEM);
+ }
++EXPORT_SYMBOL(__vmalloc);
+ 
+ struct page * vmalloc_to_page(void *addr)
+ {
+ 	return virt_to_page(addr);
+ }
++EXPORT_SYMBOL(vmalloc_to_page);
+ 
+ unsigned long vmalloc_to_pfn(void *addr)
+ {
+ 	return page_to_pfn(virt_to_page(addr));
+ }
+-
++EXPORT_SYMBOL(vmalloc_to_pfn);
+ 
+ long vread(char *buf, char *addr, unsigned long count)
+ {
+@@ -237,9 +233,8 @@ void *vmalloc_node(unsigned long size, int node)
+ }
+ EXPORT_SYMBOL(vmalloc_node);
+ 
+-/*
+- *	vmalloc_32  -  allocate virtually continguos memory (32bit addressable)
+- *
++/**
++ * vmalloc_32  -  allocate virtually contiguous memory (32bit addressable)
+  *	@size:		allocation size
+  *
+  *	Allocate enough 32bit PA addressable pages to cover @size from the
+@@ -249,17 +244,33 @@ void *vmalloc_32(unsigned long size)
+ {
+ 	return __vmalloc(size, GFP_KERNEL, PAGE_KERNEL);
+ }
++EXPORT_SYMBOL(vmalloc_32);
++
++/**
++ * vmalloc_32_user - allocate zeroed virtually contiguous 32bit memory
++ *	@size:		allocation size
++ *
++ * The resulting memory area is 32bit addressable and zeroed so it can be
++ * mapped to userspace without leaking data.
++ */
++void *vmalloc_32_user(unsigned long size)
++{
++	return __vmalloc(size, GFP_KERNEL | __GFP_ZERO, PAGE_KERNEL);
++}
++EXPORT_SYMBOL(vmalloc_32_user);
+ 
+ void *vmap(struct page **pages, unsigned int count, unsigned long flags, pgprot_t prot)
+ {
+ 	BUG();
+ 	return NULL;
+ }
++EXPORT_SYMBOL(vmap);
+ 
+ void vunmap(void *addr)
+ {
+ 	BUG();
+ }
++EXPORT_SYMBOL(vunmap);
+ 
+ /*
+  * Implement a stub for vmalloc_sync_all() if the architecture chose not to
+@@ -269,6 +280,13 @@ void  __attribute__((weak)) vmalloc_sync_all(void)
+ {
+ }
+ 
++int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
++		   struct page *page)
++{
++	return -EINVAL;
++}
++EXPORT_SYMBOL(vm_insert_page);
++
+ /*
+  *  sys_brk() for the most part doesn't need the global kernel
+  *  lock, except when an application is doing something nasty
+@@ -994,6 +1012,7 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 	show_free_areas();
+ 	return -ENOMEM;
+ }
++EXPORT_SYMBOL(do_mmap_pgoff);
+ 
+ /*
+  * handle mapping disposal for uClinux
+@@ -1074,6 +1093,7 @@ int do_munmap(struct mm_struct *mm, unsigned long addr, size_t len)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(do_munmap);
+ 
+ asmlinkage long sys_munmap(unsigned long addr, size_t len)
+ {
+@@ -1164,6 +1184,7 @@ unsigned long do_mremap(unsigned long addr,
+ 
+ 	return vma->vm_start;
+ }
++EXPORT_SYMBOL(do_mremap);
+ 
+ asmlinkage unsigned long sys_mremap(unsigned long addr,
+ 	unsigned long old_len, unsigned long new_len,
+@@ -1231,7 +1252,6 @@ unsigned long get_unmapped_area(struct file *file, unsigned long addr,
+ 
+ 	return get_area(file, addr, len, pgoff, flags);
+ }
+-
+ EXPORT_SYMBOL(get_unmapped_area);
+ 
+ /*
+@@ -1346,6 +1366,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 	BUG();
+ 	return 0;
+ }
++EXPORT_SYMBOL(filemap_fault);
+ 
+ /*
+  * Access another process' address space.
