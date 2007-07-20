@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933577AbXGTHS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933819AbXGTHUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933577AbXGTHS7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759613AbXGTHSv
+	id S933819AbXGTHUl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757709AbXGTHUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:18:51 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58644 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759307AbXGTHSu (ORCPT
+	Fri, 20 Jul 2007 03:20:34 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39134 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757920AbXGTHUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:18:50 -0400
-Date: Fri, 20 Jul 2007 10:18:49 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Roland Dreier <rdreier@cisco.com>
-cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Subject: Re: kmalloc zero size changes break i386
-In-Reply-To: <Pine.LNX.4.64.0707201009580.1209@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0707201017450.1209@sbz-30.cs.Helsinki.FI>
-References: <200707191201.35777.ak@suse.de> <84144f020707190708p1c4d63cnbb0397a602c3527d@mail.gmail.com>
- <adamyxsfmnc.fsf@cisco.com> <Pine.LNX.4.64.0707201009580.1209@sbz-30.cs.Helsinki.FI>
+	Fri, 20 Jul 2007 03:20:33 -0400
+Date: Fri, 20 Jul 2007 16:21:52 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
+Message-Id: <20070720162152.25c929bf.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070720060342.GA24765@linux-sh.org>
+References: <20070720060342.GA24765@linux-sh.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007, Pekka J Enberg wrote:
-> There's some heavy-duty function inlining going on in__kmalloc so could 
-> you please work out the exact location of the oops as described in 
-> Documentation/BUG-HUNTING (look for the "use GDB to translate" part).
+On Fri, 20 Jul 2007 15:03:42 +0900
+Paul Mundt <lethal@linux-sh.org> wrote:
 
-And, of course, please check if a5c96d8a1c67f31ef48935a78da2d2076513842b 
-fixes it.
+> zone_movable_pfn is presently marked as __initdata and referenced
+> from adjust_zone_range_for_zone_movable(), which in turn is
+> referenced by zone_spanned_pages_in_node(). Both of these are
+> __meminit annotated. When memory hotplug is enabled, this will oops
+> on a hot-add, due to zone_movable_pfn having been freed.
+> 
+> __meminitdata annotation gives the desired behaviour.
+> 
+> This will only impact platforms that enable both memory hotplug
+> and ARCH_POPULATES_NODE_MAP.
+> 
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> 
+Thank you for catching.
+It seems that this route will called at node-hotplug.
+We tested node hotplug with our machine but haven't seen this.
 
-				Pekka
+The reason is maybe...
+==
+Currently, our firmware shows *to-be-added* nodes in SRAT at boot and
+ia64 creates empty node against possible node. So, when we add node,
+pgdat is already allocated and free_area_init_core() is not called at hotplug.
+==
+We need to use dummy firmware to test this route, sorry.
+
+just thinking of:
+I'm now considering to post patches for "specifies a zone which all hotaddes pages are
+added to, MOVABLE, NORMAL, DMA..."If we do that, we may be able to avoid calling 
+adjust_zone_range_for_zone_movable() (which touches this __meminit data) at hot-add.
+
+Thanks,
+-Kame
+
