@@ -1,97 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941162AbXGTQWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940227AbXGTQWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941162AbXGTQWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935249AbXGTQWK
+	id S940227AbXGTQWb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940796AbXGTQWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:22:10 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:43676 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935040AbXGTQWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:22:08 -0400
-Date: Fri, 20 Jul 2007 18:22:03 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: sdhci-devel@list.drzeus.cx,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: SDHCI: mmc0: Unexpected interrupt 0x00008000.
-Message-ID: <20070720182203.3f378d58@poseidon.drzeus.cx>
-In-Reply-To: <469FB856.6030000@goop.org>
-References: <469FB856.6030000@goop.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-14382-1184948530-0001-2"
+	Fri, 20 Jul 2007 12:22:16 -0400
+Received: from lucidpixels.com ([75.144.35.66]:48114 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S940651AbXGTQWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 12:22:15 -0400
+Date: Fri, 20 Jul 2007 12:22:05 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, apiszcz@solarrain.com
+Subject: Re: Software RAID 5 - Two reads are faster than one on a SW RAID5?
+In-Reply-To: <20070720155808.GA21547@csclub.uwaterloo.ca>
+Message-ID: <Pine.LNX.4.64.0707201221310.508@p34.internal.lan>
+References: <Pine.LNX.4.64.0707200952270.25069@p34.internal.lan>
+ <20070720155808.GA21547@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_hera.drzeus.cx-14382-1184948530-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Thu, 19 Jul 2007 12:15:34 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Fri, 20 Jul 2007, Lennart Sorensen wrote:
 
-> I'm getting this with current GIT kernels when I plug an SD card into
-> the side of my machine.  It appears to see the filesystem OK anyway,
-> but for some reason all the hal/gnome desktop stuff isn't seeing it.
-> Was working last week.
-> 
+> On Fri, Jul 20, 2007 at 09:58:50AM -0400, Justin Piszcz wrote:
+>> I have a multi-core Q6600 CPU on a 10-disk Raptor RAID 5 running XFS.
+>>
+>> I just pulled down the Debian Etch 4.0 DVD ISO's, one for x86 and one for
+>> x86_64, when I ran md5sum -c MD5SUMS, I see ~280-320MB/s.  When I ran the
+>> second one I see upwards of what I should be seeing 500-520MB/s.
+>>
+>> NOTE:: These MD5 contain the 3 DVD ISO's for each platform, 6 total ISOs.
+>>
+>> I know md5sum is cpubound to a degree, do you think that is what is
+>> happening here?  Each core can only sustain ~300MB/s and then with two of
+>> four cores working, it can exceed that amount or is there some similarity
+>> with RAID1 in linux compared to RAID5?
+>>
+>> With RAID1, if you use a single read thread, you will get 60-70MB/s read
+>> on a dual raptor raid1.  If you use two(?) or three threads, it will read
+>> from both disks and you will see 120-140MB/s.
+>>
+>> Is there some commonality with software RAID1 and RAID5 in Linux in this
+>> regard?
+>
+> Could you just run top while doing md5sum and see how much cpu md5sum is
+> using on the cpu it is on?  After all if it says 100% for the process,
+> then yes it is cpu bound at 300MB/s, and if not then I guess there has
+> to be another explanation.
 
-This appeared because we fixed another bug. Try the included patch.
 
-Rgds
--- 
-     -- Pierre Ossman
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+   679 abc       23   0  4092  512  432 R   92  0.0   0:02.77 md5sum
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+$ /usr/bin/time md5sum debian-40r0-i386-DVD-1.iso
+79f5bcbb36335e14142fc3578b1de96e  debian-40r0-i386-DVD-1.iso
+10.69user 3.52system 0:14.47elapsed 98%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (1major+205minor)pagefaults 0swaps
 
---=_hera.drzeus.cx-14382-1184948530-0001-2
-Content-Type: text/x-patch; name="errmask.patch"; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=errmask.patch
+Looks like it.
 
-commit 0668da722a0c48e8629d697fa354e23a02548093
-Author: Pierre Ossman <drzeus@drzeus.cx>
-Date:   Fri Jul 20 18:20:36 2007 +0200
-
-    sdhci: make sure to clear the error interrupt
-    
-    The controller has a bit indicating that one of the higher bits (the
-    error bits) are set. A previous bug caused this bit to be masked, but
-    since that bug has been fixed we have to clear it explicictly.
-    
-    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
-
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 10d15c3..4a24db0 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1024,6 +1024,8 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
- 
- 	intmask &= ~(SDHCI_INT_CMD_MASK | SDHCI_INT_DATA_MASK);
- 
-+	intmask &= ~SDHCI_INT_ERROR;
-+
- 	if (intmask & SDHCI_INT_BUS_POWER) {
- 		printk(KERN_ERR "%s: Card is consuming too much power!\n",
- 			mmc_hostname(host->mmc));
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 7400f4b..a6c8704 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -107,6 +107,7 @@
- #define  SDHCI_INT_CARD_INSERT	0x00000040
- #define  SDHCI_INT_CARD_REMOVE	0x00000080
- #define  SDHCI_INT_CARD_INT	0x00000100
-+#define  SDHCI_INT_ERROR	0x00008000
- #define  SDHCI_INT_TIMEOUT	0x00010000
- #define  SDHCI_INT_CRC		0x00020000
- #define  SDHCI_INT_END_BIT	0x00040000
-
---=_hera.drzeus.cx-14382-1184948530-0001-2--
+>
+> It looks pretty likely, since I just tried running md5sum on a 130MB
+> file here, and it takes 0.444s of user cpu time and 0.068s of system
+> time to process, and I ran it multiple times so the file ended up cached
+> in ram so disk speed isn't a concern, which I figure means my system
+> runs md5sum at about 250MB/s.  This is on a single core Athlon 64 3500+
+> (2.2GHz).  So if you have a slightly faster as you do with a 2.4GHz Core
+> 2, then 300MB/s seems perfectly reasonable per core.  I don't quite know
+> how md5 hashes work, but I really doubt they are something you are
+> likely to be able to make threaded.
+>
+> --
+> Len Sorensen
+>
