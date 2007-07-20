@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932719AbXGTAoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934505AbXGTApc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932719AbXGTAoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 20:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759894AbXGTAoO
+	id S934505AbXGTApc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 20:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759848AbXGTApW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 20:44:14 -0400
-Received: from holomorphy.com ([66.93.40.71]:53544 "EHLO holomorphy.com"
+	Thu, 19 Jul 2007 20:45:22 -0400
+Received: from mga03.intel.com ([143.182.124.21]:17502 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758940AbXGTAoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 20:44:13 -0400
-Date: Thu, 19 Jul 2007 17:45:59 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andi Kleen <ak@suse.de>, lkml@rtr.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for review] [7/48] i386: divorce CONFIG_X86_PAE from CONFIG_HIGHMEM64G
-Message-ID: <20070720004559.GO11781@holomorphy.com>
-References: <20070719348.540885000@suse.de> <20070719134836.0C54214E6E@wotan.suse.de> <20070719145229.GA19858@infradead.org>
+	id S1759364AbXGTApV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 20:45:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,559,1175497200"; 
+   d="scan'208";a="252605866"
+From: Shannon Nelson <shannon.nelson@intel.com>
+Subject: [PATCH 0/7] I/OAT: Add support for DCA - Direct Cache Access
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: davem@davemloft.net, jeff@garzik.org, dan.j.williams@intel.com,
+       christopher.leech@intel.com, peter.p.waskiewicz.jr@intel.com
+Date: Thu, 19 Jul 2007 17:44:34 -0700
+Message-ID: <20070720004403.13564.14294.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719145229.GA19858@infradead.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: William Lee Irwin III <wli@holomorphy.com>
->> PAE is useful for more than supporting more than 4GB RAM.  It supports
->> expanded swapspace and NX executable protections.  Some users may want NX
->> or expanded swapspace support without the overhead or instability of
->> highmem.  For these reasons, the following patch divorces CONFIG_X86_PAE
->> from CONFIG_HIGHMEM64G.
+The following series implements support for providers and clients of
+Direct Cache Access (DCA), a method for warming the cache in the correct
+CPU before needing data.
 
-On Thu, Jul 19, 2007 at 03:52:29PM +0100, Christoph Hellwig wrote:
-> What overhead of instability of highmem?  Sorry folks but this is utter
-> bollocks.  Back in the Caldera days we did a lot of measurement on highmem
-> overhead, and CONFIG_HIGHMEM has no measurable overhead at all on a system
-> that doesn't use it.  CONFIG_HIGHMEM64G on the other hand has
-> a quite visible overhead on small systems, but that's entirely due to the
-> bigger page table entries that you need for NX.
+This series applies on GIT commit 5bae7ac9feba925fd0099057f6b23d7be80b7b41
 
-The missing context here is CONFIG_VMSPLIT on laptops.
+ioat-new-device-ids.patch
+	- add devices id's for newer Intel chipsets which support DMA and DCA
+ioat-rename-source-file.patch
+	- prepare for adding new functionality
+ioat-dma-cleanups.patch
+	- cleanup some code ugliness
+ioat-split-startup-code.patch
+	- split the DMA support code from the PCI startup
+ioat-add-msi-msix-support.patch
+	- add support for various interrupt handling schemes
+ioat-add-dca-support.patch
+	- add the dca driver
+ioat-add-ioat-dca.patch
+	- add DCA services to the ioatdma driver
 
-Laptop users, who frequently use CONFIG_VMSPLIT options to avoid
-highmem, wanted to turn on NX. Prior to the patch, those options were
-barred for all highmem configurations. In response to those requests,
-I produced the patch.
+Please pull from my git tree at
+	git://lost.foo-projects.org/~sln/linux-2.6 dca-upstream
 
-The overhead and instability derived from tiny zones as opposed to
-kmap()/kunmap(), or at least such was the case historically.
+Thanks to Dan Williams, Auke Kok, PJ Waskiewicz, and Chris Leech for their
+help.
 
-
--- wli
+sln
+--
+======================================================================
+Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
+Shannon.Nelson@intel.com                I don't speak for Intel
+(503) 712-7659                    Parents can't afford to be squeamish. 
