@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938567AbXGTAsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939050AbXGTAss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938567AbXGTAsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 20:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934171AbXGTApq
+	id S939050AbXGTAss (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 20:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761323AbXGTApv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 20:45:46 -0400
-Received: from mga03.intel.com ([143.182.124.21]:12938 "EHLO mga03.intel.com"
+	Thu, 19 Jul 2007 20:45:51 -0400
+Received: from mga01.intel.com ([192.55.52.88]:55572 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761143AbXGTApo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 20:45:44 -0400
+	id S935150AbXGTAps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 20:45:48 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,559,1175497200"; 
-   d="scan'208";a="252605968"
+   d="scan'208";a="270540501"
 From: Shannon Nelson <shannon.nelson@intel.com>
-Subject: [PATCH 6/7] DCA: Add Direct Cache Access driver
+Subject: [PATCH 7/7] I/OAT: Add DCA services
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: davem@davemloft.net, jeff@garzik.org, dan.j.williams@intel.com,
        christopher.leech@intel.com, peter.p.waskiewicz.jr@intel.com
-Date: Thu, 19 Jul 2007 17:45:17 -0700
-Message-ID: <20070720004517.13564.19649.stgit@localhost.localdomain>
+Date: Thu, 19 Jul 2007 17:45:22 -0700
+Message-ID: <20070720004522.13564.75957.stgit@localhost.localdomain>
 In-Reply-To: <20070720004403.13564.14294.stgit@localhost.localdomain>
 References: <20070720004403.13564.14294.stgit@localhost.localdomain>
 User-Agent: StGIT/0.12.1
@@ -28,93 +28,92 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Direct Cache Access (DCA) is a method for warming the CPU cache before data
-is used, with the intent of lessening the impact of cache misses.  This
-patch adds a manager and interface for matching up client requests for DCA
-services with devices that offer DCA services.
-
-In order to use DCA, a module must do bus writes with the appropriate tag
-bits set to trigger a cache read for a specific CPU.  However, different
-CPUs and chipsets can require different sets of tag bits, and the methods
-for determining the correct bits may be simple hardcoding or may be a
-hardware specific magic incantation.  This interface is a way for DCA
-clients to find the correct tag bits for the targeted CPU without needing
-to know the specifics.
+Add code to connect to the DCA driver and provide cpu tags for use by
+drivers that would like to use Direct Cache Access hints.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 ---
 
- drivers/Kconfig         |    2 +
- drivers/Makefile        |    1 
- drivers/dca/Kconfig     |   11 +++
- drivers/dca/Makefile    |    2 +
- drivers/dca/dca-core.c  |  170 +++++++++++++++++++++++++++++++++++++++++++++++
- drivers/dca/dca-sysfs.c |   88 ++++++++++++++++++++++++
- include/linux/dca.h     |   47 +++++++++++++
- 7 files changed, 321 insertions(+), 0 deletions(-)
+ drivers/dma/Makefile   |    2 
+ drivers/dma/ioat.c     |   12 ++
+ drivers/dma/ioat_dca.c |  259 ++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/dma/ioatdma.h  |    2 
+ 4 files changed, 273 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 7916f4b..98b7e10 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -80,6 +80,8 @@ source "drivers/rtc/Kconfig"
+diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
+index cec0c9c..b152cd8 100644
+--- a/drivers/dma/Makefile
++++ b/drivers/dma/Makefile
+@@ -1,5 +1,5 @@
+ obj-$(CONFIG_DMA_ENGINE) += dmaengine.o
+ obj-$(CONFIG_NET_DMA) += iovlock.o
+ obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
+-ioatdma-objs := ioat.o ioat_dma.o
++ioatdma-objs := ioat.o ioat_dma.o ioat_dca.o
+ obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
+diff --git a/drivers/dma/ioat.c b/drivers/dma/ioat.c
+index 9d9f672..8ae8c53 100644
+--- a/drivers/dma/ioat.c
++++ b/drivers/dma/ioat.c
+@@ -1,6 +1,6 @@
+ /*
+  * Intel I/OAT DMA Linux driver
+- * Copyright(c) 2004 - 2007 Intel Corporation.
++ * Copyright(c) 2007 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -29,6 +29,7 @@
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/interrupt.h>
++#include <linux/dca.h>
+ #include "ioatdma.h"
+ #include "ioatdma_registers.h"
+ #include "ioatdma_hw.h"
+@@ -49,6 +50,7 @@ struct ioat_device {
+ 	struct pci_dev		*pdev;
+ 	void __iomem		*iobase;
+ 	struct ioatdma_device	*dma;
++	struct dca_provider	*dca;
+ };
  
- source "drivers/dma/Kconfig"
+ static int __devinit ioat_probe(struct pci_dev *pdev,
+@@ -65,6 +67,7 @@ static int ioat_setup_functionality(struct pci_dev *pdev, void __iomem *iobase)
+ 	switch (version) {
+ 	case IOAT_VER_1_2:
+ 		device->dma = ioat_dma_probe(pdev, iobase);
++		device->dca = ioat_dca_init(pdev, iobase);
+ 		break;
+ 	default:
+ 		err = -ENODEV;
+@@ -81,6 +84,13 @@ static void ioat_shutdown_functionality(struct pci_dev *pdev)
+ 		ioat_dma_remove(device->dma);
+ 		device->dma = NULL;
+ 	}
++
++	if (device->dca) {
++		unregister_dca_provider(device->dca);
++		free_dca_provider(device->dca);
++		device->dca = NULL;
++	}
++
+ }
  
-+source "drivers/dca/Kconfig"
-+
- source "drivers/auxdisplay/Kconfig"
- 
- source "drivers/kvm/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 6d9d7fa..4e03de6 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -82,5 +82,6 @@ obj-$(CONFIG_CRYPTO)		+= crypto/
- obj-$(CONFIG_SUPERH)		+= sh/
- obj-$(CONFIG_GENERIC_TIME)	+= clocksource/
- obj-$(CONFIG_DMA_ENGINE)	+= dma/
-+obj-$(CONFIG_DCA)		+= dca/
- obj-$(CONFIG_HID)		+= hid/
- obj-$(CONFIG_PPC_PS3)		+= ps3/
-diff --git a/drivers/dca/Kconfig b/drivers/dca/Kconfig
+ static struct pci_driver ioat_pci_drv = {
+diff --git a/drivers/dma/ioat_dca.c b/drivers/dma/ioat_dca.c
 new file mode 100644
-index 0000000..d901615
+index 0000000..c3a500b
 --- /dev/null
-+++ b/drivers/dca/Kconfig
-@@ -0,0 +1,11 @@
-+#
-+# DCA server configuration
-+#
-+
-+config DCA
-+	tristate "DCA support for clients and providers"
-+	---help---
-+          This is a server to help modules that want to use Direct Cache
-+	  Access to find DCA providers that will supply correct CPU tags.
-+	default m
-+
-diff --git a/drivers/dca/Makefile b/drivers/dca/Makefile
-new file mode 100644
-index 0000000..b2db56b
---- /dev/null
-+++ b/drivers/dca/Makefile
-@@ -0,0 +1,2 @@
-+obj-$(CONFIG_DCA) += dca.o
-+dca-objs := dca-core.o dca-sysfs.o
-diff --git a/drivers/dca/dca-core.c b/drivers/dca/dca-core.c
-new file mode 100644
-index 0000000..864f469
---- /dev/null
-+++ b/drivers/dca/dca-core.c
-@@ -0,0 +1,170 @@
++++ b/drivers/dma/ioat_dca.c
+@@ -0,0 +1,259 @@
 +/*
-+ * Copyright(c) 2007 Intel Corporation. All rights reserved.
++ * Intel I/OAT DMA Linux driver
++ * Copyright(c) 2007 Intel Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
 + *
 + * This program is distributed in the hope that it will be useful, but WITHOUT
 + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -122,306 +121,264 @@ index 0000000..864f469
 + * more details.
 + *
 + * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59
-+ * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++ * this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
 + *
-+ * The full GNU General Public License is included in this distribution in the
-+ * file called COPYING.
-+ */
-+
-+/*
-+ * This driver supports an interface for DCA clients and providers to meet.
++ * The full GNU General Public License is included in this distribution in
++ * the file called "COPYING".
++ *
 + */
 +
 +#include <linux/kernel.h>
-+#include <linux/notifier.h>
-+#include <linux/device.h>
++#include <linux/pci.h>
++#include <linux/smp.h>
++#include <linux/interrupt.h>
 +#include <linux/dca.h>
++#include "ioatdma.h"
++#include "ioatdma_registers.h"
 +
-+MODULE_LICENSE("GPL");
++/* THIS STUFF NEEDS TO LIVE SOMEWHERE ELSE */
++#define X86_FEATURE_DCA	(4*32+18) /* Direct Cache Access */
++/* / THIS STUFF NEEDS TO LIVE SOMEWHERE ELSE */
 +
-+/* For now we're assuming a single, global, DCA provider for the system. */
++/*
++ * Bit 16 of a tag map entry is the "valid" bit, if it is set then bits 0:15
++ * contain the bit number of the APIC ID to map into the DCA tag.  If the valid
++ * bit is not set, then the value must be 0 or 1 and defines the bit in the tag.
++ */
++#define DCA_TAG_MAP_VALID 0x80
 +
-+static spinlock_t dca_lock;
++/*
++ * "Legacy" DCA systems do not implement the DCA register set in the
++ * I/OAT device.  Software needs direct support for their tag mappings.
++ */
 +
-+struct dca_provider *global_dca = NULL;
++#define APICID_BIT(x)		(DCA_TAG_MAP_VALID | (x))
++#define IOAT_TAG_MAP_LEN	8
 +
-+int dca_add_requester(struct device *dev)
++static u8 ioat_tag_map_BNB[IOAT_TAG_MAP_LEN] = {
++	1, APICID_BIT(1), APICID_BIT(2), APICID_BIT(2), };
++static u8 ioat_tag_map_SCNB[IOAT_TAG_MAP_LEN] = {
++	1, APICID_BIT(1), APICID_BIT(2), APICID_BIT(2), };
++static u8 ioat_tag_map_CNB[IOAT_TAG_MAP_LEN] = {
++	1, APICID_BIT(1), APICID_BIT(3), APICID_BIT(4), APICID_BIT(2), };
++static u8 ioat_tag_map_UNISYS[IOAT_TAG_MAP_LEN] = { 0 };
++
++/* pack PCI B/D/F into a u16 */
++static inline u16 dcaid_from_pcidev(struct pci_dev *pci)
 +{
-+	int err, slot;
++	return (pci->bus->number << 8) | pci->devfn;
++}
 +
-+	if (!global_dca)
++static int dca_enabled_in_bios(void)
++{
++	/* CPUID level 9 returns DCA configuration */
++	/* Bit 0 indicates DCA enabled by the BIOS */
++	unsigned long cpuid_level_9;
++	int res;
++
++	cpuid_level_9 = cpuid_eax(9);
++	res = test_bit(0, &cpuid_level_9);
++	if (!res)
++		printk(KERN_ERR "ioat dma: DCA is disabled in BIOS\n");
++
++	return res;
++}
++
++static int system_has_dca_enabled(void)
++{
++	if (boot_cpu_has(X86_FEATURE_DCA))
++		return dca_enabled_in_bios();
++
++	printk(KERN_ERR "ioat dma: boot cpu doesn't have X86_FEATURE_DCA\n");
++	return 0;
++}
++
++struct ioat_dca_slot {
++	struct pci_dev *pdev;	/* requester device */
++	u16 rid;		/* requester id, as used by IOAT */
++};
++
++#define IOAT_DCA_MAX_REQ 6
++
++struct ioat_dca_priv {
++	void __iomem		*iobase;
++	void			*dca_base;
++	int			 max_requesters;
++	int			 requester_count;
++	u8			 tag_map[IOAT_TAG_MAP_LEN];
++	struct ioat_dca_slot 	 req_slots[0];
++};
++
++/* 5000 series chipset DCA Port Requester ID Table Entry Format
++ * [15:8]	PCI-Express Bus Number
++ * [7:3]	PCI-Express Device Number
++ * [2:0]	PCI-Express Function Number
++ *
++ * 5000 series chipset DCA control register format
++ * [7:1]	Reserved (0)
++ * [0]		Ignore Function Number
++ */
++
++static int ioat_dca_add_requester(struct dca_provider *dca, struct device *dev)
++{
++	struct ioat_dca_priv *ioatdca = dca_priv(dca);
++	struct pci_dev *pdev;
++	int i;
++	u16 id;
++
++	/* This implementation only supports PCI-Express */
++	if (dev->bus != &pci_bus_type)
++		return -ENODEV;
++	pdev = to_pci_dev(dev);
++	id = dcaid_from_pcidev(pdev);
++
++	if (ioatdca->requester_count == ioatdca->max_requesters)
 +		return -ENODEV;
 +
-+	spin_lock(&dca_lock);
-+	slot = global_dca->ops->add_requester(global_dca, dev);
-+	spin_unlock(&dca_lock);
-+	if (slot < 0)
-+		return slot;
-+
-+	err = dca_sysfs_add_req(global_dca, dev, slot);
-+	if (err) {
-+		spin_lock(&dca_lock);
-+		global_dca->ops->remove_requester(global_dca, dev);
-+		spin_unlock(&dca_lock);
-+		return err;
++	for (i = 0; i < ioatdca->max_requesters; i++) {
++		if (ioatdca->req_slots[i].pdev == NULL) {
++			/* found an empty slot */
++			ioatdca->requester_count++;
++			ioatdca->req_slots[i].pdev = pdev;
++			ioatdca->req_slots[i].rid = id;
++			writew(id, ioatdca->dca_base + (i * 4));
++			/* make sure the ignore function bit is off */
++			writeb(0, ioatdca->dca_base + (i * 4) + 2);
++			return i;
++		}
 +	}
-+
-+	return 0;
++	/* Error, ioatdma->requester_count is out of whack */
++	return -EFAULT;
 +}
-+EXPORT_SYMBOL(dca_add_requester);
 +
-+int dca_remove_requester(struct device *dev)
++static int ioat_dca_remove_requester(struct dca_provider *dca,
++				     struct device *dev)
 +{
-+	int slot;
-+	if (!global_dca)
++	struct ioat_dca_priv *ioatdca = dca_priv(dca);
++	struct pci_dev *pdev;
++	int i;
++
++	/* This implementation only supports PCI-Express */
++	if (dev->bus != &pci_bus_type)
 +		return -ENODEV;
++	pdev = to_pci_dev(dev);
 +
-+	spin_lock(&dca_lock);
-+	slot = global_dca->ops->remove_requester(global_dca, dev);
-+	spin_unlock(&dca_lock);
-+	if (slot < 0)
-+		return slot;
-+
-+	dca_sysfs_remove_req(global_dca, slot);
-+	return 0;
++	for (i = 0; i < ioatdca->max_requesters; i++) {
++		if (ioatdca->req_slots[i].pdev == pdev) {
++			writew(0, ioatdca->dca_base + (i * 4));
++			ioatdca->req_slots[i].pdev = NULL;
++			ioatdca->req_slots[i].rid = 0;
++			ioatdca->requester_count--;
++			return i;
++		}
++	}
++	return -ENODEV;
 +}
-+EXPORT_SYMBOL(dca_remove_requester);
 +
-+u8 dca_get_tag(int cpu)
++static u8 ioat_dca_get_tag(struct dca_provider *dca, int cpu)
 +{
-+	if (!global_dca)
-+		return -ENODEV;
-+	return global_dca->ops->get_tag(global_dca, cpu);
-+}
-+EXPORT_SYMBOL(dca_get_tag);
++	struct ioat_dca_priv *ioatdca = dca_priv(dca);
++	int i, apic_id, bit, value;
++	u8 entry, tag;
 +
-+struct dca_provider *alloc_dca_provider(struct dca_ops *ops, int priv_size)
++	tag = 0;
++	apic_id = cpu_physical_id(cpu);
++
++	for (i = 0; i < IOAT_TAG_MAP_LEN; i++) {
++		entry = ioatdca->tag_map[i];
++		if (entry & DCA_TAG_MAP_VALID) {
++			bit = entry & ~DCA_TAG_MAP_VALID;
++			value = (apic_id & (1 << bit)) ? 1 : 0;
++		} else {
++			value = entry ? 1 : 0;
++		}
++		tag |= (value << i);
++	}
++	return tag;
++}
++
++static struct dca_ops ioat_dca_ops = {
++	.add_requester		= ioat_dca_add_requester,
++	.remove_requester	= ioat_dca_remove_requester,
++	.get_tag		= ioat_dca_get_tag,
++};
++
++
++struct dca_provider *ioat_dca_init(struct pci_dev *pdev, void __iomem *iobase)
 +{
 +	struct dca_provider *dca;
-+	int alloc_size;
++	struct ioat_dca_priv *ioatdca;
++	u8 *tag_map = NULL;
++	int i;
++	int err;
 +
-+	alloc_size = (sizeof(*dca) + priv_size);
-+	dca = kzalloc(alloc_size, GFP_KERNEL);
++	if (!system_has_dca_enabled())
++		return NULL;
++
++	/* I/OAT v1 systems must have a known tag_map to support DCA */
++	switch (pdev->vendor) {
++	case PCI_VENDOR_ID_INTEL:
++		switch (pdev->device) {
++		case PCI_DEVICE_ID_INTEL_IOAT:
++			tag_map = ioat_tag_map_BNB;
++			break;
++		case PCI_DEVICE_ID_INTEL_IOAT_CNB:
++			tag_map = ioat_tag_map_CNB;
++			break;
++		case PCI_DEVICE_ID_INTEL_IOAT_SCNB:
++			tag_map = ioat_tag_map_SCNB;
++			break;
++		}
++		break;
++	case PCI_VENDOR_ID_UNISYS:
++		switch (pdev->device) {
++		case PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR:
++			tag_map = ioat_tag_map_UNISYS;
++			break;
++		}
++		break;
++	}
++	if (tag_map == NULL)
++		return NULL;
++
++	dca = alloc_dca_provider(&ioat_dca_ops,
++			sizeof(*ioatdca) +
++			(sizeof(struct ioat_dca_slot) * IOAT_DCA_MAX_REQ));
 +	if (!dca)
 +		return NULL;
-+	dca->ops = ops;
++
++	ioatdca = dca_priv(dca);
++	ioatdca->max_requesters = IOAT_DCA_MAX_REQ;
++
++	ioatdca->dca_base = iobase + 0x54;
++
++	/* copy over the APIC ID to DCA tag mapping */
++	for (i = 0; i < IOAT_TAG_MAP_LEN; i++)
++		ioatdca->tag_map[i] = tag_map[i];
++
++	err = register_dca_provider(dca, &pdev->dev);
++	if (err) {
++		free_dca_provider(dca);
++		return NULL;
++	}
 +
 +	return dca;
 +}
-+EXPORT_SYMBOL(alloc_dca_provider);
 +
-+void free_dca_provider(struct dca_provider *dca)
-+{
-+	kfree(dca);
-+}
-+EXPORT_SYMBOL(free_dca_provider);
-+
-+static BLOCKING_NOTIFIER_HEAD(dca_provider_chain);
-+
-+int register_dca_provider(struct dca_provider *dca, struct device *dev)
-+{
-+	int err;
-+
-+	if (global_dca)
-+		return -EEXIST;
-+	err = dca_sysfs_add_provider(dca, dev);
-+	if (err)
-+		return err;
-+	global_dca = dca;
-+	blocking_notifier_call_chain(&dca_provider_chain,
-+				     DCA_PROVIDER_ADD, NULL);
-+	return 0;
-+}
-+EXPORT_SYMBOL(register_dca_provider);
-+
-+void unregister_dca_provider(struct dca_provider *dca)
-+{
-+	if (!global_dca)
-+		return;
-+	blocking_notifier_call_chain(&dca_provider_chain,
-+				     DCA_PROVIDER_REMOVE, NULL);
-+	global_dca = NULL;
-+	dca_sysfs_remove_provider(dca);
-+}
-+EXPORT_SYMBOL(unregister_dca_provider);
-+
-+void dca_register_notify(struct notifier_block *nb)
-+{
-+	blocking_notifier_chain_register(&dca_provider_chain, nb);
-+}
-+EXPORT_SYMBOL(dca_register_notify);
-+
-+void dca_unregister_notify(struct notifier_block *nb)
-+{
-+	blocking_notifier_chain_unregister(&dca_provider_chain, nb);
-+}
-+EXPORT_SYMBOL(dca_unregister_notify);
-+
-+static int __init dca_init(void)
-+{
-+	int err;
-+
-+	spin_lock_init(&dca_lock);
-+
-+	err = dca_sysfs_init();
-+	if (err)
-+		return err;
-+	return 0;
-+}
-+
-+static void __exit dca_exit(void)
-+{
-+	dca_sysfs_exit();
-+}
-+
-+module_init(dca_init);
-+module_exit(dca_exit);
-+
-diff --git a/drivers/dca/dca-sysfs.c b/drivers/dca/dca-sysfs.c
-new file mode 100644
-index 0000000..24a263b
---- /dev/null
-+++ b/drivers/dca/dca-sysfs.c
-@@ -0,0 +1,88 @@
-+#include <linux/kernel.h>
-+#include <linux/spinlock.h>
-+#include <linux/device.h>
-+#include <linux/idr.h>
-+#include <linux/kdev_t.h>
-+#include <linux/err.h>
-+#include <linux/dca.h>
-+
-+static struct class *dca_class;
-+static struct idr dca_idr;
-+static spinlock_t dca_idr_lock;
-+
-+int dca_sysfs_add_req(struct dca_provider *dca, struct device *dev, int slot)
-+{
-+	struct class_device *cd;
-+
-+	cd = class_device_create(dca_class, dca->cd, MKDEV(0, slot + 1),
-+				 dev, "requester%d", slot);
-+	if (IS_ERR(cd))
-+		return PTR_ERR(cd);
-+	return 0;
-+}
-+
-+void dca_sysfs_remove_req(struct dca_provider *dca, int slot)
-+{
-+	class_device_destroy(dca_class, MKDEV(0, slot + 1));
-+}
-+
-+int dca_sysfs_add_provider(struct dca_provider *dca, struct device *dev)
-+{
-+	struct class_device *cd;
-+	int err = 0;
-+
-+idr_try_again:
-+	if (!idr_pre_get(&dca_idr, GFP_KERNEL))
-+		return -ENOMEM;
-+	spin_lock(&dca_idr_lock);
-+	err = idr_get_new(&dca_idr, dca, &dca->id);
-+	spin_unlock(&dca_idr_lock);
-+	switch (err) {
-+	case 0:
-+		break;
-+	case -EAGAIN:
-+		goto idr_try_again;
-+	default:
-+		return err;
-+	}
-+
-+	cd = class_device_create(dca_class, NULL, MKDEV(0, 0),
-+				 dev, "dca%d", dca->id);
-+	if (IS_ERR(cd)) {
-+		spin_lock(&dca_idr_lock);
-+		idr_remove(&dca_idr, dca->id);
-+		spin_unlock(&dca_idr_lock);
-+		return PTR_ERR(cd);
-+	}
-+	dca->cd = cd;
-+	return 0;
-+}
-+
-+void dca_sysfs_remove_provider(struct dca_provider *dca)
-+{
-+	class_device_unregister(dca->cd);
-+	dca->cd = NULL;
-+	spin_lock(&dca_idr_lock);
-+	idr_remove(&dca_idr, dca->id);
-+	spin_unlock(&dca_idr_lock);
-+}
-+
-+int __init dca_sysfs_init(void)
-+{
-+	idr_init(&dca_idr);
-+	spin_lock_init(&dca_idr_lock);
-+
-+	dca_class = class_create(THIS_MODULE, "dca");
-+	if (IS_ERR(dca_class)) {
-+		idr_destroy(&dca_idr);
-+		return PTR_ERR(dca_class);
-+	}
-+	return 0;
-+}
-+
-+void __exit dca_sysfs_exit(void)
-+{
-+	class_destroy(dca_class);
-+	idr_destroy(&dca_idr);
-+}
-+
-diff --git a/include/linux/dca.h b/include/linux/dca.h
-new file mode 100644
-index 0000000..83eaecc
---- /dev/null
-+++ b/include/linux/dca.h
-@@ -0,0 +1,47 @@
-+#ifndef DCA_H
-+#define DCA_H
-+/* DCA Provider API */
-+
-+/* DCA Notifier Interface */
-+void dca_register_notify(struct notifier_block *nb);
-+void dca_unregister_notify(struct notifier_block *nb);
-+
-+#define DCA_PROVIDER_ADD     0x0001
-+#define DCA_PROVIDER_REMOVE  0x0002
-+
-+struct dca_provider {
-+	struct dca_ops		*ops;
-+	struct class_device 	*cd;
-+	int			 id;
-+};
-+
-+struct dca_ops {
-+	int	(*add_requester)    (struct dca_provider *, struct device *);
-+	int	(*remove_requester) (struct dca_provider *, struct device *);
-+	u8	(*get_tag)	    (struct dca_provider *, int cpu);
-+};
-+
-+struct dca_provider *alloc_dca_provider(struct dca_ops *ops, int priv_size);
-+void free_dca_provider(struct dca_provider *dca);
-+int register_dca_provider(struct dca_provider *dca, struct device *dev);
-+void unregister_dca_provider(struct dca_provider *dca);
-+
-+static inline void *dca_priv(struct dca_provider *dca)
-+{
-+	return (void *)dca + sizeof(struct dca_provider);
-+}
-+
-+/* Requester API */
-+int dca_add_requester(struct device *dev);
-+int dca_remove_requester(struct device *dev);
-+u8 dca_get_tag(int cpu);
-+
-+/* internal stuff */
-+int __init dca_sysfs_init(void);
-+void __exit dca_sysfs_exit(void);
-+int dca_sysfs_add_provider(struct dca_provider *dca, struct device *dev);
-+void dca_sysfs_remove_provider(struct dca_provider *dca);
-+int dca_sysfs_add_req(struct dca_provider *dca, struct device *dev, int slot);
-+void dca_sysfs_remove_req(struct dca_provider *dca, int slot);
-+
-+#endif /* DCA_H */
+diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
+index 2b499d5..bab2a72 100644
+--- a/drivers/dma/ioatdma.h
++++ b/drivers/dma/ioatdma.h
+@@ -133,9 +133,11 @@ struct ioat_desc_sw {
+ #if defined(CONFIG_INTEL_IOATDMA) || defined(CONFIG_INTEL_IOATDMA_MODULE)
+ struct ioatdma_device *ioat_dma_probe(struct pci_dev *, void __iomem *);
+ void ioat_dma_remove(struct ioatdma_device *device);
++struct dca_provider *ioat_dca_init(struct pci_dev *, void __iomem *);
+ #else
+ #define ioat_dma_probe(pdev, io)                NULL
+ #define ioat_dma_remove(dev)            do { } while (0)
++#define ioat_dca_init(pdev, io)			NULL
+ #endif
+ 
+ #endif /* IOATDMA_H */
