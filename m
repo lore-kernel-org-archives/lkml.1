@@ -1,88 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763197AbXGTMPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763172AbXGTMTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763197AbXGTMPg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 08:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbXGTMPW
+	id S1763172AbXGTMTF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 08:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759298AbXGTMSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 08:15:22 -0400
-Received: from ozlabs.org ([203.10.76.45]:49248 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754299AbXGTMPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 08:15:19 -0400
-Subject: [PATCH 3/3] lguest: override sched_clock
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-In-Reply-To: <1184933576.10380.299.camel@localhost.localdomain>
-References: <1184933473.10380.296.camel@localhost.localdomain>
-	 <1184933576.10380.299.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 20 Jul 2007 22:15:01 +1000
-Message-Id: <1184933701.10380.303.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 20 Jul 2007 08:18:51 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:32940 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756950AbXGTMSu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 08:18:50 -0400
+Message-ID: <46A0A7C2.3090006@googlemail.com>
+Date: Fri, 20 Jul 2007 14:17:06 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] IP_VS should depend on EXPERIMENTAL ?
+References: <46A0A01A.7030403@googlemail.com> <Pine.LNX.4.64.0707200753300.10966@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0707200753300.10966@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guests currently use the default scheduler clock: this means they
-always use jiffies even if TSC is actually available.  It doesn't make
-any noticeable difference here, but it's a better thing to do.
+Robert P. J. Day wrote:
+> On Fri, 20 Jul 2007, Gabriel C wrote:
+> 
+>> Hi,
+>>
+>> IP_VS has :
+>>
+>> ..
+>>
+>> tristate "IP virtual server support (EXPERIMENTAL)"
+>>
+>> ..
+>>
+>> but it does not depend on EXPERIMENTAL.
+>>
+>>
+>> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+>>
+>> ---
+>>
+>>  net/ipv4/ipvs/Kconfig |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/net/ipv4/ipvs/Kconfig b/net/ipv4/ipvs/Kconfig
+>> index 09d0c3f..3c594ec 100644
+>> --- a/net/ipv4/ipvs/Kconfig
+>> +++ b/net/ipv4/ipvs/Kconfig
+>> @@ -3,7 +3,7 @@
+>>  #
+>>  menuconfig IP_VS
+>>  	tristate "IP virtual server support (EXPERIMENTAL)"
+>> -	depends on NETFILTER
+>> +	depends on NETFILTER && EXPERIMENTAL
+>>  	---help---
+>>  	  IP Virtual Server support will let you build a high-performance
+>>  	  virtual server based on cluster of two or more real servers. This
+> 
+> there's maturity-level inconsistency like that in a few places, like
+> when stuff is tagged as EXPERIMENTAL, but labelled as OBSOLETE:
+> 
+[ a lot examples ]
 
-Also remove commented-out asm/sched-clock.h from -mm tree.
+I know that and there are a lot more things depending on 'EXPERIMENTAL' and not having 
+EXPERIMENTAL visible all over the tree but that patch I've made for the _net_ part got 
+NACK'ed while your maturity idea and I rm -rf'ed all the other.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/lguest/lguest.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+This one has a missing depends on EXPERIMENTAL while saying it is.
 
-diff -r d9973bf15010 drivers/lguest/lguest.c
---- a/drivers/lguest/lguest.c	Fri Jul 20 21:40:49 2007 +1000
-+++ b/drivers/lguest/lguest.c	Fri Jul 20 22:08:10 2007 +1000
-@@ -39,7 +39,6 @@
- #include <asm/e820.h>
- #include <asm/mce.h>
- #include <asm/io.h>
--//#include <asm/sched-clock.h>
- 
- /* Declarations for definitions in lguest_guest.S */
- extern char lguest_noirq_start[], lguest_noirq_end[];
-@@ -57,6 +56,7 @@ struct lguest_data lguest_data = {
- 	.blocked_interrupts = { 1 }, /* Block timer interrupts */
- };
- struct lguest_device_desc *lguest_devices;
-+static cycle_t clock_base;
- 
- static enum paravirt_lazy_mode lazy_mode;
- static void lguest_lazy_mode(enum paravirt_lazy_mode mode)
-@@ -363,6 +363,11 @@ static struct clocksource lguest_clock =
- 	.read		= lguest_clock_read,
- };
- 
-+static unsigned long long lguest_sched_clock(void)
-+{
-+	return cyc2ns(&lguest_clock, lguest_clock_read() - clock_base);
-+}
-+
- /* We also need a "struct clock_event_device": Linux asks us to set it to go
-  * off some time in the future.  Actually, James Morris figured all this out, I
-  * just applied the patch. */
-@@ -439,6 +444,7 @@ static void lguest_time_init(void)
- 		lguest_clock.mult = (((u64)NSEC_PER_SEC<<8)/ACTHZ) << 8;
- 		lguest_clock.mask = CLOCKSOURCE_MASK(32);
- 	}
-+	clock_base = lguest_clock_read();
- 	clocksource_register(&lguest_clock);
- 
- 	/* We can't set cpumask in the initializer: damn C limitations! */
-@@ -584,6 +590,7 @@ __init void lguest_init(void *boot)
- 	paravirt_ops.time_init = lguest_time_init;
- 	paravirt_ops.set_lazy_mode = lguest_lazy_mode;
- 	paravirt_ops.wbinvd = lguest_wbinvd;
-+	paravirt_ops.sched_clock = lguest_sched_clock;
- 
- 	hcall(LHCALL_LGUEST_INIT, __pa(&lguest_data), 0, 0);
- 
+So *could* we please stop this maturity stuff for now ? I don't see it in .23 nor .24 if at all.
 
+And even you get this kind changes for .24 almost a sed line will cleanup the whole tree from :
 
+... "FOO blah (EXPERIMENTAL)" ...
+
+so what is your problem ?
+
+> rday
+
+Gabriel
