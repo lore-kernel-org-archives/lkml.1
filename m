@@ -1,130 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940478AbXGTQEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940398AbXGTQDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940478AbXGTQEB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939188AbXGTQDv
+	id S940398AbXGTQDR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932355AbXGTQDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:03:51 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:62818 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932355AbXGTQDu (ORCPT
+	Fri, 20 Jul 2007 12:03:01 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44140 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934489AbXGTQC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:03:50 -0400
-Date: Fri, 20 Jul 2007 12:03:47 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Andi Kleen <ak@suse.de>
-Cc: jeremy@goop.org, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [3/11] x86: Stop MCEs and NMIs during code patching
-Message-ID: <20070720160347.GB1960@Krystal>
-References: <20070720532.949522000@suse.de> <20070720153247.75CAD14E7C@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070720153247.75CAD14E7C@wotan.suse.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:01:33 up 3 days, 10:35,  3 users,  load average: 0.36, 0.23, 0.19
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 20 Jul 2007 12:02:58 -0400
+Date: Fri, 20 Jul 2007 09:02:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/6] compacting file_ra_state
+In-Reply-To: <384933499.09699@ustc.edu.cn>
+Message-ID: <alpine.LFD.0.999.0707200858270.27249@woody.linux-foundation.org>
+References: <20070720100740.106917381@mail.ustc.edu.cn> <384926279.42287@ustc.edu.cn>
+ <p73y7hbux4d.fsf@bingen.suse.de> <384933499.09699@ustc.edu.cn>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen (ak@suse.de) wrote:
 
-> Index: linux/arch/x86_64/kernel/nmi.c
-> ===================================================================
-> --- linux.orig/arch/x86_64/kernel/nmi.c
-> +++ linux/arch/x86_64/kernel/nmi.c
-> @@ -384,11 +384,14 @@ int __kprobes nmi_watchdog_tick(struct p
->  	return rc;
->  }
->  
-> +static unsigned ignore_nmis;
-> +
->  asmlinkage __kprobes void do_nmi(struct pt_regs * regs, long error_code)
->  {
->  	nmi_enter();
->  	add_pda(__nmi_count,1);
-> -	default_do_nmi(regs);
-> +	if (!ignore_nmis) 
-> +		default_do_nmi(regs);
->  	nmi_exit();
->  }
->  
-> @@ -401,6 +404,18 @@ int do_nmi_callback(struct pt_regs * reg
->  	return 0;
->  }
->  
-> +void stop_nmi(void)
-> +{
-> +	ignore_nmis++;
-> +	acpi_nmi_disable();
-> +}
 
-I would do:
+On Fri, 20 Jul 2007, Fengguang Wu wrote:
 
-acpi_nmi_disable();
-ignore_nmis++;
+> On Fri, Jul 20, 2007 at 01:34:42PM +0200, Andi Kleen wrote:
+> > 
+> > This would add a new limit to 64bit architectures.  Surely keeping
+> > start at pgoff_t will not be a big issue? The other fields can be
+> > 32bit.
+> 
+> Yeah, it counts for about 4MB memory for 1M opened files.
 
-Instead, so we minimize the chances to have to drop a do_nmi.
+I'd suggest keeping "start" as pgoff_t, and doing what Peter Zijlstra 
+suggested about prev_offset / prev_index and turning that combination into 
+a "loff_t". The latter will cause some more 64-bit operations, but by now 
+I think we can start thinking of 64 bits as the norm, and it will be more 
+logical, methinks.
 
-> +
-> +void restart_nmi(void)
-> +{
-> +	ignore_nmis--;
-> +	acpi_nmi_enable();
-> +}
-> +
->  #ifdef CONFIG_SYSCTL
->  
-...
->  #endif /* ASM_NMI_H */
-> Index: linux/arch/i386/kernel/traps.c
-> ===================================================================
-> --- linux.orig/arch/i386/kernel/traps.c
-> +++ linux/arch/i386/kernel/traps.c
-> @@ -774,6 +774,8 @@ static __kprobes void default_do_nmi(str
->  	reassert_nmi();
->  }
->  
-> +static int ignore_nmis;
-> +
->  fastcall __kprobes void do_nmi(struct pt_regs * regs, long error_code)
->  {
->  	int cpu;
-> @@ -784,11 +786,24 @@ fastcall __kprobes void do_nmi(struct pt
->  
->  	++nmi_count(cpu);
->  
-> -	default_do_nmi(regs);
-> +	if (!ignore_nmis)
-> +		default_do_nmi(regs);
->  
->  	nmi_exit();
->  }
->  
-> +void stop_nmi(void)
-> +{
-> +	ignore_nmis++;
-> +	acpi_nmi_disable();
-> +}
-> +
+Then, when/if we add a config option to turn pgoff_t into a 32-bit entry 
+for us normal people who think that 16TB is plenty (and would rather have 
+smaller and faster harddisks than go beyond it), that will also solve the 
+"start" issue.
 
-Same here, I would swap the two.
+Does that sound like a plan?
 
-> +void restart_nmi(void)
-> +{
-> +	ignore_nmis--;
-> +	acpi_nmi_enable();
-> +}
-> +
+So I'm going to ignore the current series in the hopes that we'll have a 
+new one soon enough.
 
-Besides that, it looks good.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+			Linus
