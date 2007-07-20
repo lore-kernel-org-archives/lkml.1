@@ -1,107 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761441AbXGTNG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759133AbXGTNSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761441AbXGTNG1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbXGTNGT
+	id S1759133AbXGTNSb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 09:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbXGTNSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:06:19 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:40262 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756126AbXGTNGS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:06:18 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 20 Jul 2007 09:04:20 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] IP_VS should depend on EXPERIMENTAL ?
-In-Reply-To: <46A0AB44.70009@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0707200846170.13750@localhost.localdomain>
-References: <46A0A01A.7030403@googlemail.com> <Pine.LNX.4.64.0707200753300.10966@localhost.localdomain>
- <46A0A7C2.3090006@googlemail.com> <Pine.LNX.4.64.0707200818010.12187@localhost.localdomain>
- <46A0AB44.70009@googlemail.com>
+	Fri, 20 Jul 2007 09:18:23 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6178 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754590AbXGTNSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 09:18:23 -0400
+Date: Fri, 20 Jul 2007 15:18:12 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] splice: fix bad unlock_page() in error case
+Message-ID: <20070720131812.GC11657@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007, Gabriel C wrote:
+Hi,
 
-> Robert P. J. Day wrote:
+If add_to_page_cache_lru() fails, the page will not be locked. But
+splice jumps to an error path that does a page release and unlock,
+causing a BUG() in unlock_page().
 
-> > this has *nothing* to do with the aforementioned maturity levels.
-> > i understand entirely the inconsistency above.  what i'm
-> > suggesting is that it might very well be more appropriate to *drop
-> > the dependency* rather than munge the prompt to add the qualifier.
->
-> This is a thing the author/maintainer/subsystem maintainer should and need do.
->
-> They know when something is not EXPERIMENTAL anymore.
+Fix this by adding one more label that just releases the page. This bug
+was actually triggered on EL5 by gurudas pai <gurudas.pai@oracle.com>
+using fio.
 
-agreed (sort of).  all i'm saying (and after this, i'll shut the heck
-up about it) is that, if you find a Kconfig entry of the form:
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
-config FUBAR
-	prompt "whatever"
-	depends on ... && EXPERIMENTAL
+diff --git a/fs/splice.c b/fs/splice.c
+index 099b831..4960085 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -628,7 +628,7 @@ find_page:
+ 		ret = add_to_page_cache_lru(page, mapping, index,
+ 					    GFP_KERNEL);
+ 		if (unlikely(ret))
+-			goto out;
++			goto out_release;
+ 	}
+ 
+ 	ret = mapping->a_ops->prepare_write(file, page, offset, offset+this_len);
+@@ -684,8 +684,9 @@ find_page:
+ 	 */
+ 	mark_page_accessed(page);
+ out:
+-	page_cache_release(page);
+ 	unlock_page(page);
++out_release:
++	page_cache_release(page);
+ out_ret:
+ 	return ret;
+ }
 
-and you want to make that selection consistent, you have two
-possibilities:
+-- 
+Jens Axboe
 
-1) add "(EXPERIMENTAL)" to the prompt to match the dependency, or
-2) drop the dependency on EXPERIMENTAL to match the prompt
-
-  i contend that, *for now*, it's a better investment in time to find
-entries like that that are *clearly* not experimental any more, and
-drop the dependency.  not only will that make it consistent, but it's
-unlikely that you'll ever have to *revert* that decision.
-
-  OTOH, it's quite possible that, after you add the prompt suffix of
-"(EXPERIMENTAL)" for consistency, the feature maintainer might come by
-tomorrow and say something like, "nah, that feature's been around for
-years, it's as stable as it gets," and will undo the patch you just
-made, wasting your time and effort.
-
-  lastly, i'm not convinced that it's *only* the feature maintainer
-that can make that decision.  surely, there's enough clever people
-here who can look at any given feature and say, "yeah, i've been using
-that for years, it's rock solid, it's stupid to keep that dependent on
-EXPERIMENTAL."
-
-  all i'm saying is, if you want to put some time in here, it's better
-invested in *removing* what are clearly ridiculous dependencies on
-EXPERIMENTAL, rather than *adding* even more of that labelling to the
-tree.
-
-rday
-
-p.s.  even if a given Kconfig entry *is* consistent, as in:
-
-config SNAFU
-	bool "... (EXPERIMENTAL)"
-	depends on ... && EXPERIMENTAL
-	...
-
-  it's clear that there's a pile of *that* stuff for which all
-references to EXPERIMENTAL can be dropped.  all in all, given the
-possible cleanup here, i'm thinking that going in and *adding* more
-EXPERIMENTAL clutter to the Kconfig files is going in exactly the
-wrong direction.
-
---
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
