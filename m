@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbXGTV2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935400AbXGTV3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760093AbXGTV2W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934302AbXGTV1n
+	id S935400AbXGTV3l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXGTV3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:27:43 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47366 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933057AbXGTV1m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:27:42 -0400
-Date: Fri, 20 Jul 2007 23:27:41 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Create clflush() inline, remove hardcoded wbinvd
-Message-ID: <20070720212741.GB565@one.firstfloor.org>
-References: <1184885740.16311.19.camel@t60> <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org>
+	Fri, 20 Jul 2007 17:29:31 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60836 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751533AbXGTV3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 17:29:30 -0400
+Date: Fri, 20 Jul 2007 23:30:44 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       sparc@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 6/7] sparc64: fix section mismatch warning in pci_sunv4
+Message-ID: <20070720213044.GE25064@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 02:19:58PM -0700, H. Peter Anvin wrote:
-> Create an inline function for clflush(), with the proper arguments,
-> and use it instead of hard-coding the instruction.
-> 
-> This also removes one instance of hard-coded wbinvd, based on a patch
-> by Bauder de Oliveira Costa.
+Fix following warning:
+WARNING: vmlinux.o(.text+0x3cf50): Section mismatch: reference to .init.text:page_in_phys_avail (between 'pci_sun4v_pbm_init' and 'sun4v_pci_init')
 
-I don't see much sense in it. CLFLUSH is not priviledged, paravirt
-doesn't need to change and this adds just an unnecessary layer of abstraction.
+pci_sun4v_pbm_init and sun4v_pci_init was only used under __init
+context so declare them _init.
 
--Andi
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/sparc64/kernel/pci_sun4v.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/sparc64/kernel/pci_sun4v.c b/arch/sparc64/kernel/pci_sun4v.c
+index 6b3fe2c..639cf06 100644
+--- a/arch/sparc64/kernel/pci_sun4v.c
++++ b/arch/sparc64/kernel/pci_sun4v.c
+@@ -1129,7 +1129,7 @@ static void pci_sun4v_msi_init(struct pci_pbm_info *pbm)
+ }
+ #endif /* !(CONFIG_PCI_MSI) */
+ 
+-static void pci_sun4v_pbm_init(struct pci_controller_info *p, struct device_node *dp, u32 devhandle)
++static void __init pci_sun4v_pbm_init(struct pci_controller_info *p, struct device_node *dp, u32 devhandle)
+ {
+ 	struct pci_pbm_info *pbm;
+ 
+@@ -1163,7 +1163,7 @@ static void pci_sun4v_pbm_init(struct pci_controller_info *p, struct device_node
+ 	pci_sun4v_msi_init(pbm);
+ }
+ 
+-void sun4v_pci_init(struct device_node *dp, char *model_name)
++void __init sun4v_pci_init(struct device_node *dp, char *model_name)
+ {
+ 	static int hvapi_negotiated = 0;
+ 	struct pci_controller_info *p;
+-- 
+1.5.1.rc3.g84b7-dirty
+
