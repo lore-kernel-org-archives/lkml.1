@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762408AbXGTNa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXGTNg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762408AbXGTNa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756496AbXGTNav
+	id S1762041AbXGTNg7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 09:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbXGTNgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:30:51 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:55046 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755335AbXGTNau (ORCPT
+	Fri, 20 Jul 2007 09:36:51 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:52468 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756048AbXGTNgv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:30:50 -0400
-Subject: Re: drivers/base/core.c broken for non-CONFIG_HOTPLUG
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070720005958.47cd7c9c.akpm@linux-foundation.org>
-References: <20070720070106.GH1678@pengutronix.de>
-	 <20070720005958.47cd7c9c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 20 Jul 2007 14:06:19 +0200
-Message-Id: <1184933179.3545.12.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19F+5Qz4wyEuVy1VXgjcr0zsp/MFBLVO6MgKL5
- wGSZs8EwaxxnKtjaXOXLnky0Q6tnUADEvCV8RdXvoPB44P8Q3I
- RxzUpNgRvyhYtBUACGTAg8L5tOkhNTC
+	Fri, 20 Jul 2007 09:36:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rUlA9WgYrStMOaJGC+hZgCZ/mDUrQ7okRxE9fNt3hM8tPqcjo4/VeCJSMxUszpiOJhIhTBG1hj7yjoR0fUrOMMi4By8EgE114nP26Y6l0OS5pkFn1juv2/kjRJWQD8wenqih+RM2hQ8wAYEdHm5MmS6o5A8jgSVJLVlUZ45Z7fc=
+Message-ID: <a781481a0707200636s353c8a64l5564d5f81cc7f266@mail.gmail.com>
+Date: Fri, 20 Jul 2007 19:06:48 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "David CHANIAL" <david.ml@euro-web.fr>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
+Cc: "Neil Brown" <neilb@suse.de>,
+       "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200707201533.14517.david.ml@euro-web.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <200707160638.15750.david.ml@euro-web.fr>
+	 <18080.22813.143226.671265@notabene.brown>
+	 <a781481a0707200013g5c2ce008ka63e18f775664984@mail.gmail.com>
+	 <200707201533.14517.david.ml@euro-web.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-20 at 00:59 -0700, Andrew Morton wrote:
-> On Fri, 20 Jul 2007 09:01:06 +0200 Robert Schwebel <r.schwebel@pengutronix.de> wrote:
-> 
-> > You add and use
-> > 
-> > 	extern const char *kobject_actions[];
-> 
-> Added it in a .c file, too.  Even checkpatch.pl knows that
-> was wrong.
+On 7/20/07, David CHANIAL <david.ml@euro-web.fr> wrote:
+> Le vendredi 20 juillet 2007 09:13, Satyam Sharma a écrit:
+> > David, please try this and let us know if it solves your problems.
+>
+> How to ?
+> Should i have to patch kernel tree myself ? on 2.6.22.1 ?
 
-The kernel is doing that all over the place for global symbols that are
-not meant to be used out of a "private" context or where a "private"
-header file of a subsystem doesn't exist.
+Yes, you can apply the patch Neil just sent to your kernel,
+re-build, and test that.
 
-I can change that, if this isn't the way to do it?
-
-Thanks,
-Kay
-
+Thanks.
