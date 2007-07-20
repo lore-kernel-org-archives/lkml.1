@@ -1,91 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761927AbXGTGlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbXGTGo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761927AbXGTGlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 02:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbXGTGlk
+	id S1757199AbXGTGo4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 02:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbXGTGor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 02:41:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40778 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751338AbXGTGlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 02:41:39 -0400
-From: Neil Brown <neilb@suse.de>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Date: Fri, 20 Jul 2007 16:41:33 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 20 Jul 2007 02:44:47 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:57911 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752614AbXGTGoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 02:44:46 -0400
+Subject: Re: [PATCH 1/1][RESEND] Driver for the Atmel on-chip SSC on AT32AP
+	and AT91.
+From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+To: Andrew Victor <andrew@sanpeople.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       kernel-avr32 <kernel@avr32linux.org>,
+       David Brownell <david-b@pacbell.net>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Hans-Christian Egtvedt <egtvedt@samfundet.no>
+In-Reply-To: <1184833759.15007.33.camel@fuzzie.sanpeople.com>
+References: <469E6C00.3060506@atmel.com>
+	 <1184833759.15007.33.camel@fuzzie.sanpeople.com>
+Content-Type: text/plain
+Date: Fri, 20 Jul 2007 08:44:28 +0200
+Message-Id: <1184913868.16760.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.5 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18080.22813.143226.671265@notabene.brown>
-Cc: "David CHANIAL" <david.ml@euro-web.fr>,
-       "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
-In-Reply-To: message from Satyam Sharma on Thursday July 19
-References: <200707160638.15750.david.ml@euro-web.fr>
-	<18076.42052.961808.528867@notabene.brown>
-	<a781481a0707190711s58d7ab24xa53c6975d4172597@mail.gmail.com>
-	<a781481a0707190811y725ac900m13e9b6a02eab7b0@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday July 19, satyam.sharma@gmail.com wrote:
-> Ugh, not a good day for me today ... my earlier conclusion was right,
-> but not the reasoning behind it ... hopefully this time I'll do better :-)
 
-
-Looks good.  Thanks for your helpful analysis.
-
+On Thu, 2007-07-19 at 10:29 +0200, Andrew Victor wrote:
+> hi Hans-Christian,
 > 
-> 0x34 bytes is the offset of ex_uuid in struct fh_export.
-> %ecx == 0, which means ex_uuid was NULL.
+> > This driver is used in the ALSA sound driver for the AT73C213 external DAC on
+> > the ATSTK1000 development board for AVR32. This sound driver will be submitted
+> > soon.
+> 
+> Seems to be more of an SCC unit allocation library, but OK.
 
-Yup. That shouldn't happen, but I can see that it is possible.
+Correct, makes it easier for other modules to request the SSC peripheral
+and get access to the registers and irq.
 
-There was another case were ex_uuid could conceivably be referenced
-while NULL that I fixed a little while ago.  Looks like I need to fix
-this one too.  Something like the following.
+The AT73C213 sound driver was submitted to the alsa-dev list.
 
-Thanks,
-NeilBrown
+> I've also forwarded a copy of the patch to Frank Mandarino
+> <fmandarino@endrelia.com> for his comments.  He maintains the current
+> AT91 SSC & ALSA support.  <sound/soc/at91/>
+>
+> > +/* SSC Receive Clock Mode Register */
+> > +#define SSC_RCMR			0x00000010
+> > +#define SSC_RCMR_CKG_SIZE			 2
+> > +#define SSC_RCMR_CKG_OFFSET			 6
+> > +#define SSC_RCMR_CKI_SIZE			 1
+> > +#define SSC_RCMR_CKI_OFFSET			 5
+> > +#define SSC_RCMR_CKO_SIZE			 3
+> 
+> I'm personally not a fan of the register & bit definition format the
+> AVR32 driver seem to use.
+> Can we not rather move the existing include/asm-arm/arch-at91/at91_ssc.h
+> to somewhere shared as atmel_ssc.h ?
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+I disagree, by using the model above the user does not have to know the
+bit field offsets as they will need with the defines in
+include/asm-arm/arch-at91/at91_ssc.h.
 
-### Diffstat output
- ./fs/nfsd/nfsfh.c |   20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+Just an example from sound/soc/at91/at91-ssc.c
 
-diff .prev/fs/nfsd/nfsfh.c ./fs/nfsd/nfsfh.c
---- .prev/fs/nfsd/nfsfh.c	2007-07-13 17:41:48.000000000 +1000
-+++ ./fs/nfsd/nfsfh.c	2007-07-20 12:53:36.000000000 +1000
-@@ -566,13 +566,23 @@ enum fsid_source fsid_source(struct svc_
- 	case FSID_DEV:
- 	case FSID_ENCODE_DEV:
- 	case FSID_MAJOR_MINOR:
--		return FSIDSOURCE_DEV;
-+		if (fhp->fh_export->ex_dentry->d_inode->i_sb->s_type->fs_flags
-+		    & FS_REQUIRES_DEV)
-+			return FSIDSOURCE_DEV;
-+		break;
- 	case FSID_NUM:
--		return FSIDSOURCE_FSID;
--	default:
- 		if (fhp->fh_export->ex_flags & NFSEXP_FSID)
- 			return FSIDSOURCE_FSID;
--		else
--			return FSIDSOURCE_UUID;
-+		break;
-+	default:
-+		break;
- 	}
-+	/* either a UUID type filehandle, or the filehandle doesn't
-+	 * match the export.
-+	 */
-+	if (fhp->fh_export->ex_flags & NFSEXP_FSID)
-+		return FSIDSOURCE_FSID;
-+	if (fhp->fh_export->ex_uuid)
-+		return FSIDSOURCE_UUID;
-+	return FSIDSOURCE_DEV;
- }
+rcmr =	  (( ssc_p->rcmr_period		<< 24) & AT91_SSC_PERIOD)
+			| (( 1				<< 16) & AT91_SSC_STTDLY)
+			| (( AT91_SSC_START_FALLING_RF	     ) & AT91_SSC_START)
+			| (( AT91_SSC_CK_RISING		     ) & AT91_SSC_CKI)
+			| (( AT91_SSC_CKO_NONE		     ) & AT91_SSC_CKO)
+			| (( AT91_SSC_CKS_DIV		     ) & AT91_SSC_CKS);
+
+Would with the header style for atmel-ssc be:
+
+rcmr = SSC_BF(RCMR_PERIOD, ssc_p->rcmr_period)
+		| SSC_BF(RCMR_STTDLY, 1)
+		| SSC_BF(RCMR_START, 4)
+		| SSC_BF(RCMR_CKI, 1)
+		| SSC_BF(RCMR_CKO, 0)
+		| SSC_BF(RCMR_CKS, 0);
+
+I find the latter more readable and compact, the user also does not need
+to know the offset of the different bit-fields.
+
+I agree that describing names for the different bit-fields is nice.
+Similar to the way the AVR32 standalone headers are built up.
+
+-- 
+With kind regards,
+
+Hans-Christian Egtvedt, siv.ing. (M.Sc.)
+Applications Engineer - AVR32 System Solutions - Atmel Norway
+
