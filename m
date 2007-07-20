@@ -1,75 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939404AbXGTXoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937782AbXGTXtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939404AbXGTXoZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 19:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933668AbXGTXoE
+	id S937782AbXGTXtK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 19:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbXGTXs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 19:44:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:53890 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765468AbXGTXoA convert rfc822-to-8bit (ORCPT
+	Fri, 20 Jul 2007 19:48:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48524 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751608AbXGTXs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 19:44:00 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sebastian Siewior <sebastian@breakpoint.cc>
-Subject: Re: [PATCH] compat_ioctl requires CONFIG_BLOCK
-Date: Sat, 21 Jul 2007 01:08:57 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <20070720225817.050195257@ayoka.breakpoint.cc>
-In-Reply-To: <20070720225817.050195257@ayoka.breakpoint.cc>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707210108.58478.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+9jUFqmPkrMH2H31vfE4SQpPz2xgr0iyaqazt
- KeNkEAVC1g+OYu4jKmEaJgFJUxsLwqaLDdYoL3eJvFkcr4NWoP
- jZ3peKY3WSyBMcng2TY1g==
+	Fri, 20 Jul 2007 19:48:56 -0400
+Date: Fri, 20 Jul 2007 16:48:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: olof@lixom.net (Olof Johansson)
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
+       miltonm@bga.com
+Subject: Re: [PATCH v3] pcmcia: CompactFlash driver for PA Semi Electra
+ boards
+Message-Id: <20070720164823.95608e43.akpm@linux-foundation.org>
+In-Reply-To: <20070705144914.GA14284@lixom.net>
+References: <20070625010311.GA31355@lixom.net>
+	<20070625171221.GA6684@lixom.net>
+	<20070625193909.GA26021@infradead.org>
+	<20070625204341.GA8865@lixom.net>
+	<20070705144914.GA14284@lixom.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 July 2007, Sebastian Siewior wrote:
-> 
-> Got with randconfig
-> include/linux/loop.h:66: error: expected specifier-qualifier-list before
-> 'request_queue_t'
-> make[1]: *** [fs/compat_ioctl.o] Error 1
-> 
-> parts of compat ioctl require CONFIG_BLOCK to be set.
-> 
-> Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
-> Index: b/fs/compat_ioctl.c
-> ===================================================================
-> --- a/fs/compat_ioctl.c
-> +++ b/fs/compat_ioctl.c
-> @@ -63,7 +63,9 @@
->  #include <linux/wireless.h>
->  #include <linux/atalk.h>
->  #include <linux/blktrace_api.h>
-> +#ifdef CONFIG_BLOCK
->  #include <linux/loop.h>
-> +#endif
+On Thu, 5 Jul 2007 09:49:14 -0500
+olof@lixom.net (Olof Johansson) wrote:
 
-Adding #ifdef around an #include is considered bad style. Better just
-make loop.h compile without any conditionals. Does the below
-patch work for you?
+> Driver for the CompactFlash slot on the PA Semi Electra eval board. It's
+> a simple device sitting on localbus, with interrupts and detect/voltage
+> control over GPIO.
+> 
+> The driver is implemented as an of_platform driver, and adds localbus
+> as a bus being probed by the of_platform framework.
+> 
+> 
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> ---
+> 
+> On Mon, Jun 25, 2007 at 03:43:41PM -0500, olof wrote:
+> 
+> > The ifdef is needed since for CONFIG_PCMCIA=n builds, the bus notifier
+> > isn't available. I wanted to do the bus notifier registration explicitly
+> > before the of_platform bus probe to avoid later surprises due to reordered
+> > initcalls in case it was split up in it's own initcall.
+> > 
+> > I could add the code under ifdef as well, but it didn't seem too
+> > critical. Once the second major board comes along I'll probably move it
+> > out to a per-board file, there's no real need for it just yet.
+> 
+> Alright, turns out I still need to declare the extern bus type, which would mean
+> two #ifdefs in one function. Moving it out instead.
+> 
+> I've addressed Milton's comments as well.
+> 
+> Who's maintaining PCMCIA? MAINTAINERS only lists a mailing list, no person. Seems
+> weird for a component that's marked as maintained.
 
-	Arnd <><
+Dominik Brodowski.  He's having a bit of downtime at present (exams, I
+think).  He expects to return.  Meanwhile, cc'ing me usually has some
+effect.
 
---- a/include/linux/loop.h
-+++ b/include/linux/loop.h
-@@ -63,7 +63,7 @@ struct loop_device {
- 	struct task_struct	*lo_thread;
- 	wait_queue_head_t	lo_event;
+>
+> ...
+>
+> +static const char driver_name[] = "electra-cf";
+>
+> ...
+>
+> +static struct of_device_id electra_cf_match[] =
+> +{
+> +	{
+> +		.compatible   = "electra-cf",
+> +	},
+> +	{},
+> +};
+
+Could have reused driver_name[] here, if that was appropriate.
+
+> +static struct of_platform_driver electra_cf_driver =
+> +{
+> +	.name	   = (char *)driver_name,
+
+ug.  But it's not your fault - we should have always made it const.
+
+> --- mainline.orig/arch/powerpc/platforms/pasemi/setup.c
+> +++ mainline/arch/powerpc/platforms/pasemi/setup.c
+
+I never know who maintains random-scruffy-ppc code like this.  From a peek
+in the git-whatchanged output, it appears to be yourself.
+
+
+Have a few little fixies:
+
+--- a/drivers/pcmcia/electra_cf.c~pcmcia-compactflash-driver-for-pa-semi-electra-boards-fix
++++ a/drivers/pcmcia/electra_cf.c
+@@ -201,9 +201,7 @@ static int __devinit electra_cf_probe(st
+ 	if (!cf)
+ 		return -ENOMEM;
  
--	request_queue_t		*lo_queue;
-+	struct request_queue	*lo_queue;
- 	struct gendisk		*lo_disk;
- 	struct list_head	lo_list;
+-	init_timer(&cf->timer);
+-	cf->timer.function = electra_cf_timer;
+-	cf->timer.data = (unsigned long) cf;
++	setup_timer(&cf->timer, electra_cf_timer, (unsigned long)cf);
+ 	cf->irq = NO_IRQ;
+ 
+ 	cf->ofdev = ofdev;
+@@ -340,16 +338,14 @@ static int __devexit electra_cf_remove(s
+ 	return 0;
+ }
+ 
+-static struct of_device_id electra_cf_match[] =
+-{
++static struct of_device_id electra_cf_match[] = {
+ 	{
+ 		.compatible   = "electra-cf",
+ 	},
+ 	{},
  };
+ 
+-static struct of_platform_driver electra_cf_driver =
+-{
++static struct of_platform_driver electra_cf_driver = {
+ 	.name	   = (char *)driver_name,
+ 	.match_table    = electra_cf_match,
+ 	.probe	  = electra_cf_probe,
+@@ -371,4 +367,3 @@ module_exit(electra_cf_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR ("Olof Johansson <olof@lixom.net>");
+ MODULE_DESCRIPTION("PA Semi Electra CF driver");
+-
+_
+
