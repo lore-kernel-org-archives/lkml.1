@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940227AbXGTQWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940616AbXGTQ3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940227AbXGTQWb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940796AbXGTQWQ
+	id S940616AbXGTQ3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936942AbXGTQ3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:22:16 -0400
-Received: from lucidpixels.com ([75.144.35.66]:48114 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940651AbXGTQWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:22:15 -0400
-Date: Fri, 20 Jul 2007 12:22:05 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, apiszcz@solarrain.com
-Subject: Re: Software RAID 5 - Two reads are faster than one on a SW RAID5?
-In-Reply-To: <20070720155808.GA21547@csclub.uwaterloo.ca>
-Message-ID: <Pine.LNX.4.64.0707201221310.508@p34.internal.lan>
-References: <Pine.LNX.4.64.0707200952270.25069@p34.internal.lan>
- <20070720155808.GA21547@csclub.uwaterloo.ca>
+	Fri, 20 Jul 2007 12:29:10 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56377 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934921AbXGTQ3I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 12:29:08 -0400
+Message-ID: <46A0E2A9.6000308@s5r6.in-berlin.de>
+Date: Fri, 20 Jul 2007 18:28:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: "clameter@sgi.com" <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, akpm@linux-foundation.org,
+       Chris Snook <csnook@redhat.com>
+Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
+References: <20070531002047.702473071@sgi.com>	 <20070531003012.302019683@sgi.com> <a781481a0707200341o21381742rdb15e6a9dc770d27@mail.gmail.com>
+In-Reply-To: <a781481a0707200341o21381742rdb15e6a9dc770d27@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 20 Jul 2007, Lennart Sorensen wrote:
-
-> On Fri, Jul 20, 2007 at 09:58:50AM -0400, Justin Piszcz wrote:
->> I have a multi-core Q6600 CPU on a 10-disk Raptor RAID 5 running XFS.
+(I missed the original post, hence am replying to te reply...)
+> On 5/31/07, clameter@sgi.com <clameter@sgi.com> wrote:
+>> Introduce CONFIG_STABLE to control checks only useful for development.
 >>
->> I just pulled down the Debian Etch 4.0 DVD ISO's, one for x86 and one for
->> x86_64, when I ran md5sum -c MD5SUMS, I see ~280-320MB/s.  When I ran the
->> second one I see upwards of what I should be seeing 500-520MB/s.
+>> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+>> [...]
+>>  menu "General setup"
 >>
->> NOTE:: These MD5 contain the 3 DVD ISO's for each platform, 6 total ISOs.
->>
->> I know md5sum is cpubound to a degree, do you think that is what is
->> happening here?  Each core can only sustain ~300MB/s and then with two of
->> four cores working, it can exceed that amount or is there some similarity
->> with RAID1 in linux compared to RAID5?
->>
->> With RAID1, if you use a single read thread, you will get 60-70MB/s read
->> on a dual raptor raid1.  If you use two(?) or three threads, it will read
->> from both disks and you will see 120-140MB/s.
->>
->> Is there some commonality with software RAID1 and RAID5 in Linux in this
->> regard?
->
-> Could you just run top while doing md5sum and see how much cpu md5sum is
-> using on the cpu it is on?  After all if it says 100% for the process,
-> then yes it is cpu bound at 300MB/s, and if not then I guess there has
-> to be another explanation.
+>> +config STABLE
+>> +       bool "Stable kernel"
+>> +       help
+>> +         If the kernel is configured to be a stable kernel then various
+>> +         checks that are only of interest to kernel development will be
+>> +         omitted.
+>> +
 
+Didn't we talk about the wording and the logic some time ago?  Your
+option looks like a magic switch that suddenly improves kernel
+stability, hence everyone will switch it on.
 
-   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-   679 abc       23   0  4092  512  432 R   92  0.0   0:02.77 md5sum
+How about this:
 
-$ /usr/bin/time md5sum debian-40r0-i386-DVD-1.iso
-79f5bcbb36335e14142fc3578b1de96e  debian-40r0-i386-DVD-1.iso
-10.69user 3.52system 0:14.47elapsed 98%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (1major+205minor)pagefaults 0swaps
+config BUILD_FOR_RELEASE
+	bool "Build for release"
+	help
+	  If the kernel is configured as a release build, various checks
+	  that are only of interest to kernel development will be
+	  omitted.
 
-Looks like it.
+	  If unsure, say Y.
 
->
-> It looks pretty likely, since I just tried running md5sum on a 130MB
-> file here, and it takes 0.444s of user cpu time and 0.068s of system
-> time to process, and I ran it multiple times so the file ended up cached
-> in ram so disk speed isn't a concern, which I figure means my system
-> runs md5sum at about 250MB/s.  This is on a single core Athlon 64 3500+
-> (2.2GHz).  So if you have a slightly faster as you do with a 2.4GHz Core
-> 2, then 300MB/s seems perfectly reasonable per core.  I don't quite know
-> how md5 hashes work, but I really doubt they are something you are
-> likely to be able to make threaded.
->
-> --
-> Len Sorensen
->
+Or this:
+
+config BUILD_FOR_TESTING
+	bool "Build for testing"
+	help
+	  If the kernel is configured as a test build, various checks
+	  useful for testing of pre-releases will be activated.
+
+	  If unsure, say N.
+-- 
+Stefan Richter
+-=====-=-=== -=== =-=--
+http://arcgraph.de/sr/
