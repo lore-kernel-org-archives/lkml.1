@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934479AbXGTPJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934659AbXGTPKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934479AbXGTPJv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 11:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933859AbXGTPJp
+	id S934659AbXGTPKg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 11:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933882AbXGTPK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 11:09:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:31718 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933652AbXGTPJo (ORCPT
+	Fri, 20 Jul 2007 11:10:29 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36136 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933665AbXGTPK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 11:09:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=reeSo2gN5aJgVqguDgllxkomktpHQ0f31GqIzDueTx3vcy/NeKzM5c29qcuFNQvXJAboJHTibUnsmopbKOcW7xm+oA9qx2HyiTXwA+7Lvpa3ZDECm2NSIhBZD0hBk/sgNTSho1Of7fVXoO0I/oXsX5FW8nF6P5HOCyFCPjTk6MU=
-Message-ID: <6bffcb0e0707200809n24ccf6c3v62abbfa50a7d3c41@mail.gmail.com>
-Date: Fri, 20 Jul 2007 17:09:43 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Nick Piggin" <npiggin@suse.de>
-Subject: [broken-out-2007-07-20-00-22] fs/revoked_inode.c warnings
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 11:10:28 -0400
+Date: Fri, 20 Jul 2007 16:10:24 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
+Subject: [PATCH] lguest misannotation
+Message-ID: <20070720151024.GH21668@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+	It's void __user *, not void * __user...
 
-Your patch fs-introduce-write_begin-write_end-and-perform_write-aops-revoke.patch
-introduces new warnings
-
-fs/revoked_inode.c:381: warning: 'revoked_write_begin' defined but not used
-fs/revoked_inode.c:388: warning: 'revoked_write_end' defined but not used
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/drivers/lguest/io.c b/drivers/lguest/io.c
+index 06bdba2..c8eb792 100644
+--- a/drivers/lguest/io.c
++++ b/drivers/lguest/io.c
+@@ -187,7 +187,7 @@ static u32 copy_data(struct lguest *srclg,
+ 		/* FIXME: This is not completely portable, since
+ 		   archs do different things for copy_to_user_page. */
+ 		if (copy_from_user(maddr + (dst->addr[di] + dstoff)%PAGE_SIZE,
+-				   (void *__user)src->addr[si], len) != 0) {
++				   (void __user *)src->addr[si], len) != 0) {
+ 			kill_guest(srclg, "bad address in sending DMA");
+ 			totlen = 0;
+ 			break;
