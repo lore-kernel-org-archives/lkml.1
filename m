@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764233AbXGTOBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764030AbXGTODx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764233AbXGTOBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 10:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbXGTOBE
+	id S1764030AbXGTODx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 10:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757264AbXGTODr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 10:01:04 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:49125 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768AbXGTOBB (ORCPT
+	Fri, 20 Jul 2007 10:03:47 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:50836 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757250AbXGTODq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 10:01:01 -0400
-Date: Fri, 20 Jul 2007 15:00:59 +0100
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
-Message-ID: <20070720140058.GA3079@skynet.ie>
-References: <20070720060342.GA24765@linux-sh.org> <20070720112025.GA14495@skynet.ie> <20070720114246.GA27391@linux-sh.org> <20070720223909.d4c1e848.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 20 Jul 2007 10:03:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=n8zCVs2Srukar58PRFPGd3S2LUf22SZCe6OmKE/IvBbvfPBj1yHxNRSCkafOrLsU7DRZd/avJhsdHiyWpL0cDHHU60TlZV/qenqQSSb3mfUAvnnc7fbyV0vCuLzuuGRzS2iomXTxrIb3ecOncvkgp+TF/Nwyy+z+y2EZQnP4dX8=
+Message-ID: <46A0C059.8090506@googlemail.com>
+Date: Fri, 20 Jul 2007 16:02:01 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070720223909.d4c1e848.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Felipe Contreras <felipe.contreras@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: ata_piix broken in 2.6.22
+References: <94a0d4530707200626r2b50146bs55e268033ceab4b0@mail.gmail.com> <20070720143510.6ce81c09@the-village.bc.nu>
+In-Reply-To: <20070720143510.6ce81c09@the-village.bc.nu>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (20/07/07 22:39), KAMEZAWA Hiroyuki didst pronounce:
-> On Fri, 20 Jul 2007 20:42:46 +0900
-> Paul Mundt <lethal@linux-sh.org> wrote:
+Alan Cox wrote:
+> O> ata_piix 0000:00:1f.2: version 2.11
+>> ata_piix 0000:00:1f.2: MAP [ P0 P2 IDE IDE ]
+>> ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 16 (level, low) -> IRQ 16
+>> ata_piix 0000:00:1f.2: 0x1F0 IDE port busy
+>> ata_piix 0000:00:1f.2: 0x170 IDE port busy
+>> ata_piix 0000:00:1f.2: no available legacy port
 > 
-> > > I expect that the memory gets added to the same zone as historically but
-> > > when ZONE_MOVABLE is set, you'll see a situation where zones are overlapping
-> > > after memory hot-add.  i.e. Before memory hot-add, you'd see
-> > > 
-> > > DDDDMM
-> > > 
-> > > for ZONE_DMA and ZONE_MOVABLE and after hotadd, you'd see something like
-> > > 
-> > > DDDDMMDDDD
-> > > 
-> 
-> As similar case, I hear powerpc has followig memory layout
-> 
-> (1)(1)(0)(0)(0)(1)(1)(1)  # (0) is node 0, (1) is node 1. all zones are ZONE_DMA.
-> 
+> You appear to have old IDE compiled in as well and finding the device
+> first
 
-Not always, but it happens. We used to have two test machines available
-that exhibited this behaviour although they went missing at some point
-which is unfortunate.
+Alan ,
 
-> So zone is overlapped without memory hotplug.
+But this is allowed now and for me, after removing CONFIG_SATA_INTEL_COMBINED option
+some other options combos may be illegal and removing it broke a lot working setups.
 
-Zones overlapping have some subtle differences to nodes but the place this is
-really noticeable is during memory init when a range of PFNs are initialised
-by memmap_init_zone(). If zones overlap there, they can initialise the
-struct page fields twice but that is not an issue with memory hot-add. The
-potential issue I am thinking of is users that manually walk the memmap but
-no functionality outside of debugging should be doing anything like that.
+On <2.6.22 you got on your SATA/PATA controller with CONFIG_IDE=y , ATA=y ( ATA_X=y and even BLK_DEV_X=y) the
 
-> But I agree we have to take care of this kind of corner cases.
-> 
+SATA disk as SATA and PATA one as IDE now you get the SATA disk as 'IDE' too which gives you almost 3-4MB/s speed.
 
-Indeed. I think we're ok, but it should be checked out anyway.
+Is such a config legall for you for an SATA/IDE combo controller in >=2.6.22 ?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+CONFIG_BLK_DEV_IDE_SATA=n
+CONFIG_IDE=y
+ATA=y
+BLK_DEV_PIIX=y(or m doesn't matter )
+ATA_PIIX=y
+
+IMO after removing CONFIG_SATA_INTEL_COMBINED you guys introduced an real conflict with the IDE subsystem.
+
+The only way to get libata working with such a config is to boot ideX=noprobe.
+
+
+Regards,
+
+Gabriel
