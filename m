@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760871AbXGTAU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbXGTA27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760871AbXGTAU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 20:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757451AbXGTAUS
+	id S1761421AbXGTA27 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 20:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbXGTA2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 20:20:18 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33568 "EHLO mx2.suse.de"
+	Thu, 19 Jul 2007 20:28:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33836 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757286AbXGTAUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 20:20:17 -0400
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [1/2] 2.6.22-git: known regressions
-References: <469F92A1.5070203@googlemail.com>
+	id S1758014AbXGTA2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 20:28:51 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] slub crashes with recent -git
+References: <20070719194234.GA27917@elte.hu>
+	<alpine.LFD.0.999.0707191307220.27249@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0707191324020.27249@woody.linux-foundation.org>
 From: Andi Kleen <andi@firstfloor.org>
-Date: 20 Jul 2007 03:15:16 +0200
-In-Reply-To: <469F92A1.5070203@googlemail.com>
-Message-ID: <p738x9bx4d7.fsf@bingen.suse.de>
+Date: 20 Jul 2007 03:23:50 +0200
+In-Reply-To: <alpine.LFD.0.999.0707191324020.27249@woody.linux-foundation.org>
+Message-ID: <p734pjzx3yx.fsf@bingen.suse.de>
 User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> writes:
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> Hi all,
+> On Thu, 19 Jul 2007, Linus Torvalds wrote:
+> > 
+> > A better patch should be the appended. Does that work for you too?
 > 
-> Here is a list of some known regressions in 2.6.22-git.
+> Btw, I already committed this as obvious. 
+> 
+> I did the same for the SLAB __do_kmalloc() thing. Let's hope that that was 
+> the extent of the damage.
 
-Here's a new one: 
-
-appledisplay screen blanking driver seems to be broken
-It doesn't blank anymore. I haven't done much debugging yet,
-but the driver is loaded; just the screen stays on.
-Not bisected currently.
-
-> Subject         : Section mismatch: reference to .init.data:cpu_llc_id (between 'set_cpu_sibling_map' and 'initialize_secondary')
-> References      : http://lkml.org/lkml/2007/7/19/202
-> Last known good : ?
-> Submitter       : Gabriel C <nix.or.die@googlemail.com>
-> Caused-By       : Jeremy Fitzhardinge <jeremy@xensource.com>
->                   commit c70df74376c1e29a04e07e23dd3f4c384d6166dd
-> Handled-By      : ?
-> Status          : unknown
-
-Fix queued in my tree.
-
+My 32bit crashes seem to be gone with latest git head, both
+for slab and for slub. Even the serial console seems to work again. 
+Thanks
 
 -Andi
