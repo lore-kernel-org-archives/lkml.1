@@ -1,141 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbXGTLSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbXGTLUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759649AbXGTLSb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 07:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbXGTLSZ
+	id S1760188AbXGTLUf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 07:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXGTLU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 07:18:25 -0400
-Received: from andromeda.dapyr.net ([69.45.6.100]:33097 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754872AbXGTLSY (ORCPT
+	Fri, 20 Jul 2007 07:20:29 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:57676 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754253AbXGTLU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 07:18:24 -0400
-Date: Fri, 20 Jul 2007 07:18:23 -0400
-From: Konrad Rzeszutek <konrad@darnok.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: darnok@68k.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Inhibit NMI watchdog when Alt-SysRq-T operation is underway.
-Message-ID: <20070720111823.GA2334@andromeda.dapyr.net>
-References: <20070709140242.GA18098@andromeda.dapyr.net> <20070709155302.GB26570@andromeda.dapyr.net> <20070713164504.66b72e74.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 20 Jul 2007 07:20:28 -0400
+Date: Fri, 20 Jul 2007 12:20:25 +0100
+To: Paul Mundt <lethal@linux-sh.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
+Message-ID: <20070720112025.GA14495@skynet.ie>
+References: <20070720060342.GA24765@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070713164504.66b72e74.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070720060342.GA24765@linux-sh.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Andrew,
+On (20/07/07 15:03), Paul Mundt didst pronounce:
+> zone_movable_pfn is presently marked as __initdata and referenced
+> from adjust_zone_range_for_zone_movable(), which in turn is
+> referenced by zone_spanned_pages_in_node(). Both of these are
+> __meminit annotated. When memory hotplug is enabled, this will oops
+> on a hot-add, due to zone_movable_pfn having been freed.
+> 
 
-I tested your patch along with mine and found two things out:
+Ouch. Thanks for catching, your patch looks good. Before I add the ack though,
+I would like to get more details of the error in case there are other gremlins
+I haven't thought of and the fix for memory-hotadd is more complex.
 
- 1). Missing this patch (for i386 platform)
+First, can you confirm this is node hot-add please? I'm haven't looked at
+the memory hot-add code in a while so I would like to be sure this problem
+path only exists on node hot-add. If it is node hot-add, then everything
+should be ok. The memory should get added to the same zone as it did in
+older kernels.
 
-diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
-index 90da057..9f3a7ff 100644
---- a/arch/i386/kernel/traps.c
-+++ b/arch/i386/kernel/traps.c
-@@ -207,6 +207,7 @@ static void print_trace_address(void *da
- {
- 	printk("%s [<%08lx>] ", (char *)data, addr);
- 	print_symbol("%s\n", addr);
-+	touch_nmi_watchdog();
- }
- 
- static struct stacktrace_ops print_trace_ops = {
+Even if this is node hot-add, can you confirm that "ordinary" memory hot-add
+is working as expected when ZONE_MOVABLE exists please? To test, add a boot
+parameter kernelcore=N where N == 80% of memory and hot-add some memory to
+an existing node.
 
+I expect that the memory gets added to the same zone as historically but
+when ZONE_MOVABLE is set, you'll see a situation where zones are overlapping
+after memory hot-add.  i.e. Before memory hot-add, you'd see
 
-  2). If I run Alt-SysRq-t about 5000 times in a loop, the slow down 
-      with this change is about 5%. Is this a big issue? (This was
-      testing both i686 and x86_64).
+DDDDMM
 
-On Fri, Jul 13, 2007 at 04:45:04PM -0700, Andrew Morton wrote:
-> On Mon, 9 Jul 2007 11:53:02 -0400
-> darnok@68k.org wrote:
+for ZONE_DMA and ZONE_MOVABLE and after hotadd, you'd see something like
+
+DDDDMMDDDD
+
+so /proc/zoneinfo will look unusual.  I'd like to be sure the memory exists
+where you expect it to exist and that there are no problems after hot-add. To
+test, a simple memory hot-add followed by a dd of a file the size of all
+physical memory followed by a delete should do the trick. Also make sure
+files like /proc/zoneinfo and /proc/meminfo are ok and particularly that
+sysrq+m produces sensible output.
+
+The only in-kernel user that should notice is one that is trying to walk the
+whole of memmap and is using page_zone() changing to detect boundaries. The
+existing users I am aware of only walk within a MAX_ORDER_NR_PAGES boundary
+usually and a memory section boundary at most. Those users will be ok even
+if zones overlap.
+
+Thanks a lot.
+
+If other memory-hotadd users are watching, I'd appreciate a test and a report
+with a recent -git kernel to confirm you're ok. Is there a way currently
+of simulating memory-hotadd so I can try this out? Ages ago, one could boot
+with mem= and "add" the remaining memory at run-time.
+
+> __meminitdata annotation gives the desired behaviour.
 > 
-> >  static void print_trace_address(void *data, unsigned long addr)
-> >  {
-> > +	static int i = 0;		
-> > +	if (i && ((i % 8) == 0)) 
-> > +		touch_nmi_watchdog();
-> > +	i++;
-> >  	printk_address(addr);
-> >  }
+> This will only impact platforms that enable both memory hotplug
+> and ARCH_POPULATES_NODE_MAP.
 > 
-> I doubt if the "% 8" thing is really needed?  printk_address() is pretty
-> slow and touch_nmi_watchdog is _reasonably_ fast.  It could be made heaps
-> faster by:
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 > 
-> From: Andrew Morton <akpm@linux-foundation.org>
+> --
 > 
-> Avoid dirtying remote cpu's memory if it already has the correct value.
+>  mm/page_alloc.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Konrad Rzeszutek <konrad@darnok.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/i386/kernel/nmi.c |    8 +++++---
->  x86_64/kernel/nmi.c    |    0 
->  2 files changed, 5 insertions(+), 3 deletions(-)
-> 
-> diff -puN arch/i386/kernel/nmi.c~i386-speedup-touch_nmi_watchdog arch/i386/kernel/nmi.c
-> --- a/arch/i386/kernel/nmi.c~i386-speedup-touch_nmi_watchdog
-> +++ a/arch/i386/kernel/nmi.c
-> @@ -298,7 +298,7 @@ static unsigned int
->  	last_irq_sums [NR_CPUS],
->  	alert_counter [NR_CPUS];
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 43cb3b3..40954fb 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -138,7 +138,7 @@ static unsigned long __meminitdata dma_reserve;
+>  #endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
+>    unsigned long __initdata required_kernelcore;
+>    unsigned long __initdata required_movablecore;
+> -  unsigned long __initdata zone_movable_pfn[MAX_NUMNODES];
+> +  unsigned long __meminitdata zone_movable_pfn[MAX_NUMNODES];
 >  
-> -void touch_nmi_watchdog (void)
-> +void touch_nmi_watchdog(void)
->  {
->  	if (nmi_watchdog > 0) {
->  		unsigned cpu;
-> @@ -307,8 +307,10 @@ void touch_nmi_watchdog (void)
->  		 * Just reset the alert counters, (other CPUs might be
->  		 * spinning on locks we hold):
->  		 */
-> -		for_each_present_cpu (cpu)
-> -			alert_counter[cpu] = 0;
-> +		for_each_present_cpu(cpu) {
-> +			if (alert_counter[cpu])
-> +				alert_counter[cpu] = 0;
-> +		}
->  	}
->  
->  	/*
-> 
-> So I'd be inclined to simplify your patch to a bare
-> 
-> From: Konrad Rzeszutek <konrad@darnok.org>
-> 
-> On large memory configuration with not so fast CPUs the NMI watchdog is
-> triggered when memory addresses are being gathered and printed.  The code
-> paths for Alt-SysRq-t are sprinkled with touch_nmi_watchdog in various
-> places but not in this routine (or in the loop that utilizes this
-> function).  The patch has been tested for regression on large CPU+memory
-> configuration (128 logical CPUs + 224 GB) and 1,2,4,16-CPU sockets with
-> various memory sizes (1,2,4,6,20).
-> 
-> Cc: Andi Kleen <ak@suse.de>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/x86_64/kernel/traps.c |    1 +
->  1 files changed, 1 insertion(+)
-> 
-> diff -puN arch/x86_64/kernel/traps.c~inhibit-nmi-watchdog-when-alt-sysrq-t-operation-is-underway arch/x86_64/kernel/traps.c
-> --- a/arch/x86_64/kernel/traps.c~inhibit-nmi-watchdog-when-alt-sysrq-t-operation-is-underway
-> +++ a/arch/x86_64/kernel/traps.c
-> @@ -397,6 +397,7 @@ static int print_trace_stack(void *data,
->  
->  static void print_trace_address(void *data, unsigned long addr)
->  {
-> +	touch_nmi_watchdog();
->  	printk_address(addr);
->  }
->  
-> _
-> 
-> 
-> OK?
+>    /* movable_zone is the "real" zone pages in ZONE_MOVABLE are taken from */
+>    int movable_zone;
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
