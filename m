@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938866AbXGTAtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964899AbXGTAtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938866AbXGTAtW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 20:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935003AbXGTAqF
+	id S964899AbXGTAtv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 20:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932663AbXGTAsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 20:46:05 -0400
-Received: from pxy2nd.nifty.com ([202.248.175.14]:27179 "HELO pxy2nd.nifty.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760053AbXGTAqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 20:46:00 -0400
-X-Nifty-SrcIP: [210.170.245.86]
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=pxy2nd-default; d=mbf.nifty.com;
-  b=pS/zlii7qVQj/m26KqkI7EDREghpVspNTXIcu4enVe7gg5FjsGSgOUXS+QCpZLVfW+Lb63C4NJAB6jGOZbt1Ng==  ;
-From: TAKADA Yoshihito <takada@mbf.nifty.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: i386: pata_cs5520 does not work
-Cc: linux-kernel@vger.kernel.org, teheo@novell.com
-In-Reply-To: <20070719161821.5206ac36@the-village.bc.nu>
-References: <20070719.190831.23015057.takada@mbf.nifty.com> <20070719161821.5206ac36@the-village.bc.nu>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.064
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.28.01 [ja]
-Message-ID: <20070720004553.15709.qmail@smb518.nifty.com>
-Date: Fri, 20 Jul 2007 09:45:53 +0900
+	Thu, 19 Jul 2007 20:48:07 -0400
+Received: from hu-out-0506.google.com ([72.14.214.231]:26040 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938113AbXGTAsE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 20:48:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=PKL4c+TG4XqtLDcX0JtAclqlA8HUy0QzBiJG4lL2uUMPuytLyCBE47PJ/pBAPSJJJby6H3XtUSg+nt5NqXA6e5TQmb0/HOoMI7SnHecjeNfd+s4QXr6hfWnyL05t2nrXUSxraKhTuO5El+8/E3JbULVP2HylN5zSD+C5DDNIwdI=
+Date: Fri, 20 Jul 2007 08:45:10 +0000
+From: Dave Young <hidave.darkstar@gmail.com>
+To: akpm@linux-foundation.org
+Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+Subject: [PATCH][resend] Remove spec doc links in hpet header files
+Message-ID: <20070720084510.GA1779@darkstar.te-china.tietoenator.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-That's good. It seems to works fine.
+Hi,
+The links are broken, and already exist in Documentation/hpet.txt, so
+remove them for header files.
 
-On Thu, 19 Jul 2007 16:18:21 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> O> > rc = devm_request_irq(&pdev->dev, irq[ap->port_no],
-> > > 	ata_interrupt, 0, DRV_NAME, host);
-> > 
-> > devm_request_irq() is called twice from loop.
-> > In 1st time, ap->port_no is 0. devm_request_irq() is success.
-> > 2nd time, ap->port_no is 0 too. devm_request_irq() failed.
-> 
-> Looks like whoever updated it to the new probe mechanism didn't quite get
-> it right
-> 
-> Change it to use 
-> 
->           struct ata_port *ap = host->ports[i];
-> 
-> not ports[0]
-> 
-> Alan
+---
+include/asm-i386/hpet.h   |    6 ------
+include/asm-x86_64/hpet.h |    6 ------
+2 files changed, 12 deletions(-)
 
--- 
-TAKADA <takada@mbf.nifty.com>
-
+diff -pur linux/include/asm-i386/hpet.h linux.new/include/asm-i386/hpet.h
+--- linux/include/asm-i386/hpet.h	2007-07-11 11:15:42.000000000 +0000
++++ linux.new/include/asm-i386/hpet.h	2007-07-11 11:16:51.000000000 +0000
+@@ -28,12 +28,6 @@
+ 
+ #include <linux/timex.h>
+ 
+-/*
+- * Documentation on HPET can be found at:
+- *      http://www.intel.com/ial/home/sp/pcmmspec.htm
+- *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+- */
+-
+ #define HPET_MMAP_SIZE	1024
+ 
+ #define HPET_ID		0x000
+diff -pur linux/include/asm-x86_64/hpet.h linux.new/include/asm-x86_64/hpet.h
+--- linux/include/asm-x86_64/hpet.h	2007-07-11 11:16:07.000000000 +0000
++++ linux.new/include/asm-x86_64/hpet.h	2007-07-11 11:17:03.000000000 +0000
+@@ -1,12 +1,6 @@
+ #ifndef _ASM_X8664_HPET_H
+ #define _ASM_X8664_HPET_H 1
+ 
+-/*
+- * Documentation on HPET can be found at:
+- *      http://www.intel.com/ial/home/sp/pcmmspec.htm
+- *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+- */
+-
+ #define HPET_MMAP_SIZE	1024
+ 
+ #define HPET_ID		0x000
