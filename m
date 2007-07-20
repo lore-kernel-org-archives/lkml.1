@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938077AbXGTWu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938572AbXGTWvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938077AbXGTWu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755905AbXGTWuv
+	id S938572AbXGTWvb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 18:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759160AbXGTWvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 18:50:51 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:57765
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbXGTWuu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 18:50:50 -0400
-Date: Fri, 20 Jul 2007 15:43:20 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, Milton Miller <miltonm@bga.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ying Huang <ying.huang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <Pine.LNX.4.44L0.0707201830470.5241-100000@iolanthe.rowland.org>
-Message-ID: <Pine.LNX.4.64.0707201540260.5166@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707201830470.5241-100000@iolanthe.rowland.org>
+	Fri, 20 Jul 2007 18:51:22 -0400
+Received: from ns1.suse.de ([195.135.220.2]:47415 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755905AbXGTWvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 18:51:21 -0400
+Date: Fri, 20 Jul 2007 15:50:47 -0700
+From: Greg KH <gregkh@suse.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
+Message-ID: <20070720225047.GA17520@suse.de>
+References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007, Alan Stern wrote:
+On Fri, Jul 20, 2007 at 06:32:21PM +0200, Michal Piotrowski wrote:
+>  Hi Greg,
+> 
+>  This looks like a sysfs bug
+>  http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-07-20-00-22/00003.jpg
+> 
+>  l *kernel_param_sysfs_setup+0x75
+>  0xc13c0894 is in kernel_param_sysfs_setup (kernel/params.c:570).
+>  565             mk->mod = THIS_MODULE;
+>  566             kobj_set_kset_s(mk, module_subsys);
+>  567             kobject_set_name(&mk->kobj, name);
+>  568             kobject_init(&mk->kobj);
+>  569             ret = kobject_add(&mk->kobj);
+>  570             BUG_ON(ret < 0);
+>  571             param_sysfs_setup(mk, kparam, num_params, name_skip);
+>  572             kobject_uevent(&mk->kobj, KOBJ_ADD);
+>  573     }
+>  574
+> 
+>  http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-07-20-00-22/mm-config
 
-> On Fri, 20 Jul 2007, Jeremy Maitin-Shepard wrote:
->
->>>> when doing a suspend-to-ram you get to a point where you just don't use
->>>> any userspace.
->>
->>> What do you mean?  How can you prevent user tasks from running?  That's
->>> basically what the freezer does, and the whole point of this approach
->>> is to eliminate the freezer.  Right?
->>
->> Presumably no tasks at all would be scheduled.
->
-> How would you prevent tasks from being scheduled?  How would you
-> prevent drivers from deadlocking because in order to put their device
-> in a low-power state they need to acquire a lock which is held by a
-> user task?
+What kernel version is this happening on?  The -mm tree?  Can you try
+Linus's tree instead?
 
-you give up on the suspend becouse you have no way of getting the user 
-task to give up the lock.
+It looks like there was some needed information right before the first
+stack dump, showing exactly what kobject was trying to be added that was
+already present.  Odds are this is a kernel parameter with the same name
+as a duplicate one within the same module, but the trick is going to be
+trying to figure out what module is causing this.
 
-however, kernel locks should not be held by user tasks, user tasks are not 
-expected to behave in rational ways, allowing them to compete with kernel 
-tasks for locks is a sure way to get a deadlock or indefinate stall.
+So it's not a sysfs bug, but rather a driver issue that this is
+catching.
 
-what locks are accessed this way?
+Does that make sense?
 
->>>> from that point on you are just walking the device tree
->>>> putting things into low-power mode. This is the point where we are talking
->>>> about jumping to.
->>
->>> Yes.  And putting things into low-power mode requires the ability to
->>> run the scheduler, which means that user tasks can be scheduled, which
->>> means that they can run.
->>
->> Does it really (fundamentally) require scheduling tasks, particularly in
->> the case that the devices have already been put in the "quiesced" state?
->
-> I can't say for sure.  That's the way we have been doing it.  It
-> wouldn't be easy to change, because the driver would have to busy-wait
-> during delays -- which would mean it would need to use different code
-> for system-wide suspend and runtime suspend.
-
-please define terms so that we are all on the same page
-
-what do you mean by
-system-wide suspend
-runtime suspend
-
-David Lang
+greg k-h
