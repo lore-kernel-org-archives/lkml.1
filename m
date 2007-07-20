@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbXGTHN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932924AbXGTHQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933053AbXGTHN6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758160AbXGTHNs
+	id S932924AbXGTHQU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbXGTHQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:13:48 -0400
-Received: from ns.suse.de ([195.135.220.2]:42885 "EHLO mx1.suse.de"
+	Fri, 20 Jul 2007 03:16:04 -0400
+Received: from verein.lst.de ([213.95.11.210]:48061 "EHLO mail.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753592AbXGTHNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:13:47 -0400
-Date: Fri, 20 Jul 2007 00:10:58 -0700
-From: Greg KH <gregkh@suse.de>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
-Subject: Re: drivers/base/core.c broken for non-CONFIG_HOTPLUG
-Message-ID: <20070720071058.GA26261@suse.de>
-References: <20070720070106.GH1678@pengutronix.de>
-MIME-Version: 1.0
+	id S1757861AbXGTHQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 03:16:01 -0400
+Date: Fri, 20 Jul 2007 09:15:44 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+Message-ID: <20070720071544.GA25717@lst.de>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070711122324.GA21714@lst.de> <1184203311.6005.664.camel@localhost.localdomain> <20070711.192829.08323972.davem@davemloft.net> <1184208521.6005.695.camel@localhost.localdomain> <20070711212435.abd33524.akpm@linux-foundation.org> <1184215943.6005.745.camel@localhost.localdomain> <20070719172746.GA17710@lst.de> <1184902046.10380.257.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070720070106.GH1678@pengutronix.de>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <1184902046.10380.257.camel@localhost.localdomain>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 09:01:06AM +0200, Robert Schwebel wrote:
-> Kay,
+On Fri, Jul 20, 2007 at 01:27:26PM +1000, Rusty Russell wrote:
+> On Thu, 2007-07-19 at 19:27 +0200, Christoph Hellwig wrote:
+> > The version that just got into mainline still has the __put_task_struct
+> > export despite not needing it anymore.  Care to fix this up?
 > 
-> With commit 60a96a59569bab85571d0089682109bd3324e896, you broke
-> drivers/base/core.c for systems which have not enabled CONFIG_HOTPLUG.
-> 
-> You add and use
-> 
-> 	extern const char *kobject_actions[];
-> 
-> but the code in lib/kobject_uevent.c who actually brings in the code is
-> only compiled when CONFIG_HOTPLUG is enabled.
-> 
-> Please send a fix.
+> No, it got patched in then immediately patched out again.  Andrew
+> mis-mixed my patches, but there have been so many of them I find it hard
+> to blame him.
 
-Already known and reported, see lkml :)
-
-Kay is at GUADEC right now and will provide a patch in a day or so,
-unless I beat him to it...
-
-thanks,
-
-greg k-h
+Indeed, the export is gone in last mainline gone.
