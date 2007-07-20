@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXGTWA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934588AbXGTWB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932810AbXGTWA2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760551AbXGTV7j
+	id S934588AbXGTWB0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 18:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758333AbXGTWBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:59:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:56595 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761083AbXGTV7d (ORCPT
+	Fri, 20 Jul 2007 18:01:14 -0400
+Received: from mga09.intel.com ([134.134.136.24]:45393 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756765AbXGTWBM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:59:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=BeJ7xCqmVG+5Nh+yMSChh9g6RJvDXdYATIePGasydSm5P89eGkd0G0indLvWj67MQ6XNx1QLteE2yxMc8dcb1Q2PXFXs5nvNbE9MIifzmzqPKhAZQNjiDRbIQCEyhBVyQIFw07F6GBp+Cag1rmRj5K0SuNMx/+wRc1G9Wbhxr40=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Mike Miller <mike.miller@hp.com>
-Subject: [PATCH][cciss] Fix a small memory leak in the cciss driver
-Date: Fri, 20 Jul 2007 23:58:37 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       iss_storagedev@hp.com, Jesper Juhl <jesper.juhl@gmail.com>
+	Fri, 20 Jul 2007 18:01:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,564,1175497200"; 
+   d="scan'208";a="108352727"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707202358.37140.jesper.juhl@gmail.com>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
+Date: Fri, 20 Jul 2007 15:00:56 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02B81B55@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <1a297b360707201459s57fb4778m2be80e4c2b825b2c@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
+Thread-Index: AcfLGS7GzA5T31TFSceAPFGi/hP9EwAAB87w
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 20 Jul 2007 22:00:56.0748 (UTC) FILETIME=[7301FEC0:01C7CB19]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Manu Abraham [mailto:abraham.manu@gmail.com] 
+>
+>Ok. Thanks for clearing it up. So the idea would be that if
+>pci_enable_msix() for "n" number of messages failed, then settle down
+>for 1 message, which is equivalent to MSI mode
+>
 
-There's a memory leak in the cciss driver.
-
-in alloc_cciss_hba() we may leak sizeof(ctlr_info_t) bytes if a 
-call to alloc_disk(1 << NWD_SHIFT) fails.
-This patch should fix the issue.
-
- Spotted by the Coverity checker.
- Compile tested only.
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/block/cciss.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index a2d6612..ef7ba22 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3227,12 +3227,15 @@ static int alloc_cciss_hba(void)
- 	for (i = 0; i < MAX_CTLR; i++) {
- 		if (!hba[i]) {
- 			ctlr_info_t *p;
-+
- 			p = kzalloc(sizeof(ctlr_info_t), GFP_KERNEL);
- 			if (!p)
- 				goto Enomem;
- 			p->gendisk[0] = alloc_disk(1 << NWD_SHIFT);
--			if (!p->gendisk[0])
-+			if (!p->gendisk[0]) {
-+				kfree(p);
- 				goto Enomem;
-+			}
- 			hba[i] = p;
- 			return i;
- 		}
-
-
+yep
