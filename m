@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764831AbXGTT6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933646AbXGTUBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764831AbXGTT6j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 15:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbXGTT6a
+	id S933646AbXGTUBo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763771AbXGTUBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 15:58:30 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55067 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689AbXGTT63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 15:58:29 -0400
-To: andrei radulescu-banu <iubica2@yahoo.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <997818.30021.qm@web56615.mail.re3.yahoo.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 20 Jul 2007 21:58:27 +0200
-In-Reply-To: <997818.30021.qm@web56615.mail.re3.yahoo.com> (andrei radulescu-banu's message of "Thu, 19 Jul 2007 09:02:38 -0700 (PDT)")
-Message-ID: <m31wf226fw.fsf@maximus.localdomain>
+	Fri, 20 Jul 2007 16:01:37 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:52228 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762813AbXGTUBg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 16:01:36 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Fri, 20 Jul 2007 22:03:27 +0200
+User-Agent: KMail/1.9.7
+Cc: Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Lang <david@lang.hm>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+References: <Pine.LNX.4.44L0.0707201408060.2546-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707201408060.2546-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707202203.27849.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another idea - perhaps we could make the software VLANs behave
-the same as hw ones? I.e., stripping the tag on RX while setting
-some magic skb field?
+Am Freitag 20 Juli 2007 schrieb Alan Stern:
+> Some drivers need the ability to schedule.  Some will need the ability 
+> to allocate memory (although GFP_ATOMIC is probably sufficient).  Some 
+> will need timers to run.
 
-The packets could go via main interface first (normal path, with
-eth_type_trans stripping the tag and setting protocol = some 802.1Q),
-netif_rx | netif_receive_skb, then through the VLAN device with
-finally eth_type_trans setting the IPv4 etc. protocol to pass to
-L3 layers.
+Some will have to request firmware. It can add up to some megabytes.
+In addition, if we don't freeze, some drivers, eg. video drivers, can
+do allocations in the megabyte range.
 
-I can see potential problems on TX, the packets would have to be
-presented without the tag (but with VLAN ID set somewhere in the skb)
-and that probably means all drivers would have to be modified.
+It seems to me that without the freezer we will end up with many drivers
+needing a two step notification process. Furthermore there are requirements
+on the order of shutting down system facilities, eg. device addition must
+be stopped before drivers allocate firmware.
 
-Seems a bit of work, I know my message is missing the patch...
--- 
-Krzysztof Halasa
+	Regards
+		Oliver
+
