@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934588AbXGTWB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935260AbXGTWCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934588AbXGTWB0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758333AbXGTWBO
+	id S935260AbXGTWCe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 18:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbXGTWC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 18:01:14 -0400
-Received: from mga09.intel.com ([134.134.136.24]:45393 "EHLO mga09.intel.com"
+	Fri, 20 Jul 2007 18:02:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40101 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756765AbXGTWBM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 18:01:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,564,1175497200"; 
-   d="scan'208";a="108352727"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1756765AbXGTWC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 18:02:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+Subject: Re: which signal is sent to freeze process?
+Date: Sat, 21 Jul 2007 00:10:05 +0200
+User-Agent: KMail/1.9.5
+Cc: nigel@suspend2.net, linux-kernel@vger.kernel.org
+References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707201324.06290.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD62858CCA1@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD62858CCA1@scsmsx412.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-Date: Fri, 20 Jul 2007 15:00:56 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02B81B55@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <1a297b360707201459s57fb4778m2be80e4c2b825b2c@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-Thread-Index: AcfLGS7GzA5T31TFSceAPFGi/hP9EwAAB87w
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 20 Jul 2007 22:00:56.0748 (UTC) FILETIME=[7301FEC0:01C7CB19]
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707210010.05877.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manu Abraham [mailto:abraham.manu@gmail.com] 
->
->Ok. Thanks for clearing it up. So the idea would be that if
->pci_enable_msix() for "n" number of messages failed, then settle down
->for 1 message, which is equivalent to MSI mode
->
+On Friday, 20 July 2007 20:07, Agarwal, Lomesh wrote:
+> Can you suggest a way I can debug the issue why I am getting EINTR error
+> for system calls in resuming? What else can cause the system call
+> failure with EINTR?
 
-yep
+Well, I think I know what the problem is.  do_poll checks
+signal_pending(current) and breaks when it's set, but that may be caused
+by the freezer.
+
+You may try the patch below (untested) and see if that helps.
+
+Greetings,
+Rafael
+
+
+---
+ fs/select.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.22-rc6-mm1/fs/select.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/fs/select.c
++++ linux-2.6.22-rc6-mm1/fs/select.c
+@@ -23,6 +23,7 @@
+ #include <linux/file.h>
+ #include <linux/fs.h>
+ #include <linux/rcupdate.h>
++#include <linux/freezer.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -593,6 +594,8 @@ static int do_poll(unsigned int nfds,  s
+ 		struct poll_list *walk;
+ 		long __timeout;
+ 
++		try_to_freeze();
++
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		for (walk = list; walk != NULL; walk = walk->next) {
+ 			struct pollfd * pfd, * pfd_end;
+@@ -618,7 +621,8 @@ static int do_poll(unsigned int nfds,  s
+ 		 * a poll_table to them on the next loop iteration.
+ 		 */
+ 		pt = NULL;
+-		if (count || !*timeout || signal_pending(current))
++		if (count || !*timeout ||
++		    (signal_pending(current) && !freezing(current)))
+ 			break;
+ 		count = wait->error;
+ 		if (count)
