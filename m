@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933654AbXGTQ5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936597AbXGTRCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933654AbXGTQ5s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763013AbXGTQ4R
+	id S936597AbXGTRCI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 13:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933142AbXGTRBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:56:17 -0400
-Received: from rzcomm12.rz.tu-bs.de ([134.169.9.59]:63781 "EHLO
-	rzcomm12.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758742AbXGTQ4P (ORCPT
+	Fri, 20 Jul 2007 13:01:18 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:5546 "EHLO
+	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932644AbXGTRBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:56:15 -0400
-Message-ID: <46A0C199.8050401@l4x.org>
-Date: Fri, 20 Jul 2007 16:07:21 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Thunderbird 2.0.0.5pre (Windows/20070717)
+	Fri, 20 Jul 2007 13:01:14 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Fri, 20 Jul 2007 19:00:49 +0200
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Andi Kleen" <ak@suse.de>
+cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [patches] [PATCH] [17/58] i386: Add L3 cache support to AMD
+ CPUID4 emulation
+Message-ID: <20070720170049.GA5995@alberich.amd.com>
+References: <200707191154.642492000@suse.de>
+ <20070719095502.1718214E0B@wotan.suse.de>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] Trivial sh64 updates for 2.6.23-rc1
-References: <20070720091707.GA26717@linux-sh.org>
-In-Reply-To: <20070720091707.GA26717@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20070719095502.1718214E0B@wotan.suse.de>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 20 Jul 2007 17:00:49.0083 (UTC)
+ FILETIME=[859A60B0:01C7CAEF]
+X-WSS-ID: 6ABE35C90X82129957-05-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> Paul Mundt (5):
->       sh64: Wire up fallocate() syscall.
->       sh64: Update cayman defconfig.
->       sh64: Fix up PCI section mismatch warnings.
->       sh64: Move entry point code to .text.head.
->       sh64: Flag sh64_get_page() as __init_refok.
+On Thu, Jul 19, 2007 at 11:55:02AM +0200, Andi Kleen wrote:
+> 
+> With that an L3 cache is correctly reported in the cache information in /sys
+> 
+> With fixes from Andreas Herrmann and Dean Gaudet
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  arch/i386/kernel/cpu/intel_cacheinfo.c |   74 ++++++++++++++++++++++++---------
+>  arch/x86_64/kernel/setup.c             |    7 ++-
+>  2 files changed, 60 insertions(+), 21 deletions(-)
 
-Tangential question. Which is the currently recommended cross toolchain
-for sh64? With "gcc 3.2 20020529", "binutils 020306 20030206" (some
-binary toolchain from ~2 years ago somewhere off the web) I get [1]
+Reporting of L3 cache information should also be enabled in 32bit mode.
 
-   CC      fs/seq_file.o
-   CC      fs/xattr.o
-fs/xattr.c: In function `vfs_listxattr':
-fs/xattr.c:161: unrecognizable insn:
-(insn 162 159 114 (set (subreg:DI (reg:SI 181) 0)
-         (reg:DI 182)) -1 (nil)
-     (nil))
-fs/xattr.c:161: Internal compiler error in get_attr_highpart, at 
-insn-attrtab.c:6211
-Please submit a full bug report,
-with preprocessed source if appropriate.
-See <URL:http://www.gnu.org/software/gcc/bugs.html> for instructions.
-make[2]: *** [fs/xattr.o] Error 1
-make[1]: *** [fs] Error 2
-make: *** [_all] Error 2
 
-gcc 3.4.x, 4.0.x, 4.1.x don't build for me from source
-(target -superh-linux-gnu, binutils 2.15.x or 2.17.x).
+Regards,
 
-Thanks,
+Andreas
+--
 
-Jan
+Enable reporting of L3 cache info in 32 bit mode for family 0x10.
 
-[1] http://l4x.org/k/?d=32100
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+
+diff --git a/arch/i386/kernel/cpu/amd.c b/arch/i386/kernel/cpu/amd.c
+index 6f47eee..815a5f0 100644
+--- a/arch/i386/kernel/cpu/amd.c
++++ b/arch/i386/kernel/cpu/amd.c
+@@ -272,8 +272,12 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ 	}
+ #endif
+ 
+-	if (cpuid_eax(0x80000000) >= 0x80000006)
+-		num_cache_leaves = 3;
++	if (cpuid_eax(0x80000000) >= 0x80000006) {
++		if ((c->x86 == 0x10) && (cpuid_edx(0x80000006) & 0xf000))
++			num_cache_leaves = 4;
++		else
++			num_cache_leaves = 3;
++	}
+ 
+ 	if (amd_apic_timer_broken())
+ 		set_bit(X86_FEATURE_LAPIC_TIMER_BROKEN, c->x86_capability);
+
+
+
