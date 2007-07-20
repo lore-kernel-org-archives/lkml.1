@@ -1,106 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964993AbXGTQUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941162AbXGTQWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964993AbXGTQUa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbXGTQUV
+	id S941162AbXGTQWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935249AbXGTQWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:20:21 -0400
-Received: from mga02.intel.com ([134.134.136.20]:18040 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933878AbXGTQUU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:20:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,563,1175497200"; 
-   d="scan'208";a="268634961"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: build fix for x86_64...
-Date: Fri, 20 Jul 2007 09:20:15 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A01FA46A9@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070720085501.82715036.randy.dunlap@oracle.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: build fix for x86_64...
-Thread-Index: AcfK5e6vX7JpcwRyTlmqWkV6QmAbkwAAse4A
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>, "Andi Kleen" <ak@novell.com>
-Cc: "Arthur Jones" <arthur.jones@qlogic.com>,
-       "Vasily Tarasov" <vtaras@openvz.org>, <linux-kernel@vger.kernel.org>,
-       "Jan Kara" <jack@ucw.cz>, <linux-arch@vger.kernel.org>
-X-OriginalArrivalTime: 20 Jul 2007 16:20:16.0642 (UTC) FILETIME=[DBC15620:01C7CAE9]
+	Fri, 20 Jul 2007 12:22:10 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:43676 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935040AbXGTQWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 12:22:08 -0400
+Date: Fri, 20 Jul 2007 18:22:03 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: sdhci-devel@list.drzeus.cx,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: SDHCI: mmc0: Unexpected interrupt 0x00008000.
+Message-ID: <20070720182203.3f378d58@poseidon.drzeus.cx>
+In-Reply-To: <469FB856.6030000@goop.org>
+References: <469FB856.6030000@goop.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-14382-1184948530-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Half dozens?
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-I was imagining having to have "help" messages ... which of course we don't.
+--=_hera.drzeus.cx-14382-1184948530-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> config COMPAT_FOR_U64_ALIGNMENT
-> 	bool
-> 	default y
+On Thu, 19 Jul 2007 12:15:34 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Plausible.
+> I'm getting this with current GIT kernels when I plug an SD card into
+> the side of my machine.  It appears to see the filesystem OK anyway,
+> but for some reason all the hal/gnome desktop stuff isn't seeing it.
+> Was working last week.
+> 
 
-Randy suggested:
->	def_bool y
+This appeared because we fixed another bug. Try the included patch.
 
-Which is better.  But if we unconditionally set this CONFIG variable, then the
-code in fs/quota.c will have to read:
+Rgds
+-- 
+     -- Pierre Ossman
 
-#if defined(CONFIG_COMPAT) && defined(CONFIG_COMPAT_FOR_U64_ALIGNMENT)
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-We can keep it simpler if the Kconfig file does the conditional for us:
+--=_hera.drzeus.cx-14382-1184948530-0001-2
+Content-Type: text/x-patch; name="errmask.patch"; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=errmask.patch
 
-config COMPAT_FOR_U64_ALIGNMENT
-	def_bool y
-	depends on COMPAT
+commit 0668da722a0c48e8629d697fa354e23a02548093
+Author: Pierre Ossman <drzeus@drzeus.cx>
+Date:   Fri Jul 20 18:20:36 2007 +0200
 
-Then the patch looks like this:
+    sdhci: make sure to clear the error interrupt
+    
+    The controller has a bit indicating that one of the higher bits (the
+    error bits) are set. A previous bug caused this bit to be masked, but
+    since that bug has been fixed we have to clear it explicictly.
+    
+    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 36c7b96..36c1582 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -425,6 +425,10 @@ config COMPAT
- 	depends on IA32_SUPPORT
- 	default y
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 10d15c3..4a24db0 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1024,6 +1024,8 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
  
-+config COMPAT_FOR_U64_ALIGNMENT
-+	def_bool y
-+	depends on COMPAT
+ 	intmask &= ~(SDHCI_INT_CMD_MASK | SDHCI_INT_DATA_MASK);
+ 
++	intmask &= ~SDHCI_INT_ERROR;
 +
- config IA64_MCA_RECOVERY
- 	tristate "MCA recovery from errors other than TLB."
- 
-diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-index 14bf8ce..c77510b 100644
---- a/arch/x86_64/Kconfig
-+++ b/arch/x86_64/Kconfig
-@@ -753,6 +753,10 @@ config COMPAT
- 	depends on IA32_EMULATION
- 	default y
- 
-+config COMPAT_FOR_U64_ALIGNMENT
-+	def_bool y
-+	depends on COMPAT
-+
- config SYSVIPC_COMPAT
- 	bool
- 	depends on COMPAT && SYSVIPC
-diff --git a/fs/quota.c b/fs/quota.c
-index e6577ac..99b24b5 100644
---- a/fs/quota.c
-+++ b/fs/quota.c
-@@ -387,7 +387,7 @@ asmlinkage long sys_quotactl(unsigned int cmd, const char __user *special, qid_t
- 	return ret;
- }
- 
--#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
-+#if defined(CONFIG_COMPAT_FOR_U64_ALIGNMENT)
- /*
-  * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
-  * and is necessary due to alignment problems.
+ 	if (intmask & SDHCI_INT_BUS_POWER) {
+ 		printk(KERN_ERR "%s: Card is consuming too much power!\n",
+ 			mmc_hostname(host->mmc));
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 7400f4b..a6c8704 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -107,6 +107,7 @@
+ #define  SDHCI_INT_CARD_INSERT	0x00000040
+ #define  SDHCI_INT_CARD_REMOVE	0x00000080
+ #define  SDHCI_INT_CARD_INT	0x00000100
++#define  SDHCI_INT_ERROR	0x00008000
+ #define  SDHCI_INT_TIMEOUT	0x00010000
+ #define  SDHCI_INT_CRC		0x00020000
+ #define  SDHCI_INT_END_BIT	0x00040000
+
+--=_hera.drzeus.cx-14382-1184948530-0001-2--
