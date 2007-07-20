@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761579AbXGTVip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936553AbXGTVjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761579AbXGTVip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbXGTVid
+	id S936553AbXGTVjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936267AbXGTVio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:38:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39988 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752412AbXGTVib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:38:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Fri, 20 Jul 2007 17:38:44 -0400
+Received: from smtp.andrew.cmu.edu ([128.2.10.83]:44439 "EHLO
+	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756960AbXGTVin (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 17:38:43 -0400
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
 To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 23:46:34 +0200
-User-Agent: KMail/1.9.5
 Cc: david@lang.hm, Milton Miller <miltonm@bga.com>,
-       linux-pm <linux-pm@lists.linuxfoundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ying Huang <ying.huang@intel.com>,
        LKML <linux-kernel@vger.kernel.org>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-References: <Pine.LNX.4.44L0.0707201211450.3811-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707201211450.3811-100000@iolanthe.rowland.org>
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+References: <Pine.LNX.4.44L0.0707201722060.5241-100000@iolanthe.rowland.org>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Fri, 20 Jul 2007 17:37:35 -0400
+In-Reply-To: <Pine.LNX.4.44L0.0707201722060.5241-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Fri\, 20 Jul 2007 17\:24\:30 -0400 \(EDT\)")
+Message-ID: <877ioupxi8.fsf@jbms.ath.cx>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707202346.35901.rjw@sisk.pl>
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 20 July 2007 18:15, Alan Stern wrote:
+Alan Stern <stern@rowland.harvard.edu> writes:
+
 > On Fri, 20 Jul 2007 david@lang.hm wrote:
-> 
-> > or the userspace helper functions that setup the instructions for the 
-> > hibernate warn you if you are telling it to mount a filesystem that it 
-> > knows is ext3 and is in use by the system going to sleep.
-> 
-> One can argue that the ext3 implementation is inadequate.  We should be
-> able to give it a mount option requiring it to fail rather than play
-> back the journal and write to the disk.
-> 
-> 
-> > > What I've been trying to say from the very beginning is that the current
-> > > frameworks _support_ hibernation a la ACPI S4 (although that's not exactly
-> > > ACPI S4) and if we are going to introduce a new framework, then it should
-> > > be designed to _support_ ACPI S4 fully _from_ _the_ _start_.
-> > 
-> > here is where there is some disagreement (although it may just be 
-> > misunderstanding on the 'fully support' phrase)
-> > 
-> > it sounds like you are saying that the ACPI support requires a lot of work 
-> > (the phrase I've seen some people use is a requirement to 'fix all the 
-> > drivers'). we aren't wanting to have this work prevent the non-ACPI 
-> > hibernation from progressing.
-> 
-> You have completely misunderstood.  That phrase "fix all the drivers" 
-> has nothing whatsoever to do with ACPI.  It is a prerequisite for 
-> removing the freezer.
+>> > Userspace can submit I/O requests.  Someone will have to audit every
+>> > driver to make sure that such I/O requests don't cause a quiesced
+>> > device to become active.  If the device is active, it will make the
+>> > memory snapshot inconsistent with the on-device data.
+>> 
+>> assuming this is the suspend-from-ram after a kexec back from the 
+>> write-to-disk kernel I don't think you are correct.
+>> 
+>> when doing a suspend-to-ram you get to a point where you just don't use 
+>> any userspace.
 
-Yes.
+> What do you mean?  How can you prevent user tasks from running?  That's 
+> basically what the freezer does, and the whole point of this approach 
+> is to eliminate the freezer.  Right?
 
-> And unless I'm mistaken, removing the freezer was the main reason for 
-> doing all this kexec-style work in the first place.
+Presumably no tasks at all would be scheduled.
 
-Yes, that also is my impression.
+>> from that point on you are just walking the device tree 
+>> putting things into low-power mode. This is the point where we are talking 
+>> about jumping to.
 
-Greetings,
-Rafael
+> Yes.  And putting things into low-power mode requires the ability to 
+> run the scheduler, which means that user tasks can be scheduled, which 
+> means that they can run.
 
+Does it really (fundamentally) require scheduling tasks, particularly in
+the case that the devices have already been put in the "quiesced" state?
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Jeremy Maitin-Shepard
