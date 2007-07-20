@@ -1,97 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbXGTI12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbXGTI2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbXGTI12 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 04:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759948AbXGTIZT
+	id S1760849AbXGTI2H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 04:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934633AbXGTIZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 04:25:19 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:62289 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932087AbXGTIZO (ORCPT
+	Fri, 20 Jul 2007 04:25:27 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:51221 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932799AbXGTIZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 04:25:14 -0400
+	Fri, 20 Jul 2007 04:25:22 -0400
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Menage <menage@google.com>,
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Containers <containers@lists.osdl.org>,
        YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Menage <menage@google.com>,
        Linux MM Mailing List <linux-mm@kvack.org>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
        Pavel Emelianov <xemul@openvz.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        Dave Hansen <haveblue@us.ibm.com>,
        Eric W Biederman <ebiederm@xmission.com>
-Date: Fri, 20 Jul 2007 13:54:54 +0530
-Message-Id: <20070720082454.20752.84239.sendpatchset@balbir-laptop>
+Date: Fri, 20 Jul 2007 13:54:16 +0530
+Message-Id: <20070720082416.20752.92946.sendpatchset@balbir-laptop>
 In-Reply-To: <20070720082352.20752.37209.sendpatchset@balbir-laptop>
 References: <20070720082352.20752.37209.sendpatchset@balbir-laptop>
-Subject: [RFC][-mm PATCH 5/8] Memory controller task migration (v3)
+Subject: [RFC][-mm PATCH 2/8] Memory controller containers setup (v3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Allow tasks to migrate from one container to the other. We migrate
-mm_struct's mem_container only when the thread group id migrates.
-
+Setup the memory container and add basic hooks and controls to integrate
+and work with the container.
 
 Signed-off-by: <balbir@linux.vnet.ibm.com>
 ---
 
- mm/memcontrol.c |   35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ include/linux/container_subsys.h |    6 +
+ include/linux/memcontrol.h       |   21 +++++
+ init/Kconfig                     |    8 ++
+ mm/Makefile                      |    1 
+ mm/memcontrol.c                  |  143 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 179 insertions(+)
 
-diff -puN mm/memcontrol.c~mem-control-task-migration mm/memcontrol.c
---- linux-2.6.22-rc6/mm/memcontrol.c~mem-control-task-migration	2007-07-20 13:13:25.000000000 +0530
-+++ linux-2.6.22-rc6-balbir/mm/memcontrol.c	2007-07-20 13:13:25.000000000 +0530
-@@ -309,11 +309,46 @@ err:
- 	return rc;
- }
+diff -puN include/linux/container_subsys.h~mem-control-setup include/linux/container_subsys.h
+--- linux-2.6.22-rc6/include/linux/container_subsys.h~mem-control-setup	2007-07-20 13:13:24.000000000 +0530
++++ linux-2.6.22-rc6-balbir/include/linux/container_subsys.h	2007-07-20 13:13:24.000000000 +0530
+@@ -30,3 +30,9 @@ SUBSYS(ns)
+ #endif
  
-+static void mem_container_move_task(struct container_subsys *ss,
-+				struct container *cont,
-+				struct container *old_cont,
-+				struct task_struct *p)
-+{
-+	struct mm_struct *mm;
-+	struct mem_container *mem, *old_mem;
+ /* */
 +
-+	mm = get_task_mm(p);
-+	if (mm == NULL)
-+		return;
++#ifdef CONFIG_CONTAINER_MEM_CONT
++SUBSYS(mem_container)
++#endif
 +
-+	mem = mem_container_from_cont(cont);
-+	old_mem = mem_container_from_cont(old_cont);
++/* */
+diff -puN init/Kconfig~mem-control-setup init/Kconfig
+--- linux-2.6.22-rc6/init/Kconfig~mem-control-setup	2007-07-20 13:13:24.000000000 +0530
++++ linux-2.6.22-rc6-balbir/init/Kconfig	2007-07-20 13:13:24.000000000 +0530
+@@ -360,6 +360,14 @@ config CONTAINER_NS
+           for instance virtual servers and checkpoint/restart
+           jobs.
+ 
++config CONTAINER_MEM_CONT
++	bool "Memory controller for containers"
++	select CONTAINERS
++	select RESOURCE_COUNTERS
++	help
++	  Provides a memory controller that manages both page cache and
++	  RSS memory.
 +
-+	if (mem == old_mem)
-+		goto out;
+ config PROC_PID_CPUSET
+ 	bool "Include legacy /proc/<pid>/cpuset file"
+ 	depends on CPUSETS
+diff -puN mm/Makefile~mem-control-setup mm/Makefile
+--- linux-2.6.22-rc6/mm/Makefile~mem-control-setup	2007-07-20 13:13:24.000000000 +0530
++++ linux-2.6.22-rc6-balbir/mm/Makefile	2007-07-20 13:13:24.000000000 +0530
+@@ -30,4 +30,5 @@ obj-$(CONFIG_FS_XIP) += filemap_xip.o
+ obj-$(CONFIG_MIGRATION) += migrate.o
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
++obj-$(CONFIG_CONTAINER_MEM_CONT) += memcontrol.o
+ 
+diff -puN /dev/null mm/memcontrol.c
+--- /dev/null	2007-06-01 20:42:04.000000000 +0530
++++ linux-2.6.22-rc6-balbir/mm/memcontrol.c	2007-07-20 13:13:24.000000000 +0530
+@@ -0,0 +1,143 @@
++/* memcontrol.c - Memory Controller
++ *
++ * Copyright IBM Corporation, 2007
++ * Author Balbir Singh <balbir@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
++#include <linux/res_counter.h>
++#include <linux/memcontrol.h>
++#include <linux/container.h>
++
++struct container_subsys mem_container_subsys;
++
++/*
++ * The memory controller data structure. The memory controller controls both
++ * page cache and RSS per container. We would eventually like to provide
++ * statistics based on the statistics developed by Rik Van Riel for clock-pro,
++ * to help the administrator determine what knobs to tune.
++ *
++ * TODO: Add a water mark for the memory controller. Reclaim will begin when
++ * we hit the water mark.
++ */
++struct mem_container {
++	struct container_subsys_state css;
 +	/*
-+	 * Only thread group leaders are allowed to migrate, the mm_struct is
-+	 * in effect owned by the leader
++	 * the counter to account for memory usage
 +	 */
-+	if (p->tgid != p->pid)
-+		goto out;
++	struct res_counter res;
++};
 +
-+	css_get(&mem->css);
-+	rcu_assign_pointer(mm->mem_container, mem);
-+	css_put(&old_mem->css);
++/*
++ * A meta page is associated with every page descriptor. The meta page
++ * helps us identify information about the container
++ */
++struct meta_page {
++	struct list_head lru;		/* per container LRU list */
++	struct page *page;
++	struct mem_container *mem_container;
++};
 +
-+out:
-+	mmput(mm);
-+	return;
++
++static inline
++struct mem_container *mem_container_from_cont(struct container *cont)
++{
++	return container_of(container_subsys_state(cont,
++				mem_container_subsys_id), struct mem_container,
++				css);
 +}
 +
- struct container_subsys mem_container_subsys = {
- 	.name = "mem_container",
- 	.subsys_id = mem_container_subsys_id,
- 	.create = mem_container_create,
- 	.destroy = mem_container_destroy,
- 	.populate = mem_container_populate,
-+	.attach = mem_container_move_task,
- 	.early_init = 1,
- };
++static ssize_t mem_container_read(struct container *cont, struct cftype *cft,
++			struct file *file, char __user *userbuf, size_t nbytes,
++			loff_t *ppos)
++{
++	return res_counter_read(&mem_container_from_cont(cont)->res,
++				cft->private, userbuf, nbytes, ppos);
++}
++
++static ssize_t mem_container_write(struct container *cont, struct cftype *cft,
++				struct file *file, const char __user *userbuf,
++				size_t nbytes, loff_t *ppos)
++{
++	return res_counter_write(&mem_container_from_cont(cont)->res,
++				cft->private, userbuf, nbytes, ppos);
++}
++
++static struct cftype mem_container_usage = {
++	.name = "mem_usage",
++	.private = RES_USAGE,
++	.read = mem_container_read,
++};
++
++static struct cftype mem_container_limit = {
++	.name = "mem_limit",
++	.private = RES_LIMIT,
++	.write = mem_container_write,
++	.read = mem_container_read,
++};
++
++static struct cftype mem_container_failcnt = {
++	.name = "mem_failcnt",
++	.private = RES_FAILCNT,
++	.read = mem_container_read,
++};
++
++static int mem_container_create(struct container_subsys *ss,
++				struct container *cont)
++{
++	struct mem_container *mem;
++
++	mem = kzalloc(sizeof(struct mem_container), GFP_KERNEL);
++	if (!mem)
++		return -ENOMEM;
++
++	res_counter_init(&mem->res);
++	cont->subsys[mem_container_subsys_id] = &mem->css;
++	mem->css.container = cont;
++	return 0;
++}
++
++static void mem_container_destroy(struct container_subsys *ss,
++				struct container *cont)
++{
++	kfree(mem_container_from_cont(cont));
++}
++
++static int mem_container_populate(struct container_subsys *ss,
++				struct container *cont)
++{
++	int rc = 0;
++
++	rc = container_add_file(cont, &mem_container_usage);
++	if (rc < 0)
++		goto err;
++
++	rc = container_add_file(cont, &mem_container_limit);
++	if (rc < 0)
++		goto err;
++
++	rc = container_add_file(cont, &mem_container_failcnt);
++	if (rc < 0)
++		goto err;
++
++err:
++	return rc;
++}
++
++struct container_subsys mem_container_subsys = {
++	.name = "mem_container",
++	.subsys_id = mem_container_subsys_id,
++	.create = mem_container_create,
++	.destroy = mem_container_destroy,
++	.populate = mem_container_populate,
++	.early_init = 0,
++};
+diff -puN /dev/null include/linux/memcontrol.h
+--- /dev/null	2007-06-01 20:42:04.000000000 +0530
++++ linux-2.6.22-rc6-balbir/include/linux/memcontrol.h	2007-07-20 13:13:24.000000000 +0530
+@@ -0,0 +1,21 @@
++/* memcontrol.h - Memory Controller
++ *
++ * Copyright IBM Corporation, 2007
++ * Author Balbir Singh <balbir@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _LINUX_MEMCONTROL_H
++#define _LINUX_MEMCONTROL_H
++
++#endif /* _LINUX_MEMCONTROL_H */
++
 _
 
 -- 
