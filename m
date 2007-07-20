@@ -1,195 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936877AbXGTTTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936723AbXGTTU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936877AbXGTTTj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 15:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935906AbXGTTRG
+	id S936723AbXGTTU3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 15:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936397AbXGTTTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 15:17:06 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:42714 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765669AbXGTTRC (ORCPT
+	Fri, 20 Jul 2007 15:19:09 -0400
+Received: from mga09.intel.com ([134.134.136.24]:60523 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935453AbXGTTTH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 15:17:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:references:user-agent:date:from:to:cc:
-	subject:content-disposition;
-	b=U5HA9Czc/BoYP9LAZTMQuYFCYY6c/8B0rNWuiG7VY+COUM8xqxeYywId7Ez/B+uUJ
-	6l85to6GguK6jtn8s3huw==
-Message-Id: <20070720191248.889393000@menage.corp.google.com>
-References: <20070720183152.637820000@menage.corp.google.com>
-User-Agent: quilt/0.45-1
-Date: Fri, 20 Jul 2007 11:32:02 -0700
-From: menage@google.com
-To: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com
-Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
-       devel@openvz.org
-Subject: [PATCH 10/10] Task Containers(V11):  Simple task container debug info subsystem
-Content-Disposition: inline; filename=containersv10-simple-debug-info-subsystem.patch
+	Fri, 20 Jul 2007 15:19:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,563,1175497200"; 
+   d="scan'208";a="108310981"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
+Date: Fri, 20 Jul 2007 12:19:03 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC32903445DBE@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <aday7hac2vf.fsf@cisco.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
+thread-index: AcfLAPLQ/jRig8XJS16lciP71280VwAALT6Q
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <davem@davemloft.net>,
+       <jeff@garzik.org>, "Williams, Dan J" <dan.j.williams@intel.com>,
+       "Leech, Christopher" <christopher.leech@intel.com>
+X-OriginalArrivalTime: 20 Jul 2007 19:19:05.0477 (UTC) FILETIME=[D6A3A350:01C7CB02]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This example subsystem exports debugging information as an aid to diagnosing
-refcount leaks, etc, in the container framework.
+> Hmm, I see I don't understand what this driver is doing.  
+> What is a "struct ioatdma_device"?  Is this driver requesting 
+> interrupts that come from the NIC or the IOAT DMA engine?
 
-Signed-off-by: Paul Menage <menage@google.com>
----
+I might have caused some confusion.  You had asked if any drivers
+support MSI but not MSI-X, so I threw 2 drivers out there that currently
+support both, and why we support MSI for compatibility.
 
- include/linux/container_subsys.h |    4 +
- init/Kconfig                     |   10 ++++
- kernel/Makefile                  |    1 
- kernel/container_debug.c         |   97 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 112 insertions(+)
+> Anyway, if the NICs support MSI-X, is there any chance of 
+> failing to get one MSI-X vectors but then succeeding in 
+> getting MSI enabled?
+> How could that happen?  I don't see what falling back to MSI 
+> buys you beyond more code.
 
-Index: container-2.6.22-rc6-mm1/include/linux/container_subsys.h
-===================================================================
---- container-2.6.22-rc6-mm1.orig/include/linux/container_subsys.h
-+++ container-2.6.22-rc6-mm1/include/linux/container_subsys.h
-@@ -19,4 +19,8 @@ SUBSYS(cpuacct)
- 
- /* */
- 
-+#ifdef CONFIG_CONTAINER_DEBUG
-+SUBSYS(debug)
-+#endif
-+
- /* */
-Index: container-2.6.22-rc6-mm1/init/Kconfig
-===================================================================
---- container-2.6.22-rc6-mm1.orig/init/Kconfig
-+++ container-2.6.22-rc6-mm1/init/Kconfig
-@@ -303,6 +303,16 @@ config CONTAINERS
- 
- 	  Say N if unsure.
- 
-+config CONTAINER_DEBUG
-+	bool "Example debug container subsystem"
-+	depends on CONTAINERS
-+	help
-+	  This option enables a simple container subsystem that
-+	  exports useful debugging information about the containers
-+	  framework
-+
-+	  Say N if unsure
-+
- config CPUSETS
- 	bool "Cpuset support"
- 	depends on SMP && CONTAINERS
-Index: container-2.6.22-rc6-mm1/kernel/Makefile
-===================================================================
---- container-2.6.22-rc6-mm1.orig/kernel/Makefile
-+++ container-2.6.22-rc6-mm1/kernel/Makefile
-@@ -38,6 +38,7 @@ obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
- obj-$(CONFIG_KEXEC) += kexec.o
- obj-$(CONFIG_COMPAT) += compat.o
- obj-$(CONFIG_CONTAINERS) += container.o
-+obj-$(CONFIG_CONTAINER_DEBUG) += container_debug.o
- obj-$(CONFIG_CPUSETS) += cpuset.o
- obj-$(CONFIG_CONTAINER_CPUACCT) += cpu_acct.o
- obj-$(CONFIG_IKCONFIG) += configs.o
-Index: container-2.6.22-rc6-mm1/kernel/container_debug.c
-===================================================================
---- /dev/null
-+++ container-2.6.22-rc6-mm1/kernel/container_debug.c
-@@ -0,0 +1,97 @@
-+/*
-+ * kernel/ccontainer_debug.c - Example container subsystem that
-+ * exposes debug info
-+ *
-+ * Copyright (C) Google Inc, 2007
-+ *
-+ * Developed by Paul Menage (menage@google.com)
-+ *
-+ */
-+
-+#include <linux/container.h>
-+#include <linux/fs.h>
-+#include <linux/slab.h>
-+#include <linux/rcupdate.h>
-+
-+#include <asm/atomic.h>
-+
-+static struct container_subsys_state *debug_create(struct container_subsys *ss,
-+						   struct container *cont)
-+{
-+	struct container_subsys_state *css = kzalloc(sizeof(*css), GFP_KERNEL);
-+
-+	if (!css)
-+		return ERR_PTR(-ENOMEM);
-+
-+	return css;
-+}
-+
-+static void debug_destroy(struct container_subsys *ss, struct container *cont)
-+{
-+	kfree(cont->subsys[debug_subsys_id]);
-+}
-+
-+static u64 container_refcount_read(struct container *cont, struct cftype *cft)
-+{
-+	return atomic_read(&cont->count);
-+}
-+
-+static u64 taskcount_read(struct container *cont, struct cftype *cft)
-+{
-+	u64 count;
-+
-+	container_lock();
-+	count = container_task_count(cont);
-+	container_unlock();
-+	return count;
-+}
-+
-+static u64 current_css_group_read(struct container *cont, struct cftype *cft)
-+{
-+	return (u64)(long)current->containers;
-+}
-+
-+static u64 current_css_group_refcount_read(struct container *cont,
-+					   struct cftype *cft)
-+{
-+	u64 count;
-+
-+	rcu_read_lock();
-+	count = atomic_read(&current->containers->ref.refcount);
-+	rcu_read_unlock();
-+	return count;
-+}
-+
-+static struct cftype files[] =  {
-+	{
-+		.name = "container_refcount",
-+		.read_uint = container_refcount_read,
-+	},
-+	{
-+		.name = "taskcount",
-+		.read_uint = taskcount_read,
-+	},
-+
-+	{
-+		.name = "current_css_group",
-+		.read_uint = current_css_group_read,
-+	},
-+
-+	{
-+		.name = "current_css_group_refcount",
-+		.read_uint = current_css_group_refcount_read,
-+	},
-+};
-+
-+static int debug_populate(struct container_subsys *ss, struct container *cont)
-+{
-+	return container_add_files(cont, ss, files, ARRAY_SIZE(files));
-+}
-+
-+struct container_subsys debug_subsys = {
-+	.name = "debug",
-+	.create = debug_create,
-+	.destroy = debug_destroy,
-+	.populate = debug_populate,
-+	.subsys_id = debug_subsys_id,
-+};
+MSI-X doesn't make much sense if you have 1 Rx queue on your NIC, since
+1 vector essentially acts like MSI.  In the case of why MSI-X could
+fail, I have had it fail when I misconfigured my driver and didn't ask
+for enough vectors for what I was assigning, so the driver disabled the
+multiple Rx queues, and fell back to MSI.
 
---
+I hope this helps.
+
+-PJ
