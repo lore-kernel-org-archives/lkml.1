@@ -1,36 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933277AbXGTHR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933577AbXGTHS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933277AbXGTHR7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759613AbXGTHRv
+	id S933577AbXGTHS7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759613AbXGTHSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:17:51 -0400
-Received: from verein.lst.de ([213.95.11.210]:48126 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759243AbXGTHRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:17:50 -0400
-Date: Fri, 20 Jul 2007 09:17:42 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Christoph Hellwig <hch@lst.de>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kill DECLARE_MUTEX_LOCKED
-Message-ID: <20070720071742.GB25717@lst.de>
-References: <20070719211135.GA32725@lst.de> <a781481a0707192228r4c4e6bdfj53449d1fc67bc641@mail.gmail.com>
+	Fri, 20 Jul 2007 03:18:51 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:58644 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759307AbXGTHSu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 03:18:50 -0400
+Date: Fri, 20 Jul 2007 10:18:49 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Roland Dreier <rdreier@cisco.com>
+cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Subject: Re: kmalloc zero size changes break i386
+In-Reply-To: <Pine.LNX.4.64.0707201009580.1209@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0707201017450.1209@sbz-30.cs.Helsinki.FI>
+References: <200707191201.35777.ak@suse.de> <84144f020707190708p1c4d63cnbb0397a602c3527d@mail.gmail.com>
+ <adamyxsfmnc.fsf@cisco.com> <Pine.LNX.4.64.0707201009580.1209@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a781481a0707192228r4c4e6bdfj53449d1fc67bc641@mail.gmail.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 10:58:34AM +0530, Satyam Sharma wrote:
-> That comment in libusual is quite nonsensical, IMHO. Note that
-> usu_init_notify is declared as DECLARE_MUTEX_LOCKED and yet the
-> author wants us to believe (later, when he's doing that dummy
+On Fri, 20 Jul 2007, Pekka J Enberg wrote:
+> There's some heavy-duty function inlining going on in__kmalloc so could 
+> you please work out the exact location of the oops as described in 
+> Documentation/BUG-HUNTING (look for the "use GDB to translate" part).
 
-Given that no one should use libusual and we should kill it and the
-abomination called ub I don't really care about fixing this up.
+And, of course, please check if a5c96d8a1c67f31ef48935a78da2d2076513842b 
+fixes it.
 
+				Pekka
