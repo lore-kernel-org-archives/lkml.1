@@ -1,93 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762055AbXGTOAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764233AbXGTOBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762055AbXGTOAq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 10:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXGTOAj
+	id S1764233AbXGTOBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 10:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbXGTOBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 10:00:39 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:59263 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbXGTOAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 10:00:39 -0400
-Date: Fri, 20 Jul 2007 16:00:36 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Pierre Savary" <pierre.savary@kerlink.fr>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: TR: Neep help with my MMC driver ...
-Message-ID: <20070720160036.581f8fba@poseidon.drzeus.cx>
-In-Reply-To: <000c01c7cad4$127dcba0$377962e0$@savary@kerlink.fr>
-References: <000c01c7cad4$127dcba0$377962e0$@savary@kerlink.fr>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
-To: s@drzeus.cx
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 10:01:04 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:49125 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbXGTOBB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 10:01:01 -0400
+Date: Fri, 20 Jul 2007 15:00:59 +0100
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
+Message-ID: <20070720140058.GA3079@skynet.ie>
+References: <20070720060342.GA24765@linux-sh.org> <20070720112025.GA14495@skynet.ie> <20070720114246.GA27391@linux-sh.org> <20070720223909.d4c1e848.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070720223909.d4c1e848.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007 15:44:18 +0200
-"Pierre Savary" <pierre.savary@kerlink.fr> wrote:
-
-> Hi,
+On (20/07/07 22:39), KAMEZAWA Hiroyuki didst pronounce:
+> On Fri, 20 Jul 2007 20:42:46 +0900
+> Paul Mundt <lethal@linux-sh.org> wrote:
 > 
->  
+> > > I expect that the memory gets added to the same zone as historically but
+> > > when ZONE_MOVABLE is set, you'll see a situation where zones are overlapping
+> > > after memory hot-add.  i.e. Before memory hot-add, you'd see
+> > > 
+> > > DDDDMM
+> > > 
+> > > for ZONE_DMA and ZONE_MOVABLE and after hotadd, you'd see something like
+> > > 
+> > > DDDDMMDDDD
+> > > 
 > 
-> I permit me to send you a mail because I've seen on the net that you
-> have work around MMC.
-
-Well, I am the maintainer ;)
-
-Also, you should include the LKML for these discussions.
-
+> As similar case, I hear powerpc has followig memory layout
 > 
-> Linux 2.6.21+patch.AT91 run on my AT91sam9260. I must use the MMC.
-> But it doesn't work . and I try since the begin of this week !!!!!!!!
-> This is what I do :
-> 
->  
-
-*snip*
-
-> 
-> $ mknod /dev/mmc b 254 0
+> (1)(1)(0)(0)(0)(1)(1)(1)  # (0) is node 0, (1) is node 1. all zones are ZONE_DMA.
 > 
 
-Make sure this is the correct major. You can find it in /proc/devices.
+Not always, but it happens. We used to have two test machines available
+that exhibited this behaviour although they went missing at some point
+which is unfortunate.
 
-*snip*
+> So zone is overlapped without memory hotplug.
 
-> 
-> Sending command 1 as 00001041, arg = 00000000, blocks = 0, length = 0
-> (MR = 00008384)
-> 
-> setting ier to 00000001
-> 
-> MCI irq: status = 0001C0E4, C07F0001, 00010000
-> 
-> MMC: Response index error
-> 
-> Completed command
-> 
-> Status = 0009C0E4 [00000000 00000000 00000000 00000000]
-> 
-> Error detected and set to 4 (cmd = 1, retries = 0)
-> 
-> mmc0: req done (CMD1): 4/0/0: 00000000 00000000 00000000 00000000
-> 
-> mmc0: clock 0Hz busmode 1 powermode 0 cs 0 Vdd 0 width 0 timing 0
-> 
-> MMC: Setting controller bus width to 1
+Zones overlapping have some subtle differences to nodes but the place this is
+really noticeable is during memory init when a range of PFNs are initialised
+by memmap_init_zone(). If zones overlap there, they can initialise the
+struct page fields twice but that is not an issue with memory hot-add. The
+potential issue I am thinking of is users that manually walk the memmap but
+no functionality outside of debugging should be doing anything like that.
+
+> But I agree we have to take care of this kind of corner cases.
 > 
 
-All your commands are failing, oddly enough with "response index
-error". I'm not familiar with the AT91 controller, so I'm adding
-Nicolas Ferre, the AT91 maintainer, to this discussion.
+Indeed. I think we're ok, but it should be checked out anyway.
 
-Rgds
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
