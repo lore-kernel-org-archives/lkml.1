@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbXGTLhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbXGTLiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759424AbXGTLhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 07:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXGTLh1
+	id S1761240AbXGTLiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 07:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbXGTLha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 07:37:27 -0400
-Received: from [212.12.190.239] ([212.12.190.239]:33100 "EHLO raad.intranet"
+	Fri, 20 Jul 2007 07:37:30 -0400
+Received: from [212.12.190.239] ([212.12.190.239]:33099 "EHLO raad.intranet"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751312AbXGTLh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751527AbXGTLh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Jul 2007 07:37:26 -0400
 From: Al Boldi <a1426z@gawab.com>
 To: linux-raid@vger.kernel.org
 Subject: Re: [RFH] Partition table recovery
-Date: Fri, 20 Jul 2007 14:29:34 +0300
+Date: Fri, 20 Jul 2007 14:29:44 +0300
 User-Agent: KMail/1.5
 Cc: linux-kernel@vger.kernel.org
-References: <200707200813.03553.a1426z@gawab.com> <20070720053526.GG943@1wt.eu> <Pine.LNX.4.64.0707200858030.31013@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0707200858030.31013@fbirervta.pbzchgretzou.qr>
+References: <200707200813.03553.a1426z@gawab.com> <46A05A84.6050305@wolfmountaingroup.com>
+In-Reply-To: <46A05A84.6050305@wolfmountaingroup.com>
 MIME-Version: 1.0
+Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707201429.34419.a1426z@gawab.com>
+Message-Id: <200707201429.44915.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jul 20 2007 07:35, Willy Tarreau wrote:
-> >On Fri, Jul 20, 2007 at 08:13:03AM +0300, Al Boldi wrote:
-> >> As always, a good friend of mine managed to scratch my partion table by
-> >> cat'ing /dev/full into /dev/sda.  I was able to push him out of the
-> >> way, but at least the first 100MB are gone.  I can probably live
-> >> without the first partion, but there are many partitions after that,
-> >> which I hope should easily be recoverable.
->
-> Go use GPT, it's got a backup copy of the ptable at then end of the disk
-> ;-)
-
-Would that be compatible with md?
-
-> >> I tried parted, but it's not working out for me.  Does anybody know of
-> >> a simple partition recovery tool, that would just scan the disk for
-> >> lost partions?
+Jeffrey V. Merkey wrote:
+> Al Boldi wrote:
+> >As always, a good friend of mine managed to scratch my partion table by
+> >cat'ing /dev/full into /dev/sda.  I was able to push him out of the way,
+> > but at least the first 100MB are gone.  I can probably live without the
+> > first partion, but there are many partitions after that, which I hope
+> > should easily be recoverable.
 > >
-> >The best one is simply "fdisk", because you can manually enter your
-> >cylinders numbers. You have to find by hand the beginning of each
-> > partition, and for this, you have to remember what filesystems you used
-> > and see how to identify them (using a magic). Then with an hex editor,
-> > you scan the disk to find such entries and note the possible sectors on
-> > a paper. Then comes fdisk. You create the part, exit and try to mount
-> > it. If it fails, fdisk again and try other values.
+> >I tried parted, but it's not working out for me.  Does anybody know of a
+> >simple partition recovery tool, that would just scan the disk for lost
+> >partions?
 >
-> Pretty easy:
-> "XFSB" (offset +0),
-> "ReIsErFs2" (offset +0x10034),
-> "SWAPSPACE2" (offset +0xff6),
-> "FAT32" (offset +0x52h, maybe harder) / "mkdofs" (+0x3)
-> ext2/3 is TOUGH. (sequence 0x53ef at +0x438 - quite ambiguous!)
+> One thing NetWare always did was to stamp a copy of the partition table
+> at the time a partition was created as the second logical sector (offset
+> 1) from the start of a newly created partition. This allowed the disk to
+> be scanned for the original (or last) partition table copy.
 
-Actually, there is an easier way to do this with cfdisk.  Once you know where 
-a partition starts, enter it into cfdisk and set the size to something 
-short, then save and restart cfdisk. If the position is correct, then cfdisk 
-will identify the fs type.  Now exit again and do an fsck, which will error 
-out complaining about a dev-size/fs-size mismatch.  Adjust the cfdisk 
-partition accordingly, and cycle through the rest of the partitions.
+This is really a good idea, as this would save you the trouble of 
+reconstructing the table due to older overlapping entries.
 
-But, I want something much more automated.  And the partition table backup 
-per partition entry isn't really a bad idea.
+Can linux do something like that?
 
 
 Thanks!
