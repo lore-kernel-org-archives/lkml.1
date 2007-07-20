@@ -1,73 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937986AbXGTIa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938346AbXGTIbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937986AbXGTIa5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 04:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936343AbXGTI1y
+	id S938346AbXGTIbl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 04:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935828AbXGTI14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 04:27:54 -0400
-Received: from mail.suse.de ([195.135.220.2]:47340 "EHLO mx1.suse.de"
+	Fri, 20 Jul 2007 04:27:56 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56680 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936240AbXGTI1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 04:27:50 -0400
+	id S936285AbXGTI1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 04:27:51 -0400
 From: Andi Kleen <ak@suse.de>
 Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Dmitry Torokhov <dtor@insightbb.com>
-Subject: Re: [PATCH for review] [12/48] x86_64: use the global PIT lock
-Date: Fri, 20 Jul 2007 10:25:12 +0200
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] [15/58] i386: Rewrite sched_clock
+Date: Fri, 20 Jul 2007 10:27:46 +0200
 User-Agent: KMail/1.9.6
-Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-References: <20070719348.540885000@suse.de> <200707192152.03321.ak@suse.de> <200707200024.21467.dtor@insightbb.com>
-In-Reply-To: <200707200024.21467.dtor@insightbb.com>
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Daniel Walker <dwalker@mvista.com>
+References: <200707191154.642492000@suse.de> <1184863904.6458.17.camel@dhcp193.mvista.com> <20070720031105.GA8237@Krystal>
+In-Reply-To: <20070720031105.GA8237@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707201025.12915.ak@suse.de>
+Message-Id: <200707201027.46532.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> +static DEFINE_SPINLOCK(i8253_lock);
-> +
->  static __init int add_pcspkr(void)
->  {
->         struct platform_device *pd;
-> @@ -1501,9 +1503,14 @@ static __init int add_pcspkr(void)
->         if (!pd)
->                 return -ENOMEM;
->  
-> +       pd->dev.platform_data = &i8253_lock;
+> I noticed the same thing about interrupts off when going through the
+> code.
 
-That seems pretty ugly to pass spinlocks around in void * pointers. Also 
-out of general memory bloat reasons i don't like allocating big data structures
-just for this.
-
-Wouldn't  it be better to just define i8253_lock weakly in the pcspkr code and let 
-the architecture override it?
-
-> Index: work/arch/x86_64/kernel/time.c
-> ===================================================================
-> --- work.orig/arch/x86_64/kernel/time.c
-> +++ work/arch/x86_64/kernel/time.c
-> @@ -23,6 +23,7 @@
->  #include <linux/module.h>
->  #include <linux/device.h>
->  #include <linux/sysdev.h>
-> +#include <linux/platform_device.h>
->  #include <linux/bcd.h>
->  #include <linux/notifier.h>
->  #include <linux/cpu.h>
-> @@ -185,7 +186,7 @@ void main_timer_handler(void)
->                 set_rtc_mmss(xtime.tv_sec);
->                 rtc_update = xtime.tv_sec + 660;
->         }
-> - 
-> +
->         write_sequnlock(&xtime_lock);
->  }
-
-No random white space changes in patches, multiple occurrences ?!?
+That's only on a slow path during cpu frequency changing while the TSC is instable.
+Shouldn't be that common.
 
 -Andi
-
