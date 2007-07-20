@@ -1,200 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbXGTO1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbXGTOlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932132AbXGTO1s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 10:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764904AbXGTO1k
+	id S932512AbXGTOlq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 10:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762759AbXGTOlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 10:27:40 -0400
-Received: from mercury.realtime.net ([205.238.132.86]:39290 "EHLO
-	ruth.realtime.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760308AbXGTO1i (ORCPT
+	Fri, 20 Jul 2007 10:41:40 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:64602 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760460AbXGTOlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 10:27:38 -0400
-In-Reply-To: <Pine.LNX.4.64.0707191018520.28721@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org> <200707172217.01890.rjw@sisk.pl> <87odiag45q.fsf@jbms.ath.cx> <200707151433.34625.rjw@sisk.pl> <200707172320.16279.rjw@sisk.pl> <ea7a437ca4038d408ac544bbc3c2434a@bga.com> <Pine.LNX.4.64.0707191018520.28721@asgard.lang.hm>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <86863e635f75f5b0e3746202893cb231@bga.com>
+	Fri, 20 Jul 2007 10:41:39 -0400
+Date: Fri, 20 Jul 2007 10:36:33 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: jbeulich@novell.com, "S. P. Prasanna" <prasanna@in.ibm.com>,
+       linux-kernel@vger.kernel.org, patches@x86-64.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: new text patching for review
+Message-ID: <20070720143633.GB29979@Krystal>
+References: <200707191105.44056.ak@suse.de> <20070719133852.GA5490@Krystal> <200707191546.08919.ak@suse.de> <20070719173502.GB12955@Krystal> <p73d4yow0ys.fsf@bingen.suse.de> <20070719234912.GB30383@Krystal> <20070720082833.GC19833@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       linux-pm <linux-pm@lists.linuxfoundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 09:24:03 -0500
-To: david@lang.hm
-X-Mailer: Apple Mail (2.624)
+Content-Disposition: inline
+In-Reply-To: <20070720082833.GC19833@one.firstfloor.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:13:08 up 3 days,  8:47,  3 users,  load average: 0.09, 0.80, 1.18
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 19, 2007, at 12:31 PM, david@lang.hm wrote:
-> On Thu, 19 Jul 2007, Milton Miller wrote:
->>>  (2) Upon start-up (by which I mean what happens after the user has 
->>> pressed
->>>      the power button or something like that):
->>>    * check if the image is present (and valid) _without_ enabling 
->>> ACPI (we
->>>  don't
->>>      do that now, but I see no reason for not doing it in the new
->>>  framework)
->>>    * if the image is present (and valid), load it
->>>    * turn on ACPI (unless already turned on by the BIOS, that is)
->>>    * execute the _BFS global control method
->>>    * execute the _WAK global control method
->>>    * continue
->>>    Here, the first two things should be done by the image-loading
->>>  kernel, but
->>>    the remaining operations have to be carried out by the restored 
->>> kernel.
->>
->> Here I agree.
->>
->> Here is my proposal.  Instead of trying to both write the image and 
->> suspend, I think this all becomes much simpler if we limit the scope 
->> the work of the second kernel.  Its purpose is to write the image.   
->> After that its done. The platform can be powered off if we are going 
->> to S5.   However, to support suspend to ram and suspend to disk, we 
->> return to the first kernel.
->>
->> This means that the first kernel will need to know why it got 
->> resumed.  Was the system powered off, and this is the resume from the 
->> user?   Or was it restarted because the image has been saved, and its 
->> now time to actually suspend until woken up?  If you look at it, this 
->> is the same interface we have with the magic arch_suspend hook -- did 
->> we just suspend and its time to write the image, or did we just 
->> resume and its time to wake everything up.
->>
->> I think this can be easily solved by giving the image saving kernel 
->> two resume points: one for the image has been written, and one for we 
->> rebooted and have restored the image.  I'm not familiar with ACPI.  
->> Perhaps we need a third to differentiate we read the image from S4 
->> instead of from S5, but that information must be available to the OS 
->> because it needs that to know if it should resume from hibernate.
->
-> are we sure that there are only 2-3 possible actions? or should this 
-> be made into a simple jump table so that it's extendable?
+* Andi Kleen (andi@firstfloor.org) wrote:
+> On Thu, Jul 19, 2007 at 07:49:12PM -0400, Mathieu Desnoyers wrote:
+> > * Andi Kleen (andi@firstfloor.org) wrote:
+> > > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+> > > 
+> > > > * Andi Kleen (ak@suse.de) wrote:
+> > > > > 
+> > > > > > Ewwwwwwwwwww.... you plan to run this in SMP ? So you actually go byte
+> > > > > > by byte changing pieces of instructions non atomically and doing
+> > > > > > non-Intel's errata friendly XMC. You are really looking for trouble
+> > > > > > there :) Two distinct errors can occur: 
+> > > > > 
+> > > > > In this case it is ok because this only happens when transitioning
+> > > > > from 1 CPU to 2 CPUs or vice versa and in both cases the other CPUs
+> > > > > are essentially stopped.
+> > > > > 
+> > > > 
+> > > > I agree that it's ok with SMP, but another problem arises: it's not only
+> > > > a matter of being protected from SMP access, but also a matter of
+> > > > reentrancy wrt interrupt handlers.
+> > > > 
+> > > > i.e.: if, as we are patching nops non atomically, we have a non maskable
+> > > > interrupt coming which calls get_cycles_sync() which uses the
+> > > 
+> > > Hmm, i didn't think NMI handlers called that. e.g. nmi watchdog just
+> > > uses jiffies.
+> > > 
+> > > get_cycles_sync patching happens only relatively early at boot, so oprofile
+> > > cannot be running yet.
+> > 
+> > Actually, the nmi handler does use the get_cycles(), and also uses the
+> >
+> > spinlock code:
+> > 
+> > arch/i386/kernel/nmi.c:
+> > __kprobes int nmi_watchdog_tick(struct pt_regs * regs, unsigned reason)
+> > ...
+> > static DEFINE_SPINLOCK(lock);   /* Serialise the printks */
+> > spin_lock(&lock);
+> > printk("NMI backtrace for cpu %d\n", cpu);
+> > ...
+> > spin_unlock(&lock);
+> > 
+> > If A - we change the spinlock code non atomically it would break.
+> 
+> It only has its lock prefixes twiggled, which should be ok.
+> 
 
-At 2 I don't think we need a jump table.   Even if we had a table, we 
-have to identify what each entry means.  If we start getting more then 
-we can change from command line to table.
-
->> As noted in  the thread
->>
->> Message-ID: <873azxwqhr.fsf@jbms.ath.cx>
->> Subject: [linux-pm] Re: hibernation/snapshot design
->> on Mon Jul  9 08:23:53 2007, Jeremy Maitin-Shepard wrote:
->>
->>>  (3) how to communicate where to save the memory
->>
->> This is an intresting topic.  The suspended kernel has most IO and 
->> disk space.  It also knows how much space is to be occupied by the 
->> kernel.   So communicating a block map to the second kernel would be 
->> the obvious choice. But the second kernel must be able to find the 
->> image to restore it, and it must have drivers for the media.  Also, 
->> this is not feasible for storing to nfs.
->>
->> I think we will end up with several methods.
->>
->> One would be supply a list of blocks, and implement a file system 
->> that reads the file by reading the scatter list from media.  The 
->> restore kernel then only needs to read an anchor, and can build upon 
->> that until the image is read into memory.  Or do this in userspace.
->>
->> I don't know how this compares to the current restore path.   I 
->> wasn't able to identify the code that creates the on disk structure 
->> in my 10 minute perusal of kernel/power/.
->>
->> A second method will be to supply a device and file that will be 
->> mounted by the save kernel, then unmounted and restored.  This would 
->> require a partition that is not mounted or open by the suspended 
->> kernel (or use nfs or a similar protocol that is designed for 
->> multiple client concurrent access).
->>
->> A third method would be to allocate a file with the first kernel, and 
->> make sure the blocks are flushed to disk.  The save and restore 
->> kernels map the file system using a snapshot device.  Writing would 
->> map the blocks and use the block offset to write to the real device 
->> using the method from the first option; reading could be done 
->> directly from the snapshot device.
->>
->> The first and third option are dead on log based file systems (where 
->> the data is stored in the log).
->
-> remember that the save and restore kernel can access the memory of the 
-> suspending kernel, so as long as the data is in a known format and 
-> there is a pointer to the data in a known location, the save and 
-> restore kernel can retreive the data from memory, there's no need to 
-> involve media.
-
-I agree that the the save kernel can read the list from the being-saved 
-kernel.
-
-However, when restoring, the being-saved (being-restored) kernel is not 
-accessable, so the save list has to be stored as part of the image.
-
->> Simplifying kjump: the proposal for v3.
->>
->> The current code is trying to use crash dump area as a safe, reserved 
->> area to run the second kernel.   However, that means that the kernel 
->> has to be linked specially to run in the reserved area.   I think we 
->> need to finish separating kexec_jump from the other code paths.
->
-> on x86 at least it's possible to compile a relocateable kernel, so it 
-> doesn't need to be compiled specificly for a particular reserved area. 
-> This would allow you to use the same kernel build as the suspending 
-> kernel if you wanted to (I think that the config of the save and 
-> restore kernel is going to be trivial enough to consider 
-> auto-configuring and building a specific kernel for each box a real 
-> possibility)
-
-Yes, one *can* build x86 relocatable.  But there are funny restrictions 
-like it has to be a bzImage or be loaded by kexec or something.   And 
-not all architectures have relocatable support.  I think making the 
-lists for the exsiting code to swap memory will not be that difficult 
-and it will make the solution have less restrictions.  Maybe I should 
-shut up and write some code this weekend.
-
-Actually, I think we can have the dedicated area as an option.  If you 
-suspend frequently keep a relocated kernel booted.  If you need more 
-ram or suspend infrequently allocate the pages on the fly.
+Yes, this is a special case where both the lock prefixed instructions
+and the non lock prefixed instructions are valid, so it does not matter
+if a thread is preempted right after executing the NOP turned into a
+0xf0. However, if such case happens when passing from UP to SMP, a
+thread could be scheduled in and try to access to a spinlock with the
+non-locked instruction. There should be some kind of "teardown" to make
+sure that no such case can happen.
 
 
->> As a first stage of suspend and resume, we can save to dedicated 
->> partitions all memory (as supplied to crash_dump) that is not marked 
->> nosave and not part of the save kernel's image.   The fancy block 
->> lists and memory lists can be added later.
->
-> if the suspending kernel needs to tell the save and restore kernel 
-> what memory is not marked nosave have it do so useing a memory list of 
-> some kind. you need to setup a mechanism for communicating the data 
-> anyway, setup a mechansim that's useable in the long term.
 
-I'm saying we can have people start to test by the simple save all ram 
-to dedicated while we figure out what the long term list looks like.
+> >    B - printk reads the TSC to get a timestamp, it breaks:
+> >    it calls:
+> > printk_clock(void) -> sched_clock(); -> get_cycles_sync() on x86_64.
+> 
+> Are we reading the same source? sched_clock has never used get_cycles_sync(),
+> just ordinary get_cycles() which is not patched. In fact it mostly
+> used rdtscll() directly.
+> 
 
->> If we want to keep the second kernel booted, then we need to add a 
->> save area for the booted jump target.   Note that the save and 
->> restore lists to relocate_new_kernel can be computed once and saved.  
->>  Longer term we could implement sys_kexec_load(UNLOAD) that would 
->> retrieve the saved list back to application space to save to disk in 
->> a file.   This means you could save the booted save kernel, it just 
->> couldn't have any shared storage open.
->
-> since the kexec to the second kernel needs to handle the device 
-> intialization, do you really save much by doing this? from a 
-> reliability point of view it would seem simpler (and therefor more 
-> reliable) to initialize the save and restore kernel each time it's 
-> used, so that it always does the same thing (as opposed to carrying 
-> state from one use to the next)
+Yes, you are right.. I am thinking more about other clients, such as a
+tracer, which could want the precision given by get_cycles_sync() and
+may execute in NMI context. It does not apply to the current kernel
+source. It's just that reading a timestamp counter is an operation so
+common that it should not come with restrictions about which context it
+could be called from due to the alternatives mechanism.
 
-You can save a bit of run time initialization, at the cost of saving 
-the whole image with the initialized pages instead of zeroing 
-uninitialized pages.   The code to restore the devices is the same code 
-path as the code for the main kernel to restore the devices (as 
-implemented in the current patch), so we get more testing of that path.
+> The main problem is alternative() nopify, e.g. for prefetches which
+> could hide in every list_for_each; but from a quick look the current
+> early NMI code doesn't do that.
 
-> David Lang
-milton
+Yup.. well.. my tracer will ;) I use a list_for_each_rcu() to iterate on
+active traces. That's another example of a very basic piece of
+infrastructure for which we don't want to bother about alternatives
+patching when using it.
 
+> 
+> > Yeah, that's a mess. That's why I always consider patching the code
+> > in a way that will let the NMI handler run through it in a sane manner
+> > _while_ the code is being patched. It implies _at least_ to do the
+> > updates atomically with atomic aligned memory writes that keeps the site
+> > being patched in a coherent state. Using a int3-based bypass is also
+> > required on Intel because of the erratum regarding instruction cache.
+> 
+> That's only for cross modifying code, no? 
+> 
+
+No. It also applies to UP modification. Since it is hard to insure that
+no unmaskable interrupt handler will run on top of you, it can help to
+leave the code in a valid state at every moment.
+
+> > > This cannot happen for the current code: 
+> > > - full alternative patching happen only at boot when the other CPUs
+> > > are not running
+> > 
+> > Should be checked if NMIs and MCEs are active at that moment.
+> 
+> They are probably both.
+> 
+> I guess we could disable them again. I will cook up a patch.
+> 
+
+I guess we could, although I wouldn't recommend doing it on a live
+system, only at boot time.
+
+> > I see the mb()/rmb()/wmb() also uses alternatives, they should be
+> > checked for boot-time racing against NMIs and MCEs.
+> 
+> Patch above would take care of it.
+> 
+> > 
+> > init/main.c:start_kernel()
+> > 
+> > parse_args() (where the nmi watchdog is enabled it seems) would probably
+> > execute the smp-alt-boot and nmi_watchdog arguments in the order in which
+> > they are given as kernel arguments. So I guess it could race.
+> 
+> Not sure I see your point here. How can arguments race?
+> 
+
+I thought parse_args() started the NMIs, but it seems to just take the
+arguments and saves them for later.
+
+> > 
+> > the "mce" kernel argument is also parsed in parse_args(), which leads to
+> > the same problem.
+> 
+> ?
+> 
+Same as above.
+
+> 
+> > 
+> > > For the immediate value patching it also cannot happen because
+> > > you'll never modify multiple instructions and all immediate values
+> > > can be changed atomically. 
+> > > 
+> > 
+> > Exactly, I always make sure that the immediate value within the
+> > instruction is aligned (so a 5 bytes movl must have an offset of +3
+> > compared to a 4 bytes alignment).
+> 
+> The x86 architecture doesn't require alignment for atomic updates.
+> 
+
+You mean for atomicity wrt the local SMP or cross-cpus ?
+
+> > Make sure this API is used only to modify code meeting these
+> > requirements (those are the ones I remember from the top of my head):
+> 
+> Umm, that's far too complicated. Nobody will understand it anyways.
+> I'll cook up something simpler.
+> 
+
+ok :)
+
+Mathieu
+
+> -Andi
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
