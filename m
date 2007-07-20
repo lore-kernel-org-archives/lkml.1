@@ -1,85 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbXGTHMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbXGTHM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763350AbXGTHMM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbXGTHL7
+	id S932153AbXGTHM6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbXGTHMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:11:59 -0400
-Received: from za-gw.sanpeople.com ([196.211.225.226]:2419 "EHLO
-	za-gw.sanpeople.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753723AbXGTHL6 (ORCPT
+	Fri, 20 Jul 2007 03:12:51 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42166 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753805AbXGTHMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:11:58 -0400
-Subject: Re: [PATCH 1/1][RESEND] Driver for the Atmel on-chip SSC on AT32AP
-	and AT91.
-From: Andrew Victor <andrew@sanpeople.com>
-To: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kernel-avr32 <kernel@avr32linux.org>,
-       David Brownell <david-b@pacbell.net>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Hans-Christian Egtvedt <egtvedt@samfundet.no>
-In-Reply-To: <1184913868.16760.21.camel@localhost.localdomain>
-References: <469E6C00.3060506@atmel.com>
-	 <1184833759.15007.33.camel@fuzzie.sanpeople.com>
-	 <1184913868.16760.21.camel@localhost.localdomain>
-Content-Type: text/plain
-Organization: Multenet Technologies (Pty) Ltd
-Message-Id: <1184914542.15002.113.camel@fuzzie.sanpeople.com>
+	Fri, 20 Jul 2007 03:12:50 -0400
+Date: Fri, 20 Jul 2007 10:12:48 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Roland Dreier <rdreier@cisco.com>
+cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Subject: Re: kmalloc zero size changes break i386
+In-Reply-To: <adamyxsfmnc.fsf@cisco.com>
+Message-ID: <Pine.LNX.4.64.0707201009580.1209@sbz-30.cs.Helsinki.FI>
+References: <200707191201.35777.ak@suse.de> <84144f020707190708p1c4d63cnbb0397a602c3527d@mail.gmail.com>
+ <adamyxsfmnc.fsf@cisco.com>
 Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.2.2 
-Date: 20 Jul 2007 08:55:42 +0200
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi Hans-Christian,
+Hi Roland,
 
-> Just an example from sound/soc/at91/at91-ssc.c
-> 
-> rcmr =	  (( ssc_p->rcmr_period		<< 24) & AT91_SSC_PERIOD)
-> 			| (( 1				<< 16) & AT91_SSC_STTDLY)
-> 			| (( AT91_SSC_START_FALLING_RF	     ) & AT91_SSC_START)
-> 			| (( AT91_SSC_CK_RISING		     ) & AT91_SSC_CKI)
-> 			| (( AT91_SSC_CKO_NONE		     ) & AT91_SSC_CKO)
-> 			| (( AT91_SSC_CKS_DIV		     ) & AT91_SSC_CKS);
+On Thu, 19 Jul 2007, Roland Dreier wrote:
+> [ 1350.668590] Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+> [ 1350.674068]  [<ffffffff8027b373>] __kmalloc+0x51/0xaf
 
-Well, I didn't write the above, so it's more complex than it needs to
-be.
+There's some heavy-duty function inlining going on in__kmalloc so could 
+you please work out the exact location of the oops as described in 
+Documentation/BUG-HUNTING (look for the "use GDB to translate" part).
 
-For bitfields where the user can input any value we would usually add to
-the header:
-   #define AT91_SSC_STTDLY_(x)   ((x) << 16)
-   #define AT91_SSC_PERIOD_(x)   ((x) << 24)
+And to double-check, this is SLAB with CONFIG_DEBUG_SLAB enabled? Do you 
+see this with SLUB?
 
-Then it can simply be re-written as:
-
-rcmr = AT91_SSC_PERIOD(ssc_p->rcmr_period)
-	| AT91_SSC_STTDLY(1)
-	| AT91_SSC_START_FALLING_RF
-	| AT91_SSC_CK_RISING
-	| AT91_SSC_CKO_NONE
-	| AT91_SSC_CKS_DIV;
-
-
-> Would with the header style for atmel-ssc be:
-> 
-> rcmr = SSC_BF(RCMR_PERIOD, ssc_p->rcmr_period)
-> 		| SSC_BF(RCMR_STTDLY, 1)
-> 		| SSC_BF(RCMR_START, 4)
-> 		| SSC_BF(RCMR_CKI, 1)
-> 		| SSC_BF(RCMR_CKO, 0)
-> 		| SSC_BF(RCMR_CKS, 0);
-> 
-> I find the latter more readable and compact, the user also does not need
-> to know the offset of the different bit-fields.
-
-But the user does then constantly have to refer to the datasheet to
-determine what CKI = 1 or CKS = 0 means.
-
-
-Regards,
-  Andrew Victor
-
-
+				Pekka
