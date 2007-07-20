@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935540AbXGTXdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761677AbXGTXdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935540AbXGTXdM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 19:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbXGTXc7
+	id S1761677AbXGTXdg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 19:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759769AbXGTXdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 19:32:59 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:37869 "EHLO
+	Fri, 20 Jul 2007 19:33:01 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:37870 "EHLO
 	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758828AbXGTXc6 (ORCPT
+	by vger.kernel.org with ESMTP id S1757304AbXGTXc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Jul 2007 19:32:58 -0400
-Message-Id: <20070720225817.050195257@ayoka.breakpoint.cc>
+Message-Id: <20070720225817.607502287@ayoka.breakpoint.cc>
 User-Agent: quilt/0.46-1
-Date: Sat, 21 Jul 2007 00:58:00 +0200
+Date: Sat, 21 Jul 2007 00:58:01 +0200
 From: Sebastian Siewior <sebastian@breakpoint.cc>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] compat_ioctl requires CONFIG_BLOCK
-Content-Disposition: inline; filename=compat_ioctl_fix.diff
+Subject: [PATCH] i2o: defined but not used.
+Content-Disposition: inline; filename=i2o_exec_lct_notify_def_not_used.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Got with randconfig
-include/linux/loop.h:66: error: expected specifier-qualifier-list before
-'request_queue_t'
-make[1]: *** [fs/compat_ioctl.o] Error 1
-
-parts of compat ioctl require CONFIG_BLOCK to be set.
-
+drivers/message/i2o/exec-osm.c:539: warning: 'i2o_exec_lct_notify' defined but
+not used
 Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
-Index: b/fs/compat_ioctl.c
+Index: b/drivers/message/i2o/exec-osm.c
 ===================================================================
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -63,7 +63,9 @@
- #include <linux/wireless.h>
- #include <linux/atalk.h>
- #include <linux/blktrace_api.h>
-+#ifdef CONFIG_BLOCK
- #include <linux/loop.h>
-+#endif
+--- a/drivers/message/i2o/exec-osm.c
++++ b/drivers/message/i2o/exec-osm.c
+@@ -389,9 +389,7 @@ static void i2o_exec_lct_modified(struct
+ 	if (i2o_device_parse_lct(c) != -EAGAIN)
+ 		change_ind = c->lct->change_ind + 1;
  
- #include <net/bluetooth/bluetooth.h>
- #include <net/bluetooth/hci.h>
-@@ -3491,8 +3493,10 @@ HANDLE_IOCTL(LPSETTIMEOUT, lp_timeout_tr
- IGNORE_IOCTL(VFAT_IOCTL_READDIR_BOTH32)
- IGNORE_IOCTL(VFAT_IOCTL_READDIR_SHORT32)
- 
-+#ifdef CONFIG_BLOCK
- /* loop */
- IGNORE_IOCTL(LOOP_CLR_FD)
-+#endif
+-#ifdef CONFIG_I2O_LCT_NOTIFY_ON_CHANGES
+ 	i2o_exec_lct_notify(c, change_ind);
+-#endif
  };
  
- #define IOCTL_HASHSIZE 256
+ /**
+@@ -525,6 +523,7 @@ int i2o_exec_lct_get(struct i2o_controll
+ 	return rc;
+ }
+ 
++#ifdef CONFIG_I2O_LCT_NOTIFY_ON_CHANGES
+ /**
+  *	i2o_exec_lct_notify - Send a asynchronus LCT NOTIFY request
+  *	@c: I2O controller to which the request should be send
+@@ -570,6 +569,13 @@ static int i2o_exec_lct_notify(struct i2
+ 	return 0;
+ };
+ 
++#else
++static int i2o_exec_lct_notify(struct i2o_controller *c, u32 change_ind)
++{
++	return 0;
++}
++#endif
++
+ /* Exec OSM driver struct */
+ struct i2o_driver i2o_exec_driver = {
+ 	.name = OSM_NAME,
 
 -- 
 
