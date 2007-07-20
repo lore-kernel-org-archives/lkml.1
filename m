@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935150AbXGTTr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934647AbXGTTtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935150AbXGTTr7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 15:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763029AbXGTTrm
+	id S934647AbXGTTtf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 15:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762879AbXGTTt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 15:47:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33803 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753526AbXGTTrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 15:47:40 -0400
-Date: Fri, 20 Jul 2007 15:47:37 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Douglas Thompson <dougthompson@xmission.com>
-Subject: Re: drivers/edac: add mips and ppc visibility
-Message-ID: <20070720194737.GA30184@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Douglas Thompson <dougthompson@xmission.com>
-References: <200707191759.l6JHxG4c022643@hera.kernel.org>
+	Fri, 20 Jul 2007 15:49:28 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:4171 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761333AbXGTTt0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 15:49:26 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAD+voEarR7PD/2dsb2JhbAA
+X-IronPort-AV: i="4.16,563,1175497200"; 
+   d="scan'208"; a="167627391:sNHT40403214"
+To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <davem@davemloft.net>,
+       <jeff@garzik.org>, "Williams, Dan J" <dan.j.williams@intel.com>,
+       "Leech, Christopher" <christopher.leech@intel.com>
+Subject: Re: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
+X-Message-Flag: Warning: May contain useful information
+References: <D5C1322C3E673F459512FB59E0DDC32903445DBE@orsmsx414.amr.corp.intel.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 20 Jul 2007 12:49:24 -0700
+In-Reply-To: <D5C1322C3E673F459512FB59E0DDC32903445DBE@orsmsx414.amr.corp.intel.com> (Waskiewicz Jr's message of "Fri, 20 Jul 2007 12:19:03 -0700")
+Message-ID: <adair8ec0u3.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707191759.l6JHxG4c022643@hera.kernel.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+X-OriginalArrivalTime: 20 Jul 2007 19:49:25.0260 (UTC) FILETIME=[13507CC0:01C7CB07]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 05:59:16PM +0000, Linux Kernel wrote:
- > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b113a3f7e85d7f97c8383a88a5bc7c2ea8daeb2f
- > Commit:     b113a3f7e85d7f97c8383a88a5bc7c2ea8daeb2f
- > Parent:     052dfb45ccb5ea354a426b52556bcfee75b9d2f5
- > Author:     Douglas Thompson <dougthompson@xmission.com>
- > AuthorDate: Thu Jul 19 01:50:15 2007 -0700
- > Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
- > CommitDate: Thu Jul 19 10:04:55 2007 -0700
+ > > Hmm, I see I don't understand what this driver is doing.  
+ > > What is a "struct ioatdma_device"?  Is this driver requesting 
+ > > interrupts that come from the NIC or the IOAT DMA engine?
  > 
- >     drivers/edac: add mips and ppc visibility
- >     
- >     1) Remove an old CVS ID string
- >     
- >     2) change EDAC from a tristate option to a simple bool option
- >     
- >     3) In addition to the X86 arch, PPC and MIPS also have drivers in the
- >     submission queue.  This patch turns on the EDAC flag for those archs.  Each
- >     driver will have its respective 'depends on ARCH' set.
- >     
- >     Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
- >     Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
- >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
- >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+ > I might have caused some confusion.  You had asked if any drivers
+ > support MSI but not MSI-X, so I threw 2 drivers out there that currently
+ > support both, and why we support MSI for compatibility.
+ > 
+ > > Anyway, if the NICs support MSI-X, is there any chance of 
+ > > failing to get one MSI-X vectors but then succeeding in 
+ > > getting MSI enabled?
+ > > How could that happen?  I don't see what falling back to MSI 
+ > > buys you beyond more code.
+ > 
+ > MSI-X doesn't make much sense if you have 1 Rx queue on your NIC, since
+ > 1 vector essentially acts like MSI.  In the case of why MSI-X could
+ > fail, I have had it fail when I misconfigured my driver and didn't ask
+ > for enough vectors for what I was assigning, so the driver disabled the
+ > multiple Rx queues, and fell back to MSI.
 
-What was the reasoning behind 2) ?
-Now everyone's distro kernel has bits of EDAC in it even if they
-don't use it.  (Admittedly only a small amount, but these things
-tend to creep in bit by bit).
+OK, let's try to avoid going off into the weeds here.  In the context
+of the specific patch that this thread started with, is there any
+point in having both "msix-single-vector" and "msi" interrupt support?
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+ - R.
