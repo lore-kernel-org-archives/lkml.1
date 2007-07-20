@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936723AbXGTTU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933395AbXGTTaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936723AbXGTTU3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 15:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936397AbXGTTTJ
+	id S933395AbXGTTaf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 15:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760619AbXGTTaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 15:19:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:60523 "EHLO mga09.intel.com"
+	Fri, 20 Jul 2007 15:30:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49876 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935453AbXGTTTH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 15:19:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,563,1175497200"; 
-   d="scan'208";a="108310981"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1760093AbXGTTaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 15:30:19 -0400
+Date: Fri, 20 Jul 2007 21:30:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] slub crashes with recent -git
+Message-ID: <20070720193008.GA4190@elte.hu>
+References: <20070719194234.GA27917@elte.hu> <1184952874.12655.4.camel@cmn3.stanford.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-Date: Fri, 20 Jul 2007 12:19:03 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC32903445DBE@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <aday7hac2vf.fsf@cisco.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-thread-index: AcfLAPLQ/jRig8XJS16lciP71280VwAALT6Q
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <davem@davemloft.net>,
-       <jeff@garzik.org>, "Williams, Dan J" <dan.j.williams@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-X-OriginalArrivalTime: 20 Jul 2007 19:19:05.0477 (UTC) FILETIME=[D6A3A350:01C7CB02]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1184952874.12655.4.camel@cmn3.stanford.edu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm, I see I don't understand what this driver is doing.  
-> What is a "struct ioatdma_device"?  Is this driver requesting 
-> interrupts that come from the NIC or the IOAT DMA engine?
 
-I might have caused some confusion.  You had asked if any drivers
-support MSI but not MSI-X, so I threw 2 drivers out there that currently
-support both, and why we support MSI for compatibility.
+* Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
 
-> Anyway, if the NICs support MSI-X, is there any chance of 
-> failing to get one MSI-X vectors but then succeeding in 
-> getting MSI enabled?
-> How could that happen?  I don't see what falling back to MSI 
-> buys you beyond more code.
+> On Thu, 2007-07-19 at 21:42 +0200, Ingo Molnar wrote:
+> > Linus, Christoph,
+> > 
+> > recent slub commits in -git cause this bootup crash:
+> > 
+> >  Freeing unused kernel memory: 324k freed
+> >  Write protecting the kernel read-only data: 1294k
+> 
+> Just curious, are the crashes even possible in 2.6.22.1? (I see the 
+> same patchable code snippet in the source). Just wondering if I should 
+> also apply this to 2.6.21.1-rt4...
 
-MSI-X doesn't make much sense if you have 1 Rx queue on your NIC, since
-1 vector essentially acts like MSI.  In the case of why MSI-X could
-fail, I have had it fail when I misconfigured my driver and didn't ask
-for enough vectors for what I was assigning, so the driver disabled the
-multiple Rx queues, and fell back to MSI.
+no, i think they are unique to .23, due to the recent stricter behavior 
+introduced for zero-sized allocs.
 
-I hope this helps.
-
--PJ
+	Ingo
