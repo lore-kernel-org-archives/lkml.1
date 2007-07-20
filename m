@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762979AbXGTN7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762055AbXGTOAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762979AbXGTN7B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbXGTN6y
+	id S1762055AbXGTOAq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 10:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXGTOAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:58:54 -0400
-Received: from lucidpixels.com ([75.144.35.66]:33998 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756801AbXGTN6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:58:54 -0400
-Date: Fri, 20 Jul 2007 09:58:50 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux-kernel@vger.kernel.org
-cc: xfs@oss.sgi.com, apiszcz@solarrain.com
-Subject: Software RAID 5 - Two reads are faster than one on a SW RAID5?
-Message-ID: <Pine.LNX.4.64.0707200952270.25069@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 20 Jul 2007 10:00:39 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:59263 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750714AbXGTOAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 10:00:39 -0400
+Date: Fri, 20 Jul 2007 16:00:36 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Pierre Savary" <pierre.savary@kerlink.fr>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: TR: Neep help with my MMC driver ...
+Message-ID: <20070720160036.581f8fba@poseidon.drzeus.cx>
+In-Reply-To: <000c01c7cad4$127dcba0$377962e0$@savary@kerlink.fr>
+References: <000c01c7cad4$127dcba0$377962e0$@savary@kerlink.fr>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
+To: s@drzeus.cx
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a multi-core Q6600 CPU on a 10-disk Raptor RAID 5 running XFS.
+On Fri, 20 Jul 2007 15:44:18 +0200
+"Pierre Savary" <pierre.savary@kerlink.fr> wrote:
 
-I just pulled down the Debian Etch 4.0 DVD ISO's, one for x86 and one for 
-x86_64, when I ran md5sum -c MD5SUMS, I see ~280-320MB/s.  When I ran the 
-second one I see upwards of what I should be seeing 500-520MB/s.
+> Hi,
+> 
+>  
+> 
+> I permit me to send you a mail because I've seen on the net that you
+> have work around MMC.
 
-NOTE:: These MD5 contain the 3 DVD ISO's for each platform, 6 total ISOs.
+Well, I am the maintainer ;)
 
-I know md5sum is cpubound to a degree, do you think that is what is 
-happening here?  Each core can only sustain ~300MB/s and then with two of 
-four cores working, it can exceed that amount or is there some similarity 
-with RAID1 in linux compared to RAID5?
+Also, you should include the LKML for these discussions.
 
-With RAID1, if you use a single read thread, you will get 60-70MB/s read 
-on a dual raptor raid1.  If you use two(?) or three threads, it will read 
-from both disks and you will see 120-140MB/s.
+> 
+> Linux 2.6.21+patch.AT91 run on my AT91sam9260. I must use the MMC.
+> But it doesn't work . and I try since the begin of this week !!!!!!!!
+> This is what I do :
+> 
+>  
 
-Is there some commonality with software RAID1 and RAID5 in Linux in this 
-regard?
+*snip*
 
-$ vmstat 1
-procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
-  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
-  1  0    128  46344    648 6702340    0    0   357   418   21    1  1  1 99  0
-  1  0    128  48476    648 6700664    0    0 294912     0 3862 1505 20 10 71  0
-  1  0    128  46144    648 6703448    0    0 327680     0 3951 1815 20 10 70  0
-  1  0    128  47280    648 6704488    0    0 295632    92 3747 1937 20  8 72  1
-< kicked off the next md5sum -c >
-  1  1    128  47956    644 6704156    0    0 423256   128 4730 2149 22 11 62  5
-  2  0    128  47684    492 6705700    0    0 491520     0 5598 2484 31 12 48  9
-  1  1    128  46412    492 6708432    0    0 524288 41008 5648 6541 31 16 45  8
-  2  0    128  48136    492 6706840    0    0 491520     0 5730 2606 29 13 47 11
-  1  1    128  46464    492 6708432    0    0 491520    17 5571 2597 30 12 48 10
-  2  0    128  47512    492 6709392    0    0 524288     0 5751 2875 32 12 48  8
-  2  0    128  47076    304 6711152    0    0 524288     0 5671 2677 31 13 49  7
-  3  0    128  48000    304 6706512    0    0 356388    12 4475 2097 22 10 50 19
-  2  0    128  47656    304 6713716    0    0 495580    48 5726 2452 30 13 47  9
-  2  0    128  47676    304 6713852    0    0 524468    32 5768 2739 31 13 48 8
+> 
+> $ mknod /dev/mmc b 254 0
+> 
 
-Thoughts?
+Make sure this is the correct major. You can find it in /proc/devices.
+
+*snip*
+
+> 
+> Sending command 1 as 00001041, arg = 00000000, blocks = 0, length = 0
+> (MR = 00008384)
+> 
+> setting ier to 00000001
+> 
+> MCI irq: status = 0001C0E4, C07F0001, 00010000
+> 
+> MMC: Response index error
+> 
+> Completed command
+> 
+> Status = 0009C0E4 [00000000 00000000 00000000 00000000]
+> 
+> Error detected and set to 4 (cmd = 1, retries = 0)
+> 
+> mmc0: req done (CMD1): 4/0/0: 00000000 00000000 00000000 00000000
+> 
+> mmc0: clock 0Hz busmode 1 powermode 0 cs 0 Vdd 0 width 0 timing 0
+> 
+> MMC: Setting controller bus width to 1
+> 
+
+All your commands are failing, oddly enough with "response index
+error". I'm not familiar with the AT91 controller, so I'm adding
+Nicolas Ferre, the AT91 maintainer, to this discussion.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
