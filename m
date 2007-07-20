@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938084AbXGTWmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938541AbXGTWnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938084AbXGTWmG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938284AbXGTWlm
+	id S938541AbXGTWnD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 18:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbXGTWmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 18:41:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44906 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S938260AbXGTWlk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 18:41:40 -0400
-Date: Fri, 20 Jul 2007 15:41:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: sukadev@us.ibm.com
-Cc: linux-kernel@vger.kernel.org, Containers <containers@lists.osdl.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [PATCH 4/5] [V2] Define is_global_init() and
- is_container_init()
-Message-Id: <20070720154113.db9fb8a4.akpm@linux-foundation.org>
-In-Reply-To: <20070719072158.GD28216@us.ibm.com>
-References: <20070719071206.GE10195@us.ibm.com>
-	<20070719072158.GD28216@us.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Jul 2007 18:42:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55954 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755034AbXGTWmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 18:42:46 -0400
+Message-ID: <46A13A62.5020502@garzik.org>
+Date: Fri, 20 Jul 2007 18:42:42 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+References: <1184970779.4012.38.camel@chaos> <46A1396F.4090204@garzik.org> <20070720224033.GA12358@elte.hu>
+In-Reply-To: <20070720224033.GA12358@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 00:21:58 -0700
-sukadev@us.ibm.com wrote:
+Ingo Molnar wrote:
+> * Jeff Garzik <jeff@garzik.org> wrote:
+> 
+>> I agree with Andi...  it's quite nice to be able to leave some 
+>> arch/i386 stuff, and not carry it over to arch/x86-64.
+> 
+> we can leave those few items in arch/x86 just as much. No need to keep 
+> around a legacy tree for that.
 
-> --- lx26-22-rc6-mm1a.orig/kernel/pid.c	2007-07-16 12:55:15.000000000 -0700
-> +++ lx26-22-rc6-mm1a/kernel/pid.c	2007-07-16 13:10:48.000000000 -0700
-> @@ -69,6 +69,13 @@ struct pid_namespace init_pid_ns = {
->  	.last_pid = 0,
->  	.child_reaper = &init_task
->  };
-> +EXPORT_SYMBOL(init_pid_ns);
-> +
-> +int is_global_init(struct task_struct *tsk)
-> +{
-> +	return tsk == init_pid_ns.child_reaper;
-> +}
-> +EXPORT_SYMBOL(is_global_init);
+By extension it makes doing that sort of thing, in general, more 
+difficult.  Which is IMO not desirable.
 
-I don't immediately see why init_pid_ns was exported to modules.
+	Jeff
 
-It would need to be exported if is_global_init() was made static inline in a
-header (which seems like a sensible thing to do), but it wasn't.
+
 
