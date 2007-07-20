@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759864AbXGTKOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbXGTKOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759864AbXGTKOX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 06:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbXGTKLf
+	id S1758240AbXGTKOp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 06:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758432AbXGTKM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 06:11:35 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:59109 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751706AbXGTKLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 06:11:30 -0400
-Message-ID: <384926280.22018@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070720101124.083676724@mail.ustc.edu.cn>
-References: <20070720100740.106917381@mail.ustc.edu.cn>
-User-Agent: quilt/0.45-1
-Date: Fri, 20 Jul 2007 18:07:42 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] mmap read-around simplification
-Content-Disposition: inline; filename=remove-mmap-hit.patch
+	Fri, 20 Jul 2007 06:12:58 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:65314 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758386AbXGTKM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 06:12:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hedGDomDELrt4m9MfJ90lhjkc67YBQNiIlDU4Jj3WdTL1Kv+kt99xlptPaAYspM+ca/UuvN8/UnAWC9oGDs5jqIEAxDgOHF92Ds0kY5wgCEoGmpb+8cH7bIxIWIFqxSt8shYnajcGe+kydP7Q8sAiOuxwQ6P7vRrY4HUBZB/ufQ=
+Message-ID: <91b13c310707200312j17ec110bm20c100e5861b1758@mail.gmail.com>
+Date: Fri, 20 Jul 2007 18:12:53 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Subject: Re: [PATCH] fs/fuse/dev.c: use zero_user_page instead
+Cc: "Miklos Szeredi" <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <a8e1da0707200309n377eca1fwa640eeceb920959b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11849242706-git-send-email-crquan@gmail.com>
+	 <a8e1da0707200309n377eca1fwa640eeceb920959b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fold file_ra_state.mmap_hit into file_ra_state.mmap_miss
-and make it an int.
+On 7/20/07, Dave Young <hidave.darkstar@gmail.com> wrote:
+> > -       if (page && zeroing && count < PAGE_SIZE) {
+> > -               void *mapaddr = kmap_atomic(page, KM_USER1);
+> > -               memset(mapaddr, 0, PAGE_SIZE);
+> > -               kunmap_atomic(mapaddr, KM_USER1);
+> > -       }
+> > +       if (page && zeroing && count < PAGE_SIZE)
+> > +               zero_user_page(page, 0, PAGE_SIZE, KM_USER1);
+> Why clear all page? IMHO,only count bytes need to be cleared.
+The original one is memset(mapaddr, 0, PAGE_SIZE), namely clear the whole page.
 
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- include/linux/fs.h |    3 +--
- mm/filemap.c       |    4 ++--
- 2 files changed, 3 insertions(+), 4 deletions(-)
+-- 
+Denis Cheng
+Linux Application Developer
 
---- linux-2.6.22-rc6-mm1.orig/include/linux/fs.h
-+++ linux-2.6.22-rc6-mm1/include/linux/fs.h
-@@ -777,8 +777,7 @@ struct file_ra_state {
- 					   there are only # of pages ahead */
- 
- 	unsigned int ra_pages;		/* Maximum readahead window */
--	unsigned long mmap_hit;		/* Cache hit stat for mmap accesses */
--	unsigned long mmap_miss;	/* Cache miss stat for mmap accesses */
-+	int mmap_miss;			/* Cache miss stat for mmap accesses */
- 	unsigned int prev_offset;	/* Offset where last read() ended in a page */
- 	unsigned int prev_index;	/* Cache last read() position */
- };
---- linux-2.6.22-rc6-mm1.orig/mm/filemap.c
-+++ linux-2.6.22-rc6-mm1/mm/filemap.c
-@@ -1389,7 +1389,7 @@ retry_find:
- 		 * Do we miss much more than hit in this file? If so,
- 		 * stop bothering with read-ahead. It will only hurt.
- 		 */
--		if (ra->mmap_miss > ra->mmap_hit + MMAP_LOTSAMISS)
-+		if (ra->mmap_miss > MMAP_LOTSAMISS)
- 			goto no_cached_page;
- 
- 		/*
-@@ -1415,7 +1415,7 @@ retry_find:
- 	}
- 
- 	if (!did_readaround)
--		ra->mmap_hit++;
-+		ra->mmap_miss--;
- 
- 	/*
- 	 * We have a locked page in the page cache, now we need to check
-
---
+"One of my most productive days was throwing away 1000 lines of code."
+ - Ken Thompson.
