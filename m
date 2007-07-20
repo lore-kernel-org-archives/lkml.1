@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbXGTKJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbXGTKLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbXGTKJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 06:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXGTKJM
+	id S1756374AbXGTKLj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 06:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbXGTKLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 06:09:12 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:28353 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbXGTKJL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 06:09:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=k7ENADqDsyWNjjC+rQka5x4qktKoAIa/m/rUNHo+ighmUYXJVNum9kBWoqL2EZvZl0Q8XC1/lm3307ecpW3hTvpF37aE7t2haPZ4NFQUrmsPhnu5P8wggCSOM1chRQtYgEApv2dh1ZVE21jpICZhCrjNxJqN3zRYafUmjysub2s=
-Message-ID: <a8e1da0707200309n377eca1fwa640eeceb920959b@mail.gmail.com>
-Date: Fri, 20 Jul 2007 10:09:10 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Denis Cheng" <crquan@gmail.com>
-Subject: Re: [PATCH] fs/fuse/dev.c: use zero_user_page instead
-Cc: "Miklos Szeredi" <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <11849242706-git-send-email-crquan@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11849242706-git-send-email-crquan@gmail.com>
+	Fri, 20 Jul 2007 06:11:31 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:59100 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751984AbXGTKLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 06:11:30 -0400
+Message-ID: <384926279.42287@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Message-Id: <20070720101123.936159499@mail.ustc.edu.cn>
+References: <20070720100740.106917381@mail.ustc.edu.cn>
+User-Agent: quilt/0.45-1
+Date: Fri, 20 Jul 2007 18:07:41 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/6] compacting file_ra_state
+Content-Disposition: inline; filename=short-rasize.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 7/20/07, Denis Cheng <crquan@gmail.com> wrote:
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
-> ---
-> I'm not very sure zero_user_page is correctly used here,
-> so please feel free to give comments.
->
-> and why here it uses KM_USER1 not KM_USER0, What are the differences?
->
->  fs/fuse/dev.c |    8 +++-----
->  1 files changed, 3 insertions(+), 5 deletions(-)
->
-> diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
-> index 3ad22be..e55b5e8 100644
-> --- a/fs/fuse/dev.c
-> +++ b/fs/fuse/dev.c
-> @@ -533,11 +533,9 @@ static int fuse_copy_do(struct fuse_copy_state *cs, void **val, unsigned *size)
->  static int fuse_copy_page(struct fuse_copy_state *cs, struct page *page,
->                           unsigned offset, unsigned count, int zeroing)
->  {
-> -       if (page && zeroing && count < PAGE_SIZE) {
-> -               void *mapaddr = kmap_atomic(page, KM_USER1);
-> -               memset(mapaddr, 0, PAGE_SIZE);
-> -               kunmap_atomic(mapaddr, KM_USER1);
-> -       }
-> +       if (page && zeroing && count < PAGE_SIZE)
-> +               zero_user_page(page, 0, PAGE_SIZE, KM_USER1);
-Why clear all page? IMHO,only count bytes need to be cleared.
-> +
->         while (count) {
->                 int err;
->                 if (!cs->len && (err = fuse_copy_fill(cs)))
+Use 'unsigned int' instead of 'unsigned long' for the readahead indexes/sizes.
+
+This helps reduce memory consumption on 64bit CPU when
+a lot of files are opened.
+
+Note that the (smaller) 32bit index can support up to 16PB file.
+Which should be sufficient large at least for now.
+
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ include/linux/fs.h |   10 +++++-----
+ mm/filemap.c       |    2 +-
+ mm/readahead.c     |    5 +++--
+ 3 files changed, 9 insertions(+), 8 deletions(-)
+
+--- linux-2.6.22-rc6-mm1.orig/include/linux/fs.h
++++ linux-2.6.22-rc6-mm1/include/linux/fs.h
+@@ -771,16 +771,16 @@ struct fown_struct {
+  * Track a single file's readahead state
+  */
+ struct file_ra_state {
+-	pgoff_t start;                  /* where readahead started */
+-	unsigned long size;             /* # of readahead pages */
+-	unsigned long async_size;       /* do asynchronous readahead when
++	unsigned int start;		/* where readahead started */
++	unsigned int size;		/* # of readahead pages */
++	unsigned int async_size;	/* do asynchronous readahead when
+ 					   there are only # of pages ahead */
+ 
+-	unsigned long ra_pages;		/* Maximum readahead window */
++	unsigned int ra_pages;		/* Maximum readahead window */
+ 	unsigned long mmap_hit;		/* Cache hit stat for mmap accesses */
+ 	unsigned long mmap_miss;	/* Cache miss stat for mmap accesses */
+-	unsigned long prev_index;	/* Cache last read() position */
+ 	unsigned int prev_offset;	/* Offset where last read() ended in a page */
++	unsigned int prev_index;	/* Cache last read() position */
+ };
+ 
+ /*
+--- linux-2.6.22-rc6-mm1.orig/mm/filemap.c
++++ linux-2.6.22-rc6-mm1/mm/filemap.c
+@@ -840,7 +840,7 @@ static void shrink_readahead_size_eio(st
+ 	if (count > 5)
+ 		return;
+ 	count++;
+-	printk(KERN_WARNING "Reducing readahead size to %luK\n",
++	printk(KERN_WARNING "Reducing readahead size to %dK\n",
+ 		ra->ra_pages << (PAGE_CACHE_SHIFT - 10));
+ }
+ 
+--- linux-2.6.22-rc6-mm1.orig/mm/readahead.c
++++ linux-2.6.22-rc6-mm1/mm/readahead.c
+@@ -342,11 +342,12 @@ ondemand_readahead(struct address_space 
+ 		   bool hit_readahead_marker, pgoff_t offset,
+ 		   unsigned long req_size)
+ {
+-	unsigned long max;	/* max readahead pages */
++	int max;	/* max readahead pages */
+ 	int sequential;
+ 
+ 	max = ra->ra_pages;
+-	sequential = (offset - ra->prev_index <= 1UL) || (req_size > max);
++	sequential = ((unsigned int)offset - ra->prev_index <= 1UL) ||
++			(req_size > max);
+ 
+ 	/*
+ 	 * It's the expected callback offset, assume sequential access.
+
+--
