@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760420AbXGTWNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937312AbXGTWOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760420AbXGTWNt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbXGTWNm
+	id S937312AbXGTWOY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 18:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761836AbXGTWOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 18:13:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:4826 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755978AbXGTWNl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 18:13:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=ftIPTRkkKFkZIs25YiCcyb9qmgAhoHjzDUi4u7xK37kTJzzzbEBFmnNQ5Km+owE97auT5xCXROnwOu8b3wXWUqUwi/An05iUFf3wCvbPqTJzt1GRzEjZwP+SlMptF5CljEnhG+qdvfVMpg+X8jdwFK0fXgI+I8mi/JayhA+MUpQ=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][SELinux] Let us not leak memory in SELinux : security_netlbl_cache_add()
-Date: Sat, 21 Jul 2007 00:12:44 +0200
-User-Agent: KMail/1.9.7
-Cc: Stephen Smalley <sds@epoch.ncsc.mil>, James Morris <jmorris@redhat.com>,
-       dgoeddel@trustedcs.com, Frank Mayer <mayerf@tresys.com>,
-       Karl MacMillan <kmacmillan@tresys.com>, paul.moore@hp.com,
-       Chad Sellers <csellers@tresys.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Fri, 20 Jul 2007 18:14:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40164 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761414AbXGTWOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 18:14:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: david@lang.hm
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Sat, 21 Jul 2007 00:22:02 +0200
+User-Agent: KMail/1.9.5
+Cc: Jim Crilly <jim@why.dont.jablowme.net>, Milton Miller <miltonm@bga.com>,
+       linux-pm <linux-pm@lists.linuxfoundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> <200707202343.29307.rjw@sisk.pl> <Pine.LNX.4.64.0707201435520.5166@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707201435520.5166@asgard.lang.hm>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707210012.45185.jesper.juhl@gmail.com>
+Message-Id: <200707210022.03205.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday, 20 July 2007 23:39, david@lang.hm wrote:
+> On Fri, 20 Jul 2007, Rafael J. Wysocki wrote:
+> 
+> > On Friday, 20 July 2007 17:36, david@lang.hm wrote:
+> >> On Fri, 20 Jul 2007, Jim Crilly wrote:
+> >>
+> >>>>> has
+> >>>>> requested the image to be not greater than 50% of RAM.  In that case you
+> >>>>> have
+> >>>>> to free some memory _before_ identifying memory to save and you must not
+> >>>>> race with applications that attempt to allocate memory while you're doing
+> >>>>> it.
+> >>>>
+> >>>> I disagree a little bit.
+> >>>>
+> >>>> first off, only the suspending kernel can know what can be freed and what
+> >>>> is needed to do so (remember this is kernel internals, it can change from
+> >>>> patch to patch, let alone version to version)
+> >>>>
+> >>>> second, if you have a lot of memory to free, and you can't just throw away
+> >>>> caches to do so, you don't know what is going to be involved in freeing
+> >>>> the memory, it's very possilbe that it is going to involve userspace, so
+> >>>> you can't freeze any significant portion of the system, so you can't
+> >>>> eliminate all chance of races
+> >>>>
+> >>>> what you can do is
+> >>>>
+> >>>> 1. try to free stuff
+> >>>> 2. stop the system and account for memory, is enough free
+> >>>> if not goto 1
+> >>>>
+> >>>> if userspace is dirtying memory fast enough, or is just useing enough
+> >>>> memory that you can't meet your limit you just won't be able to suspend.
+> >>>>
+> >>>> but under any other conditions you will eventually get enough memory free.
+> >>>>
+> >>>> so try several times and if you still fail tell the user they have too
+> >>>> much stuff running and they need to kill something.
+> >>>
+> >>> Which would be a pretty big regression from what we have now. With the
+> >>> current implementation I can hibernate under virtually any workload because
+> >>> the freezer stops everything and there's no competition for resources.
+> >>
+> >> as long as what you are trying to save is <=50% of ram (at least with some
+> >> implementations). if you are trying to save more then 50% of ram with some
+> >> current implmenetations you just can't
+> >
+> > With some, you can't, with the others, you can. :-)
+> >
+> > The argument given was about the freezer and IMO it was valid.
+> >
+> > Why didn't you address it directly?
+> 
+> I thought it had been covered in other messages (with as big as this 
+> thread is I'm trying to avoid repeating the same thing more then a couple 
+> times a day :-)
+> 
+> there was another message talking about ways that you could reduce the 
+> image size without it being racy (allocate pinned memory until the 
+> remainder is small enough, then don't backup the pinned memory)
+> 
+> that's a much cleaner answer then what I was thinking, so I'll go with it 
+> instead ;-)
 
-Leaking memory is a bad idea, so let's not do it, in 
-security/selinux/ss/services.c::security_netlbl_cache_add().
+Wouldn't that cause the OOM killer to act, in some cases?
 
-Note: The Coverity checker gets credit for spotting this one.
-Note: Patch has only been compile tested.
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- security/selinux/ss/services.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-index b5f017f..0ae032f 100644
---- a/security/selinux/ss/services.c
-+++ b/security/selinux/ss/services.c
-@@ -2417,8 +2417,10 @@ static void security_netlbl_cache_add(struct netlbl_lsm_secattr *secattr,
- 
- 	cache->type = NETLBL_CACHE_T_MLS;
- 	if (ebitmap_cpy(&cache->data.mls_label.level[0].cat,
--			&ctx->range.level[0].cat) != 0)
-+			&ctx->range.level[0].cat) != 0) {
-+		kfree(cache);
- 		return;
-+	}
- 	cache->data.mls_label.level[1].cat.highbit =
- 		cache->data.mls_label.level[0].cat.highbit;
- 	cache->data.mls_label.level[1].cat.node =
+Greetings,
+Rafael
 
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
