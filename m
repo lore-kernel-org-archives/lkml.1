@@ -1,159 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762035AbXGTDpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762955AbXGTDr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762035AbXGTDpt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 23:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbXGTDpj
+	id S1762955AbXGTDr0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 23:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbXGTDrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 23:45:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44025 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753790AbXGTDpi (ORCPT
+	Thu, 19 Jul 2007 23:47:18 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:54232 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754164AbXGTDrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 23:45:38 -0400
-Date: Thu, 19 Jul 2007 20:44:56 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: [GIT PATCH] more USB patches for 2.6.22
-Message-ID: <20070720034456.GA5826@kroah.com>
+	Thu, 19 Jul 2007 23:47:18 -0400
+Date: Fri, 20 Jul 2007 06:00:50 +0200
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: ak@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: asm-offsets
+Message-ID: <20070720040050.GC475@flower.upol.cz>
+References: <200707192004.l6JK4wQK019993@imap1.linux-foundation.org> <E1IBdoz-0005Ol-6b@flower> <1184895253.10380.227.camel@localhost.localdomain> <20070720032236.GB475@flower.upol.cz> <1184901820.10380.254.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <1184901820.10380.254.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some more USB patches and fixes against your 2.6.22 git tree.
+On Fri, Jul 20, 2007 at 01:23:40PM +1000, Rusty Russell wrote:
+> 	I appreciate your frustration!
 
-They add a new usb gadget driver, more urb->status cleanups, a new sysfs
-attribute to get the raw config of the usb device, and some bugfixes and
-documentation updates.
+It isn't, just a conversation, everyone can skip, you know.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+> Unfortunately I'm not fluent enough in kbuild to be able to give
+> meaningful commentary,
 
-The full patches will be sent to the linux-usb-devel mailing list, if
-anyone wants to see them.
+Modest Rusty :)
 
-thanks,
+> so pinging Sam is my way of helping this along...
 
-greg k-h
-
-
- MAINTAINERS                            |    6 +
- drivers/usb/atm/cxacru.c               |    3 +-
- drivers/usb/atm/speedtch.c             |    7 +-
- drivers/usb/atm/ueagle-atm.c           |    6 +-
- drivers/usb/atm/usbatm.c               |   11 +-
- drivers/usb/class/cdc-acm.c            |   18 +-
- drivers/usb/class/usblp.c              |   27 +-
- drivers/usb/core/hcd.c                 |  131 +-
- drivers/usb/core/hub.c                 |   10 +-
- drivers/usb/core/message.c             |   34 +-
- drivers/usb/core/sysfs.c               |   53 +
- drivers/usb/core/urb.c                 |   88 +-
- drivers/usb/gadget/Kconfig             |   57 +-
- drivers/usb/gadget/Makefile            |    1 +
- drivers/usb/gadget/amd5536udc.c        | 3454 ++++++++++++++++++++++++++++++++
- drivers/usb/gadget/amd5536udc.h        |  626 ++++++
- drivers/usb/gadget/ether.c             |    4 +
- drivers/usb/gadget/gadget_chips.h      |   10 +-
- drivers/usb/gadget/m66592-udc.c        |  255 ++--
- drivers/usb/gadget/m66592-udc.h        |  610 +++---
- drivers/usb/gadget/serial.c            |   25 +-
- drivers/usb/host/isp116x-hcd.c         |  187 +-
- drivers/usb/host/r8a66597-hcd.c        |  110 +-
- drivers/usb/host/r8a66597.h            |   87 +-
- drivers/usb/host/u132-hcd.c            |   17 +-
- drivers/usb/host/uhci-q.c              |   59 +-
- drivers/usb/image/mdc800.c             |   45 +-
- drivers/usb/image/microtek.c           |   19 +-
- drivers/usb/misc/adutux.c              |   59 +-
- drivers/usb/misc/appledisplay.c        |    9 +-
- drivers/usb/misc/auerswald.c           |   25 +-
- drivers/usb/misc/ftdi-elan.c           |   21 +-
- drivers/usb/misc/iowarrior.c           |   21 +-
- drivers/usb/misc/ldusb.c               |   20 +-
- drivers/usb/misc/legousbtower.c        |   28 +-
- drivers/usb/misc/phidgetkit.c          |   13 +-
- drivers/usb/misc/phidgetmotorcontrol.c |   13 +-
- drivers/usb/misc/usblcd.c              |   11 +-
- drivers/usb/misc/usbtest.c             |    4 +-
- drivers/usb/misc/uss720.c              |    5 +-
- drivers/usb/serial/io_ti.c             |   10 +-
- drivers/usb/serial/mos7720.c           |    5 -
- drivers/usb/serial/mos7840.c           |   19 -
- drivers/usb/serial/sierra.c            |  119 +-
- drivers/usb/storage/dpcm.c             |   56 +-
- drivers/usb/storage/onetouch.c         |   13 +-
- drivers/usb/storage/unusual_devs.h     |   18 +
- 47 files changed, 5350 insertions(+), 1079 deletions(-)
- create mode 100644 drivers/usb/gadget/amd5536udc.c
- create mode 100644 drivers/usb/gadget/amd5536udc.h
-
----------------
-
-Alan Stern (8):
-      isp116x-hcd: prepare for urb->status
-      USB: add "descriptors" binary sysfs attribute
-      USB: fix warning caused by autosuspend counter going negative
-      UHCI: short control URBs get a status stage
-      USB: documentation update for usb_unlink_urb
-      USB: usb-storage: unusual_devs entry for Nikon D100
-      USB: move routines in hcd.c
-      USB: change name of spinlock in hcd.c
-
-Florin Malita (1):
-      USB: mos7720, mos7840: remove redundant urb check
-
-Greg Kroah-Hartman (22):
-      USB: atm: cxacru: clean up urb->status usage
-      USB: atm: speedtch: clean up urb->status usage
-      USB: atm: ueagle-atm: clean up urb->status usage
-      USB: atm: usbatm: clean up urb->status usage
-      USB: class: cdc-acm: clean up urb->status usage
-      USB: class: usblp: clean up urb->status usage
-      USB: storage: onetouch: clean up urb->status usage
-      USB: image: mdc800: clean up urb->status usage
-      USB: image: microtek: clean up urb->status usage
-      USB: core: message: clean up urb->status usage
-      USB: misc: adtux: clean up urb->status usage
-      USB: misc: appledisplay: clean up urb->status usage
-      USB: misc: auerswald: clean up urb->status usage
-      USB: misc: ftdi-elan: clean up urb->status usage
-      USB: misc: iowarrior: clean up urb->status usage
-      USB: misc: ldusb: clean up urb->status usage
-      USB: misc: legousbtower: clean up urb->status usage
-      USB: misc: phidgetkit: clean up urb->status usage
-      USB: misc: phidgetmotorcontrol: clean up urb->status usage
-      USB: misc: usblcd: clean up urb->status usage
-      USB: misc: usbtest: clean up urb->status usage
-      USB: misc: uss720: clean up urb->status usage
-
-Jesper Juhl (1):
-      USB: Remove pointless conditional in drivers/usb/serial/io_ti.c::edge_shutdown()
-
-Kevin Lloyd (2):
-      USB: sierra: Add TRU-Install (c) Support
-      USB: sierra: Add new devices
-
-Matthias Kaehlcke (4):
-      USB: use mutex instead of semaphore in the USB gadget serial driver
-      USB: use mutex instead of semaphore in the ELAN U132 adapter driver
-      USB: use mutex instead of semaphore in the Adutux driver
-      USB: use mutex instead of semaphore in the FTDI ELAN driver
-
-Pete Zaitcev (1):
-      USB: usblp: "Big cleanup" breaks O_NONBLOCK
-
-S.Caglar Onur (1):
-      USB: drivers/usb/storage/dpcm.c whitespace cleanup
-
-Thomas Dahlmann (2):
-      USB: amd5536 UDC driver (in GEODE southbridge)
-      USB: MAINTAINERS entry for amd5536udc
-
-Yoshihiro Shimoda (2):
-      USB: m66592-udc: fixes some problems
-      USB: r8a66597-hcd: fixes some problem
-
+Thanks for doing this, because apart from being more readable i've found
+that for example dummy arch/sparc64/kernel/asm-offsets.c may benefit from
+it as well.
+____
