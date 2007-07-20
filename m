@@ -1,87 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbXGTMt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbXGTMui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759424AbXGTMt1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 08:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbXGTMtT
+	id S1761024AbXGTMui (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 08:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbXGTMub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 08:49:19 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4948 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755999AbXGTMtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 08:49:18 -0400
-Date: Fri, 20 Jul 2007 14:49:40 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Jonathan Corbet <corbet@lwn.net>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH/RFC] msleep() with hrtimers 
-In-Reply-To: <28799.1184607969@lwn.net>
-Message-ID: <Pine.LNX.4.64.0707201332530.1817@scrub.home>
-References: <28799.1184607969@lwn.net>
+	Fri, 20 Jul 2007 08:50:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:49129 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755999AbXGTMua (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 08:50:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eNx4ixAoEIOn6JiEWNWMy9oblG33hBfARsQW9KtHQyZrOvDr2WZXJpMGsD6L/GF5Sfon4L49I8h/VyRg7P8kAwfHSR+tAOtLlN3d4OdHa4ZRs65eVxLqRitTlJs0pU33HLOSHQzqgIjF+EjT3PXrLCJtNU7wRotOx2MuziYVC74=
+Message-ID: <d120d5000707200550q47148983w6b525f95fe67cd1f@mail.gmail.com>
+Date: Fri, 20 Jul 2007 08:50:29 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH for review] [12/48] x86_64: use the global PIT lock
+Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <200707201025.12915.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070719348.540885000@suse.de> <200707192152.03321.ak@suse.de>
+	 <200707200024.21467.dtor@insightbb.com>
+	 <200707201025.12915.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 7/20/07, Andi Kleen <ak@suse.de> wrote:
+>
+> > +static DEFINE_SPINLOCK(i8253_lock);
+> > +
+> > static __init int add_pcspkr(void)
+> > {
+> > struct platform_device *pd;
+> > @@ -1501,9 +1503,14 @@ static __init int add_pcspkr(void)
+> > if (!pd)
+> > return -ENOMEM;
+> >
+> > +pd->dev.platform_data = &i8253_lock;
+>
+> That seems pretty ugly to pass spinlocks around in void * pointers.
 
-On Mon, 16 Jul 2007, Jonathan Corbet wrote:
+That spinlock _is_ platform data. We could define
 
-> > That's a bit my problem - we have to consider other setups as well.
-> > Is it worth converting all msleep users behind their back or should we 
-> > just a provide a separate function for those who care?
-> 
-> Any additional overhead is clearly small - enough not to disrupt a *high
-> resolution* timer, after all.
+struct pcspkr_platform_data {
+        spinlock_t *lock;
+};
 
-If you use already high resolution timer, you also need a fast time 
-source, so that in this case it indeed doesn't matter much how you sleep.
+and pass around this as the rest of platform code does but then we'd
+need a header file and it would add a level of indirection but if you
+like this better I can change it. Otherwise spinlock is another data
+structure and we pass them around all teh time.
 
->  And msleep() is used mostly during
-> initialization time.  My box had a few hundred calls, almost all during
-> boot.  Any cost will be bounded by the fact that, well, it sleeps for
-> milliseconds on every call.
+> Also
+> out of general memory bloat reasons i don't like allocating big data structures
+> just for this.
+>
 
-Well, there are over 1500 msleep calls, so I'm not sure they're mostly 
-during initialization.
+I am not sure where you see new data structure allocation... If you
+look at your box you should see that /sys/bus/platform/devices/pcspkr
+device is already there. We already create it so that pcspkr driver
+can bind to it.
 
-> I'm not *that* attached to this patch; if it causes heartburn we can
-> just forget it.  But I had thought it might be useful...
+> Wouldn't  it be better to just define i8253_lock weakly in the pcspkr code and let
+> the architecture override it?
 
-I'm not against using hrtimer in drivers, if you add a hrsleep() function 
-and use that, that would be perfectly fine.
-The really important point is to keep our APIs clean, so it's obvious who 
-is using what. The requirements for both timers are different, so there 
-should be a choice in what to use.
+Yes, it probably is btetter.
 
-> > Which driver is this? I'd like to look at this, in case there's some other 
-> > hidden problem. 
-> 
-> drivers/media/video/cafe_ccic.c, and cafe_smbus_write_data() in
-> particular.  The "hidden problem," though, is that the hardware has
-> periods where reading the status registers will send it off into its
-> room where it will hide under its bed and never come out.
+>
+> > Index: work/arch/x86_64/kernel/time.c
+> > ===================================================================
+> > --- work.orig/arch/x86_64/kernel/time.c
+> > +++ work/arch/x86_64/kernel/time.c
+> > @@ -23,6 +23,7 @@
+> > #include <linux/module.h>
+> > #include <linux/device.h>
+> > #include <linux/sysdev.h>
+> > +#include <linux/platform_device.h>
+> > #include <linux/bcd.h>
+> > #include <linux/notifier.h>
+> > #include <linux/cpu.h>
+> > @@ -185,7 +186,7 @@ void main_timer_handler(void)
+> > set_rtc_mmss(xtime.tv_sec);
+> > rtc_update = xtime.tv_sec + 660;
+> > }
+> > -
+> > +
+> > write_sequnlock(&xtime_lock);
+> > }
+>
+> No random white space changes in patches, multiple occurrences ?!?
+>
 
-It's indeed not a trivial problem, as it's not localized to the driver 
-(the request comes from generic code).
-The most elegant and general solution might be to move such initialization 
-sequences into a separate thread, where they don't hold up the rest.
+By bad, sorry.
 
-> My understanding is that the current dyntick code only turns off the
-> tick during idle periods; while things are running it's business as
-> usual.  Perhaps I misunderstood?
-
-jiffies needs to be updated, theoretically one could reduce the timer 
-tick even then, but one has to be careful about the increased resolution, 
-so jiffies+1 isn't enough anymore to round it up.
-In general it's doable by further cleaning up our APIs, but here it's 
-really important to keep the APIs clean to keep Linux running on a wide 
-range of hardware. It should be clear whether one requests a low 
-resolution, but low overhead timer or a high resolution and more precise 
-timer (and _please_ ignore that "likely to expire" stuff).
-It's e.g. a possibility to map everything to high resolution timer on a 
-hardware, which can deal with this, but on other hardware that's not
-possible without paying a significant price.
-
-bye, Roman
+-- 
+Dmitry
