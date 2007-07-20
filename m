@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761969AbXGTD1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762052AbXGTD3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761969AbXGTD1k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 23:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXGTD1e
+	id S1762052AbXGTD3Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 23:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXGTD3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 23:27:34 -0400
-Received: from ozlabs.org ([203.10.76.45]:55970 "EHLO ozlabs.org"
+	Thu, 19 Jul 2007 23:29:03 -0400
+Received: from mail.tmr.com ([64.65.253.246]:48371 "EHLO posidon.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754338AbXGTD1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 23:27:33 -0400
-Subject: Re: lguest, Re: -mm merge plans for 2.6.23
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20070719172746.GA17710@lst.de>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <20070711122324.GA21714@lst.de>
-	 <1184203311.6005.664.camel@localhost.localdomain>
-	 <20070711.192829.08323972.davem@davemloft.net>
-	 <1184208521.6005.695.camel@localhost.localdomain>
-	 <20070711212435.abd33524.akpm@linux-foundation.org>
-	 <1184215943.6005.745.camel@localhost.localdomain>
-	 <20070719172746.GA17710@lst.de>
-Content-Type: text/plain
-Date: Fri, 20 Jul 2007 13:27:26 +1000
-Message-Id: <1184902046.10380.257.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1753918AbXGTD3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 23:29:01 -0400
+Message-ID: <46A02BFB.3090500@tmr.com>
+Date: Thu, 19 Jul 2007 23:28:59 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
+MIME-Version: 1.0
+To: Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Where did KVM go in 2.6.22-git9?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 19:27 +0200, Christoph Hellwig wrote:
-> The version that just got into mainline still has the __put_task_struct
-> export despite not needing it anymore.  Care to fix this up?
+I just built a 2.6.22-git9 kernel, and when I run oldconfig it (a) sets 
+the processor type to pentium-pro, and (b) the KVM stuff simply isn't in 
+the config. Before I spend a lot of time on this, was it disabled 
+temporarily for some reason, or is it a known bug, or ???
 
-No, it got patched in then immediately patched out again.  Andrew
-mis-mixed my patches, but there have been so many of them I find it hard
-to blame him.
+Processor is a Core2 E6600, and the starting config has KVM.
 
-Rusty.
+Strong suggestion: put KVM in processor type and options, and if the CPU 
+type selected supports the feature, let the builder turn it on in one 
+place and have Kconfig turn on whatever voodoo is needed to allow it, 
+rather than have people trying to find out what depends have changed 
+with each release. I see KVm depends on X86_CMPXCHG64 which simply 
+doesn't seem to be defined directly anywhere.
+
+Going back to 2.6.21.6 until whatever changed is at least documented.
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
