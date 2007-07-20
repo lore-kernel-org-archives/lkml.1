@@ -1,108 +1,320 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933848AbXGTHXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934252AbXGTHXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933848AbXGTHXV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761793AbXGTHXN
+	id S934252AbXGTHXh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764127AbXGTHXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:23:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60917 "EHLO mx3.mail.elte.hu"
+	Fri, 20 Jul 2007 03:23:15 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:35855 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759613AbXGTHXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:23:11 -0400
-Date: Fri, 20 Jul 2007 09:22:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jan Glauber <jang@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, vatsa@linux.vnet.ibm.com,
-       mschwid2@linux.vnet.ibm.com, efault@gmx.de, dmitry.adamushko@gmail.com,
-       anton@samba.org
-Subject: Re: [PATCH] virtual sched_clock() for s390
-Message-ID: <20070720072245.GA4020@elte.hu>
-References: <1184842661.6546.14.camel@localhost.localdomain> <469F8342.7060000@goop.org> <20070719160025.GA31815@elte.hu> <18080.2390.42425.852087@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
+	id S1763143AbXGTHXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 03:23:13 -0400
+Date: Fri, 20 Jul 2007 11:22:42 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH] Add kernel/notifier.c
+Message-ID: <20070720072242.GA11030@localhost.sw.ru>
+References: <20070719164611.GB31240@localhost.sw.ru> <20070719144859.efccbcc3.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18080.2390.42425.852087@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070719144859.efccbcc3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> PowerPC's sched_clock() currently measures real time.  On POWER5 and 
-> POWER6 machines we could change it to use a register called the "PURR" 
-> (for Processor Utilization of Resources Register), which only measures 
-> time spent while the partition is running.  But the PURR has another 
-> function as well: it measures the distribution of dispatch cycles 
-> between the two hardware threads on each core when running in SMT 
-> mode.  That is, the cpu dispatches instructions from one thread or the 
-> other (not both) on each CPU cycle, and each thread's PURR only gets 
-> incremented on cycles where the cpu dispatches instructions for that 
-> thread.  So the sum of the two threads' PURRs adds up to real time.
+On Thu, Jul 19, 2007 at 02:48:59PM -0700, Andrew Morton wrote:
+> On Thu, 19 Jul 2007 20:46:11 +0400
+> Alexey Dobriyan <adobriyan@sw.ru> wrote:
 > 
-> Do you think this makes the PURR more useful for CFS, or less?  To me 
-> it looks like this would mean that CFS can make a more equitable 
-> distribution of CPU time if, for example, you had 3 runnable tasks on 
-> a 2-core x dual-threaded machine (4 virtual CPUs).
+> > There is separate notifier header, but no separate notifier .c file.
+> >
+> > Extract notifier code out of kernel/sys.c which will remain for
+> > misc syscalls I hope. Merge kernel/die_notifier.c into kernel/notifier.c.
+>
+> If you were running checkpatch (I hope you are)
 
-there's one complication: sched_clock() still needs to increase while 
-the CPU (or thread) is idle, so that we can have a correct measurement 
-of the CPU's utilization, for SMP load-balancing. CFS constructs another 
-clock from sched_clock() [the rq->fair_clock] which does stop while the 
-CPU is idle.
+:)
 
-So perhaps a combination of the PURR and real-time might work as 
-sched_clock(): when a hardware thread is in cpu_idle(), it should 
-advance its sched clock with _half_ the rate of real-time [so that the 
-sum of advance of all threads if they are all idle is equal to real 
-time], and use the PURR if they are not idle. This would still correctly 
-keep a meaningful load-average if the physical CPU is under-utilized.
+> then you'd find that we
+> copied over a whole pile of cruft.  We might as well fix that up while
+> we're moving the code around.
+>
+> Also, your patch tried to add some trailing whitespace, but checkpatch
+> failed to notice that.
 
-If you do such a change you'll immediately see whether the approach is 
-right: monitor the cpu_load[] values in /proc/sched_debug, they should 
-match the intuitive 'load average' of that CPU (if divided by 1024), and 
-check whether 'top' still works fine.
+It notices here:
 
-> BTW, what does "time spent running during sleep" mean?  Does it mean 
-> "time that other tasks are running while this task is sleeping"?
+	$ ./scripts/checkpatch.pl ../notifier.patch | grep ERROR
+	ERROR: trailing whitespace
+	ERROR: trailing whitespace
+	ERROR: trailing whitespace
+	ERROR: trailing whitespace
+	ERROR: trailing whitespace
+	ERROR: "foo * bar" should be "foo *bar"
+	ERROR: trailing whitespace
+	ERROR: "foo * bar" should be "foo *bar"
 
-yeah. It's "the amount of fair runtime i missed out on while others were 
-running".
+> (The code motion and the cleanups should really be separate patches, and
+> indeed they are, but I'll end up joining them before it hits git)
 
-> > still, CFS needs time measurement across idle periods as well, for 
-> > another purpose: to be able to do precise task statistics for /proc. 
-> > (for top, ps, etc.) So it's still true that sched_clock() should 
-> > include idle periods too.
-> 
-> As with s390, 64-bit PowerPC also uses CONFIG_VIRT_CPU_ACCOUNTING. 
-> That affects how tsk->utime and tsk->stime are accumulated (we call 
-> account_user_time and account_system_time directly rather than calling 
-> update_process_times) as well as the system hardirq/softirq time, idle 
-> time, and stolen time.
+Then take this cleanup which is based on yours;
+In particular, it fixes [Space][Tab][Space] places and removes lines
+between kernel-doc comment and function itself.
 
-tsk->utime and tsk->stime is only used for a single purpose: to 
-determine the 'split' factor of how to split up the precise total time 
-between user and system time.
 
-> When you say "precise task statistics for /proc", where are they 
-> accumulated?  I don't see any changes to the way that tsk->utime and 
-> ctime are computed.
+--- a/kernel/notifier.c
++++ b/kernel/notifier.c
+@@ -10,7 +10,6 @@
+  *	at shutdown. This is used to stop any idling DMA operations
+  *	and the like.
+  */
+-
+ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
+ 
+ /*
+@@ -50,13 +49,12 @@ static int notifier_chain_unregister(struct notifier_block **nl,
+  *	@val:		Value passed unmodified to notifier function
+  *	@v:		Pointer passed unmodified to notifier function
+  *	@nr_to_call:	Number of notifier functions to be called. Don't care
+- *		     	value of this parameter is -1.
++ *			value of this parameter is -1.
+  *	@nr_calls:	Records the number of notifications sent. Don't care
+- *		   	value of this field is NULL.
+- * 	@returns:	notifier_call_chain returns the value returned by the
++ *			value of this field is NULL.
++ *	@returns:	notifier_call_chain returns the value returned by the
+  *			last notifier function called.
+  */
+-
+ static int __kprobes notifier_call_chain(struct notifier_block **nl,
+ 					unsigned long val, void *v,
+ 					int nr_to_call,	int *nr_calls)
+@@ -95,7 +93,6 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
+  *
+  *	Currently always returns zero.
+  */
+-
+ int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
+ 		struct notifier_block *n)
+ {
+@@ -107,7 +104,6 @@ int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
+ 	spin_unlock_irqrestore(&nh->lock, flags);
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL_GPL(atomic_notifier_chain_register);
+ 
+ /**
+@@ -131,7 +127,6 @@ int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
+ 	synchronize_rcu();
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL_GPL(atomic_notifier_chain_unregister);
+ 
+ /**
+@@ -153,7 +148,6 @@ EXPORT_SYMBOL_GPL(atomic_notifier_chain_unregister);
+  *	Otherwise the return value is the return value
+  *	of the last notifier function called.
+  */
+-
+ int __kprobes __atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+ 					unsigned long val, void *v,
+ 					int nr_to_call, int *nr_calls)
+@@ -165,7 +159,6 @@ int __kprobes __atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+ 	rcu_read_unlock();
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL_GPL(__atomic_notifier_call_chain);
+ 
+ int __kprobes atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+@@ -173,8 +166,8 @@ int __kprobes atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+ {
+ 	return __atomic_notifier_call_chain(nh, val, v, -1, NULL);
+ }
+-
+ EXPORT_SYMBOL_GPL(atomic_notifier_call_chain);
++
+ /*
+  *	Blocking notifier chain routines.  All access to the chain is
+  *	synchronized by an rwsem.
+@@ -190,7 +183,6 @@ EXPORT_SYMBOL_GPL(atomic_notifier_call_chain);
+  *
+  *	Currently always returns zero.
+  */
+-
+ int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
+ 		struct notifier_block *n)
+ {
+@@ -209,7 +201,6 @@ int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
+ 	up_write(&nh->rwsem);
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL_GPL(blocking_notifier_chain_register);
+ 
+ /**
+@@ -240,7 +231,6 @@ int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
+ 	up_write(&nh->rwsem);
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL_GPL(blocking_notifier_chain_unregister);
+ 
+ /**
+@@ -261,7 +251,6 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chain_unregister);
+  *	Otherwise the return value is the return value
+  *	of the last notifier function called.
+  */
+-
+ int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+ 				   unsigned long val, void *v,
+ 				   int nr_to_call, int *nr_calls)
+@@ -305,13 +294,11 @@ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
+  *
+  *	Currently always returns zero.
+  */
+-
+ int raw_notifier_chain_register(struct raw_notifier_head *nh,
+ 		struct notifier_block *n)
+ {
+ 	return notifier_chain_register(&nh->head, n);
+ }
+-
+ EXPORT_SYMBOL_GPL(raw_notifier_chain_register);
+ 
+ /**
+@@ -329,7 +316,6 @@ int raw_notifier_chain_unregister(struct raw_notifier_head *nh,
+ {
+ 	return notifier_chain_unregister(&nh->head, n);
+ }
+-
+ EXPORT_SYMBOL_GPL(raw_notifier_chain_unregister);
+ 
+ /**
+@@ -351,14 +337,12 @@ EXPORT_SYMBOL_GPL(raw_notifier_chain_unregister);
+  *	Otherwise the return value is the return value
+  *	of the last notifier function called.
+  */
+-
+ int __raw_notifier_call_chain(struct raw_notifier_head *nh,
+ 			      unsigned long val, void *v,
+ 			      int nr_to_call, int *nr_calls)
+ {
+ 	return notifier_call_chain(&nh->head, val, v, nr_to_call, nr_calls);
+ }
+-
+ EXPORT_SYMBOL_GPL(__raw_notifier_call_chain);
+ 
+ int raw_notifier_call_chain(struct raw_notifier_head *nh,
+@@ -366,7 +350,6 @@ int raw_notifier_call_chain(struct raw_notifier_head *nh,
+ {
+ 	return __raw_notifier_call_chain(nh, val, v, -1, NULL);
+ }
+-
+ EXPORT_SYMBOL_GPL(raw_notifier_call_chain);
+ 
+ /*
+@@ -384,7 +367,6 @@ EXPORT_SYMBOL_GPL(raw_notifier_call_chain);
+  *
+  *	Currently always returns zero.
+  */
+-
+ int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
+ 		struct notifier_block *n)
+ {
+@@ -403,7 +385,6 @@ int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
+ 	mutex_unlock(&nh->mutex);
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL_GPL(srcu_notifier_chain_register);
+ 
+ /**
+@@ -435,7 +416,6 @@ int srcu_notifier_chain_unregister(struct srcu_notifier_head *nh,
+ 	synchronize_srcu(&nh->srcu);
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL_GPL(srcu_notifier_chain_unregister);
+ 
+ /**
+@@ -456,7 +436,6 @@ EXPORT_SYMBOL_GPL(srcu_notifier_chain_unregister);
+  *	Otherwise the return value is the return value
+  *	of the last notifier function called.
+  */
+-
+ int __srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+ 			       unsigned long val, void *v,
+ 			       int nr_to_call, int *nr_calls)
+@@ -490,7 +469,6 @@ EXPORT_SYMBOL_GPL(srcu_notifier_call_chain);
+  *	up by calling srcu_cleanup_notifier_head().  Otherwise the head's
+  *	per-cpu data (used by the SRCU mechanism) will leak.
+  */
+-
+ void srcu_init_notifier_head(struct srcu_notifier_head *nh)
+ {
+ 	mutex_init(&nh->mutex);
+@@ -498,7 +476,6 @@ void srcu_init_notifier_head(struct srcu_notifier_head *nh)
+ 		BUG();
+ 	nh->head = NULL;
+ }
+-
+ EXPORT_SYMBOL_GPL(srcu_init_notifier_head);
+ 
+ /**
+@@ -511,12 +488,10 @@ EXPORT_SYMBOL_GPL(srcu_init_notifier_head);
+  *	Currently always returns zero, as blocking_notifier_chain_register()
+  *	always returns zero.
+  */
+-
+-int register_reboot_notifier(struct notifier_block * nb)
++int register_reboot_notifier(struct notifier_block *nb)
+ {
+ 	return blocking_notifier_chain_register(&reboot_notifier_list, nb);
+ }
+-
+ EXPORT_SYMBOL(register_reboot_notifier);
+ 
+ /**
+@@ -528,30 +503,25 @@ EXPORT_SYMBOL(register_reboot_notifier);
+  *
+  *	Returns zero on success, or %-ENOENT on failure.
+  */
+-
+-int unregister_reboot_notifier(struct notifier_block * nb)
++int unregister_reboot_notifier(struct notifier_block *nb)
+ {
+ 	return blocking_notifier_chain_unregister(&reboot_notifier_list, nb);
+ }
+-
+ EXPORT_SYMBOL(unregister_reboot_notifier);
+ 
+-
+-
+ static ATOMIC_NOTIFIER_HEAD(die_chain);
+ 
+ int notify_die(enum die_val val, const char *str,
+ 	       struct pt_regs *regs, long err, int trap, int sig)
+ {
+ 	struct die_args args = {
+-		.regs		= regs,
+-		.str		= str,
+-		.err		= err,
+-		.trapnr		= trap,
+-		.signr		= sig,
++		.regs	= regs,
++		.str	= str,
++		.err	= err,
++		.trapnr	= trap,
++		.signr	= sig,
+ 
+ 	};
+-
+ 	return atomic_notifier_call_chain(&die_chain, val, &args);
+ }
+ 
 
-we now use p->se.sum_exec_runtime that measures (in nanoseconds) the 
-precise amount of time spent executing (sum of system and user time) - 
-and ->stime and ->utime is used to determine the 'split'. [this allows 
-us to gather ->stime and ->utime via low-resolution sampling, while 
-keeping the 'total' precise. Accounting at every system entry point 
-would be quite expensive on most platforms.]
-
-	Ingo
