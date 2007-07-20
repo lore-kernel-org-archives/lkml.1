@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932977AbXGTDf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932674AbXGTDh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932977AbXGTDf5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 23:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759077AbXGTDeB
+	id S932674AbXGTDh4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 23:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbXGTDht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 23:34:01 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35679 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765578AbXGTDd6 (ORCPT
+	Thu, 19 Jul 2007 23:37:49 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:1693 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755633AbXGTDhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 23:33:58 -0400
-To: torvalds@linux-foundation.org
-Subject: [PATCH 8/8] m68k: exclude more unbuildable drivers
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Message-Id: <E1IBjFe-0004nH-6H@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 20 Jul 2007 04:33:58 +0100
+	Thu, 19 Jul 2007 23:37:47 -0400
+Message-Id: <200707200337.l6K3bjDr053658@www262.sakura.ne.jp>
+Subject: [PATCH] parse_table() earlier check.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 20 Jul 2007 12:37:45 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+/* The part parse_table() does */
 
-anything that wants working dma-mapping won't work
-parport_pc won't work on m68k unless we have ISA
+for ( ; table->ctl_name || table->procname; table++) {
+        if (!table->ctl_name)
+                continue;
+        if (n == table->ctl_name) {
+                return do_sysctl_strategy();
+        }
+}
+return -ENOTDIR;
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/m68k/Kconfig       |    3 +++
- drivers/parport/Kconfig |    2 +-
- 2 files changed, 4 insertions(+), 1 deletions(-)
+/* is equivalent to */
 
-diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-index 684de4c..20a9c08 100644
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -49,6 +49,9 @@ config ARCH_MAY_HAVE_PC_FDC
- config NO_IOPORT
- 	def_bool y
- 
-+config NO_DMA
-+	def_bool SUN3
-+
- mainmenu "Linux/68k Kernel Configuration"
- 
- source "init/Kconfig"
-diff --git a/drivers/parport/Kconfig b/drivers/parport/Kconfig
-index 09c93ff..d449b15 100644
---- a/drivers/parport/Kconfig
-+++ b/drivers/parport/Kconfig
-@@ -35,7 +35,7 @@ if PARPORT
- 
- config PARPORT_PC
- 	tristate "PC-style hardware"
--	depends on (!SPARC64 || PCI) && !SPARC32 && !M32R && !FRV
-+	depends on (!SPARC64 || PCI) && !SPARC32 && !M32R && !FRV && (!M68K || ISA)
- 	---help---
- 	  You should say Y here if you have a PC-style parallel port. All
- 	  IBM PC compatible computers and some Alphas have PC-style
--- 
-1.5.3.GIT
+for ( ; table->ctl_name || table->procname; table++) {
+        if (n == table->ctl_name && n) {
+                return do_sysctl_strategy();
+        }
+}
+return -ENOTDIR;
 
+/* is equivalent to */
+
+if (n) {
+        for ( ; table->ctl_name || table->procname; table++) {
+                if (n == table->ctl_name) {
+                        return do_sysctl_strategy();
+                }
+        }
+}
+return -ENOTDIR;
+
+/* and here is a patch. I think this change is harmless. */
+
+-----
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+
+ sysctl.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -ur linux-2.6.22-orig/kernel/sysctl.c linux-2.6.22/kernel/sysctl.c
+--- linux-2.6.22-orig/kernel/sysctl.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.22/kernel/sysctl.c	2007-07-20 12:23:17.000000000 +0900
+@@ -1190,9 +1190,9 @@
+ 		return -ENOTDIR;
+ 	if (get_user(n, name))
+ 		return -EFAULT;
++	if (!n)
++		return -ENOTDIR;
+ 	for ( ; table->ctl_name || table->procname; table++) {
+-		if (!table->ctl_name)
+-			continue;
+ 		if (n == table->ctl_name) {
+ 			int error;
+ 			if (table->child) {
