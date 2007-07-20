@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940616AbXGTQ3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941220AbXGTQau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940616AbXGTQ3T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936942AbXGTQ3K
+	id S941220AbXGTQau (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938427AbXGTQam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:29:10 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56377 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934921AbXGTQ3I (ORCPT
+	Fri, 20 Jul 2007 12:30:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50622 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936942AbXGTQal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:29:08 -0400
-Message-ID: <46A0E2A9.6000308@s5r6.in-berlin.de>
-Date: Fri, 20 Jul 2007 18:28:25 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: "clameter@sgi.com" <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
-References: <20070531002047.702473071@sgi.com>	 <20070531003012.302019683@sgi.com> <a781481a0707200341o21381742rdb15e6a9dc770d27@mail.gmail.com>
-In-Reply-To: <a781481a0707200341o21381742rdb15e6a9dc770d27@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Jul 2007 12:30:41 -0400
+Date: Fri, 20 Jul 2007 09:30:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: drivers/base/core.c broken for non-CONFIG_HOTPLUG
+Message-Id: <20070720093018.8260fc0c.akpm@linux-foundation.org>
+In-Reply-To: <1184933179.3545.12.camel@lov.localdomain>
+References: <20070720070106.GH1678@pengutronix.de>
+	<20070720005958.47cd7c9c.akpm@linux-foundation.org>
+	<1184933179.3545.12.camel@lov.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I missed the original post, hence am replying to te reply...)
-> On 5/31/07, clameter@sgi.com <clameter@sgi.com> wrote:
->> Introduce CONFIG_STABLE to control checks only useful for development.
->>
->> Signed-off-by: Christoph Lameter <clameter@sgi.com>
->> [...]
->>  menu "General setup"
->>
->> +config STABLE
->> +       bool "Stable kernel"
->> +       help
->> +         If the kernel is configured to be a stable kernel then various
->> +         checks that are only of interest to kernel development will be
->> +         omitted.
->> +
+On Fri, 20 Jul 2007 14:06:19 +0200 Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-Didn't we talk about the wording and the logic some time ago?  Your
-option looks like a magic switch that suddenly improves kernel
-stability, hence everyone will switch it on.
+> On Fri, 2007-07-20 at 00:59 -0700, Andrew Morton wrote:
+> > On Fri, 20 Jul 2007 09:01:06 +0200 Robert Schwebel <r.schwebel@pengutronix.de> wrote:
+> > 
+> > > You add and use
+> > > 
+> > > 	extern const char *kobject_actions[];
+> > 
+> > Added it in a .c file, too.  Even checkpatch.pl knows that
+> > was wrong.
+> 
+> The kernel is doing that all over the place for global symbols that are
+> not meant to be used out of a "private" context or where a "private"
+> header file of a subsystem doesn't exist.
 
-How about this:
+Whatever the reason, it's still wrong, because the problem remains: lack of
+typechecking between the definition and its users.
 
-config BUILD_FOR_RELEASE
-	bool "Build for release"
-	help
-	  If the kernel is configured as a release build, various checks
-	  that are only of interest to kernel development will be
-	  omitted.
+It's defensible in one situation: where the definition is in assembly
+language.  And even then the symbol can be declared in a header, if only
+because a second user may be added.
 
-	  If unsure, say Y.
+> I can change that, if this isn't the way to do it?
 
-Or this:
-
-config BUILD_FOR_TESTING
-	bool "Build for testing"
-	help
-	  If the kernel is configured as a test build, various checks
-	  useful for testing of pre-releases will be activated.
-
-	  If unsure, say N.
--- 
-Stefan Richter
--=====-=-=== -=== =-=--
-http://arcgraph.de/sr/
+Please.  Let's find a reasonably-relevant header for it.  If there isn't
+one, let's add it; there are quite possibly other things which should be in
+that header so choose with care, with that possibility in mind.
