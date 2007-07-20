@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932164AbXGTTFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765447AbXGTTIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932164AbXGTTFl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 15:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbXGTTFd
+	id S1765447AbXGTTIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 15:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760577AbXGTTIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 15:05:33 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:5726 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756182AbXGTTFc (ORCPT
+	Fri, 20 Jul 2007 15:08:06 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39735 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757547AbXGTTID (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 15:05:32 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAP6joEarR7PD/2dsb2JhbAA
-X-IronPort-AV: i="4.16,563,1175497200"; 
-   d="scan'208"; a="505509707:sNHT26481882"
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <davem@davemloft.net>,
-       <jeff@garzik.org>, "Williams, Dan J" <dan.j.williams@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-Subject: Re: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-X-Message-Flag: Warning: May contain useful information
-References: <D5C1322C3E673F459512FB59E0DDC32903445CD4@orsmsx414.amr.corp.intel.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 20 Jul 2007 12:05:24 -0700
-In-Reply-To: <D5C1322C3E673F459512FB59E0DDC32903445CD4@orsmsx414.amr.corp.intel.com> (Waskiewicz Jr's message of "Fri, 20 Jul 2007 11:09:03 -0700")
-Message-ID: <aday7hac2vf.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Fri, 20 Jul 2007 15:08:03 -0400
+Date: Fri, 20 Jul 2007 21:07:26 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [patch 1/3] m68k/mac: Make mac_hid_mouse_emulate_buttons()
+	declaration visible
+Message-ID: <20070720190726.GD3801@stusta.de>
+References: <20070720164043.523003359@mail.of.borg> <20070720164323.625963918@mail.of.borg> <d120d5000707201047y2d22167co882a10176d79fce4@mail.gmail.com> <20070720183503.GC3801@stusta.de> <d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Jul 2007 19:05:25.0323 (UTC) FILETIME=[EDCA11B0:01C7CB00]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Both igb (recently posted) and ixgbe (also recently posted) support both
- > MSI and MSI-X.  Right now when we try to request MSI-X vectors, if we
- > fail to acquire what we've asked for, we fall back to MSI support.  If
- > MSI fails to initialize, we fall back to legacy interrupts.  So it needs
- > to be there in case MSI-X allocation fails for the NIC driver.
+On Fri, Jul 20, 2007 at 02:51:02PM -0400, Dmitry Torokhov wrote:
+> On 7/20/07, Adrian Bunk <bunk@stusta.de> wrote:
+>> On Fri, Jul 20, 2007 at 01:47:36PM -0400, Dmitry Torokhov wrote:
+>> > Hi Geert,
+>> >
+>> > On 7/20/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> >> From: Geert Uytterhoeven <geert@linux-m68k.org>
+>> >>
+>> >> m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
+>> >>
+>> >> drivers/char/keyboard.c: In function 'kbd_keycode':
+>> >> drivers/char/keyboard.c:1142: error: implicit declaration of function
+>> >> 'mac_hid_mouse_emulate_buttons'
+>> >>
+>> >> The forward declaration of mac_hid_mouse_emulate_buttons() is not 
+>> visible
+>> >> on
+>> >> m68k because it's hidden in the middle of a big #ifdef block.
+>> >>
+>> >> Move it to <linux/hid.h>, correct the type of the second parameter, and
+>> >> include <linux/hid.h> where needed.
+>> >
+>> > linux/hid.h contains definitions needed for drivers speaking HID
+>> > protocol, I don't think we want to put quirks for legacy keyboard
+>> > driver there. I'd just move the #ifdef within drivers/char/keyboard.c
+>> > for now.
+>> >...
+>>
+>> If you only move it you will keep the bug of the wrong second parameter.
+>>
+>> But if you move it to any header file gcc is able to figure out such
+>> errors itself instead of them being nasty runtime errors.
+>>
+>> Such prototypes in C files are really bad since (like in this case) they
+>> prevent the finding of bugs. It doesn't matter which header file you put
+>> the prototype into (it can even be a new one), but it belongs into a
+>> header file.
+>
+> I am OK with adding a new header file. I was just saying that placing
+> that declaration in linux/hid.h makes about the same sense as putting
+> it into linux/scsi.h
 
-Hmm, I see I don't understand what this driver is doing.  What is a
-"struct ioatdma_device"?  Is this driver requesting interrupts that
-come from the NIC or the IOAT DMA engine?
+scsi.h would also be fine with me.  ;-)
 
-Anyway, if the NICs support MSI-X, is there any chance of failing to
-get one MSI-X vectors but then succeeding in getting MSI enabled?
-How could that happen?  I don't see what falling back to MSI buys you
-beyond more code.
+Are you making a patch or should I send one? [1]
 
- - R.
+> Dmitry
+
+cu
+Adrian
+
+[1] for a new header file, not scsi.h
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
