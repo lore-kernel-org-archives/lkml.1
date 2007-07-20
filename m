@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbXGTElz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbXGTEwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbXGTElz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 00:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbXGTElq
+	id S1754930AbXGTEwb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 00:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbXGTEwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 00:41:46 -0400
-Received: from [212.12.190.56] ([212.12.190.56]:32969 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750826AbXGTElp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 00:41:45 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 07:40:38 +0300
-User-Agent: KMail/1.5
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0707181021300.3759-100000@iolanthe.rowland.org> <200707181647.32620.rjw@sisk.pl>
-In-Reply-To: <200707181647.32620.rjw@sisk.pl>
+	Fri, 20 Jul 2007 00:52:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:3605 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbXGTEwV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 00:52:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=tAWBtWyaop7ashbEeOw2zGgq/Evof1rMMt3AgiYkRdPiwEY9EQ7doO39Jlv//BC7MPVTCnLT7Q8G77F9udMKwbsAs38upyrqDqpzhhYXc8ioUbc7WeYp9648S/n8icFsme9See3L4Sc0UnSfuS23eAk0zDxakwMXARKW+3m8NhM=
+Date: Fri, 20 Jul 2007 08:52:16 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Ogrisegg <tom-lkml@lkml.fnord.at>, linux-kernel@vger.kernel.org,
+       rml@novell.com, John McCutchan <ttb@tentacle.dhs.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, robin.ksj@gmail.com
+Subject: Re: [PATCH] procfs fixes for inotify/dnotify
+Message-ID: <20070720045216.GA5831@martell.zuzino.mipt.ru>
+References: <20060221211623.GA26413@rescue.iwoars.net> <20070719150355.2971e8e4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707200740.38158.a1426z@gawab.com>
+In-Reply-To: <20070719150355.2971e8e4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Wednesday, 18 July 2007 16:29, Alan Stern wrote:
-> >
-> > Never mind.  It seems clear that this approach will suffer the same
-> > drawback as the proposal for removing the freezer from the
-> > suspend-to-RAM pathway.  Namely, device drivers will have to be changed
-> > to prevent user I/O requests from proceeding while devices are supposed
-> > to be quiescent or in a low-power state.
->
-> I agree.
->
-> > If a driver fails to handle this properly, its device could be
-> > reactivated in order to service a user request before the memory
-> > snapshot is made.  This could easily ruin the snapshot.
->
-> That's why I've been saying for quite some time that we first need to take
-> care of the drivers. :-)
->
-> IMO we've reached the point at which, whatever we want to do next, the
-> drivers are in the way.
+On Thu, Jul 19, 2007 at 03:03:55PM -0700, Andrew Morton wrote:
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=8782
 
-Correct, but only if we want ACPI support.  Granted, we need a separation of 
-the hibernate/suspend PM functions, but in the absence of ACPI, all we need 
-right now are dump/restore routines for the crashkernel.
+[fsnotify and /proc]
 
-Next, we should be looking into reducing the kexec'd kernel environment size, 
-which currently, at 16MB, is way too big, and even at 1MB would be 
-problematic for small systems.
+> > --- linux-2.6.15/fs/proc/base.c
+> > +++ linux-2.6.15.4/fs/proc/base.c
+> > @@ -1945,6 +1945,7 @@
+> >  	if(proc_dentry != NULL) {
+> >  		shrink_dcache_parent(proc_dentry);
+> >  		dput(proc_dentry);
+> > +		fsnotify_nameremove (proc_dentry, 1);
+> >  	}
+> 
+> I wonder if this is racy - after the dput() we might no longer have a
+> reference?
 
-So, ACPI should really be the least of our worries, and the reason why people 
-are fixating on ACPI is probably because they have nothing else to fixate 
-on.  They probably haven't even tried the kexec patches to appreciate how 
-easy the kexec approach is and how little interference APCI represents when 
-suspending and resuming.
-
-
-Thanks!
-
---
-Al
+It is indeed racy. dput() => kill_it: => d_kill() => d_free() =>
+__d_free() eventually. *boom*
 
