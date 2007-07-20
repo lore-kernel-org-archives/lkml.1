@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761914AbXGTAw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940027AbXGTAwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761914AbXGTAw1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 20:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939339AbXGTAvL
+	id S940027AbXGTAwr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 20:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965479AbXGTAvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 20:51:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42124
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S939448AbXGTAvJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 20:51:09 -0400
-Date: Thu, 19 Jul 2007 17:51:08 -0700 (PDT)
-Message-Id: <20070719.175108.95058293.davem@davemloft.net>
-To: shannon.nelson@intel.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       dan.j.williams@intel.com, christopher.leech@intel.com,
-       peter.p.waskiewicz.jr@intel.com
-Subject: Re: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070720004512.13564.55742.stgit@localhost.localdomain>
-References: <20070720004403.13564.14294.stgit@localhost.localdomain>
-	<20070720004512.13564.55742.stgit@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 19 Jul 2007 20:51:33 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1088 "EHLO Perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965434AbXGTAvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 20:51:32 -0400
+X-Greylist: delayed 532 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 20:51:31 EDT
+Subject: RFC - pr_info,warn,dbg,err and PREFIX
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Thu, 19 Jul 2007 17:42:38 -0700
+Message-Id: <1184892158.26827.41.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Shannon Nelson <shannon.nelson@intel.com>
-Date: Thu, 19 Jul 2007 17:45:12 -0700
+A number of local #defines or functions exist which merely
+add a constant prefix to printks.  Perhaps it is better
+to have these functions standardized.
 
-> Add support for MSI and MSI-X interrupt handling, including the ability
-> to choose the desired interrupt method.
-> 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Thoughts?
 
-Acked-by: David S. Miller <davem@davemloft.net>
+A method to prefix pr_info messages with an arbitrary prefix
+(#define PREFIX "foo") could be:
 
-But:
+--------------------------------
 
-> +#define for_each_bit(bit, addr, size) \
-> +	for ((bit) = find_first_bit((addr), (size)); \
-> +	     (bit) < (size); \
-> +	     (bit) = find_next_bit((addr), (size), (bit) + 1))
+#define PRINTK_stringify_1(x) #x
+#define PRINTK_stringify(x) PRINTK_stringify_1(x)
 
-This or something like it is codified in a few spots now,
-namely now here and cpumask.h, it would be nice to have
-this in some standard place.
+#define PRINTK_USEPREFIX (strcmp(PRINTK_stringify(PREFIX), "PREFIX"))
+
+#define PRINTK_PREFIX(PREFIX) \
+({const char *p = PRINTK_USEPREFIX(PREFIX) ? PRINTK_stringify(PREFIX) + 1 : ""; p;})
+
+#define PRINTK_PREFIXLEN(PREFIX) \
+({int len = PRINTK_USEPREFIX(PREFIX) ? strlen(PRINTK_stringify(PREFIX)) - 2 : 0; len;})
+
+#define PRINTK_PREFIXSEPARATOR(PREFIX) \
+({const char *p = PRINTK_USEPREFIX(PREFIX) ? ": " : ""; p;})
+
+#define PRINTK_PREFIXFMT "%.*s%s"
+#define PRINTK_PREFIXARG PRINTK_PREFIXLEN(PREFIX), PRINTK_PREFIX(PREFIX), PRINTK_PREFIXSEPARATOR(PREFIX)
+
+#define pr_info(fmt, arg...) printk(KERN_INFO PRINTK_PREFIXFMT fmt, PRINTK_PREFIXARG, ##arg)
+#define pr_warn(fmt, arg...) printk(KERN_WARNING PRINTK_PREFIXFMT fmt, PRINTK_PREFIXARG, ##arg)
+#define pr_err(fmt, arg...) printk(KERN_ERR PRINTK_PREFIXFMT fmt, PRINTK_PREFIXARG, ##arg)
+
+---------------
+
+With a #define of PREFIX:
+	#define PREFIX "abc"
+	pr_info("msg\n")
+output:
+	<6>abc: msg
+
+without a #define of PREFIX:
+	pr_info("msg\n")
+output:
+	<6>msg
+
+---------------
+
+
