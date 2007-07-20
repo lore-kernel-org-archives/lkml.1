@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764970AbXGTURs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765042AbXGTUUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764970AbXGTURs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 16:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758660AbXGTURk
+	id S1765042AbXGTUUA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbXGTUTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 16:17:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34601 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755514AbXGTURj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 16:17:39 -0400
-Date: Fri, 20 Jul 2007 13:17:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [IA64] Add mapping table between irq and vector
-Message-Id: <20070720131728.a7335d92.akpm@linux-foundation.org>
-In-Reply-To: <200707201959.l6KJxHAu019185@hera.kernel.org>
-References: <200707201959.l6KJxHAu019185@hera.kernel.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 16:19:48 -0400
+Received: from khc.piap.pl ([195.187.100.11]:55192 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752715AbXGTUTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 16:19:47 -0400
+To: Ben Greear <greearb@candelatech.com>
+Cc: andrei radulescu-banu <iubica2@yahoo.com>,
+       Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Linux, tcpdump and vlan
+References: <930446.33248.qm@web56601.mail.re3.yahoo.com>
+	<469FF611.6080905@candelatech.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 20 Jul 2007 22:19:45 +0200
+In-Reply-To: <469FF611.6080905@candelatech.com> (Ben Greear's message of "Thu, 19 Jul 2007 16:38:57 -0700")
+Message-ID: <m3r6n2zv32.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007 19:59:17 GMT
-Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+Ben Greear <greearb@candelatech.com> writes:
 
-> +	BUG_ON(bind_irq_vector(irq, vector));
+>> The net result is that dev_queue_xmit_nit() is called twice, once
+>> for dev=eth0.2 then for dev=eth0.
+>
+> Maybe binding to all isn't such a good idea then.
 
-It's not good practice to do assert(expression-with-side-effects).  Because
-if someone wants to create a build which has all the assertions disabled,
-the resulting binary will not work.
-
-In the present implementation our BUG_ON(expression) will evaluate
-`expression' even if CONFIG_BUG=n.  But that's totally lame and we are just
-leaving optimisation opportunities on the floor.
-
-Our objective _should_ be to make BUG_ON(expr) generate no code at all if
-CONFIG_BUG=n.
-
-So please, prefer to do
-
-	if (bind_irq_vector(irq, vector))
-		BUG();
-
+Anyway I would expect the frame on eth0.2 and then on eth0 as well.
+Anything different is crazy.
+-- 
+Krzysztof Halasa
