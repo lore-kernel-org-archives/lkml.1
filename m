@@ -1,86 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934586AbXGTH7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935175AbXGTIAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934586AbXGTH7T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760368AbXGTH7M
+	id S935175AbXGTIAq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 04:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760468AbXGTIAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:59:12 -0400
-Received: from wp050.webpack.hosteurope.de ([80.237.132.57]:59658 "EHLO
-	wp050.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758641AbXGTH7L (ORCPT
+	Fri, 20 Jul 2007 04:00:39 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43315 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760334AbXGTIAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:59:11 -0400
-X-Greylist: delayed 1896 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jul 2007 03:59:11 EDT
-Date: Fri, 20 Jul 2007 09:27:30 +0200
-From: Uwe Hermann <uwe@hermann-uwe.de>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
-Subject: Re: Patches for REALLY TINY 386 kernels
-Message-ID: <20070720072730.GN3700@greenwood>
-References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com> <20070718194137.GG11166@waste.org> <20070718201043.GF3898@one.firstfloor.org> <20070718204102.GM11115@waste.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OROCMA9jn6tkzFBc"
-Content-Disposition: inline
-In-Reply-To: <20070718204102.GM11115@waste.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-bounce-key: webpack.hosteurope.de;uwe@hermann-uwe.de;1184918351;a97aed78;
+	Fri, 20 Jul 2007 04:00:38 -0400
+Date: Fri, 20 Jul 2007 00:59:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/base/core.c broken for non-CONFIG_HOTPLUG
+Message-Id: <20070720005958.47cd7c9c.akpm@linux-foundation.org>
+In-Reply-To: <20070720070106.GH1678@pengutronix.de>
+References: <20070720070106.GH1678@pengutronix.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 20 Jul 2007 09:01:06 +0200 Robert Schwebel <r.schwebel@pengutronix.de> wrote:
 
---OROCMA9jn6tkzFBc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> You add and use
+> 
+> 	extern const char *kobject_actions[];
 
-On Wed, Jul 18, 2007 at 03:41:02PM -0500, Matt Mackall wrote:
-> On Wed, Jul 18, 2007 at 10:10:43PM +0200, Andi Kleen wrote:
-> >=20
-> > I was waiting for someone to make that "point" ...
-> >=20
-> > >=20
-> > > Every byte you can shave off the compressed kernel image is another
-> > > byte you can use for userspace on your FLASH.
-> >=20
-> > Now let's see if that 1MB 386 contains any flash at all. Guesses? =20
->=20
-> I've certainly worked on such devices. I expect there are more of them
-> still in service, than, say, Voyagers.
->=20
-> I haven't looked at whether this CPUID stuff is worth the trouble, I'm
-> just responding to your argument about init code. Init code is
-> definitely not free. It takes up storage space, which can be extremely
-> valuable.
-
-Ack.
-
-Some people are putting Linux kernels in the "BIOS" (i.e. ROM chip) when
-using LinuxBIOS (www.linuxbios.org). It _does_ make a lot of difference
-there how big the kernel is. At the moment you can't do that with
-anything smaller than a 1 MB chip. But if people could use 512 KB chips
-because the kernel is small enough that would sure be a great thing.
-
-In such scenarios every single byte matters.
-
-
-Uwe.
---=20
-http://www.hermann-uwe.de  | http://www.holsham-traders.de
-http://www.crazy-hacks.org | http://www.unmaintained-free-software.org
-
---OROCMA9jn6tkzFBc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGoGPiXdVoV3jWIbQRArMsAJ98ucQKZaEUXUuJRWna+5wR1pt2NgCeK81F
-JmhbIBpANAzVozBTLMIgROk=
-=Tsy5
------END PGP SIGNATURE-----
-
---OROCMA9jn6tkzFBc--
+Added it in a .c file, too.  Even checkpatch.pl knows that
+was wrong.
