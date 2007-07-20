@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932429AbXGTR2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934368AbXGTR31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932429AbXGTR2i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 13:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbXGTR21
+	id S934368AbXGTR31 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 13:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbXGTR3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 13:28:27 -0400
-Received: from ns2.suse.de ([195.135.220.15]:59633 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757029AbXGTR20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 13:28:26 -0400
-From: Andi Kleen <ak@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: build fix for x86_64...
-Date: Fri, 20 Jul 2007 19:25:11 +0200
-User-Agent: KMail/1.9.1
-Cc: "Luck, Tony" <tony.luck@intel.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andi Kleen <ak@novell.com>, Arthur Jones <arthur.jones@qlogic.com>,
-       Vasily Tarasov <vtaras@openvz.org>, linux-kernel@vger.kernel.org,
-       Jan Kara <jack@ucw.cz>, linux-arch@vger.kernel.org
-References: <617E1C2C70743745A92448908E030B2A01FA46A9@scsmsx411.amr.corp.intel.com> <46A0EAC8.9020203@zytor.com>
-In-Reply-To: <46A0EAC8.9020203@zytor.com>
+	Fri, 20 Jul 2007 13:29:17 -0400
+Received: from queueout02-winn.ispmail.ntl.com ([81.103.221.56]:37041 "EHLO
+	queueout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758836AbXGTR3Q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 13:29:16 -0400
+X-Greylist: delayed 702 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jul 2007 13:29:16 EDT
+Date: Fri, 20 Jul 2007 18:17:29 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] what should 'uptime' be on suspend?
+Message-ID: <20070720171729.GA19935@deepthought>
+References: <46A0210E.6010207@tmr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200707201925.12036.ak@suse.de>
+In-Reply-To: <46A0210E.6010207@tmr.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 July 2007 19:03, H. Peter Anvin wrote:
-> Luck, Tony wrote:
-> > Which is better.  But if we unconditionally set this CONFIG variable,
-> > then the code in fs/quota.c will have to read:
-> >
-> > #if defined(CONFIG_COMPAT) && defined(CONFIG_COMPAT_FOR_U64_ALIGNMENT)
-> >
-> > We can keep it simpler if the Kconfig file does the conditional for us:
-> >
-> > config COMPAT_FOR_U64_ALIGNMENT
-> > 	def_bool y
-> > 	depends on COMPAT
->
-> No, that would be bad.  If compat_u64 is used to carry 32-bit ABIs
+On Thu, Jul 19, 2007 at 10:42:22PM -0400, Bill Davidsen wrote:
+> I just found a machine which will resume after suspend to memory, using 
+> the mainline kernel (no suspend2 patch).
+> 
+> On resume I was looking at the uptime output, and it was about six 
+> minutes, FAR longer than the time since resume. So the topic for 
+> discussion is, should the uptime be
+> - time sine the original boot
+> - total uptime since first boot, not counting the time suspended
+> - time since resume
+> - some other time around six minutes
+> 
+> Any of the first three could be useful and "right" for some casesm thus 
+> discussion invited.
+> 
+ My ibook has always been able to suspend to RAM.  For a long while,
+uptime was shown as the time since the last boot.  At some point,
+maybe about a year ago, this was "corrected" to show time since boot
+_less_ time suspended.
 
-That doesn't help for any old interfaces, like the one here. For those
-still ifdefs are needed. Interfaces that use compat_u64 just use
-a normal #ifdef CONFIG_COMPAT.
+ To be clear, the ibook suspends when I close the lid and resumes
+when I open it.  Uptime used to be convenient, because I could work
+out when I'd last booted.
 
-Besides I have my doubts compat_u64 will be the solution
-to these worries. We have hundreds of people adding various interfaces
-to Linux and it's unlikely they all heard about it. So likely
-these cases will occur again and again.
-
--Andi
-
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
