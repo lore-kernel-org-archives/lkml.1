@@ -1,124 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764386AbXGTDdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763076AbXGTDdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764386AbXGTDdh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 23:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbXGTDdI
+	id S1763076AbXGTDdy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 23:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbXGTDdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 23:33:08 -0400
-Received: from igw2.watson.ibm.com ([129.34.20.6]:52302 "EHLO
-	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757280AbXGTDdG (ORCPT
+	Thu, 19 Jul 2007 23:33:10 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35617 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762899AbXGTDdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 23:33:06 -0400
-Message-ID: <46A02CED.7000309@us.ibm.com>
-Date: Thu, 19 Jul 2007 23:33:01 -0400
-From: Reiner Sailer <sailer@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: jesper.juhl@gmail.com, kjhall@linux.vnet.ibm.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Seiji Munetoh <munetoh@jp.ibm.com>,
-       Reiner Sailer <sailer@watson.ibm.com>, stefanb@us.ibm.com
-Subject: Re: [PATCH] Memory leak in tpm_ascii_bios_measurements_open() fix.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 23:33:08 -0400
+To: torvalds@linux-foundation.org
+Subject: [PATCH 3/8] m68k: use .text.head
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Message-Id: <E1IBjEq-0004ks-5L@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Fri, 20 Jul 2007 04:33:08 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper,
 
-thank you very much for finding this error and for posting a patch 
-proposal. Since Kylene is not online, I am responding. Please see my 
-inlines and an alternative patch proposal below.
+i.e. tell modpost that entry point code (that has to be outside
+of .init.text for external reasons) is OK to refer to .init.*
 
-Jesper Juhl <jesper.juhl@gmail.com> wrote on 07/18/2007 07:11:54 PM:
-
- > Ehlo,
- >
- > Coverity found a memory leak in tpm_ascii_bios_measurements_open().
- >
- > If "read_log(log)" fails, then we may leak 'log' and
- > 'log->bios_event_log'.
- >
- > This patch should fix it, but please double check it. I don't know
- > this code very well and the patch has only been compile tested.
- >
- >
- > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
- > ---
- >
- >  drivers/char/tpm/tpm_bios.c |   11 ++++++++---
- >  1 files changed, 8 insertions(+), 3 deletions(-)
- >
- > diff --git a/drivers/char/tpm/tpm_bios.c b/drivers/char/tpm/tpm_bios.c
- > index 4eba32b..4b26ce4 100644
- > --- a/drivers/char/tpm/tpm_bios.c
- > +++ b/drivers/char/tpm/tpm_bios.c
- > @@ -427,7 +427,7 @@ static int
- > tpm_ascii_bios_measurements_open(struct inode *inode,
- >        return -ENOMEM;
- >  
- >     if ((err = read_log(log)))
- > -      return err;
- > +      goto out_free;
-
-
-log->bios_event_log should not be pointing to allocated memory here
-(seems cleaner if read_log cleans its allocated memory in the error case)
----> just free log
-
-
- >
- >     /* now register seq file */
- >     err = seq_open(file, &tpm_ascii_b_measurments_seqops);
- > @@ -435,10 +435,15 @@ static int
- > tpm_ascii_bios_measurements_open(struct inode *inode,
- >        seq = file->private_data;
- >        seq->private = log;
- >     } else {
- > -      kfree(log->bios_event_log);
- > -      kfree(log);
- > +      goto out_free;
- >     }
- > +
- > +out:
- >     return err;
- > +out_free:
- > +   kfree(log->bios_event_log);
- > +   kfree(log);
- > +   goto out;
- >  }
- >  
- >  const struct file_operations tpm_ascii_bios_measurements_ops = {
- >
- >
-
-The following patch should be sufficient to fix the problem you discovered:
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/char/tpm/tpm_bios.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/m68k/kernel/head.S           |    2 +-
+ arch/m68k/kernel/sun3-head.S      |    2 +-
+ arch/m68k/kernel/vmlinux-std.lds  |    1 +
+ arch/m68k/kernel/vmlinux-sun3.lds |    2 +-
+ 4 files changed, 4 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.22-rc7/drivers/char/tpm/tpm_bios.c
-===================================================================
---- linux-2.6.22-rc7.orig/drivers/char/tpm/tpm_bios.c
-+++ linux-2.6.22-rc7/drivers/char/tpm/tpm_bios.c
-@@ -426,9 +426,10 @@ static int tpm_ascii_bios_measurements_o
-     if (!log)
-         return -ENOMEM;
+diff --git a/arch/m68k/kernel/head.S b/arch/m68k/kernel/head.S
+index 05741f2..faa6764 100644
+--- a/arch/m68k/kernel/head.S
++++ b/arch/m68k/kernel/head.S
+@@ -577,7 +577,7 @@ func_define	putn,1
+ #endif
+ .endm
  
--    if ((err = read_log(log)))
-+    if ((err = read_log(log))) {
-+        kfree(log);
-         return err;
--
-+    }
-     /* now register seq file */
-     err = seq_open(file, &tpm_ascii_b_measurments_seqops);
-     if (!err) {
+-.text
++.section ".text.head","ax"
+ ENTRY(_stext)
+ /*
+  * Version numbers of the bootinfo interface
+diff --git a/arch/m68k/kernel/sun3-head.S b/arch/m68k/kernel/sun3-head.S
+index 4b5f050..aad0159 100644
+--- a/arch/m68k/kernel/sun3-head.S
++++ b/arch/m68k/kernel/sun3-head.S
+@@ -29,7 +29,7 @@ kernel_pmd_table:              .skip 0x2000
+ .globl kernel_pg_dir
+ .equ    kernel_pg_dir,kernel_pmd_table
+ 
+-	.section .head
++	.section .text.head
+ ENTRY(_stext)
+ ENTRY(_start)
+ 
+diff --git a/arch/m68k/kernel/vmlinux-std.lds b/arch/m68k/kernel/vmlinux-std.lds
+index 40f02b1..c422457 100644
+--- a/arch/m68k/kernel/vmlinux-std.lds
++++ b/arch/m68k/kernel/vmlinux-std.lds
+@@ -11,6 +11,7 @@ SECTIONS
+   . = 0x1000;
+   _text = .;			/* Text and read-only data */
+   .text : {
++	*(.text.head)
+ 	TEXT_TEXT
+ 	SCHED_TEXT
+ 	LOCK_TEXT
+diff --git a/arch/m68k/kernel/vmlinux-sun3.lds b/arch/m68k/kernel/vmlinux-sun3.lds
+index f06425b..4adffef 100644
+--- a/arch/m68k/kernel/vmlinux-sun3.lds
++++ b/arch/m68k/kernel/vmlinux-sun3.lds
+@@ -11,7 +11,7 @@ SECTIONS
+   . = 0xE002000;
+   _text = .;			/* Text and read-only data */
+   .text : {
+-	*(.head)
++	*(.text.head)
+ 	TEXT_TEXT
+ 	SCHED_TEXT
+ 	LOCK_TEXT
+-- 
+1.5.3.GIT
 
-Do you agree?
-
-Greetings
-Reiner
 
