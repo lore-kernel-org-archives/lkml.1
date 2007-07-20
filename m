@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965924AbXGTAxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939880AbXGTAxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965924AbXGTAxj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 20:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939881AbXGTAwl
+	id S939880AbXGTAxy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 20:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965745AbXGTAxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 20:52:41 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42181 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S939821AbXGTAwk (ORCPT
+	Thu, 19 Jul 2007 20:53:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42135
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965668AbXGTAxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 20:52:40 -0400
-Message-ID: <46A00752.4040103@sgi.com>
-Date: Fri, 20 Jul 2007 10:52:34 +1000
-From: Timothy Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 2.0.0.4 (Macintosh/20070604)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: akpm@linux-foundation.org, xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] XFS update
-References: <469F7329.9080603@sgi.com> <alpine.LFD.0.999.0707191528250.27249@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707191528250.27249@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Jul 2007 20:53:00 -0400
+Date: Thu, 19 Jul 2007 17:52:59 -0700 (PDT)
+Message-Id: <20070719.175259.48796795.davem@davemloft.net>
+To: shannon.nelson@intel.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       dan.j.williams@intel.com, christopher.leech@intel.com,
+       peter.p.waskiewicz.jr@intel.com
+Subject: Re: [PATCH 7/7] I/OAT: Add DCA services
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070720004522.13564.75957.stgit@localhost.localdomain>
+References: <20070720004403.13564.14294.stgit@localhost.localdomain>
+	<20070720004522.13564.75957.stgit@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Fri, 20 Jul 2007, Tim Shimmin wrote:
->> Please pull from the for-linus branch:
->>     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
-> 
-> Ok, this got some conflicts with Nick's VM fault patches, but I fixed them 
-> up since they looked trivial, and pushed out the result. Please do verify 
-> that it all works and makes sense, though...
-> 
-> 		Linus
+From: Shannon Nelson <shannon.nelson@intel.com>
+Date: Thu, 19 Jul 2007 17:45:22 -0700
 
-Okay, sorry and thanks.
+> Add code to connect to the DCA driver and provide cpu tags for use by
+> drivers that would like to use Direct Cache Access hints.
+> 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 
-The window between pulling in and applying changes was obviously
-large enough for Nick's changes to get in.
-I did pull in, and then had hassles in converting changes between
-sgi dev tree and git mainline. Then by the time they were fixed, scripts
-updated, had dinner, tree built, had failure with posix_test_lock (fixed that -
-then noticed others fixed it - wish I had pulled in at this stage:)
-and ran thru some qa, Nick's changes must have gone in.
-Ok, next time must remember to repull in latest just before sending out
-as a final check.
-
---Tim
+Acked-by: David S. Miller <davem@davemloft.net>
