@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbXGTEwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbXGTFIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930AbXGTEwb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 00:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbXGTEwW
+	id S1754914AbXGTFIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 01:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbXGTFIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 00:52:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:3605 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbXGTEwV (ORCPT
+	Fri, 20 Jul 2007 01:08:04 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:37660 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750886AbXGTFIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 00:52:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=tAWBtWyaop7ashbEeOw2zGgq/Evof1rMMt3AgiYkRdPiwEY9EQ7doO39Jlv//BC7MPVTCnLT7Q8G77F9udMKwbsAs38upyrqDqpzhhYXc8ioUbc7WeYp9648S/n8icFsme9See3L4Sc0UnSfuS23eAk0zDxakwMXARKW+3m8NhM=
-Date: Fri, 20 Jul 2007 08:52:16 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Ogrisegg <tom-lkml@lkml.fnord.at>, linux-kernel@vger.kernel.org,
-       rml@novell.com, John McCutchan <ttb@tentacle.dhs.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, robin.ksj@gmail.com
-Subject: Re: [PATCH] procfs fixes for inotify/dnotify
-Message-ID: <20070720045216.GA5831@martell.zuzino.mipt.ru>
-References: <20060221211623.GA26413@rescue.iwoars.net> <20070719150355.2971e8e4.akpm@linux-foundation.org>
+	Fri, 20 Jul 2007 01:08:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=XvJ6Glm5236eGFSySwTDb/zPjEOUrUKiWvTb7jEjCq5wwu/sbh/Ue15BPknYugzqG16eV/eG35c14IG5BTiwbmlDHZqJ/L1ymAEfj5oUkv+gFqZRWGi2wz6lgoNG0IJ5jfM2jYcYmEncSsLZei7pD96IyKQ8SU8orGX4aVNvTkI=  ;
+X-YMail-OSG: xQfiVF0VM1lPJ2uvKXRUWxLrd2pdlKPe.uxyDscRjxXX3kT2Cy43o03avsQ43H9GUA2YRuJSNQ--
+Message-ID: <46A0432C.8090207@yahoo.com.au>
+Date: Fri, 20 Jul 2007 15:07:56 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719150355.2971e8e4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: Andi Kleen <ak@suse.de>, patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH] [15/58] i386: Rewrite sched_clock (cmpxchg8b)
+References: <200707191154.642492000@suse.de> <20070719095459.E60AD14E11@wotan.suse.de> <1184863904.6458.17.camel@dhcp193.mvista.com> <20070720031105.GA8237@Krystal> <20070720034757.GA9093@Krystal> <20070720041839.GA11217@Krystal>
+In-Reply-To: <20070720041839.GA11217@Krystal>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 03:03:55PM -0700, Andrew Morton wrote:
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=8782
+Mathieu Desnoyers wrote:
 
-[fsnotify and /proc]
-
-> > --- linux-2.6.15/fs/proc/base.c
-> > +++ linux-2.6.15.4/fs/proc/base.c
-> > @@ -1945,6 +1945,7 @@
-> >  	if(proc_dentry != NULL) {
-> >  		shrink_dcache_parent(proc_dentry);
-> >  		dput(proc_dentry);
-> > +		fsnotify_nameremove (proc_dentry, 1);
-> >  	}
+> I tried it with and without the LOCK prefix on my Pentium 4.
 > 
-> I wonder if this is racy - after the dput() we might no longer have a
-> reference?
+> Locked cmpxchg8b : 90 cycles
+> Non locked cmpxchg8b: 30 cycles
+> sti: 166 cycles
+> cli: 159 cycles
+> 
+> So, hrm, even if we use the locked version, it is still much faster than
+> the sti/cli. I am thoughtful about the comment in asm-i386/system.h:
 
-It is indeed racy. dput() => kill_it: => d_kill() => d_free() =>
-__d_free() eventually. *boom*
+Curious: what does it look like if the memory is not in cache? I
+found that cmpxchg is relatively slower than other rmw instructions
+in that case.
 
+-- 
+SUSE Labs, Novell Inc.
