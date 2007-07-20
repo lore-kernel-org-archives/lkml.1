@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935880AbXGTUpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757264AbXGTUyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935880AbXGTUpY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 16:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXGTUpM
+	id S1757264AbXGTUyb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759268AbXGTUyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 16:45:12 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:59584 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759508AbXGTUpK (ORCPT
+	Fri, 20 Jul 2007 16:54:21 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57209 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbXGTUyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 16:45:10 -0400
-Date: Fri, 20 Jul 2007 16:45:07 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: tonyko@lineo.ca, robin.getz@analog.com, linux-kernel@vger.kernel.org
-Subject: Re: blackfin - cmpxchg not atomic ?
-Message-ID: <20070720204507.GA15760@Krystal>
-References: <20070720202807.GA15009@Krystal> <8bd0f97a0707201336l6bed7c24i7014333ce356417f@mail.gmail.com>
-Mime-Version: 1.0
+	Fri, 20 Jul 2007 16:54:19 -0400
+Date: Fri, 20 Jul 2007 14:54:18 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Simon Arlott <simon@fire.lp0.eu>, Denis Cheng <crquan@gmail.com>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] run scripts/Lindent on it to match Documentation/CodingStyle
+Message-ID: <20070720205418.GK14791@parisc-linux.org>
+References: <1184489571313-git-send-email-crquan@gmail.com> <4699EEA9.6070709@simon.arlott.org.uk> <20070720170743.GF14791@parisc-linux.org> <E1IBzQw-0000Im-55@flower>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0707201336l6bed7c24i7014333ce356417f@mail.gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:44:25 up 3 days, 15:18,  3 users,  load average: 0.08, 0.39, 0.40
+In-Reply-To: <E1IBzQw-0000Im-55@flower>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mike Frysinger (vapier.adi@gmail.com) wrote:
-> On 7/20/07, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> >I am currently passing through each architectures adding a
-> >cmpxchg_local() to each system.h, and I notice that you disable
-> >interrupts in your cmpxchg() implementation, why are you doing so ?
-> 
-> because Blackfin lacks any atomic instructions
-> 
-> >Also, does you assembly stub _really_ modify memory atomically ? If yes,
-> >then there should be no need for disabling interrupts. Else, I see a
-> >major problem with SMP.
-> 
-> that isnt the only problem with SMP on Blackfin
-> 
-> >I also don't like the comment in asm-blackfin/atomic.h :
+On Fri, Jul 20, 2007 at 10:50:42PM +0200, Oleg Verych wrote:
+> > Of course, we can't add this flag to Lindent until it's widely
+> > circulating amongst the distributions.  Perhaps we can add this to
+> > Lindent in the meantime:
 > >
-> > * Generally we do not concern about SMP BFIN systems, so we don't have
-> > * to deal with that.
+> > sed -i -e 's/^\t*      \(\w*:\)/ \1/' "$@"
 > >
-> >I have seen on the blackfin website that you actually sell a board with
-> >SMP. Why aren't you caring about it ?
+> > which will replace the leading tabs and spaces with one space.
+> > It should leave case labels unmolested, as they should be indented with
+> > tabs, not 6 spaces.
+> >
+> > Any regexp ninjas want to have a go at something better?
 > 
-> just because a processor has more than one core does not make it SMP
-> -mike
+> I'm the one. Trying to write portable, optimized and easy to
+> understand scripts [0].
+> 
+> Please, describe more what must be done, and i will do it. Case labels
+> are handled very strangely in you example.
 
-I see, thanks for the reply. Is there a particular reason for
-implementing system.h/cmpxchg() in assembly rather that in plain C then?
+OK.  indent will indent labels to a column number that's a multiple of
+8, plus 6.  So it may start in column 6, 14, 20, 28, etc.  I'm not quite
+sure what the definition of a label is; I had it as \w*: up there, but I
+don't know if that would match the _.  The point is to *not* handle case
+labels, only goto labels.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
