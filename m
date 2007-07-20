@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934351AbXGTUG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXGTUMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934351AbXGTUG0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 16:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757636AbXGTUGT
+	id S933585AbXGTUMl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbXGTUMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 16:06:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40019 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755191AbXGTUGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 16:06:18 -0400
-Date: Fri, 20 Jul 2007 16:05:30 -0400
-From: Dave Jones <davej@redhat.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Andy Whitcroft <apw@uk.ibm.com>
-Subject: Re: [PATCH] buggered kmalloc()
-Message-ID: <20070720200530.GA9978@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Al Viro <viro@ftp.linux.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Mike Christie <michaelc@cs.wisc.edu>, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org, Andy Whitcroft <apw@uk.ibm.com>
-References: <20070720150340.GF21668@ftp.linux.org.uk>
+	Fri, 20 Jul 2007 16:12:33 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54429 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754340AbXGTUMc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 16:12:32 -0400
+Date: Fri, 20 Jul 2007 16:12:31 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Lang <david@lang.hm>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <200707202203.27849.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0707201608120.2546-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070720150340.GF21668@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 04:03:40PM +0100, Al Viro wrote:
- > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
- > ---
- > diff --git a/drivers/scsi/iscsi_tcp.c b/drivers/scsi/iscsi_tcp.c
- > index aebcd5f..7829ab1 100644
- > --- a/drivers/scsi/iscsi_tcp.c
- > +++ b/drivers/scsi/iscsi_tcp.c
- > @@ -1885,7 +1885,7 @@ static int iscsi_tcp_get_addr(struct iscsi_conn *conn, struct socket *sock,
- >  	struct sockaddr_in *sin;
- >  	int rc = 0, len;
- >  
- > -	addr = kmalloc(GFP_KERNEL, sizeof(*addr));
- > +	addr = kmalloc(sizeof(*addr), GFP_KERNEL);
- >  	if (!addr)
- >  		return -ENOMEM;
+On Fri, 20 Jul 2007, Oliver Neukum wrote:
 
-This seems like something that would be trivial to check for in checkpatch.
+> Am Freitag 20 Juli 2007 schrieb Alan Stern:
+> > Some drivers need the ability to schedule.  Some will need the ability 
+> > to allocate memory (although GFP_ATOMIC is probably sufficient).  Some 
+> > will need timers to run.
+> 
+> Some will have to request firmware. It can add up to some megabytes.
+> In addition, if we don't freeze, some drivers, eg. video drivers, can
+> do allocations in the megabyte range.
+> 
+> It seems to me that without the freezer we will end up with many drivers
+> needing a two step notification process. Furthermore there are requirements
+> on the order of shutting down system facilities, eg. device addition must
+> be stopped before drivers allocate firmware.
 
-	Dave
+These are really separate issues, since they refer to things that have 
+to happen well before the memory snapshot is captured.
 
--- 
-http://www.codemonkey.org.uk
+We already have a pre-suspend notification available for drivers that 
+need to allocate large amounts of memory.
+
+You are correct about the need to delay/stop device addition.  I don't
+know how this can be done in general; each code path calling
+device_add() may have to be treated individually.
+
+Alan Stern
+
