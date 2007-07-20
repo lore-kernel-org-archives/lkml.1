@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752311AbXGTV1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbXGTV1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752311AbXGTV1Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765760AbXGTV0i
+	id S1760684AbXGTV1u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbXGTV1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:26:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39900 "EHLO ogre.sisk.pl"
+	Fri, 20 Jul 2007 17:27:32 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60544 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765471AbXGTV0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:26:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 23:34:40 +0200
-User-Agent: KMail/1.9.5
-Cc: Milton Miller <miltonm@bga.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, David Lang <david@lang.hm>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> <40fa2626aff7b6b590ad6aa4737fc873@bga.com> <1184942918.13737.23.camel@caritas-dev.intel.com>
-In-Reply-To: <1184942918.13737.23.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1753410AbXGTV1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 17:27:30 -0400
+Date: Fri, 20 Jul 2007 23:28:45 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 4/7] x86_64: fix section mismatch warning in hpet.c
+Message-ID: <20070720212845.GC25064@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707202334.41665.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 20 July 2007 16:48, Huang, Ying wrote:
-> On Fri, 2007-07-20 at 09:01 -0500, Milton Miller wrote:
-> > Simplifying kjump: the proposal for v3.
-> > 
-> > The current code is trying to use crash dump area as a safe, reserved 
-> > area to run the second kernel.   However, that means that the kernel 
-> > has to be linked specially to run in the reserved area.   I think we 
-> > need to finish separating kexec_jump from the other code paths.
-> > 
-> > (1) add a new command line argument that specifies the kexec_jump 
-> > target area (or just size?)
-> > 
-> > (2) add a kjump flag to the flags parameter, used by kexec_load.   When 
-> > loading a jump kernel, it is loaded like a normal kernel, however, 
-> > additional control pages are allocated to (a) save this kenrel's use of 
-> > the kexec_jump target area (b) save the backed up region that is used 
-> > by all kernels like crash dump, and (c) space for invoking 
-> > relocate_new_kernel that will get its args from the execution entry 
-> > point and will restore the kernel then call resume and suspend.
-> 
-> Backuping target memory before kexec and restoring it after kexec is
-> planed feature for kexec jump. But I will work on image writing/reading
-> first.
+Fix following warnings:
+WARNING: vmlinux.o(.text+0x945e): Section mismatch: reference to .init.text:__set_fixmap (between 'hpet_arch_init' and 'hpet_mask_rtc_irq_bit')
+WARNING: vmlinux.o(.text+0x9474): Section mismatch: reference to .init.text:__set_fixmap (between 'hpet_arch_init' and 'hpet_mask_rtc_irq_bit')
 
-Have you thought about using any existing code, when you're at it?
+hpet_arch_init is only used from __init context so mark it __init.
 
-Greetings,
-Rafael
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/x86_64/kernel/hpet.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
+diff --git a/arch/x86_64/kernel/hpet.c b/arch/x86_64/kernel/hpet.c
+index b828696..3dc68d1 100644
+--- a/arch/x86_64/kernel/hpet.c
++++ b/arch/x86_64/kernel/hpet.c
+@@ -133,7 +133,7 @@ struct clocksource clocksource_hpet = {
+ 	.vread		= vread_hpet,
+ };
+ 
+-int hpet_arch_init(void)
++int __init hpet_arch_init(void)
+ {
+ 	unsigned int id;
+ 	u64 tmp;
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+1.5.1.rc3.g84b7-dirty
+
