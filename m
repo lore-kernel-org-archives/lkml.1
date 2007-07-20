@@ -1,95 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbXGTKMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbXGTKNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbXGTKMO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 06:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXGTKLc
+	id S1758386AbXGTKNA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 06:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXGTKLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 06:11:32 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:59144 "HELO ustc.edu.cn"
+	Fri, 20 Jul 2007 06:11:33 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:59133 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752233AbXGTKLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752277AbXGTKLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Jul 2007 06:11:30 -0400
-Message-ID: <384926280.09332@ustc.edu.cn>
+Message-ID: <384926280.23246@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070720101124.470940735@mail.ustc.edu.cn>
+Message-Id: <20070720101124.350754890@mail.ustc.edu.cn>
 References: <20070720100740.106917381@mail.ustc.edu.cn>
 User-Agent: quilt/0.45-1
-Date: Fri, 20 Jul 2007 18:07:45 +0800
+Date: Fri, 20 Jul 2007 18:07:44 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 5/6] introduce radix_tree_scan_hole()
-Content-Disposition: inline; filename=radixtree-introduce-scan-hole-data-functions.patch
+Subject: [PATCH 4/6] remove the limit max_sectors_kb imposed on max_readahead_kb
+Content-Disposition: inline; filename=remove-readahead-size-limit.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce radix_tree_scan_hole(root, index, max_scan) to scan radix tree
-for the first hole. It will be used in interleaved readahead.
+Remove the size limit max_sectors_kb imposed on max_readahead_kb.
 
-The implementation is dumb and obviously correct.
-It can help debug the possible smart one in future.
+max_sectors_kb cannot grow larger than max_hw_sectors_kb, which can be
+rather small for some disk drives.
 
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
 ---
+ block/ll_rw_blk.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
- include/linux/radix-tree.h |    2 ++
- lib/radix-tree.c           |   34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 36 insertions(+)
-
---- linux-2.6.22-rc6-mm1.orig/include/linux/radix-tree.h
-+++ linux-2.6.22-rc6-mm1/include/linux/radix-tree.h
-@@ -155,6 +155,8 @@ void *radix_tree_delete(struct radix_tre
- unsigned int
- radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
- 			unsigned long first_index, unsigned int max_items);
-+unsigned long radix_tree_scan_hole(struct radix_tree_root *root,
-+				unsigned long index, unsigned long max_scan);
- int radix_tree_preload(gfp_t gfp_mask);
- void radix_tree_init(void);
- void *radix_tree_tag_set(struct radix_tree_root *root,
---- linux-2.6.22-rc6-mm1.orig/lib/radix-tree.c
-+++ linux-2.6.22-rc6-mm1/lib/radix-tree.c
-@@ -601,6 +601,40 @@ int radix_tree_tag_get(struct radix_tree
- EXPORT_SYMBOL(radix_tree_tag_get);
- #endif
+--- linux-2.6.22-rc6-mm1.orig/block/ll_rw_blk.c
++++ linux-2.6.22-rc6-mm1/block/ll_rw_blk.c
+@@ -3945,7 +3945,6 @@ queue_max_sectors_store(struct request_q
+ 			max_hw_sectors_kb = q->max_hw_sectors >> 1,
+ 			page_kb = 1 << (PAGE_CACHE_SHIFT - 10);
+ 	ssize_t ret = queue_var_store(&max_sectors_kb, page, count);
+-	int ra_kb;
  
-+static unsigned long
-+radix_tree_scan_hole_dumb(struct radix_tree_root *root,
-+				unsigned long index, unsigned long max_scan)
-+{
-+	unsigned long i;
-+
-+	for (i = 0; i < max_scan; i++) {
-+		if (!radix_tree_lookup(root, index))
-+			break;
-+		if (++index == 0)
-+			break;
-+	}
-+
-+	return index;
-+}
-+
-+/**
-+ *	radix_tree_scan_hole    -    scan for hole
-+ *	@root:		radix tree root
-+ *	@index:		index key
-+ *	@max_scan:      advice on max items to scan (it may scan a little more)
-+ *
-+ *      Scan forward from @index for a hole/empty item, stop when
-+ *      - hit hole
-+ *      - wrap-around to index 0
-+ *      - @max_scan or more items scanned
-+ */
-+unsigned long radix_tree_scan_hole(struct radix_tree_root *root,
-+				unsigned long index, unsigned long max_scan)
-+{
-+	return radix_tree_scan_hole_dumb(root, index, max_scan);
-+}
-+EXPORT_SYMBOL(radix_tree_scan_hole);
-+
- static unsigned int
- __lookup(struct radix_tree_node *slot, void **results, unsigned long index,
- 	unsigned int max_items, unsigned long *next_index)
+ 	if (max_sectors_kb > max_hw_sectors_kb || max_sectors_kb < page_kb)
+ 		return -EINVAL;
+@@ -3954,14 +3953,6 @@ queue_max_sectors_store(struct request_q
+ 	 * values synchronously:
+ 	 */
+ 	spin_lock_irq(q->queue_lock);
+-	/*
+-	 * Trim readahead window as well, if necessary:
+-	 */
+-	ra_kb = q->backing_dev_info.ra_pages << (PAGE_CACHE_SHIFT - 10);
+-	if (ra_kb > max_sectors_kb)
+-		q->backing_dev_info.ra_pages =
+-				max_sectors_kb >> (PAGE_CACHE_SHIFT - 10);
+-
+ 	q->max_sectors = max_sectors_kb << 1;
+ 	spin_unlock_irq(q->queue_lock);
+ 
 
 --
