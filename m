@@ -1,113 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763434AbXGTMOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763197AbXGTMPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763434AbXGTMOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 08:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbXGTMOM
+	id S1763197AbXGTMPg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 08:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbXGTMPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 08:14:12 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1923 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755146AbXGTMOK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 08:14:10 -0400
-Date: Fri, 20 Jul 2007 13:14:07 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
-cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] defxx: Use __maybe_unused rather than a local hack
-Message-ID: <Pine.LNX.4.64N.0707201310060.7402@blysk.ds.pg.gda.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Jul 2007 08:15:22 -0400
+Received: from ozlabs.org ([203.10.76.45]:49248 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754299AbXGTMPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 08:15:19 -0400
+Subject: [PATCH 3/3] lguest: override sched_clock
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+In-Reply-To: <1184933576.10380.299.camel@localhost.localdomain>
+References: <1184933473.10380.296.camel@localhost.localdomain>
+	 <1184933576.10380.299.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 20 Jul 2007 22:15:01 +1000
+Message-Id: <1184933701.10380.303.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This is a change to remove a local hack in favour to __maybe_unused that 
-has been recently added.
+Guests currently use the default scheduler clock: this means they
+always use jiffies even if TSC is actually available.  It doesn't make
+any noticeable difference here, but it's a better thing to do.
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+Also remove commented-out asm/sched-clock.h from -mm tree.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
-Hi,
+ drivers/lguest/lguest.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
- It should be obvious.  The code builds, therefore it works.
-
- Please apply,
-
-  Maciej
-
-patch-mips-2.6.22-20070710-defxx-unused-0
-diff -up --recursive --new-file linux-mips-2.6.22-20070710.macro/drivers/net/defxx.c linux-mips-2.6.22-20070710/drivers/net/defxx.c
---- linux-mips-2.6.22-20070710.macro/drivers/net/defxx.c	2007-07-10 04:56:16.000000000 +0000
-+++ linux-mips-2.6.22-20070710/drivers/net/defxx.c	2007-07-20 00:05:14.000000000 +0000
-@@ -200,6 +200,7 @@
+diff -r d9973bf15010 drivers/lguest/lguest.c
+--- a/drivers/lguest/lguest.c	Fri Jul 20 21:40:49 2007 +1000
++++ b/drivers/lguest/lguest.c	Fri Jul 20 22:08:10 2007 +1000
+@@ -39,7 +39,6 @@
+ #include <asm/e820.h>
+ #include <asm/mce.h>
+ #include <asm/io.h>
+-//#include <asm/sched-clock.h>
  
- /* Include files */
- #include <linux/bitops.h>
-+#include <linux/compiler.h>
- #include <linux/delay.h>
- #include <linux/dma-mapping.h>
- #include <linux/eisa.h>
-@@ -240,8 +241,6 @@ static char version[] __devinitdata =
-  */
- #define NEW_SKB_SIZE (PI_RCV_DATA_K_SIZE_MAX+128)
- 
--#define __unused __attribute__ ((unused))
--
- #ifdef CONFIG_PCI
- #define DFX_BUS_PCI(dev) (dev->bus == &pci_bus_type)
- #else
-@@ -375,7 +374,7 @@ static inline void dfx_outl(DFX_board_t 
- 
- static void dfx_port_write_long(DFX_board_t *bp, int offset, u32 data)
- {
--	struct device __unused *bdev = bp->bus_dev;
-+	struct device __maybe_unused *bdev = bp->bus_dev;
- 	int dfx_bus_tc = DFX_BUS_TC(bdev);
- 	int dfx_use_mmio = DFX_MMIO || dfx_bus_tc;
- 
-@@ -399,7 +398,7 @@ static inline void dfx_inl(DFX_board_t *
- 
- static void dfx_port_read_long(DFX_board_t *bp, int offset, u32 *data)
- {
--	struct device __unused *bdev = bp->bus_dev;
-+	struct device __maybe_unused *bdev = bp->bus_dev;
- 	int dfx_bus_tc = DFX_BUS_TC(bdev);
- 	int dfx_use_mmio = DFX_MMIO || dfx_bus_tc;
- 
-@@ -866,7 +865,7 @@ static void __devinit dfx_bus_uninit(str
- 
- static void __devinit dfx_bus_config_check(DFX_board_t *bp)
- {
--	struct device __unused *bdev = bp->bus_dev;
-+	struct device __maybe_unused *bdev = bp->bus_dev;
- 	int dfx_bus_eisa = DFX_BUS_EISA(bdev);
- 	int	status;				/* return code from adapter port control call */
- 	u32	host_data;			/* LW data returned from port control call */
-@@ -3624,8 +3623,8 @@ static void __devexit dfx_unregister(str
- }
- 
- 
--static int __devinit __unused dfx_dev_register(struct device *);
--static int __devexit __unused dfx_dev_unregister(struct device *);
-+static int __devinit __maybe_unused dfx_dev_register(struct device *);
-+static int __devexit __maybe_unused dfx_dev_unregister(struct device *);
- 
- #ifdef CONFIG_PCI
- static int __devinit dfx_pci_register(struct pci_dev *,
-@@ -3699,7 +3698,7 @@ static struct tc_driver dfx_tc_driver = 
+ /* Declarations for definitions in lguest_guest.S */
+ extern char lguest_noirq_start[], lguest_noirq_end[];
+@@ -57,6 +56,7 @@ struct lguest_data lguest_data = {
+ 	.blocked_interrupts = { 1 }, /* Block timer interrupts */
  };
- #endif /* CONFIG_TC */
+ struct lguest_device_desc *lguest_devices;
++static cycle_t clock_base;
  
--static int __devinit __unused dfx_dev_register(struct device *dev)
-+static int __devinit __maybe_unused dfx_dev_register(struct device *dev)
- {
- 	int status;
+ static enum paravirt_lazy_mode lazy_mode;
+ static void lguest_lazy_mode(enum paravirt_lazy_mode mode)
+@@ -363,6 +363,11 @@ static struct clocksource lguest_clock =
+ 	.read		= lguest_clock_read,
+ };
  
-@@ -3709,7 +3708,7 @@ static int __devinit __unused dfx_dev_re
- 	return status;
- }
++static unsigned long long lguest_sched_clock(void)
++{
++	return cyc2ns(&lguest_clock, lguest_clock_read() - clock_base);
++}
++
+ /* We also need a "struct clock_event_device": Linux asks us to set it to go
+  * off some time in the future.  Actually, James Morris figured all this out, I
+  * just applied the patch. */
+@@ -439,6 +444,7 @@ static void lguest_time_init(void)
+ 		lguest_clock.mult = (((u64)NSEC_PER_SEC<<8)/ACTHZ) << 8;
+ 		lguest_clock.mask = CLOCKSOURCE_MASK(32);
+ 	}
++	clock_base = lguest_clock_read();
+ 	clocksource_register(&lguest_clock);
  
--static int __devexit __unused dfx_dev_unregister(struct device *dev)
-+static int __devexit __maybe_unused dfx_dev_unregister(struct device *dev)
- {
- 	put_device(dev);
- 	dfx_unregister(dev);
+ 	/* We can't set cpumask in the initializer: damn C limitations! */
+@@ -584,6 +590,7 @@ __init void lguest_init(void *boot)
+ 	paravirt_ops.time_init = lguest_time_init;
+ 	paravirt_ops.set_lazy_mode = lguest_lazy_mode;
+ 	paravirt_ops.wbinvd = lguest_wbinvd;
++	paravirt_ops.sched_clock = lguest_sched_clock;
+ 
+ 	hcall(LHCALL_LGUEST_INIT, __pa(&lguest_data), 0, 0);
+ 
+
+
