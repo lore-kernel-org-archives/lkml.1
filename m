@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934249AbXGTQty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765510AbXGTQvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934249AbXGTQty (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764831AbXGTQoa
+	id S1765510AbXGTQvK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933438AbXGTQpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:44:30 -0400
-Received: from astra.telenet-ops.be ([195.130.132.58]:38026 "EHLO
-	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758898AbXGTQoW (ORCPT
+	Fri, 20 Jul 2007 12:45:30 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57737 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1763250AbXGTQpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:44:22 -0400
-Message-Id: <20070720164324.097994947@mail.of.borg>
-References: <20070720164043.523003359@mail.of.borg>
-User-Agent: quilt/0.46-1
-Date: Fri, 20 Jul 2007 18:40:46 +0200
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org, linux-mips@linux-mips.org
-Subject: [patch 3/3] scsi: wd33c93 needs <asm/irq.h>
-Content-Disposition: inline; filename=m68k-wd33c93-needs-asm-irq.diff
+	Fri, 20 Jul 2007 12:45:25 -0400
+Date: Fri, 20 Jul 2007 12:15:36 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: david@lang.hm
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Milton Miller <miltonm@bga.com>,
+       linux-pm <linux-pm@lists.linuxfoundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <Pine.LNX.4.64.0707200746491.19248@asgard.lang.hm>
+Message-ID: <Pine.LNX.4.44L0.0707201211450.3811-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-wd33c93 SCSI needs <asm/irq.h> on m68k
+On Fri, 20 Jul 2007 david@lang.hm wrote:
 
-drivers/scsi/wd33c93.c: In function 'wd33c93_host_reset':
-drivers/scsi/wd33c93.c:1582: error: implicit declaration of function 'disable_irq'
-drivers/scsi/wd33c93.c:1603: error: implicit declaration of function 'enable_irq'
+> or the userspace helper functions that setup the instructions for the 
+> hibernate warn you if you are telling it to mount a filesystem that it 
+> knows is ext3 and is in use by the system going to sleep.
 
-The driver still compiles on MIPS (CONFIG_SGIWD93_SCSI=y)
+One can argue that the ext3 implementation is inadequate.  We should be
+able to give it a mount option requiring it to fail rather than play
+back the journal and write to the disk.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/scsi/wd33c93.c |    2 ++
- 1 file changed, 2 insertions(+)
 
---- a/drivers/scsi/wd33c93.c
-+++ b/drivers/scsi/wd33c93.c
-@@ -89,6 +89,8 @@
- #include <scsi/scsi_device.h>
- #include <scsi/scsi_host.h>
- 
-+#include <asm/irq.h>
-+
- #include "wd33c93.h"
- 
- #define optimum_sx_per(hostdata) (hostdata)->sx_table[1].period_ns
+> > What I've been trying to say from the very beginning is that the current
+> > frameworks _support_ hibernation a la ACPI S4 (although that's not exactly
+> > ACPI S4) and if we are going to introduce a new framework, then it should
+> > be designed to _support_ ACPI S4 fully _from_ _the_ _start_.
+> 
+> here is where there is some disagreement (although it may just be 
+> misunderstanding on the 'fully support' phrase)
+> 
+> it sounds like you are saying that the ACPI support requires a lot of work 
+> (the phrase I've seen some people use is a requirement to 'fix all the 
+> drivers'). we aren't wanting to have this work prevent the non-ACPI 
+> hibernation from progressing.
 
--- 
-Gr{oetje,eeting}s,
+You have completely misunderstood.  That phrase "fix all the drivers" 
+has nothing whatsoever to do with ACPI.  It is a prerequisite for 
+removing the freezer.
 
-						Geert
+And unless I'm mistaken, removing the freezer was the main reason for 
+doing all this kexec-style work in the first place.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Alan Stern
 
