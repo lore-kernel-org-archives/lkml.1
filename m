@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765835AbXGTXkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938817AbXGTXlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765835AbXGTXkF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 19:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762309AbXGTXjx
+	id S938817AbXGTXlx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 19:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbXGTXlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 19:39:53 -0400
-Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:36042 "EHLO
-	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762128AbXGTXjx (ORCPT
+	Fri, 20 Jul 2007 19:41:45 -0400
+Received: from mga02.intel.com ([134.134.136.20]:13893 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755226AbXGTXlo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 19:39:53 -0400
-Date: Fri, 20 Jul 2007 19:39:49 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stephen Smalley <sds@epoch.ncsc.mil>, James Morris <jmorris@redhat.com>,
-       dgoeddel@trustedcs.com, Frank Mayer <mayerf@tresys.com>,
-       Karl MacMillan <kmacmillan@tresys.com>, paul.moore@hp.com,
-       Chad Sellers <csellers@tresys.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@parisplace.org>
-Subject: Re: [PATCH][SELinux] Let us not leak memory in SELinux :
- security_netlbl_cache_add()
-In-Reply-To: <200707210012.45185.jesper.juhl@gmail.com>
-Message-ID: <Line.LNX.4.64.0707201938500.12490@d.namei>
-References: <200707210012.45185.jesper.juhl@gmail.com>
+	Fri, 20 Jul 2007 19:41:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,564,1175497200"; 
+   d="scan'208";a="268773608"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: where is the code for read system call?
+Date: Fri, 20 Jul 2007 16:41:42 -0700
+Message-ID: <A3258B497F1C1441AD36A2E8B45FD62858CFA6@scsmsx412.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: where is the code for read system call?
+thread-index: AcfLJ4abpHD6cnEySeOKSKe3pMog2A==
+From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 20 Jul 2007 23:41:43.0634 (UTC) FILETIME=[873B9320:01C7CB27]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007, Jesper Juhl wrote:
+My application reads from socket. I need to change the behavior of read
+system call for an experiment. Can someone point me to code?
 
-> Hi,
-> 
-> Leaking memory is a bad idea, so let's not do it, in 
-> security/selinux/ss/services.c::security_netlbl_cache_add().
-> 
-> Note: The Coverity checker gets credit for spotting this one.
-> Note: Patch has only been compile tested.
-
-Thanks!
-
-Verified and applied to:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-linus
-
-
-
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+thanks
