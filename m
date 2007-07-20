@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765979AbXGTSmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934288AbXGTSnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765979AbXGTSmL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 14:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760832AbXGTSl6
+	id S934288AbXGTSnI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 14:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761607AbXGTSm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 14:41:58 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:52267 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757625AbXGTSl5 (ORCPT
+	Fri, 20 Jul 2007 14:42:57 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:54288 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760832AbXGTSm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 14:41:57 -0400
-Subject: [PATCH] Mark sysrq_sched_debug_show static.
-From: Josh Triplett <josh@kernel.org>
-Reply-To: josh@kernel.org, josht@linux.vnet.ibm.com
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
+	Fri, 20 Jul 2007 14:42:56 -0400
+Subject: [PATCH] i386: Mark pit_clockevent static
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Content-Type: text/plain
-Date: Fri, 20 Jul 2007 11:42:16 -0700
-Message-Id: <1184956936.2630.12.camel@josh-work.beaverton.ibm.com>
+Date: Fri, 20 Jul 2007 11:43:12 -0700
+Message-Id: <1184956992.2630.14.camel@josh-work.beaverton.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only sched.c uses sysrq_sched_debug_show, and sched.c includes sched_debug.c,
-so all uses of sysrq_sched_debug_show occur in the same source file.
+Nothing outside of arch/i386/kernel/i8253.c uses pit_clockevent, so mark it
+static.
 
 Eliminates a sparse warning:
-warning: symbol 'sysrq_sched_debug_show' was not declared. Should it be static?
+warning: symbol 'pit_clockevent' was not declared. Should it be static?
 
 Signed-off-by: Josh Triplett <josh@kernel.org>
 ---
- kernel/sched_debug.c |    2 +-
+ arch/i386/kernel/i8253.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 29f2c21..42970f7 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -186,7 +186,7 @@ static int sched_debug_show(struct seq_file *m, void *v)
- 	return 0;
- }
- 
--void sysrq_sched_debug_show(void)
-+static void sysrq_sched_debug_show(void)
- {
- 	sched_debug_show(NULL, NULL);
- }
+diff --git a/arch/i386/kernel/i8253.c b/arch/i386/kernel/i8253.c
+index f8a3c40..7ba1e76 100644
+--- a/arch/i386/kernel/i8253.c
++++ b/arch/i386/kernel/i8253.c
+@@ -91,7 +91,7 @@ static int pit_next_event(unsigned long delta, struct clock_event_device *evt)
+  * registered. This mechanism replaces the previous #ifdef LOCAL_APIC -
+  * !using_apic_timer decisions in do_timer_interrupt_hook()
+  */
+-struct clock_event_device pit_clockevent = {
++static struct clock_event_device pit_clockevent = {
+ 	.name		= "pit",
+ 	.features	= CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
+ 	.set_mode	= init_pit_timer,
 -- 
 1.5.2.1
 
