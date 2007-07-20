@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937479AbXGTPg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937522AbXGTPk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937479AbXGTPg1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 11:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964799AbXGTPdg
+	id S937522AbXGTPk1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 11:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932646AbXGTPkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 11:33:36 -0400
-Received: from ns2.suse.de ([195.135.220.15]:54394 "EHLO mx2.suse.de"
+	Fri, 20 Jul 2007 11:40:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:56004 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936359AbXGTPdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 11:33:35 -0400
-From: Andi Kleen <ak@suse.de>
-References: <20070720532.949522000@suse.de>
-In-Reply-To: <20070720532.949522000@suse.de>
-To: mathieu.desnoyers@polymtl.ca, andi@firstfloor.org, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [8/11] x86_64: x86_64 - Use non locked version for local_cmpxchg()
-Message-Id: <20070720153252.C0AC514E79@wotan.suse.de>
-Date: Fri, 20 Jul 2007 17:32:52 +0200 (CEST)
+	id S932647AbXGTPkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 11:40:18 -0400
+Message-ID: <46A0D720.9000204@goop.org>
+Date: Fri, 20 Jul 2007 08:39:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: caglar@pardus.org.tr, LKML <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH] Remove -static from Documentation/lguest/Makefile
+References: <200707192313.44106.caglar@pardus.org.tr> <1184932973.10380.293.camel@localhost.localdomain>
+In-Reply-To: <1184932973.10380.293.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-9
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rusty Russell wrote:
+> How's this?
+> ===
+> Link lguest example launcher non-static
+>
+> S.Caglar Onur points out that many distributions don't ship a static
+> zlib.  Unfortunately the launcher currently maps virtual device memory
+> where shared libraries want to go.
+>
+> The solution is to pre-scan the args to figure out how much memory we
+> have, then allocate devices above that, rather than down from the top.
+>   
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-x86_64 - Use non locked version for local_cmpxchg()
+The technique I used in Valgrind was to have a small core program which
+links up high, which then uses mmap to reserve all the client (guest)
+address space, and then dlopens any other libraries, which are
+guaranteed to be loaded high.
 
-local_cmpxchg() should not use any LOCK prefix. This change probably got lost in
-the move to cmpxchg.h.
+There are a number of subtleties, of course.  You need to make the
+initial stub static, but some versions of glibc have difficulties with
+having static programs use dlopen.  And it means you need to use dlsym
+and do all your library function accesses indirectly, which may not be a
+problem for a relatively simple library like libz.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Acked-by: Christoph Lameter <clameter@sgi.com>
-CC: Andi Kleen <andi@firstfloor.org>
----
- include/asm-x86_64/cmpxchg.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux/include/asm-x86_64/cmpxchg.h
-===================================================================
---- linux.orig/include/asm-x86_64/cmpxchg.h
-+++ linux/include/asm-x86_64/cmpxchg.h
-@@ -128,7 +128,7 @@ static inline unsigned long __cmpxchg_lo
- 	((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
- 					(unsigned long)(n),sizeof(*(ptr))))
- #define cmpxchg_local(ptr,o,n)\
--	((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
-+	((__typeof__(*(ptr)))__cmpxchg_local((ptr),(unsigned long)(o),\
- 					(unsigned long)(n),sizeof(*(ptr))))
- 
- #endif
+    J
