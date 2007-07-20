@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936067AbXGTW7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbXGTXFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936067AbXGTW7d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbXGTW7X
+	id S933220AbXGTXFI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 19:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbXGTXE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 18:59:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58730 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751533AbXGTW7W (ORCPT
+	Fri, 20 Jul 2007 19:04:56 -0400
+Received: from [192.102.209.1] ([192.102.209.1]:46823 "EHLO
+	laptopd505.fenrus.org" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752715AbXGTXEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 18:59:22 -0400
-Date: Fri, 20 Jul 2007 15:59:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
-Message-Id: <20070720155912.079c5a27.akpm@linux-foundation.org>
-In-Reply-To: <20070720225047.GA17520@suse.de>
-References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>
-	<20070720225047.GA17520@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Jul 2007 19:04:55 -0400
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <1184970779.4012.38.camel@chaos>
+References: <1184970779.4012.38.camel@chaos>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 20 Jul 2007 16:01:39 -0700
+Message-Id: <1184972499.2692.9.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007 15:50:47 -0700
-Greg KH <gregkh@suse.de> wrote:
+On Sat, 2007-07-21 at 00:32 +0200, Thomas Gleixner wrote:
+> We are pleased to announce a project we've been working on for some 
+> time: the unified x86 architecture tree, or "arch/x86" - and we'd like 
+> to solicit feedback about it.
 
-> On Fri, Jul 20, 2007 at 06:32:21PM +0200, Michal Piotrowski wrote:
-> >  Hi Greg,
-> > 
-> >  This looks like a sysfs bug
-> >  http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-07-20-00-22/00003.jpg
-> > 
-> >  l *kernel_param_sysfs_setup+0x75
-> >  0xc13c0894 is in kernel_param_sysfs_setup (kernel/params.c:570).
-> >  565             mk->mod = THIS_MODULE;
-> >  566             kobj_set_kset_s(mk, module_subsys);
-> >  567             kobject_set_name(&mk->kobj, name);
-> >  568             kobject_init(&mk->kobj);
-> >  569             ret = kobject_add(&mk->kobj);
-> >  570             BUG_ON(ret < 0);
-> >  571             param_sysfs_setup(mk, kparam, num_params, name_skip);
-> >  572             kobject_uevent(&mk->kobj, KOBJ_ADD);
-> >  573     }
-> >  574
-> > 
-> >  http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-07-20-00-22/mm-config
-> 
-> What kernel version is this happening on?  The -mm tree?  Can you try
-> Linus's tree instead?
-> 
-> It looks like there was some needed information right before the first
-> stack dump, showing exactly what kobject was trying to be added that was
-> already present.  Odds are this is a kernel parameter with the same name
-> as a duplicate one within the same module, but the trick is going to be
-> trying to figure out what module is causing this.
-> 
-> So it's not a sysfs bug, but rather a driver issue that this is
-> catching.
 
-In that case a BUG was way too harsh treatment, and in fact directly
-contributed to our inability to debug the bug!
 
-Can we wind that back a bit?  Add some useful printks and then recover
-in some fashion?
+I really like the idea of a unified source tree for the 2 x86 variants.
+The technical differences are really small (of course there are
+differences, especially in the boot sequence), and striving to unify as
+much as possible while having a clean way to do per 32/64 bit parts as
+well is something that imo is the right thing.
+
+I'm more than happy to help with this effort, and have people in my
+group at Intel help test and engineer this as well.
+
+The technical approach of first moving (in an automated way) everything
+into one directory, and then merge pieces one by one is appealing since
+it can be done incrementally and carefully, while testing the "can we do
+separate bits" from the start.
+
+So in short, way to go, I hope we can get this thing done as soon as
+possible. Heck it looks like the infrastructure (not the unification)
+can make it into 2.6.23 merge window still, so that the entire 2.6.23
+window can be used to develop merged-functionality pieces...
+
+Greetings,
+    Arjan van de Ven
+
 
