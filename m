@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937224AbXGTCDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXGTCVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937224AbXGTCDe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 22:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761608AbXGTCDY
+	id S1758278AbXGTCVL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 22:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbXGTCVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 22:03:24 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:45911 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763195AbXGTCDX (ORCPT
+	Thu, 19 Jul 2007 22:21:00 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:42540 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752320AbXGTCU7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 22:03:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=Rn1BAWiyFIUfd0H8cFNrKEBNLF0kZwkQLmdZ1FFob/3wfo19aunHjNQJk7zv0u/JAzC+7YeAfuRie5or2GSe3qqyH779vUOVvYVjQUtowoodoaymlUrf9JFNPmwkDVun0bHqk5oIwdXvAfyDq5U1KGSGScSt58DxSscnA94k0uc=  ;
-X-YMail-OSG: tQeuqKsVM1kL9kOrjIrIH04DPDyWlxW4Tk1XZ.qOKVFD1SiirQPEcgold0bmokMWvlfz_HnIOg--
-Message-ID: <469DABA5.9070706@yahoo.com.au>
-Date: Wed, 18 Jul 2007 15:56:53 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
+	Thu, 19 Jul 2007 22:20:59 -0400
+Subject: [PATCH 2/2] Debug handling of early spurious interrupts
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] AFS: Fix file locking
-References: <20070717124732.22619.34179.stgit@warthog.cambridge.redhat.com> <20070717175017.8b8a8976.akpm@linux-foundation.org>
-In-Reply-To: <20070717175017.8b8a8976.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1184896944.27369.50.camel@sebastian.kern.oss.ntt.co.jp>
+References: <1184666997.5271.5.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20070718154659.c8b5ffea.akpm@linux-foundation.org>
+	 <1184896459.27369.36.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1184896944.27369.50.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Fri, 20 Jul 2007 11:20:43 +0900
+Message-Id: <1184898043.28418.3.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 17 Jul 2007 13:47:32 +0100
-> David Howells <dhowells@redhat.com> wrote:
-> 
-> 
->>+	if (type == AFS_LOCK_READ &&
->>+	    vnode->flags & (1 << AFS_VNODE_READLOCKED)) {
-> 
-> 
-> Here we use
-> 
-> 	vnode->flags & (1 << foo)
-> 
-> 
->>+		set_bit(AFS_VNODE_LOCKING, &vnode->flags);
-> 
-> 
-> and elsewhere we use set_bit(foo, &vnode->flags) and clear_bit()
-> 
-> This is a bit strange.  Does the open-coded bit-test have any performance
-> benefit on any architecture?  Not on x86 at least, afaik.
+With the advent of kdump it is possible that device drivers receive
+interrupts generated in the context of a previous kernel. Ideally
+quiescing the underlying devices should suffice but not all drivers do
+this, either because it is not possible or because they did not
+contemplate this case. Thus drivers ought to be able to handle
+interrupts coming in as soon as the interrupt handler is registered.
 
-It uses locked operations on x86, but you can use __set_bit instead
-(which should always be at least as efficient as the C version).
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
--- 
-SUSE Labs, Novell Inc.
+diff -urNp linux-2.6.22-orig/kernel/irq/manage.c linux-2.6.22-pendirq/kernel/irq/manage.c
+--- linux-2.6.22-orig/kernel/irq/manage.c	2007-07-19 18:18:53.000000000 +0900
++++ linux-2.6.22-pendirq/kernel/irq/manage.c	2007-07-19 19:43:41.000000000 +0900
+@@ -533,21 +533,32 @@ int request_irq(unsigned int irq, irq_ha
+ 
+ 	select_smp_affinity(irq);
+ 
+-	if (irqflags & IRQF_SHARED) {
+-		/*
+-		 * It's a shared IRQ -- the driver ought to be prepared for it
+-		 * to happen immediately, so let's make sure....
+-		 * We do this before actually registering it, to make sure that
+-		 * a 'real' IRQ doesn't run in parallel with our fake
+-		 */
+-		if (irqflags & IRQF_DISABLED) {
+-			unsigned long flags;
++	/*
++	 * With the advent of kdump it possible that device drivers receive
++	 * interrupts generated in the context of a previous kernel. Ideally
++	 * quiescing the underlying devices should suffice but not all drivers
++	 * do this, either because it is not possible or because they did not
++	 * contemplate this case. Thus drivers ought to be able to handle
++	 * interrupts coming in as soon as the interrupt handler is registered.
++	 *
++	 * Besides, if it is a shared IRQ the driver ought to be prepared for
++	 * it to happen immediately too.
++	 *
++	 * We do this before actually registering it, to make sure that
++	 * a 'real' IRQ doesn't run in parallel with our fake.
++	 */
++	if (irqflags & IRQF_DISABLED) {
++		unsigned long flags;
+ 
+-			local_irq_save(flags);
+-			handler(irq, dev_id);
+-			local_irq_restore(flags);
+-		} else
+-			handler(irq, dev_id);
++		local_irq_save(flags);
++		retval = handler(irq, dev_id);
++		local_irq_restore(flags);
++	} else
++		retval = handler(irq, dev_id);
++	if (retval == IRQ_HANDLED) {
++		printk(KERN_WARNING
++		       "%s (IRQ %d) handled a spurious interrupt\n",
++		       devname, irq);
+ 	}
+ 
+ 	retval = setup_irq(irq, action);
+
+
