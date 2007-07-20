@@ -1,166 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935017AbXGTSOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbXGTSRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935017AbXGTSOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 14:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763650AbXGTSOE
+	id S932528AbXGTSRq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 14:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbXGTSRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 14:14:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55328 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756160AbXGTSOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 14:14:01 -0400
-Subject: [PATCH] Use descriptor's functions instead of inline assembly
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org, ak@suse.de, akpm@linux-foundation.org,
-       rostedt@goodmis.org, chrisw@sous-sol.org
-Content-Type: text/plain
-Organization: Red Hat
-Date: Fri, 20 Jul 2007 15:14:38 -0300
-Message-Id: <1184955278.16311.30.camel@t60>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 14:17:38 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:46456 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757773AbXGTSRi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 14:17:38 -0400
+Date: Fri, 20 Jul 2007 14:17:36 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Milton Miller <miltonm@bga.com>
+cc: Ying Huang <ying.huang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Lang <david@lang.hm>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <09666fe245b0fb34a5a09464250e003d@bga.com>
+Message-ID: <Pine.LNX.4.44L0.0707201408060.2546-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides a new set of functions for managing the descriptor
-tables that can be used instead of putting the raw assembly in .c files.
-    
-Remodeling of store_tr() suggested by Frederik Deweerdt.
-    
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+On Fri, 20 Jul 2007, Milton Miller wrote:
 
-diff --git a/arch/x86_64/kernel/head64.c b/arch/x86_64/kernel/head64.c
-index 6c34bdd..dde41d7 100644
---- a/arch/x86_64/kernel/head64.c
-+++ b/arch/x86_64/kernel/head64.c
-@@ -70,7 +70,7 @@ void __init x86_64_start_kernel(char * real_mode_data)
- 
- 	for (i = 0; i < IDT_ENTRIES; i++)
- 		set_intr_gate(i, early_idt_handler);
--	asm volatile("lidt %0" :: "m" (idt_descr));
-+	load_idt((const struct desc_ptr *)&idt_descr);
- 
- 	early_printk("Kernel alive\n");
- 
-diff --git a/arch/x86_64/kernel/reboot.c b/arch/x86_64/kernel/reboot.c
-index 7503068..7c50a12 100644
---- a/arch/x86_64/kernel/reboot.c
-+++ b/arch/x86_64/kernel/reboot.c
-@@ -11,6 +11,7 @@
- #include <linux/sched.h>
- #include <asm/io.h>
- #include <asm/delay.h>
-+#include <asm/desc.h>
- #include <asm/hw_irq.h>
- #include <asm/system.h>
- #include <asm/pgtable.h>
-@@ -132,7 +133,7 @@ void machine_emergency_restart(void)
- 		}
- 
- 		case BOOT_TRIPLE: 
--			__asm__ __volatile__("lidt (%0)": :"r" (&no_idt));
-+			load_idt((const struct desc_ptr *)&no_idt);
- 			__asm__ __volatile__("int3");
- 
- 			reboot_type = BOOT_KBD;
-diff --git a/arch/x86_64/kernel/setup64.c b/arch/x86_64/kernel/setup64.c
-index 1200aaa..fef7290 100644
---- a/arch/x86_64/kernel/setup64.c
-+++ b/arch/x86_64/kernel/setup64.c
-@@ -224,8 +224,8 @@ void __cpuinit cpu_init (void)
-  		memcpy(cpu_gdt(cpu), cpu_gdt_table, GDT_SIZE);
- 
- 	cpu_gdt_descr[cpu].size = GDT_SIZE;
--	asm volatile("lgdt %0" :: "m" (cpu_gdt_descr[cpu]));
--	asm volatile("lidt %0" :: "m" (idt_descr));
-+	load_gdt((const struct desc_ptr *)&cpu_gdt_descr[cpu]);
-+	load_idt((const struct desc_ptr *)&idt_descr);
- 
- 	memset(me->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
- 	syscall_init();
-diff --git a/arch/x86_64/kernel/suspend.c b/arch/x86_64/kernel/suspend.c
-index b39d478..ddedadf 100644
---- a/arch/x86_64/kernel/suspend.c
-+++ b/arch/x86_64/kernel/suspend.c
-@@ -32,9 +32,9 @@ void __save_processor_state(struct saved_context *ctxt)
- 	/*
- 	 * descriptor tables
- 	 */
--	asm volatile ("sgdt %0" : "=m" (ctxt->gdt_limit));
--	asm volatile ("sidt %0" : "=m" (ctxt->idt_limit));
--	asm volatile ("str %0"  : "=m" (ctxt->tr));
-+	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
-+	store_idt((struct desc_ptr *)&ctxt->idt_limit);
-+	store_tr(ctxt->tr);
- 
- 	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
- 	/*
-@@ -91,8 +91,9 @@ void __restore_processor_state(struct saved_context *ctxt)
- 	 * now restore the descriptor tables to their proper values
- 	 * ltr is done i fix_processor_context().
- 	 */
--	asm volatile ("lgdt %0" :: "m" (ctxt->gdt_limit));
--	asm volatile ("lidt %0" :: "m" (ctxt->idt_limit));
-+	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
-+	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
-+	
- 
- 	/*
- 	 * segment registers
-diff --git a/include/asm-x86_64/desc.h b/include/asm-x86_64/desc.h
-index ac991b5..f2b0a6f 100644
---- a/include/asm-x86_64/desc.h
-+++ b/include/asm-x86_64/desc.h
-@@ -20,6 +20,15 @@ extern struct desc_struct cpu_gdt_table[GDT_ENTRIES];
- #define load_LDT_desc() asm volatile("lldt %w0"::"r" (GDT_ENTRY_LDT*8))
- #define clear_LDT()  asm volatile("lldt %w0"::"r" (0))
- 
-+static inline unsigned long __store_tr(void)
-+{
-+       unsigned long tr;
-+       asm volatile ("str %w0":"=r" (tr));
-+       return tr;
-+}
-+
-+#define store_tr(tr) (tr) = __store_tr()
-+
- /*
-  * This is the ldt that every process will get unless we need
-  * something other than this.
-@@ -31,6 +40,16 @@ extern struct desc_ptr cpu_gdt_descr[];
- /* the cpu gdt accessor */
- #define cpu_gdt(_cpu) ((struct desc_struct *)cpu_gdt_descr[_cpu].address)
- 
-+static inline void load_gdt(const struct desc_ptr *ptr)
-+{
-+	asm volatile("lgdt %w0"::"m" (*ptr));
-+}
-+
-+static inline void store_gdt(struct desc_ptr *ptr)
-+{
-+       asm ("sgdt %w0":"=m" (*ptr));
-+}
-+
- static inline void _set_gate(void *adr, unsigned type, unsigned long func, unsigned dpl, unsigned ist)  
- {
- 	struct gate_struct s; 	
-@@ -71,6 +90,16 @@ static inline void set_system_gate_ist(int nr, void *func, unsigned ist)
- 	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 3, ist);
- }
- 
-+static inline void load_idt(const struct desc_ptr *ptr)
-+{
-+	asm volatile("lidt %w0"::"m" (*ptr));
-+}
-+
-+static inline void store_idt(struct desc_ptr *dtr)
-+{
-+       asm ("sidt %w0":"=m" (*dtr));
-+}
-+
- static inline void set_tssldt_descriptor(void *ptr, unsigned long tss, unsigned type, 
- 					 unsigned size) 
- { 
+> On Jul 20, 2007, at 11:20 AM, Alan Stern wrote:
+> > On Fri, 20 Jul 2007, Milton Miller wrote:
+> >>> We can't do this unless we have frozen tasks (this way, or another)
+> >>> before
+> >>> carrying out the entire operation.
+> >>
+> >> What can't we do?   We've already worked with the drivers to quesce 
+> >> the
+> >> hardware and put any information to resume the device in ram.  Now we
+> >> ask them to put their device in low power mode so we can go to sleep.
+> >> Even if we schedule, the only thing userspace could touch is memory.
+> >
+> > Userspace can submit I/O requests.  Someone will have to audit every
+> > driver to make sure that such I/O requests don't cause a quiesced
+> > device to become active.  If the device is active, it will make the
+> > memory snapshot inconsistent with the on-device data.
+> 
+> If a driver is waking a device between the time it was told by 
+> hibernation "suspend all operations and save your device state to ram" 
+> and "resume your device" then it is a buggy driver.
 
+That's exactly my point.  As far as I know nobody has done a survey,
+but I bet you'd find _many_ drivers are buggy either in this way or the
+converse (forcing an I/O request to fail immediately instead of waiting
+until the suspend is over when it could succeed).  They have this bug 
+because they were written -- those which include any suspend/resume 
+support at all -- under the assumption that they could rely on the 
+freezer.
+
+And that's why Rafael said "We can't do this unless we have frozen
+tasks (this way, or another) before carrying out the entire operation."  
+Until the drivers are fixed -- which seems like a tremendous job --
+none of this will work.
+
+> I argue the process can make the io request after we write to disk, we 
+> just can't service it.  If we are suspended it will go to the request 
+> queue, and eventually the process will wait for normal throttling 
+> mechanisms until the driver is woken up.
+
+Many drivers don't have request queues.  Even for the ones that do, 
+there are I/O pathways that bypass the queue (think of ioctl or sysfs).
+
+> Actually, my point was more "what kernel services do the drivers need 
+> to transition from quiesced to low power for acpi S4 or 
+> suspend-to-ram"?  We can't give them allocate-memory (but we give them 
+> a call "we are going to suspend" when they can), but does "run this 
+> tasklet" help?  What timer facilities are needed?
+
+Some drivers need the ability to schedule.  Some will need the ability 
+to allocate memory (although GFP_ATOMIC is probably sufficient).  Some 
+will need timers to run.
+
+> Do we need to differentate init (por by bios) and resume from quiesced 
+> (for reboot, kexec start/resume)?  I hope not.
+
+Yes we do.
+
+Alan Stern
 
