@@ -1,49 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938214AbXGTBmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939667AbXGTBm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938214AbXGTBmo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 21:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbXGTBmg
+	id S939667AbXGTBm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 21:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764100AbXGTBmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 21:42:36 -0400
-Received: from jericho.provo.novell.com ([137.65.248.124]:13302 "EHLO
-	jericho.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761080AbXGTBmf (ORCPT
+	Thu, 19 Jul 2007 21:42:39 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:51381 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762916AbXGTBmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 21:42:35 -0400
-X-Greylist: delayed 1220 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 21:42:35 EDT
-Message-ID: <46A00E41.5090608@novell.com>
-Date: Fri, 20 Jul 2007 10:22:09 +0900
-From: Tejun Heo <teheo@novell.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: TAKADA Yoshihito <takada@mbf.nifty.com>, linux-kernel@vger.kernel.org
-Subject: Re: i386: pata_cs5520 does not work
-References: <20070716.091928.111205836.takada@mbf.nifty.com>	<20070718144212.3289e86c@the-village.bc.nu>	<20070719015806.8B09.TAKADA@mbf.nifty.com>	<20070719.190831.23015057.takada@mbf.nifty.com> <20070719161821.5206ac36@the-village.bc.nu>
-In-Reply-To: <20070719161821.5206ac36@the-village.bc.nu>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 Jul 2007 21:42:38 -0400
+Date: Thu, 19 Jul 2007 21:42:36 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Tom Zanussi <zanussi@us.ibm.com>, Karim Yaghmour <karim@opersys.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       "David J. Wilder" <wilder@us.ibm.com>
+Subject: Re: [PATCH] Fix a use after free bug in kernel->userspace relay file support
+Message-ID: <20070720014236.GA5836@Krystal>
+References: <20070720010909.GA4298@Krystal> <20070719182952.5f437e64.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070719182952.5f437e64.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:42:12 up 2 days, 20:16,  2 users,  load average: 0.20, 0.18, 0.17
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> O> > rc = devm_request_irq(&pdev->dev, irq[ap->port_no],
->>> 	ata_interrupt, 0, DRV_NAME, host);
->> devm_request_irq() is called twice from loop.
->> In 1st time, ap->port_no is 0. devm_request_irq() is success.
->> 2nd time, ap->port_no is 0 too. devm_request_irq() failed.
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Thu, 19 Jul 2007 21:09:09 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> Looks like whoever updated it to the new probe mechanism didn't quite get
-> it right
+> > Coverity spotted what looks like a real possible case of using a 
+> > variable after it has been freed.
+> > The problem is in kernel/relay.c::relay_open_buf()
+> > 
+> > If the code hits "goto free_buf;" it ends up in this code :
+> > 
+> >   free_buf:
+> >     	relay_destroy_buf(buf);	<--- calls kfree() on 'buf'.
+> >   free_name:
+> >    	kfree(tmpname);
+> >   end:
+> >   	return buf;		<-- use after free of 'buf'.
+> > 
+> > I read through the callers and they all handle a NULL return 
+> > from this function as an error (and hitting the 'free_buf' label 
+> > only happens on failure to chan->cb->create_buf_file(), so that 
+> > looks like a clear error to me). 
+> > 
+> > The patch simply sets 'buf' to NULL after the call to 
+> > relay_destroy_buf(buf); - as far as I can see that should take 
+> > care of the problem.
+> > 
+> > The patch also corrects a reference to a documentation file while 
+> > I was at it.
+> > 
+> > Note from Mathieu: the documentation reference change should have been
+> > done in a separate patch, but I guess no one will really care.
+> > 
+> > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> > Acked-by: "David J. Wilder" <wilder@us.ibm.com>
+> > Tested-by: "David J. Wilder" <wilder@us.ibm.com>
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 > 
-> Change it to use 
+> I'm going to infer from all this that the patch was actually written
+> by Jesper.  Correct?
 > 
->           struct ata_port *ap = host->ports[i];
-> 
-> not ports[0]
+> If so, it shuld have had From: Jesper Juhl <jesper.juhl@gmail.com>
+> right at the start of the changelog.
 
-Eh.... That was me being stupid.  Sorry about that.
+Yes, it's the case. Thanks.
 
 -- 
-tejun
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
