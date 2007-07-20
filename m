@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765933AbXGTVWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765064AbXGTVYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765933AbXGTVWi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXGTVW2
+	id S1765064AbXGTVYQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXGTVYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:22:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39875 "EHLO ogre.sisk.pl"
+	Fri, 20 Jul 2007 17:24:03 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43108 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbXGTVW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:22:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 23:30:30 +0200
-User-Agent: KMail/1.9.5
-Cc: Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, David Lang <david@lang.hm>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> <f29402c6050f9c3ff5d83a59cea2de58@bga.com> <87myxroubm.fsf@jbms.ath.cx>
-In-Reply-To: <87myxroubm.fsf@jbms.ath.cx>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1752311AbXGTVYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 17:24:01 -0400
+Date: Fri, 20 Jul 2007 23:24:54 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/7] i386: fix section mismatch warning in smpboot.c
+Message-ID: <20070720212454.GA25064@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707202330.31644.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 20 July 2007 19:31, Jeremy Maitin-Shepard wrote:
-> Milton Miller <miltonm@bga.com> writes:
-> 
-> [snip]
-> 
-> >>>> (7) how to avoid corrupting filesystems mounted by the hibernated kernel
-> >>> 
-> >>> I didn't realize this was a discussion item. I thought the options were
-> >>> clear, for some filesystem types you can mount them read-only, but for
-> >>> ext3 (and possilby other less common ones) you just plain cannot touch
-> >>> them.
-> >> 
-> >> That's correct.  And since you cannot thouch ext3, you need either to assume
-> >> that you won't touch filesystems at all, or to have a code to recognize the
-> >> filesystem you're dealing with.
-> 
-> > Or add a small bit of infrastructure that errors writes at make_request if you
-> > don't have a magic "i am a direct block device write from userspace" flag on the
-> > bio.
-> 
-> I still don't understand why there is this fixation on accessing dirty
-> filesystems in use by the hibernated system.  Even if you avoid
-> corrupting the filesystem by avoiding writing to the block device, there
-> isn't any real guarantee about the state of the data, except for a
-> filesystem that specifically makes guarantees about such data (and I
-> don't believe any of the existing ones do).
-> 
-> It isn't necessary to be able to access such filesystems: everything can
-> be done from an initramfs/initrd.
+Fix following warnings:
+WARNING: vmlinux.o(.text+0xf22d): Section mismatch: reference to .init.data:cpu_llc_id (between 'set_cpu_sibling_map' and 'initialize_secondary')
+WARNING: vmlinux.o(.text+0xf23b): Section mismatch: reference to .init.data:cpu_llc_id (between 'set_cpu_sibling_map' and 'initialize_secondary')
 
-That's correct, but you need an additional ramdisk for that (yet another
-complication).
+set_cpu_sibling_map is used either from __init or __cpuinit context,
+so declaring this function __cpuinit makes this warning go away.
+cpu_llc_id are declared __cpuinitdata so this matches the new definition
+of set_cpu_sibling_map.
 
-Greetings,
-Rafael
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/i386/kernel/smpboot.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
+diff --git a/arch/i386/kernel/smpboot.c b/arch/i386/kernel/smpboot.c
+index 5910d3f..e4f61d1 100644
+--- a/arch/i386/kernel/smpboot.c
++++ b/arch/i386/kernel/smpboot.c
+@@ -308,7 +308,7 @@ cpumask_t cpu_coregroup_map(int cpu)
+ /* representing cpus for which sibling maps can be computed */
+ static cpumask_t cpu_sibling_setup_map;
+ 
+-void set_cpu_sibling_map(int cpu)
++void __cpuinit set_cpu_sibling_map(int cpu)
+ {
+ 	int i;
+ 	struct cpuinfo_x86 *c = cpu_data;
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+1.5.1.rc3.g84b7-dirty
+
