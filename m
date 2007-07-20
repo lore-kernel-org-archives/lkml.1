@@ -1,161 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764268AbXGTNz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762979AbXGTN7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764268AbXGTNz4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbXGTNzu
+	id S1762979AbXGTN7B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 09:59:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbXGTN6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:55:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38130 "EHLO mx1.redhat.com"
+	Fri, 20 Jul 2007 09:58:54 -0400
+Received: from lucidpixels.com ([75.144.35.66]:33998 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756801AbXGTNzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:55:49 -0400
-Subject: [PATCH] Use descriptor's functions instead of inline assembly
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
-Content-Type: text/plain
-Organization: Red Hat
-Date: Fri, 20 Jul 2007 10:56:01 -0300
-Message-Id: <1184939761.16311.22.camel@t60>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	id S1756801AbXGTN6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 09:58:54 -0400
+Date: Fri, 20 Jul 2007 09:58:50 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+cc: xfs@oss.sgi.com, apiszcz@solarrain.com
+Subject: Software RAID 5 - Two reads are faster than one on a SW RAID5?
+Message-ID: <Pine.LNX.4.64.0707200952270.25069@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides a new set of functions for managing the descriptor
-tables that can be used instead of putting the raw assembly in .c files.
-    
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+I have a multi-core Q6600 CPU on a 10-disk Raptor RAID 5 running XFS.
 
-diff --git a/arch/x86_64/kernel/head64.c b/arch/x86_64/kernel/head64.c
-index 6c34bdd..dde41d7 100644
---- a/arch/x86_64/kernel/head64.c
-+++ b/arch/x86_64/kernel/head64.c
-@@ -70,7 +70,7 @@ void __init x86_64_start_kernel(char * real_mode_data)
- 
- 	for (i = 0; i < IDT_ENTRIES; i++)
- 		set_intr_gate(i, early_idt_handler);
--	asm volatile("lidt %0" :: "m" (idt_descr));
-+	load_idt((const struct desc_ptr *)&idt_descr);
- 
- 	early_printk("Kernel alive\n");
- 
-diff --git a/arch/x86_64/kernel/reboot.c b/arch/x86_64/kernel/reboot.c
-index 7503068..7c50a12 100644
---- a/arch/x86_64/kernel/reboot.c
-+++ b/arch/x86_64/kernel/reboot.c
-@@ -11,6 +11,7 @@
- #include <linux/sched.h>
- #include <asm/io.h>
- #include <asm/delay.h>
-+#include <asm/desc.h>
- #include <asm/hw_irq.h>
- #include <asm/system.h>
- #include <asm/pgtable.h>
-@@ -132,7 +133,7 @@ void machine_emergency_restart(void)
- 		}
- 
- 		case BOOT_TRIPLE: 
--			__asm__ __volatile__("lidt (%0)": :"r" (&no_idt));
-+			load_idt((const struct desc_ptr *)&no_idt);
- 			__asm__ __volatile__("int3");
- 
- 			reboot_type = BOOT_KBD;
-diff --git a/arch/x86_64/kernel/setup64.c b/arch/x86_64/kernel/setup64.c
-index 1200aaa..fef7290 100644
---- a/arch/x86_64/kernel/setup64.c
-+++ b/arch/x86_64/kernel/setup64.c
-@@ -224,8 +224,8 @@ void __cpuinit cpu_init (void)
-  		memcpy(cpu_gdt(cpu), cpu_gdt_table, GDT_SIZE);
- 
- 	cpu_gdt_descr[cpu].size = GDT_SIZE;
--	asm volatile("lgdt %0" :: "m" (cpu_gdt_descr[cpu]));
--	asm volatile("lidt %0" :: "m" (idt_descr));
-+	load_gdt((const struct desc_ptr *)&cpu_gdt_descr[cpu]);
-+	load_idt((const struct desc_ptr *)&idt_descr);
- 
- 	memset(me->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
- 	syscall_init();
-diff --git a/arch/x86_64/kernel/suspend.c b/arch/x86_64/kernel/suspend.c
-index b39d478..65e6720 100644
---- a/arch/x86_64/kernel/suspend.c
-+++ b/arch/x86_64/kernel/suspend.c
-@@ -32,9 +32,9 @@ void __save_processor_state(struct saved_context *ctxt)
- 	/*
- 	 * descriptor tables
- 	 */
--	asm volatile ("sgdt %0" : "=m" (ctxt->gdt_limit));
--	asm volatile ("sidt %0" : "=m" (ctxt->idt_limit));
--	asm volatile ("str %0"  : "=m" (ctxt->tr));
-+	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
-+	store_idt((struct desc_ptr *)&ctxt->idt_limit);
-+	ctxt->tr = store_tr();
- 
- 	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
- 	/*
-@@ -91,8 +91,9 @@ void __restore_processor_state(struct saved_context *ctxt)
- 	 * now restore the descriptor tables to their proper values
- 	 * ltr is done i fix_processor_context().
- 	 */
--	asm volatile ("lgdt %0" :: "m" (ctxt->gdt_limit));
--	asm volatile ("lidt %0" :: "m" (ctxt->idt_limit));
-+	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
-+	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
-+	
- 
- 	/*
- 	 * segment registers
-diff --git a/include/asm-x86_64/desc.h b/include/asm-x86_64/desc.h
-index ac991b5..4d58b3c 100644
---- a/include/asm-x86_64/desc.h
-+++ b/include/asm-x86_64/desc.h
-@@ -20,6 +20,13 @@ extern struct desc_struct cpu_gdt_table[GDT_ENTRIES];
- #define load_LDT_desc() asm volatile("lldt %w0"::"r" (GDT_ENTRY_LDT*8))
- #define clear_LDT()  asm volatile("lldt %w0"::"r" (0))
- 
-+static inline unsigned long store_tr(void)
-+{
-+       unsigned long tr;
-+       asm volatile ("str %w0":"=r" (tr));
-+       return tr;
-+}
-+
- /*
-  * This is the ldt that every process will get unless we need
-  * something other than this.
-@@ -31,6 +38,16 @@ extern struct desc_ptr cpu_gdt_descr[];
- /* the cpu gdt accessor */
- #define cpu_gdt(_cpu) ((struct desc_struct *)cpu_gdt_descr[_cpu].address)
- 
-+static inline void load_gdt(const struct desc_ptr *ptr)
-+{
-+	asm volatile("lgdt %w0"::"m" (*ptr));
-+}
-+
-+static inline void store_gdt(struct desc_ptr *ptr)
-+{
-+       asm ("sgdt %w0":"=m" (*ptr));
-+}
-+
- static inline void _set_gate(void *adr, unsigned type, unsigned long func, unsigned dpl, unsigned ist)  
- {
- 	struct gate_struct s; 	
-@@ -71,6 +88,16 @@ static inline void set_system_gate_ist(int nr, void *func, unsigned ist)
- 	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 3, ist);
- }
- 
-+static inline void load_idt(const struct desc_ptr *ptr)
-+{
-+	asm volatile("lidt %w0"::"m" (*ptr));
-+}
-+
-+static inline void store_idt(struct desc_ptr *dtr)
-+{
-+       asm ("sidt %w0":"=m" (*dtr));
-+}
-+
- static inline void set_tssldt_descriptor(void *ptr, unsigned long tss, unsigned type, 
- 					 unsigned size) 
- { 
+I just pulled down the Debian Etch 4.0 DVD ISO's, one for x86 and one for 
+x86_64, when I ran md5sum -c MD5SUMS, I see ~280-320MB/s.  When I ran the 
+second one I see upwards of what I should be seeing 500-520MB/s.
 
+NOTE:: These MD5 contain the 3 DVD ISO's for each platform, 6 total ISOs.
 
+I know md5sum is cpubound to a degree, do you think that is what is 
+happening here?  Each core can only sustain ~300MB/s and then with two of 
+four cores working, it can exceed that amount or is there some similarity 
+with RAID1 in linux compared to RAID5?
+
+With RAID1, if you use a single read thread, you will get 60-70MB/s read 
+on a dual raptor raid1.  If you use two(?) or three threads, it will read 
+from both disks and you will see 120-140MB/s.
+
+Is there some commonality with software RAID1 and RAID5 in Linux in this 
+regard?
+
+$ vmstat 1
+procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+  1  0    128  46344    648 6702340    0    0   357   418   21    1  1  1 99  0
+  1  0    128  48476    648 6700664    0    0 294912     0 3862 1505 20 10 71  0
+  1  0    128  46144    648 6703448    0    0 327680     0 3951 1815 20 10 70  0
+  1  0    128  47280    648 6704488    0    0 295632    92 3747 1937 20  8 72  1
+< kicked off the next md5sum -c >
+  1  1    128  47956    644 6704156    0    0 423256   128 4730 2149 22 11 62  5
+  2  0    128  47684    492 6705700    0    0 491520     0 5598 2484 31 12 48  9
+  1  1    128  46412    492 6708432    0    0 524288 41008 5648 6541 31 16 45  8
+  2  0    128  48136    492 6706840    0    0 491520     0 5730 2606 29 13 47 11
+  1  1    128  46464    492 6708432    0    0 491520    17 5571 2597 30 12 48 10
+  2  0    128  47512    492 6709392    0    0 524288     0 5751 2875 32 12 48  8
+  2  0    128  47076    304 6711152    0    0 524288     0 5671 2677 31 13 49  7
+  3  0    128  48000    304 6706512    0    0 356388    12 4475 2097 22 10 50 19
+  2  0    128  47656    304 6713716    0    0 495580    48 5726 2452 30 13 47  9
+  2  0    128  47676    304 6713852    0    0 524468    32 5768 2739 31 13 48 8
+
+Thoughts?
