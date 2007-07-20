@@ -1,87 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbXGTLZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbXGTLZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758459AbXGTLZS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 07:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXGTLZA
+	id S1761524AbXGTLZn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 07:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757743AbXGTLZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 07:25:00 -0400
-Received: from hydra.gt.owl.de ([195.71.99.218]:39724 "EHLO hydra.gt.owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755236AbXGTLY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 07:24:58 -0400
-X-Greylist: delayed 2094 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jul 2007 07:24:58 EDT
-Date: Fri, 20 Jul 2007 12:50:03 +0200
-From: Florian Lohoff <flo@rfc822.org>
-To: andrei radulescu-banu <iubica2@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux, tcpdump and vlan
-Message-ID: <20070720105003.GB24536@paradigm.rfc822.org>
-References: <878246.51044.qm@web56608.mail.re3.yahoo.com>
+	Fri, 20 Jul 2007 07:25:32 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:46050 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1759266AbXGTLZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 07:25:31 -0400
+Message-ID: <384930723.12146@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 20 Jul 2007 19:25:28 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/6] remove the limit max_sectors_kb imposed on max_readahead_kb
+Message-ID: <20070720112528.GC6300@mail.ustc.edu.cn>
+Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
+	Andrew Morton <akpm@osdl.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070720100740.106917381@mail.ustc.edu.cn> <20070720101124.350754890@mail.ustc.edu.cn> <20070720110743.GT11657@kernel.dk>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <878246.51044.qm@web56608.mail.re3.yahoo.com>
-Organization: rfc822 - pure communication
-X-SpiderMe: mh-200707200837@listme.rfc822.org
+In-Reply-To: <20070720110743.GT11657@kernel.dk>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 20, 2007 at 01:07:43PM +0200, Jens Axboe wrote:
+> On Fri, Jul 20 2007, Fengguang Wu wrote:
+> > Remove the size limit max_sectors_kb imposed on max_readahead_kb.
+> > 
+> > max_sectors_kb cannot grow larger than max_hw_sectors_kb, which can be
+> > rather small for some disk drives.
+> 
+> Please CC me on core block layer changes, thanks.
 
---oyUTqETQ0mS9luUI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+OK.
 
-On Wed, Jul 18, 2007 at 12:34:33PM -0700, andrei radulescu-banu wrote:
->=20
-> Dear kernel networking gurus,=20
->=20
-> I am trying to understand why tcpdump does not work properly for vlan pac=
-kets on linux. Here is the existing behavior, observed with:
->   - kernel 2.6.16,  =20
-> - e1000 driver =20
-> - libpcap 0.9.6 =20
-> - tcpdump 3.9.6=20
->  =20
->=20
-> The e1000 driver has two modes when handling vlan frames: =20
-> (A) Default mode, when  =20
-> - on rx, the mac includes vlan headers  =20
-> - on tx, the mac expects tx frames to include vlan headers.  =20
-> (B) Vlan hw accelerated mode, when: =20
-> - on rx, the mac does not include vlan headers, and instead passes vlan t=
-ag information in the status field of the ring buffer
->   - on tx, the mac expects no vlan headers, and instead expects vlan tag =
-information to be passed in the status field of the ring buffer
+> The patch looks fine though! Your reasoning is a bit odd, though. I
+> think the depency between the two is just wrong and ugly, so I agree it
+> should go.
+> 
+> Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
-I have seen similar behaviour. Once the kernel is compiled with VLAN
-support the e1000 driver drops the vlan tag completely even when no
-vlans are configured on that port. I would consider this beeing a bug
-that enableing a kernel option changes behaviour even if the feature is
-not in use.
+Thank you :-)
 
-As i was tracing dot1qinq i could actually see that only the outer
-vlan tag was beeing dropped.
-
-Flo
---=20
-Florian Lohoff                  flo@rfc822.org             +49-171-2280134
-	Those who would give up a little freedom to get a little=20
-          security shall soon have neither - Benjamin Franklin
-
---oyUTqETQ0mS9luUI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGoJNbUaz2rXW+gJcRAlqTAKCSErEnvxGMDSR2Tl2DwNsG0E7/0QCfSuFs
-bT+/bD0bcSmAlFRL+Bo6sOY=
-=iaIN
------END PGP SIGNATURE-----
-
---oyUTqETQ0mS9luUI--
