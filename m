@@ -1,78 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762978AbXGTMN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763434AbXGTMOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762978AbXGTMN7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 08:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbXGTMNm
+	id S1763434AbXGTMOd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 08:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbXGTMOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 08:13:42 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:37909 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753260AbXGTMNk (ORCPT
+	Fri, 20 Jul 2007 08:14:12 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1923 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755146AbXGTMOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 08:13:40 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 20 Jul 2007 08:11:45 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] IP_VS should depend on EXPERIMENTAL ?
-In-Reply-To: <46A0A01A.7030403@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0707200805070.11571@localhost.localdomain>
-References: <46A0A01A.7030403@googlemail.com>
+	Fri, 20 Jul 2007 08:14:10 -0400
+Date: Fri, 20 Jul 2007 13:14:07 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] defxx: Use __maybe_unused rather than a local hack
+Message-ID: <Pine.LNX.4.64N.0707201310060.7402@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ This is a change to remove a local hack in favour to __maybe_unused that 
+has been recently added.
 
-  as a short followup to my previous post, at the *very least*, a
-cleanup that could be done now is to find all entries which have an
-actual dependency on "EXPERIMENTAL" but don't advertise themselves as
-such:
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+Hi,
 
-...
-config MA600_DONGLE
-        tristate "Mobile Action MA600 dongle"
-        depends on IRTTY_SIR && DONGLE && IRDA && EXPERIMENTAL
-	...
+ It should be obvious.  The code builds, therefore it works.
 
-and determine which of those should have the dependency on
-"EXPERIMENTAL" removed.  no, don't go adding "(EXPERIMENTAL)" to the
-prompt -- just deal with *only* those for which the dependency is
-clearly out of date and not relevant anymore, and delete it.
+ Please apply,
 
-that would be, at least, a place to start.  and, yes, there's piles of
-potential (net/ipv4/Kconfig):
+  Maciej
 
-config TCP_CONG_HSTCP
-        tristate "High Speed TCP"
-        depends on EXPERIMENTAL
-	...
-config TCP_CONG_HYBLA
-        tristate "TCP-Hybla congestion control algorithm"
-        depends on EXPERIMENTAL
-	...
-config TCP_CONG_VEGAS
-        tristate "TCP Vegas"
-        depends on EXPERIMENTAL
-	...
-... etc etc ...
-
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+patch-mips-2.6.22-20070710-defxx-unused-0
+diff -up --recursive --new-file linux-mips-2.6.22-20070710.macro/drivers/net/defxx.c linux-mips-2.6.22-20070710/drivers/net/defxx.c
+--- linux-mips-2.6.22-20070710.macro/drivers/net/defxx.c	2007-07-10 04:56:16.000000000 +0000
++++ linux-mips-2.6.22-20070710/drivers/net/defxx.c	2007-07-20 00:05:14.000000000 +0000
+@@ -200,6 +200,7 @@
+ 
+ /* Include files */
+ #include <linux/bitops.h>
++#include <linux/compiler.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/eisa.h>
+@@ -240,8 +241,6 @@ static char version[] __devinitdata =
+  */
+ #define NEW_SKB_SIZE (PI_RCV_DATA_K_SIZE_MAX+128)
+ 
+-#define __unused __attribute__ ((unused))
+-
+ #ifdef CONFIG_PCI
+ #define DFX_BUS_PCI(dev) (dev->bus == &pci_bus_type)
+ #else
+@@ -375,7 +374,7 @@ static inline void dfx_outl(DFX_board_t 
+ 
+ static void dfx_port_write_long(DFX_board_t *bp, int offset, u32 data)
+ {
+-	struct device __unused *bdev = bp->bus_dev;
++	struct device __maybe_unused *bdev = bp->bus_dev;
+ 	int dfx_bus_tc = DFX_BUS_TC(bdev);
+ 	int dfx_use_mmio = DFX_MMIO || dfx_bus_tc;
+ 
+@@ -399,7 +398,7 @@ static inline void dfx_inl(DFX_board_t *
+ 
+ static void dfx_port_read_long(DFX_board_t *bp, int offset, u32 *data)
+ {
+-	struct device __unused *bdev = bp->bus_dev;
++	struct device __maybe_unused *bdev = bp->bus_dev;
+ 	int dfx_bus_tc = DFX_BUS_TC(bdev);
+ 	int dfx_use_mmio = DFX_MMIO || dfx_bus_tc;
+ 
+@@ -866,7 +865,7 @@ static void __devinit dfx_bus_uninit(str
+ 
+ static void __devinit dfx_bus_config_check(DFX_board_t *bp)
+ {
+-	struct device __unused *bdev = bp->bus_dev;
++	struct device __maybe_unused *bdev = bp->bus_dev;
+ 	int dfx_bus_eisa = DFX_BUS_EISA(bdev);
+ 	int	status;				/* return code from adapter port control call */
+ 	u32	host_data;			/* LW data returned from port control call */
+@@ -3624,8 +3623,8 @@ static void __devexit dfx_unregister(str
+ }
+ 
+ 
+-static int __devinit __unused dfx_dev_register(struct device *);
+-static int __devexit __unused dfx_dev_unregister(struct device *);
++static int __devinit __maybe_unused dfx_dev_register(struct device *);
++static int __devexit __maybe_unused dfx_dev_unregister(struct device *);
+ 
+ #ifdef CONFIG_PCI
+ static int __devinit dfx_pci_register(struct pci_dev *,
+@@ -3699,7 +3698,7 @@ static struct tc_driver dfx_tc_driver = 
+ };
+ #endif /* CONFIG_TC */
+ 
+-static int __devinit __unused dfx_dev_register(struct device *dev)
++static int __devinit __maybe_unused dfx_dev_register(struct device *dev)
+ {
+ 	int status;
+ 
+@@ -3709,7 +3708,7 @@ static int __devinit __unused dfx_dev_re
+ 	return status;
+ }
+ 
+-static int __devexit __unused dfx_dev_unregister(struct device *dev)
++static int __devexit __maybe_unused dfx_dev_unregister(struct device *dev)
+ {
+ 	put_device(dev);
+ 	dfx_unregister(dev);
