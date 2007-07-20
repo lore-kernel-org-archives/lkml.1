@@ -1,135 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765717AbXGTW5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936067AbXGTW7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765717AbXGTW5P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbXGTW5A
+	id S936067AbXGTW7d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 18:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbXGTW7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 18:57:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:45033 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbXGTW47 (ORCPT
+	Fri, 20 Jul 2007 18:59:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58730 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751533AbXGTW7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 18:56:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=naBQl2pwIWZJTY9iKZZF+VN9apBgMpXlkOMkG18d9uTq0dXArKwSmQHs6t+wUIgwfzYJM2vuZkG03iZzp/5sica3evZQOv06Dd6JVBzKFS0Gwy6Mp9LAAABBNpu1Ofpvj8T/F2SszDTqzlQaw35qYQl/bGP6aV+CtrfT36qEz/8=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix several memory leaks in cr_backlight_probe()
-Date: Sat, 21 Jul 2007 00:56:01 +0200
-User-Agent: KMail/1.9.7
-Cc: Thomas Hellstrom <thomas@tungstengraphics.com>,
-       Alan Hourihane <alanh@tungstengraphics.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 20 Jul 2007 18:59:22 -0400
+Date: Fri, 20 Jul 2007 15:59:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
+Message-Id: <20070720155912.079c5a27.akpm@linux-foundation.org>
+In-Reply-To: <20070720225047.GA17520@suse.de>
+References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>
+	<20070720225047.GA17520@suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707210056.02139.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 20 Jul 2007 15:50:47 -0700
+Greg KH <gregkh@suse.de> wrote:
 
-After fixing the too small memory allocation in cr_backlight_probe()
-from drivers/video/backlight/cr_bllcd.c 
-(commit e3bbb3f05339de438faf54124f25c92e6fe4ac2e) I noticed that the 
-Coverity checker also thought there were a few memory leaks in there. 
-I took a closer look and confirmed that there were indeed several 
-leaks.
+> On Fri, Jul 20, 2007 at 06:32:21PM +0200, Michal Piotrowski wrote:
+> >  Hi Greg,
+> > 
+> >  This looks like a sysfs bug
+> >  http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-07-20-00-22/00003.jpg
+> > 
+> >  l *kernel_param_sysfs_setup+0x75
+> >  0xc13c0894 is in kernel_param_sysfs_setup (kernel/params.c:570).
+> >  565             mk->mod = THIS_MODULE;
+> >  566             kobj_set_kset_s(mk, module_subsys);
+> >  567             kobject_set_name(&mk->kobj, name);
+> >  568             kobject_init(&mk->kobj);
+> >  569             ret = kobject_add(&mk->kobj);
+> >  570             BUG_ON(ret < 0);
+> >  571             param_sysfs_setup(mk, kparam, num_params, name_skip);
+> >  572             kobject_uevent(&mk->kobj, KOBJ_ADD);
+> >  573     }
+> >  574
+> > 
+> >  http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-07-20-00-22/mm-config
+> 
+> What kernel version is this happening on?  The -mm tree?  Can you try
+> Linus's tree instead?
+> 
+> It looks like there was some needed information right before the first
+> stack dump, showing exactly what kobject was trying to be added that was
+> already present.  Odds are this is a kernel parameter with the same name
+> as a duplicate one within the same module, but the trick is going to be
+> trying to figure out what module is causing this.
+> 
+> So it's not a sysfs bug, but rather a driver issue that this is
+> catching.
 
-At the start of the function we allocate storage for a 
-'struct cr_panel' and store the pointer in a variable named 'crp'. 
+In that case a BUG was way too harsh treatment, and in fact directly
+contributed to our inability to debug the bug!
 
-Then we call pci_get_device() and pci_read_config_byte() and if 
-either of them fail we return without freeing the memory allocated 
-for the 'struct cr_panel'. These two leaks are easy to fix since we 
-don't even use 'crp' for anything up to this point, so I simply 
-moved the allocation further down in the function so it only happens 
-just before we actually need it.
-
-A bit further down we call backlight_device_register() and store the 
-result in 'crp->cr_backlight_device'. In case of error we return 
-'crp->cr_backlight_device' from the function, thus leaking 'crp' 
-itself. The same thing happens with the call to lcd_device_register().
-To fix these two leaks I declare two new pointers to hold the return 
-values, so that in case of error we can return the pointer (as before) 
-but without leaking 'crp'.
-
-Please consider merging.
-
-Note: Due to lack of hardware the patch has only been compile tested.
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/video/backlight/cr_bllcd.c |   30 +++++++++++++++---------------
- 1 files changed, 15 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/video/backlight/cr_bllcd.c b/drivers/video/backlight/cr_bllcd.c
-index 1b3f658..d526907 100644
---- a/drivers/video/backlight/cr_bllcd.c
-+++ b/drivers/video/backlight/cr_bllcd.c
-@@ -171,13 +171,11 @@ static struct lcd_ops cr_lcd_ops = {
- 
- static int cr_backlight_probe(struct platform_device *pdev)
- {
-+	struct backlight_device *bdp;
-+	struct lcd_device *ldp;
- 	struct cr_panel *crp;
- 	u8 dev_en;
- 
--	crp = kzalloc(sizeof(*crp), GFP_KERNEL);
--	if (crp == NULL)
--		return -ENOMEM;
--
- 	lpc_dev = pci_get_device(PCI_VENDOR_ID_INTEL,
- 					CRVML_DEVICE_LPC, NULL);
- 	if (!lpc_dev) {
-@@ -193,27 +191,29 @@ static int cr_backlight_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
--	crp->cr_backlight_device = backlight_device_register("cr-backlight",
--							     &pdev->dev, NULL,
--							     &cr_backlight_ops);
--	if (IS_ERR(crp->cr_backlight_device)) {
-+	bdp = backlight_device_register("cr-backlight",
-+					&pdev->dev, NULL,
-+					&cr_backlight_ops);
-+	if (IS_ERR(bdp)) {
- 		pci_dev_put(lpc_dev);
--		return PTR_ERR(crp->cr_backlight_device);
-+		return PTR_ERR(bdp);
- 	}
- 
--	crp->cr_lcd_device = lcd_device_register("cr-lcd",
--							&pdev->dev,
--							&cr_lcd_ops);
--
--	if (IS_ERR(crp->cr_lcd_device)) {
-+	ldp = lcd_device_register("cr-lcd", &pdev->dev, &cr_lcd_ops);
-+	if (IS_ERR(ldp)) {
- 		pci_dev_put(lpc_dev);
--		return PTR_ERR(crp->cr_backlight_device);
-+		return PTR_ERR(bdp);
- 	}
- 
- 	pci_read_config_dword(lpc_dev, CRVML_REG_GPIOBAR,
- 			      &gpio_bar);
- 	gpio_bar &= ~0x3F;
- 
-+	crp = kzalloc(sizeof(*crp), GFP_KERNEL);
-+	if (crp == NULL)
-+		return -ENOMEM;
-+	crp->cr_backlight_device = bdp;
-+	crp->cr_lcd_device = ldp;
- 	crp->cr_backlight_device->props.power = FB_BLANK_UNBLANK;
- 	crp->cr_backlight_device->props.brightness = 0;
- 	crp->cr_backlight_device->props.max_brightness = 0;
-
+Can we wind that back a bit?  Add some useful printks and then recover
+in some fashion?
 
