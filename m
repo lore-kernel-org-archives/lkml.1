@@ -1,103 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbXGTMui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbXGTM4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761024AbXGTMui (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 08:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbXGTMub
+	id S1760598AbXGTM4l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 08:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbXGTM4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 08:50:31 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:49129 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755999AbXGTMua (ORCPT
+	Fri, 20 Jul 2007 08:56:32 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:38723 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753539AbXGTM4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 08:50:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eNx4ixAoEIOn6JiEWNWMy9oblG33hBfARsQW9KtHQyZrOvDr2WZXJpMGsD6L/GF5Sfon4L49I8h/VyRg7P8kAwfHSR+tAOtLlN3d4OdHa4ZRs65eVxLqRitTlJs0pU33HLOSHQzqgIjF+EjT3PXrLCJtNU7wRotOx2MuziYVC74=
-Message-ID: <d120d5000707200550q47148983w6b525f95fe67cd1f@mail.gmail.com>
-Date: Fri, 20 Jul 2007 08:50:29 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH for review] [12/48] x86_64: use the global PIT lock
-Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <200707201025.12915.ak@suse.de>
+	Fri, 20 Jul 2007 08:56:31 -0400
+Date: Fri, 20 Jul 2007 13:56:29 +0100
+To: Paul Mundt <lethal@linux-sh.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
+Message-ID: <20070720125629.GB14495@skynet.ie>
+References: <20070720060342.GA24765@linux-sh.org> <20070720112025.GA14495@skynet.ie> <20070720114246.GA27391@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-References: <20070719348.540885000@suse.de> <200707192152.03321.ak@suse.de>
-	 <200707200024.21467.dtor@insightbb.com>
-	 <200707201025.12915.ak@suse.de>
+In-Reply-To: <20070720114246.GA27391@linux-sh.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/20/07, Andi Kleen <ak@suse.de> wrote:
->
-> > +static DEFINE_SPINLOCK(i8253_lock);
-> > +
-> > static __init int add_pcspkr(void)
-> > {
-> > struct platform_device *pd;
-> > @@ -1501,9 +1503,14 @@ static __init int add_pcspkr(void)
-> > if (!pd)
-> > return -ENOMEM;
-> >
-> > +pd->dev.platform_data = &i8253_lock;
->
-> That seems pretty ugly to pass spinlocks around in void * pointers.
+On (20/07/07 20:42), Paul Mundt didst pronounce:
+> On Fri, Jul 20, 2007 at 12:20:25PM +0100, Mel Gorman wrote:
+> > On (20/07/07 15:03), Paul Mundt didst pronounce:
+> > > zone_movable_pfn is presently marked as __initdata and referenced
+> > > from adjust_zone_range_for_zone_movable(), which in turn is
+> > > referenced by zone_spanned_pages_in_node(). Both of these are
+> > > __meminit annotated. When memory hotplug is enabled, this will oops
+> > > on a hot-add, due to zone_movable_pfn having been freed.
+> > > 
+> > 
+> > First, can you confirm this is node hot-add please? I'm haven't looked at
+> > the memory hot-add code in a while so I would like to be sure this problem
+> > path only exists on node hot-add. If it is node hot-add, then everything
+> > should be ok. The memory should get added to the same zone as it did in
+> > older kernels.
+> > 
+> > Even if this is node hot-add, can you confirm that "ordinary" memory hot-add
+> > is working as expected when ZONE_MOVABLE exists please? To test, add a boot
+> > parameter kernelcore=N where N == 80% of memory and hot-add some memory to
+> > an existing node.
+> > 
+> Normal memory hot-add does work as advertised. The problem in this case
+> is really a corner case, as I pointed out to Kamezawa-san. The only way
+> to enter the problematic code path (namely zone_spanned_pages_in_node())
+> is via free_area_init_node(), which in this case is only triggered by
+> hotadd_new_pgdat() if there's no existing pgdat.
+> 
 
-That spinlock _is_ platform data. We could define
+Right, all sounds fair and right. In that case for your patch
 
-struct pcspkr_platform_data {
-        spinlock_t *lock;
-};
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
-and pass around this as the rest of platform code does but then we'd
-need a header file and it would add a level of indirection but if you
-like this better I can change it. Otherwise spinlock is another data
-structure and we pass them around all teh time.
+Point is moot as Andrew already picked it up but what harm :)
 
-> Also
-> out of general memory bloat reasons i don't like allocating big data structures
-> just for this.
->
+> Kamezawa-san wasn't able to reproduce this particular problem due to the
+> pgdat being preallocated, and I imagine that this is the common case for
+> most users.
 
-I am not sure where you see new data structure allocation... If you
-look at your box you should see that /sys/bus/platform/devices/pcspkr
-device is already there. We already create it so that pcspkr driver
-can bind to it.
+Probably. I suspect that Kamezawa-san's usecases for node-hotadd are the
+only cases currently out there.
 
-> Wouldn't  it be better to just define i8253_lock weakly in the pcspkr code and let
-> the architecture override it?
+> I have a slightly different use case where we might tear down
+> the node entirely, either to hand it off to another application, kernel,
+> or explicit power gating. In which case we have to start over via the new
+> pgdat path.
+> 
 
-Yes, it probably is btetter.
+Fun stuff!
 
->
-> > Index: work/arch/x86_64/kernel/time.c
-> > ===================================================================
-> > --- work.orig/arch/x86_64/kernel/time.c
-> > +++ work/arch/x86_64/kernel/time.c
-> > @@ -23,6 +23,7 @@
-> > #include <linux/module.h>
-> > #include <linux/device.h>
-> > #include <linux/sysdev.h>
-> > +#include <linux/platform_device.h>
-> > #include <linux/bcd.h>
-> > #include <linux/notifier.h>
-> > #include <linux/cpu.h>
-> > @@ -185,7 +186,7 @@ void main_timer_handler(void)
-> > set_rtc_mmss(xtime.tv_sec);
-> > rtc_update = xtime.tv_sec + 660;
-> > }
-> > -
-> > +
-> > write_sequnlock(&xtime_lock);
-> > }
->
-> No random white space changes in patches, multiple occurrences ?!?
->
+> > I expect that the memory gets added to the same zone as historically but
+> > when ZONE_MOVABLE is set, you'll see a situation where zones are overlapping
+> > after memory hot-add.  i.e. Before memory hot-add, you'd see
+> > 
+> > DDDDMM
+> > 
+> > for ZONE_DMA and ZONE_MOVABLE and after hotadd, you'd see something like
+> > 
+> > DDDDMMDDDD
+> > 
+> > so /proc/zoneinfo will look unusual.  I'd like to be sure the memory exists
+> > where you expect it to exist and that there are no problems after hot-add. To
+> > test, a simple memory hot-add followed by a dd of a file the size of all
+> > physical memory followed by a delete should do the trick. Also make sure
+> > files like /proc/zoneinfo and /proc/meminfo are ok and particularly that
+> > sysrq+m produces sensible output.
+> > 
+> It'll be Monday before I'm by a system I can test this out on, so perhaps
+> someone else will beat me to it. If not, I'll give it some more testing
+> and follow up then.
+> 
 
-By bad, sorry.
+Thanks.
 
+> > If other memory-hotadd users are watching, I'd appreciate a test and a report
+> > with a recent -git kernel to confirm you're ok. Is there a way currently
+> > of simulating memory-hotadd so I can try this out? Ages ago, one could boot
+> > with mem= and "add" the remaining memory at run-time.
+> > 
+> That's probably something worth resurrecting if it's broken in current
+> kernels. It should be pretty trivial to hook something like that up via
+> sparsemem anyways.
+
+I'll take a look around and see can I come up with a basic testcase that
+uses "normal" hardware to test the hot-add paths if no one else comes up
+with a generally approved approach.
+
+Thanks Paul.
 -- 
-Dmitry
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
