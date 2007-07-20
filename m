@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939840AbXGTBro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939160AbXGTBuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939840AbXGTBro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 21:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761904AbXGTBrh
+	id S939160AbXGTBuh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 21:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762121AbXGTBu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 21:47:37 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:55072 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761080AbXGTBrh (ORCPT
+	Thu, 19 Jul 2007 21:50:29 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51420 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761755AbXGTBu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 21:47:37 -0400
-Message-ID: <46A013DA.1080602@googlemail.com>
-Date: Fri, 20 Jul 2007 03:46:02 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Some 'Section mismatch' warnings on current git head with allmodconfig
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 19 Jul 2007 21:50:28 -0400
+X-Greylist: delayed 68075 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jul 2007 21:50:28 EDT
+Date: Fri, 20 Jul 2007 10:51:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tony.luck@intel.com, nickpiggin@yahoo.com.au,
+       mike@stroyan.net, dmosberger@gmail.com, y-goto@jp.fujitsu.com
+Subject: Re: [BUGFIX]{PATCH] flush icache on ia64 take2
+Message-Id: <20070720105123.e9bd9577.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <469F80E3.3040007@bull.net>
+References: <20070706112901.16bb5f8a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070719155632.7dbfb110.kamezawa.hiroyu@jp.fujitsu.com>
+	<469F5372.7010703@bull.net>
+	<20070719220118.73f40346.kamezawa.hiroyu@jp.fujitsu.com>
+	<469F71E7.4050200@bull.net>
+	<20070719235157.9715baff.kamezawa.hiroyu@jp.fujitsu.com>
+	<469F80E3.3040007@bull.net>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 19 Jul 2007 17:18:59 +0200
+Zoltan Menyhart <Zoltan.Menyhart@bull.net> wrote:
 
-I got this warnings with allmodconfig on
-64fb98fc40738ae1a98bcea9ca3145b89fb71524
+> KAMEZAWA Hiroyuki wrote:
+> 
+> > Hmm...but the current code flushes the page. just do it in "lazy" way.
+> > much difference ?
+> 
+> I agree the current code flushes the I-cache for all kinds of file
+> systems (for PTEs with the exec bit on).
+> 
+> The error is that it does it after the PTE is written.
+> 
+> In addition, I wanted to optimize it to gain a few %.
+I'm glad, too if we can do it. But it seems that we need a bit
+clever way to do that.
 
+> Apparently this idea is not much welcome.
+> 
+> I can agree that flushing the I-cache (if the architecture requires it)
+> before setting the PTE eliminates the error.
+> 
+Hm, I'll refresh and repost the patch. 
 
-...
-
-  MODPOST 2126 modules
-  CC      arch/i386/boot/tty.o
-  CC      arch/i386/boot/video.o
-WARNING: vmlinux(.text+0xc0101183): Section mismatch: reference to
-.init.text:start_kernel (between 'is386' and 'check_x87')
-WARNING: vmlinux(.text+0xc02da787): Section mismatch: reference to
-.init.text:kernel_init (between 'rest_init' and 'kthreadd_setup')
-WARNING: vmlinux(.text+0xc02e0797): Section mismatch: reference to
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02e07a3): Section mismatch: reference to
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02e07af): Section mismatch: reference to
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02e07bb): Section mismatch: reference to
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02da850): Section mismatch: reference to
-.init.text:__alloc_bootmem_node (between 'alloc_node_mem_map' and
-'zone_wait_table_init')
-WARNING: vmlinux(.text+0xc02da8f9): Section mismatch: reference to
-.init.text:__alloc_bootmem_node (between 'zone_wait_table_init' and
-'fb_find_logo')
-WARNING: vmlinux(.text+0xc02083a5): Section mismatch: reference to
-.init.text:__alloc_bootmem (between 'vgacon_startup' and
-'vgacon_scrolldelta')
-WARNING: vmlinux(.text+0xc02e0d8b): Section mismatch: reference to
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02da947): Section mismatch: reference to
-.init.data:logo_linux_mono (between 'fb_find_logo' and 'schedule')
-WARNING: vmlinux(.text+0xc02da951): Section mismatch: reference to
-.init.data:logo_linux_clut224 (between 'fb_find_logo' and 'schedule')
-WARNING: vmlinux(.text+0xc02da956): Section mismatch: reference to
-.init.data:logo_linux_vga16 (between 'fb_find_logo' and 'schedule')
-WARNING: vmlinux(.text+0xc02e0ed7): Section mismatch: reference to
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.data+0xc03ad099): Section mismatch: reference to
-.init.text:xen_start_kernel (between 'startup_xen' and 'boot_gdt_descr')
-  CC      arch/i386/boot/version.o
-
-
-....
-
-
-
-Regards,
-
-Gabriel C
+Thanks,
+-Kame
 
