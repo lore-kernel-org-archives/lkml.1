@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937046AbXGTVmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761424AbXGTVnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937046AbXGTVmg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762316AbXGTVmF
+	id S1761424AbXGTVnQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761567AbXGTVmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:42:05 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:40640 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759719AbXGTVmC (ORCPT
+	Fri, 20 Jul 2007 17:42:47 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43138
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760173AbXGTVmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:42:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=rpkTxt+Z7fln2bJc2tk+CNbDdPPBdtgbH5E9/niB9BVx9VUgauqcVQkl9T0DtKPayJmYk8oFCgLBJnxKY6b0qvy5DFltsfFVkptvj09RtNNT2hA7TC23vRWRpthTf7jpgG4vpB4at/9ndEb5ZL0RDbPq4mFgolD8q+Ci1B6aqBY=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][pnp] Avoid a small unlikely memory leak in proc_read_escd()
-Date: Fri, 20 Jul 2007 23:41:06 +0200
-User-Agent: KMail/1.9.7
-Cc: Thomas Hood <dthood@mail.com>, David Hinds <dahinds@users.sourceforge.net>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Fri, 20 Jul 2007 17:42:45 -0400
+Date: Fri, 20 Jul 2007 14:34:02 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Milton Miller <miltonm@bga.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ying Huang <ying.huang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <Pine.LNX.4.44L0.0707201722060.5241-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.64.0707201428080.5166@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707201722060.5241-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707202341.06710.jesper.juhl@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 20 Jul 2007, Alan Stern wrote:
 
-There's a small and unlikely memory leak in 
-drivers/pnp/pnpbios/proc.c::proc_read_escd(). It's inside a sanity 
-check, so it probably won't trigger often (if at all), however it 
-*is* a potential leak and it's easy to avoid, so let's just fix it :)
+> On Fri, 20 Jul 2007 david@lang.hm wrote:
+>
+>>> Userspace can submit I/O requests.  Someone will have to audit every
+>>> driver to make sure that such I/O requests don't cause a quiesced
+>>> device to become active.  If the device is active, it will make the
+>>> memory snapshot inconsistent with the on-device data.
+>>
+>> assuming this is the suspend-from-ram after a kexec back from the
+>> write-to-disk kernel I don't think you are correct.
+>>
+>> when doing a suspend-to-ram you get to a point where you just don't use
+>> any userspace.
+>
+> What do you mean?  How can you prevent user tasks from running?  That's
+> basically what the freezer does, and the whole point of this approach
+> is to eliminate the freezer.  Right?
+>
+>> from that point on you are just walking the device tree
+>> putting things into low-power mode. This is the point where we are talking
+>> about jumping to.
+>
+> Yes.  And putting things into low-power mode requires the ability to
+> run the scheduler, which means that user tasks can be scheduled, which
+> means that they can run.
 
-While I was in there I also broke a oneline 'if' statement into two 
-lines - seemed too trivial a changee to warrent a seperate patch.
+I did not know that getting into low-power mode required scheduling.
 
+does it require userspace?
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+if so this is a problem and I say punt on suspend-to-disk-and-ram until 
+suspend-to-ram is working independantly ;-)
 
- drivers/pnp/pnpbios/proc.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+if not, then can you schedule but not consider non-kernel tasks runnable?
 
-diff --git a/drivers/pnp/pnpbios/proc.c b/drivers/pnp/pnpbios/proc.c
-index 8027073..f77b8c4 100644
---- a/drivers/pnp/pnpbios/proc.c
-+++ b/drivers/pnp/pnpbios/proc.c
-@@ -88,7 +88,8 @@ static int proc_read_escd(char *buf, char **start, off_t pos,
- 	}
- 
- 	tmpbuf = kzalloc(escd.escd_size, GFP_KERNEL);
--	if (!tmpbuf) return -ENOMEM;
-+	if (!tmpbuf)
-+		return -ENOMEM;
- 
- 	if (pnp_bios_read_escd(tmpbuf, escd.nv_storage_base)) {
- 		kfree(tmpbuf);
-@@ -100,6 +101,7 @@ static int proc_read_escd(char *buf, char **start, off_t pos,
- 	/* sanity check */
- 	if (escd_size > MAX_SANE_ESCD_SIZE) {
- 		printk(KERN_ERR "PnPBIOS: proc_read_escd: ESCD size reported by BIOS read_escd call is too great\n");
-+		kfree(tmpbuf);
- 		return -EFBIG;
- 	}
- 
+freezing all of userspace is easy (see above)
 
+freezing all of kernelspace is easy (unplug all non-boot CPU's and don't 
+schedule)
 
+where freezing gets hard is when you need to partially freeze either one 
+of these.
+
+David Lang
