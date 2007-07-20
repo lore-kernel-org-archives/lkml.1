@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964786AbXGTRGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbXGTRI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964786AbXGTRGr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 13:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbXGTRFz
+	id S1757369AbXGTRI3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 13:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932542AbXGTRHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 13:05:55 -0400
-Received: from agave.telenet-ops.be ([195.130.137.77]:38238 "EHLO
-	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765851AbXGTRFw (ORCPT
+	Fri, 20 Jul 2007 13:07:48 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:42163 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932474AbXGTRHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 13:05:52 -0400
-Date: Fri, 20 Jul 2007 19:05:49 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-mips@linux-mips.org
-Subject: Re: [patch 3/3] scsi: wd33c93 needs <asm/irq.h>
-In-Reply-To: <1184950138.3455.42.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0707201905340.18493@anakin>
-References: <20070720164043.523003359@mail.of.borg> <20070720164324.097994947@mail.of.borg>
- <1184950138.3455.42.camel@localhost.localdomain>
+	Fri, 20 Jul 2007 13:07:46 -0400
+Date: Fri, 20 Jul 2007 11:07:43 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Denis Cheng <crquan@gmail.com>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] run scripts/Lindent on it to match Documentation/CodingStyle
+Message-ID: <20070720170743.GF14791@parisc-linux.org>
+References: <1184489571313-git-send-email-crquan@gmail.com> <4699EEA9.6070709@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4699EEA9.6070709@simon.arlott.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007, James Bottomley wrote:
-> On Fri, 2007-07-20 at 18:40 +0200, Geert Uytterhoeven wrote:
-> > plain text document attachment (m68k-wd33c93-needs-asm-irq.diff)
-> > wd33c93 SCSI needs <asm/irq.h> on m68k
-> > 
-> > drivers/scsi/wd33c93.c: In function 'wd33c93_host_reset':
-> > drivers/scsi/wd33c93.c:1582: error: implicit declaration of function 'disable_irq'
-> > drivers/scsi/wd33c93.c:1603: error: implicit declaration of function 'enable_irq'
-> > 
-> > The driver still compiles on MIPS (CONFIG_SGIWD93_SCSI=y)
+On Sun, Jul 15, 2007 at 10:53:45AM +0100, Simon Arlott wrote:
+> Do people ever check what Lindent does?
+[...]
+> > -out1:
+> > +      out1:
 > 
-> That's fixed here, isn't it:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=078dda95c521b1c78d1b5da69ac90d581abc9951
+> NAK: A perfectly valid non-indented label is now indented by 6 spaces.
 
-Indeed, thx!
+I tracked down why indent does this.  It's actually hard-coded to indent
+by 2 fewer columns than the current code indentation.  I've patched it
+to allow specifying either an absolute column, or a column relative to
+the current indentation level.
 
-Gr{oetje,eeting}s,
+Patch here:
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=433956
 
-						Geert
+Of course, we can't add this flag to Lindent until it's widely
+circulating amongst the distributions.  Perhaps we can add this to
+Lindent in the meantime:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+sed -i -e 's/^\t*      \(\w*:\)/ \1/' "$@"
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+which will replace the leading tabs and spaces with one space.
+It should leave case labels unmolested, as they should be indented with
+tabs, not 6 spaces.
+
+Any regexp ninjas want to have a go at something better?
+
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
