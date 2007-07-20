@@ -1,114 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937328AbXGTVo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934815AbXGTVrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937328AbXGTVo0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937128AbXGTVno
+	id S934815AbXGTVrW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbXGTVrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:43:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48463 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936948AbXGTVnm (ORCPT
+	Fri, 20 Jul 2007 17:47:12 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:60734
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754545AbXGTVrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:43:42 -0400
-Date: Fri, 20 Jul 2007 14:43:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Debug handling of early spurious interrupts
-Message-Id: <20070720144302.2785e961.akpm@linux-foundation.org>
-In-Reply-To: <1184898043.28418.3.camel@sebastian.kern.oss.ntt.co.jp>
-References: <1184666997.5271.5.camel@sebastian.kern.oss.ntt.co.jp>
-	<20070718154659.c8b5ffea.akpm@linux-foundation.org>
-	<1184896459.27369.36.camel@sebastian.kern.oss.ntt.co.jp>
-	<1184896944.27369.50.camel@sebastian.kern.oss.ntt.co.jp>
-	<1184898043.28418.3.camel@sebastian.kern.oss.ntt.co.jp>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 17:47:11 -0400
+Date: Fri, 20 Jul 2007 14:39:39 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jim Crilly <jim@why.dont.jablowme.net>, Milton Miller <miltonm@bga.com>,
+       linux-pm <linux-pm@lists.linuxfoundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <200707202343.29307.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.64.0707201435520.5166@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
+ <20070720152744.GH20529@grifter.jdc.home> <Pine.LNX.4.64.0707200835380.19248@asgard.lang.hm>
+ <200707202343.29307.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007 11:20:43 +0900
-Fernando Luis V__zquez Cao <fernando@oss.ntt.co.jp> wrote:
+On Fri, 20 Jul 2007, Rafael J. Wysocki wrote:
 
-> With the advent of kdump it is possible that device drivers receive
-> interrupts generated in the context of a previous kernel. Ideally
-> quiescing the underlying devices should suffice but not all drivers do
-> this, either because it is not possible or because they did not
-> contemplate this case. Thus drivers ought to be able to handle
-> interrupts coming in as soon as the interrupt handler is registered.
-> 
-> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> ---
-> 
-> diff -urNp linux-2.6.22-orig/kernel/irq/manage.c linux-2.6.22-pendirq/kernel/irq/manage.c
-> --- linux-2.6.22-orig/kernel/irq/manage.c	2007-07-19 18:18:53.000000000 +0900
-> +++ linux-2.6.22-pendirq/kernel/irq/manage.c	2007-07-19 19:43:41.000000000 +0900
-> @@ -533,21 +533,32 @@ int request_irq(unsigned int irq, irq_ha
->  
->  	select_smp_affinity(irq);
->  
-> -	if (irqflags & IRQF_SHARED) {
-> -		/*
-> -		 * It's a shared IRQ -- the driver ought to be prepared for it
-> -		 * to happen immediately, so let's make sure....
-> -		 * We do this before actually registering it, to make sure that
-> -		 * a 'real' IRQ doesn't run in parallel with our fake
-> -		 */
-> -		if (irqflags & IRQF_DISABLED) {
-> -			unsigned long flags;
-> +	/*
-> +	 * With the advent of kdump it possible that device drivers receive
-> +	 * interrupts generated in the context of a previous kernel. Ideally
-> +	 * quiescing the underlying devices should suffice but not all drivers
-> +	 * do this, either because it is not possible or because they did not
-> +	 * contemplate this case. Thus drivers ought to be able to handle
-> +	 * interrupts coming in as soon as the interrupt handler is registered.
-> +	 *
-> +	 * Besides, if it is a shared IRQ the driver ought to be prepared for
-> +	 * it to happen immediately too.
-> +	 *
-> +	 * We do this before actually registering it, to make sure that
-> +	 * a 'real' IRQ doesn't run in parallel with our fake.
-> +	 */
-> +	if (irqflags & IRQF_DISABLED) {
-> +		unsigned long flags;
->  
-> -			local_irq_save(flags);
-> -			handler(irq, dev_id);
-> -			local_irq_restore(flags);
-> -		} else
-> -			handler(irq, dev_id);
-> +		local_irq_save(flags);
-> +		retval = handler(irq, dev_id);
-> +		local_irq_restore(flags);
-> +	} else
-> +		retval = handler(irq, dev_id);
-> +	if (retval == IRQ_HANDLED) {
-> +		printk(KERN_WARNING
-> +		       "%s (IRQ %d) handled a spurious interrupt\n",
-> +		       devname, irq);
->  	}
->  
+> On Friday, 20 July 2007 17:36, david@lang.hm wrote:
+>> On Fri, 20 Jul 2007, Jim Crilly wrote:
+>>
+>>>>> has
+>>>>> requested the image to be not greater than 50% of RAM.  In that case you
+>>>>> have
+>>>>> to free some memory _before_ identifying memory to save and you must not
+>>>>> race with applications that attempt to allocate memory while you're doing
+>>>>> it.
+>>>>
+>>>> I disagree a little bit.
+>>>>
+>>>> first off, only the suspending kernel can know what can be freed and what
+>>>> is needed to do so (remember this is kernel internals, it can change from
+>>>> patch to patch, let alone version to version)
+>>>>
+>>>> second, if you have a lot of memory to free, and you can't just throw away
+>>>> caches to do so, you don't know what is going to be involved in freeing
+>>>> the memory, it's very possilbe that it is going to involve userspace, so
+>>>> you can't freeze any significant portion of the system, so you can't
+>>>> eliminate all chance of races
+>>>>
+>>>> what you can do is
+>>>>
+>>>> 1. try to free stuff
+>>>> 2. stop the system and account for memory, is enough free
+>>>> if not goto 1
+>>>>
+>>>> if userspace is dirtying memory fast enough, or is just useing enough
+>>>> memory that you can't meet your limit you just won't be able to suspend.
+>>>>
+>>>> but under any other conditions you will eventually get enough memory free.
+>>>>
+>>>> so try several times and if you still fail tell the user they have too
+>>>> much stuff running and they need to kill something.
+>>>
+>>> Which would be a pretty big regression from what we have now. With the
+>>> current implementation I can hibernate under virtually any workload because
+>>> the freezer stops everything and there's no competition for resources.
+>>
+>> as long as what you are trying to save is <=50% of ram (at least with some
+>> implementations). if you are trying to save more then 50% of ram with some
+>> current implmenetations you just can't
+>
+> With some, you can't, with the others, you can. :-)
+>
+> The argument given was about the freezer and IMO it was valid.
+>
+> Why didn't you address it directly?
 
-This change means that we'll run the irq handler at request_irq()-time even
-for non-shared interrupts.
+I thought it had been covered in other messages (with as big as this 
+thread is I'm trying to avoid repeating the same thing more then a couple 
+times a day :-)
 
-This is a bit of a worry.  See, shared-interrupt handlers are required to
-be able to cope with being called when their device isn't interrupting. 
-But nobody ever said that non-shared interrupt handlers need to be able to
-cope with that.
+there was another message talking about ways that you could reduce the 
+image size without it being racy (allocate pinned memory until the 
+remainder is small enough, then don't backup the pinned memory)
 
-Hence these non-shared handlers are within their rights to emit warning
-printks, go BUG or accuse the operator of having busted hardware.
+that's a much cleaner answer then what I was thinking, so I'll go with it 
+instead ;-)
 
-So bad things might happen because of this change.  And if they do, they
-will take a loooong time to be discovered, because non-shared interrupt
-handlers tend to dwell in crufty old drivers which not many people use.
-
-So I'm wondering if it would be more prudent to only do all this for shared
-handlers?
-
-
+David Lang
