@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935752AbXGTVgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbXGTViS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935752AbXGTVgY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935731AbXGTVfm
+	id S933326AbXGTViS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbXGTViH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:35:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39969 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751713AbXGTVfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:35:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 23:43:28 +0200
-User-Agent: KMail/1.9.5
-Cc: Jim Crilly <jim@why.dont.jablowme.net>, Milton Miller <miltonm@bga.com>,
-       linux-pm <linux-pm@lists.linuxfoundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> <20070720152744.GH20529@grifter.jdc.home> <Pine.LNX.4.64.0707200835380.19248@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707200835380.19248@asgard.lang.hm>
+	Fri, 20 Jul 2007 17:38:07 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:27388 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbXGTViF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 17:38:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAFPIoEarR7O6/2dsb2JhbAA
+X-IronPort-AV: i="4.16,564,1175497200"; 
+   d="scan'208"; a="9750512:sNHT12354198"
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Cc: "Leech, Christopher" <christopher.leech@intel.com>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Nelson, Shannon" <shannon.nelson@intel.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, davem@davemloft.net, jeff@garzik.org,
+       "Williams, Dan J" <dan.j.williams@intel.com>
+Subject: Re: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
+X-Message-Flag: Warning: May contain useful information
+References: <BD524EA7912ED5469DFD0BAEF6BC752F023E842F@orsmsx411.amr.corp.intel.com>
+	<adazm1qai0m.fsf@cisco.com>
+	<1a297b360707201432q3dc976b3x214c2916ca235b6f@mail.gmail.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 20 Jul 2007 14:38:02 -0700
+In-Reply-To: <1a297b360707201432q3dc976b3x214c2916ca235b6f@mail.gmail.com> (Manu Abraham's message of "Sat, 21 Jul 2007 01:32:36 +0400")
+Message-ID: <adaveceah8l.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707202343.29307.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 20 Jul 2007 21:38:02.0818 (UTC) FILETIME=[4014EA20:01C7CB16]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 20 July 2007 17:36, david@lang.hm wrote:
-> On Fri, 20 Jul 2007, Jim Crilly wrote:
-> 
-> >>> has
-> >>> requested the image to be not greater than 50% of RAM.  In that case you
-> >>> have
-> >>> to free some memory _before_ identifying memory to save and you must not
-> >>> race with applications that attempt to allocate memory while you're doing
-> >>> it.
-> >>
-> >> I disagree a little bit.
-> >>
-> >> first off, only the suspending kernel can know what can be freed and what
-> >> is needed to do so (remember this is kernel internals, it can change from
-> >> patch to patch, let alone version to version)
-> >>
-> >> second, if you have a lot of memory to free, and you can't just throw away
-> >> caches to do so, you don't know what is going to be involved in freeing
-> >> the memory, it's very possilbe that it is going to involve userspace, so
-> >> you can't freeze any significant portion of the system, so you can't
-> >> eliminate all chance of races
-> >>
-> >> what you can do is
-> >>
-> >> 1. try to free stuff
-> >> 2. stop the system and account for memory, is enough free
-> >> if not goto 1
-> >>
-> >> if userspace is dirtying memory fast enough, or is just useing enough
-> >> memory that you can't meet your limit you just won't be able to suspend.
-> >>
-> >> but under any other conditions you will eventually get enough memory free.
-> >>
-> >> so try several times and if you still fail tell the user they have too
-> >> much stuff running and they need to kill something.
-> >
-> > Which would be a pretty big regression from what we have now. With the
-> > current implementation I can hibernate under virtually any workload because
-> > the freezer stops everything and there's no competition for resources.
-> 
-> as long as what you are trying to save is <=50% of ram (at least with some 
-> implementations). if you are trying to save more then 50% of ram with some 
-> current implmenetations you just can't
+ > In a case where you have a device that which supports MSI-X (multiple
+ > interrupts) but the device in default is in MSI mode, ie some
+ > configuration change is needed on the device. In such a case, how
+ > would one handle between MSI-X and MSI ?
+ > 
+ > ie the device initially doesn't support MSI-X
 
-With some, you can't, with the others, you can. :-)
+I don't understand the question really.  Does the PCI spec even allow
+a device to be in MSI mode by default?  Surely the OS must initialize
+the address/message before the device can generate an MSI?
 
-The argument given was about the freezer and IMO it was valid.
+What device do you have in mind?  I guess the interesting case is a
+PCIe device that supports MSI and MSI-X but not legacy interrupts.
+However I would assume such a device would come up with both MSI and
+MSI-X disabled.
 
-Why didn't you address it directly?
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+ - R.
