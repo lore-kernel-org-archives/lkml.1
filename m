@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbXGTDM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbXGTDSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759278AbXGTDM4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 23:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXGTDMu
+	id S1759449AbXGTDSf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 23:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbXGTDS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 23:12:50 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:59525 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751306AbXGTDMt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 23:12:49 -0400
-Date: Thu, 19 Jul 2007 20:12:44 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, shai@scalex86.org
-Subject: Re: [patch] Change softlockup trigger limit using a kernel	parameter
-Message-ID: <20070720031244.GA5990@localdomain>
-References: <20070716222650.GA5947@localdomain> <20070718160858.75865461.akpm@linux-foundation.org> <20070719054121.GA15074@localdomain> <20070718230907.741ae56c.akpm@linux-foundation.org> <20070719091142.GA28723@elte.hu> <20070719183129.GB20298@localdomain> <20070719184536.GB10940@elte.hu> <469FB2A2.8040403@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <469FB2A2.8040403@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 19 Jul 2007 23:18:28 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58422 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753981AbXGTDS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 23:18:27 -0400
+Date: Fri, 20 Jul 2007 13:18:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: video4linux-list@redhat.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] stradis and zoran depend on virt_to_bus
+Message-Id: <20070720131831.49ed586f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 11:51:14AM -0700, Jeremy Fitzhardinge wrote:
->Ingo Molnar wrote:
->> just in case someone sees false positives and wants to turn it off.
->
->Why not make 0=off?
+I assume that is why they were marked as !PPC64.
 
-A patch to disable softlockup during boot already went in.
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=97842216b8400fe9d1a20468959e2989180f8f79
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/media/video/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-It uses kernel boot parameter to disable softlockup, not exactly disabling
-softlockup at run time though.  Do we still need 0=off?
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Thanks,
-Kiran
+diff --git a/drivers/media/video/Kconfig b/drivers/media/video/Kconfig
+index 4d45a40..ae92015 100644
+--- a/drivers/media/video/Kconfig
++++ b/drivers/media/video/Kconfig
+@@ -500,7 +500,7 @@ config VIDEO_VINO
+ 
+ config VIDEO_STRADIS
+ 	tristate "Stradis 4:2:2 MPEG-2 video driver  (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && PCI && VIDEO_V4L1 && !PPC64
++	depends on EXPERIMENTAL && PCI && VIDEO_V4L1 && VIRT_TO_BUS
+ 	help
+ 	  Say Y here to enable support for the Stradis 4:2:2 MPEG-2 video
+ 	  driver for PCI.  There is a product page at
+@@ -511,7 +511,7 @@ config VIDEO_ZORAN_ZR36060
+ 
+ config VIDEO_ZORAN
+ 	tristate "Zoran ZR36057/36067 Video For Linux"
+-	depends on PCI && I2C_ALGOBIT && VIDEO_V4L1 && !PPC64
++	depends on PCI && I2C_ALGOBIT && VIDEO_V4L1 && VIRT_TO_BUS
+ 	help
+ 	  Say Y for support for MJPEG capture cards based on the Zoran
+ 	  36057/36067 PCI controller chipset. This includes the Iomega
+-- 
+1.5.2.3
+
