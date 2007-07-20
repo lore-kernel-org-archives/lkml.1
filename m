@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934320AbXGTPIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934479AbXGTPJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934320AbXGTPIn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 11:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933652AbXGTPIh
+	id S934479AbXGTPJv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 11:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933859AbXGTPJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 11:08:37 -0400
-Received: from mail.suse.de ([195.135.220.2]:49362 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933654AbXGTPIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 11:08:36 -0400
-Date: Fri, 20 Jul 2007 08:06:27 -0700
-From: Greg KH <gregkh@suse.de>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kay.sievers@vrfy.org
-Subject: Re: kobject link failure
-Message-ID: <20070720150627.GA12822@suse.de>
-References: <Pine.LNX.4.64.0707191956510.31013@fbirervta.pbzchgretzou.qr> <469FA94E.20002@googlemail.com> <20070720080059.GA29639@suse.de> <20070720113221.390ed32a@gondolin.boeblingen.de.ibm.com> <20070720135813.0e416b2b@gondolin.boeblingen.de.ibm.com>
+	Fri, 20 Jul 2007 11:09:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:31718 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933652AbXGTPJo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 11:09:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=reeSo2gN5aJgVqguDgllxkomktpHQ0f31GqIzDueTx3vcy/NeKzM5c29qcuFNQvXJAboJHTibUnsmopbKOcW7xm+oA9qx2HyiTXwA+7Lvpa3ZDECm2NSIhBZD0hBk/sgNTSho1Of7fVXoO0I/oXsX5FW8nF6P5HOCyFCPjTk6MU=
+Message-ID: <6bffcb0e0707200809n24ccf6c3v62abbfa50a7d3c41@mail.gmail.com>
+Date: Fri, 20 Jul 2007 17:09:43 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Nick Piggin" <npiggin@suse.de>
+Subject: [broken-out-2007-07-20-00-22] fs/revoked_inode.c warnings
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070720135813.0e416b2b@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 01:58:13PM +0200, Cornelia Huck wrote:
-> On Fri, 20 Jul 2007 11:32:21 +0200,
-> Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> 
-> > Hm, this would be an interface change (the uevent attribute used to
-> > exist even for !CONFIG_HOTPLUG, it just triggered nothing). How about
-> > moving kobject_actions[] out of the #ifdef (maybe next to
-> > kobject_action)?
-> 
-> Leaving kobject_actions[] in kobject_uevent.c, but putting it outside
-> the #ifdef looks indeed like the best solution to me. This way, we
-> avoid adding #ifdef CONFIG_HOTPLUG into core.c, when all other
-> functions called do not need such a thing.
+Hi Nick,
 
-Yeah, this is much nicer and smaller, thanks.  I'll throw away my patch
-and use this one instead.
+Your patch fs-introduce-write_begin-write_end-and-perform_write-aops-revoke.patch
+introduces new warnings
 
-Can someone verify that it works properly for them please?
+fs/revoked_inode.c:381: warning: 'revoked_write_begin' defined but not used
+fs/revoked_inode.c:388: warning: 'revoked_write_end' defined but not used
 
-thanks,
+Regards,
+Michal
 
-greg k-h
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
