@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762807AbXGTNjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbXGTNjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762807AbXGTNjV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbXGTNjM
+	id S1758924AbXGTNjh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 09:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbXGTNj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:39:12 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1604 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756922AbXGTNjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:39:11 -0400
-Date: Fri, 20 Jul 2007 15:38:39 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: Matt Mackall <mpm@selenic.com>, James Bruce <bruce@andrew.cmu.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] CFS: Fix missing digit off in wmult table
-In-Reply-To: <20070718161751.GA510@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707181825520.1817@scrub.home>
-References: <20070716203117.GC11166@waste.org> <20070716211851.GB18661@elte.hu>
- <Pine.LNX.4.64.0707162351030.1817@scrub.home> <20070716222909.GA30906@elte.hu>
- <Pine.LNX.4.64.0707170047230.1817@scrub.home> <Pine.LNX.4.64.0707170437110.1818@scrub.home>
- <20070717080230.GC13539@elte.hu> <Pine.LNX.4.64.0707171324110.1817@scrub.home>
- <20070718104001.GA2801@elte.hu> <Pine.LNX.4.64.0707181330480.1817@scrub.home>
- <20070718161751.GA510@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Jul 2007 09:39:28 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34612 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756922AbXGTNj1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 09:39:27 -0400
+Date: Fri, 20 Jul 2007 22:39:09 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: mel@skynet.ie, torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
+Message-Id: <20070720223909.d4c1e848.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070720114246.GA27391@linux-sh.org>
+References: <20070720060342.GA24765@linux-sh.org>
+	<20070720112025.GA14495@skynet.ie>
+	<20070720114246.GA27391@linux-sh.org>
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 20 Jul 2007 20:42:46 +0900
+Paul Mundt <lethal@linux-sh.org> wrote:
 
-On Wed, 18 Jul 2007, Ingo Molnar wrote:
+> > I expect that the memory gets added to the same zone as historically but
+> > when ZONE_MOVABLE is set, you'll see a situation where zones are overlapping
+> > after memory hot-add.  i.e. Before memory hot-add, you'd see
+> > 
+> > DDDDMM
+> > 
+> > for ZONE_DMA and ZONE_MOVABLE and after hotadd, you'd see something like
+> > 
+> > DDDDMMDDDD
+> > 
 
-> > > [more rude insults deleted]
-> > > I've been waiting for that obvious question, and i _might_ be able
-> > > to answer it, but somehow it never occured to you ;-) Thanks,
-> 
-> the ";-)" emoticon (and its contents) clearly signals this as a 
-> sarcastic, tongue-in-cheek remark.
+As similar case, I hear powerpc has followig memory layout
 
-To take another example why is this still insulting and inappropriate, 
-this is a behaviour I would characterize as school bullying:
-A bully attacks someone obviously weaker than himself and for example 
-takes something away and than continues like "If you ask nicely I'll give 
-it back to you.", this often accompied by laughter to signal he's enjoying 
-himself and the power he has, but for the other person it's everything but 
-funny.
+(1)(1)(0)(0)(0)(1)(1)(1)  # (0) is node 0, (1) is node 1. all zones are ZONE_DMA.
 
-Maybe you don't know what it feels like, but I do and I can't find 
-anything funny, sarcastic or whatever about this, no matter how many 
-smileys or other tags you add there. If the communication is already that 
-troubled as this, such "humor" is really the worst thing you can do and I 
-find it rather sad that you can't realize this yourself.
+So zone is overlapped without memory hotplug.
+But I agree we have to take care of this kind of corner cases.
 
-> ok? (If you didnt see/read it as sarcastic straight away then my 
-> apologies for insulting you!)
-
-Sorry, that is too little too late. You've apologized before and you 
-continued to make fun of me personally to the point of spreading wrong 
-information about me, which you could have very easily verified yourself, 
-if you only wanted.
-What I want from you is that you treat me with respect and to keep your 
-"sarcasm" to yourself.
-
-I told you very clearly how I think about you requoting this crap and yet 
-you repeat it again _twice_, so on the one hand I get this apology attempt 
-and on the other hand you continue to kick me in the crotch? How do you 
-think am I supposed to feel about this?
-
-It's also always interesting what you don't respond to. I asked you for 
-examples which would prove the (rather strong) assertions you made about 
-me, what does it tell me now if you can't back up your statements?
-
-bye, Roman
+Thanks,
+-Kame
