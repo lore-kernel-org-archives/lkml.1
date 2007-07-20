@@ -1,119 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936698AbXGUA3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938070AbXGUAb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936698AbXGUA3K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 20:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXGUA24
+	id S938070AbXGUAb2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 20:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbXGUAbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 20:28:56 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:55213 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbXGUA2z (ORCPT
+	Fri, 20 Jul 2007 20:31:21 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:65496 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751834AbXGUAbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 20:28:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Syxr7Eqza2qTMlUvVjBBXjwnTiJ1tBOyLHOwYfixoTsI4AtQUatNDJOg6EJC03wfH7zHMUiHrALpokKjIn+IsRAx8UyBEgwH7/wNX7QceuA9IDhp56PCB//5afH5RcuSaqbawCnW3zPCjKfTBJSKUZBCvcx8PrkJrQ89SwPmNlg=
-Message-ID: <6bffcb0e0707201728u6deeccd1j453ff89d0767dccc@mail.gmail.com>
-Date: Sat, 21 Jul 2007 02:28:52 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
-Cc: "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       rdunlap@xenotime.net, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <a781481a0707201703h6318fe65td4c5c6f57bb7eb24@mail.gmail.com>
+	Fri, 20 Jul 2007 20:31:20 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+Date: Sat, 21 Jul 2007 01:55:41 +0200
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+References: <1184970779.4012.38.camel@chaos>
+In-Reply-To: <1184970779.4012.38.camel@chaos>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>
-	 <20070720225047.GA17520@suse.de>
-	 <20070720155912.079c5a27.akpm@linux-foundation.org>
-	 <20070720231052.GA19752@suse.de>
-	 <a781481a0707201643l17ea92fajfbc256a7a16a802f@mail.gmail.com>
-	 <a781481a0707201703h6318fe65td4c5c6f57bb7eb24@mail.gmail.com>
+Message-Id: <200707210155.42814.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18x2GVpBLuNXw7Yj6CNLfAuaWY1Y8fofpsRECS
+ oHgp6jELVZcU57+u38N+jkjQ4X3nLiQwOul60wyxsaClFCWW0F
+ kwmKdAoTcSzqIgN6ojv9A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21/07/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> Oh, which means ...
->
->
-> On 7/21/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> > On 7/21/07, Greg KH <gregkh@suse.de> wrote:
-> > > On Fri, Jul 20, 2007 at 03:59:12PM -0700, Andrew Morton wrote:
-> > > > On Fri, 20 Jul 2007 15:50:47 -0700
-> > > > Greg KH <gregkh@suse.de> wrote:
-> > > >
-> > > > > On Fri, Jul 20, 2007 at 06:32:21PM +0200, Michal Piotrowski wrote:
-> > > > > >  Hi Greg,
-> > > > > >
-> > > > > >  This looks like a sysfs bug
-> > > > > >  http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/
-> > > > > >  broken-out-2007-07-20-00-22/00003.jpg
-> > > > > >
-> > > > > >  l *kernel_param_sysfs_setup+0x75
-> > > > > >  0xc13c0894 is in kernel_param_sysfs_setup (kernel/params.c:570).
-> > > > > >  565             mk->mod = THIS_MODULE;
-> > > > > >  566             kobj_set_kset_s(mk, module_subsys);
->
-> > > > > >  567             kobject_set_name(&mk->kobj, name);
->
-> Shouldn't the return of kobject_set_name() be checked here?
->
-> [ Looking at code, and realizing that kobject_set_name() manages to
-> succeed even when given a null string! ]
->
-> > > > > >  568             kobject_init(&mk->kobj);
-> > > > > >  569             ret = kobject_add(&mk->kobj);
-> > > > > >  570             BUG_ON(ret < 0);
-> > > > > >  571             param_sysfs_setup(mk, kparam, num_params, name_skip);
-> > > > > >  572             kobject_uevent(&mk->kobj, KOBJ_ADD);
-> > > > > >  573     }
-> > > > > >  574
-> > > > > >
-> > > > > >  http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/
-> > > > > >  broken-out-2007-07-20-00-22/mm-config
-> > > > >
-> > > > > What kernel version is this happening on?  The -mm tree?  Can you try
-> > > > > Linus's tree instead?
-> > > > >
-> > > > > It looks like there was some needed information right before the first
-> > > > > stack dump, showing exactly what kobject was trying to be added that was
-> > > > > already present.  Odds are this is a kernel parameter with the same name
-> > > > > as a duplicate one within the same module,
-> >
-> > I don't think that's an -EEXIST.
-> >
-> > I think what we have here is kobject_add() exiting with -EINVAL.
-> > (kobject attempted to be registered with no name!)
-> >
-> > [ The first trace on that screen shows: kobject_shadow_add+0x5b/0x189.
-> > That's the WARN_ON(1) at lib/kobject.c:176. If it was a EEXIST case,
-> > we would've seen an offset in kobject_shadow_add closer to 0x189,
-> > because the dump_stack() for EEXIST is barely 4 instructions before
-> > we return from that function. ]
-> >
-> > > > > but the trick is going to be
-> > > > > trying to figure out what module is causing this.
-> >
-> > So I'd guess we want to search for a module that's passing a kobject *
-> > to kobject_add() such that !kobj->k_name is true.
->
-> Oh, that's kernel_param_sysfs_setup itself. So we actually need to
-> search for a built-in module in Michal's config that ... has an ... empty
-> "" modname !?
+On Saturday 21 July 2007, Thomas Gleixner wrote:
+> The topic of sharing more x86 code has been discussed on LKML a number 
+> of times. Various approaches were discussed and we decided to advance 
+> the discussion by implementing a full solution that brings the 
+> transition to a shared tree to completion.
 
-I'll try to figure out this
+Great stuff. I've worked on doing the same for s390 and powerpc
+in the past, and really think it's the right thing to do. I've
+even started my own x86 merge two or three times in the past
+but never got very far because of the quickly moving source.
 
-> Shouldn't that turn up pretty quickly in a grep?
->
-> How do I do that, btw?
->
+> In this initial implementation the old arch/i386 and arch/x86_64 trees 
+> are removed _immediately_, in the same commit, and all future x86 
+> development goes on in the new, shared tree. So the transition right now 
+> is one atomic operation.
+> 
+> As a next step we plan to generate a gradual, fully bisectable, fully
+> working switchover from the current code to the fully populated
+> arch/x86 tree. It will result in about 1000-2000 commits. We are
+> releasing our current solution because it 100% represents the finally
+> resulting arch/x86 source tree already, and we first wanted to make
+> sure that the new architecture layout works fine and folks are happy
+> before we go and do the (even more complex) fine-grained work.
 
-Regards,
-Michal
+I don't think it's really good to do it this way, or maybe I'm still
+misunderstanding where you're going. If you really want to end
+up with the exact set of files that you have your tree now, I see
+absolutely zero point in making it bisectable. On the contrary,
+there is nothing particularly complicated in it, so once it has
+seen some amount of testing it can better get merged in one
+big changeset. I'm just not convinced that it actully is what
+we want to end up with.
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+In my experience, it's very helpful to have a single set of header
+files, and merging the two versions of one header usually exposes
+bugs that have been fixed in only one of the two, so you get
+to fix actual bugs in the process.
+
+In the s390 merge, I also started out in an attempt to guarantee
+unchanged object files, much like what you describe. However, it
+turned out that fixing it in the process is actually easier.
+Either way, 'diff -D __x86_64__' is a great tool for a start, you
+should try it out to see how easy it is to merge a lot of files.
+
+To put it into perspective, I think the s390 merge was a lot easier
+than the x86 merge, because there is only a very limited set of
+hardware configurations for s390 compared to others. We ended up
+doing the full merge with three people within less than a week
+and no separate files at all.
+
+OTOH, the powerpc merge is now going into its third year, mostly
+because it was started with the intention to remove all cruft
+in the process and to only allow sane code into the new architecture.
+
+The steps that I'd suggest instead are:
+
+* merge all exported header files of the two architectures. This
+  alone is a worthy goal, because it allows us to get rid of
+  the ugly code for deciding which version to use in installed
+  headers and elsewhere.
+
+* Merge the remaining header files, to end up with a single
+  include/asm-x86 directory.
+
+* Come up with a model that integrates the machine type selection
+  of i386 with the way we build things on x86_64. One way would
+  be to make X86_64 another platform next to X86_PC, X86_VOYAGER
+  and the others.
+
+* Create an arch/x86/Kconfig that handles the new common
+  configuration
+
+* Create an arch/x86/Makefile that descends into ../i386/* and
+  ../x86_64/* instead of its subdirectories.
+
+* Merge the arch/x86/* subdirectories, one at a time, starting with
+  the low-hanging fruit like oprofile or pci, and do the hard
+  ones like mm and kernel last.
+
+Unfortunately, I don't think I'll spend much time on this, so I
+don't get to decide on it, but you asked for feedback ;-)
+
+	Arnd <><
