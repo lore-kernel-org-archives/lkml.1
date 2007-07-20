@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761194AbXGTD0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761969AbXGTD1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761194AbXGTD0y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 23:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbXGTD0r
+	id S1761969AbXGTD1k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 23:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXGTD1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 23:26:47 -0400
-Received: from smtp23.orange.fr ([193.252.22.30]:9038 "EHLO smtp23.orange.fr"
+	Thu, 19 Jul 2007 23:27:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:55970 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbXGTD0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 23:26:47 -0400
-X-ME-UUID: 20070720032644119.1D4131C00087@mwinf2334.orange.fr
-From: "werner" <werner@copaya.yi.org>
-Subject: Kernel Error / Crash
-To: linux-kernel@vger.kernel.org
-X-Originating-IP: 81.248.33.170
-X-Mailer: Usermin 1.270
-Message-Id: <1184901372.4269@werner>
-Date: Fri, 20 Jul 2007 00:16:12 -0300 (GFT)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="bound1184901372"
+	id S1754338AbXGTD1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 23:27:33 -0400
+Subject: Re: lguest, Re: -mm merge plans for 2.6.23
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20070719172746.GA17710@lst.de>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <20070711122324.GA21714@lst.de>
+	 <1184203311.6005.664.camel@localhost.localdomain>
+	 <20070711.192829.08323972.davem@davemloft.net>
+	 <1184208521.6005.695.camel@localhost.localdomain>
+	 <20070711212435.abd33524.akpm@linux-foundation.org>
+	 <1184215943.6005.745.camel@localhost.localdomain>
+	 <20070719172746.GA17710@lst.de>
+Content-Type: text/plain
+Date: Fri, 20 Jul 2007 13:27:26 +1000
+Message-Id: <1184902046.10380.257.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Thu, 2007-07-19 at 19:27 +0200, Christoph Hellwig wrote:
+> The version that just got into mainline still has the __put_task_struct
+> export despite not needing it anymore.  Care to fix this up?
 
---bound1184901372
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+No, it got patched in then immediately patched out again.  Andrew
+mis-mixed my patches, but there have been so many of them I find it hard
+to blame him.
 
-To: linux-kernel@vger.kernel.org
-
-
-copied from the screen:
-
-...
-proc on /proc type proc (rw)
-sysfs on /sys type sysfs (rw)
-Starting udevd: /sbin/udevd -- daemon
-------------[cut here]-------------------
-Kernel BUG at mm/slub.c:2401!
-Invalid opcode: 0000[#1]
-SMP
-Modules linked in:
-CPU: 0
-EIP: 0060: [<c0174ec0>]   Not tainted VLI
-EFLAGS:  00010046  (2.6.22-git13-i486-1mn #1)
-EIP is at ksize + 0x40/0x50
-  .....
-
-Obs:  With 2.6.22-git11 that problem didnt occur
-
-Werner Landgraf
-werner@copaya.yi.org
-
-
---bound1184901372--
-
+Rusty.
 
