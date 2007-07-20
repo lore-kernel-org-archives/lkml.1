@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762313AbXGTLoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbXGTLq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762313AbXGTLoS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 07:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbXGTLoJ
+	id S1761588AbXGTLq1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 07:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbXGTLqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 07:44:09 -0400
-Received: from ns2.suse.de ([195.135.220.15]:40199 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbXGTLoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 07:44:08 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: Re: [PATCH] Use wbinvd() macro instead of raw inline assembly in .c files
-Date: Fri, 20 Jul 2007 13:43:59 +0200
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Muli Ben-Yehuda <muli@il.ibm.com>
-References: <1184885740.16311.19.camel@t60>
-In-Reply-To: <1184885740.16311.19.camel@t60>
+	Fri, 20 Jul 2007 07:46:11 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:43904 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbXGTLqK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 07:46:10 -0400
+Message-ID: <46A0A01A.7030403@googlemail.com>
+Date: Fri, 20 Jul 2007 13:44:26 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: netdev@vger.kernel.org
+Subject: [PATCH] IP_VS should depend on EXPERIMENTAL ?
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707201343.59962.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 July 2007 00:55:40 Glauber de Oliveira Costa wrote:
-> This patch uses the already-existant wbinvd() macro to replace
-> raw assembly to perform this very same task in some .c files
->     
-> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-> 
-> diff --git a/arch/x86_64/kernel/tce.c b/arch/x86_64/kernel/tce.c
-> index f61fb8e..afbb951 100644
-> --- a/arch/x86_64/kernel/tce.c
-> +++ b/arch/x86_64/kernel/tce.c
-> @@ -42,7 +42,7 @@ static inline void flush_tce(void* tceaddr)
->  	if (cpu_has_clflush)
->  		asm volatile("clflush (%0)" :: "r" (tceaddr));
->  	else
-> -		asm volatile("wbinvd":::"memory");
-> +		wbinvd();
+Hi,
 
-I guess it can be just removed there. I don' think there are any calgary 
-machines without clflush
+IP_VS has :
 
->  }
->  
->  void tce_build(struct iommu_table *tbl, unsigned long index,
-> diff --git a/arch/x86_64/mm/pageattr.c b/arch/x86_64/mm/pageattr.c
-> index 9148f4a..0a75790 100644
-> --- a/arch/x86_64/mm/pageattr.c
-> +++ b/arch/x86_64/mm/pageattr.c
-> @@ -77,7 +77,7 @@ static void flush_kernel_map(void *arg)
->  	   much cheaper than WBINVD. Disable clflush for now because
->  	   the high level code is not ready yet */
->  	if (1 || !cpu_has_clflush)
-> -		asm volatile("wbinvd" ::: "memory");
-> +		wbinvd();
->  	else list_for_each_entry(pg, l, lru) {
->  		void *adr = page_address(pg);
->  		if (cpu_has_clflush)
-> 
+..
 
-This code has changed recently in the queue. Please resubmit later.
+tristate "IP virtual server support (EXPERIMENTAL)"
 
--Andi
+..
+
+but it does not depend on EXPERIMENTAL.
 
 
-> 
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
 
+---
 
+ net/ipv4/ipvs/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/ipv4/ipvs/Kconfig b/net/ipv4/ipvs/Kconfig
+index 09d0c3f..3c594ec 100644
+--- a/net/ipv4/ipvs/Kconfig
++++ b/net/ipv4/ipvs/Kconfig
+@@ -3,7 +3,7 @@
+ #
+ menuconfig IP_VS
+ 	tristate "IP virtual server support (EXPERIMENTAL)"
+-	depends on NETFILTER
++	depends on NETFILTER && EXPERIMENTAL
+ 	---help---
+ 	  IP Virtual Server support will let you build a high-performance
+ 	  virtual server based on cluster of two or more real servers. This
