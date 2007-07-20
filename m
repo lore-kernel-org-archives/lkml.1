@@ -1,27 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936166AbXGTBbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937156AbXGTBdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936166AbXGTBbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 21:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761107AbXGTBbM
+	id S937156AbXGTBdB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 21:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760856AbXGTBcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 21:31:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52176 "EHLO
+	Thu, 19 Jul 2007 21:32:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49161 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759851AbXGTBbK (ORCPT
+	by vger.kernel.org with ESMTP id S1751965AbXGTBcw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 21:31:10 -0400
-Date: Thu, 19 Jul 2007 18:29:52 -0700
+	Thu, 19 Jul 2007 21:32:52 -0400
+Date: Thu, 19 Jul 2007 18:32:02 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Tom Zanussi <zanussi@us.ibm.com>, Karim Yaghmour <karim@opersys.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       "David J. Wilder" <wilder@us.ibm.com>
-Subject: Re: [PATCH] Fix a use after free bug in kernel->userspace relay
- file support
-Message-Id: <20070719182952.5f437e64.akpm@linux-foundation.org>
-In-Reply-To: <20070720010909.GA4298@Krystal>
-References: <20070720010909.GA4298@Krystal>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru
+Subject: Re: [PATCH] async_tx: fix kmap_atomic usage in async_memcpy
+Message-Id: <20070719183202.f7045ede.akpm@linux-foundation.org>
+In-Reply-To: <20070720011252.6443.34295.stgit@dwillia2-linux.ch.intel.com>
+References: <20070720011252.6443.34295.stgit@dwillia2-linux.ch.intel.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,44 +25,36 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 21:09:09 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On Thu, 19 Jul 2007 18:12:52 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
 
-> Coverity spotted what looks like a real possible case of using a 
-> variable after it has been freed.
-> The problem is in kernel/relay.c::relay_open_buf()
+> Andrew Morton:
+> 	[async_memcpy] is very wrong if both ASYNC_TX_KMAP_DST and
+> 	ASYNC_TX_KMAP_SRC can ever be set.  We'll end up using the same kmap
+> 	slot for both src add dest and we get either corrupted data or a BUG.
 > 
-> If the code hits "goto free_buf;" it ends up in this code :
+> Evgeniy Polyakov:
+> 	Btw, shouldn't it always be kmap_atomic() even if flag is not set.
+> 	That pages are usual one returned by alloc_page().
 > 
->   free_buf:
->     	relay_destroy_buf(buf);	<--- calls kfree() on 'buf'.
->   free_name:
->    	kfree(tmpname);
->   end:
->   	return buf;		<-- use after free of 'buf'.
+> So fix the usage of kmap_atomic and kill the ASYNC_TX_KMAP_DST and
+> ASYNC_TX_KMAP_SRC flags.
 > 
-> I read through the callers and they all handle a NULL return 
-> from this function as an error (and hitting the 'free_buf' label 
-> only happens on failure to chan->cb->create_buf_file(), so that 
-> looks like a clear error to me). 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
 > 
-> The patch simply sets 'buf' to NULL after the call to 
-> relay_destroy_buf(buf); - as far as I can see that should take 
-> care of the problem.
-> 
-> The patch also corrects a reference to a documentation file while 
-> I was at it.
-> 
-> Note from Mathieu: the documentation reference change should have been
-> done in a separate patch, but I guess no one will really care.
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> Acked-by: "David J. Wilder" <wilder@us.ibm.com>
-> Tested-by: "David J. Wilder" <wilder@us.ibm.com>
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>  crypto/async_tx/async_memcpy.c |   19 ++++---------------
+>  drivers/md/raid5.c             |    4 ++--
+>  include/linux/async_tx.h       |    6 ------
+>  3 files changed, 6 insertions(+), 23 deletions(-)
 
-I'm going to infer from all this that the patch was actually written
-by Jesper.  Correct?
+Neato.
 
-If so, it shuld have had From: Jesper Juhl <jesper.juhl@gmail.com>
-right at the start of the changelog.
+You (or at least, Shannon) run a git tree.  I always get confused when
+git-tree-owners send me patches, because I expect them to put the
+patches into their git trees.
+
+So if you, a git-tree-owner, wish me to merge-test-and-forward a patch,
+please explicitly tell me.
