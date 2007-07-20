@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932795AbXGTH3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934408AbXGTHbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932795AbXGTH3h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbXGTH3b
+	id S934408AbXGTHbY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759785AbXGTHbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:29:31 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:58216 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756799AbXGTH3a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:29:30 -0400
-X-Greylist: delayed 1682 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jul 2007 03:29:30 EDT
-Date: Fri, 20 Jul 2007 09:01:06 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: drivers/base/core.c broken for non-CONFIG_HOTPLUG
-Message-ID: <20070720070106.GH1678@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Fri, 20 Jul 2007 03:31:18 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:35315 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757139AbXGTHbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 03:31:17 -0400
+Date: Fri, 20 Jul 2007 16:30:53 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
+Message-ID: <20070720073053.GA26080@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Mel Gorman <mel@csn.ul.ie>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070720060342.GA24765@linux-sh.org> <20070720162152.25c929bf.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070720162152.25c929bf.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay,
-
-With commit 60a96a59569bab85571d0089682109bd3324e896, you broke
-drivers/base/core.c for systems which have not enabled CONFIG_HOTPLUG.
-
-You add and use
-
-	extern const char *kobject_actions[];
-
-but the code in lib/kobject_uevent.c who actually brings in the code is
-only compiled when CONFIG_HOTPLUG is enabled.
-
-Please send a fix.
-
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
-
+On Fri, Jul 20, 2007 at 04:21:52PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Fri, 20 Jul 2007 15:03:42 +0900
+> Paul Mundt <lethal@linux-sh.org> wrote:
+> 
+> > zone_movable_pfn is presently marked as __initdata and referenced
+> > from adjust_zone_range_for_zone_movable(), which in turn is
+> > referenced by zone_spanned_pages_in_node(). Both of these are
+> > __meminit annotated. When memory hotplug is enabled, this will oops
+> > on a hot-add, due to zone_movable_pfn having been freed.
+> > 
+> > __meminitdata annotation gives the desired behaviour.
+> > 
+> > This will only impact platforms that enable both memory hotplug
+> > and ARCH_POPULATES_NODE_MAP.
+> > 
+> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> > 
+> Thank you for catching.
+> It seems that this route will called at node-hotplug.
+> We tested node hotplug with our machine but haven't seen this.
+> 
+> The reason is maybe...
+> ==
+> Currently, our firmware shows *to-be-added* nodes in SRAT at boot and
+> ia64 creates empty node against possible node. So, when we add node,
+> pgdat is already allocated and free_area_init_core() is not called at hotplug.
+> ==
+> We need to use dummy firmware to test this route, sorry.
+> 
+Correct, if the pgdat is already allocated on the node you're adding,
+then you shouldn't hit this path. I've been toying with the hotplug code
+for handoffs of small SRAM blocks (transitioning between exclusive
+application usage and letting the kernel manage it as a node), which can
+reliably follow this path. It's managed to find a couple of oopses in
+this area at least, this not being the first :-)
