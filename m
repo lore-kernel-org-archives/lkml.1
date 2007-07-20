@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbXGTV1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbXGTV2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760684AbXGTV1u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbXGTV1c
+	id S1760093AbXGTV2W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934302AbXGTV1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:27:32 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60544 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753410AbXGTV1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:27:30 -0400
-Date: Fri, 20 Jul 2007 23:28:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/7] x86_64: fix section mismatch warning in hpet.c
-Message-ID: <20070720212845.GC25064@uranus.ravnborg.org>
+	Fri, 20 Jul 2007 17:27:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47366 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933057AbXGTV1m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 17:27:42 -0400
+Date: Fri, 20 Jul 2007 23:27:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Create clflush() inline, remove hardcoded wbinvd
+Message-ID: <20070720212741.GB565@one.firstfloor.org>
+References: <1184885740.16311.19.camel@t60> <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following warnings:
-WARNING: vmlinux.o(.text+0x945e): Section mismatch: reference to .init.text:__set_fixmap (between 'hpet_arch_init' and 'hpet_mask_rtc_irq_bit')
-WARNING: vmlinux.o(.text+0x9474): Section mismatch: reference to .init.text:__set_fixmap (between 'hpet_arch_init' and 'hpet_mask_rtc_irq_bit')
+On Fri, Jul 20, 2007 at 02:19:58PM -0700, H. Peter Anvin wrote:
+> Create an inline function for clflush(), with the proper arguments,
+> and use it instead of hard-coding the instruction.
+> 
+> This also removes one instance of hard-coded wbinvd, based on a patch
+> by Bauder de Oliveira Costa.
 
-hpet_arch_init is only used from __init context so mark it __init.
+I don't see much sense in it. CLFLUSH is not priviledged, paravirt
+doesn't need to change and this adds just an unnecessary layer of abstraction.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- arch/x86_64/kernel/hpet.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86_64/kernel/hpet.c b/arch/x86_64/kernel/hpet.c
-index b828696..3dc68d1 100644
---- a/arch/x86_64/kernel/hpet.c
-+++ b/arch/x86_64/kernel/hpet.c
-@@ -133,7 +133,7 @@ struct clocksource clocksource_hpet = {
- 	.vread		= vread_hpet,
- };
- 
--int hpet_arch_init(void)
-+int __init hpet_arch_init(void)
- {
- 	unsigned int id;
- 	u64 tmp;
--- 
-1.5.1.rc3.g84b7-dirty
-
+-Andi
