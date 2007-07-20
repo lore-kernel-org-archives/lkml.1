@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbXGTXWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936713AbXGTXYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932859AbXGTXWp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 19:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756874AbXGTXWg
+	id S936713AbXGTXYn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 19:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758934AbXGTXYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 19:22:36 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:52224 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756477AbXGTXWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 19:22:36 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] [GIT PULL][RESEND] Late KVM Updates for the 2.6.23 merge window
-Date: Sat, 21 Jul 2007 02:21:30 +0300
-User-Agent: KMail/1.9.7
-Cc: Avi Kivity <avi@qumranet.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <1184952728548-git-send-email-avi@qumranet.com>
-In-Reply-To: <1184952728548-git-send-email-avi@qumranet.com>
+	Fri, 20 Jul 2007 19:24:35 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:52582 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756210AbXGTXYe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 19:24:34 -0400
+Date: Fri, 20 Jul 2007 19:23:38 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+In-Reply-To: <1184972499.2692.9.camel@laptopd505.fenrus.org>
+Message-ID: <Pine.LNX.4.58.0707201922210.21951@gandalf.stny.rr.com>
+References: <1184970779.4012.38.camel@chaos> <1184972499.2692.9.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1391966.mPjPlleK7Z";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707210221.34121.caglar@pardus.org.tr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1391966.mPjPlleK7Z
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi;=20
+On Fri, 20 Jul 2007, Arjan van de Ven wrote:
 
-20 Tem 2007 Cum tarihinde, Avi Kivity =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
-=C4=B1:=20
-> Please pull from the git repository at:
->=20
->   git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
->=20
-> to get the following changes:
->=20
-> Avi Kivity (4):
->       KVM: MMU: Store nx bit for large page shadows
->       KVM: Fix memory slot management functions for guest smp
->       KVM: x86 emulator: implement rdmsr and wrmsr
->       KVM: MMU: Fix oopses with SLUB
->=20
-> The last commit is new since the last pull request.
+> On Sat, 2007-07-21 at 00:32 +0200, Thomas Gleixner wrote:
+> > We are pleased to announce a project we've been working on for some
+> > time: the unified x86 architecture tree, or "arch/x86" - and we'd like
+> > to solicit feedback about it.
+>
+>
+>
+> I really like the idea of a unified source tree for the 2 x86 variants.
+> The technical differences are really small (of course there are
+> differences, especially in the boot sequence), and striving to unify as
+> much as possible while having a clean way to do per 32/64 bit parts as
+> well is something that imo is the right thing.
+>
 
-With Linus's latest git, shutting down a guest (fired with -smp 2 -m 512) s=
-ometimes=20
-ends up like [1], this occured as soon as qemu window closed.
+Not to mention all the paravirt stuff that's going on. Having a single
+x86 arch to work with would be greatly beneficial to the work being done
+to port paravirt to x86_64.
 
-[1] http://cekirdek.pardus.org.tr/~caglar/kvm/dmesg.latest
+Way to go, Thomas and Ingo!
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+-- Steve
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart1391966.mPjPlleK7Z
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGoUN+y7E6i0LKo6YRAp/xAJ9dsBhP93cfadSgMib2lNu6jUJCpwCgoC1I
-M/fJ6Rp8U2dlcO+azzOq3/Y=
-=Pt3Q
------END PGP SIGNATURE-----
-
---nextPart1391966.mPjPlleK7Z--
