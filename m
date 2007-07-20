@@ -1,1709 +1,921 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761672AbXGTNsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbXGTNug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761672AbXGTNsW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbXGTNsL
+	id S932227AbXGTNug (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 09:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbXGTNu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:48:11 -0400
-Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:38205 "HELO
-	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756801AbXGTNsI (ORCPT
+	Fri, 20 Jul 2007 09:50:27 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:26954 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756801AbXGTNuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:48:08 -0400
-X-YMail-OSG: WwhSPkcVM1kUu0cSgQxJCiSKX9hPouZ49weFbehTJkCNKh3mIIlhv4pqHncR7UpPC9z2dtjayAC.9nSbEAz4.5MkweNh6kcH553WBkmn0O3ok7eb.zE-
-Date: Fri, 20 Jul 2007 08:48:01 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Michael Halcrow <mhalcrow@us.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       tchicks@us.ibm.com, trevor.highland@gmail.com, pregan@ic.sunysb.edu,
-       toml@us.ibm.com, sergeh@us.ibm.com, mike@halcrow.us
-Subject: Re: [PATCH 1/8] eCryptfs: Add key list structure; search keyring
-Message-ID: <20070720134801.GA22713@vino.hallyn.com>
-References: <20070719212453.GA13821@halcrow.austin.ibm.com> <20070719212546.GB13821@halcrow.austin.ibm.com>
+	Fri, 20 Jul 2007 09:50:25 -0400
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, openib-general@openib.org
+Subject: [PATCH 1/5] ehca: Supports large page MRs
+Date: Fri, 20 Jul 2007 16:01:51 +0200
+User-Agent: KMail/1.8.2
+Cc: raisch@de.ibm.com, stefan.roscher@de.ibm.com, fenkes@de.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070719212546.GB13821@halcrow.austin.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707201601.52277.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Halcrow (mhalcrow@us.ibm.com):
-> Add support structures for handling multiple keys. The list in
+From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+Date: Thu, 19 Jul 2007 20:48:04 +0200
+Subject: [PATCH 1/5] IB/ehca: Support large page MRs
 
-Excellent.
+Add support for MR pages larger than 4K on eHCA2. This reduces firmware
+memory consumption. If enabled via the mr_largepage module parameter, the MR
+page size will be determined based on the MR length and the hardware
+capabilities - if the MR is >= 16M, 16M pages are used, for example.
 
-Very glad to see this implemented.  A few comments inline.
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_classes.h |    9 +
+ drivers/infiniband/hw/ehca/ehca_main.c    |   18 ++-
+ drivers/infiniband/hw/ehca/ehca_mrmw.c    |  371 ++++++++++++++++++++++++-----
+ drivers/infiniband/hw/ehca/ehca_mrmw.h    |    2 +-
+ drivers/infiniband/hw/ehca/hcp_if.c       |   20 ++-
+ 5 files changed, 357 insertions(+), 63 deletions(-)
 
-> crypt_stat contains the key identifiers for all of the keys that
-> should be used for encrypting each file's File Encryption Key
-> (FEK). For now, each inode inherits this list from the mount-wide
-> crypt_stat struct, via the
-> ecryptfs_copy_mount_wide_sigs_to_inode_sigs() function.
-> 
-> This patch also removes the global key tfm from the mount-wide
-> crypt_stat struct, instead keeping a list of tfm's meant for dealing
-> with the various inode FEK's. eCryptfs will now search the user's
-> keyring for FEK's parsed from the existing file metadata, so the user
-> can make keys available at any time before or after mounting.
-> 
-> Now that multiple FEK packets can be written to the file metadata, we
-> need to be more meticulous about size limits. The updates to the code
-> for writing out packets to the file metadata makes sizes and limits
-> more explicit, uniformly expressed, and (hopefully) easier to follow.
-> 
-> Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
-> ---
->  fs/ecryptfs/crypto.c          |  208 ++++++++++--
->  fs/ecryptfs/ecryptfs_kernel.h |   71 ++++-
->  fs/ecryptfs/keystore.c        |  743 ++++++++++++++++++++++++++---------------
->  fs/ecryptfs/main.c            |  121 +++-----
->  4 files changed, 742 insertions(+), 401 deletions(-)
-> 
-> diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
-> index 6ac6306..4f7d895 100644
-> --- a/fs/ecryptfs/crypto.c
-> +++ b/fs/ecryptfs/crypto.c
-> @@ -204,6 +204,8 @@ void
->  ecryptfs_init_crypt_stat(struct ecryptfs_crypt_stat *crypt_stat)
->  {
->  	memset((void *)crypt_stat, 0, sizeof(struct ecryptfs_crypt_stat));
-> +	INIT_LIST_HEAD(&crypt_stat->keysig_list);
-> +	mutex_init(&crypt_stat->keysig_list_mutex);
->  	mutex_init(&crypt_stat->cs_mutex);
->  	mutex_init(&crypt_stat->cs_tfm_mutex);
->  	mutex_init(&crypt_stat->cs_hash_tfm_mutex);
-> @@ -218,20 +220,41 @@ ecryptfs_init_crypt_stat(struct ecryptfs_crypt_stat *crypt_stat)
->   */
->  void ecryptfs_destruct_crypt_stat(struct ecryptfs_crypt_stat *crypt_stat)
->  {
-> +	struct ecryptfs_key_sig *key_sig, *key_sig_tmp;
-> +
->  	if (crypt_stat->tfm)
->  		crypto_free_blkcipher(crypt_stat->tfm);
->  	if (crypt_stat->hash_tfm)
->  		crypto_free_hash(crypt_stat->hash_tfm);
-> +	mutex_lock(&crypt_stat->keysig_list_mutex);
+diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
+index 043e4fb..63b8b9f 100644
+--- a/drivers/infiniband/hw/ehca/ehca_classes.h
++++ b/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -100,6 +100,11 @@ struct ehca_sport {
+ 	struct ehca_sma_attr saved_attr;
+ };
+ 
++#define HCA_CAP_MR_PGSIZE_4K  1
++#define HCA_CAP_MR_PGSIZE_64K 2
++#define HCA_CAP_MR_PGSIZE_1M  4
++#define HCA_CAP_MR_PGSIZE_16M 8
++
+ struct ehca_shca {
+ 	struct ib_device ib_device;
+ 	struct ibmebus_dev *ibmebus_dev;
+@@ -115,6 +120,8 @@ struct ehca_shca {
+ 	struct h_galpas galpas;
+ 	struct mutex modify_mutex;
+ 	u64 hca_cap;
++	/* MR pgsize: bit 0-3 means 4K, 64K, 1M, 16M respectively */
++	u32 hca_cap_mr_pgsize;
+ 	int max_mtu;
+ };
+ 
+@@ -206,6 +213,7 @@ struct ehca_mr {
+ 	enum ehca_mr_flag flags;
+ 	u32 num_kpages;		/* number of kernel pages */
+ 	u32 num_hwpages;	/* number of hw pages to form MR */
++	u64 hwpage_size;	/* hw page size used for this MR */
+ 	int acl;		/* ACL (stored here for usage in reregister) */
+ 	u64 *start;		/* virtual start address (stored here for */
+ 				/* usage in reregister) */
+@@ -240,6 +248,7 @@ struct ehca_mr_pginfo {
+ 	enum ehca_mr_pgi_type type;
+ 	u64 num_kpages;
+ 	u64 kpage_cnt;
++	u64 hwpage_size;     /* hw page size used for this MR */
+ 	u64 num_hwpages;     /* number of hw pages */
+ 	u64 hwpage_cnt;      /* counter for hw pages */
+ 	u64 next_hwpage;     /* next hw page in buffer/chunk/listelem */
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 36377c6..34661c3 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -63,6 +63,7 @@ int ehca_port_act_time = 30;
+ int ehca_poll_all_eqs  = 1;
+ int ehca_static_rate   = -1;
+ int ehca_scaling_code  = 0;
++int ehca_mr_largepage  = 0;
+ 
+ module_param_named(open_aqp1,     ehca_open_aqp1,     int, 0);
+ module_param_named(debug_level,   ehca_debug_level,   int, 0);
+@@ -72,7 +73,8 @@ module_param_named(use_hp_mr,     ehca_use_hp_mr,     int, 0);
+ module_param_named(port_act_time, ehca_port_act_time, int, 0);
+ module_param_named(poll_all_eqs,  ehca_poll_all_eqs,  int, 0);
+ module_param_named(static_rate,   ehca_static_rate,   int, 0);
+-module_param_named(scaling_code,   ehca_scaling_code,   int, 0);
++module_param_named(scaling_code,  ehca_scaling_code,  int, 0);
++module_param_named(mr_largepage,  ehca_mr_largepage,  int, 0);
+ 
+ MODULE_PARM_DESC(open_aqp1,
+ 		 "AQP1 on startup (0: no (default), 1: yes)");
+@@ -95,6 +97,9 @@ MODULE_PARM_DESC(static_rate,
+ 		 "set permanent static rate (default: disabled)");
+ MODULE_PARM_DESC(scaling_code,
+ 		 "set scaling code (0: disabled/default, 1: enabled)");
++MODULE_PARM_DESC(mr_largepage,
++		 "use large page for MR (0: use PAGE_SIZE (default), "
++		 "1: use large page depending on MR size");
+ 
+ DEFINE_RWLOCK(ehca_qp_idr_lock);
+ DEFINE_RWLOCK(ehca_cq_idr_lock);
+@@ -295,6 +300,8 @@ int ehca_sense_attributes(struct ehca_shca *shca)
+ 		if (EHCA_BMASK_GET(hca_cap_descr[i].mask, shca->hca_cap))
+ 			ehca_gen_dbg("   %s", hca_cap_descr[i].descr);
+ 
++	shca->hca_cap_mr_pgsize = rblock->memory_page_size_supported;
++
+ 	port = (struct hipz_query_port *)rblock;
+ 	h_ret = hipz_h_query_port(shca->ipz_hca_handle, 1, port);
+ 	if (h_ret != H_SUCCESS) {
+@@ -590,6 +597,14 @@ static ssize_t ehca_show_adapter_handle(struct device *dev,
+ }
+ static DEVICE_ATTR(adapter_handle, S_IRUGO, ehca_show_adapter_handle, NULL);
+ 
++static ssize_t ehca_show_mr_largepage(struct device *dev,
++				      struct device_attribute *attr,
++				      char *buf)
++{
++	return sprintf(buf, "%d\n", ehca_mr_largepage);
++}
++static DEVICE_ATTR(mr_largepage, S_IRUGO, ehca_show_mr_largepage, NULL);
++
+ static struct attribute *ehca_dev_attrs[] = {
+ 	&dev_attr_adapter_handle.attr,
+ 	&dev_attr_num_ports.attr,
+@@ -606,6 +621,7 @@ static struct attribute *ehca_dev_attrs[] = {
+ 	&dev_attr_cur_mw.attr,
+ 	&dev_attr_max_pd.attr,
+ 	&dev_attr_max_ah.attr,
++	&dev_attr_mr_largepage.attr,
+ 	NULL
+ };
+ 
+diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
+index 6262c54..ba28783 100644
+--- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
++++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
+@@ -5,6 +5,7 @@
+  *
+  *  Authors: Dietmar Decker <ddecker@de.ibm.com>
+  *           Christoph Raisch <raisch@de.ibm.com>
++ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+  *
+  *  Copyright (c) 2005 IBM Corporation
+  *
+@@ -56,6 +57,37 @@
+ static struct kmem_cache *mr_cache;
+ static struct kmem_cache *mw_cache;
+ 
++enum ehca_mr_pgsize {
++	EHCA_MR_PGSIZE4K  = 0x1000L,
++	EHCA_MR_PGSIZE64K = 0x10000L,
++	EHCA_MR_PGSIZE1M  = 0x100000L,
++	EHCA_MR_PGSIZE16M = 0x1000000L
++};
++
++extern int ehca_mr_largepage;
++
++static u32 ehca_encode_hwpage_size(u32 pgsize)
++{
++	u32 idx = 0;
++	pgsize >>= 12;
++	/*
++	 * map mr page size into hw code:
++	 * 0, 1, 2, 3 for 4K, 64K, 1M, 64M
++	 */
++	while (!(pgsize & 1)) {
++		idx++;
++		pgsize >>= 4;
++	}
++	return idx;
++}
++
++static u64 ehca_get_max_hwpage_size(struct ehca_shca *shca)
++{
++	if (shca->hca_cap_mr_pgsize & HCA_CAP_MR_PGSIZE_16M)
++		return EHCA_MR_PGSIZE16M;
++	return EHCA_MR_PGSIZE4K;
++}
++
+ static struct ehca_mr *ehca_mr_new(void)
+ {
+ 	struct ehca_mr *me;
+@@ -207,19 +239,23 @@ struct ib_mr *ehca_reg_phys_mr(struct ib_pd *pd,
+ 		struct ehca_mr_pginfo pginfo;
+ 		u32 num_kpages;
+ 		u32 num_hwpages;
++		u64 hw_pgsize;
+ 
+ 		num_kpages = NUM_CHUNKS(((u64)iova_start % PAGE_SIZE) + size,
+ 					PAGE_SIZE);
+-		num_hwpages = NUM_CHUNKS(((u64)iova_start % EHCA_PAGESIZE) +
+-					 size, EHCA_PAGESIZE);
++		/* for kernel space we try most possible pgsize */
++		hw_pgsize = ehca_get_max_hwpage_size(shca);
++		num_hwpages = NUM_CHUNKS(((u64)iova_start % hw_pgsize) + size,
++					 hw_pgsize);
+ 		memset(&pginfo, 0, sizeof(pginfo));
+ 		pginfo.type = EHCA_MR_PGI_PHYS;
+ 		pginfo.num_kpages = num_kpages;
++		pginfo.hwpage_size = hw_pgsize;
+ 		pginfo.num_hwpages = num_hwpages;
+ 		pginfo.u.phy.num_phys_buf = num_phys_buf;
+ 		pginfo.u.phy.phys_buf_array = phys_buf_array;
+-		pginfo.next_hwpage = (((u64)iova_start & ~PAGE_MASK) /
+-				      EHCA_PAGESIZE);
++		pginfo.next_hwpage =
++			((u64)iova_start & ~(hw_pgsize - 1)) / hw_pgsize;
+ 
+ 		ret = ehca_reg_mr(shca, e_mr, iova_start, size, mr_access_flags,
+ 				  e_pd, &pginfo, &e_mr->ib.ib_mr.lkey,
+@@ -259,6 +295,7 @@ struct ib_mr *ehca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
+ 	int ret;
+ 	u32 num_kpages;
+ 	u32 num_hwpages;
++	u64 hwpage_size;
+ 
+ 	if (!pd) {
+ 		ehca_gen_err("bad pd=%p", pd);
+@@ -309,16 +346,32 @@ struct ib_mr *ehca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
+ 
+ 	/* determine number of MR pages */
+ 	num_kpages = NUM_CHUNKS((virt % PAGE_SIZE) + length, PAGE_SIZE);
+-	num_hwpages = NUM_CHUNKS((virt % EHCA_PAGESIZE) + length,
+-				 EHCA_PAGESIZE);
++	/* select proper hw_pgsize */
++	if (ehca_mr_largepage &&
++	    (shca->hca_cap_mr_pgsize & HCA_CAP_MR_PGSIZE_16M)) {
++		if (length <= EHCA_MR_PGSIZE4K
++		    && PAGE_SIZE == EHCA_MR_PGSIZE4K)
++			hwpage_size = EHCA_MR_PGSIZE4K;
++		else if (length <= EHCA_MR_PGSIZE64K)
++			hwpage_size = EHCA_MR_PGSIZE64K;
++		else if (length <= EHCA_MR_PGSIZE1M)
++			hwpage_size = EHCA_MR_PGSIZE1M;
++		else
++			hwpage_size = EHCA_MR_PGSIZE16M;
++	} else
++		hwpage_size = EHCA_MR_PGSIZE4K;
++	ehca_dbg(pd->device, "hwpage_size=%lx", hwpage_size);
+ 
++reg_user_mr_fallback:
++	num_hwpages = NUM_CHUNKS((virt % hwpage_size) + length, hwpage_size);
+ 	/* register MR on HCA */
+ 	memset(&pginfo, 0, sizeof(pginfo));
+ 	pginfo.type = EHCA_MR_PGI_USER;
++	pginfo.hwpage_size = hwpage_size;
+ 	pginfo.num_kpages = num_kpages;
+ 	pginfo.num_hwpages = num_hwpages;
+ 	pginfo.u.usr.region = e_mr->umem;
+-	pginfo.next_hwpage = e_mr->umem->offset / EHCA_PAGESIZE;
++	pginfo.next_hwpage = e_mr->umem->offset / hwpage_size;
+ 	pginfo.u.usr.next_chunk = list_prepare_entry(pginfo.u.usr.next_chunk,
+ 						     (&e_mr->umem->chunk_list),
+ 						     list);
+@@ -326,6 +379,18 @@ struct ib_mr *ehca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
+ 	ret = ehca_reg_mr(shca, e_mr, (u64 *)virt, length, mr_access_flags,
+ 			  e_pd, &pginfo, &e_mr->ib.ib_mr.lkey,
+ 			  &e_mr->ib.ib_mr.rkey);
++	if (ret == -EINVAL && pginfo.hwpage_size > PAGE_SIZE) {
++		ehca_warn(pd->device, "failed to register mr "
++			  "with hwpage_size=%lx", hwpage_size);
++		ehca_info(pd->device, "try to register mr with "
++			  "kpage_size=%lx", PAGE_SIZE);
++		/*
++		 * this means kpages are not contiguous for a hw page
++		 * try kernel page size as fallback solution
++		 */
++		hwpage_size = PAGE_SIZE;
++		goto reg_user_mr_fallback;
++	}
+ 	if (ret) {
+ 		ib_mr = ERR_PTR(ret);
+ 		goto reg_user_mr_exit2;
+@@ -452,6 +517,8 @@ int ehca_rereg_phys_mr(struct ib_mr *mr,
+ 	new_pd = container_of(mr->pd, struct ehca_pd, ib_pd);
+ 
+ 	if (mr_rereg_mask & IB_MR_REREG_TRANS) {
++		u64 hw_pgsize = ehca_get_max_hwpage_size(shca);
++
+ 		new_start = iova_start;	/* change address */
+ 		/* check physical buffer list and calculate size */
+ 		ret = ehca_mr_chk_buf_and_calc_size(phys_buf_array,
+@@ -468,16 +535,17 @@ int ehca_rereg_phys_mr(struct ib_mr *mr,
+ 		}
+ 		num_kpages = NUM_CHUNKS(((u64)new_start % PAGE_SIZE) +
+ 					new_size, PAGE_SIZE);
+-		num_hwpages = NUM_CHUNKS(((u64)new_start % EHCA_PAGESIZE) +
+-					 new_size, EHCA_PAGESIZE);
++		num_hwpages = NUM_CHUNKS(((u64)new_start % hw_pgsize) +
++					 new_size, hw_pgsize);
+ 		memset(&pginfo, 0, sizeof(pginfo));
+ 		pginfo.type = EHCA_MR_PGI_PHYS;
+ 		pginfo.num_kpages = num_kpages;
++		pginfo.hwpage_size = hw_pgsize;
+ 		pginfo.num_hwpages = num_hwpages;
+ 		pginfo.u.phy.num_phys_buf = num_phys_buf;
+ 		pginfo.u.phy.phys_buf_array = phys_buf_array;
+-		pginfo.next_hwpage = (((u64)iova_start & ~PAGE_MASK) /
+-				      EHCA_PAGESIZE);
++		pginfo.next_hwpage =
++			((u64)iova_start & ~(hw_pgsize - 1)) / hw_pgsize;
+ 	}
+ 	if (mr_rereg_mask & IB_MR_REREG_ACCESS)
+ 		new_acl = mr_access_flags;
+@@ -709,6 +777,7 @@ struct ib_fmr *ehca_alloc_fmr(struct ib_pd *pd,
+ 	int ret;
+ 	u32 tmp_lkey, tmp_rkey;
+ 	struct ehca_mr_pginfo pginfo;
++	u64 hw_pgsize;
+ 
+ 	/* check other parameters */
+ 	if (((mr_access_flags & IB_ACCESS_REMOTE_WRITE) &&
+@@ -738,8 +807,8 @@ struct ib_fmr *ehca_alloc_fmr(struct ib_pd *pd,
+ 		ib_fmr = ERR_PTR(-EINVAL);
+ 		goto alloc_fmr_exit0;
+ 	}
+-	if (((1 << fmr_attr->page_shift) != EHCA_PAGESIZE) &&
+-	    ((1 << fmr_attr->page_shift) != PAGE_SIZE)) {
++	hw_pgsize = ehca_get_max_hwpage_size(shca);
++	if ((1 << fmr_attr->page_shift) != hw_pgsize) {
+ 		ehca_err(pd->device, "unsupported fmr_attr->page_shift=%x",
+ 			 fmr_attr->page_shift);
+ 		ib_fmr = ERR_PTR(-EINVAL);
+@@ -755,6 +824,10 @@ struct ib_fmr *ehca_alloc_fmr(struct ib_pd *pd,
+ 
+ 	/* register MR on HCA */
+ 	memset(&pginfo, 0, sizeof(pginfo));
++	/*
++	 * pginfo.num_hwpages==0, ie register_rpages() will not be called
++	 * but deferred to map_phys_fmr()
++	 */
+ 	ret = ehca_reg_mr(shca, e_fmr, NULL,
+ 			  fmr_attr->max_pages * (1 << fmr_attr->page_shift),
+ 			  mr_access_flags, e_pd, &pginfo,
+@@ -765,6 +838,7 @@ struct ib_fmr *ehca_alloc_fmr(struct ib_pd *pd,
+ 	}
+ 
+ 	/* successful */
++	e_fmr->hwpage_size = hw_pgsize;
+ 	e_fmr->fmr_page_size = 1 << fmr_attr->page_shift;
+ 	e_fmr->fmr_max_pages = fmr_attr->max_pages;
+ 	e_fmr->fmr_max_maps = fmr_attr->max_maps;
+@@ -822,10 +896,12 @@ int ehca_map_phys_fmr(struct ib_fmr *fmr,
+ 	memset(&pginfo, 0, sizeof(pginfo));
+ 	pginfo.type = EHCA_MR_PGI_FMR;
+ 	pginfo.num_kpages = list_len;
+-	pginfo.num_hwpages = list_len * (e_fmr->fmr_page_size / EHCA_PAGESIZE);
++	pginfo.hwpage_size = e_fmr->hwpage_size;
++	pginfo.num_hwpages =
++		list_len * e_fmr->fmr_page_size / pginfo.hwpage_size;
+ 	pginfo.u.fmr.page_list = page_list;
+-	pginfo.next_hwpage = ((iova & (e_fmr->fmr_page_size-1)) /
+-			      EHCA_PAGESIZE);
++	pginfo.next_hwpage =
++		(iova & (e_fmr->fmr_page_size-1)) / pginfo.hwpage_size;
+ 	pginfo.u.fmr.fmr_pgsize = e_fmr->fmr_page_size;
+ 
+ 	ret = ehca_rereg_mr(shca, e_fmr, (u64 *)iova,
+@@ -964,7 +1040,7 @@ int ehca_reg_mr(struct ehca_shca *shca,
+ 	struct ehca_mr_hipzout_parms hipzout;
+ 
+ 	ehca_mrmw_map_acl(acl, &hipz_acl);
+-	ehca_mrmw_set_pgsize_hipz_acl(&hipz_acl);
++	ehca_mrmw_set_pgsize_hipz_acl(pginfo->hwpage_size, &hipz_acl);
+ 	if (ehca_use_hp_mr == 1)
+ 		hipz_acl |= 0x00000001;
+ 
+@@ -987,6 +1063,7 @@ int ehca_reg_mr(struct ehca_shca *shca,
+ 	/* successful registration */
+ 	e_mr->num_kpages = pginfo->num_kpages;
+ 	e_mr->num_hwpages = pginfo->num_hwpages;
++	e_mr->hwpage_size = pginfo->hwpage_size;
+ 	e_mr->start = iova_start;
+ 	e_mr->size = size;
+ 	e_mr->acl = acl;
+@@ -1029,6 +1106,9 @@ int ehca_reg_mr_rpages(struct ehca_shca *shca,
+ 	u32 i;
+ 	u64 *kpage;
+ 
++	if (!pginfo->num_hwpages) /* in case of fmr */
++		return 0;
++
+ 	kpage = ehca_alloc_fw_ctrlblock(GFP_KERNEL);
+ 	if (!kpage) {
+ 		ehca_err(&shca->ib_device, "kpage alloc failed");
+@@ -1036,7 +1116,7 @@ int ehca_reg_mr_rpages(struct ehca_shca *shca,
+ 		goto ehca_reg_mr_rpages_exit0;
+ 	}
+ 
+-	/* max 512 pages per shot */
++	/* max MAX_RPAGES ehca mr pages per register call */
+ 	for (i = 0; i < NUM_CHUNKS(pginfo->num_hwpages, MAX_RPAGES); i++) {
+ 
+ 		if (i == NUM_CHUNKS(pginfo->num_hwpages, MAX_RPAGES) - 1) {
+@@ -1049,8 +1129,8 @@ int ehca_reg_mr_rpages(struct ehca_shca *shca,
+ 		ret = ehca_set_pagebuf(pginfo, rnum, kpage);
+ 		if (ret) {
+ 			ehca_err(&shca->ib_device, "ehca_set_pagebuf "
+-					 "bad rc, ret=%x rnum=%x kpage=%p",
+-					 ret, rnum, kpage);
++				 "bad rc, ret=%x rnum=%x kpage=%p",
++				 ret, rnum, kpage);
+ 			goto ehca_reg_mr_rpages_exit1;
+ 		}
+ 
+@@ -1065,9 +1145,10 @@ int ehca_reg_mr_rpages(struct ehca_shca *shca,
+ 		} else
+ 			rpage = *kpage;
+ 
+-		h_ret = hipz_h_register_rpage_mr(shca->ipz_hca_handle, e_mr,
+-						 0, /* pagesize 4k */
+-						 0, rpage, rnum);
++		h_ret = hipz_h_register_rpage_mr(
++			shca->ipz_hca_handle, e_mr,
++			ehca_encode_hwpage_size(pginfo->hwpage_size),
++			0, rpage, rnum);
+ 
+ 		if (i == NUM_CHUNKS(pginfo->num_hwpages, MAX_RPAGES) - 1) {
+ 			/*
+@@ -1131,7 +1212,7 @@ inline int ehca_rereg_mr_rereg1(struct ehca_shca *shca,
+ 	struct ehca_mr_hipzout_parms hipzout;
+ 
+ 	ehca_mrmw_map_acl(acl, &hipz_acl);
+-	ehca_mrmw_set_pgsize_hipz_acl(&hipz_acl);
++	ehca_mrmw_set_pgsize_hipz_acl(pginfo->hwpage_size, &hipz_acl);
+ 
+ 	kpage = ehca_alloc_fw_ctrlblock(GFP_KERNEL);
+ 	if (!kpage) {
+@@ -1182,6 +1263,7 @@ inline int ehca_rereg_mr_rereg1(struct ehca_shca *shca,
+ 		 */
+ 		e_mr->num_kpages = pginfo->num_kpages;
+ 		e_mr->num_hwpages = pginfo->num_hwpages;
++		e_mr->hwpage_size = pginfo->hwpage_size;
+ 		e_mr->start = iova_start;
+ 		e_mr->size = size;
+ 		e_mr->acl = acl;
+@@ -1268,13 +1350,14 @@ int ehca_rereg_mr(struct ehca_shca *shca,
+ 
+ 		/* set some MR values */
+ 		e_mr->flags = save_mr.flags;
++		e_mr->hwpage_size = save_mr.hwpage_size;
+ 		e_mr->fmr_page_size = save_mr.fmr_page_size;
+ 		e_mr->fmr_max_pages = save_mr.fmr_max_pages;
+ 		e_mr->fmr_max_maps = save_mr.fmr_max_maps;
+ 		e_mr->fmr_map_cnt = save_mr.fmr_map_cnt;
+ 
+ 		ret = ehca_reg_mr(shca, e_mr, iova_start, size, acl,
+-				      e_pd, pginfo, lkey, rkey);
++				  e_pd, pginfo, lkey, rkey);
+ 		if (ret) {
+ 			u32 offset = (u64)(&e_mr->flags) - (u64)e_mr;
+ 			memcpy(&e_mr->flags, &(save_mr.flags),
+@@ -1355,6 +1438,7 @@ int ehca_unmap_one_fmr(struct ehca_shca *shca,
+ 
+ 	/* set some MR values */
+ 	e_fmr->flags = save_fmr.flags;
++	e_fmr->hwpage_size = save_fmr.hwpage_size;
+ 	e_fmr->fmr_page_size = save_fmr.fmr_page_size;
+ 	e_fmr->fmr_max_pages = save_fmr.fmr_max_pages;
+ 	e_fmr->fmr_max_maps = save_fmr.fmr_max_maps;
+@@ -1363,8 +1447,6 @@ int ehca_unmap_one_fmr(struct ehca_shca *shca,
+ 
+ 	memset(&pginfo, 0, sizeof(pginfo));
+ 	pginfo.type = EHCA_MR_PGI_FMR;
+-	pginfo.num_kpages = 0;
+-	pginfo.num_hwpages = 0;
+ 	ret = ehca_reg_mr(shca, e_fmr, NULL,
+ 			  (e_fmr->fmr_max_pages * e_fmr->fmr_page_size),
+ 			  e_fmr->acl, e_pd, &pginfo, &tmp_lkey,
+@@ -1373,7 +1455,6 @@ int ehca_unmap_one_fmr(struct ehca_shca *shca,
+ 		u32 offset = (u64)(&e_fmr->flags) - (u64)e_fmr;
+ 		memcpy(&e_fmr->flags, &(save_mr.flags),
+ 		       sizeof(struct ehca_mr) - offset);
+-		goto ehca_unmap_one_fmr_exit0;
+ 	}
+ 
+ ehca_unmap_one_fmr_exit0:
+@@ -1401,7 +1482,7 @@ int ehca_reg_smr(struct ehca_shca *shca,
+ 	struct ehca_mr_hipzout_parms hipzout;
+ 
+ 	ehca_mrmw_map_acl(acl, &hipz_acl);
+-	ehca_mrmw_set_pgsize_hipz_acl(&hipz_acl);
++	ehca_mrmw_set_pgsize_hipz_acl(e_origmr->hwpage_size, &hipz_acl);
+ 
+ 	h_ret = hipz_h_register_smr(shca->ipz_hca_handle, e_newmr, e_origmr,
+ 				    (u64)iova_start, hipz_acl, e_pd->fw_pd,
+@@ -1420,6 +1501,7 @@ int ehca_reg_smr(struct ehca_shca *shca,
+ 	/* successful registration */
+ 	e_newmr->num_kpages = e_origmr->num_kpages;
+ 	e_newmr->num_hwpages = e_origmr->num_hwpages;
++	e_newmr->hwpage_size   = e_origmr->hwpage_size;
+ 	e_newmr->start = iova_start;
+ 	e_newmr->size = e_origmr->size;
+ 	e_newmr->acl = acl;
+@@ -1452,6 +1534,7 @@ int ehca_reg_internal_maxmr(
+ 	struct ib_phys_buf ib_pbuf;
+ 	u32 num_kpages;
+ 	u32 num_hwpages;
++	u64 hw_pgsize;
+ 
+ 	e_mr = ehca_mr_new();
+ 	if (!e_mr) {
+@@ -1468,13 +1551,15 @@ int ehca_reg_internal_maxmr(
+ 	ib_pbuf.size = size_maxmr;
+ 	num_kpages = NUM_CHUNKS(((u64)iova_start % PAGE_SIZE) + size_maxmr,
+ 				PAGE_SIZE);
+-	num_hwpages = NUM_CHUNKS(((u64)iova_start % EHCA_PAGESIZE) + size_maxmr,
+-				 EHCA_PAGESIZE);
++	hw_pgsize = ehca_get_max_hwpage_size(shca);
++	num_hwpages = NUM_CHUNKS(((u64)iova_start % hw_pgsize) + size_maxmr,
++				 hw_pgsize);
+ 
+ 	memset(&pginfo, 0, sizeof(pginfo));
+ 	pginfo.type = EHCA_MR_PGI_PHYS;
+ 	pginfo.num_kpages = num_kpages;
+ 	pginfo.num_hwpages = num_hwpages;
++	pginfo.hwpage_size = hw_pgsize;
+ 	pginfo.u.phy.num_phys_buf = 1;
+ 	pginfo.u.phy.phys_buf_array = &ib_pbuf;
+ 
+@@ -1523,7 +1608,7 @@ int ehca_reg_maxmr(struct ehca_shca *shca,
+ 	struct ehca_mr_hipzout_parms hipzout;
+ 
+ 	ehca_mrmw_map_acl(acl, &hipz_acl);
+-	ehca_mrmw_set_pgsize_hipz_acl(&hipz_acl);
++	ehca_mrmw_set_pgsize_hipz_acl(e_origmr->hwpage_size, &hipz_acl);
+ 
+ 	h_ret = hipz_h_register_smr(shca->ipz_hca_handle, e_newmr, e_origmr,
+ 				    (u64)iova_start, hipz_acl, e_pd->fw_pd,
+@@ -1539,6 +1624,7 @@ int ehca_reg_maxmr(struct ehca_shca *shca,
+ 	/* successful registration */
+ 	e_newmr->num_kpages = e_origmr->num_kpages;
+ 	e_newmr->num_hwpages = e_origmr->num_hwpages;
++	e_newmr->hwpage_size = e_origmr->hwpage_size;
+ 	e_newmr->start = iova_start;
+ 	e_newmr->size = e_origmr->size;
+ 	e_newmr->acl = acl;
+@@ -1684,6 +1770,7 @@ static int ehca_set_pagebuf_user1(struct ehca_mr_pginfo *pginfo,
+ 	u64 pgaddr;
+ 	u32 i = 0;
+ 	u32 j = 0;
++	int hwpages_per_kpage = PAGE_SIZE / pginfo->hwpage_size;
+ 
+ 	/* loop over desired chunk entries */
+ 	chunk      = pginfo->u.usr.next_chunk;
+@@ -1695,7 +1782,7 @@ static int ehca_set_pagebuf_user1(struct ehca_mr_pginfo *pginfo,
+ 				<< PAGE_SHIFT ;
+ 			*kpage = phys_to_abs(pgaddr +
+ 					     (pginfo->next_hwpage *
+-					      EHCA_PAGESIZE));
++					      pginfo->hwpage_size));
+ 			if ( !(*kpage) ) {
+ 				ehca_gen_err("pgaddr=%lx "
+ 					     "chunk->page_list[i]=%lx "
+@@ -1708,8 +1795,7 @@ static int ehca_set_pagebuf_user1(struct ehca_mr_pginfo *pginfo,
+ 			(pginfo->hwpage_cnt)++;
+ 			(pginfo->next_hwpage)++;
+ 			kpage++;
+-			if (pginfo->next_hwpage %
+-			    (PAGE_SIZE / EHCA_PAGESIZE) == 0) {
++			if (pginfo->next_hwpage % hwpages_per_kpage == 0) {
+ 				(pginfo->kpage_cnt)++;
+ 				(pginfo->u.usr.next_nmap)++;
+ 				pginfo->next_hwpage = 0;
+@@ -1738,6 +1824,143 @@ static int ehca_set_pagebuf_user1(struct ehca_mr_pginfo *pginfo,
+ 	return ret;
+ }
+ 
++/*
++ * check given pages for contiguous layout
++ * last page addr is returned in prev_pgaddr for further check
++ */
++static int ehca_check_kpages_per_ate(struct scatterlist *page_list,
++				     int start_idx, int end_idx,
++				     u64 *prev_pgaddr)
++{
++	int t;
++	for (t = start_idx; t <= end_idx; t++) {
++		u64 pgaddr = page_to_pfn(page_list[t].page) << PAGE_SHIFT;
++		ehca_gen_dbg("chunk_page=%lx value=%016lx", pgaddr,
++			     *(u64 *)abs_to_virt(phys_to_abs(pgaddr)));
++		if (pgaddr - PAGE_SIZE != *prev_pgaddr) {
++			ehca_gen_err("uncontiguous page found pgaddr=%lx "
++				     "prev_pgaddr=%lx page_list_i=%x",
++				     pgaddr, *prev_pgaddr, t);
++			return -EINVAL;
++		}
++		*prev_pgaddr = pgaddr;
++	}
++	return 0;
++}
++
++/* PAGE_SIZE < pginfo->hwpage_size */
++static int ehca_set_pagebuf_user2(struct ehca_mr_pginfo *pginfo,
++				  u32 number,
++				  u64 *kpage)
++{
++	int ret = 0;
++	struct ib_umem_chunk *prev_chunk;
++	struct ib_umem_chunk *chunk;
++	u64 pgaddr, prev_pgaddr;
++	u32 i = 0;
++	u32 j = 0;
++	int kpages_per_hwpage = pginfo->hwpage_size / PAGE_SIZE;
++	int nr_kpages = kpages_per_hwpage;
++
++	/* loop over desired chunk entries */
++	chunk      = pginfo->u.usr.next_chunk;
++	prev_chunk = pginfo->u.usr.next_chunk;
++	list_for_each_entry_continue(
++		chunk, (&(pginfo->u.usr.region->chunk_list)), list) {
++		for (i = pginfo->u.usr.next_nmap; i < chunk->nmap; ) {
++			if (nr_kpages == kpages_per_hwpage) {
++				pgaddr = ( page_to_pfn(chunk->page_list[i].page)
++					   << PAGE_SHIFT );
++				*kpage = phys_to_abs(pgaddr);
++				if ( !(*kpage) ) {
++					ehca_gen_err("pgaddr=%lx i=%x",
++						     pgaddr, i);
++					ret = -EFAULT;
++					return ret;
++				}
++				/*
++				 * The first page in a hwpage must be aligned;
++				 * the first MR page is exempt from this rule.
++				 */
++				if (pgaddr & (pginfo->hwpage_size - 1)) {
++					if (pginfo->hwpage_cnt) {
++						ehca_gen_err(
++							"invalid alignment "
++							"pgaddr=%lx i=%x "
++							"mr_pgsize=%lx",
++							pgaddr, i,
++							pginfo->hwpage_size);
++						ret = -EFAULT;
++						return ret;
++					}
++					/* first MR page */
++					pginfo->kpage_cnt =
++						(pgaddr &
++						 (pginfo->hwpage_size - 1)) >>
++						PAGE_SHIFT;
++					nr_kpages -= pginfo->kpage_cnt;
++					*kpage = phys_to_abs(
++						pgaddr &
++						~(pginfo->hwpage_size - 1));
++				}
++				ehca_gen_dbg("kpage=%lx chunk_page=%lx "
++					     "value=%016lx", *kpage, pgaddr,
++					     *(u64 *)abs_to_virt(
++						     phys_to_abs(pgaddr)));
++				prev_pgaddr = pgaddr;
++				i++;
++				pginfo->kpage_cnt++;
++				pginfo->u.usr.next_nmap++;
++				nr_kpages--;
++				if (!nr_kpages)
++					goto next_kpage;
++				continue;
++			}
++			if (i + nr_kpages > chunk->nmap) {
++				ret = ehca_check_kpages_per_ate(
++					chunk->page_list, i,
++					chunk->nmap - 1, &prev_pgaddr);
++				if (ret) return ret;
++				pginfo->kpage_cnt += chunk->nmap - i;
++				pginfo->u.usr.next_nmap += chunk->nmap - i;
++				nr_kpages -= chunk->nmap - i;
++				break;
++			}
++
++			ret = ehca_check_kpages_per_ate(chunk->page_list, i,
++							i + nr_kpages - 1,
++							&prev_pgaddr);
++			if (ret) return ret;
++			i += nr_kpages;
++			pginfo->kpage_cnt += nr_kpages;
++			pginfo->u.usr.next_nmap += nr_kpages;
++next_kpage:
++			nr_kpages = kpages_per_hwpage;
++			(pginfo->hwpage_cnt)++;
++			kpage++;
++			j++;
++			if (j >= number) break;
++		}
++		if ((pginfo->u.usr.next_nmap >= chunk->nmap) &&
++		    (j >= number)) {
++			pginfo->u.usr.next_nmap = 0;
++			prev_chunk = chunk;
++			break;
++		} else if (pginfo->u.usr.next_nmap >= chunk->nmap) {
++			pginfo->u.usr.next_nmap = 0;
++			prev_chunk = chunk;
++		} else if (j >= number)
++			break;
++		else
++			prev_chunk = chunk;
++	}
++	pginfo->u.usr.next_chunk =
++		list_prepare_entry(prev_chunk,
++				   (&(pginfo->u.usr.region->chunk_list)),
++				   list);
++	return ret;
++}
++
+ int ehca_set_pagebuf_phys(struct ehca_mr_pginfo *pginfo,
+ 			  u32 number,
+ 			  u64 *kpage)
+@@ -1750,9 +1973,10 @@ int ehca_set_pagebuf_phys(struct ehca_mr_pginfo *pginfo,
+ 	/* loop over desired phys_buf_array entries */
+ 	while (i < number) {
+ 		pbuf   = pginfo->u.phy.phys_buf_array + pginfo->u.phy.next_buf;
+-		num_hw  = NUM_CHUNKS((pbuf->addr % EHCA_PAGESIZE) +
+-				     pbuf->size, EHCA_PAGESIZE);
+-		offs_hw = (pbuf->addr & ~PAGE_MASK) / EHCA_PAGESIZE;
++		num_hw  = NUM_CHUNKS((pbuf->addr % pginfo->hwpage_size) +
++				     pbuf->size, pginfo->hwpage_size);
++		offs_hw = (pbuf->addr & ~(pginfo->hwpage_size - 1)) /
++			pginfo->hwpage_size;
+ 		while (pginfo->next_hwpage < offs_hw + num_hw) {
+ 			/* sanity check */
+ 			if ((pginfo->kpage_cnt >= pginfo->num_kpages) ||
+@@ -1768,21 +1992,23 @@ int ehca_set_pagebuf_phys(struct ehca_mr_pginfo *pginfo,
+ 				return -EFAULT;
+ 			}
+ 			*kpage = phys_to_abs(
+-				(pbuf->addr & EHCA_PAGEMASK)
+-				+ (pginfo->next_hwpage * EHCA_PAGESIZE));
++				(pbuf->addr & ~(pginfo->hwpage_size - 1)) +
++				(pginfo->next_hwpage * pginfo->hwpage_size));
+ 			if ( !(*kpage) && pbuf->addr ) {
+-				ehca_gen_err("pbuf->addr=%lx "
+-					     "pbuf->size=%lx "
++				ehca_gen_err("pbuf->addr=%lx pbuf->size=%lx "
+ 					     "next_hwpage=%lx", pbuf->addr,
+-					     pbuf->size,
+-					     pginfo->next_hwpage);
++					     pbuf->size, pginfo->next_hwpage);
+ 				return -EFAULT;
+ 			}
+ 			(pginfo->hwpage_cnt)++;
+ 			(pginfo->next_hwpage)++;
+-			if (pginfo->next_hwpage %
+-			    (PAGE_SIZE / EHCA_PAGESIZE) == 0)
+-				(pginfo->kpage_cnt)++;
++			if (PAGE_SIZE >= pginfo->hwpage_size) {
++				if (pginfo->next_hwpage %
++				    (PAGE_SIZE / pginfo->hwpage_size) == 0)
++					(pginfo->kpage_cnt)++;
++			} else
++				pginfo->kpage_cnt += pginfo->hwpage_size /
++					PAGE_SIZE;
+ 			kpage++;
+ 			i++;
+ 			if (i >= number) break;
+@@ -1806,8 +2032,8 @@ int ehca_set_pagebuf_fmr(struct ehca_mr_pginfo *pginfo,
+ 	/* loop over desired page_list entries */
+ 	fmrlist = pginfo->u.fmr.page_list + pginfo->u.fmr.next_listelem;
+ 	for (i = 0; i < number; i++) {
+-		*kpage = phys_to_abs((*fmrlist & EHCA_PAGEMASK) +
+-				     pginfo->next_hwpage * EHCA_PAGESIZE);
++		*kpage = phys_to_abs((*fmrlist & ~(pginfo->hwpage_size - 1)) +
++				     pginfo->next_hwpage * pginfo->hwpage_size);
+ 		if ( !(*kpage) ) {
+ 			ehca_gen_err("*fmrlist=%lx fmrlist=%p "
+ 				     "next_listelem=%lx next_hwpage=%lx",
+@@ -1817,15 +2043,38 @@ int ehca_set_pagebuf_fmr(struct ehca_mr_pginfo *pginfo,
+ 			return -EFAULT;
+ 		}
+ 		(pginfo->hwpage_cnt)++;
+-		(pginfo->next_hwpage)++;
+-		kpage++;
+-		if (pginfo->next_hwpage %
+-		    (pginfo->u.fmr.fmr_pgsize / EHCA_PAGESIZE) == 0) {
+-			(pginfo->kpage_cnt)++;
+-			(pginfo->u.fmr.next_listelem)++;
+-			fmrlist++;
+-			pginfo->next_hwpage = 0;
++		if (pginfo->u.fmr.fmr_pgsize >= pginfo->hwpage_size) {
++			if (pginfo->next_hwpage %
++			    (pginfo->u.fmr.fmr_pgsize /
++			     pginfo->hwpage_size) == 0) {
++				(pginfo->kpage_cnt)++;
++				(pginfo->u.fmr.next_listelem)++;
++				fmrlist++;
++				pginfo->next_hwpage = 0;
++			} else
++				(pginfo->next_hwpage)++;
++		} else {
++			unsigned int cnt_per_hwpage = pginfo->hwpage_size /
++				pginfo->u.fmr.fmr_pgsize;
++			unsigned int j;
++			u64 prev = *kpage;
++			/* check if adrs are contiguous */
++			for (j = 1; j < cnt_per_hwpage; j++) {
++				u64 p = phys_to_abs(fmrlist[j] &
++						    ~(pginfo->hwpage_size - 1));
++				if (prev + pginfo->u.fmr.fmr_pgsize != p) {
++					ehca_gen_err("uncontiguous fmr pages "
++						     "found prev=%lx p=%lx "
++						     "idx=%x", prev, p, i + j);
++					return -EINVAL;
++				}
++				prev = p;
++			}
++			pginfo->kpage_cnt += cnt_per_hwpage;
++			pginfo->u.fmr.next_listelem += cnt_per_hwpage;
++			fmrlist += cnt_per_hwpage;
+ 		}
++		kpage++;
+ 	}
+ 	return ret;
+ }
+@@ -1842,7 +2091,9 @@ int ehca_set_pagebuf(struct ehca_mr_pginfo *pginfo,
+ 		ret = ehca_set_pagebuf_phys(pginfo, number, kpage);
+ 		break;
+ 	case EHCA_MR_PGI_USER:
+-		ret = ehca_set_pagebuf_user1(pginfo, number, kpage);
++		ret = PAGE_SIZE >= pginfo->hwpage_size ?
++			ehca_set_pagebuf_user1(pginfo, number, kpage) :
++			ehca_set_pagebuf_user2(pginfo, number, kpage);
+ 		break;
+ 	case EHCA_MR_PGI_FMR:
+ 		ret = ehca_set_pagebuf_fmr(pginfo, number, kpage);
+@@ -1895,9 +2146,9 @@ void ehca_mrmw_map_acl(int ib_acl,
+ /*----------------------------------------------------------------------*/
+ 
+ /* sets page size in hipz access control for MR/MW. */
+-void ehca_mrmw_set_pgsize_hipz_acl(u32 *hipz_acl) /*INOUT*/
++void ehca_mrmw_set_pgsize_hipz_acl(u32 pgsize, u32 *hipz_acl) /*INOUT*/
+ {
+-	return; /* HCA supports only 4k */
++	*hipz_acl |= (ehca_encode_hwpage_size(pgsize) << 24);
+ } /* end ehca_mrmw_set_pgsize_hipz_acl() */
+ 
+ /*----------------------------------------------------------------------*/
+diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.h b/drivers/infiniband/hw/ehca/ehca_mrmw.h
+index 24f13fe..bc8f4e3 100644
+--- a/drivers/infiniband/hw/ehca/ehca_mrmw.h
++++ b/drivers/infiniband/hw/ehca/ehca_mrmw.h
+@@ -111,7 +111,7 @@ int ehca_mr_is_maxmr(u64 size,
+ void ehca_mrmw_map_acl(int ib_acl,
+ 		       u32 *hipz_acl);
+ 
+-void ehca_mrmw_set_pgsize_hipz_acl(u32 *hipz_acl);
++void ehca_mrmw_set_pgsize_hipz_acl(u32 pgsize, u32 *hipz_acl);
+ 
+ void ehca_mrmw_reverse_map_acl(const u32 *hipz_acl,
+ 			       int *ib_acl);
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 3394e05..358796c 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -427,7 +427,8 @@ u64 hipz_h_register_rpage(const struct ipz_adapter_handle adapter_handle,
+ {
+ 	return ehca_plpar_hcall_norets(H_REGISTER_RPAGES,
+ 				       adapter_handle.handle,      /* r4  */
+-				       queue_type | pagesize << 8, /* r5  */
++				       (u64)queue_type | ((u64)pagesize) << 8,
++				       /* r5  */
+ 				       resource_handle,	           /* r6  */
+ 				       logical_address_of_page,    /* r7  */
+ 				       count,	                   /* r8  */
+@@ -724,6 +725,9 @@ u64 hipz_h_alloc_resource_mr(const struct ipz_adapter_handle adapter_handle,
+ 	u64 ret;
+ 	u64 outs[PLPAR_HCALL9_BUFSIZE];
+ 
++	ehca_gen_dbg("kernel PAGE_SIZE=%x access_ctrl=%016x "
++		     "vaddr=%lx length=%lx",
++		     (u32)PAGE_SIZE, access_ctrl, vaddr, length);
+ 	ret = ehca_plpar_hcall9(H_ALLOC_RESOURCE, outs,
+ 				adapter_handle.handle,            /* r4 */
+ 				5,                                /* r5 */
+@@ -746,8 +750,22 @@ u64 hipz_h_register_rpage_mr(const struct ipz_adapter_handle adapter_handle,
+ 			     const u64 logical_address_of_page,
+ 			     const u64 count)
+ {
++	extern int ehca_debug_level;
+ 	u64 ret;
+ 
++	if (unlikely(ehca_debug_level >= 2)) {
++		if (count > 1) {
++			u64 *kpage;
++			int i;
++			kpage = (u64 *)abs_to_virt(logical_address_of_page);
++			for (i = 0; i < count; i++)
++				ehca_gen_dbg("kpage[%d]=%p",
++					     i, (void *)kpage[i]);
++		} else
++			ehca_gen_dbg("kpage=%p",
++				     (void *)logical_address_of_page);
++	}
++
+ 	if ((count > 1) && (logical_address_of_page & (EHCA_PAGESIZE-1))) {
+ 		ehca_gen_err("logical_address_of_page not on a 4k boundary "
+ 			     "adapter_handle=%lx mr=%p mr_handle=%lx "
+-- 
+1.5.2
 
-Curious - at this point you know you have the last reference to
-the inode, right?  And you're not decrementing a use count on the
-crypt_stats, you're just zeroing it out.  So you must not think anyone
-else has references to it.
 
-So why do you need to grab the mutex here?
 
-> +	list_for_each_entry_safe(key_sig, key_sig_tmp,
-> +				 &crypt_stat->keysig_list, crypt_stat_list) {
-> +		list_del(&key_sig->crypt_stat_list);
-> +		kmem_cache_free(ecryptfs_key_sig_cache, key_sig);
-> +	}
-> +	mutex_unlock(&crypt_stat->keysig_list_mutex);
->  	memset(crypt_stat, 0, sizeof(struct ecryptfs_crypt_stat));
->  }
->  
->  void ecryptfs_destruct_mount_crypt_stat(
->  	struct ecryptfs_mount_crypt_stat *mount_crypt_stat)
->  {
-> -	if (mount_crypt_stat->global_auth_tok_key)
-> -		key_put(mount_crypt_stat->global_auth_tok_key);
-> -	if (mount_crypt_stat->global_key_tfm)
-> -		crypto_free_blkcipher(mount_crypt_stat->global_key_tfm);
-> +	struct ecryptfs_global_auth_tok *auth_tok, *auth_tok_tmp;
-> +
-> +	if (!(mount_crypt_stat->flags & ECRYPTFS_MOUNT_CRYPT_STAT_INITIALIZED))
-> +		return;
-> +	mutex_lock(&mount_crypt_stat->global_auth_tok_list_mutex);
 
-Same question here - after all it's called from put_super...  So if
-not having the mutex cause the problem doesn't that mean the mutex
-is papering over some other problem?
-
-> +	list_for_each_entry_safe(auth_tok, auth_tok_tmp,
-> +				 &mount_crypt_stat->global_auth_tok_list,
-> +				 mount_crypt_stat_list) {
-> +		list_del(&auth_tok->mount_crypt_stat_list);
-> +		mount_crypt_stat->num_global_auth_toks--;
-> +		if (auth_tok->global_auth_tok_key
-> +		    && !(auth_tok->flags & ECRYPTFS_AUTH_TOK_INVALID))
-> +			key_put(auth_tok->global_auth_tok_key);
-> +		kmem_cache_free(ecryptfs_global_auth_tok_cache, auth_tok);
-> +	}
-> +	mutex_unlock(&mount_crypt_stat->global_auth_tok_list_mutex);
->  	memset(mount_crypt_stat, 0, sizeof(struct ecryptfs_mount_crypt_stat));
->  }
->  
-> @@ -931,6 +954,30 @@ static void ecryptfs_copy_mount_wide_flags_to_inode_flags(
->  		crypt_stat->flags |= ECRYPTFS_VIEW_AS_ENCRYPTED;
->  }
->  
-> +static int ecryptfs_copy_mount_wide_sigs_to_inode_sigs(
-> +	struct ecryptfs_crypt_stat *crypt_stat,
-> +	struct ecryptfs_mount_crypt_stat *mount_crypt_stat)
-> +{
-> +	struct ecryptfs_global_auth_tok *global_auth_tok;
-> +	int rc = 0;
-> +
-> +	mutex_lock(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +	list_for_each_entry(global_auth_tok,
-> +			    &mount_crypt_stat->global_auth_tok_list,
-> +			    mount_crypt_stat_list) {
-> +		rc = ecryptfs_add_keysig(crypt_stat, global_auth_tok->sig);
-> +		if (rc) {
-> +			printk(KERN_ERR "Error adding keysig; rc = [%d]\n", rc);
-> +			mutex_unlock(
-> +				&mount_crypt_stat->global_auth_tok_list_mutex);
-> +			goto out;
-> +		}
-> +	}
-> +	mutex_unlock(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +out:
-> +	return rc;
-> +}
-> +
->  /**
->   * ecryptfs_set_default_crypt_stat_vals
->   * @crypt_stat
-> @@ -973,46 +1020,44 @@ static void ecryptfs_set_default_crypt_stat_vals(
->  /* Associate an authentication token(s) with the file */
->  int ecryptfs_new_file_context(struct dentry *ecryptfs_dentry)
->  {
-> -	int rc = 0;
->  	struct ecryptfs_crypt_stat *crypt_stat =
->  	    &ecryptfs_inode_to_private(ecryptfs_dentry->d_inode)->crypt_stat;
->  	struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
->  	    &ecryptfs_superblock_to_private(
->  		    ecryptfs_dentry->d_sb)->mount_crypt_stat;
->  	int cipher_name_len;
-> +	int rc = 0;
->  
->  	ecryptfs_set_default_crypt_stat_vals(crypt_stat, mount_crypt_stat);
-> -	/* See if there are mount crypt options */
-> -	if (mount_crypt_stat->global_auth_tok) {
-> -		ecryptfs_printk(KERN_DEBUG, "Initializing context for new "
-> -				"file using mount_crypt_stat\n");
-> -		crypt_stat->flags |= ECRYPTFS_ENCRYPTED;
-> -		crypt_stat->flags |= ECRYPTFS_KEY_VALID;
-> -		ecryptfs_copy_mount_wide_flags_to_inode_flags(crypt_stat,
-> -							      mount_crypt_stat);
-> -		memcpy(crypt_stat->keysigs[crypt_stat->num_keysigs++],
-> -		       mount_crypt_stat->global_auth_tok_sig,
-> -		       ECRYPTFS_SIG_SIZE_HEX);
-> -		cipher_name_len =
-> -		    strlen(mount_crypt_stat->global_default_cipher_name);
-> -		memcpy(crypt_stat->cipher,
-> -		       mount_crypt_stat->global_default_cipher_name,
-> -		       cipher_name_len);
-> -		crypt_stat->cipher[cipher_name_len] = '\0';
-> -		crypt_stat->key_size =
-> -			mount_crypt_stat->global_default_cipher_key_size;
-> -		ecryptfs_generate_new_key(crypt_stat);
-> -	} else
-> -		/* We should not encounter this scenario since we
-> -		 * should detect lack of global_auth_tok at mount time
-> -		 * TODO: Applies to 0.1 release only; remove in future
-> -		 * release */
-> -		BUG();
-> +	mutex_lock(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +	BUG_ON(mount_crypt_stat->num_global_auth_toks == 0);
-> +	mutex_unlock(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +	crypt_stat->flags |= ECRYPTFS_ENCRYPTED;
-> +	crypt_stat->flags |= ECRYPTFS_KEY_VALID;
-> +	ecryptfs_copy_mount_wide_flags_to_inode_flags(crypt_stat,
-> +						      mount_crypt_stat);
-> +	rc = ecryptfs_copy_mount_wide_sigs_to_inode_sigs(crypt_stat,
-> +							 mount_crypt_stat);
-> +	if (rc) {
-> +		printk(KERN_ERR "Error attempting to copy mount-wide key sigs "
-> +		       "to the inode key sigs; rc = [%d]\n", rc);
-> +		goto out;
-> +	}
-> +	cipher_name_len =
-> +		strlen(mount_crypt_stat->global_default_cipher_name);
-> +	memcpy(crypt_stat->cipher,
-> +	       mount_crypt_stat->global_default_cipher_name,
-> +	       cipher_name_len);
-> +	crypt_stat->cipher[cipher_name_len] = '\0';
-> +	crypt_stat->key_size =
-> +		mount_crypt_stat->global_default_cipher_key_size;
-> +	ecryptfs_generate_new_key(crypt_stat);
->  	rc = ecryptfs_init_crypt_ctx(crypt_stat);
->  	if (rc)
->  		ecryptfs_printk(KERN_ERR, "Error initializing cryptographic "
->  				"context for cipher [%s]: rc = [%d]\n",
->  				crypt_stat->cipher, rc);
-> +out:
->  	return rc;
->  }
->  
-> @@ -1776,7 +1821,7 @@ out:
->  }
->  
->  /**
-> - * ecryptfs_process_cipher - Perform cipher initialization.
-> + * ecryptfs_process_key_cipher - Perform key cipher initialization.
->   * @key_tfm: Crypto context for key material, set by this function
->   * @cipher_name: Name of the cipher
->   * @key_size: Size of the key in bytes
-> @@ -1786,8 +1831,8 @@ out:
->   * event, regardless of whether this function succeeds for fails.
->   */
->  int
-> -ecryptfs_process_cipher(struct crypto_blkcipher **key_tfm, char *cipher_name,
-> -			size_t *key_size)
-> +ecryptfs_process_key_cipher(struct crypto_blkcipher **key_tfm,
-> +			    char *cipher_name, size_t *key_size)
->  {
->  	char dummy_key[ECRYPTFS_MAX_KEY_BYTES];
->  	char *full_alg_name;
-> @@ -1829,3 +1874,98 @@ ecryptfs_process_cipher(struct crypto_blkcipher **key_tfm, char *cipher_name,
->  out:
->  	return rc;
->  }
-> +
-> +struct kmem_cache *ecryptfs_key_tfm_cache;
-> +struct list_head key_tfm_list;
-> +struct mutex key_tfm_list_mutex;
-> +
-> +int ecryptfs_init_crypto(void)
-> +{
-> +	mutex_init(&key_tfm_list_mutex);
-> +	INIT_LIST_HEAD(&key_tfm_list);
-> +	return 0;
-> +}
-> +
-> +int ecryptfs_destruct_crypto(void)
-> +{
-> +	struct ecryptfs_key_tfm *key_tfm, *key_tfm_tmp;
-> +
-> +	mutex_lock(&key_tfm_list_mutex);
-> +	list_for_each_entry_safe(key_tfm, key_tfm_tmp, &key_tfm_list,
-> +				 key_tfm_list) {
-> +		list_del(&key_tfm->key_tfm_list);
-> +		if (key_tfm->key_tfm)
-> +			crypto_free_blkcipher(key_tfm->key_tfm);
-> +		kmem_cache_free(ecryptfs_key_tfm_cache, key_tfm);
-> +	}
-> +	mutex_unlock(&key_tfm_list_mutex);
-> +	return 0;
-> +}
-> +
-> +int
-> +ecryptfs_add_new_key_tfm(struct ecryptfs_key_tfm **key_tfm, char *cipher_name,
-> +			 size_t key_size)
-> +{
-> +	struct ecryptfs_key_tfm *tmp_tfm;
-> +	int rc = 0;
-> +
-> +	tmp_tfm = kmem_cache_alloc(ecryptfs_key_tfm_cache, GFP_KERNEL);
-> +	if (key_tfm != NULL)
-> +		(*key_tfm) = tmp_tfm;
-> +	if (!tmp_tfm) {
-> +		rc = -ENOMEM;
-> +		printk(KERN_ERR "Error attempting to allocate from "
-> +		       "ecryptfs_key_tfm_cache\n");
-> +		goto out;
-> +	}
-> +	mutex_init(&tmp_tfm->key_tfm_mutex);
-> +	strncpy(tmp_tfm->cipher_name, cipher_name,
-> +		ECRYPTFS_MAX_CIPHER_NAME_SIZE);
-> +	tmp_tfm->key_size = key_size;
-> +	if ((rc = ecryptfs_process_key_cipher(&tmp_tfm->key_tfm,
-> +					      tmp_tfm->cipher_name,
-> +					      &tmp_tfm->key_size))) {
-> +		printk(KERN_ERR "Error attempting to initialize key TFM "
-> +		       "cipher with name = [%s]; rc = [%d]\n",
-> +		       tmp_tfm->cipher_name, rc);
-> +		kmem_cache_free(ecryptfs_key_tfm_cache, tmp_tfm);
-> +		if (key_tfm != NULL)
-> +			(*key_tfm) = NULL;
-> +		goto out;
-> +	}
-> +	mutex_lock(&key_tfm_list_mutex);
-> +	list_add(&tmp_tfm->key_tfm_list, &key_tfm_list);
-> +	mutex_unlock(&key_tfm_list_mutex);
-> +out:
-> +	return rc;
-> +}
-> +
-> +int ecryptfs_get_tfm_and_mutex_for_cipher_name(struct crypto_blkcipher **tfm,
-> +					       struct mutex **tfm_mutex,
-> +					       char *cipher_name)
-> +{
-> +	struct ecryptfs_key_tfm *key_tfm;
-> +	int rc = 0;
-> +
-> +	(*tfm) = NULL;
-> +	(*tfm_mutex) = NULL;
-> +	mutex_lock(&key_tfm_list_mutex);
-> +	list_for_each_entry(key_tfm, &key_tfm_list, key_tfm_list) {
-> +		if (strcmp(key_tfm->cipher_name, cipher_name) == 0) {
-> +			(*tfm) = key_tfm->key_tfm;
-> +			(*tfm_mutex) = &key_tfm->key_tfm_mutex;
-> +			mutex_unlock(&key_tfm_list_mutex);
-> +			goto out;
-> +		}
-> +	}
-> +	mutex_unlock(&key_tfm_list_mutex);
-> +	if ((rc = ecryptfs_add_new_key_tfm(&key_tfm, cipher_name, 0))) {
-> +		printk(KERN_ERR "Error adding new key_tfm to list; rc = [%d]\n",
-> +		       rc);
-> +		goto out;
-> +	}
-> +	(*tfm) = key_tfm->key_tfm;
-> +	(*tfm_mutex) = &key_tfm->key_tfm_mutex;
-> +out:
-> +	return rc;
-> +}
-> diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
-> index 1b9dd9a..6ddab6c 100644
-> --- a/fs/ecryptfs/ecryptfs_kernel.h
-> +++ b/fs/ecryptfs/ecryptfs_kernel.h
-> @@ -48,10 +48,12 @@
->  #define ECRYPTFS_VERSIONING_PLAINTEXT_PASSTHROUGH 0x00000004
->  #define ECRYPTFS_VERSIONING_POLICY                0x00000008
->  #define ECRYPTFS_VERSIONING_XATTR                 0x00000010
-> +#define ECRYPTFS_VERSIONING_MULTKEY               0x00000020
->  #define ECRYPTFS_VERSIONING_MASK (ECRYPTFS_VERSIONING_PASSPHRASE \
->  				  | ECRYPTFS_VERSIONING_PLAINTEXT_PASSTHROUGH \
->  				  | ECRYPTFS_VERSIONING_PUBKEY \
-> -				  | ECRYPTFS_VERSIONING_XATTR)
-> +				  | ECRYPTFS_VERSIONING_XATTR \
-> +				  | ECRYPTFS_VERSIONING_MULTKEY)
->  #define ECRYPTFS_MAX_PASSWORD_LENGTH 64
->  #define ECRYPTFS_MAX_PASSPHRASE_BYTES ECRYPTFS_MAX_PASSWORD_LENGTH
->  #define ECRYPTFS_SALT_SIZE 8
-> @@ -144,6 +146,7 @@ struct ecryptfs_private_key {
->  struct ecryptfs_auth_tok {
->  	u16 version; /* 8-bit major and 8-bit minor */
->  	u16 token_type;
-> +#define ECRYPTFS_ENCRYPT_ONLY 0x00000001
->  	u32 flags;
->  	struct ecryptfs_session_key session_key;
->  	u8 reserved[32];
-> @@ -153,6 +156,7 @@ struct ecryptfs_auth_tok {
->  	} token;
->  } __attribute__ ((packed));
->  
-> +int ecryptfs_get_auth_tok_sig(char **sig, struct ecryptfs_auth_tok *auth_tok);
->  void ecryptfs_dump_auth_tok(struct ecryptfs_auth_tok *auth_tok);
->  extern void ecryptfs_to_hex(char *dst, char *src, size_t src_size);
->  extern void ecryptfs_from_hex(char *dst, char *src, int dst_size);
-> @@ -194,7 +198,6 @@ ecryptfs_get_key_payload_data(struct key *key)
->  #define ECRYPTFS_MAX_KEYSET_SIZE 1024
->  #define ECRYPTFS_MAX_CIPHER_NAME_SIZE 32
->  #define ECRYPTFS_MAX_NUM_ENC_KEYS 64
-> -#define ECRYPTFS_MAX_NUM_KEYSIGS 2 /* TODO: Make this a linked list */
->  #define ECRYPTFS_MAX_IV_BYTES 16	/* 128 bits */
->  #define ECRYPTFS_SALT_BYTES 2
->  #define MAGIC_ECRYPTFS_MARKER 0x3c81b7f5
-> @@ -212,6 +215,11 @@ ecryptfs_get_key_payload_data(struct key *key)
->  #define ECRYPTFS_TAG_67_PACKET_TYPE 0x43
->  #define MD5_DIGEST_SIZE 16
->  
-> +struct ecryptfs_key_sig {
-> +	struct list_head crypt_stat_list;
-> +	char keysig[ECRYPTFS_SIG_SIZE_HEX];
-> +};
-> +
->  /**
->   * This is the primary struct associated with each encrypted file.
->   *
-> @@ -231,7 +239,6 @@ struct ecryptfs_crypt_stat {
->  	u32 flags;
->  	unsigned int file_version;
->  	size_t iv_bytes;
-> -	size_t num_keysigs;
->  	size_t header_extent_size;
->  	size_t num_header_extents_at_front;
->  	size_t extent_size; /* Data extent size; default is 4096 */
-> @@ -245,7 +252,8 @@ struct ecryptfs_crypt_stat {
->  	unsigned char cipher[ECRYPTFS_MAX_CIPHER_NAME_SIZE];
->  	unsigned char key[ECRYPTFS_MAX_KEY_BYTES];
->  	unsigned char root_iv[ECRYPTFS_MAX_IV_BYTES];
-> -	unsigned char keysigs[ECRYPTFS_MAX_NUM_KEYSIGS][ECRYPTFS_SIG_SIZE_HEX];
-> +	struct list_head keysig_list;
-> +	struct mutex keysig_list_mutex;
->  	struct mutex cs_tfm_mutex;
->  	struct mutex cs_hash_tfm_mutex;
->  	struct mutex cs_mutex;
-> @@ -265,6 +273,26 @@ struct ecryptfs_dentry_info {
->  	struct ecryptfs_crypt_stat *crypt_stat;
->  };
->  
-> +struct ecryptfs_global_auth_tok {
-> +#define ECRYPTFS_AUTH_TOK_INVALID 0x00000001
-> +	u32 flags;
-> +	struct list_head mount_crypt_stat_list;
-> +	struct key *global_auth_tok_key;
-> +	struct ecryptfs_auth_tok *global_auth_tok;
-> +	unsigned char sig[ECRYPTFS_SIG_SIZE_HEX + 1];
-> +};
-> +
-> +struct ecryptfs_key_tfm {
-> +	struct crypto_blkcipher *key_tfm;
-> +	size_t key_size;
-> +	struct mutex key_tfm_mutex;
-> +	struct list_head key_tfm_list;
-> +	unsigned char cipher_name[ECRYPTFS_MAX_CIPHER_NAME_SIZE + 1];
-> +};
-> +
-> +extern struct list_head key_tfm_list;
-> +extern struct mutex key_tfm_list_mutex;
-> +
->  /**
->   * This struct is to enable a mount-wide passphrase/salt combo. This
->   * is more or less a stopgap to provide similar functionality to other
-> @@ -276,15 +304,14 @@ struct ecryptfs_mount_crypt_stat {
->  #define ECRYPTFS_PLAINTEXT_PASSTHROUGH_ENABLED 0x00000001
->  #define ECRYPTFS_XATTR_METADATA_ENABLED        0x00000002
->  #define ECRYPTFS_ENCRYPTED_VIEW_ENABLED        0x00000004
-> +#define ECRYPTFS_MOUNT_CRYPT_STAT_INITIALIZED  0x00000008
->  	u32 flags;
-> -	struct ecryptfs_auth_tok *global_auth_tok;
-> -	struct key *global_auth_tok_key;
-> +	struct list_head global_auth_tok_list;
-> +	struct mutex global_auth_tok_list_mutex;
-> +	size_t num_global_auth_toks;
->  	size_t global_default_cipher_key_size;
-> -	struct crypto_blkcipher *global_key_tfm;
-> -	struct mutex global_key_tfm_mutex;
->  	unsigned char global_default_cipher_name[ECRYPTFS_MAX_CIPHER_NAME_SIZE
->  						 + 1];
-> -	unsigned char global_auth_tok_sig[ECRYPTFS_SIG_SIZE_HEX + 1];
->  };
->  
->  /* superblock private data. */
-> @@ -468,6 +495,9 @@ extern struct kmem_cache *ecryptfs_header_cache_2;
->  extern struct kmem_cache *ecryptfs_xattr_cache;
->  extern struct kmem_cache *ecryptfs_lower_page_cache;
->  extern struct kmem_cache *ecryptfs_key_record_cache;
-> +extern struct kmem_cache *ecryptfs_key_sig_cache;
-> +extern struct kmem_cache *ecryptfs_global_auth_tok_cache;
-> +extern struct kmem_cache *ecryptfs_key_tfm_cache;
->  
->  int ecryptfs_interpose(struct dentry *hidden_dentry,
->  		       struct dentry *this_dentry, struct super_block *sb,
-> @@ -538,9 +568,8 @@ int
->  ecryptfs_parse_packet_set(struct ecryptfs_crypt_stat *crypt_stat,
->  			  unsigned char *src, struct dentry *ecryptfs_dentry);
->  int ecryptfs_truncate(struct dentry *dentry, loff_t new_length);
-> -int
-> -ecryptfs_process_cipher(struct crypto_blkcipher **key_tfm, char *cipher_name,
-> -			size_t *key_size);
-> +int ecryptfs_process_key_cipher(struct crypto_blkcipher **key_tfm,
-> +				char *cipher_name, size_t *key_size);
->  int ecryptfs_inode_test(struct inode *inode, void *candidate_lower_inode);
->  int ecryptfs_inode_set(struct inode *inode, void *lower_inode);
->  void ecryptfs_init_inode(struct inode *inode, struct inode *lower_inode);
-> @@ -580,6 +609,24 @@ void
->  ecryptfs_write_header_metadata(char *virt,
->  			       struct ecryptfs_crypt_stat *crypt_stat,
->  			       size_t *written);
-> +int ecryptfs_add_keysig(struct ecryptfs_crypt_stat *crypt_stat, char *sig);
-> +int
-> +ecryptfs_add_global_auth_tok(struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
-> +			   char *sig);
-> +int ecryptfs_get_global_auth_tok_for_sig(
-> +	struct ecryptfs_global_auth_tok **global_auth_tok,
-> +	struct ecryptfs_mount_crypt_stat *mount_crypt_stat, char *sig);
-> +int
-> +ecryptfs_add_new_key_tfm(struct ecryptfs_key_tfm **key_tfm, char *cipher_name,
-> +			 size_t key_size);
-> +int ecryptfs_init_crypto(void);
-> +int ecryptfs_destruct_crypto(void);
-> +int ecryptfs_get_tfm_and_mutex_for_cipher_name(struct crypto_blkcipher **tfm,
-> +					       struct mutex **tfm_mutex,
-> +					       char *cipher_name);
-> +int ecryptfs_keyring_auth_tok_for_sig(struct key **auth_tok_key,
-> +				      struct ecryptfs_auth_tok **auth_tok,
-> +				      char *sig);
->  int ecryptfs_write_zeros(struct file *file, pgoff_t index, int start,
->  			 int num_zeros);
->  
-> diff --git a/fs/ecryptfs/keystore.c b/fs/ecryptfs/keystore.c
-> index b550dea..ef4904a 100644
-> --- a/fs/ecryptfs/keystore.c
-> +++ b/fs/ecryptfs/keystore.c
-> @@ -402,20 +402,24 @@ out:
->   *
->   * Returns Zero on success; non-zero error otherwise.
->   */
-> -static int decrypt_pki_encrypted_session_key(
-> -	struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
-> -	struct ecryptfs_auth_tok *auth_tok,
-> -	struct ecryptfs_crypt_stat *crypt_stat)
-> +static int
-> +decrypt_pki_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
-> +				  struct ecryptfs_crypt_stat *crypt_stat)
->  {
->  	u16 cipher_code = 0;
->  	struct ecryptfs_msg_ctx *msg_ctx;
->  	struct ecryptfs_message *msg = NULL;
-> +	char *auth_tok_sig;
->  	char *netlink_message;
->  	size_t netlink_message_length;
->  	int rc;
->  
-> -	rc = write_tag_64_packet(mount_crypt_stat->global_auth_tok_sig,
-> -				 &(auth_tok->session_key),
-> +	if ((rc = ecryptfs_get_auth_tok_sig(&auth_tok_sig, auth_tok))) {
-> +		printk(KERN_ERR "Unrecognized auth tok type: [%d]\n",
-> +		       auth_tok->token_type);
-> +		goto out;
-> +	}
-> +	rc = write_tag_64_packet(auth_tok_sig, &(auth_tok->session_key),
->  				 &netlink_message, &netlink_message_length);
->  	if (rc) {
->  		ecryptfs_printk(KERN_ERR, "Failed to write tag 64 packet");
-> @@ -921,126 +925,241 @@ out:
->  	return rc;
->  }
->  
-> +static int
-> +ecryptfs_find_global_auth_tok_for_sig(
-> +	struct ecryptfs_global_auth_tok **global_auth_tok,
-> +	struct ecryptfs_mount_crypt_stat *mount_crypt_stat, char *sig)
-> +{
-> +	struct ecryptfs_global_auth_tok *walker;
-> +	int rc = 0;
-> +
-> +	(*global_auth_tok) = NULL;
-> +	mutex_lock(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +	list_for_each_entry(walker,
-> +			    &mount_crypt_stat->global_auth_tok_list,
-> +			    mount_crypt_stat_list) {
-> +		if (memcmp(walker->sig, sig, ECRYPTFS_SIG_SIZE_HEX) == 0) {
-> +			(*global_auth_tok) = walker;
-> +			goto out;
-> +		}
-> +	}
-> +	rc = -EINVAL;
-> +out:
-> +	mutex_unlock(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +	return rc;
-> +}
-> +
->  /**
-> - * decrypt_session_key - Decrypt the session key with the given auth_tok.
-> + * ecryptfs_verify_version
-> + * @version: The version number to confirm
-> + *
-> + * Returns zero on good version; non-zero otherwise
-> + */
-> +static int ecryptfs_verify_version(u16 version)
-> +{
-> +	int rc = 0;
-> +	unsigned char major;
-> +	unsigned char minor;
-> +
-> +	major = ((version >> 8) & 0xFF);
-> +	minor = (version & 0xFF);
-> +	if (major != ECRYPTFS_VERSION_MAJOR) {
-> +		ecryptfs_printk(KERN_ERR, "Major version number mismatch. "
-> +				"Expected [%d]; got [%d]\n",
-> +				ECRYPTFS_VERSION_MAJOR, major);
-> +		rc = -EINVAL;
-> +		goto out;
-> +	}
-> +	if (minor != ECRYPTFS_VERSION_MINOR) {
-> +		ecryptfs_printk(KERN_ERR, "Minor version number mismatch. "
-> +				"Expected [%d]; got [%d]\n",
-> +				ECRYPTFS_VERSION_MINOR, minor);
-> +		rc = -EINVAL;
-> +		goto out;
-> +	}
-> +out:
-> +	return rc;
-> +}
-> +
-> +int ecryptfs_keyring_auth_tok_for_sig(struct key **auth_tok_key,
-> +				      struct ecryptfs_auth_tok **auth_tok,
-> +				      char *sig)
-> +{
-> +	int rc = 0;
-> +
-> +	(*auth_tok_key) = request_key(&key_type_user, sig, NULL);
-> +	if (!(*auth_tok_key) || IS_ERR(*auth_tok_key)) {
-> +		printk(KERN_ERR "Could not find key with description: [%s]\n",
-> +		       sig);
-> +		process_request_key_err(PTR_ERR(*auth_tok_key));
-> +		rc = -EINVAL;
-> +		goto out;
-> +	}
-> +	(*auth_tok) = ecryptfs_get_key_payload_data(*auth_tok_key);
-> +	if (ecryptfs_verify_version((*auth_tok)->version)) {
-> +		printk(KERN_ERR
-> +		       "Data structure version mismatch. "
-> +		       "Userspace tools must match eCryptfs "
-> +		       "kernel module with major version [%d] "
-> +		       "and minor version [%d]\n",
-> +		       ECRYPTFS_VERSION_MAJOR,
-> +		       ECRYPTFS_VERSION_MINOR);
-> +		rc = -EINVAL;
-> +		goto out;
-> +	}
-> +	if ((*auth_tok)->token_type != ECRYPTFS_PASSWORD
-> +	    && (*auth_tok)->token_type != ECRYPTFS_PRIVATE_KEY) {
-> +		printk(KERN_ERR "Invalid auth_tok structure "
-> +		       "returned from key query\n");
-> +		rc = -EINVAL;
-> +		goto out;
-> +	}
-> +out:
-> +	return rc;
-> +}
-> +
-> +/**
-> + * ecryptfs_find_auth_tok_for_sig
-> + * @auth_tok: Set to the matching auth_tok; NULL if not found
-> + * @crypt_stat: inode crypt_stat crypto context
-> + * @sig: Sig of auth_tok to find
-> + *
-> + * For now, this function simply looks at the registered auth_tok's
-> + * linked off the mount_crypt_stat, so all the auth_toks that can be
-> + * used must be registered at mount time. This function could
-> + * potentially try a lot harder to find auth_tok's (e.g., by calling
-> + * out to ecryptfsd to dynamically retrieve an auth_tok object) so
-> + * that static registration of auth_tok's will no longer be necessary.
-> + *
-> + * Returns zero on no error; non-zero on error
-> + */
-> +static int
-> +ecryptfs_find_auth_tok_for_sig(
-> +	struct ecryptfs_auth_tok **auth_tok,
-> +	struct ecryptfs_crypt_stat *crypt_stat, char *sig)
-> +{
-> +	struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
-> +		crypt_stat->mount_crypt_stat;
-> +	struct ecryptfs_global_auth_tok *global_auth_tok;
-> +	int rc = 0;
-> +
-> +	(*auth_tok) = NULL;
-> +	if (ecryptfs_find_global_auth_tok_for_sig(&global_auth_tok,
-> +						  mount_crypt_stat, sig)) {
-> +		struct key *auth_tok_key;
-> +
-> +		rc = ecryptfs_keyring_auth_tok_for_sig(&auth_tok_key, auth_tok,
-> +						       sig);
-> +	} else
-> +		(*auth_tok) = global_auth_tok->global_auth_tok;
-> +	return rc;
-> +}
-> +
-> +/**
-> + * decrypt_passphrase_encrypted_session_key - Decrypt the session key
-> + * with the given auth_tok.
->   *
->   * Returns Zero on success; non-zero error otherwise.
->   */
-> -static int decrypt_session_key(struct ecryptfs_auth_tok *auth_tok,
-> -			       struct ecryptfs_crypt_stat *crypt_stat)
-> +static int
-> +decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
-> +					 struct ecryptfs_crypt_stat *crypt_stat)
->  {
-> -	struct ecryptfs_password *password_s_ptr;
-> -	struct scatterlist src_sg[2], dst_sg[2];
-> +	struct scatterlist dst_sg;
-> +	struct scatterlist src_sg;
->  	struct mutex *tfm_mutex = NULL;
-> -	char *encrypted_session_key;
-> -	char *session_key;
->  	struct blkcipher_desc desc = {
->  		.flags = CRYPTO_TFM_REQ_MAY_SLEEP
->  	};
->  	int rc = 0;
->  
-> -	password_s_ptr = &auth_tok->token.password;
-> -	if (password_s_ptr->flags & ECRYPTFS_SESSION_KEY_ENCRYPTION_KEY_SET)
-> -		ecryptfs_printk(KERN_DEBUG, "Session key encryption key "
-> -				"set; skipping key generation\n");
-> -	ecryptfs_printk(KERN_DEBUG, "Session key encryption key (size [%d])"
-> -			":\n",
-> -			password_s_ptr->session_key_encryption_key_bytes);
-> -	if (ecryptfs_verbosity > 0)
-> -		ecryptfs_dump_hex(password_s_ptr->session_key_encryption_key,
-> -				  password_s_ptr->
-> -				  session_key_encryption_key_bytes);
-> -	if (!strcmp(crypt_stat->cipher,
-> -		    crypt_stat->mount_crypt_stat->global_default_cipher_name)
-> -	    && crypt_stat->mount_crypt_stat->global_key_tfm) {
-> -		desc.tfm = crypt_stat->mount_crypt_stat->global_key_tfm;
-> -		tfm_mutex = &crypt_stat->mount_crypt_stat->global_key_tfm_mutex;
-> -	} else {
-> -		char *full_alg_name;
-> -
-> -		rc = ecryptfs_crypto_api_algify_cipher_name(&full_alg_name,
-> -							    crypt_stat->cipher,
-> -							    "ecb");
-> -		if (rc)
-> -			goto out;
-> -		desc.tfm = crypto_alloc_blkcipher(full_alg_name, 0,
-> -						  CRYPTO_ALG_ASYNC);
-> -		kfree(full_alg_name);
-> -		if (IS_ERR(desc.tfm)) {
-> -			rc = PTR_ERR(desc.tfm);
-> -			printk(KERN_ERR "Error allocating crypto context; "
-> -			       "rc = [%d]\n", rc);
-> -			goto out;
-> -		}
-> -		crypto_blkcipher_set_flags(desc.tfm, CRYPTO_TFM_REQ_WEAK_KEY);
-> +	if (unlikely(ecryptfs_verbosity > 0)) {
-> +		ecryptfs_printk(
-> +			KERN_DEBUG, "Session key encryption key (size [%d]):\n",
-> +			auth_tok->token.password.session_key_encryption_key_bytes);
-> +		ecryptfs_dump_hex(
-> +			auth_tok->token.password.session_key_encryption_key,
-> +			auth_tok->token.password.session_key_encryption_key_bytes);
-> +	}
-> +	rc = ecryptfs_get_tfm_and_mutex_for_cipher_name(&desc.tfm, &tfm_mutex,
-> +							crypt_stat->cipher);
-> +	if (unlikely(rc)) {
-> +		printk(KERN_ERR "Internal error whilst attempting to get "
-> +		       "tfm and mutex for cipher name [%s]; rc = [%d]\n",
-> +		       crypt_stat->cipher, rc);
-> +		goto out;
->  	}
-> -	if (tfm_mutex)
-> -		mutex_lock(tfm_mutex);
-> -	rc = crypto_blkcipher_setkey(desc.tfm,
-> -				     password_s_ptr->session_key_encryption_key,
-> -				     crypt_stat->key_size);
-> -	if (rc < 0) {
-> +	if ((rc = virt_to_scatterlist(auth_tok->session_key.encrypted_key,
-> +				      auth_tok->session_key.encrypted_key_size,
-> +				      &src_sg, 1)) != 1) {
-> +		printk(KERN_ERR "Internal error whilst attempting to convert "
-> +			"auth_tok->session_key.encrypted_key to scatterlist; "
-> +			"expected rc = 1; got rc = [%d]. "
-> +		       "auth_tok->session_key.encrypted_key_size = [%d]\n", rc,
-> +			auth_tok->session_key.encrypted_key_size);
-> +		goto out;
-> +	}
-> +	auth_tok->session_key.decrypted_key_size =
-> +		auth_tok->session_key.encrypted_key_size;
-> +	if ((rc = virt_to_scatterlist(auth_tok->session_key.decrypted_key,
-> +				      auth_tok->session_key.decrypted_key_size,
-> +				      &dst_sg, 1)) != 1) {
-> +		printk(KERN_ERR "Internal error whilst attempting to convert "
-> +			"auth_tok->session_key.decrypted_key to scatterlist; "
-> +			"expected rc = 1; got rc = [%d]\n", rc);
-> +		goto out;
-> +	}
-> +	mutex_lock(tfm_mutex);
-> +	rc = crypto_blkcipher_setkey(
-> +		desc.tfm, auth_tok->token.password.session_key_encryption_key,
-> +		crypt_stat->key_size);
-> +	if (unlikely(rc < 0)) {
-> +		mutex_unlock(tfm_mutex);
->  		printk(KERN_ERR "Error setting key for crypto context\n");
->  		rc = -EINVAL;
-> -		goto out_free_tfm;
-> -	}
-> -	/* TODO: virt_to_scatterlist */
-> -	encrypted_session_key = (char *)__get_free_page(GFP_KERNEL);
-> -	if (!encrypted_session_key) {
-> -		ecryptfs_printk(KERN_ERR, "Out of memory\n");
-> -		rc = -ENOMEM;
-> -		goto out_free_tfm;
-> +		goto out;
->  	}
-> -	session_key = (char *)__get_free_page(GFP_KERNEL);
-> -	if (!session_key) {
-> -		kfree(encrypted_session_key);
-> -		ecryptfs_printk(KERN_ERR, "Out of memory\n");
-> -		rc = -ENOMEM;
-> -		goto out_free_tfm;
-> -	}
-> -	memcpy(encrypted_session_key, auth_tok->session_key.encrypted_key,
-> -	       auth_tok->session_key.encrypted_key_size);
-> -	src_sg[0].page = virt_to_page(encrypted_session_key);
-> -	src_sg[0].offset = 0;
-> -	BUG_ON(auth_tok->session_key.encrypted_key_size > PAGE_CACHE_SIZE);
-> -	src_sg[0].length = auth_tok->session_key.encrypted_key_size;
-> -	dst_sg[0].page = virt_to_page(session_key);
-> -	dst_sg[0].offset = 0;
-> -	auth_tok->session_key.decrypted_key_size =
-> -	    auth_tok->session_key.encrypted_key_size;
-> -	dst_sg[0].length = auth_tok->session_key.encrypted_key_size;
-> -	rc = crypto_blkcipher_decrypt(&desc, dst_sg, src_sg,
-> +	rc = crypto_blkcipher_decrypt(&desc, &dst_sg, &src_sg,
->  				      auth_tok->session_key.encrypted_key_size);
-> -	if (rc) {
-> +	mutex_unlock(tfm_mutex);
-> +	if (unlikely(rc)) {
->  		printk(KERN_ERR "Error decrypting; rc = [%d]\n", rc);
-> -		goto out_free_memory;
-> +		goto out;
->  	}
-> -	auth_tok->session_key.decrypted_key_size =
-> -	    auth_tok->session_key.encrypted_key_size;
-> -	memcpy(auth_tok->session_key.decrypted_key, session_key,
-> -	       auth_tok->session_key.decrypted_key_size);
->  	auth_tok->session_key.flags |= ECRYPTFS_CONTAINS_DECRYPTED_KEY;
->  	memcpy(crypt_stat->key, auth_tok->session_key.decrypted_key,
->  	       auth_tok->session_key.decrypted_key_size);
->  	crypt_stat->flags |= ECRYPTFS_KEY_VALID;
-> -	ecryptfs_printk(KERN_DEBUG, "Decrypted session key:\n");
-> -	if (ecryptfs_verbosity > 0)
-> +	if (unlikely(ecryptfs_verbosity > 0)) {
-> +		ecryptfs_printk(KERN_DEBUG, "FEK of size [%d]:\n",
-> +				crypt_stat->key_size);
->  		ecryptfs_dump_hex(crypt_stat->key,
->  				  crypt_stat->key_size);
-> -out_free_memory:
-> -	memset(encrypted_session_key, 0, PAGE_CACHE_SIZE);
-> -	free_page((unsigned long)encrypted_session_key);
-> -	memset(session_key, 0, PAGE_CACHE_SIZE);
-> -	free_page((unsigned long)session_key);
-> -out_free_tfm:
-> -	if (tfm_mutex)
-> -		mutex_unlock(tfm_mutex);
-> -	else
-> -		crypto_free_blkcipher(desc.tfm);
-> +	}
->  out:
->  	return rc;
->  }
->  
-> +int ecryptfs_get_auth_tok_sig(char **sig, struct ecryptfs_auth_tok *auth_tok)
-> +{
-> +	int rc = 0;
-> +
-> +	(*sig) = NULL;
-> +	switch (auth_tok->token_type) {
-> +	case ECRYPTFS_PASSWORD:
-> +		(*sig) = auth_tok->token.password.signature;
-> +		break;
-> +	case ECRYPTFS_PRIVATE_KEY:
-> +		(*sig) = auth_tok->token.private_key.signature;
-> +		break;
-> +	default:
-> +		printk(KERN_ERR "Cannot get sig for auth_tok of type [%d]\n",
-> +		       auth_tok->token_type);
-> +		rc = -EINVAL;
-> +	}
-> +	return rc;
-> +}
-> +
->  /**
->   * ecryptfs_parse_packet_set
->   * @dest: The header page in memory
-> @@ -1058,25 +1177,22 @@ int ecryptfs_parse_packet_set(struct ecryptfs_crypt_stat *crypt_stat,
->  			      struct dentry *ecryptfs_dentry)
->  {
->  	size_t i = 0;
-> -	size_t found_auth_tok = 0;
-> +	size_t found_auth_tok;
->  	size_t next_packet_is_auth_tok_packet;
-> -	char sig[ECRYPTFS_SIG_SIZE_HEX];
->  	struct list_head auth_tok_list;
-> -	struct list_head *walker;
-> -	struct ecryptfs_auth_tok *chosen_auth_tok = NULL;
-> -	struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
-> -		&ecryptfs_superblock_to_private(
-> -			ecryptfs_dentry->d_sb)->mount_crypt_stat;
-> +	struct ecryptfs_auth_tok *matching_auth_tok = NULL;
->  	struct ecryptfs_auth_tok *candidate_auth_tok = NULL;
-> +	char *candidate_auth_tok_sig;
->  	size_t packet_size;
->  	struct ecryptfs_auth_tok *new_auth_tok;
->  	unsigned char sig_tmp_space[ECRYPTFS_SIG_SIZE];
-> +	struct ecryptfs_auth_tok_list_item *auth_tok_list_item;
->  	size_t tag_11_contents_size;
->  	size_t tag_11_packet_size;
->  	int rc = 0;
->  
->  	INIT_LIST_HEAD(&auth_tok_list);
-> -	/* Parse the header to find as many packets as we can, these will be
-> +	/* Parse the header to find as many packets as we can; these will be
->  	 * added the our &auth_tok_list */
->  	next_packet_is_auth_tok_packet = 1;
->  	while (next_packet_is_auth_tok_packet) {
-> @@ -1155,73 +1271,86 @@ int ecryptfs_parse_packet_set(struct ecryptfs_crypt_stat *crypt_stat,
->  		}
->  	}
->  	if (list_empty(&auth_tok_list)) {
-> -		rc = -EINVAL; /* Do not support non-encrypted files in
-> -			       * the 0.1 release */
-> +		printk(KERN_ERR "The lower file appears to be a non-encrypted "
-> +		       "eCryptfs file; this is not supported in this version "
-> +		       "of the eCryptfs kernel module\n");
-> +		rc = -EINVAL;
->  		goto out;
->  	}
-> -	/* If we have a global auth tok, then we should try to use
-> -	 * it */
-> -	if (mount_crypt_stat->global_auth_tok) {
-> -		memcpy(sig, mount_crypt_stat->global_auth_tok_sig,
-> -		       ECRYPTFS_SIG_SIZE_HEX);
-> -		chosen_auth_tok = mount_crypt_stat->global_auth_tok;
-> -	} else
-> -		BUG(); /* We should always have a global auth tok in
-> -			* the 0.1 release */
-> -	/* Scan list to see if our chosen_auth_tok works */
-> -	list_for_each(walker, &auth_tok_list) {
-> -		struct ecryptfs_auth_tok_list_item *auth_tok_list_item;
-> -		auth_tok_list_item =
-> -		    list_entry(walker, struct ecryptfs_auth_tok_list_item,
-> -			       list);
-> +	/* auth_tok_list contains the set of authentication tokens
-> +	 * parsed from the metadata. We need to find a matching
-> +	 * authentication token that has the secret component(s)
-> +	 * necessary to decrypt the EFEK in the auth_tok parsed from
-> +	 * the metadata. There may be several potential matches, but
-> +	 * just one will be sufficient to decrypt to get the FEK. */
-> +find_next_matching_auth_tok:
-> +	found_auth_tok = 0;
-> +	list_for_each_entry(auth_tok_list_item, &auth_tok_list, list) {
->  		candidate_auth_tok = &auth_tok_list_item->auth_tok;
->  		if (unlikely(ecryptfs_verbosity > 0)) {
->  			ecryptfs_printk(KERN_DEBUG,
->  					"Considering cadidate auth tok:\n");
->  			ecryptfs_dump_auth_tok(candidate_auth_tok);
->  		}
-> -		/* TODO: Replace ECRYPTFS_SIG_SIZE_HEX w/ dynamic value */
-> -		if (candidate_auth_tok->token_type == ECRYPTFS_PASSWORD
-> -		    && !strncmp(candidate_auth_tok->token.password.signature,
-> -				sig, ECRYPTFS_SIG_SIZE_HEX)) {
-> -			found_auth_tok = 1;
-> -			goto leave_list;
-> -			/* TODO: Transfer the common salt into the
-> -			 * crypt_stat salt */
-> -		} else if ((candidate_auth_tok->token_type
-> -			    == ECRYPTFS_PRIVATE_KEY)
-> -			   && !strncmp(candidate_auth_tok->token.private_key.signature,
-> -				     sig, ECRYPTFS_SIG_SIZE_HEX)) {
-> +		if ((rc = ecryptfs_get_auth_tok_sig(&candidate_auth_tok_sig,
-> +						    candidate_auth_tok))) {
-> +			printk(KERN_ERR
-> +			       "Unrecognized candidate auth tok type: [%d]\n",
-> +			       candidate_auth_tok->token_type);
-> +			rc = -EINVAL;
-> +			goto out_wipe_list;
-> +		}
-> +		if ((rc = ecryptfs_find_auth_tok_for_sig(
-> +			     &matching_auth_tok, crypt_stat,
-> +			     candidate_auth_tok_sig)))
-> +			rc = 0;
-> +		if (matching_auth_tok) {
->  			found_auth_tok = 1;
-> -			goto leave_list;
-> +			goto found_matching_auth_tok;
->  		}
->  	}
->  	if (!found_auth_tok) {
-> -		ecryptfs_printk(KERN_ERR, "Could not find authentication "
-> -				"token on temporary list for sig [%.*s]\n",
-> -				ECRYPTFS_SIG_SIZE_HEX, sig);
-> +		ecryptfs_printk(KERN_ERR, "Could not find a usable "
-> +				"authentication token\n");
->  		rc = -EIO;
->  		goto out_wipe_list;
->  	}
-> -leave_list:
-> -	rc = -ENOTSUPP;
-> +found_matching_auth_tok:
->  	if (candidate_auth_tok->token_type == ECRYPTFS_PRIVATE_KEY) {
->  		memcpy(&(candidate_auth_tok->token.private_key),
-> -		       &(chosen_auth_tok->token.private_key),
-> +		       &(matching_auth_tok->token.private_key),
->  		       sizeof(struct ecryptfs_private_key));
-> -		rc = decrypt_pki_encrypted_session_key(mount_crypt_stat,
-> -						       candidate_auth_tok,
-> +		rc = decrypt_pki_encrypted_session_key(candidate_auth_tok,
->  						       crypt_stat);
->  	} else if (candidate_auth_tok->token_type == ECRYPTFS_PASSWORD) {
->  		memcpy(&(candidate_auth_tok->token.password),
-> -		       &(chosen_auth_tok->token.password),
-> +		       &(matching_auth_tok->token.password),
->  		       sizeof(struct ecryptfs_password));
-> -		rc = decrypt_session_key(candidate_auth_tok, crypt_stat);
-> +		rc = decrypt_passphrase_encrypted_session_key(
-> +			candidate_auth_tok, crypt_stat);
->  	}
->  	if (rc) {
-> -		ecryptfs_printk(KERN_ERR, "Error decrypting the "
-> -				"session key; rc = [%d]\n", rc);
-> -		goto out_wipe_list;
-> +		struct ecryptfs_auth_tok_list_item *auth_tok_list_item_tmp;
-> +
-> +		ecryptfs_printk(KERN_WARNING, "Error decrypting the "
-> +				"session key for authentication token with sig "
-> +				"[%.*s]; rc = [%d]. Removing auth tok "
-> +				"candidate from the list and searching for "
-> +				"the next match.\n", candidate_auth_tok_sig,
-> +				ECRYPTFS_SIG_SIZE_HEX, rc);
-> +		list_for_each_entry_safe(auth_tok_list_item,
-> +					 auth_tok_list_item_tmp,
-> +					 &auth_tok_list, list) {
-> +			if (candidate_auth_tok
-> +			    == &auth_tok_list_item->auth_tok) {
-> +				list_del(&auth_tok_list_item->list);
-> +				kmem_cache_free(
-> +					ecryptfs_auth_tok_list_item_cache,
-> +					auth_tok_list_item);
-> +				goto find_next_matching_auth_tok;
-> +			}
-> +		}
-> +		BUG();
->  	}
->  	rc = ecryptfs_compute_root_iv(crypt_stat);
->  	if (rc) {
-> @@ -1240,6 +1369,7 @@ out_wipe_list:
->  out:
->  	return rc;
->  }
-> +
->  static int
->  pki_encrypt_session_key(struct ecryptfs_auth_tok *auth_tok,
->  			struct ecryptfs_crypt_stat *crypt_stat,
-> @@ -1291,15 +1421,15 @@ out:
->   * Returns zero on success; non-zero on error.
->   */
->  static int
-> -write_tag_1_packet(char *dest, size_t max, struct ecryptfs_auth_tok *auth_tok,
-> +write_tag_1_packet(char *dest, size_t *remaining_bytes,
-> +		   struct ecryptfs_auth_tok *auth_tok,
->  		   struct ecryptfs_crypt_stat *crypt_stat,
-> -		   struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
->  		   struct ecryptfs_key_record *key_rec, size_t *packet_size)
->  {
->  	size_t i;
->  	size_t encrypted_session_key_valid = 0;
-> -	size_t key_rec_size;
->  	size_t packet_size_length;
-> +	size_t max_packet_size;
->  	int rc = 0;
->  
->  	(*packet_size) = 0;
-> @@ -1329,37 +1459,23 @@ write_tag_1_packet(char *dest, size_t max, struct ecryptfs_auth_tok *auth_tok,
->  		ecryptfs_dump_hex(key_rec->enc_key, key_rec->enc_key_size);
->  	}
->  encrypted_session_key_set:
-> -	/* Now we have a valid key_rec.  Append it to the
-> -	 * key_rec set. */
-> -	key_rec_size = (sizeof(struct ecryptfs_key_record)
-> -			- ECRYPTFS_MAX_ENCRYPTED_KEY_BYTES
-> -			+ (key_rec->enc_key_size));
-> -	/* TODO: Include a packet size limit as a parameter to this
-> -	 * function once we have multi-packet headers (for versions
-> -	 * later than 0.1 */
-> -	if (key_rec_size >= ECRYPTFS_MAX_KEYSET_SIZE) {
-> -		ecryptfs_printk(KERN_ERR, "Keyset too large\n");
-> -		rc = -EINVAL;
-> -		goto out;
-> -	}
-> -	/*              ***** TAG 1 Packet Format *****
-> -	 *    | version number                     | 1 byte       |
-> -	 *    | key ID                             | 8 bytes      |
-> -	 *    | public key algorithm               | 1 byte       |
-> -	 *    | encrypted session key              | arbitrary    |
-> -	 */
-> -	if ((0x02 + ECRYPTFS_SIG_SIZE + key_rec->enc_key_size) >= max) {
-> -		ecryptfs_printk(KERN_ERR,
-> -				"Authentication token is too large\n");
-> +	/* This format is inspired by OpenPGP; see RFC 2440
-> +	 * packet tag 1 */
-> +	max_packet_size = (1                         /* Tag 1 identifier */
-> +			   + 3                       /* Max Tag 1 packet size */
-> +			   + 1                       /* Version */
-> +			   + ECRYPTFS_SIG_SIZE       /* Key identifier */
-> +			   + 1                       /* Cipher identifier */
-> +			   + key_rec->enc_key_size); /* Encrypted key size */
-> +	if (max_packet_size > (*remaining_bytes)) {
-> +		printk(KERN_ERR "Packet length larger than maximum allowable; "
-> +		       "need up to [%d] bytes, but there are only [%d] "
-> +		       "available\n", max_packet_size, (*remaining_bytes));
->  		rc = -EINVAL;
->  		goto out;
->  	}
->  	dest[(*packet_size)++] = ECRYPTFS_TAG_1_PACKET_TYPE;
-> -	/* This format is inspired by OpenPGP; see RFC 2440
-> -	 * packet tag 1 */
-> -	rc = write_packet_length(&dest[(*packet_size)],
-> -				 (0x02 + ECRYPTFS_SIG_SIZE +
-> -				 key_rec->enc_key_size),
-> +	rc = write_packet_length(&dest[(*packet_size)], (max_packet_size - 4),
->  				 &packet_size_length);
->  	if (rc) {
->  		ecryptfs_printk(KERN_ERR, "Error generating tag 1 packet "
-> @@ -1377,6 +1493,8 @@ encrypted_session_key_set:
->  out:
->  	if (rc)
->  		(*packet_size) = 0;
-> +	else
-> +		(*remaining_bytes) -= (*packet_size);
->  	return rc;
->  }
->  
-> @@ -1448,19 +1566,22 @@ write_tag_11_packet(char *dest, int max, char *contents, size_t contents_length,
->   * Returns zero on success; non-zero on error.
->   */
->  static int
-> -write_tag_3_packet(char *dest, size_t max, struct ecryptfs_auth_tok *auth_tok,
-> +write_tag_3_packet(char *dest, size_t *remaining_bytes,
-> +		   struct ecryptfs_auth_tok *auth_tok,
->  		   struct ecryptfs_crypt_stat *crypt_stat,
->  		   struct ecryptfs_key_record *key_rec, size_t *packet_size)
->  {
->  	size_t i;
->  	size_t encrypted_session_key_valid = 0;
->  	char session_key_encryption_key[ECRYPTFS_MAX_KEY_BYTES];
-> -	struct scatterlist dest_sg[2];
-> -	struct scatterlist src_sg[2];
-> +	struct scatterlist dst_sg;
-> +	struct scatterlist src_sg;
->  	struct mutex *tfm_mutex = NULL;
-> -	size_t key_rec_size;
-> -	size_t packet_size_length;
->  	size_t cipher_code;
-> +	size_t packet_size_length;
-> +	size_t max_packet_size;
-> +	struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
-> +		crypt_stat->mount_crypt_stat;
->  	struct blkcipher_desc desc = {
->  		.tfm = NULL,
->  		.flags = CRYPTO_TFM_REQ_MAY_SLEEP
-> @@ -1470,16 +1591,25 @@ write_tag_3_packet(char *dest, size_t max, struct ecryptfs_auth_tok *auth_tok,
->  	(*packet_size) = 0;
->  	ecryptfs_from_hex(key_rec->sig, auth_tok->token.password.signature,
->  			  ECRYPTFS_SIG_SIZE);
-> -	encrypted_session_key_valid = 0;
-> -	for (i = 0; i < crypt_stat->key_size; i++)
-> -		encrypted_session_key_valid |=
-> -			auth_tok->session_key.encrypted_key[i];
-> -	if (encrypted_session_key_valid) {
-> -		memcpy(key_rec->enc_key,
-> -		       auth_tok->session_key.encrypted_key,
-> -		       auth_tok->session_key.encrypted_key_size);
-> -		goto encrypted_session_key_set;
-> +	rc = ecryptfs_get_tfm_and_mutex_for_cipher_name(&desc.tfm, &tfm_mutex,
-> +							crypt_stat->cipher);
-> +	if (unlikely(rc)) {
-> +		printk(KERN_ERR "Internal error whilst attempting to get "
-> +		       "tfm and mutex for cipher name [%s]; rc = [%d]\n",
-> +		       crypt_stat->cipher, rc);
-> +		goto out;
-> +	}
-> +	if (mount_crypt_stat->global_default_cipher_key_size == 0) {
-> +		struct blkcipher_alg *alg = crypto_blkcipher_alg(desc.tfm);
-> +
-> +		printk(KERN_WARNING "No key size specified at mount; "
-> +		       "defaulting to [%d]\n", alg->max_keysize);
-> +		mount_crypt_stat->global_default_cipher_key_size =
-> +			alg->max_keysize;
->  	}
-> +	if (crypt_stat->key_size == 0)
-> +		crypt_stat->key_size =
-> +			mount_crypt_stat->global_default_cipher_key_size;
->  	if (auth_tok->session_key.encrypted_key_size == 0)
->  		auth_tok->session_key.encrypted_key_size =
->  			crypt_stat->key_size;
-> @@ -1487,9 +1617,24 @@ write_tag_3_packet(char *dest, size_t max, struct ecryptfs_auth_tok *auth_tok,
->  	    && strcmp("aes", crypt_stat->cipher) == 0) {
->  		memset((crypt_stat->key + 24), 0, 8);
->  		auth_tok->session_key.encrypted_key_size = 32;
-> -	}
-> +	} else
-> +		auth_tok->session_key.encrypted_key_size = crypt_stat->key_size;
->  	key_rec->enc_key_size =
->  		auth_tok->session_key.encrypted_key_size;
-> +	encrypted_session_key_valid = 0;
-> +	for (i = 0; i < auth_tok->session_key.encrypted_key_size; i++)
-> +		encrypted_session_key_valid |=
-> +			auth_tok->session_key.encrypted_key[i];
-> +	if (encrypted_session_key_valid) {
-> +		ecryptfs_printk(KERN_DEBUG, "encrypted_session_key_valid != 0; "
-> +				"using auth_tok->session_key.encrypted_key, "
-> +				"where key_rec->enc_key_size = [%d]\n",
-> +				key_rec->enc_key_size);
-> +		memcpy(key_rec->enc_key,
-> +		       auth_tok->session_key.encrypted_key,
-> +		       key_rec->enc_key_size);
-> +		goto encrypted_session_key_set;
-> +	}
->  	if (auth_tok->token.password.flags &
->  	    ECRYPTFS_SESSION_KEY_ENCRYPTION_KEY_SET) {
->  		ecryptfs_printk(KERN_DEBUG, "Using previously generated "
-> @@ -1508,54 +1653,32 @@ write_tag_3_packet(char *dest, size_t max, struct ecryptfs_auth_tok *auth_tok,
->  		ecryptfs_printk(KERN_DEBUG, "Session key encryption key:\n");
->  		ecryptfs_dump_hex(session_key_encryption_key, 16);
->  	}
-> -	rc = virt_to_scatterlist(crypt_stat->key,
-> -				 key_rec->enc_key_size, src_sg, 2);
-> -	if (!rc) {
-> +	if ((rc = virt_to_scatterlist(crypt_stat->key,
-> +				      key_rec->enc_key_size, &src_sg, 1))
-> +	    != 1) {
->  		ecryptfs_printk(KERN_ERR, "Error generating scatterlist "
-> -				"for crypt_stat session key\n");
-> +				"for crypt_stat session key; expected rc = 1; "
-> +				"got rc = [%d]. key_rec->enc_key_size = [%d]\n",
-> +				rc, key_rec->enc_key_size);
->  		rc = -ENOMEM;
->  		goto out;
->  	}
-> -	rc = virt_to_scatterlist(key_rec->enc_key,
-> -				 key_rec->enc_key_size, dest_sg, 2);
-> -	if (!rc) {
-> +	if ((rc = virt_to_scatterlist(key_rec->enc_key,
-> +				      key_rec->enc_key_size, &dst_sg, 1))
-> +	    != 1) {
->  		ecryptfs_printk(KERN_ERR, "Error generating scatterlist "
-> -				"for crypt_stat encrypted session key\n");
-> +				"for crypt_stat encrypted session key; "
-> +				"expected rc = 1; got rc = [%d]. "
-> +				"key_rec->enc_key_size = [%d]\n", rc,
-> +				key_rec->enc_key_size);
->  		rc = -ENOMEM;
->  		goto out;
->  	}
-> -	if (!strcmp(crypt_stat->cipher,
-> -		    crypt_stat->mount_crypt_stat->global_default_cipher_name)
-> -	    && crypt_stat->mount_crypt_stat->global_key_tfm) {
-> -		desc.tfm = crypt_stat->mount_crypt_stat->global_key_tfm;
-> -		tfm_mutex = &crypt_stat->mount_crypt_stat->global_key_tfm_mutex;
-> -	} else {
-> -		char *full_alg_name;
-> -
-> -		rc = ecryptfs_crypto_api_algify_cipher_name(&full_alg_name,
-> -							    crypt_stat->cipher,
-> -							    "ecb");
-> -		if (rc)
-> -			goto out;
-> -		desc.tfm = crypto_alloc_blkcipher(full_alg_name, 0,
-> -						  CRYPTO_ALG_ASYNC);
-> -		kfree(full_alg_name);
-> -		if (IS_ERR(desc.tfm)) {
-> -			rc = PTR_ERR(desc.tfm);
-> -			ecryptfs_printk(KERN_ERR, "Could not initialize crypto "
-> -					"context for cipher [%s]; rc = [%d]\n",
-> -					crypt_stat->cipher, rc);
-> -			goto out;
-> -		}
-> -		crypto_blkcipher_set_flags(desc.tfm, CRYPTO_TFM_REQ_WEAK_KEY);
-> -	}
-> -	if (tfm_mutex)
-> -		mutex_lock(tfm_mutex);
-> +	mutex_lock(tfm_mutex);
->  	rc = crypto_blkcipher_setkey(desc.tfm, session_key_encryption_key,
->  				     crypt_stat->key_size);
->  	if (rc < 0) {
-> -		if (tfm_mutex)
-> -			mutex_unlock(tfm_mutex);
-> +		mutex_unlock(tfm_mutex);
->  		ecryptfs_printk(KERN_ERR, "Error setting key for crypto "
->  				"context; rc = [%d]\n", rc);
->  		goto out;
-> @@ -1563,56 +1686,53 @@ write_tag_3_packet(char *dest, size_t max, struct ecryptfs_auth_tok *auth_tok,
->  	rc = 0;
->  	ecryptfs_printk(KERN_DEBUG, "Encrypting [%d] bytes of the key\n",
->  			crypt_stat->key_size);
-> -	rc = crypto_blkcipher_encrypt(&desc, dest_sg, src_sg,
-> +	rc = crypto_blkcipher_encrypt(&desc, &dst_sg, &src_sg,
->  				      (*key_rec).enc_key_size);
-> +	mutex_unlock(tfm_mutex);
->  	if (rc) {
->  		printk(KERN_ERR "Error encrypting; rc = [%d]\n", rc);
->  		goto out;
->  	}
-> -	if (tfm_mutex)
-> -		mutex_unlock(tfm_mutex);
->  	ecryptfs_printk(KERN_DEBUG, "This should be the encrypted key:\n");
-> -	if (ecryptfs_verbosity > 0)
-> +	if (ecryptfs_verbosity > 0) {
-> +		ecryptfs_printk(KERN_DEBUG, "EFEK of size [%d]:\n",
-> +				key_rec->enc_key_size);
->  		ecryptfs_dump_hex(key_rec->enc_key,
->  				  key_rec->enc_key_size);
-> -encrypted_session_key_set:
-> -	/* Now we have a valid key_rec.  Append it to the
-> -	 * key_rec set. */
-> -	key_rec_size = (sizeof(struct ecryptfs_key_record)
-> -			- ECRYPTFS_MAX_ENCRYPTED_KEY_BYTES
-> -			+ (key_rec->enc_key_size));
-> -	/* TODO: Include a packet size limit as a parameter to this
-> -	 * function once we have multi-packet headers (for versions
-> -	 * later than 0.1 */
-> -	if (key_rec_size >= ECRYPTFS_MAX_KEYSET_SIZE) {
-> -		ecryptfs_printk(KERN_ERR, "Keyset too large\n");
-> -		rc = -EINVAL;
-> -		goto out;
->  	}
-> -	/* TODO: Packet size limit */
-> -	/* We have 5 bytes of surrounding packet data */
-> -	if ((0x05 + ECRYPTFS_SALT_SIZE
-> -	     + key_rec->enc_key_size) >= max) {
-> -		ecryptfs_printk(KERN_ERR, "Authentication token is too "
-> -				"large\n");
-> +encrypted_session_key_set:
-> +	/* This format is inspired by OpenPGP; see RFC 2440
-> +	 * packet tag 3 */
-> +	max_packet_size = (1                         /* Tag 3 identifier */
-> +			   + 3                       /* Max Tag 3 packet size */
-> +			   + 1                       /* Version */
-> +			   + 1                       /* Cipher code */
-> +			   + 1                       /* S2K specifier */
-> +			   + 1                       /* Hash identifier */
-> +			   + ECRYPTFS_SALT_SIZE      /* Salt */
-> +			   + 1                       /* Hash iterations */
-> +			   + key_rec->enc_key_size); /* Encrypted key size */
-> +	if (max_packet_size > (*remaining_bytes)) {
-> +		printk(KERN_ERR "Packet too large; need up to [%d] bytes, but "
-> +		       "there are only [%d] available\n", max_packet_size,
-> +		       (*remaining_bytes));
->  		rc = -EINVAL;
->  		goto out;
->  	}
-> -	/* This format is inspired by OpenPGP; see RFC 2440
-> -	 * packet tag 3 */
->  	dest[(*packet_size)++] = ECRYPTFS_TAG_3_PACKET_TYPE;
-> -	/* ver+cipher+s2k+hash+salt+iter+enc_key */
-> -	rc = write_packet_length(&dest[(*packet_size)],
-> -				 (0x05 + ECRYPTFS_SALT_SIZE
-> -				  + key_rec->enc_key_size),
-> +	/* Chop off the Tag 3 identifier(1) and Tag 3 packet size(3)
-> +	 * to get the number of octets in the actual Tag 3 packet */
-> +	rc = write_packet_length(&dest[(*packet_size)], (max_packet_size - 4),
->  				 &packet_size_length);
->  	if (rc) {
-> -		ecryptfs_printk(KERN_ERR, "Error generating tag 3 packet "
-> -				"header; cannot generate packet length\n");
-> +		printk(KERN_ERR "Error generating tag 3 packet header; cannot "
-> +		       "generate packet length. rc = [%d]\n", rc);
->  		goto out;
->  	}
->  	(*packet_size) += packet_size_length;
->  	dest[(*packet_size)++] = 0x04; /* version 4 */
-> +	/* TODO: Break from RFC2440 so that arbitrary ciphers can be
-> +	 * specified with strings */
->  	cipher_code = ecryptfs_code_for_cipher_string(crypt_stat);
->  	if (cipher_code == 0) {
->  		ecryptfs_printk(KERN_WARNING, "Unable to generate code for "
-> @@ -1631,10 +1751,10 @@ encrypted_session_key_set:
->  	       key_rec->enc_key_size);
->  	(*packet_size) += key_rec->enc_key_size;
->  out:
-> -	if (desc.tfm && !tfm_mutex)
-> -		crypto_free_blkcipher(desc.tfm);
->  	if (rc)
->  		(*packet_size) = 0;
-> +	else
-> +		(*remaining_bytes) -= (*packet_size);
->  	return rc;
->  }
->  
-> @@ -1662,24 +1782,43 @@ ecryptfs_generate_key_packet_set(char *dest_base,
->  				 size_t max)
->  {
->  	struct ecryptfs_auth_tok *auth_tok;
-> +	struct ecryptfs_global_auth_tok *global_auth_tok;
->  	struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
->  		&ecryptfs_superblock_to_private(
->  			ecryptfs_dentry->d_sb)->mount_crypt_stat;
->  	size_t written;
->  	struct ecryptfs_key_record *key_rec;
-> +	struct ecryptfs_key_sig *key_sig;
->  	int rc = 0;
->  
->  	(*len) = 0;
-> +	mutex_lock(&crypt_stat->keysig_list_mutex);
->  	key_rec = kmem_cache_alloc(ecryptfs_key_record_cache, GFP_KERNEL);
->  	if (!key_rec) {
->  		rc = -ENOMEM;
->  		goto out;
->  	}
-> -	if (mount_crypt_stat->global_auth_tok) {
-> -		auth_tok = mount_crypt_stat->global_auth_tok;
-> +	list_for_each_entry(key_sig, &crypt_stat->keysig_list,
-> +			    crypt_stat_list) {
-> +		memset(key_rec, 0, sizeof(*key_rec));
-> +		rc = ecryptfs_find_global_auth_tok_for_sig(&global_auth_tok,
-> +							   mount_crypt_stat,
-> +							   key_sig->keysig);
-> +		if (rc) {
-> +			printk(KERN_ERR "Error attempting to get the global "
-> +			       "auth_tok; rc = [%d]\n", rc);
-> +			goto out_free;
-> +		}
-> +		if (global_auth_tok->flags & ECRYPTFS_AUTH_TOK_INVALID) {
-> +			printk(KERN_WARNING
-> +			       "Skipping invalid auth tok with sig = [%s]\n",
-> +			       global_auth_tok->sig);
-> +			continue;
-> +		}
-> +		auth_tok = global_auth_tok->global_auth_tok;
->  		if (auth_tok->token_type == ECRYPTFS_PASSWORD) {
->  			rc = write_tag_3_packet((dest_base + (*len)),
-> -						max, auth_tok,
-> +						&max, auth_tok,
->  						crypt_stat, key_rec,
->  						&written);
->  			if (rc) {
-> @@ -1689,10 +1828,9 @@ ecryptfs_generate_key_packet_set(char *dest_base,
->  			}
->  			(*len) += written;
->  			/* Write auth tok signature packet */
-> -			rc = write_tag_11_packet(
-> -				(dest_base + (*len)),
-> -				(max - (*len)),
-> -				key_rec->sig, ECRYPTFS_SIG_SIZE, &written);
-> +			rc = write_tag_11_packet((dest_base + (*len)), &max,
-> +						 key_rec->sig,
-> +						 ECRYPTFS_SIG_SIZE, &written);
->  			if (rc) {
->  				ecryptfs_printk(KERN_ERR, "Error writing "
->  						"auth tok signature packet\n");
-> @@ -1701,9 +1839,8 @@ ecryptfs_generate_key_packet_set(char *dest_base,
->  			(*len) += written;
->  		} else if (auth_tok->token_type == ECRYPTFS_PRIVATE_KEY) {
->  			rc = write_tag_1_packet(dest_base + (*len),
-> -						max, auth_tok,
-> -						crypt_stat,mount_crypt_stat,
-> -						key_rec, &written);
-> +						&max, auth_tok,
-> +						crypt_stat, key_rec, &written);
->  			if (rc) {
->  				ecryptfs_printk(KERN_WARNING, "Error "
->  						"writing tag 1 packet\n");
-> @@ -1716,19 +1853,69 @@ ecryptfs_generate_key_packet_set(char *dest_base,
->  			rc = -EINVAL;
->  			goto out_free;
->  		}
-> -	} else
-> -		BUG();
-> -	if (likely((max - (*len)) > 0)) {
-> +	}
-> +	if (likely(max > 0)) {
->  		dest_base[(*len)] = 0x00;
->  	} else {
->  		ecryptfs_printk(KERN_ERR, "Error writing boundary byte\n");
->  		rc = -EIO;
->  	}
-> -
->  out_free:
->  	kmem_cache_free(ecryptfs_key_record_cache, key_rec);
->  out:
->  	if (rc)
->  		(*len) = 0;
-> +	mutex_unlock(&crypt_stat->keysig_list_mutex);
-> +	return rc;
-> +}
-> +
-> +struct kmem_cache *ecryptfs_key_sig_cache;
-> +
-> +int ecryptfs_add_keysig(struct ecryptfs_crypt_stat *crypt_stat, char *sig)
-> +{
-> +	struct ecryptfs_key_sig *new_key_sig;
-> +	int rc = 0;
-> +
-> +	new_key_sig = kmem_cache_alloc(ecryptfs_key_sig_cache, GFP_KERNEL);
-> +	if (!new_key_sig) {
-> +		rc = -ENOMEM;
-> +		printk(KERN_ERR
-> +		       "Error allocating from ecryptfs_key_sig_cache\n");
-> +		goto out;
-> +	}
-> +	memcpy(new_key_sig->keysig, sig, ECRYPTFS_SIG_SIZE_HEX);
-> +	mutex_lock(&crypt_stat->keysig_list_mutex);
-> +	list_add(&new_key_sig->crypt_stat_list, &crypt_stat->keysig_list);
-> +	mutex_unlock(&crypt_stat->keysig_list_mutex);
-> +out:
->  	return rc;
->  }
-> +
-> +struct kmem_cache *ecryptfs_global_auth_tok_cache;
-> +
-> +int
-> +ecryptfs_add_global_auth_tok(struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
-> +			     char *sig)
-> +{
-> +	struct ecryptfs_global_auth_tok *new_auth_tok;
-> +	int rc = 0;
-> +
-> +	new_auth_tok = kmem_cache_alloc(ecryptfs_global_auth_tok_cache,
-> +					GFP_KERNEL);
-> +	if (!new_auth_tok) {
-> +		rc = -ENOMEM;
-> +		printk(KERN_ERR "Error allocating from "
-> +		       "ecryptfs_global_auth_tok_cache\n");
-> +		goto out;
-> +	}
-> +	memcpy(new_auth_tok->sig, sig, ECRYPTFS_SIG_SIZE_HEX);
-> +	new_auth_tok->sig[ECRYPTFS_SIG_SIZE_HEX] = '\0';
-> +	mutex_lock(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +	list_add(&new_auth_tok->mount_crypt_stat_list,
-> +		 &mount_crypt_stat->global_auth_tok_list);
-> +	mount_crypt_stat->num_global_auth_toks++;
-> +	mutex_unlock(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +out:
-> +	return rc;
-> +}
-> +
-> diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-> index 606128f..5da6180 100644
-> --- a/fs/ecryptfs/main.c
-> +++ b/fs/ecryptfs/main.c
-> @@ -179,38 +179,40 @@ static match_table_t tokens = {
->  	{ecryptfs_opt_err, NULL}
->  };
->  
-> -/**
-> - * ecryptfs_verify_version
-> - * @version: The version number to confirm
-> - *
-> - * Returns zero on good version; non-zero otherwise
-> - */
-> -static int ecryptfs_verify_version(u16 version)
-> +static int ecryptfs_init_global_auth_toks(
-> +	struct ecryptfs_mount_crypt_stat *mount_crypt_stat)
->  {
-> +	struct ecryptfs_global_auth_tok *global_auth_tok;
->  	int rc = 0;
-> -	unsigned char major;
-> -	unsigned char minor;
-> -
-> -	major = ((version >> 8) & 0xFF);
-> -	minor = (version & 0xFF);
-> -	if (major != ECRYPTFS_VERSION_MAJOR) {
-> -		ecryptfs_printk(KERN_ERR, "Major version number mismatch. "
-> -				"Expected [%d]; got [%d]\n",
-> -				ECRYPTFS_VERSION_MAJOR, major);
-> -		rc = -EINVAL;
-> -		goto out;
-> -	}
-> -	if (minor != ECRYPTFS_VERSION_MINOR) {
-> -		ecryptfs_printk(KERN_ERR, "Minor version number mismatch. "
-> -				"Expected [%d]; got [%d]\n",
-> -				ECRYPTFS_VERSION_MINOR, minor);
-> -		rc = -EINVAL;
-> -		goto out;
-> +
-> +	list_for_each_entry(global_auth_tok,
-> +			    &mount_crypt_stat->global_auth_tok_list,
-> +			    mount_crypt_stat_list) {
-> +		if ((rc = ecryptfs_keyring_auth_tok_for_sig(
-> +			     &global_auth_tok->global_auth_tok_key,
-> +			     &global_auth_tok->global_auth_tok,
-> +			     global_auth_tok->sig))) {
-> +			printk(KERN_ERR "Could not find valid key in user "
-> +			       "session keyring for sig specified in mount "
-> +			       "option: [%s]\n", global_auth_tok->sig);
-> +			global_auth_tok->flags |= ECRYPTFS_AUTH_TOK_INVALID;
-> +			rc = 0;
-> +		} else
-> +			global_auth_tok->flags &= ~ECRYPTFS_AUTH_TOK_INVALID;
->  	}
-> -out:
->  	return rc;
->  }
->  
-> +static void ecryptfs_init_mount_crypt_stat(
-> +	struct ecryptfs_mount_crypt_stat *mount_crypt_stat)
-> +{
-> +	memset((void *)mount_crypt_stat, 0,
-> +	       sizeof(struct ecryptfs_mount_crypt_stat));
-> +	INIT_LIST_HEAD(&mount_crypt_stat->global_auth_tok_list);
-> +	mutex_init(&mount_crypt_stat->global_auth_tok_list_mutex);
-> +	mount_crypt_stat->flags |= ECRYPTFS_MOUNT_CRYPT_STAT_INITIALIZED;
-> +}
-> +
->  /**
->   * ecryptfs_parse_options
->   * @sb: The ecryptfs super block
-> @@ -264,14 +266,13 @@ static int ecryptfs_parse_options(struct super_block *sb, char *options)
->  		case ecryptfs_opt_sig:
->  		case ecryptfs_opt_ecryptfs_sig:
->  			sig_src = args[0].from;
-> -			sig_dst =
-> -				mount_crypt_stat->global_auth_tok_sig;
-> -			memcpy(sig_dst, sig_src, ECRYPTFS_SIG_SIZE_HEX);
-> -			sig_dst[ECRYPTFS_SIG_SIZE_HEX] = '\0';
-> -			ecryptfs_printk(KERN_DEBUG,
-> -					"The mount_crypt_stat "
-> -					"global_auth_tok_sig set to: "
-> -					"[%s]\n", sig_dst);
-> +			rc = ecryptfs_add_global_auth_tok(mount_crypt_stat,
-> +							  sig_src);
-> +			if (rc) {
-> +				printk(KERN_ERR "Error attempting to register "
-> +				       "global sig; rc = [%d]\n", rc);
-> +				goto out;
-> +			}
->  			sig_set = 1;
->  			break;
->  		case ecryptfs_opt_debug:
-> @@ -358,55 +359,21 @@ static int ecryptfs_parse_options(struct super_block *sb, char *options)
->  	if (!cipher_key_bytes_set) {
->  		mount_crypt_stat->global_default_cipher_key_size = 0;
->  	}
-> -	rc = ecryptfs_process_cipher(
-> -		&mount_crypt_stat->global_key_tfm,
-> -		mount_crypt_stat->global_default_cipher_name,
-> -		&mount_crypt_stat->global_default_cipher_key_size);
-> -	if (rc) {
-> -		printk(KERN_ERR "Error attempting to initialize cipher [%s] "
-> -		       "with key size [%Zd] bytes; rc = [%d]\n",
-> +	if ((rc = ecryptfs_add_new_key_tfm(
-> +		     NULL, mount_crypt_stat->global_default_cipher_name,
-> +		     mount_crypt_stat->global_default_cipher_key_size))) {
-> +		printk(KERN_ERR "Error attempting to initialize cipher with "
-> +		       "name = [%s] and key size = [%d]; rc = [%d]\n",
->  		       mount_crypt_stat->global_default_cipher_name,
->  		       mount_crypt_stat->global_default_cipher_key_size, rc);
-> -		mount_crypt_stat->global_key_tfm = NULL;
-> -		mount_crypt_stat->global_auth_tok_key = NULL;
-> -		rc = -EINVAL;
-> -		goto out;
-> -	}
-> -	mutex_init(&mount_crypt_stat->global_key_tfm_mutex);
-> -	ecryptfs_printk(KERN_DEBUG, "Requesting the key with description: "
-> -			"[%s]\n", mount_crypt_stat->global_auth_tok_sig);
-> -	/* The reference to this key is held until umount is done The
-> -	 * call to key_put is done in ecryptfs_put_super() */
-> -	auth_tok_key = request_key(&key_type_user,
-> -				   mount_crypt_stat->global_auth_tok_sig,
-> -				   NULL);
-> -	if (!auth_tok_key || IS_ERR(auth_tok_key)) {
-> -		ecryptfs_printk(KERN_ERR, "Could not find key with "
-> -				"description: [%s]\n",
-> -				mount_crypt_stat->global_auth_tok_sig);
-> -		process_request_key_err(PTR_ERR(auth_tok_key));
->  		rc = -EINVAL;
->  		goto out;
->  	}
-> -	auth_tok = ecryptfs_get_key_payload_data(auth_tok_key);
-> -	if (ecryptfs_verify_version(auth_tok->version)) {
-> -		ecryptfs_printk(KERN_ERR, "Data structure version mismatch. "
-> -				"Userspace tools must match eCryptfs kernel "
-> -				"module with major version [%d] and minor "
-> -				"version [%d]\n", ECRYPTFS_VERSION_MAJOR,
-> -				ECRYPTFS_VERSION_MINOR);
-> -		rc = -EINVAL;
-> -		goto out;
-> -	}
-> -	if (auth_tok->token_type != ECRYPTFS_PASSWORD
-> -	    && auth_tok->token_type != ECRYPTFS_PRIVATE_KEY) {
-> -		ecryptfs_printk(KERN_ERR, "Invalid auth_tok structure "
-> -				"returned from key query\n");
-> -		rc = -EINVAL;
-> -		goto out;
-> +	if ((rc = ecryptfs_init_global_auth_toks(mount_crypt_stat))) {
-> +		printk(KERN_WARNING "One or more global auth toks could not "
-> +		       "properly register; rc = [%d]\n", rc);
->  	}
-> -	mount_crypt_stat->global_auth_tok_key = auth_tok_key;
-> -	mount_crypt_stat->global_auth_tok = auth_tok;
-> +	rc = 0;
->  out:
->  	return rc;
->  }
-> -- 
-> 1.5.1.6
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
