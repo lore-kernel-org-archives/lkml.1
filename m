@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760970AbXGTFkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXGTFoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760970AbXGTFkU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 01:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXGTFkI
+	id S1760091AbXGTFoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 01:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXGTFoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 01:40:08 -0400
-Received: from mail.suse.de ([195.135.220.2]:38053 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbXGTFkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 01:40:06 -0400
-Date: Fri, 20 Jul 2007 07:40:04 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>, dgc@sgi.com, mhalcrow@us.ibm.com
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch] fix some conversion overflows
-Message-ID: <20070720054004.GA22099@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 20 Jul 2007 01:44:12 -0400
+Received: from wx-out-0506.google.com ([66.249.82.233]:9621 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbXGTFoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 01:44:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HhKYpewnWN2G0sLf51ey+kMHLr4828/FdEuiF97Mbe9EPg6QKRJ5VtHah7DXaOq/MICCDMUo9qXeYnjHAM5OPf19jTUy1kDePCBAcR0Lp4CIRYxHIsgIhaO2a6+tKJ3sLMmh/7q9NbsvFqJOvbOu3Bt8eL1HLSAEl3irxhMUHQE=
+Message-ID: <a8e1da0707192244n345100cdub8ef6168cf348c8c@mail.gmail.com>
+Date: Fri, 20 Jul 2007 05:44:10 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: [RFH] Partion table recovery
+Cc: "Al Boldi" <a1426z@gawab.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070720053526.GG943@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+References: <200707200813.03553.a1426z@gawab.com> <20070720053526.GG943@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix page index to offset conversion overflows in buffer layer, ecryptfs,
-and ocfs2.
-
-It would be nice to convert the whole tree to page_offset, but for now
-just fix the bugs.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-
----
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 02ebb1f..0e5ec37 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -2221,7 +2221,7 @@ block_page_mkwrite(struct vm_area_struct
- 	lock_page(page);
- 	size = i_size_read(inode);
- 	if ((page->mapping != inode->i_mapping) ||
--	    ((page->index << PAGE_CACHE_SHIFT) > size)) {
-+	    (page_offset(page) > size)) {
- 		/* page got truncated out from underneath us */
- 		goto out_unlock;
- 	}
-diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
-index 7d5a43c..e4ab7bc 100644
---- a/fs/ecryptfs/mmap.c
-+++ b/fs/ecryptfs/mmap.c
-@@ -409,8 +409,7 @@ static int ecryptfs_prepare_write(struct
- 	if (!PageUptodate(page))
- 		rc = ecryptfs_do_readpage(file, page, page->index);
- 	if (page->index != 0) {
--		loff_t end_of_prev_pg_pos =
--			(((loff_t)page->index << PAGE_CACHE_SHIFT) - 1);
-+		loff_t end_of_prev_pg_pos = page_offset(page) - 1;
- 
- 		if (end_of_prev_pg_pos > i_size_read(page->mapping->host)) {
- 			rc = ecryptfs_truncate(file->f_path.dentry,
-@@ -736,7 +735,7 @@ static int ecryptfs_commit_write(struct
- 		goto out;
- 	}
- 	inode->i_blocks = lower_inode->i_blocks;
--	pos = (page->index << PAGE_CACHE_SHIFT) + to;
-+	pos = page_offset(page) + to;
- 	if (pos > i_size_read(inode)) {
- 		i_size_write(inode, pos);
- 		ecryptfs_printk(KERN_DEBUG, "Expanded file size to "
-diff --git a/fs/ocfs2/mmap.c b/fs/ocfs2/mmap.c
-index ee64749..9875615 100644
---- a/fs/ocfs2/mmap.c
-+++ b/fs/ocfs2/mmap.c
-@@ -89,7 +89,7 @@ static int __ocfs2_page_mkwrite(struct i
- {
- 	int ret;
- 	struct address_space *mapping = inode->i_mapping;
--	loff_t pos = page->index << PAGE_CACHE_SHIFT;
-+	loff_t pos = page_offset(page);
- 	unsigned int len = PAGE_CACHE_SIZE;
- 	pgoff_t last_index;
- 	struct page *locked_page = NULL;
+>On 7/20/07, Willy Tarreau <w@1wt.eu> wrote:
+> On Fri, Jul 20, 2007 at 08:13:03AM +0300, Al Boldi wrote:
+> > As always, a good friend of mine managed to scratch my partion table by
+> > cat'ing /dev/full into /dev/sda.  I was able to push him out of the way, but
+> > at least the first 100MB are gone.  I can probably live without the first
+> > partion, but there are many partitions after that, which I hope should
+> > easily be recoverable.
+> >
+> > I tried parted, but it's not working out for me.  Does anybody know of a
+> > simple partition recovery tool, that would just scan the disk for lost
+> > partions?
+>
+> The best one is simply "fdisk", because you can manually enter your
+> cylinders numbers. You have to find by hand the beginning of each partition,
+> and for this, you have to remember what filesystems you used and see how to
+> identify them (using a magic). Then with an hex editor, you scan the disk to
+> find such entries and note the possible sectors on a paper. Then comes fdisk.
+> You create the part, exit and try to mount it. If it fails, fdisk again and
+> try other values.
+One more possible solution about this, you can find the filesystem
+magic position, if ext2/ext3 , /dev/sda can be mounted with option
+sb=blocknumber
+>
+> I've saved many disks that way, it may sound harder than it really is. It
+> should not take you more than half an hour to get the first part. Knowing
+> your approximate partitions size will help too.
+>
+> Good luck!
+> Willy
