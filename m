@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937428AbXGTWTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764378AbXGTWTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937428AbXGTWTB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762055AbXGTWSy
+	id S1764378AbXGTWTf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 18:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762055AbXGTWT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 18:18:54 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:60671 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761860AbXGTWSw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 18:18:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=BxD8UlWtVnKzTYljkI9k5HzH3PLT0X/ElgBoPcWi9rpMpbZ8cFNUPvWbl9FmScBzJ6ihwQn5LlWOlw6/3KU9nzhXTiI0MXNgo6L6A6bF217FZRV6odoD4nW9JZA6Y9owzc7oSTj2ye4rK7VJQVpmlCoBN0TOky5iyjWhGf4YFBc=
-Message-ID: <75b66ecd0707201518j45ef8bb7q7e48462ffbbc9c58@mail.gmail.com>
-Date: Fri, 20 Jul 2007 18:18:51 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: posible latency issues in seq_read
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46A125F4.3030504@nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 18:19:27 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:44222 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756178AbXGTWTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 18:19:25 -0400
+Date: Sat, 21 Jul 2007 00:20:39 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] kbuild update
+Message-ID: <20070720222039.GA25443@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46A125F4.3030504@nortel.com>
-X-Google-Sender-Auth: b76fc6178dfe31d2
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/20/07, Chris Friesen <cfriesen@nortel.com> wrote:
->
-> We've run into an issue (on 2.6.10) where calling "lsof" triggers lost
-> packets on our server.  Preempt is disabled, and NAPI is enabled.
->
+Hi Linus.
 
-Can you reproduce with a recent kernel?  Lots of latency issues have
-been fixed since then.
+Another smaller round of kbuild updates.
+The important bit is the fix so we no longer warn too much on second
+pass of modpost - section mismatch is avoided for vmlinux in second pass.
 
-Lee
+The 'larger' patch is a simple kconfig update I have used locally.
+An earlier variant was reviewed with feedback incorporated in this updated patch.
+
+Please pull from:
+ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
+
+	Sam
+
+[to lkml-readers. One of the below patches was the 'mssing' patch in the serie I just sent out].
+
+Jesper Juhl (1):
+      kbuild: fix up printing of Linux C Library version in scripts/ver_linux
+
+Sam Ravnborg (3):
+      kbuild: do not do section mismatch checks on vmlinux in 2nd pass
+      kconfig: attach help text to menus
+      kconfig: remove unused members from struct symbol
+
+ scripts/Makefile.modpost            |   19 ++++++++++---------
+ scripts/kconfig/conf.c              |   31 +++++++++++++++----------------
+ scripts/kconfig/expr.h              |    4 +---
+ scripts/kconfig/gconf.c             |   10 ++--------
+ scripts/kconfig/kxgettext.c         |    4 ++--
+ scripts/kconfig/lkc_proto.h         |    2 ++
+ scripts/kconfig/mconf.c             |    4 ++--
+ scripts/kconfig/menu.c              |   12 ++++++++++++
+ scripts/kconfig/qconf.cc            |    2 +-
+ scripts/kconfig/zconf.tab.c_shipped |   12 ++++++------
+ scripts/kconfig/zconf.y             |   12 ++++++------
+ scripts/mod/modpost.c               |   13 ++++++++++---
+ scripts/ver_linux                   |    4 ++--
+ 13 files changed, 71 insertions(+), 58 deletions(-)
