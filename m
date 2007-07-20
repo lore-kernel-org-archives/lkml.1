@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935815AbXGTPSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935757AbXGTPXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935815AbXGTPSW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 11:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935585AbXGTPSI
+	id S935757AbXGTPXL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 11:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762408AbXGTPW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 11:18:08 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38152 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935569AbXGTPSH (ORCPT
+	Fri, 20 Jul 2007 11:22:58 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:38662 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756186AbXGTPW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 11:18:07 -0400
-Date: Fri, 20 Jul 2007 16:18:06 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, clameter@sgi.com
-Subject: [PATCH] fix gfp_t annotations for slub
-Message-ID: <20070720151806.GJ21668@ftp.linux.org.uk>
+	Fri, 20 Jul 2007 11:22:57 -0400
+Date: Fri, 20 Jul 2007 11:22:55 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <ak@suse.de>
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH] [15/58] i386: Rewrite sched_clock
+Message-ID: <20070720152255.GB511@Krystal>
+References: <200707191154.642492000@suse.de> <200707201027.46532.ak@suse.de> <20070720141210.GA29979@Krystal> <200707201714.16811.ak@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <200707201714.16811.ak@suse.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:18:07 up 3 days,  9:52,  3 users,  load average: 0.17, 0.14, 0.17
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Since we have use like ~SLUB_DMA, we ought to have the type
-set right in both cases.
+* Andi Kleen (ak@suse.de) wrote:
+> 
+> > So if, after this, we run tsc_sched_clock() with an unstable TSC, we
+> > read a last_val containing the interrupt's MSB and the last_val LSB. It
+> > can particularity hurt if we are around a 32 bits overflow, because time
+> > could "jump" forward of about 1.43 seconds on a 3 GHz system.
+> > 
+> > So I guess we need synchronization on the fast path, and therefore using
+> > cmpxchg_local on x86_64
+> 
+> On x86-64 the 64bit write is atomic against interrupts.
+> 
+> You're right 32bit has a problem though. I'm not too happy about 
+> cmpxchg though because that wouldn't work on some CPUs.
+> 
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index 07f7e4c..124270d 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -160,7 +160,7 @@ static inline struct kmem_cache *kmalloc_slab(size_t size)
- #define SLUB_DMA __GFP_DMA
- #else
- /* Disable DMA functionality */
--#define SLUB_DMA 0
-+#define SLUB_DMA (__force gfp_t)0
- #endif
- 
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+Which CPUs ? 386 ? do they even have a cycle counter ?
 
+Please have a look at my reply to this email for the x86_64 problematic
+case. This problematic case also applies to i386 (non atomicity of tsc
+read vs write to memory).
+
+> I wonder if we can just get away with using a 32bit value on i386.
+> Just for the purpose of keeping the value monotonic it should be good
+> enough. Will think about it.
+> 
+
+Yes, it could work. In this case you have to be aware that the 32 LSBs
+of the TSC will overflow every ~ 1s and, in order to be sure to be able
+to detect the overflow, you have to do at least 1 TSC read per second
+(more precisely per 32 LSB overflow period).
+
+> Thanks for the review.
+> 
+
+YW,
+
+Mathieu
+
+> -Andi
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
