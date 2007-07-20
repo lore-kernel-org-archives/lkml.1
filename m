@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbXGTViS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761579AbXGTVip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbXGTViS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbXGTViH
+	id S1761579AbXGTVip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbXGTVid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:38:07 -0400
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:27388 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768AbXGTViF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:38:05 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAFPIoEarR7O6/2dsb2JhbAA
-X-IronPort-AV: i="4.16,564,1175497200"; 
-   d="scan'208"; a="9750512:sNHT12354198"
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Cc: "Leech, Christopher" <christopher.leech@intel.com>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Nelson, Shannon" <shannon.nelson@intel.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, davem@davemloft.net, jeff@garzik.org,
-       "Williams, Dan J" <dan.j.williams@intel.com>
-Subject: Re: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-X-Message-Flag: Warning: May contain useful information
-References: <BD524EA7912ED5469DFD0BAEF6BC752F023E842F@orsmsx411.amr.corp.intel.com>
-	<adazm1qai0m.fsf@cisco.com>
-	<1a297b360707201432q3dc976b3x214c2916ca235b6f@mail.gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 20 Jul 2007 14:38:02 -0700
-In-Reply-To: <1a297b360707201432q3dc976b3x214c2916ca235b6f@mail.gmail.com> (Manu Abraham's message of "Sat, 21 Jul 2007 01:32:36 +0400")
-Message-ID: <adaveceah8l.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Fri, 20 Jul 2007 17:38:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39988 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752412AbXGTVib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 17:38:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Fri, 20 Jul 2007 23:46:34 +0200
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, Milton Miller <miltonm@bga.com>,
+       linux-pm <linux-pm@lists.linuxfoundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+References: <Pine.LNX.4.44L0.0707201211450.3811-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707201211450.3811-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Jul 2007 21:38:02.0818 (UTC) FILETIME=[4014EA20:01C7CB16]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707202346.35901.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > In a case where you have a device that which supports MSI-X (multiple
- > interrupts) but the device in default is in MSI mode, ie some
- > configuration change is needed on the device. In such a case, how
- > would one handle between MSI-X and MSI ?
- > 
- > ie the device initially doesn't support MSI-X
+On Friday, 20 July 2007 18:15, Alan Stern wrote:
+> On Fri, 20 Jul 2007 david@lang.hm wrote:
+> 
+> > or the userspace helper functions that setup the instructions for the 
+> > hibernate warn you if you are telling it to mount a filesystem that it 
+> > knows is ext3 and is in use by the system going to sleep.
+> 
+> One can argue that the ext3 implementation is inadequate.  We should be
+> able to give it a mount option requiring it to fail rather than play
+> back the journal and write to the disk.
+> 
+> 
+> > > What I've been trying to say from the very beginning is that the current
+> > > frameworks _support_ hibernation a la ACPI S4 (although that's not exactly
+> > > ACPI S4) and if we are going to introduce a new framework, then it should
+> > > be designed to _support_ ACPI S4 fully _from_ _the_ _start_.
+> > 
+> > here is where there is some disagreement (although it may just be 
+> > misunderstanding on the 'fully support' phrase)
+> > 
+> > it sounds like you are saying that the ACPI support requires a lot of work 
+> > (the phrase I've seen some people use is a requirement to 'fix all the 
+> > drivers'). we aren't wanting to have this work prevent the non-ACPI 
+> > hibernation from progressing.
+> 
+> You have completely misunderstood.  That phrase "fix all the drivers" 
+> has nothing whatsoever to do with ACPI.  It is a prerequisite for 
+> removing the freezer.
 
-I don't understand the question really.  Does the PCI spec even allow
-a device to be in MSI mode by default?  Surely the OS must initialize
-the address/message before the device can generate an MSI?
+Yes.
 
-What device do you have in mind?  I guess the interesting case is a
-PCIe device that supports MSI and MSI-X but not legacy interrupts.
-However I would assume such a device would come up with both MSI and
-MSI-X disabled.
+> And unless I'm mistaken, removing the freezer was the main reason for 
+> doing all this kexec-style work in the first place.
 
- - R.
+Yes, that also is my impression.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
