@@ -1,70 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbXGTLkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762738AbXGTLjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbXGTLkh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 07:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761891AbXGTLjS
+	id S1762738AbXGTLjy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 07:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762195AbXGTLjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 07:39:18 -0400
-Received: from lug-owl.de ([195.71.106.12]:45267 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758482AbXGTLjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 07:39:16 -0400
-Date: Fri, 20 Jul 2007 13:39:14 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFH] Partition table recovery
-Message-ID: <20070720113914.GJ22998@lug-owl.de>
-Mail-Followup-To: Al Boldi <a1426z@gawab.com>, linux-raid@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <200707200813.03553.a1426z@gawab.com> <20070720053526.GG943@1wt.eu> <Pine.LNX.4.64.0707200858030.31013@fbirervta.pbzchgretzou.qr> <200707201429.34419.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8tZVdKiiYitVG083"
-Content-Disposition: inline
-In-Reply-To: <200707201429.34419.a1426z@gawab.com>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 20 Jul 2007 07:39:00 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:59970 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762142AbXGTLi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 07:38:57 -0400
+Subject: Re: [PATCH 1/1][RESEND] Driver for the Atmel on-chip SSC on AT32AP
+	and AT91.
+From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+To: Andrew Victor <andrew@sanpeople.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       kernel-avr32 <kernel@avr32linux.org>,
+       David Brownell <david-b@pacbell.net>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Hans-Christian Egtvedt <egtvedt@samfundet.no>
+In-Reply-To: <1184914542.15002.113.camel@fuzzie.sanpeople.com>
+References: <469E6C00.3060506@atmel.com>
+	 <1184833759.15007.33.camel@fuzzie.sanpeople.com>
+	 <1184913868.16760.21.camel@localhost.localdomain>
+	 <1184914542.15002.113.camel@fuzzie.sanpeople.com>
+Content-Type: text/plain
+Date: Fri, 20 Jul 2007 13:38:31 +0200
+Message-Id: <1184931511.16760.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew,
 
---8tZVdKiiYitVG083
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2007-07-20 at 08:55 +0200, Andrew Victor wrote:
+> > Just an example from sound/soc/at91/at91-ssc.c
+> > 
+> > rcmr =	  (( ssc_p->rcmr_period		<< 24) & AT91_SSC_PERIOD)
+> > 			| (( 1				<< 16) & AT91_SSC_STTDLY)
+> > 			| (( AT91_SSC_START_FALLING_RF	     ) & AT91_SSC_START)
+> > 			| (( AT91_SSC_CK_RISING		     ) & AT91_SSC_CKI)
+> > 			| (( AT91_SSC_CKO_NONE		     ) & AT91_SSC_CKO)
+> > 			| (( AT91_SSC_CKS_DIV		     ) & AT91_SSC_CKS);
+> 
+> Well, I didn't write the above, so it's more complex than it needs to
+> be.
+> 
+> For bitfields where the user can input any value we would usually add
+> to
+> the header:
+>    #define AT91_SSC_STTDLY_(x)   ((x) << 16)
+>    #define AT91_SSC_PERIOD_(x)   ((x) << 24)
+> 
+> Then it can simply be re-written as:
+> 
+> rcmr = AT91_SSC_PERIOD(ssc_p->rcmr_period)
+> 	| AT91_SSC_STTDLY(1)
+> 	| AT91_SSC_START_FALLING_RF
+> 	| AT91_SSC_CK_RISING
+> 	| AT91_SSC_CKO_NONE
+> 	| AT91_SSC_CKS_DIV;
 
-On Fri, 2007-07-20 14:29:34 +0300, Al Boldi <a1426z@gawab.com> wrote:
->=20
-> But, I want something much more automated.  And the partition table backu=
-p=20
-> per partition entry isn't really a bad idea.
+This is more sane and readable.
 
-That's called `gpart'.
+> > Would with the header style for atmel-ssc be:
+> > 
+> > rcmr = SSC_BF(RCMR_PERIOD, ssc_p->rcmr_period)
+> > 		| SSC_BF(RCMR_STTDLY, 1)
+> > 		| SSC_BF(RCMR_START, 4)
+> > 		| SSC_BF(RCMR_CKI, 1)
+> > 		| SSC_BF(RCMR_CKO, 0)
+> > 		| SSC_BF(RCMR_CKS, 0);
+> > 
+> > I find the latter more readable and compact, the user also does not
+> need
+> > to know the offset of the different bit-fields.
+> 
+> But the user does then constantly have to refer to the datasheet to
+> determine what CKI = 1 or CKS = 0 means.
 
-MfG, JBG
+As I said two lines furter down, I think these defines are nice. Will
+adding bit-field descriptors make the SSC driver more usable by the AT91
+people?
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:              Fortschritt bedeutet, einen Schritt so zu machen,
-the second  :                   da=C3=9F man den n=C3=A4chsten auch noch ma=
-chen kann.
+I guess there is also the possibility to include the ARM headers for
+that architecture and use the definitions in the header file for AVR32.
 
---8tZVdKiiYitVG083
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+-- 
+With kind regards,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Hans-Christian Egtvedt, siv.ing. (M.Sc.)
+Applications Engineer - AVR32 System Solutions - Atmel Norway
 
-iD8DBQFGoJ7iHb1edYOZ4bsRAl3aAJ4gOJPY2NfDUDayqUPLlwSBzaDHdwCfQQIh
-J726Wvlhh4MI/mllOiOJc+I=
-=YqGJ
------END PGP SIGNATURE-----
-
---8tZVdKiiYitVG083--
