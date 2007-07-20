@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939564AbXGTP6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939806AbXGTP7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939564AbXGTP6j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 11:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938015AbXGTP6c
+	id S939806AbXGTP7S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 11:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937547AbXGTP7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 11:58:32 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:56644 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S937044AbXGTP6a (ORCPT
+	Fri, 20 Jul 2007 11:59:03 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:40051
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938317AbXGTP7C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 11:58:30 -0400
-Date: Fri, 20 Jul 2007 11:58:08 -0400
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, apiszcz@solarrain.com
-Subject: Re: Software RAID 5 - Two reads are faster than one on a SW RAID5?
-Message-ID: <20070720155808.GA21547@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.64.0707200952270.25069@p34.internal.lan>
+	Fri, 20 Jul 2007 11:59:02 -0400
+Date: Fri, 20 Jul 2007 08:48:52 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Huang, Ying" <ying.huang@intel.com>
+cc: Milton Miller <miltonm@bga.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J.Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <1184942918.13737.23.camel@caritas-dev.intel.com>
+Message-ID: <Pine.LNX.4.64.0707200845200.19248@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> 
+ <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org> 
+ <200707172217.01890.rjw@sisk.pl> <87odiag45q.fsf@jbms.ath.cx> 
+ <200707151433.34625.rjw@sisk.pl> <200707172320.16279.rjw@sisk.pl> 
+ <40fa2626aff7b6b590ad6aa4737fc873@bga.com> <1184942918.13737.23.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707200952270.25069@p34.internal.lan>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 09:58:50AM -0400, Justin Piszcz wrote:
-> I have a multi-core Q6600 CPU on a 10-disk Raptor RAID 5 running XFS.
-> 
-> I just pulled down the Debian Etch 4.0 DVD ISO's, one for x86 and one for 
-> x86_64, when I ran md5sum -c MD5SUMS, I see ~280-320MB/s.  When I ran the 
-> second one I see upwards of what I should be seeing 500-520MB/s.
-> 
-> NOTE:: These MD5 contain the 3 DVD ISO's for each platform, 6 total ISOs.
-> 
-> I know md5sum is cpubound to a degree, do you think that is what is 
-> happening here?  Each core can only sustain ~300MB/s and then with two of 
-> four cores working, it can exceed that amount or is there some similarity 
-> with RAID1 in linux compared to RAID5?
-> 
-> With RAID1, if you use a single read thread, you will get 60-70MB/s read 
-> on a dual raptor raid1.  If you use two(?) or three threads, it will read 
-> from both disks and you will see 120-140MB/s.
-> 
-> Is there some commonality with software RAID1 and RAID5 in Linux in this 
-> regard?
+On Fri, 20 Jul 2007, Huang, Ying wrote:
 
-Could you just run top while doing md5sum and see how much cpu md5sum is
-using on the cpu it is on?  After all if it says 100% for the process,
-then yes it is cpu bound at 300MB/s, and if not then I guess there has
-to be another explanation.
+> 
+> On Fri, 2007-07-20 at 09:01 -0500, Milton Miller wrote:
+>> Simplifying kjump: the proposal for v3.
+>>
+>> The current code is trying to use crash dump area as a safe, reserved
+>> area to run the second kernel.   However, that means that the kernel
+>> has to be linked specially to run in the reserved area.   I think we
+>> need to finish separating kexec_jump from the other code paths.
+>>
+>> (1) add a new command line argument that specifies the kexec_jump
+>> target area (or just size?)
+>>
+>> (2) add a kjump flag to the flags parameter, used by kexec_load.   When
+>> loading a jump kernel, it is loaded like a normal kernel, however,
+>> additional control pages are allocated to (a) save this kenrel's use of
+>> the kexec_jump target area (b) save the backed up region that is used
+>> by all kernels like crash dump, and (c) space for invoking
+>> relocate_new_kernel that will get its args from the execution entry
+>> point and will restore the kernel then call resume and suspend.
+>
+> Backuping target memory before kexec and restoring it after kexec is
+> planed feature for kexec jump. But I will work on image writing/reading
+> first.
 
-It looks pretty likely, since I just tried running md5sum on a 130MB
-file here, and it takes 0.444s of user cpu time and 0.068s of system
-time to process, and I ran it multiple times so the file ended up cached
-in ram so disk speed isn't a concern, which I figure means my system
-runs md5sum at about 250MB/s.  This is on a single core Athlon 64 3500+
-(2.2GHz).  So if you have a slightly faster as you do with a 2.4GHz Core
-2, then 300MB/s seems perfectly reasonable per core.  I don't quite know
-how md5 hashes work, but I really doubt they are something you are
-likely to be able to make threaded.
+if we can get a list of what memory is safe to backup/restore then the 
+reading/writing of the image should be able to be done in userspace.
 
---
-Len Sorensen
+>> (3) replace jump_huf_pfn with two command line addresses that specify
+>> the (a) return point for after resume, and (b) the return point for
+>> after image save.   Actually these can be done in userspace; the second
+>> restore kernel can just specify the null copy list and the entry points
+>> supplied by the suspended kernel.  To do resume we also need (c) where
+>> to store resume address for the save kernel.
+>
+> There is many free spaces in jump_buf_pfn page now. I think passing the
+> needed information through jump_buf_pfn is more convenient than through
+> kernel command line. That is, the jump_buf_pfn can be seen as a meta
+> interface, which is passed to kexeced kernel though command line, while
+> other information can be passed though jmp_buf_pfn.
+
+
+
+>> The seperation should be whoever builds a scatter copy list builds the
+>> inverse list.  This is why I propose simple jump entry points.  I
+>> expect just a few instructions to establish arguments for the call to
+>> the exstinging relocate_new_kernel code.
+>
+> If the "scatter copy" is replaced by "scatter swap", we need not the
+> inverse list, and the state of kexeced kernel can be backuped too. There
+> are "scatter copy" support in normal kexec implementation in
+> "relocate_kernel".
+
+what do you mean by "scatter swap"?
+
+David Lang
