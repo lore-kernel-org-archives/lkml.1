@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935544AbXGTJ77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbXGTKJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935544AbXGTJ77 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 05:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758533AbXGTJ7s
+	id S1755346AbXGTKJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 06:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXGTKJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 05:59:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37025 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763687AbXGTJ7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 05:59:47 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] AFS: Use patched rxrpc_kernel_send_data() correctly [try #2]
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jul 2007 10:59:41 +0100
-Message-ID: <20070720095941.23835.2661.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	Fri, 20 Jul 2007 06:09:12 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:28353 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbXGTKJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 06:09:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=k7ENADqDsyWNjjC+rQka5x4qktKoAIa/m/rUNHo+ighmUYXJVNum9kBWoqL2EZvZl0Q8XC1/lm3307ecpW3hTvpF37aE7t2haPZ4NFQUrmsPhnu5P8wggCSOM1chRQtYgEApv2dh1ZVE21jpICZhCrjNxJqN3zRYafUmjysub2s=
+Message-ID: <a8e1da0707200309n377eca1fwa640eeceb920959b@mail.gmail.com>
+Date: Fri, 20 Jul 2007 10:09:10 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Denis Cheng" <crquan@gmail.com>
+Subject: Re: [PATCH] fs/fuse/dev.c: use zero_user_page instead
+Cc: "Miklos Szeredi" <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <11849242706-git-send-email-crquan@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11849242706-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix afs_send_simple_reply() to accept a greater-than-zero return value from
-rxrpc_kernel_send_data() as being a successful return rather than thinking it
-an error and aborting the call.
-
-rxrpc_kernel_send_data() previously returned zero incorrectly when it worked
-successfully, but has been patched to return the number of bytes it
-transmitted.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/afs/rxrpc.c |   21 ++++++++++-----------
- 1 files changed, 10 insertions(+), 11 deletions(-)
-
-diff --git a/fs/afs/rxrpc.c b/fs/afs/rxrpc.c
-index 1b36f45..8ccee9e 100644
---- a/fs/afs/rxrpc.c
-+++ b/fs/afs/rxrpc.c
-@@ -792,6 +792,7 @@ void afs_send_simple_reply(struct afs_call *call, const void *buf, size_t len)
- {
- 	struct msghdr msg;
- 	struct iovec iov[1];
-+	int n;
- 
- 	_enter("");
- 
-@@ -806,22 +807,20 @@ void afs_send_simple_reply(struct afs_call *call, const void *buf, size_t len)
- 	msg.msg_flags		= 0;
- 
- 	call->state = AFS_CALL_AWAIT_ACK;
--	switch (rxrpc_kernel_send_data(call->rxcall, &msg, len)) {
--	case 0:
-+	n = rxrpc_kernel_send_data(call->rxcall, &msg, len);
-+	if (n >= 0) {
- 		_leave(" [replied]");
- 		return;
--
--	case -ENOMEM:
-+	}
-+	if (n == -ENOMEM) {
- 		_debug("oom");
- 		rxrpc_kernel_abort_call(call->rxcall, RX_USER_ABORT);
--	default:
--		rxrpc_kernel_end_call(call->rxcall);
--		call->rxcall = NULL;
--		call->type->destructor(call);
--		afs_free_call(call);
--		_leave(" [error]");
--		return;
- 	}
-+	rxrpc_kernel_end_call(call->rxcall);
-+	call->rxcall = NULL;
-+	call->type->destructor(call);
-+	afs_free_call(call);
-+	_leave(" [error]");
- }
- 
- /*
-
+>On 7/20/07, Denis Cheng <crquan@gmail.com> wrote:
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+> I'm not very sure zero_user_page is correctly used here,
+> so please feel free to give comments.
+>
+> and why here it uses KM_USER1 not KM_USER0, What are the differences?
+>
+>  fs/fuse/dev.c |    8 +++-----
+>  1 files changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
+> index 3ad22be..e55b5e8 100644
+> --- a/fs/fuse/dev.c
+> +++ b/fs/fuse/dev.c
+> @@ -533,11 +533,9 @@ static int fuse_copy_do(struct fuse_copy_state *cs, void **val, unsigned *size)
+>  static int fuse_copy_page(struct fuse_copy_state *cs, struct page *page,
+>                           unsigned offset, unsigned count, int zeroing)
+>  {
+> -       if (page && zeroing && count < PAGE_SIZE) {
+> -               void *mapaddr = kmap_atomic(page, KM_USER1);
+> -               memset(mapaddr, 0, PAGE_SIZE);
+> -               kunmap_atomic(mapaddr, KM_USER1);
+> -       }
+> +       if (page && zeroing && count < PAGE_SIZE)
+> +               zero_user_page(page, 0, PAGE_SIZE, KM_USER1);
+Why clear all page? IMHO,only count bytes need to be cleared.
+> +
+>         while (count) {
+>                 int err;
+>                 if (!cs->len && (err = fuse_copy_fill(cs)))
