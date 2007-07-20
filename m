@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934546AbXGTUf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936135AbXGTUgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934546AbXGTUf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 16:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760313AbXGTUfM
+	id S936135AbXGTUgY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933811AbXGTUgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 16:35:12 -0400
-Received: from ns2.lanforge.com ([66.165.47.211]:38028 "EHLO ns2.lanforge.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757349AbXGTUfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 16:35:10 -0400
-Message-ID: <46A11C54.2090100@candelatech.com>
-Date: Fri, 20 Jul 2007 13:34:28 -0700
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Fri, 20 Jul 2007 16:36:14 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:11690 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933806AbXGTUgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 16:36:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V+LqCPO/IDKRsD3fD2fNtIXxH8Qm2ac65GZkY1iKDQs9Kna5KnxM4fDM+LcQtMxz78Hc5VSkVZJaDLs8K4+TFgkYYEdxvEFCHG5p/mB/EolwQL+snKcrPnOX6vyhBReK+16vyAV8ycJay5CWC5rpa2z9p3RDyu+BPjNAGh7nsGg=
+Message-ID: <8bd0f97a0707201336l6bed7c24i7014333ce356417f@mail.gmail.com>
+Date: Fri, 20 Jul 2007 16:36:12 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
+Subject: Re: blackfin - cmpxchg not atomic ?
+Cc: tonyko@lineo.ca, robin.getz@analog.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20070720202807.GA15009@Krystal>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: andrei radulescu-banu <iubica2@yahoo.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <997818.30021.qm@web56615.mail.re3.yahoo.com> <m31wf226fw.fsf@maximus.localdomain>
-In-Reply-To: <m31wf226fw.fsf@maximus.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070720202807.GA15009@Krystal>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Another idea - perhaps we could make the software VLANs behave
-> the same as hw ones? I.e., stripping the tag on RX while setting
-> some magic skb field?
-> 
-> The packets could go via main interface first (normal path, with
-> eth_type_trans stripping the tag and setting protocol = some 802.1Q),
-> netif_rx | netif_receive_skb, then through the VLAN device with
-> finally eth_type_trans setting the IPv4 etc. protocol to pass to
-> L3 layers.
+On 7/20/07, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> I am currently passing through each architectures adding a
+> cmpxchg_local() to each system.h, and I notice that you disable
+> interrupts in your cmpxchg() implementation, why are you doing so ?
 
-There is already a flag you can set on vlan devices (reorder-header)
-that strips the VLAN tag before presenting it to user-space.
+because Blackfin lacks any atomic instructions
 
-> I can see potential problems on TX, the packets would have to be
-> presented without the tag (but with VLAN ID set somewhere in the skb)
-> and that probably means all drivers would have to be modified.
+> Also, does you assembly stub _really_ modify memory atomically ? If yes,
+> then there should be no need for disabling interrupts. Else, I see a
+> major problem with SMP.
 
-On tx, if it shows up on the vlan device, we add that device's VID to
-the header if no VID is currently in the SKB.  If it is in the SKB header
-we change the VID to be the tx dev's VID (if it was different).  This allows user-space
-to send a raw ethernet frame on a vlan device and have it automatically
-go out of the box on the correct vlan.  User-space can also send raw VLAN frames
-and have those also go out on the correct VLAN.
+that isnt the only problem with SMP on Blackfin
 
-> Seems a bit of work, I know my message is missing the patch...
+> I also don't like the comment in asm-blackfin/atomic.h :
+>
+>  * Generally we do not concern about SMP BFIN systems, so we don't have
+>  * to deal with that.
+>
+> I have seen on the blackfin website that you actually sell a board with
+> SMP. Why aren't you caring about it ?
 
-Unless I mis-understand, this has been working since 2.4 days :)
-
-Ben
-
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
-
+just because a processor has more than one core does not make it SMP
+-mike
