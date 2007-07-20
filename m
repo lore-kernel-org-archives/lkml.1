@@ -1,43 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbXGTNkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763165AbXGTNll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763289AbXGTNkX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757197AbXGTNkJ
+	id S1763165AbXGTNll (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 09:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757197AbXGTNle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:40:09 -0400
-Received: from srv4.netavous.net ([213.251.145.243]:47873 "HELO
-	srv4.netavous.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758238AbXGTNkH convert rfc822-to-8bit (ORCPT
+	Fri, 20 Jul 2007 09:41:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:25212 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756922AbXGTNle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:40:07 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jul 2007 09:40:07 EDT
-From: David CHANIAL <david.ml@euro-web.fr>
-Organization: Euro Web
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
-Date: Fri, 20 Jul 2007 15:33:14 +0200
-User-Agent: KMail/1.9.5
-Cc: "Neil Brown" <neilb@suse.de>,
-       "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>
-References: <200707160638.15750.david.ml@euro-web.fr> <18080.22813.143226.671265@notabene.brown> <a781481a0707200013g5c2ce008ka63e18f775664984@mail.gmail.com>
-In-Reply-To: <a781481a0707200013g5c2ce008ka63e18f775664984@mail.gmail.com>
+	Fri, 20 Jul 2007 09:41:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=iJCeKN/0hbSlKvOobLVqLrQRYJyuTr9mydPiwKd1KS0YExI2FevWqWK5gD4CrJnTOZDOfnBjcPFVxDfbg8ibZd3EkCPyY5Nh1QCIK2T/LSNXVI9/KNDYFKFUtuTQ5rRCsBquBA6NUSrYTRojpjMcNP02DJbLVdmmS8z0DxNrmyQ=
+Message-ID: <46A0BB24.6050001@googlemail.com>
+Date: Fri, 20 Jul 2007 15:39:48 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707201533.14517.david.ml@euro-web.fr>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: ata_piix broken in 2.6.22
+References: <94a0d4530707200626r2b50146bs55e268033ceab4b0@mail.gmail.com>
+In-Reply-To: <94a0d4530707200626r2b50146bs55e268033ceab4b0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 20 juillet 2007 09:13, Satyam Sharma a écrit :
-> David, please try this and let us know if it solves your problems.
+Felipe Contreras wrote:
+> Hi,
 
-How to ?
-Should i have to patch kernel tree myself ? on 2.6.22.1 ?
+Hi ,
 
-For the moment, with 2.6.22.1 the probleme has not reappeared.
+> 
+> Since I updated to 2.6.22 everything has been slower and I think this
+> is the reason:
+> 
+> ata_piix 0000:00:1f.2: version 2.11
+> ata_piix 0000:00:1f.2: MAP [ P0 P2 IDE IDE ]
+> ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 16 (level, low) -> IRQ 16
+> ata_piix 0000:00:1f.2: 0x1F0 IDE port busy
+> ata_piix 0000:00:1f.2: 0x170 IDE port busy
+> ata_piix 0000:00:1f.2: no available legacy port
+> 
+> I tried to apply the patch d583bc18812f8da52bf25eef9cd111e5fd46a6ab,
+> but I get a similar error:
+> 
+> ata_piix 0000:00:1f.2: version 2.11
+> ata_piix 0000:00:1f.2: MAP [ P0 P2 IDE IDE ]
+> ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 16 (level, low) -> IRQ 16
+> PCI: Unable to reserve I/O region #1:8@1f0 for device 0000:00:1f.2
+> ata_piix 0000:00:1f.2: failed to request/iomap BARs for port 0 (errno=-16)
+> PCI: Unable to reserve I/O region #3:8@170 for device 0000:00:1f.2
+> ata_piix 0000:00:1f.2: failed to request/iomap BARs for port 1 (errno=-16)
+> ata_piix 0000:00:1f.2: no available native port
+> 
+> I think I'm not the only one with that problem:
+> http://www.dellcommunity.com/supportforums/board/message?board.id=sw_linux&thread.id=10825
+> 
+> Any hints?
+> 
 
-Best regards,
--- 
-David
+Guessing you are using and SATA/PATA controller ?
+
+Combined mode got removed in 2.6.22 and depending on your config things will break.
+
+As example CONFIG_IDE=y  BLK_DEV_PIIX=y , ATA=y , ATA_PIIX=Y worked in <2.6.22 but won't on .22.
+
+If you want to use libata try to boot with ideX=noprobe ideY=noprobe
+
+
+Gabriel
+
