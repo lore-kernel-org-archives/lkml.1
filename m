@@ -1,103 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763668AbXGTMX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763999AbXGTMYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763668AbXGTMX3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 08:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbXGTMXL
+	id S1763999AbXGTMYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 08:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760829AbXGTMXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 08:23:11 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:2764 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752764AbXGTMXJ (ORCPT
+	Fri, 20 Jul 2007 08:23:47 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:38261 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759729AbXGTMXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 08:23:09 -0400
-Date: Fri, 20 Jul 2007 13:23:06 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sibyte-users@bitmover.com
-Subject: [PATCH] sb1250-duart: __maybe_unused, etc. fixes
-Message-ID: <Pine.LNX.4.64N.0707201314300.7402@blysk.ds.pg.gda.pl>
+	Fri, 20 Jul 2007 08:23:46 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 20 Jul 2007 08:21:52 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] IP_VS should depend on EXPERIMENTAL ?
+In-Reply-To: <46A0A7C2.3090006@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0707200818010.12187@localhost.localdomain>
+References: <46A0A01A.7030403@googlemail.com> <Pine.LNX.4.64.0707200753300.10966@localhost.localdomain>
+ <46A0A7C2.3090006@googlemail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This is a set of small fixes addressing points raised with the original 
-driver submission.  In particular, __maybe_unused is used rather than a 
-local hack and sbd_ops is made const.  Additionally I have made two local 
-string variables automatic as rodata space was wasted for pointers 
-unnecessarily.
+On Fri, 20 Jul 2007, Gabriel C wrote:
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
-Hi,
+> Robert P. J. Day wrote:
+> > On Fri, 20 Jul 2007, Gabriel C wrote:
+> >
+> >> Hi,
+> >>
+> >> IP_VS has :
+> >>
+> >> ..
+> >>
+> >> tristate "IP virtual server support (EXPERIMENTAL)"
+> >>
+> >> ..
+> >>
+> >> but it does not depend on EXPERIMENTAL.
+> >>
+> >>
+> >> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+> >>
+> >> ---
+> >>
+> >>  net/ipv4/ipvs/Kconfig |    2 +-
+> >>  1 files changed, 1 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/net/ipv4/ipvs/Kconfig b/net/ipv4/ipvs/Kconfig
+> >> index 09d0c3f..3c594ec 100644
+> >> --- a/net/ipv4/ipvs/Kconfig
+> >> +++ b/net/ipv4/ipvs/Kconfig
+> >> @@ -3,7 +3,7 @@
+> >>  #
+> >>  menuconfig IP_VS
+> >>  	tristate "IP virtual server support (EXPERIMENTAL)"
+> >> -	depends on NETFILTER
+> >> +	depends on NETFILTER && EXPERIMENTAL
+> >>  	---help---
+> >>  	  IP Virtual Server support will let you build a high-performance
+> >>  	  virtual server based on cluster of two or more real servers. This
+> >
+> > there's maturity-level inconsistency like that in a few places, like
+> > when stuff is tagged as EXPERIMENTAL, but labelled as OBSOLETE:
+> >
+> [ a lot examples ]
+>
+> I know that and there are a lot more things depending on
+> 'EXPERIMENTAL' and not having EXPERIMENTAL visible all over the tree
+> but that patch I've made for the _net_ part got NACK'ed while your
+> maturity idea and I rm -rf'ed all the other.
+>
+> This one has a missing depends on EXPERIMENTAL while saying it is.
+>
+> So *could* we please stop this maturity stuff for now ? I don't see
+> it in .23 nor .24 if at all.
 
- This should be obvious.  It builds.  Please apply.
+this has *nothing* to do with the aforementioned maturity levels.  i
+understand entirely the inconsistency above.  what i'm suggesting is
+that it might very well be more appropriate to *drop the dependency*
+rather than munge the prompt to add the qualifier.
 
-  Maciej
+i think it's safe to say that there's *piles* of stuff in the Kconfig
+files that is still saddled with an EXPERIMENTAL dependency that's
+been around for years and has stabilized nicely.  i mean, seriously,
+is IP virtual server support still "experimental" in any way?
 
-patch-mips-2.6.22-20070710-serial-sb1250-duart-fix-0
-diff -up --recursive --new-file linux-mips-2.6.22-20070710.macro/drivers/serial/sb1250-duart.c linux-mips-2.6.22-20070710/drivers/serial/sb1250-duart.c
---- linux-mips-2.6.22-20070710.macro/drivers/serial/sb1250-duart.c	2007-07-11 02:21:42.000000000 +0000
-+++ linux-mips-2.6.22-20070710/drivers/serial/sb1250-duart.c	2007-07-19 23:46:33.000000000 +0000
-@@ -25,6 +25,7 @@
- #define SUPPORT_SYSRQ
- #endif
- 
-+#include <linux/compiler.h>
- #include <linux/console.h>
- #include <linux/delay.h>
- #include <linux/errno.h>
-@@ -103,8 +104,6 @@ struct sbd_duart {
- 
- static struct sbd_duart sbd_duarts[DUART_MAX_CHIP];
- 
--#define __unused __attribute__((__unused__))
--
- 
- /*
-  * Reading and writing SB1250 DUART registers.
-@@ -204,12 +203,12 @@ static int sbd_receive_drain(struct sbd_
- 	return loops;
- }
- 
--static int __unused sbd_transmit_ready(struct sbd_port *sport)
-+static int __maybe_unused sbd_transmit_ready(struct sbd_port *sport)
- {
- 	return read_sbdchn(sport, R_DUART_STATUS) & M_DUART_TX_RDY;
- }
- 
--static int __unused sbd_transmit_drain(struct sbd_port *sport)
-+static int __maybe_unused sbd_transmit_drain(struct sbd_port *sport)
- {
- 	int loops = 10000;
- 
-@@ -664,7 +663,7 @@ static void sbd_release_port(struct uart
- 
- static int sbd_map_port(struct uart_port *uport)
- {
--	static const char *err = KERN_ERR "sbd: Cannot map MMIO\n";
-+	const char *err = KERN_ERR "sbd: Cannot map MMIO\n";
- 	struct sbd_port *sport = to_sport(uport);
- 	struct sbd_duart *duart = sport->duart;
- 
-@@ -691,8 +690,7 @@ static int sbd_map_port(struct uart_port
- 
- static int sbd_request_port(struct uart_port *uport)
- {
--	static const char *err = KERN_ERR
--				 "sbd: Unable to reserve MMIO resource\n";
-+	const char *err = KERN_ERR "sbd: Unable to reserve MMIO resource\n";
- 	struct sbd_duart *duart = to_sport(uport)->duart;
- 	int map_guard;
- 	int ret = 0;
-@@ -755,7 +753,7 @@ static int sbd_verify_port(struct uart_p
- }
- 
- 
--static struct uart_ops sbd_ops = {
-+static const struct uart_ops sbd_ops = {
- 	.tx_empty	= sbd_tx_empty,
- 	.set_mctrl	= sbd_set_mctrl,
- 	.get_mctrl	= sbd_get_mctrl,
+rday
+ --
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
