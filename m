@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXGTUMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764970AbXGTURs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933585AbXGTUMl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 16:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbXGTUMd
+	id S1764970AbXGTURs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758660AbXGTURk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 16:12:33 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54429 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754340AbXGTUMc (ORCPT
+	Fri, 20 Jul 2007 16:17:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34601 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755514AbXGTURj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 16:12:32 -0400
-Date: Fri, 20 Jul 2007 16:12:31 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Lang <david@lang.hm>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <200707202203.27849.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0707201608120.2546-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 20 Jul 2007 16:17:39 -0400
+Date: Fri, 20 Jul 2007 13:17:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [IA64] Add mapping table between irq and vector
+Message-Id: <20070720131728.a7335d92.akpm@linux-foundation.org>
+In-Reply-To: <200707201959.l6KJxHAu019185@hera.kernel.org>
+References: <200707201959.l6KJxHAu019185@hera.kernel.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007, Oliver Neukum wrote:
+On Fri, 20 Jul 2007 19:59:17 GMT
+Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 
-> Am Freitag 20 Juli 2007 schrieb Alan Stern:
-> > Some drivers need the ability to schedule.  Some will need the ability 
-> > to allocate memory (although GFP_ATOMIC is probably sufficient).  Some 
-> > will need timers to run.
-> 
-> Some will have to request firmware. It can add up to some megabytes.
-> In addition, if we don't freeze, some drivers, eg. video drivers, can
-> do allocations in the megabyte range.
-> 
-> It seems to me that without the freezer we will end up with many drivers
-> needing a two step notification process. Furthermore there are requirements
-> on the order of shutting down system facilities, eg. device addition must
-> be stopped before drivers allocate firmware.
+> +	BUG_ON(bind_irq_vector(irq, vector));
 
-These are really separate issues, since they refer to things that have 
-to happen well before the memory snapshot is captured.
+It's not good practice to do assert(expression-with-side-effects).  Because
+if someone wants to create a build which has all the assertions disabled,
+the resulting binary will not work.
 
-We already have a pre-suspend notification available for drivers that 
-need to allocate large amounts of memory.
+In the present implementation our BUG_ON(expression) will evaluate
+`expression' even if CONFIG_BUG=n.  But that's totally lame and we are just
+leaving optimisation opportunities on the floor.
 
-You are correct about the need to delay/stop device addition.  I don't
-know how this can be done in general; each code path calling
-device_add() may have to be treated individually.
+Our objective _should_ be to make BUG_ON(expr) generate no code at all if
+CONFIG_BUG=n.
 
-Alan Stern
+So please, prefer to do
+
+	if (bind_irq_vector(irq, vector))
+		BUG();
 
