@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941352AbXGTQdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941405AbXGTQee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941352AbXGTQdi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765064AbXGTQdb
+	id S941405AbXGTQee (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939521AbXGTQe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:33:31 -0400
-Received: from mga01.intel.com ([192.55.52.88]:53995 "EHLO mga01.intel.com"
+	Fri, 20 Jul 2007 12:34:26 -0400
+Received: from mail.screens.ru ([213.234.233.54]:48476 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934884AbXGTQda convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:33:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,563,1175497200"; 
-   d="scan'208";a="270781941"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 4/7] I/OAT: Split PCI startup from DMA handling code
-Date: Fri, 20 Jul 2007 09:33:20 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02B81665@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20070720105307.GB10631@pazke.donpac.ru>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 4/7] I/OAT: Split PCI startup from DMA handling code
-Thread-Index: AcfKvDDOwhH7DHavRfyiAi4jZLuGxwALygXw
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Andrey Panin" <pazke@donpac.ru>
-Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <davem@davemloft.net>, <jeff@garzik.org>,
-       "Williams, Dan J" <dan.j.williams@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-X-OriginalArrivalTime: 20 Jul 2007 16:33:20.0871 (UTC) FILETIME=[AF312F70:01C7CAEB]
+	id S932220AbXGTQeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 12:34:25 -0400
+Date: Fri, 20 Jul 2007 20:36:06 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kristian Hoegsberg <krh@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] idr_remove_all: kill unused variable
+Message-ID: <20070720163606.GA2672@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Panin [mailto:pazke@donpac.ru] 
->
->Why this driver lacks MODULE_DEVICE_TABLE() ? Is it 
->intentionaly omitted ?
+"error" is always equal to 0.
 
-Hmmm - good catch.  It has been missing for a long time in the code.
-I'll double check with the original developer to see if it was left out
-on purpose and probably add it in a later patch.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Thanks,
-sln
---
-======================================================================
-Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
-Shannon.Nelson@intel.com                I don't speak for Intel
-(503) 712-7659                    Parents can't afford to be squeamish.
+--- t/lib/idr.c~	2007-07-20 20:18:09.000000000 +0400
++++ t/lib/idr.c	2007-07-20 20:19:27.000000000 +0400
+@@ -405,7 +405,7 @@ EXPORT_SYMBOL(idr_remove);
+  */
+ void idr_remove_all(struct idr *idp)
+ {
+-	int n, id, max, error = 0;
++	int n, id, max;
+ 	struct idr_layer *p;
+ 	struct idr_layer *pa[MAX_LEVEL];
+ 	struct idr_layer **paa = &pa[0];
+@@ -415,7 +415,7 @@ void idr_remove_all(struct idr *idp)
+ 	max = 1 << n;
+ 
+ 	id = 0;
+-	while (id < max && !error) {
++	while (id < max) {
+ 		while (n > IDR_BITS && p) {
+ 			n -= IDR_BITS;
+ 			*paa++ = p;
+
