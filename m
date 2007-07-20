@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933955AbXGTPHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932671AbXGTPIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933955AbXGTPHv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 11:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764523AbXGTPHn
+	id S932671AbXGTPIG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 11:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934036AbXGTPHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 11:07:43 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36020 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764294AbXGTPHm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 11:07:42 -0400
-Date: Fri, 20 Jul 2007 16:07:33 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: shemminger@linux-foundation.org, jgarzik@pobox.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] sky2 breakage
-Message-ID: <20070720150733.GG21668@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Fri, 20 Jul 2007 11:07:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42438 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764523AbXGTPHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 11:07:54 -0400
+Message-ID: <46A0CFB3.1090004@redhat.com>
+Date: Fri, 20 Jul 2007 17:07:31 +0200
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070529)
+MIME-Version: 1.0
+To: Alasdair G Kergon <agk@redhat.com>
+CC: Chuck Ebbert <cebbert@redhat.com>, Patrick McHardy <kaber@trash.net>,
+       Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Subject: Re: [2.6.23 PATCH 07/18] dm io: fix panic on large request
+References: <20070711205846.GY24114@agk.fab.redhat.com> <469CC11B.2020103@trash.net> <469E305D.8060003@redhat.com>
+In-Reply-To: <469E305D.8060003@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Doing |= 1 << 19 to 16bit unsigned is not particulary useful;
-that register is 32bit, unlike the ones dealt with in the rest of
-function, so we need u32 variable here.
+Chuck Ebbert wrote:
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+>> [  126.754204] BUG: unable to handle kernel NULL pointer dereference at
+>> virtual address 00000000
+>>     
+...
+
+> mempool_free() was called with a NULL pool. That can't be good.
+Yes, it is really not good :)
+
+Bug http://bugzilla.kernel.org/show_bug.cgi?id=7388
+Attached patch fixes this problem, fix needed for stable tree too,
+this is not regression, just very old bug...
+
+Milan
+--
+mbroz@redhat.com
+
+--
+From: Milan Broz <mbroz@redhat.com>
+
+Flush workqueue before releasing bioset and mopools
+in dm-crypt.
+There can be finished but not yet released request.
+
+Call chain causing oops:
+  run workqueue
+    dec_pending
+      bio_endio(...);
+      	<remove device request - remove mempool>
+      mempool_free(io, cc->io_pool);
+
+This usually happens when cryptsetup create temporary
+luks mapping in the beggining of crypt device activation.
+
+When dm-core calls destructor crypt_dtr, no new request
+are possible.
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+
 ---
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index a2f3215..13f08a3 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -692,6 +692,7 @@ static void sky2_mac_init(struct sky2_hw *hw, unsigned port)
+ drivers/md/dm-crypt.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6.22/drivers/md/dm-crypt.c
+===================================================================
+--- linux-2.6.22.orig/drivers/md/dm-crypt.c	2007-07-17 21:56:36.000000000 +0200
++++ linux-2.6.22/drivers/md/dm-crypt.c	2007-07-19 11:55:13.000000000 +0200
+@@ -920,6 +920,8 @@ static void crypt_dtr(struct dm_target *
  {
- 	struct sky2_port *sky2 = netdev_priv(hw->dev[port]);
- 	u16 reg;
-+	u32 rx_reg;
- 	int i;
- 	const u8 *addr = hw->dev[port]->dev_addr;
+ 	struct crypt_config *cc = (struct crypt_config *) ti->private;
  
-@@ -768,11 +769,11 @@ static void sky2_mac_init(struct sky2_hw *hw, unsigned port)
- 
- 	/* Configure Rx MAC FIFO */
- 	sky2_write8(hw, SK_REG(port, RX_GMF_CTRL_T), GMF_RST_CLR);
--	reg = GMF_OPER_ON | GMF_RX_F_FL_ON;
-+	rx_reg = GMF_OPER_ON | GMF_RX_F_FL_ON;
- 	if (hw->chip_id == CHIP_ID_YUKON_EX)
--		reg |= GMF_RX_OVER_ON;
-+		rx_reg |= GMF_RX_OVER_ON;
- 
--	sky2_write32(hw, SK_REG(port, RX_GMF_CTRL_T), reg);
-+	sky2_write32(hw, SK_REG(port, RX_GMF_CTRL_T), rx_reg);
- 
- 	/* Flush Rx MAC FIFO on any flow control or error */
- 	sky2_write16(hw, SK_REG(port, RX_GMF_FL_MSK), GMR_FS_ANY_ERR);
++	flush_workqueue(_kcryptd_workqueue);
++
+ 	bioset_free(cc->bs);
+ 	mempool_destroy(cc->page_pool);
+ 	mempool_destroy(cc->io_pool);
+
+
+
