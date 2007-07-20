@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761062AbXGTDXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761484AbXGTDXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761062AbXGTDXL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 23:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXGTDWz
+	id S1761484AbXGTDXz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 23:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbXGTDXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 23:22:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:48815 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754180AbXGTDWx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 23:22:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ooLipdXS5eGLxodwn97dNmFaWkBVjIAwBzvkj9F87ZB6fUNWYmeLcCjoleHi6Fb+tMNVhf2VbHsir674Z5scF2yB4UxaL0a6J3gxylb7BkepcBYsh4kqs06fzaLP94gg6Hb8ofN2A7TVdduix8lxun883wyudXu9QRlpXPiq7a0=
-Message-ID: <91b13c310707192022mf16cfefg8e05077697a4fef0@mail.gmail.com>
-Date: Fri, 20 Jul 2007 11:22:52 +0800
-From: "rae l" <crquan@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/2] net/core: merge the content of dev_mcast.c into dev.c
-Cc: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru, kaber@trash.net,
-       pekkas@netcore.fi, jmorris@namei.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070719.200459.41636483.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Jul 2007 23:23:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:55897 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756228AbXGTDXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 23:23:47 -0400
+Subject: Re: asm-offsets
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: ak@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20070720032236.GB475@flower.upol.cz>
+References: <200707192004.l6JK4wQK019993@imap1.linux-foundation.org>
+	 <E1IBdoz-0005Ol-6b@flower>
+	 <1184895253.10380.227.camel@localhost.localdomain>
+	 <20070720032236.GB475@flower.upol.cz>
+Content-Type: text/plain
+Date: Fri, 20 Jul 2007 13:23:40 +1000
+Message-Id: <1184901820.10380.254.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070718.030306.50591269.davem@davemloft.net>
-	 <1184758229305-git-send-email-crquan@gmail.com>
-	 <91b13c310707191851h3bffaf2au7443d32c725dfb45@mail.gmail.com>
-	 <20070719.200459.41636483.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/20/07, David Miller <davem@davemloft.net> wrote:
-> Please don't quote a big huge patch just to say one sentence that
-> doesn't apply to any particular specific part of a patch.
->
-> That's wastes bandwidth, annoys people you might actually want
-> a response from, and is bad netiquette in general.
-Thanks.
+On Fri, 2007-07-20 at 05:22 +0200, Oleg Verych wrote:
+> On Fri, Jul 20, 2007 at 11:34:13AM +1000, Rusty Russell wrote:
+> > On Thu, 2007-07-19 at 23:46 +0200, Oleg Verych wrote:
+> > > > This is the structure offsets required by lg.ko's switcher.S.
+> > > >
+> > > > Unfortunately we don't have infrastructure for private asm-offsets
+> > > > creation.
+> > > 
+> > > I did asm-offsets build rewrite RFC caled asm-values more than four week
+> > > ago: <http://mid.gmane.org/20070612234558.648949000@flower.upol.cz>
+> > 
+> > Indeed, but you're poking the wrong person.  Sam needs to ack or fwd...
+> 
+> Even busy people can say something about proposed design of that
+> rewrite, so work will not stall like this. But lost message is another
+> case of course.
 
->
+Hi Oleg,
 
--- 
-Denis Cheng
-Linux Application Developer
+	I appreciate your frustration!  Unfortunately I'm not fluent enough in
+kbuild to be able to give meaningful commentary, so pinging Sam is my
+way of helping this along...
 
-"One of my most productive days was throwing away 1000 lines of code."
- - Ken Thompson.
+Thanks!
+Rusty.
+
+
+
