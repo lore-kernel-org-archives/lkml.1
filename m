@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938600AbXGTXi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765835AbXGTXkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938600AbXGTXi6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 19:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbXGTXiu
+	id S1765835AbXGTXkF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 19:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762309AbXGTXjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 19:38:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41050 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754541AbXGTXit (ORCPT
+	Fri, 20 Jul 2007 19:39:53 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:36042 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762128AbXGTXjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 19:38:49 -0400
-Date: Fri, 20 Jul 2007 16:37:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?UTF-8?Q?S=2E=C3=87a=C4=9Flar_Onur?= <caglar@pardus.org.tr>
-cc: kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [GIT PULL][RESEND] Late KVM Updates for the 2.6.23
- merge window
-In-Reply-To: <200707210221.34121.caglar@pardus.org.tr>
-Message-ID: <alpine.LFD.0.999.0707201633390.27249@woody.linux-foundation.org>
-References: <1184952728548-git-send-email-avi@qumranet.com>
- <200707210221.34121.caglar@pardus.org.tr>
+	Fri, 20 Jul 2007 19:39:53 -0400
+Date: Fri, 20 Jul 2007 19:39:49 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stephen Smalley <sds@epoch.ncsc.mil>, James Morris <jmorris@redhat.com>,
+       dgoeddel@trustedcs.com, Frank Mayer <mayerf@tresys.com>,
+       Karl MacMillan <kmacmillan@tresys.com>, paul.moore@hp.com,
+       Chad Sellers <csellers@tresys.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Eric Paris <eparis@parisplace.org>
+Subject: Re: [PATCH][SELinux] Let us not leak memory in SELinux :
+ security_netlbl_cache_add()
+In-Reply-To: <200707210012.45185.jesper.juhl@gmail.com>
+Message-ID: <Line.LNX.4.64.0707201938500.12490@d.namei>
+References: <200707210012.45185.jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 21 Jul 2007, Jesper Juhl wrote:
 
-
-On Sat, 21 Jul 2007, S.Çağlar Onur wrote:
+> Hi,
 > 
-> With Linus's latest git, shutting down a guest (fired with -smp 2 -m 512) sometimes 
-> ends up like [1], this occured as soon as qemu window closed.
+> Leaking memory is a bad idea, so let's not do it, in 
+> security/selinux/ss/services.c::security_netlbl_cache_add().
 > 
-> [1] http://cekirdek.pardus.org.tr/~caglar/kvm/dmesg.latest
+> Note: The Coverity checker gets credit for spotting this one.
+> Note: Patch has only been compile tested.
 
-[  737.460654] Bad page state in process 'qemu-kvm'
-[  737.460656] page:f5e68000 flags:0xea020000 mapping:00000000 mapcount:2 count:0
-[  737.460657] Trying to fix it up, but a reboot is needed
-[  737.460659] Backtrace:
-[  737.460691]  [<c0159e70>] bad_page+0x64/0x8e
-[  737.460733]  [<c015a7ee>] free_hot_cold_page+0x68/0x15a
+Thanks!
 
-That's the "free_pages_check()", and in particular it seems to be 
-"page_mapcount()" being non-zero that triggered that thing.
+Verified and applied to:
 
-So it looks like something in KVM isn't coherent about the mapping vs the 
-usage counters..
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-linus
 
-		Linus
+
+
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
