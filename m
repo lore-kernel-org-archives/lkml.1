@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934827AbXGTHfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762716AbXGTHgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934827AbXGTHfk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 03:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762759AbXGTHfb
+	id S1762716AbXGTHgJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 03:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764260AbXGTHfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 03:35:31 -0400
-Received: from il.qumranet.com ([82.166.9.18]:54511 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934400AbXGTHfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 03:35:30 -0400
-Message-ID: <46A065C0.6030700@argo.co.il>
-Date: Fri, 20 Jul 2007 10:35:28 +0300
-From: Avi Kivity <avi@argo.co.il>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: Where did KVM go in 2.6.22-git9?
-References: <46A02BFB.3090500@tmr.com>
-In-Reply-To: <46A02BFB.3090500@tmr.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Jul 2007 03:35:51 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:49791 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764145AbXGTHfu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 03:35:50 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <200707200813.03553.a1426z@gawab.com>
+References: <200707200813.03553.a1426z@gawab.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4FEA8E81-3BA7-4F8C-AFD2-6B93487A9AD5@cam.ac.uk>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Fri, 20 Jul 2007 10:35:28 +0300 (IDT)
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: [RFH] Partion table recovery
+Date: Fri, 20 Jul 2007 08:35:45 +0100
+To: Al Boldi <a1426z@gawab.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> I just built a 2.6.22-git9 kernel, and when I run oldconfig it (a)
-> sets the processor type to pentium-pro, and (b) the KVM stuff simply
-> isn't in the config. Before I spend a lot of time on this, was it
-> disabled temporarily for some reason, or is it a known bug, or ???
+On 20 Jul 2007, at 06:13, Al Boldi wrote:
+> As always, a good friend of mine managed to scratch my partion  
+> table by
+> cat'ing /dev/full into /dev/sda.  I was able to push him out of the  
+> way, but
+> at least the first 100MB are gone.  I can probably live without the  
+> first
+> partion, but there are many partitions after that, which I hope should
+> easily be recoverable.
 >
-> Processor is a Core2 E6600, and the starting config has KVM.
->
-> Strong suggestion: put KVM in processor type and options, and if the
-> CPU type selected supports the feature, let the builder turn it on in
-> one place and have Kconfig turn on whatever voodoo is needed to allow
-> it, rather than have people trying to find out what depends have
-> changed with each release. I see KVm depends on X86_CMPXCHG64 which
-> simply doesn't seem to be defined directly anywhere.
->
-> Going back to 2.6.21.6 until whatever changed is at least documented.
->
+> I tried parted, but it's not working out for me.  Does anybody know  
+> of a
+> simple partition recovery tool, that would just scan the disk for lost
+> partions?
 
-Kconfig changes got kvm temporarily disabled on i386 nonpae.  Current
--git has it back.
+parted and its derivatives are pile of crap...  They cause corruption  
+to totally healthy systems at the best of times.  Don't go near them.
 
+Use TestDisk (http://www.cgsecurity.org/wiki/TestDisk) and be happy.   
+(-:
 
+Best regards,
+
+	Anton
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
 
