@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934553AbXGTREb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964786AbXGTRGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934553AbXGTREb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 13:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936168AbXGTRDj
+	id S964786AbXGTRGr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 13:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbXGTRFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 13:03:39 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43075 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932229AbXGTRDg (ORCPT
+	Fri, 20 Jul 2007 13:05:55 -0400
+Received: from agave.telenet-ops.be ([195.130.137.77]:38238 "EHLO
+	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765851AbXGTRFw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 13:03:36 -0400
-Message-ID: <46A0EAC8.9020203@zytor.com>
-Date: Fri, 20 Jul 2007 10:03:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 20 Jul 2007 13:05:52 -0400
+Date: Fri, 20 Jul 2007 19:05:49 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-mips@linux-mips.org
+Subject: Re: [patch 3/3] scsi: wd33c93 needs <asm/irq.h>
+In-Reply-To: <1184950138.3455.42.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0707201905340.18493@anakin>
+References: <20070720164043.523003359@mail.of.borg> <20070720164324.097994947@mail.of.borg>
+ <1184950138.3455.42.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Andi Kleen <ak@novell.com>,
-       Arthur Jones <arthur.jones@qlogic.com>,
-       Vasily Tarasov <vtaras@openvz.org>, linux-kernel@vger.kernel.org,
-       Jan Kara <jack@ucw.cz>, linux-arch@vger.kernel.org
-Subject: Re: build fix for x86_64...
-References: <617E1C2C70743745A92448908E030B2A01FA46A9@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A01FA46A9@scsmsx411.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luck, Tony wrote:
+On Fri, 20 Jul 2007, James Bottomley wrote:
+> On Fri, 2007-07-20 at 18:40 +0200, Geert Uytterhoeven wrote:
+> > plain text document attachment (m68k-wd33c93-needs-asm-irq.diff)
+> > wd33c93 SCSI needs <asm/irq.h> on m68k
+> > 
+> > drivers/scsi/wd33c93.c: In function 'wd33c93_host_reset':
+> > drivers/scsi/wd33c93.c:1582: error: implicit declaration of function 'disable_irq'
+> > drivers/scsi/wd33c93.c:1603: error: implicit declaration of function 'enable_irq'
+> > 
+> > The driver still compiles on MIPS (CONFIG_SGIWD93_SCSI=y)
 > 
-> Which is better.  But if we unconditionally set this CONFIG variable, then the
-> code in fs/quota.c will have to read:
+> That's fixed here, isn't it:
 > 
-> #if defined(CONFIG_COMPAT) && defined(CONFIG_COMPAT_FOR_U64_ALIGNMENT)
-> 
-> We can keep it simpler if the Kconfig file does the conditional for us:
-> 
-> config COMPAT_FOR_U64_ALIGNMENT
-> 	def_bool y
-> 	depends on COMPAT
-> 
+> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=078dda95c521b1c78d1b5da69ac90d581abc9951
 
-No, that would be bad.  If compat_u64 is used to carry 32-bit ABIs
-forward into 64-bit space without needing compatibility hacks, then this
-would actually introduce ABI incompatibilities depending on CONFIG_COMPAT!
+Indeed, thx!
 
-	-hpa
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
