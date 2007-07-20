@@ -1,57 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940332AbXGTQCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940478AbXGTQEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940332AbXGTQCk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940148AbXGTQC1
+	id S940478AbXGTQEB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939188AbXGTQDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:02:27 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37683 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939949AbXGTQC0 (ORCPT
+	Fri, 20 Jul 2007 12:03:51 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:62818 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932355AbXGTQDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:02:26 -0400
-Date: Fri, 20 Jul 2007 18:02:25 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Greg KH <gregkh@suse.de>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kay.sievers@vrfy.org
-Subject: Re: kobject link failure
-In-Reply-To: <20070720150627.GA12822@suse.de>
-Message-ID: <Pine.LNX.4.64.0707201756290.31013@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0707191956510.31013@fbirervta.pbzchgretzou.qr>
- <469FA94E.20002@googlemail.com> <20070720080059.GA29639@suse.de>
- <20070720113221.390ed32a@gondolin.boeblingen.de.ibm.com>
- <20070720135813.0e416b2b@gondolin.boeblingen.de.ibm.com> <20070720150627.GA12822@suse.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-1536441064-1184947345=:31013"
+	Fri, 20 Jul 2007 12:03:50 -0400
+Date: Fri, 20 Jul 2007 12:03:47 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Andi Kleen <ak@suse.de>
+Cc: jeremy@goop.org, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [3/11] x86: Stop MCEs and NMIs during code patching
+Message-ID: <20070720160347.GB1960@Krystal>
+References: <20070720532.949522000@suse.de> <20070720153247.75CAD14E7C@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070720153247.75CAD14E7C@wotan.suse.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:01:33 up 3 days, 10:35,  3 users,  load average: 0.36, 0.23, 0.19
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+* Andi Kleen (ak@suse.de) wrote:
 
----699020219-1536441064-1184947345=:31013
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+> Index: linux/arch/x86_64/kernel/nmi.c
+> ===================================================================
+> --- linux.orig/arch/x86_64/kernel/nmi.c
+> +++ linux/arch/x86_64/kernel/nmi.c
+> @@ -384,11 +384,14 @@ int __kprobes nmi_watchdog_tick(struct p
+>  	return rc;
+>  }
+>  
+> +static unsigned ignore_nmis;
+> +
+>  asmlinkage __kprobes void do_nmi(struct pt_regs * regs, long error_code)
+>  {
+>  	nmi_enter();
+>  	add_pda(__nmi_count,1);
+> -	default_do_nmi(regs);
+> +	if (!ignore_nmis) 
+> +		default_do_nmi(regs);
+>  	nmi_exit();
+>  }
+>  
+> @@ -401,6 +404,18 @@ int do_nmi_callback(struct pt_regs * reg
+>  	return 0;
+>  }
+>  
+> +void stop_nmi(void)
+> +{
+> +	ignore_nmis++;
+> +	acpi_nmi_disable();
+> +}
 
+I would do:
 
-On Jul 20 2007 08:06, Greg KH wrote:
->> Leaving kobject_actions[] in kobject_uevent.c, but putting it outside
->> the #ifdef looks indeed like the best solution to me. This way, we
->> avoid adding #ifdef CONFIG_HOTPLUG into core.c, when all other
->> functions called do not need such a thing.
->
->Yeah, this is much nicer and smaller, thanks.  I'll throw away my patch
->and use this one instead.
->
->Can someone verify that it works properly for them please?
+acpi_nmi_disable();
+ignore_nmis++;
 
-Works-For-Me™: Jan Engelhardt <jengelh@gmx.de>
+Instead, so we minimize the chances to have to drop a do_nmi.
 
+> +
+> +void restart_nmi(void)
+> +{
+> +	ignore_nmis--;
+> +	acpi_nmi_enable();
+> +}
+> +
+>  #ifdef CONFIG_SYSCTL
+>  
+...
+>  #endif /* ASM_NMI_H */
+> Index: linux/arch/i386/kernel/traps.c
+> ===================================================================
+> --- linux.orig/arch/i386/kernel/traps.c
+> +++ linux/arch/i386/kernel/traps.c
+> @@ -774,6 +774,8 @@ static __kprobes void default_do_nmi(str
+>  	reassert_nmi();
+>  }
+>  
+> +static int ignore_nmis;
+> +
+>  fastcall __kprobes void do_nmi(struct pt_regs * regs, long error_code)
+>  {
+>  	int cpu;
+> @@ -784,11 +786,24 @@ fastcall __kprobes void do_nmi(struct pt
+>  
+>  	++nmi_count(cpu);
+>  
+> -	default_do_nmi(regs);
+> +	if (!ignore_nmis)
+> +		default_do_nmi(regs);
+>  
+>  	nmi_exit();
+>  }
+>  
+> +void stop_nmi(void)
+> +{
+> +	ignore_nmis++;
+> +	acpi_nmi_disable();
+> +}
+> +
 
-	Jan
+Same here, I would swap the two.
+
+> +void restart_nmi(void)
+> +{
+> +	ignore_nmis--;
+> +	acpi_nmi_enable();
+> +}
+> +
+
+Besides that, it looks good.
+
+Mathieu
+
 -- 
----699020219-1536441064-1184947345=:31013--
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
