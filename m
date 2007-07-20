@@ -1,166 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbXGTDoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762035AbXGTDpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760644AbXGTDoq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 23:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbXGTDoi
+	id S1762035AbXGTDpt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 23:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbXGTDpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 23:44:38 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:49420 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752966AbXGTDoh (ORCPT
+	Thu, 19 Jul 2007 23:45:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44025 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753790AbXGTDpi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 23:44:37 -0400
-Subject: Re: v2.6.22.1-rt3
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1184325752.12353.312.camel@chaos>
-References: <1184325752.12353.312.camel@chaos>
-Content-Type: text/plain
-Date: Thu, 19 Jul 2007 20:37:05 -0700
-Message-Id: <1184902625.25414.8.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jul 2007 23:45:38 -0400
+Date: Thu, 19 Jul 2007 20:44:56 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: [GIT PATCH] more USB patches for 2.6.22
+Message-ID: <20070720034456.GA5826@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here are some more USB patches and fixes against your 2.6.22 git tree.
 
-I reworked the broken out series for 2.6.22.1-rt5 (note not -rt3) so
-that it's a little more bisectable. I found that many of the patches
-would compile but wouldn't boot. 
+They add a new usb gadget driver, more urb->status cleanups, a new sysfs
+attribute to get the raw config of the usb device, and some bugfixes and
+documentation updates.
 
-Combined patch,
-ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.22.1-rt4-dw1
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+
+The full patches will be sent to the linux-usb-devel mailing list, if
+anyone wants to see them.
+
+thanks,
+
+greg k-h
 
 
-The broken out series is here,
-ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.22.1-rt4-dw1.tar.gz
+ MAINTAINERS                            |    6 +
+ drivers/usb/atm/cxacru.c               |    3 +-
+ drivers/usb/atm/speedtch.c             |    7 +-
+ drivers/usb/atm/ueagle-atm.c           |    6 +-
+ drivers/usb/atm/usbatm.c               |   11 +-
+ drivers/usb/class/cdc-acm.c            |   18 +-
+ drivers/usb/class/usblp.c              |   27 +-
+ drivers/usb/core/hcd.c                 |  131 +-
+ drivers/usb/core/hub.c                 |   10 +-
+ drivers/usb/core/message.c             |   34 +-
+ drivers/usb/core/sysfs.c               |   53 +
+ drivers/usb/core/urb.c                 |   88 +-
+ drivers/usb/gadget/Kconfig             |   57 +-
+ drivers/usb/gadget/Makefile            |    1 +
+ drivers/usb/gadget/amd5536udc.c        | 3454 ++++++++++++++++++++++++++++++++
+ drivers/usb/gadget/amd5536udc.h        |  626 ++++++
+ drivers/usb/gadget/ether.c             |    4 +
+ drivers/usb/gadget/gadget_chips.h      |   10 +-
+ drivers/usb/gadget/m66592-udc.c        |  255 ++--
+ drivers/usb/gadget/m66592-udc.h        |  610 +++---
+ drivers/usb/gadget/serial.c            |   25 +-
+ drivers/usb/host/isp116x-hcd.c         |  187 +-
+ drivers/usb/host/r8a66597-hcd.c        |  110 +-
+ drivers/usb/host/r8a66597.h            |   87 +-
+ drivers/usb/host/u132-hcd.c            |   17 +-
+ drivers/usb/host/uhci-q.c              |   59 +-
+ drivers/usb/image/mdc800.c             |   45 +-
+ drivers/usb/image/microtek.c           |   19 +-
+ drivers/usb/misc/adutux.c              |   59 +-
+ drivers/usb/misc/appledisplay.c        |    9 +-
+ drivers/usb/misc/auerswald.c           |   25 +-
+ drivers/usb/misc/ftdi-elan.c           |   21 +-
+ drivers/usb/misc/iowarrior.c           |   21 +-
+ drivers/usb/misc/ldusb.c               |   20 +-
+ drivers/usb/misc/legousbtower.c        |   28 +-
+ drivers/usb/misc/phidgetkit.c          |   13 +-
+ drivers/usb/misc/phidgetmotorcontrol.c |   13 +-
+ drivers/usb/misc/usblcd.c              |   11 +-
+ drivers/usb/misc/usbtest.c             |    4 +-
+ drivers/usb/misc/uss720.c              |    5 +-
+ drivers/usb/serial/io_ti.c             |   10 +-
+ drivers/usb/serial/mos7720.c           |    5 -
+ drivers/usb/serial/mos7840.c           |   19 -
+ drivers/usb/serial/sierra.c            |  119 +-
+ drivers/usb/storage/dpcm.c             |   56 +-
+ drivers/usb/storage/onetouch.c         |   13 +-
+ drivers/usb/storage/unusual_devs.h     |   18 +
+ 47 files changed, 5350 insertions(+), 1079 deletions(-)
+ create mode 100644 drivers/usb/gadget/amd5536udc.c
+ create mode 100644 drivers/usb/gadget/amd5536udc.h
 
-Below is a diff between the 2.6.22.1-rt4 series and mine, and a
-interdiff between the two combined patches.
+---------------
 
---- patches-2.6.22.1-rt4/series	2007-07-16 02:29:51.000000000 -0700
-+++ patches/series	2007-07-19 20:40:00.000000000 -0700
-@@ -306,18 +306,21 @@
- #
- # IRQ threading
- #
-+preempt-softirqs-core.patch
- preempt-irqs-core.patch
-+preempt-irqs-softirq-in-hardirq.patch
-+preempt-irqs-direct-debug-keyboard.patch
- preempt-irqs-timer.patch
- preempt-irqs-hrtimer.patch
- 
- preempt-irqs-i386.patch
-+preempt-irqs-i386-ioapic-mask-quirk.patch
- 
- preempt-irqs-mips.patch
- 
- preempt-irqs-x86-64.patch
- preempt-irqs-x86-64-ioapic-mask-quirk.patch
- 
--preempt-irqs-i386-ioapic-mask-quirk.patch
- preempt-irqs-arm.patch
- preempt-irqs-arm-fix-oprofile.patch
- 
-@@ -352,7 +355,7 @@
- rt-mutex-mips.patch
- 
- rt-mutex-ppc.patch
--rt-mtex-ppc-fix-a5.patch
-+rt-mutex-ppc-fix-a5.patch
- 
- rt-mutex-x86-64.patch
- 
-@@ -402,6 +405,7 @@
- #
- # Posix-cpu-timers in a thread
- #
-+preempt-realtime-warn-and-bug-on.patch
- cputimer-thread-rt_A0.patch
- cputimer-thread-rt-fix.patch
- posix-cpu-timers-fix.patch
-@@ -501,7 +505,6 @@
- preempt-realtime-timer.patch
- preempt-realtime-usb.patch
- 
--preempt-realtime-warn-and-bug-on.patch
- preempt-realtime-warn-and-bug-on-fix.patch
- 
- #
-@@ -611,7 +614,6 @@
- # Softirq modifications
- #
- new-softirq-code.patch
--new-softirq-code-fixlets.patch
- softirq-per-cpu-assumptions-fixes.patch
- smp-processor-id-fixups.patch
- fix-migrating-softirq.patch
-@@ -659,13 +661,9 @@
- #
- # not yet backmerged tail patches:
- #
--hrt-rt-fix-merge-artifact.patch
- preempt-rt-no-slub.patch
- rfkill-input-fix.patch
--fork.c-takeover-tasklets-warning-fix.patch
- 
- paravirt-function-pointer-fix.patch
--hpet-build-fix.patch
--rtc.c-build-fix.patch
- version.patch
- 
+Alan Stern (8):
+      isp116x-hcd: prepare for urb->status
+      USB: add "descriptors" binary sysfs attribute
+      USB: fix warning caused by autosuspend counter going negative
+      UHCI: short control URBs get a status stage
+      USB: documentation update for usb_unlink_urb
+      USB: usb-storage: unusual_devs entry for Nikon D100
+      USB: move routines in hcd.c
+      USB: change name of spinlock in hcd.c
 
-diff -u linux/arch/i386/kernel/hpet.c linux-2.6.22.1/arch/i386/kernel/hpet.c
---- linux/arch/i386/kernel/hpet.c
-+++ linux-2.6.22.1/arch/i386/kernel/hpet.c	2007-07-20 02:22:56.000000000 +0000
-@@ -9,7 +9,6 @@
- #include <linux/pm.h>
- 
- #include <asm/fixmap.h>
--#include <asm/i8253.h>
- #include <asm/hpet.h>
- #include <asm/i8253.h>
- #include <asm/io.h>
-diff -u linux/include/asm-generic/bug.h linux-2.6.22.1/include/asm-generic/bug.h
---- linux/include/asm-generic/bug.h
-+++ linux-2.6.22.1/include/asm-generic/bug.h	2007-07-20 03:15:15.000000000 +0000
-@@ -94,14 +94,2 @@
- 
--#ifdef CONFIG_PREEMPT_RT
--# define BUG_ON_RT(c)			BUG_ON(c)
--# define BUG_ON_NONRT(c)		do { } while (0)
--# define WARN_ON_RT(condition)		WARN_ON(condition)
--# define WARN_ON_NONRT(condition)	do { } while (0)
--#else
--# define BUG_ON_RT(c)			do { } while (0)
--# define BUG_ON_NONRT(c)		BUG_ON(c)
--# define WARN_ON_RT(condition)		do { } while (0)
--# define WARN_ON_NONRT(condition)	WARN_ON(condition)
--#endif
--
- #endif
-diff -u linux/kernel/softirq.c linux-2.6.22.1/kernel/softirq.c
---- linux/kernel/softirq.c
-+++ linux-2.6.22.1/kernel/softirq.c	2007-07-20 03:15:17.000000000 +0000
-@@ -102,7 +102,6 @@
- 
- 	if (unlikely(!tsk))
- 		return;
--#if 1
- #if defined(CONFIG_PREEMPT_SOFTIRQS) && defined(CONFIG_PREEMPT_HARDIRQS)
- 	/*
- 	 * Optimization: if we are in a hardirq thread context, and
-@@ -117,7 +116,6 @@
- 			(tsk->normal_prio == current->normal_prio))
- 		return;
- #endif
--#endif
- 	/*
- 	 * Wake up the softirq task:
- 	 */
+Florin Malita (1):
+      USB: mos7720, mos7840: remove redundant urb check
 
+Greg Kroah-Hartman (22):
+      USB: atm: cxacru: clean up urb->status usage
+      USB: atm: speedtch: clean up urb->status usage
+      USB: atm: ueagle-atm: clean up urb->status usage
+      USB: atm: usbatm: clean up urb->status usage
+      USB: class: cdc-acm: clean up urb->status usage
+      USB: class: usblp: clean up urb->status usage
+      USB: storage: onetouch: clean up urb->status usage
+      USB: image: mdc800: clean up urb->status usage
+      USB: image: microtek: clean up urb->status usage
+      USB: core: message: clean up urb->status usage
+      USB: misc: adtux: clean up urb->status usage
+      USB: misc: appledisplay: clean up urb->status usage
+      USB: misc: auerswald: clean up urb->status usage
+      USB: misc: ftdi-elan: clean up urb->status usage
+      USB: misc: iowarrior: clean up urb->status usage
+      USB: misc: ldusb: clean up urb->status usage
+      USB: misc: legousbtower: clean up urb->status usage
+      USB: misc: phidgetkit: clean up urb->status usage
+      USB: misc: phidgetmotorcontrol: clean up urb->status usage
+      USB: misc: usblcd: clean up urb->status usage
+      USB: misc: usbtest: clean up urb->status usage
+      USB: misc: uss720: clean up urb->status usage
+
+Jesper Juhl (1):
+      USB: Remove pointless conditional in drivers/usb/serial/io_ti.c::edge_shutdown()
+
+Kevin Lloyd (2):
+      USB: sierra: Add TRU-Install (c) Support
+      USB: sierra: Add new devices
+
+Matthias Kaehlcke (4):
+      USB: use mutex instead of semaphore in the USB gadget serial driver
+      USB: use mutex instead of semaphore in the ELAN U132 adapter driver
+      USB: use mutex instead of semaphore in the Adutux driver
+      USB: use mutex instead of semaphore in the FTDI ELAN driver
+
+Pete Zaitcev (1):
+      USB: usblp: "Big cleanup" breaks O_NONBLOCK
+
+S.Caglar Onur (1):
+      USB: drivers/usb/storage/dpcm.c whitespace cleanup
+
+Thomas Dahlmann (2):
+      USB: amd5536 UDC driver (in GEODE southbridge)
+      USB: MAINTAINERS entry for amd5536udc
+
+Yoshihiro Shimoda (2):
+      USB: m66592-udc: fixes some problems
+      USB: r8a66597-hcd: fixes some problem
 
