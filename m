@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764712AbXGTUoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935880AbXGTUpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764712AbXGTUoO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 16:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760068AbXGTUn6
+	id S935880AbXGTUpY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXGTUpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 16:43:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60976 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756477AbXGTUn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 16:43:58 -0400
-Message-ID: <46A11E7D.90209@redhat.com>
-Date: Fri, 20 Jul 2007 16:43:41 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Folkert van Heusden <folkert@vanheusden.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.21.1] totally hanging altough not crashed
-References: <20070720195252.GA25317@vanheusden.com>
-In-Reply-To: <20070720195252.GA25317@vanheusden.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Jul 2007 16:45:12 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:59584 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759508AbXGTUpK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 16:45:10 -0400
+Date: Fri, 20 Jul 2007 16:45:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: tonyko@lineo.ca, robin.getz@analog.com, linux-kernel@vger.kernel.org
+Subject: Re: blackfin - cmpxchg not atomic ?
+Message-ID: <20070720204507.GA15760@Krystal>
+References: <20070720202807.GA15009@Krystal> <8bd0f97a0707201336l6bed7c24i7014333ce356417f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0707201336l6bed7c24i7014333ce356417f@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:44:25 up 3 days, 15:18,  3 users,  load average: 0.08, 0.39, 0.40
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/20/2007 03:53 PM, Folkert van Heusden wrote:
-> Hi,
+* Mike Frysinger (vapier.adi@gmail.com) wrote:
+> On 7/20/07, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> >I am currently passing through each architectures adding a
+> >cmpxchg_local() to each system.h, and I notice that you disable
+> >interrupts in your cmpxchg() implementation, why are you doing so ?
 > 
-> One of my systems running 2.6.21.1 on a P4 with HT and 2GB of ram
-> occasionally crashes. Not with an oops or panic, it just suddenly stops
-> doing anything. It still lets you ping and it still forwards ip traffic
-> but you can't login: not via ssh and not on the console - pressing enter
-> brings the cursor to the next line and that's it. It is NOT swapping at
-> all, in fact alt+sysrq+m says that there's still plenty of memory and
-> swap available:
+> because Blackfin lacks any atomic instructions
+> 
+> >Also, does you assembly stub _really_ modify memory atomically ? If yes,
+> >then there should be no need for disabling interrupts. Else, I see a
+> >major problem with SMP.
+> 
+> that isnt the only problem with SMP on Blackfin
+> 
+> >I also don't like the comment in asm-blackfin/atomic.h :
+> >
+> > * Generally we do not concern about SMP BFIN systems, so we don't have
+> > * to deal with that.
+> >
+> >I have seen on the blackfin website that you actually sell a board with
+> >SMP. Why aren't you caring about it ?
+> 
+> just because a processor has more than one core does not make it SMP
+> -mike
 
-Lots of processes are in uninterruptible wait at
-start_this_handle+0x208/0x365. Can you find out what line of code
-that matches? (There are a few of those waits in that function.)
+I see, thanks for the reply. Is there a particular reason for
+implementing system.h/cmpxchg() in assembly rather that in plain C then?
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
