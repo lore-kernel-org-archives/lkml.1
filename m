@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761513AbXGTMLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbXGTMMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761513AbXGTMLl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 08:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbXGTMLe
+	id S1756048AbXGTMMG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 08:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbXGTMLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 08:11:34 -0400
-Received: from ozlabs.org ([203.10.76.45]:53182 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751758AbXGTMLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 08:11:34 -0400
-Subject: [PATCH 1/3] lguest: fix sense if IF flag on interrupt injection
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 20 Jul 2007 22:11:13 +1000
-Message-Id: <1184933473.10380.296.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 08:11:51 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:44377 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753594AbXGTMLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 08:11:50 -0400
+Message-ID: <384933499.09699@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 20 Jul 2007 20:11:43 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/6] compacting file_ra_state
+Message-ID: <20070720121143.GA8584@mail.ustc.edu.cn>
+Mail-Followup-To: Andi Kleen <andi@firstfloor.org>,
+	Andrew Morton <akpm@osdl.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070720100740.106917381@mail.ustc.edu.cn> <384926279.42287@ustc.edu.cn> <p73y7hbux4d.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73y7hbux4d.fsf@bingen.suse.de>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sense of the IF bit is backwards in the host interrupt handling.
+On Fri, Jul 20, 2007 at 01:34:42PM +0200, Andi Kleen wrote:
+> Fengguang Wu <wfg@mail.ustc.edu.cn> writes:
+> 
+> > Use 'unsigned int' instead of 'unsigned long' for the readahead indexes/sizes.
+> > 
+> > This helps reduce memory consumption on 64bit CPU when
+> > a lot of files are opened.
+> > 
+> > Note that the (smaller) 32bit index can support up to 16PB file.
+                                                          ~~~~
+                                                sorry, it's 16TB ;)
 
-This means we always save "IF=1" on the stack when injecting an
-interrupt.  It turns out this is almost always correct (unless the
-guest is taking a page fault in an interrupt due to an unpopulated
-vmalloc mapping), so went unnoticed.
+> > Which should be sufficient large at least for now.
+> 
+> This would add a new limit to 64bit architectures.  Surely keeping
+> start at pgoff_t will not be a big issue? The other fields can be
+> 32bit.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/lguest/interrupts_and_traps.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Yeah, it counts for about 4MB memory for 1M opened files.
 
-diff -r 209f5cd5cda5 drivers/lguest/interrupts_and_traps.c
---- a/drivers/lguest/interrupts_and_traps.c	Fri Jul 20 14:53:40 2007 +1000
-+++ b/drivers/lguest/interrupts_and_traps.c	Fri Jul 20 21:34:06 2007 +1000
-@@ -38,12 +38,12 @@ static void set_guest_interrupt(struct l
- 		ss = lg->regs->ss;
- 	}
- 
--	/* We use IF bit in eflags to indicate whether irqs were disabled
--	   (it's always 0, since irqs are enabled when guest is running). */
-+	/* We use IF bit in eflags to indicate whether irqs were enabled
-+	   (it's always 1, since irqs are enabled when guest is running). */
- 	eflags = lg->regs->eflags;
--	if (get_user(irq_enable, &lg->lguest_data->irq_enabled))
--		irq_enable = 0;
--	eflags |= (irq_enable & X86_EFLAGS_IF);
-+	if (get_user(irq_enable, &lg->lguest_data->irq_enabled) == 0
-+	    && !(irq_enable & X86_EFLAGS_IF))
-+		eflags &= ~X86_EFLAGS_IF;
- 
- 	push_guest_stack(lg, &gstack, eflags);
- 	push_guest_stack(lg, &gstack, lg->regs->cs);
-
+But, the filp size is now 296 on x86_64, so slab-objects-per-page = 13.
+Adding another 4bytes, it remains in 13;
+Taking 4bytes more, it increases to 14.
+So pgoff_t consumes no more memory actually.
 
