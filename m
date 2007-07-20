@@ -1,43 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939067AbXGTBed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937249AbXGTBh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939067AbXGTBed (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 21:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762106AbXGTBeX
+	id S937249AbXGTBh1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 21:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbXGTBhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 21:34:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:51728 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759851AbXGTBeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 21:34:22 -0400
-Subject: Re: - lguest-the-asm-offsets.patch removed from -mm tree
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: ak@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <E1IBdoz-0005Ol-6b@flower>
-References: <200707192004.l6JK4wQK019993@imap1.linux-foundation.org>
-	 <E1IBdoz-0005Ol-6b@flower>
-Content-Type: text/plain
-Date: Fri, 20 Jul 2007 11:34:13 +1000
-Message-Id: <1184895253.10380.227.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 19 Jul 2007 21:37:19 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:61005 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752994AbXGTBhR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jul 2007 21:37:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hRWX0yDQAaO9sHWq51h53kvu3N0W6qFtbID0emqF3bhSvJTFUejEyvagDfs5WlKwQDmjye1V0va2hK+wIiMvKExAJvENGIbnWVqNt6gJDZWO95pGQuxeNFsMHr3QOfoaDo3uNCFt7kz0ITF6+kk+7idBn95CpLTDcKnepw0K2F8=
+Message-ID: <a8e1da0707191837i5c4328c4he5b3402b6e80138@mail.gmail.com>
+Date: Fri, 20 Jul 2007 01:37:16 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH][resend] Remove spec doc links in hpet header files
+Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20070719183314.2d7d2331.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070720084510.GA1779@darkstar.te-china.tietoenator.com>
+	 <20070719183314.2d7d2331.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 23:46 +0200, Oleg Verych wrote:
-> > This is the structure offsets required by lg.ko's switcher.S.
+>On 7/20/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 20 Jul 2007 08:45:10 +0000
+> Dave Young <hidave.darkstar@gmail.com> wrote:
+>
+> > Hi,
+> > The links are broken, and already exist in Documentation/hpet.txt, so
+> > remove them for header files.
 > >
-> > Unfortunately we don't have infrastructure for private asm-offsets
-> > creation.
-> 
-> I did asm-offsets build rewrite RFC caled asm-values more than four week
-> ago: <http://mid.gmane.org/20070612234558.648949000@flower.upol.cz>
+> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> > Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+> >
+> > ---
+> > include/asm-i386/hpet.h   |    6 ------
+> > include/asm-x86_64/hpet.h |    6 ------
+> > 2 files changed, 12 deletions(-)
+> >
+> > diff -pur linux/include/asm-i386/hpet.h linux.new/include/asm-i386/hpet.h
+> > --- linux/include/asm-i386/hpet.h     2007-07-11 11:15:42.000000000 +0000
+> > +++ linux.new/include/asm-i386/hpet.h 2007-07-11 11:16:51.000000000 +0000
+> > @@ -28,12 +28,6 @@
+> >
+> >  #include <linux/timex.h>
+> >
+> > -/*
+> > - * Documentation on HPET can be found at:
+> > - *      http://www.intel.com/ial/home/sp/pcmmspec.htm
+> > - *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+> > - */
+> > -
+> >  #define HPET_MMAP_SIZE       1024
+> >
+> >  #define HPET_ID              0x000
+> > diff -pur linux/include/asm-x86_64/hpet.h linux.new/include/asm-x86_64/hpet.h
+> > --- linux/include/asm-x86_64/hpet.h   2007-07-11 11:16:07.000000000 +0000
+> > +++ linux.new/include/asm-x86_64/hpet.h       2007-07-11 11:17:03.000000000 +0000
+> > @@ -1,12 +1,6 @@
+> >  #ifndef _ASM_X8664_HPET_H
+> >  #define _ASM_X8664_HPET_H 1
+> >
+> > -/*
+> > - * Documentation on HPET can be found at:
+> > - *      http://www.intel.com/ial/home/sp/pcmmspec.htm
+> > - *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+> > - */
+> > -
+> >  #define HPET_MMAP_SIZE       1024
+> >
+> >  #define HPET_ID              0x000
+>
+> It only half-applies here because 100 monkeys are tromping all over the
+> hpet code.
+>
+> But I'm inclined to duck it anyway: having the documentation references in
+> the soruce doesn't hurt, and nobody looks in Documentation/.
+>
 
-Indeed, but you're poking the wrong person.  Sam needs to ack or fwd...
+Hi,
+But at least the web urls are broken, please update to below address:
+<http://www.intel.com/technology/architecture/hpetspec.htm>.
 
-Thanks,
-Rusty.
-
-
+Regards
+dave
