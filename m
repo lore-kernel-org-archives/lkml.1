@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933314AbXGTSJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934212AbXGTSNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933314AbXGTSJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 14:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761531AbXGTSJH
+	id S934212AbXGTSNS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 14:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761555AbXGTSNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 14:09:07 -0400
-Received: from mga03.intel.com ([143.182.124.21]:27010 "EHLO mga03.intel.com"
+	Fri, 20 Jul 2007 14:13:09 -0400
+Received: from ns1.suse.de ([195.135.220.2]:60681 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760464AbXGTSJF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 14:09:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,563,1175497200"; 
-   d="scan'208";a="252876358"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1759483AbXGTSNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 14:13:07 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: build fix for x86_64...
+Date: Fri, 20 Jul 2007 20:13:03 +0200
+User-Agent: KMail/1.9.6
+Cc: Andreas Schwab <schwab@suse.de>, "Luck, Tony" <tony.luck@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Arthur Jones <arthur.jones@qlogic.com>,
+       Vasily Tarasov <vtaras@openvz.org>, linux-kernel@vger.kernel.org,
+       Jan Kara <jack@ucw.cz>, linux-arch@vger.kernel.org
+References: <617E1C2C70743745A92448908E030B2A01FA46A9@scsmsx411.amr.corp.intel.com> <jezm1rq8gz.fsf@sykes.suse.de> <46A0F4AC.50809@zytor.com>
+In-Reply-To: <46A0F4AC.50809@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-Date: Fri, 20 Jul 2007 11:09:03 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC32903445CD4@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <adair8fc6o1.fsf@cisco.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-thread-index: AcfK9Yvy+9XZTNCAStGnCbGNAjNqvgAAzsEg
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Roland Dreier" <rdreier@cisco.com>,
-       "Nelson, Shannon" <shannon.nelson@intel.com>
-Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <davem@davemloft.net>, <jeff@garzik.org>,
-       "Williams, Dan J" <dan.j.williams@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-X-OriginalArrivalTime: 20 Jul 2007 18:09:03.0757 (UTC) FILETIME=[0E380BD0:01C7CAF9]
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707202013.03568.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Roland Dreier [mailto:rdreier@cisco.com] 
-> Sent: Friday, July 20, 2007 10:43 AM
-> To: Nelson, Shannon
-> Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org; 
-> davem@davemloft.net; jeff@garzik.org; Williams, Dan J; Leech, 
-> Christopher; Waskiewicz Jr, Peter P
-> Subject: Re: [PATCH 5/7] I/OAT: Add support for MSI and MSI-X
-> 
-> are there any devices that support MSI but not MSI-X?  If 
-> not, is there any point in having code to support both?
-> 
->  - R.
-> 
 
-Both igb (recently posted) and ixgbe (also recently posted) support both
-MSI and MSI-X.  Right now when we try to request MSI-X vectors, if we
-fail to acquire what we've asked for, we fall back to MSI support.  If
-MSI fails to initialize, we fall back to legacy interrupts.  So it needs
-to be there in case MSI-X allocation fails for the NIC driver.
+> Obviously, this is not a panacea; if the original "struct foo" has also
+> been introduced on 64 bits before the bug is caught, 
 
-Thanks,
--PJ Waskiewicz
+That's usually the case. There is already an established 64bit ABI
+
+-Andi
+
