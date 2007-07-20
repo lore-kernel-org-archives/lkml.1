@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXGTNg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762890AbXGTNhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762041AbXGTNg7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbXGTNgv
+	id S1762890AbXGTNhc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 09:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbXGTNhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:36:51 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:52468 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756048AbXGTNgv convert rfc822-to-8bit (ORCPT
+	Fri, 20 Jul 2007 09:37:13 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:6403 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757405AbXGTNhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:36:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rUlA9WgYrStMOaJGC+hZgCZ/mDUrQ7okRxE9fNt3hM8tPqcjo4/VeCJSMxUszpiOJhIhTBG1hj7yjoR0fUrOMMi4By8EgE114nP26Y6l0OS5pkFn1juv2/kjRJWQD8wenqih+RM2hQ8wAYEdHm5MmS6o5A8jgSVJLVlUZ45Z7fc=
-Message-ID: <a781481a0707200636s353c8a64l5564d5f81cc7f266@mail.gmail.com>
-Date: Fri, 20 Jul 2007 19:06:48 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "David CHANIAL" <david.ml@euro-web.fr>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
-Cc: "Neil Brown" <neilb@suse.de>,
-       "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200707201533.14517.david.ml@euro-web.fr>
+	Fri, 20 Jul 2007 09:37:10 -0400
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: rolandd@cisco.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org
+Subject: [PATCH 0/5] ehca: MR large page, small queue and fixes
+Date: Fri, 20 Jul 2007 15:48:35 +0200
+User-Agent: KMail/1.8.2
+Cc: stefan.roscher@de.ibm.com, raisch@de.ibm.com, fenkes@de.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200707160638.15750.david.ml@euro-web.fr>
-	 <18080.22813.143226.671265@notabene.brown>
-	 <a781481a0707200013g5c2ce008ka63e18f775664984@mail.gmail.com>
-	 <200707201533.14517.david.ml@euro-web.fr>
+Message-Id: <200707201548.36047.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/20/07, David CHANIAL <david.ml@euro-web.fr> wrote:
-> Le vendredi 20 juillet 2007 09:13, Satyam Sharma a écrit:
-> > David, please try this and let us know if it solves your problems.
->
-> How to ?
-> Should i have to patch kernel tree myself ? on 2.6.22.1 ?
+Here is a patch set against Roland's git, branch for-2.6.23 for ehca.
+It adds support for MR large page and small queues. In addition of that
+it also contains various small fixes from previous comments and what
+we found.
 
-Yes, you can apply the patch Neil just sent to your kernel,
-re-build, and test that.
+They are in details:
+[1/5] adds support for MR large page
+[2/5] generates event when SRQ limit reached
+[3/5] makes ehca2ib_return_code() non inline
+[4/5] makes internal_create/destroy_qp() static
+[5/5] adds support for small queues
 
-Thanks.
+The patches should apply cleanly, in order, against Roland's git. Please
+review the changes and apply the patches if they are okay.
+
+Regards,
+Nam & Stefan
+
