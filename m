@@ -1,47 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933797AbXGTQxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934894AbXGTQyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933797AbXGTQxP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939310AbXGTQsL
+	id S934894AbXGTQyE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938607AbXGTQs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:48:11 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:46744 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761559AbXGTQsH (ORCPT
+	Fri, 20 Jul 2007 12:48:58 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:43562 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932397AbXGTQsy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:48:07 -0400
-Date: Fri, 20 Jul 2007 11:47:43 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] [updated] PHY fixed driver: rework release path and update phy_id notation
-Message-ID: <20070720164743.GA9659@ld0162-tx32.am.freescale.net>
-References: <20070718233804.24451.22543.stgit@localhost.localdomain> <20070719232337.184942e0.akpm@linux-foundation.org> <20070720115039.05f50f0f@localhost.localdomain> <20070720005702.b2b644e7.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Fri, 20 Jul 2007 12:48:54 -0400
+Date: Fri, 20 Jul 2007 10:48:50 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Andi Kleen <ak@novell.com>,
+       Arthur Jones <arthur.jones@qlogic.com>,
+       Vasily Tarasov <vtaras@openvz.org>, linux-kernel@vger.kernel.org,
+       Jan Kara <jack@ucw.cz>, linux-arch@vger.kernel.org
+Subject: Re: build fix for x86_64...
+Message-ID: <20070720164850.GE14791@parisc-linux.org>
+References: <20070720085501.82715036.randy.dunlap@oracle.com> <617E1C2C70743745A92448908E030B2A01FA46A9@scsmsx411.amr.corp.intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070720005702.b2b644e7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <617E1C2C70743745A92448908E030B2A01FA46A9@scsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 12:57:02AM -0700, Andrew Morton wrote:
-> On Fri, 20 Jul 2007 11:50:39 +0400 Vitaly Bordug <vitb@kernel.crashing.org> wrote:
-> > On Thu, 19 Jul 2007 23:23:37 -0700
-> > Andrew Morton wrote:
-> > > Shouldn't these be runtime options (ie: module parameters)?
-> > > 
-> > I thought about it but this thing is more like the one that will never tend/required to change while\
-> > configured.. Will add if you see it appropriate though.
+On Fri, Jul 20, 2007 at 09:20:15AM -0700, Luck, Tony wrote:
+> Which is better.  But if we unconditionally set this CONFIG variable, then the
+> code in fs/quota.c will have to read:
 > 
-> 99% of users don't compile their own kernels: their vendor will have to
-> make this decision for them, and it sounds like any decision which they
-> make will be wrong for some of their users?
+> #if defined(CONFIG_COMPAT) && defined(CONFIG_COMPAT_FOR_U64_ALIGNMENT)
+> 
+> We can keep it simpler if the Kconfig file does the conditional for us:
+> 
+> config COMPAT_FOR_U64_ALIGNMENT
+> 	def_bool y
+> 	depends on COMPAT
 
-This is mostly of use on embedded hardware where the kernel will be
-rebuilt by someone who knows the hardware...  That said, I don't see why
-it needs to be configured at all.  Couldn't it use an idr table instead? 
+Ah, but you can do better:
 
--Scott
+config COMPAT_FOR_U64_ALIGNMENT
+	def_bool COMPAT
+
+I hand-edited your patch:
+
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 36c7b96..36c1582 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -425,6 +425,9 @@ config COMPAT
+ 	depends on IA32_SUPPORT
+ 	default y
+ 
++config COMPAT_FOR_U64_ALIGNMENT
++	def_bool COMPAT
++
+ config IA64_MCA_RECOVERY
+ 	tristate "MCA recovery from errors other than TLB."
+ 
+diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+index 14bf8ce..c77510b 100644
+--- a/arch/x86_64/Kconfig
++++ b/arch/x86_64/Kconfig
+@@ -753,6 +753,9 @@ config COMPAT
+ 	depends on IA32_EMULATION
+ 	default y
+ 
++config COMPAT_FOR_U64_ALIGNMENT
++	def_bool COMPAT
++
+ config SYSVIPC_COMPAT
+ 	bool
+ 	depends on COMPAT && SYSVIPC
+diff --git a/fs/quota.c b/fs/quota.c
+index e6577ac..99b24b5 100644
+--- a/fs/quota.c
++++ b/fs/quota.c
+@@ -387,7 +387,7 @@ asmlinkage long sys_quotactl(unsigned int cmd, const char __user *special, qid_t
+ 	return ret;
+ }
+ 
+-#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
++#if defined(CONFIG_COMPAT_FOR_U64_ALIGNMENT)
+ /*
+  * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
+  * and is necessary due to alignment problems.
+
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
