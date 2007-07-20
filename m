@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934139AbXGTVNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbXGTVPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934139AbXGTVNy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbXGTVNo
+	id S1760093AbXGTVPt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbXGTVPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:13:44 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48690 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbXGTVNm (ORCPT
+	Fri, 20 Jul 2007 17:15:41 -0400
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:40086 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752437AbXGTVPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:13:42 -0400
-Subject: Re: [PATCH] hugetlbfs read() support
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Bill Irwin <bill.irwin@oracle.com>, nacc@us.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <46A03A17.8090708@yahoo.com.au>
-References: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070718221950.35bbdb76.akpm@linux-foundation.org>
-	 <1184860309.18188.90.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070719095850.6e09b0e8.akpm@linux-foundation.org>
-	 <46A03A17.8090708@yahoo.com.au>
-Content-Type: text/plain
-Date: Fri, 20 Jul 2007 14:15:33 -0700
-Message-Id: <1184966133.21127.0.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+	Fri, 20 Jul 2007 17:15:40 -0400
+Message-ID: <46A125F4.3030504@nortel.com>
+Date: Fri, 20 Jul 2007 15:15:32 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: posible latency issues in seq_read
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Jul 2007 21:15:35.0775 (UTC) FILETIME=[1D2E76F0:01C7CB13]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-20 at 14:29 +1000, Nick Piggin wrote:
-> Andrew Morton wrote:
-> > On Thu, 19 Jul 2007 08:51:49 -0700 Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> > 
-> > 
-> >>>>+		}
-> >>>>+
-> >>>>+		offset += ret;
-> >>>>+		retval += ret;
-> >>>>+		len -= ret;
-> >>>>+		index += offset >> HPAGE_SHIFT;
-> >>>>+		offset &= ~HPAGE_MASK;
-> >>>>+
-> >>>>+		page_cache_release(page);
-> >>>>+		if (ret == nr && len)
-> >>>>+			continue;
-> >>>>+		goto out;
-> >>>>+	}
-> >>>>+out:
-> >>>>+	return retval;
-> >>>>+}
-> >>>
-> >>>This code doesn't have all the ghastly tricks which we deploy to handle
-> >>>concurrent truncate.
-> >>
-> >>Do I need to ? Baaahh!!  I don't want to deal with them. 
-> > 
-> > 
-> > Nick, can you think of any serious consequences of a read/truncate race in
-> > there?  I can't..
-> 
-> As it doesn't allow writes, then I _think_ it should be OK. If you
-> ever did want to add write(2) support, then you would have transient
-> zeroes problems.
 
-I have no plans to add write() support - unless there is real reason
-for doing so.
+We've run into an issue (on 2.6.10) where calling "lsof" triggers lost 
+packets on our server.  Preempt is disabled, and NAPI is enabled.
 
-> 
-> But why not just hold i_mutex around the whole thing just to be safe?
+It appears that for some reason the networking softirq is not being 
+handled in a timely fashion, which means that the rx ring buffer fills 
+up and packets overflow.
 
-Yeah. I can do that, just to be safe for future..
+It appears that the problem path is:
+
+seq_read
+	tcp_seq_next
+		established_get_next
+			read_lock/read_unlock
+
+The issue appears to be related to the amount of time that this syscall 
+takes.  While we're in the syscall we cannot run the softirqd thread, 
+and so the rx buffer is not being cleaned.
+
+The fact that there are kmalloc(GFP_KERNEL) calls in seq_read() seems to 
+indicate that sleeping is safe, so would it be reasonable to call 
+schedule() periodically (maybe based on elapsed time) to ensure that 
+system latency is kept under control?
 
 Thanks,
-Badari
 
+Chris
