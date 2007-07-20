@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937156AbXGTBdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938176AbXGTBeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937156AbXGTBdB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 21:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760856AbXGTBcx
+	id S938176AbXGTBeB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 21:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761755AbXGTBdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 21:32:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49161 "EHLO
+	Thu, 19 Jul 2007 21:33:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45335 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751965AbXGTBcw (ORCPT
+	by vger.kernel.org with ESMTP id S1759851AbXGTBdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 21:32:52 -0400
-Date: Thu, 19 Jul 2007 18:32:02 -0700
+	Thu, 19 Jul 2007 21:33:53 -0400
+Date: Thu, 19 Jul 2007 18:33:14 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru
-Subject: Re: [PATCH] async_tx: fix kmap_atomic usage in async_memcpy
-Message-Id: <20070719183202.f7045ede.akpm@linux-foundation.org>
-In-Reply-To: <20070720011252.6443.34295.stgit@dwillia2-linux.ch.intel.com>
-References: <20070720011252.6443.34295.stgit@dwillia2-linux.ch.intel.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][resend] Remove spec doc links in hpet header files
+Message-Id: <20070719183314.2d7d2331.akpm@linux-foundation.org>
+In-Reply-To: <20070720084510.GA1779@darkstar.te-china.tietoenator.com>
+References: <20070720084510.GA1779@darkstar.te-china.tietoenator.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,36 +25,56 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jul 2007 18:12:52 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
+On Fri, 20 Jul 2007 08:45:10 +0000
+Dave Young <hidave.darkstar@gmail.com> wrote:
 
-> Andrew Morton:
-> 	[async_memcpy] is very wrong if both ASYNC_TX_KMAP_DST and
-> 	ASYNC_TX_KMAP_SRC can ever be set.  We'll end up using the same kmap
-> 	slot for both src add dest and we get either corrupted data or a BUG.
+> Hi,
+> The links are broken, and already exist in Documentation/hpet.txt, so
+> remove them for header files.
 > 
-> Evgeniy Polyakov:
-> 	Btw, shouldn't it always be kmap_atomic() even if flag is not set.
-> 	That pages are usual one returned by alloc_page().
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> So fix the usage of kmap_atomic and kill the ASYNC_TX_KMAP_DST and
-> ASYNC_TX_KMAP_SRC flags.
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 > ---
+> include/asm-i386/hpet.h   |    6 ------
+> include/asm-x86_64/hpet.h |    6 ------
+> 2 files changed, 12 deletions(-)
 > 
->  crypto/async_tx/async_memcpy.c |   19 ++++---------------
->  drivers/md/raid5.c             |    4 ++--
->  include/linux/async_tx.h       |    6 ------
->  3 files changed, 6 insertions(+), 23 deletions(-)
+> diff -pur linux/include/asm-i386/hpet.h linux.new/include/asm-i386/hpet.h
+> --- linux/include/asm-i386/hpet.h	2007-07-11 11:15:42.000000000 +0000
+> +++ linux.new/include/asm-i386/hpet.h	2007-07-11 11:16:51.000000000 +0000
+> @@ -28,12 +28,6 @@
+>  
+>  #include <linux/timex.h>
+>  
+> -/*
+> - * Documentation on HPET can be found at:
+> - *      http://www.intel.com/ial/home/sp/pcmmspec.htm
+> - *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+> - */
+> -
+>  #define HPET_MMAP_SIZE	1024
+>  
+>  #define HPET_ID		0x000
+> diff -pur linux/include/asm-x86_64/hpet.h linux.new/include/asm-x86_64/hpet.h
+> --- linux/include/asm-x86_64/hpet.h	2007-07-11 11:16:07.000000000 +0000
+> +++ linux.new/include/asm-x86_64/hpet.h	2007-07-11 11:17:03.000000000 +0000
+> @@ -1,12 +1,6 @@
+>  #ifndef _ASM_X8664_HPET_H
+>  #define _ASM_X8664_HPET_H 1
+>  
+> -/*
+> - * Documentation on HPET can be found at:
+> - *      http://www.intel.com/ial/home/sp/pcmmspec.htm
+> - *      ftp://download.intel.com/ial/home/sp/mmts098.pdf
+> - */
+> -
+>  #define HPET_MMAP_SIZE	1024
+>  
+>  #define HPET_ID		0x000
 
-Neato.
+It only half-applies here because 100 monkeys are tromping all over the
+hpet code.
 
-You (or at least, Shannon) run a git tree.  I always get confused when
-git-tree-owners send me patches, because I expect them to put the
-patches into their git trees.
-
-So if you, a git-tree-owner, wish me to merge-test-and-forward a patch,
-please explicitly tell me.
+But I'm inclined to duck it anyway: having the documentation references in
+the soruce doesn't hurt, and nobody looks in Documentation/.
