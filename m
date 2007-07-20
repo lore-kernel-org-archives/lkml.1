@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbXGTRI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935627AbXGTRJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757369AbXGTRI3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 13:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932542AbXGTRHs
+	id S935627AbXGTRJZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 13:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932429AbXGTRIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 13:07:48 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:42163 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932474AbXGTRHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 13:07:46 -0400
-Date: Fri, 20 Jul 2007 11:07:43 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: Denis Cheng <crquan@gmail.com>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] run scripts/Lindent on it to match Documentation/CodingStyle
-Message-ID: <20070720170743.GF14791@parisc-linux.org>
-References: <1184489571313-git-send-email-crquan@gmail.com> <4699EEA9.6070709@simon.arlott.org.uk>
+	Fri, 20 Jul 2007 13:08:45 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:45783 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765792AbXGTRIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 13:08:39 -0400
+Message-ID: <46A0D3A2.5000703@rfo.atmel.com>
+Date: Fri, 20 Jul 2007 17:24:18 +0200
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4699EEA9.6070709@simon.arlott.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+CC: Pierre Savary <pierre.savary@kerlink.fr>, s@drzeus.cx,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: TR: Neep help with my MMC driver ...
+References: <000c01c7cad4$127dcba0$377962e0$@savary@kerlink.fr> <20070720160036.581f8fba@poseidon.drzeus.cx>
+In-Reply-To: <20070720160036.581f8fba@poseidon.drzeus.cx>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
+Content-Transfer-Encoding: 7bit
+X-ESAFE-STATUS: Mail clean
+X-ESAFE-DETAILS: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 15, 2007 at 10:53:45AM +0100, Simon Arlott wrote:
-> Do people ever check what Lindent does?
-[...]
-> > -out1:
-> > +      out1:
+Pierre Ossman :
+> On Fri, 20 Jul 2007 15:44:18 +0200
+> "Pierre Savary" <pierre.savary@kerlink.fr> wrote:
 > 
-> NAK: A perfectly valid non-indented label is now indented by 6 spaces.
+>> Hi,
+>>
+>>  
+>>
+>> I permit me to send you a mail because I've seen on the net that you
+>> have work around MMC.
+> 
+> Well, I am the maintainer ;)
+> 
+> Also, you should include the LKML for these discussions.
+> 
+>> Linux 2.6.21+patch.AT91 run on my AT91sam9260. I must use the MMC.
+>> But it doesn't work . and I try since the begin of this week !!!!!!!!
+>> This is what I do :
 
-I tracked down why indent does this.  It's actually hard-coded to indent
-by 2 fewer columns than the current code indentation.  I've patched it
-to allow specifying either an absolute column, or a column relative to
-the current indentation level.
+Please use the very last patchset developed those last days for at91_mci.
 
-Patch here:
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=433956
-
-Of course, we can't add this flag to Lindent until it's widely
-circulating amongst the distributions.  Perhaps we can add this to
-Lindent in the meantime:
-
-sed -i -e 's/^\t*      \(\w*:\)/ \1/' "$@"
-
-which will replace the leading tabs and spaces with one space.
-It should leave case labels unmolested, as they should be indented with
-tabs, not 6 spaces.
-
-Any regexp ninjas want to have a go at something better?
-
+Regards,
 -- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Nicolas Ferre
+
+
