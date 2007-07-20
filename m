@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760617AbXGTLYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbXGTLZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760617AbXGTLYY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 07:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbXGTLYQ
+	id S1758459AbXGTLZS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 07:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXGTLZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 07:24:16 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:45241 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754253AbXGTLYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 07:24:15 -0400
-Message-ID: <384930645.25087@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 20 Jul 2007 19:24:09 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/6] compacting file_ra_state
-Message-ID: <20070720112409.GB6300@mail.ustc.edu.cn>
-Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
-	Andrew Morton <akpm@osdl.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070720100740.106917381@mail.ustc.edu.cn> <20070720101123.936159499@mail.ustc.edu.cn> <1184927207.20032.168.camel@twins> <1184928539.20032.171.camel@twins>
+	Fri, 20 Jul 2007 07:25:00 -0400
+Received: from hydra.gt.owl.de ([195.71.99.218]:39724 "EHLO hydra.gt.owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755236AbXGTLY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 07:24:58 -0400
+X-Greylist: delayed 2094 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jul 2007 07:24:58 EDT
+Date: Fri, 20 Jul 2007 12:50:03 +0200
+From: Florian Lohoff <flo@rfc822.org>
+To: andrei radulescu-banu <iubica2@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux, tcpdump and vlan
+Message-ID: <20070720105003.GB24536@paradigm.rfc822.org>
+References: <878246.51044.qm@web56608.mail.re3.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
 Content-Disposition: inline
-In-Reply-To: <1184928539.20032.171.camel@twins>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+In-Reply-To: <878246.51044.qm@web56608.mail.re3.yahoo.com>
+Organization: rfc822 - pure communication
+X-SpiderMe: mh-200707200837@listme.rfc822.org
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 12:48:59PM +0200, Peter Zijlstra wrote:
-> On Fri, 2007-07-20 at 12:26 +0200, Peter Zijlstra wrote:
-> > On Fri, 2007-07-20 at 18:07 +0800, Fengguang Wu wrote:
-> > > plain text document attachment (short-rasize.patch)
-> > > Use 'unsigned int' instead of 'unsigned long' for the readahead indexes/sizes.
-> > > 
-> > > This helps reduce memory consumption on 64bit CPU when
-> > > a lot of files are opened.
-> > > 
-> > > Note that the (smaller) 32bit index can support up to 16PB file.
-> > > Which should be sufficient large at least for now.
-> > 
-> > Perhaps merge prev_offset and prev_index into a pgoff_t prev? That
-> > should give the same savings on 64bit and be more correct on 32bit.
-> 
-> s/pgoff_t/loff_t/
 
-Good idea!                                                                                                              
-This could solve Andi's concern as well :)                                                                              
-                                                                                                                        
-I'm coding it up, and sure it'll need some more tests...                                                                
+--oyUTqETQ0mS9luUI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> (and how come lkml was not on the CC list?)
+On Wed, Jul 18, 2007 at 12:34:33PM -0700, andrei radulescu-banu wrote:
+>=20
+> Dear kernel networking gurus,=20
+>=20
+> I am trying to understand why tcpdump does not work properly for vlan pac=
+kets on linux. Here is the existing behavior, observed with:
+>   - kernel 2.6.16,  =20
+> - e1000 driver =20
+> - libpcap 0.9.6 =20
+> - tcpdump 3.9.6=20
+>  =20
+>=20
+> The e1000 driver has two modes when handling vlan frames: =20
+> (A) Default mode, when  =20
+> - on rx, the mac includes vlan headers  =20
+> - on tx, the mac expects tx frames to include vlan headers.  =20
+> (B) Vlan hw accelerated mode, when: =20
+> - on rx, the mac does not include vlan headers, and instead passes vlan t=
+ag information in the status field of the ring buffer
+>   - on tx, the mac expects no vlan headers, and instead expects vlan tag =
+information to be passed in the status field of the ring buffer
 
-:) 
+I have seen similar behaviour. Once the kernel is compiled with VLAN
+support the e1000 driver drops the vlan tag completely even when no
+vlans are configured on that port. I would consider this beeing a bug
+that enableing a kernel option changes behaviour even if the feature is
+not in use.
 
+As i was tracing dot1qinq i could actually see that only the outer
+vlan tag was beeing dropped.
+
+Flo
+--=20
+Florian Lohoff                  flo@rfc822.org             +49-171-2280134
+	Those who would give up a little freedom to get a little=20
+          security shall soon have neither - Benjamin Franklin
+
+--oyUTqETQ0mS9luUI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGoJNbUaz2rXW+gJcRAlqTAKCSErEnvxGMDSR2Tl2DwNsG0E7/0QCfSuFs
+bT+/bD0bcSmAlFRL+Bo6sOY=
+=iaIN
+-----END PGP SIGNATURE-----
+
+--oyUTqETQ0mS9luUI--
