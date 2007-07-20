@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934548AbXGTVA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935132AbXGTVBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934548AbXGTVA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755623AbXGTVAH
+	id S935132AbXGTVBP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760423AbXGTVAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:00:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:64004 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761335AbXGTVAF (ORCPT
+	Fri, 20 Jul 2007 17:00:52 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41961 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762831AbXGTVAu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:00:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ebRJuQ0ez2RlZumVDkUnBwTX5lilXLqs52K7G20aR197AunK5szhf8EbZjESVZ7VoEsbh8084WCAz0Bgx1vXZGRyOaNmUdAwIt358B7imjt4Ouqy7+J/Wgq5ff4NBMYfsflGpYVpuVy/dgJzZ0TyC6wAkTq3s/7DpUu2+4plblY=
-Message-ID: <46A121DD.2090304@googlemail.com>
-Date: Fri, 20 Jul 2007 22:58:05 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070617)
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-git13 crash
-References: <46A11E4B.3070002@tmr.com>
-In-Reply-To: <46A11E4B.3070002@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 17:00:50 -0400
+Date: Fri, 20 Jul 2007 22:00:46 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Christie <michaelc@cs.wisc.edu>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Andy Whitcroft <apw@uk.ibm.com>
+Subject: Re: [PATCH] buggered kmalloc()
+Message-ID: <20070720210046.GK21668@ftp.linux.org.uk>
+References: <20070720150340.GF21668@ftp.linux.org.uk> <20070720200530.GA9978@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070720200530.GA9978@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> built from 2.6.22-git9 config, used oldconfig. Crashes so early it 
-> doesn't seem to get to the network card.
+On Fri, Jul 20, 2007 at 04:05:30PM -0400, Dave Jones wrote:
+> On Fri, Jul 20, 2007 at 04:03:40PM +0100, Al Viro wrote:
+>  > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+>  > ---
+>  > diff --git a/drivers/scsi/iscsi_tcp.c b/drivers/scsi/iscsi_tcp.c
+>  > index aebcd5f..7829ab1 100644
+>  > --- a/drivers/scsi/iscsi_tcp.c
+>  > +++ b/drivers/scsi/iscsi_tcp.c
+>  > @@ -1885,7 +1885,7 @@ static int iscsi_tcp_get_addr(struct iscsi_conn *conn, struct socket *sock,
+>  >  	struct sockaddr_in *sin;
+>  >  	int rc = 0, len;
+>  >  
+>  > -	addr = kmalloc(GFP_KERNEL, sizeof(*addr));
+>  > +	addr = kmalloc(sizeof(*addr), GFP_KERNEL);
+>  >  	if (!addr)
+>  >  		return -ENOMEM;
 > 
->   config: www.tmr.com/~davidsen/config-2.6.22-git13.gz
->   screen dump: www.tmr.com/~davidsen/dump-2.6.22-git13.jpg
-> 
-> Not much info, and probably seen elsewhere.
-> 
+> This seems like something that would be trivial to check for in checkpatch.
 
-Should be fixed by this commit :
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9550b105b8646f916862aee3ab7b25020ca14159
-
-
-Regards,
-
-Gabriel C
+Or just run sparse before and after - all such places stand out immediately...
