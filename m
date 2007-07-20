@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935400AbXGTV3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbXGTV37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935400AbXGTV3l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 17:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXGTV3b
+	id S1758070AbXGTV37 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 17:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934253AbXGTV3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 17:29:31 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60836 "EHLO pasmtpA.tele.dk"
+	Fri, 20 Jul 2007 17:29:37 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49530 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751533AbXGTV3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 17:29:30 -0400
-Date: Fri, 20 Jul 2007 23:30:44 +0200
+	id S933689AbXGTV3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 17:29:36 -0400
+Date: Fri, 20 Jul 2007 23:29:47 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       sparc@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 6/7] sparc64: fix section mismatch warning in pci_sunv4
-Message-ID: <20070720213044.GE25064@uranus.ravnborg.org>
+Subject: [PATCH 5/7] x86_64: fix section mismatch warning in init.c
+Message-ID: <20070720212947.GD25064@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,38 +23,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix following warning:
-WARNING: vmlinux.o(.text+0x3cf50): Section mismatch: reference to .init.text:page_in_phys_avail (between 'pci_sun4v_pbm_init' and 'sun4v_pci_init')
+WARNING: vmlinux.o(.text+0x188ea): Section mismatch: reference to .init.text:__alloc_bootmem_core (between 'alloc_bootmem_high_node' and 'get_gate_vma')
 
-pci_sun4v_pbm_init and sun4v_pci_init was only used under __init
-context so declare them _init.
+alloc_bootmem_high_node() is only used from __init scope so declare it __init.
+And in addition declare the weak variant __init too.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/sparc64/kernel/pci_sun4v.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86_64/mm/init.c |    2 +-
+ mm/sparse.c           |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sparc64/kernel/pci_sun4v.c b/arch/sparc64/kernel/pci_sun4v.c
-index 6b3fe2c..639cf06 100644
---- a/arch/sparc64/kernel/pci_sun4v.c
-+++ b/arch/sparc64/kernel/pci_sun4v.c
-@@ -1129,7 +1129,7 @@ static void pci_sun4v_msi_init(struct pci_pbm_info *pbm)
- }
- #endif /* !(CONFIG_PCI_MSI) */
- 
--static void pci_sun4v_pbm_init(struct pci_controller_info *p, struct device_node *dp, u32 devhandle)
-+static void __init pci_sun4v_pbm_init(struct pci_controller_info *p, struct device_node *dp, u32 devhandle)
- {
- 	struct pci_pbm_info *pbm;
- 
-@@ -1163,7 +1163,7 @@ static void pci_sun4v_pbm_init(struct pci_controller_info *p, struct device_node
- 	pci_sun4v_msi_init(pbm);
+diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
+index 9a0e98a..75afe9c 100644
+--- a/arch/x86_64/mm/init.c
++++ b/arch/x86_64/mm/init.c
+@@ -769,7 +769,7 @@ int in_gate_area_no_task(unsigned long addr)
+ 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
  }
  
--void sun4v_pci_init(struct device_node *dp, char *model_name)
-+void __init sun4v_pci_init(struct device_node *dp, char *model_name)
+-void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
++void * __init alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
  {
- 	static int hvapi_negotiated = 0;
- 	struct pci_controller_info *p;
+ 	return __alloc_bootmem_core(pgdat->bdata, size,
+ 			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
+diff --git a/mm/sparse.c b/mm/sparse.c
+index e03b39f..3047bf0 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -209,7 +209,7 @@ static int __meminit sparse_init_one_section(struct mem_section *ms,
+ 	return 1;
+ }
+ 
+-__attribute__((weak))
++__attribute__((weak)) __init
+ void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+ {
+ 	return NULL;
 -- 
 1.5.1.rc3.g84b7-dirty
 
