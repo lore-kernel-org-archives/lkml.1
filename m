@@ -1,89 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbXGTSRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933393AbXGTSV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932528AbXGTSRq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 14:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbXGTSRi
+	id S933393AbXGTSV5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 14:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbXGTSVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 14:17:38 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46456 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757773AbXGTSRi (ORCPT
+	Fri, 20 Jul 2007 14:21:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39870 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756762AbXGTSVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 14:17:38 -0400
-Date: Fri, 20 Jul 2007 14:17:36 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Milton Miller <miltonm@bga.com>
-cc: Ying Huang <ying.huang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, David Lang <david@lang.hm>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <09666fe245b0fb34a5a09464250e003d@bga.com>
-Message-ID: <Pine.LNX.4.44L0.0707201408060.2546-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Jul 2007 14:21:50 -0400
+Date: Fri, 20 Jul 2007 11:21:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Juergen Beisert <juergen127@kreuzholzen.de>,
+       Andres Salomon <dilinger@queued.net>,
+       TAKADA Yoshihito <takada@mbf.nifty.com>, linux-kernel@vger.kernel.org,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/1] i386: Geode's TSC is not neccessary to mark tu
+ unstable
+Message-Id: <20070720112118.0521ecf5.akpm@linux-foundation.org>
+In-Reply-To: <p73ir8gwl7g.fsf@bingen.suse.de>
+References: <20070715.210036.157242351.takada@mbf.nifty.com>
+	<200707191052.50047.juergen127@kreuzholzen.de>
+	<200707191125.47079.ak@suse.de>
+	<200707191225.26047.juergen127@kreuzholzen.de>
+	<p73ir8gwl7g.fsf@bingen.suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007, Milton Miller wrote:
+On 19 Jul 2007 15:56:51 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-> On Jul 20, 2007, at 11:20 AM, Alan Stern wrote:
-> > On Fri, 20 Jul 2007, Milton Miller wrote:
-> >>> We can't do this unless we have frozen tasks (this way, or another)
-> >>> before
-> >>> carrying out the entire operation.
-> >>
-> >> What can't we do?   We've already worked with the drivers to quesce 
-> >> the
-> >> hardware and put any information to resume the device in ram.  Now we
-> >> ask them to put their device in low power mode so we can go to sleep.
-> >> Even if we schedule, the only thing userspace could touch is memory.
-> >
-> > Userspace can submit I/O requests.  Someone will have to audit every
-> > driver to make sure that such I/O requests don't cause a quiesced
-> > device to become active.  If the device is active, it will make the
-> > memory snapshot inconsistent with the on-device data.
+> Juergen Beisert <juergen127@kreuzholzen.de> writes:
 > 
-> If a driver is waking a device between the time it was told by 
-> hibernation "suspend all operations and save your device state to ram" 
-> and "resume your device" then it is a buggy driver.
+> > Hi Andi,
+> > 
+> > On Thursday 19 July 2007 11:25, Andi Kleen wrote:
+> > > On Thursday 19 July 2007 10:52:48 Juergen Beisert wrote:
+> > > > On Thursday 19 July 2007 10:22, Andi Kleen wrote:
+> > > > > > Wow, that's a really cool bug; nice work!  Don't forget to update
+> > > > > > arch/i386/kernel/cpu/mtrr/state.c, though; it uses setCx86() as well.
+> > > > > >  It needs to include processor-cyrix.h.
+> > > > >
+> > > > > It also needs some big fat comments
+> > > >
+> > > > No problem. Where to add?
+> > >
+> > > Where the inlines are defined.
+> > >
+> > > Also can you please resubmit full patches with full description
+> > > and Signed off lines, not incrementals? Thanks.
+> > 
+> > Find attached. Hope its ok now.
+> 
+> For future reference:
+> - Please send the patches inline if possible
 
-That's exactly my point.  As far as I know nobody has done a survey,
-but I bet you'd find _many_ drivers are buggy either in this way or the
-converse (forcing an I/O request to fail immediately instead of waiting
-until the suspend is over when it could succeed).  They have this bug 
-because they were written -- those which include any suspend/resume 
-support at all -- under the assumption that they could rely on the 
-freezer.
++1!
 
-And that's why Rafael said "We can't do this unless we have frozen
-tasks (this way, or another) before carrying out the entire operation."  
-Until the drivers are fixed -- which seems like a tremendous job --
-none of this will work.
+> - Generate them from top level (so path start with linux...) 
 
-> I argue the process can make the io request after we write to disk, we 
-> just can't service it.  If we are suspended it will go to the request 
-> queue, and eventually the process will wait for normal throttling 
-> mechanisms until the driver is woken up.
++2!
 
-Many drivers don't have request queues.  Even for the ones that do, 
-there are I/O pathways that bypass the queue (think of ioctl or sysfs).
+> 
+> I fixed it all up
 
-> Actually, my point was more "what kernel services do the drivers need 
-> to transition from quiesced to low power for acpi S4 or 
-> suspend-to-ram"?  We can't give them allocate-memory (but we give them 
-> a call "we are going to suspend" when they can), but does "run this 
-> tasklet" help?  What timer facilities are needed?
+I have a sad little patch from Nick here which adds a new
+include/asm-x86_64/processor-cyrix.h.  I guess this patch broke the x86_64
+build.
 
-Some drivers need the ability to schedule.  Some will need the ability 
-to allocate memory (although GFP_ATOMIC is probably sufficient).  Some 
-will need timers to run.
+ arch/i386/kernel/cpu/cpufreq/gx-suspmod.c |    2 +-
+ arch/i386/kernel/cpu/cyrix.c              |    2 +-
+ arch/i386/kernel/cpu/mtrr/cyrix.c         |    1 +
+ arch/i386/kernel/cpu/mtrr/state.c         |    1 +
+ include/asm-i386/processor-cyrix.h        |   30 ++++++++++++++++++++++++++++++
+ include/asm-i386/processor.h              |   11 -----------
+ include/asm-x86_64/processor.h            |   11 -----------
 
-> Do we need to differentate init (por by bios) and resume from quiesced 
-> (for reboot, kexec start/resume)?  I hope not.
-
-Yes we do.
-
-Alan Stern
-
+Some of those .c files will be used by x86_64 too.
