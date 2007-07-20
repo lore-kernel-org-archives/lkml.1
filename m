@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937799AbXGTWjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937664AbXGTWlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937799AbXGTWjj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 18:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbXGTWjc
+	id S937664AbXGTWlQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 18:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbXGTWk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 18:39:32 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:56335 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbXGTWjb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 18:39:31 -0400
-Message-ID: <46A1399C.8010405@nortel.com>
-Date: Fri, 20 Jul 2007 16:39:24 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Fri, 20 Jul 2007 18:40:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60855 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751477AbXGTWk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 18:40:58 -0400
+Date: Sat, 21 Jul 2007 00:40:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+Message-ID: <20070720224033.GA12358@elte.hu>
+References: <1184970779.4012.38.camel@chaos> <46A1396F.4090204@garzik.org>
 MIME-Version: 1.0
-To: Lee Revell <rlrevell@joe-job.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: posible latency issues in seq_read
-References: <46A125F4.3030504@nortel.com> <75b66ecd0707201518j45ef8bb7q7e48462ffbbc9c58@mail.gmail.com>
-In-Reply-To: <75b66ecd0707201518j45ef8bb7q7e48462ffbbc9c58@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Jul 2007 22:39:27.0614 (UTC) FILETIME=[D46429E0:01C7CB1E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A1396F.4090204@garzik.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Revell wrote:
-> On 7/20/07, Chris Friesen <cfriesen@nortel.com> wrote:
 
->> We've run into an issue (on 2.6.10) where calling "lsof" triggers lost
->> packets on our server.  Preempt is disabled, and NAPI is enabled.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-> Can you reproduce with a recent kernel?  Lots of latency issues have
-> been fixed since then.
+> I agree with Andi...  it's quite nice to be able to leave some 
+> arch/i386 stuff, and not carry it over to arch/x86-64.
 
-Unfortunately I have to fix it on this version (the bug was found on 
-shipped product), so if there was a difference I'd have to isolate the 
-changes and backport them.  Also, I can't run the software that triggers 
-the problem on a newer kernel as it has dependencies on various patches 
-that are not in mainline.
+we can leave those few items in arch/x86 just as much. No need to keep 
+around a legacy tree for that.
 
-Basically what I'd like to know is whether calling schedule() in 
-seq_read() is safe or whether it would break assumptions made by 
-seq_file users.
-
-Chris
+	Ingo
