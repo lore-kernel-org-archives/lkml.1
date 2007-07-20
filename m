@@ -1,40 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765042AbXGTUUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932678AbXGTUUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765042AbXGTUUA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 16:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbXGTUTs
+	id S932678AbXGTUUh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759453AbXGTUUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 16:19:48 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55192 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752715AbXGTUTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 16:19:47 -0400
-To: Ben Greear <greearb@candelatech.com>
-Cc: andrei radulescu-banu <iubica2@yahoo.com>,
-       Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <930446.33248.qm@web56601.mail.re3.yahoo.com>
-	<469FF611.6080905@candelatech.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 20 Jul 2007 22:19:45 +0200
-In-Reply-To: <469FF611.6080905@candelatech.com> (Ben Greear's message of "Thu, 19 Jul 2007 16:38:57 -0700")
-Message-ID: <m3r6n2zv32.fsf@maximus.localdomain>
+	Fri, 20 Jul 2007 16:20:16 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:50099 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755583AbXGTUUO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 16:20:14 -0400
+Date: Fri, 20 Jul 2007 16:20:10 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: menage@google.com
+cc: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
+       devel@openvz.org
+Subject: Re: [PATCH 02/10] Task Containers(V11):  Add tasks file interface
+In-Reply-To: <20070720191247.556709000@menage.corp.google.com>
+Message-ID: <Line.LNX.4.64.0707201616240.9702@d.namei>
+References: <20070720183152.637820000@menage.corp.google.com>
+ <20070720191247.556709000@menage.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Greear <greearb@candelatech.com> writes:
+On Fri, 20 Jul 2007, menage@google.com wrote:
 
->> The net result is that dev_queue_xmit_nit() is called twice, once
->> for dev=eth0.2 then for dev=eth0.
->
-> Maybe binding to all isn't such a good idea then.
+> +/*
+> + * Attach task with pid 'pid' to container 'cont'. Call with
+> + * container_mutex, may take task_lock of task
+> + */
+> +static int attach_task_by_pid(struct container *cont, char *pidbuf)
+> +{
+> +	pid_t pid;
+> +	struct task_struct *tsk;
+> +	int ret;
+> +
+> +	if (sscanf(pidbuf, "%d", &pid) != 1)
+> +		return -EIO;
+> +
+> +	if (pid) {
+> +		rcu_read_lock();
+> +		tsk = find_task_by_pid(pid);
+> +		if (!tsk || tsk->flags & PF_EXITING) {
+> +			rcu_read_unlock();
+> +			return -ESRCH;
+> +		}
+> +		get_task_struct(tsk);
+> +		rcu_read_unlock();
+> +
+> +		if ((current->euid) && (current->euid != tsk->uid)
+> +		    && (current->euid != tsk->suid)) {
+> +			put_task_struct(tsk);
+> +			return -EACCES;
 
-Anyway I would expect the frame on eth0.2 and then on eth0 as well.
-Anything different is crazy.
+I wonder if we should allow CAP_SYS_ADMIN to do this, too.
+
 -- 
-Krzysztof Halasa
+James Morris
+<jmorris@namei.org>
