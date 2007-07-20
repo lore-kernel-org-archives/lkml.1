@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759949AbXGTKQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbXGTKlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759949AbXGTKQT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 06:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXGTKQK
+	id S1757269AbXGTKlt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 06:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXGTKll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 06:16:10 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:31018 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752447AbXGTKQI (ORCPT
+	Fri, 20 Jul 2007 06:41:41 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:63963 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191AbXGTKlk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 06:16:08 -0400
+	Fri, 20 Jul 2007 06:41:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=h8IiHhYaPFZBhMPDEV/I5lGeGbP9XsLs0ZqKXOyWfyScRpaUp2xFsuyzDnywgxKf+e+yvIw5wdgwBGnQHiIvCgMPpBxFF9hB6DELm3uVvSP0H/9Q7eIVrd8RRbehSj31cLMWEFwzYWcmeRw0nfkAvyYooT+HvOe7x8mB9E+VjaI=
-Message-ID: <a8e1da0707200316y68fdbb39o8b21d3ebdefa5c05@mail.gmail.com>
-Date: Fri, 20 Jul 2007 10:16:05 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "rae l" <crquan@gmail.com>
-Subject: Re: [PATCH] fs/fuse/dev.c: use zero_user_page instead
-Cc: "Miklos Szeredi" <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <91b13c310707200312j17ec110bm20c100e5861b1758@mail.gmail.com>
+        b=GrRxEpvfhgNUwd/1lNGU5pUdwej+RNCCL+WqEDtklijBY5rCR0XgHgakbYqxF9mEThDJnBkDh5Vnu2Ipl78iwcljqlX3ZONEppXWaohjQikLhZuFTkk+RnkwKWCSK08YATjmh7sw1OiqIDqoEmL3q9shqRllTfzeHjXMpZdLe74=
+Message-ID: <a781481a0707200341o21381742rdb15e6a9dc770d27@mail.gmail.com>
+Date: Fri, 20 Jul 2007 16:11:38 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "clameter@sgi.com" <clameter@sgi.com>
+Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20070531003012.302019683@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <11849242706-git-send-email-crquan@gmail.com>
-	 <a8e1da0707200309n377eca1fwa640eeceb920959b@mail.gmail.com>
-	 <91b13c310707200312j17ec110bm20c100e5861b1758@mail.gmail.com>
+References: <20070531002047.702473071@sgi.com>
+	 <20070531003012.302019683@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 7/20/07, rae l <crquan@gmail.com> wrote:
-> On 7/20/07, Dave Young <hidave.darkstar@gmail.com> wrote:
-> > > -       if (page && zeroing && count < PAGE_SIZE) {
-> > > -               void *mapaddr = kmap_atomic(page, KM_USER1);
-> > > -               memset(mapaddr, 0, PAGE_SIZE);
-> > > -               kunmap_atomic(mapaddr, KM_USER1);
-> > > -       }
-> > > +       if (page && zeroing && count < PAGE_SIZE)
-> > > +               zero_user_page(page, 0, PAGE_SIZE, KM_USER1);
-> > Why clear all page? IMHO,only count bytes need to be cleared.
-> The original one is memset(mapaddr, 0, PAGE_SIZE), namely clear the whole page.
-Yes, I have same suspicion with original code.
+[ Just cleaning up my inbox, and stumbled across this thread ... ]
+
+
+On 5/31/07, clameter@sgi.com <clameter@sgi.com> wrote:
+> Introduce CONFIG_STABLE to control checks only useful for development.
 >
-> --
-> Denis Cheng
-> Linux Application Developer
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> [...]
+>  menu "General setup"
 >
-> "One of my most productive days was throwing away 1000 lines of code."
->  - Ken Thompson.
->
+> +config STABLE
+> +       bool "Stable kernel"
+> +       help
+> +         If the kernel is configured to be a stable kernel then various
+> +         checks that are only of interest to kernel development will be
+> +         omitted.
+> +
+
+
+"A programmer who uses assertions during testing and turns them off
+during production is like a sailor who wears a life vest while drilling
+on shore and takes it off at sea."
+                                                - Tony Hoare
+
+
+Probably you meant to turn off debug _output_ (and not _checks_)
+with this config option? But we already have CONFIG_FOO_DEBUG_BAR
+for those situations ...
+
+Satyam
