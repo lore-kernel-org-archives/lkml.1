@@ -1,91 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760805AbXGTL6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbXGTMB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760805AbXGTL6Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 07:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbXGTL6E
+	id S1760261AbXGTMB6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 08:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbXGTMBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 07:58:04 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:55906 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754253AbXGTL6D (ORCPT
+	Fri, 20 Jul 2007 08:01:48 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:37424 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754473AbXGTMBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 07:58:03 -0400
-Date: Fri, 20 Jul 2007 13:58:13 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kay.sievers@vrfy.org
-Subject: Re: kobject link failure
-Message-ID: <20070720135813.0e416b2b@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070720113221.390ed32a@gondolin.boeblingen.de.ibm.com>
-References: <Pine.LNX.4.64.0707191956510.31013@fbirervta.pbzchgretzou.qr>
-	<469FA94E.20002@googlemail.com>
-	<20070720080059.GA29639@suse.de>
-	<20070720113221.390ed32a@gondolin.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 08:01:47 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 20 Jul 2007 07:59:56 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] IP_VS should depend on EXPERIMENTAL ?
+In-Reply-To: <46A0A01A.7030403@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0707200753300.10966@localhost.localdomain>
+References: <46A0A01A.7030403@googlemail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007 11:32:21 +0200,
-Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+On Fri, 20 Jul 2007, Gabriel C wrote:
 
-> Hm, this would be an interface change (the uevent attribute used to
-> exist even for !CONFIG_HOTPLUG, it just triggered nothing). How about
-> moving kobject_actions[] out of the #ifdef (maybe next to
-> kobject_action)?
+> Hi,
+>
+> IP_VS has :
+>
+> ..
+>
+> tristate "IP virtual server support (EXPERIMENTAL)"
+>
+> ..
+>
+> but it does not depend on EXPERIMENTAL.
+>
+>
+> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+>
+> ---
+>
+>  net/ipv4/ipvs/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/net/ipv4/ipvs/Kconfig b/net/ipv4/ipvs/Kconfig
+> index 09d0c3f..3c594ec 100644
+> --- a/net/ipv4/ipvs/Kconfig
+> +++ b/net/ipv4/ipvs/Kconfig
+> @@ -3,7 +3,7 @@
+>  #
+>  menuconfig IP_VS
+>  	tristate "IP virtual server support (EXPERIMENTAL)"
+> -	depends on NETFILTER
+> +	depends on NETFILTER && EXPERIMENTAL
+>  	---help---
+>  	  IP Virtual Server support will let you build a high-performance
+>  	  virtual server based on cluster of two or more real servers. This
 
-Leaving kobject_actions[] in kobject_uevent.c, but putting it outside
-the #ifdef looks indeed like the best solution to me. This way, we
-avoid adding #ifdef CONFIG_HOTPLUG into core.c, when all other
-functions called do not need such a thing.
+there's maturity-level inconsistency like that in a few places, like
+when stuff is tagged as EXPERIMENTAL, but labelled as OBSOLETE:
 
+./net/ipv6/netfilter/Kconfig-config IP6_NF_QUEUE
+./net/ipv6/netfilter/Kconfig-   tristate "IP6 Userspace queueing via NETLINK (OBSOLETE)"
+./net/ipv6/netfilter/Kconfig:   depends on INET && IPV6 && NETFILTER && EXPERIMENTAL
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+and other examples:
 
----
- lib/kobject_uevent.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+./net/ipv6/netfilter/Kconfig-config IP6_NF_IPTABLES
+./net/ipv6/netfilter/Kconfig-   tristate "IP6 tables support (required for filtering)"
+./net/ipv6/netfilter/Kconfig:   depends on INET && IPV6 && EXPERIMENTAL
+...
+./net/ipv6/Kconfig-config IPV6_MULTIPLE_TABLES
+./net/ipv6/Kconfig-     bool "IPv6: Multiple Routing Tables"
+./net/ipv6/Kconfig:     depends on IPV6 && EXPERIMENTAL
+...
+./net/ipv4/Kconfig-config TCP_CONG_HSTCP
+./net/ipv4/Kconfig-     tristate "High Speed TCP"
+./net/ipv4/Kconfig:     depends on EXPERIMENTAL
+...
+./net/rxrpc/Kconfig-config AF_RXRPC
+./net/rxrpc/Kconfig-    tristate "RxRPC session sockets"
+./net/rxrpc/Kconfig:    depends on INET && EXPERIMENTAL
+...
 
---- linux-2.6.orig/lib/kobject_uevent.c
-+++ linux-2.6/lib/kobject_uevent.c
-@@ -25,14 +25,6 @@
- #define BUFFER_SIZE	2048	/* buffer for the variables */
- #define NUM_ENVP	32	/* number of env pointers */
- 
--#if defined(CONFIG_HOTPLUG)
--u64 uevent_seqnum;
--char uevent_helper[UEVENT_HELPER_PATH_LEN] = "/sbin/hotplug";
--static DEFINE_SPINLOCK(sequence_lock);
--#if defined(CONFIG_NET)
--static struct sock *uevent_sock;
--#endif
--
- /* the strings here must match the enum in include/linux/kobject.h */
- const char *kobject_actions[] = {
- 	"add",
-@@ -43,6 +35,14 @@ const char *kobject_actions[] = {
- 	"offline",
- };
- 
-+#if defined(CONFIG_HOTPLUG)
-+u64 uevent_seqnum;
-+char uevent_helper[UEVENT_HELPER_PATH_LEN] = "/sbin/hotplug";
-+static DEFINE_SPINLOCK(sequence_lock);
-+#if defined(CONFIG_NET)
-+static struct sock *uevent_sock;
-+#endif
-+
- /**
-  * kobject_uevent_env - send an uevent with environmental data
-  *
+  it might be a better investment in time to look through the Kconfig
+files, and decide which entries currently marked as "EXPERIMENTAL"
+really *shouldn't* be, and remove those silly dependencies.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
