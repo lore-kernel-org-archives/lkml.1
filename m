@@ -1,99 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934433AbXGTTLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbXGTTNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934433AbXGTTLl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 15:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758441AbXGTTLc
+	id S932388AbXGTTNf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 15:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757721AbXGTTN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 15:11:32 -0400
-Received: from echo.digadd.de ([195.47.195.234]:43052 "EHLO mx2.digadd.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756182AbXGTTLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 15:11:30 -0400
-Message-ID: <46A108D3.9030404@digadd.de>
-Date: Fri, 20 Jul 2007 22:11:15 +0300
-From: "Christian P. Schmidt" <charlie@digadd.de>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070716)
+	Fri, 20 Jul 2007 15:13:27 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:1177 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756182AbXGTTN0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 15:13:26 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAN+loEarR7MV/2dsb2JhbAA
+X-IronPort-AV: i="4.16,563,1175497200"; 
+   d="scan'208"; a="185808708:sNHT24800283"
+To: Pekka J Enberg <penberg@cs.helsinki.fi>, torvalds@linux-foundation.org
+Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Subject: [PATCH] Fix ZERO_OR_NULL_PTR(ZERO_SIZE_PTR)
+X-Message-Flag: Warning: May contain useful information
+References: <200707191201.35777.ak@suse.de>
+	<84144f020707190708p1c4d63cnbb0397a602c3527d@mail.gmail.com>
+	<adamyxsfmnc.fsf@cisco.com>
+	<Pine.LNX.4.64.0707201009580.1209@sbz-30.cs.Helsinki.FI>
+	<Pine.LNX.4.64.0707201017450.1209@sbz-30.cs.Helsinki.FI>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 20 Jul 2007 12:13:20 -0700
+In-Reply-To: <Pine.LNX.4.64.0707201017450.1209@sbz-30.cs.Helsinki.FI> (Pekka J. Enberg's message of "Fri, 20 Jul 2007 10:18:49 +0300 (EEST)")
+Message-ID: <adamyxqc2i7.fsf_-_@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Problem after suspend to ram: NMI received for unknown reason b0.
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 20 Jul 2007 19:13:20.0653 (UTC) FILETIME=[091BABD0:01C7CB02]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+The comparison with ZERO_SIZE_PTR in ZERO_OR_NULL_PTR() needs to be <=
+(not just <) so that ZERO_OR_NULL_PTR(ZERO_SIZE_PTR) is 1.
 
-I'm almost happy with my new laptop - I got like 90% of the things
-working the way I wanted, except the all-time dreaded suspend.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+I finally had time to reproduce Michael's crash and debug it.  Linus's
+patch is part of the story -- it doesn't help unless ZERO_OR_NULL_PTR()
+is true.  With this change the crash goes away, and it seems pretty
+obviously correct to me (unless I'm seriously confused).
 
-Suspend to disk, using the suspend2 patchset, fails because the
-fingerprint reader on the USB bus apparently does not suspend. Well,
-I'll go into that later on when I'm finished with the other problems
-(like e1000 autonegotiation and the ATI driver messing up my xterms (and
-only them).
+ include/linux/slab.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The bigger problem is the embedded Atheros AR5418 and suspend to ram.
-
-After the resume (between immediately and some time later) I see the
-card suddenly stops working, and I see this in the log:
-
-[ 1979.234594] Uhhuh. NMI received for unknown reason b0.
-[ 1979.234604] You have some hardware problem, likely on the PCI bus.
-[ 1979.234608] Dazed and confused, but trying to continue
-[ 1980.211872] wifi0: rx FIFO overrun; resetting
-[ 1981.258461] wifi0: rx FIFO overrun; resetting
-
-And then this message continues once per second. Unloading the driver
-before suspending seems to delay the NMI for some time, but not finally
-preventing it. The card is remains in this somehow unusable state until
-reboot, even if removing and reinserting the driver:
-
-[ 2714.974822] ACPI: PCI interrupt for device 0000:03:00.0 disabled
-[ 2714.975151] ath_pci: driver unloaded
-[ 2716.572893] ath_pci: 0.9.4.5 ()
-[ 2716.573574] ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level,
-low) -> IRQ 17
-[ 2716.573726] PCI: Setting latency timer of device 0000:03:00.0 to 64
-[ 2716.706774] ath_pci: switching rfkill capability off
-[ 2716.706859] ath_pci: ath_pci: switching per-packet transmit power
-control off
-[ 2716.707332] wifi0: 11a rates: 6Mbps 9Mbps 12Mbps 18Mbps 24Mbps 36Mbps
-48Mbps 54Mbps
-[ 2716.707472] wifi0: 11b rates: 1Mbps 2Mbps 5.5Mbps 11Mbps
-[ 2716.707565] wifi0: 11g rates: 1Mbps 2Mbps 5.5Mbps 11Mbps 6Mbps 9Mbps
-12Mbps 18Mbps 24Mbps 36Mbps 48Mbps 54Mbps
-[ 2716.707734] wifi0: turboA rates: 6Mbps 9Mbps 12Mbps 18Mbps 24Mbps
-36Mbps 48Mbps 54Mbps
-[ 2716.707865] wifi0: turboG rates: 6Mbps 9Mbps 12Mbps 18Mbps 24Mbps
-36Mbps 48Mbps 54Mbps
-[ 2716.707995] wifi0: H/W encryption support: WEP AES AES_CCM TKIP
-[ 2716.708087] wifi0: mac 12.10 phy 8.1 radio 12.0
-[ 2716.708153] wifi0: Use hw queue 1 for WME_AC_BE traffic
-[ 2716.708202] wifi0: Use hw queue 0 for WME_AC_BK traffic
-[ 2716.708252] wifi0: Use hw queue 2 for WME_AC_VI traffic
-[ 2716.708302] wifi0: Use hw queue 3 for WME_AC_VO traffic
-[ 2716.708352] wifi0: Use hw queue 8 for CAB traffic
-[ 2716.708399] wifi0: Use hw queue 9 for beacons
-[ 2716.708754] wifi0: Atheros 5418: mem=0xedf00000, irq=17
-[ 2722.595511] ath0: no IPv6 routers present
-[ 2729.942696] wifi0: rx FIFO overrun; resetting
-
-Judging from /proc/interrupts, no interrupts 17 are generated any more
-(the one among others for the Atheros card). The audio subsystem that
-shares the irq line works fine though, and generates interrupts.
-A second Atheros card plugged via PCCard interface works perfectly
-during this time.
-
-Also, I'm not alone with this problem: See
-http://ubuntuforums.org/showthread.php?p=3029533 for exactly this problem.
-
-Some additional data:
-full dmesg @ http://digadd.de/dmesg.txt
-lspci -vv  @ http://digadd.de/lspci.txt
-lshw       @ http://digadd.de/lshw.txt
-.config    @ http://digadd.de/config.txt
-
-Thanks for reading until here!
-Christian
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index 7d0ecc1..d859354 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -40,7 +40,7 @@
+  */
+ #define ZERO_SIZE_PTR ((void *)16)
+ 
+-#define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) < \
++#define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= \
+ 				(unsigned long)ZERO_SIZE_PTR)
+ 
+ /*
