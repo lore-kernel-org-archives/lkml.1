@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbXGTNjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbXGTNkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758924AbXGTNjh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 09:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbXGTNj2
+	id S1763289AbXGTNkX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 09:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757197AbXGTNkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 09:39:28 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34612 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756922AbXGTNj1 (ORCPT
+	Fri, 20 Jul 2007 09:40:09 -0400
+Received: from srv4.netavous.net ([213.251.145.243]:47873 "HELO
+	srv4.netavous.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758238AbXGTNkH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 09:39:27 -0400
-Date: Fri, 20 Jul 2007 22:39:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: mel@skynet.ie, torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: Fix memory hotplug oops from ZONE_MOVABLE changes.
-Message-Id: <20070720223909.d4c1e848.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070720114246.GA27391@linux-sh.org>
-References: <20070720060342.GA24765@linux-sh.org>
-	<20070720112025.GA14495@skynet.ie>
-	<20070720114246.GA27391@linux-sh.org>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 09:40:07 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jul 2007 09:40:07 EDT
+From: David CHANIAL <david.ml@euro-web.fr>
+Organization: Euro Web
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
+Date: Fri, 20 Jul 2007 15:33:14 +0200
+User-Agent: KMail/1.9.5
+Cc: "Neil Brown" <neilb@suse.de>,
+       "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>
+References: <200707160638.15750.david.ml@euro-web.fr> <18080.22813.143226.671265@notabene.brown> <a781481a0707200013g5c2ce008ka63e18f775664984@mail.gmail.com>
+In-Reply-To: <a781481a0707200013g5c2ce008ka63e18f775664984@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707201533.14517.david.ml@euro-web.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007 20:42:46 +0900
-Paul Mundt <lethal@linux-sh.org> wrote:
+Le vendredi 20 juillet 2007 09:13, Satyam Sharma a écrit :
+> David, please try this and let us know if it solves your problems.
 
-> > I expect that the memory gets added to the same zone as historically but
-> > when ZONE_MOVABLE is set, you'll see a situation where zones are overlapping
-> > after memory hot-add.  i.e. Before memory hot-add, you'd see
-> > 
-> > DDDDMM
-> > 
-> > for ZONE_DMA and ZONE_MOVABLE and after hotadd, you'd see something like
-> > 
-> > DDDDMMDDDD
-> > 
+How to ?
+Should i have to patch kernel tree myself ? on 2.6.22.1 ?
 
-As similar case, I hear powerpc has followig memory layout
+For the moment, with 2.6.22.1 the probleme has not reappeared.
 
-(1)(1)(0)(0)(0)(1)(1)(1)  # (0) is node 0, (1) is node 1. all zones are ZONE_DMA.
-
-So zone is overlapped without memory hotplug.
-But I agree we have to take care of this kind of corner cases.
-
-Thanks,
--Kame
+Best regards,
+-- 
+David
