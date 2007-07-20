@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936960AbXGTUmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764712AbXGTUoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936960AbXGTUmZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 16:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935762AbXGTUmL
+	id S1764712AbXGTUoO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 16:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760068AbXGTUn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 16:42:11 -0400
-Received: from mail.tmr.com ([64.65.253.246]:44338 "EHLO gaimboi.tmr.com"
+	Fri, 20 Jul 2007 16:43:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60976 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935878AbXGTUmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 16:42:10 -0400
-Message-ID: <46A11E4B.3070002@tmr.com>
-Date: Fri, 20 Jul 2007 16:42:51 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1756477AbXGTUn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 16:43:58 -0400
+Message-ID: <46A11E7D.90209@redhat.com>
+Date: Fri, 20 Jul 2007 16:43:41 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.22-git13 crash
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Folkert van Heusden <folkert@vanheusden.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.21.1] totally hanging altough not crashed
+References: <20070720195252.GA25317@vanheusden.com>
+In-Reply-To: <20070720195252.GA25317@vanheusden.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-built from 2.6.22-git9 config, used oldconfig. Crashes so early it 
-doesn't seem to get to the network card.
+On 07/20/2007 03:53 PM, Folkert van Heusden wrote:
+> Hi,
+> 
+> One of my systems running 2.6.21.1 on a P4 with HT and 2GB of ram
+> occasionally crashes. Not with an oops or panic, it just suddenly stops
+> doing anything. It still lets you ping and it still forwards ip traffic
+> but you can't login: not via ssh and not on the console - pressing enter
+> brings the cursor to the next line and that's it. It is NOT swapping at
+> all, in fact alt+sysrq+m says that there's still plenty of memory and
+> swap available:
 
-  config: www.tmr.com/~davidsen/config-2.6.22-git13.gz
-  screen dump: www.tmr.com/~davidsen/dump-2.6.22-git13.jpg
-
-Not much info, and probably seen elsewhere.
-
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+Lots of processes are in uninterruptible wait at
+start_this_handle+0x208/0x365. Can you find out what line of code
+that matches? (There are a few of those waits in that function.)
