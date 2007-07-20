@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765921AbXGTJca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbXGTJhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765921AbXGTJca (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 05:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbXGTJcW
+	id S932101AbXGTJhy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 05:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbXGTJhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 05:32:22 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:57763 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756498AbXGTJcU (ORCPT
+	Fri, 20 Jul 2007 05:37:46 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:16318 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756498AbXGTJhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 05:32:20 -0400
-Date: Fri, 20 Jul 2007 11:32:21 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kay.sievers@vrfy.org
-Subject: Re: kobject link failure
-Message-ID: <20070720113221.390ed32a@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070720080059.GA29639@suse.de>
-References: <Pine.LNX.4.64.0707191956510.31013@fbirervta.pbzchgretzou.qr>
-	<469FA94E.20002@googlemail.com>
-	<20070720080059.GA29639@suse.de>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 05:37:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=mDz1lQRccxcm80Ql5FrEqeLx5J7/Gqzr+4VV3m4nbf54kF7PrBIKwGl/NLwHd4kssn6kD4XSEAK2a7l1Ijr8F/hEO8XeXQhUYgbk+WH0dqGX06y5nXQK8tyPO5zxxgy1fhruJ7NwfFKzDGjsnYoNPOf7bmN8c0q+yAwyIE+v6YY=
+From: Denis Cheng <crquan@gmail.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: fuse-devel@lists.sourceforge.net, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, Denis Cheng <crquan@gmail.com>
+Subject: [PATCH] fs/fuse/dev.c: use zero_user_page instead
+Date: Fri, 20 Jul 2007 17:37:50 +0800
+Message-Id: <11849242706-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007 01:00:59 -0700,
-Greg KH <gregkh@suse.de> wrote:
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+I'm not very sure zero_user_page is correctly used here,
+so please feel free to give comments.
 
+and why here it uses KM_USER1 not KM_USER0, What are the differences?
 
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -250,6 +250,7 @@ static struct kset_uevent_ops device_uev
->  	.uevent =	dev_uevent,
->  };
-> 
-> +#ifdef CONFIG_HOTPLUG
->  static ssize_t show_uevent(struct device *dev, struct device_attribute *attr,
->  			   char *buf)
->  {
-> @@ -330,6 +331,23 @@ out:
->  static struct device_attribute uevent_attr =
->  	__ATTR(uevent, S_IRUGO | S_IWUSR, show_uevent, store_uevent);
-> 
-> +static int device_add_uevent_attr(struct device *dev)
-> +{
-> +	return device_create_file(dev, &uevent_attr);
-> +}
-> +
-> +static void device_remove_uevent_attr(struct device *dev)
-> +{
-> +	device_remove_file(dev, &uevent_attr);
-> +}
-> +
-> +#else	/* CONFIG_HOTPLUG */
-> +
-> +static inline int device_add_uevent_attr(struct device *dev) { return 0; }
-> +static inline void device_remove_uevent_attr(struct device *dev) { }
-> +
-> +#endif	/* CONFIG_HOTPLUG */
-> +
->  static int device_add_attributes(struct device *dev,
->  				 struct device_attribute *attrs)
->  {
-> @@ -787,7 +805,7 @@ int device_add(struct device *dev)
->  		blocking_notifier_call_chain(&dev->bus->bus_notifier,
->  					     BUS_NOTIFY_ADD_DEVICE, dev);
-> 
-> -	error = device_create_file(dev, &uevent_attr);
-> +	error = device_add_uevent_attr(dev);
->  	if (error)
->  		goto attrError;
-> 
-> @@ -861,7 +879,7 @@ int device_add(struct device *dev)
->  		}
->  	}
->   ueventattrError:
-> -	device_remove_file(dev, &uevent_attr);
-> +	device_remove_uevent_attr(dev);
->   attrError:
->  	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
->  	kobject_del(&dev->kobj);
-> @@ -994,7 +1012,7 @@ void device_del(struct device * dev)
->  			up(&dev->class->sem);
->  		}
->  	}
-> -	device_remove_file(dev, &uevent_attr);
-> +	device_remove_uevent_attr(dev);
->  	device_remove_attrs(dev);
->  	bus_remove_device(dev);
-> 
+ fs/fuse/dev.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-Hm, this would be an interface change (the uevent attribute used to
-exist even for !CONFIG_HOTPLUG, it just triggered nothing). How about
-moving kobject_actions[] out of the #ifdef (maybe next to
-kobject_action)?
+diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
+index 3ad22be..e55b5e8 100644
+--- a/fs/fuse/dev.c
++++ b/fs/fuse/dev.c
+@@ -533,11 +533,9 @@ static int fuse_copy_do(struct fuse_copy_state *cs, void **val, unsigned *size)
+ static int fuse_copy_page(struct fuse_copy_state *cs, struct page *page,
+ 			  unsigned offset, unsigned count, int zeroing)
+ {
+-	if (page && zeroing && count < PAGE_SIZE) {
+-		void *mapaddr = kmap_atomic(page, KM_USER1);
+-		memset(mapaddr, 0, PAGE_SIZE);
+-		kunmap_atomic(mapaddr, KM_USER1);
+-	}
++	if (page && zeroing && count < PAGE_SIZE)
++		zero_user_page(page, 0, PAGE_SIZE, KM_USER1);
++
+ 	while (count) {
+ 		int err;
+ 		if (!cs->len && (err = fuse_copy_fill(cs)))
+-- 
+1.5.2.2
+
