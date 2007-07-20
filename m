@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbXGTFYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbXGTF0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758649AbXGTFYQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 01:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbXGTFYF
+	id S1759227AbXGTF0H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 01:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbXGTFZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 01:24:05 -0400
-Received: from il.qumranet.com ([82.166.9.18]:54451 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751533AbXGTFYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 01:24:03 -0400
-Message-ID: <46A046F1.7040207@qumranet.com>
-Date: Fri, 20 Jul 2007 08:24:01 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Fri, 20 Jul 2007 01:25:52 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:52127 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbXGTFZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 01:25:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vm+hACeZuPMJq8hjR6GatPZnMfPSIEGxADXCUMN8lRzdMVm47SJ+tKTE37QuGZuPLogm5Pg5XrDRz2nij3GFMkOG5a2t6vJw1O95GbWyFa+yB8uRFzFm2lbeFQaU3E1OeP4Aocxs09ejbZOQA9Ibfcnt92GQj0CIJiMFC/TE+z8=
+Message-ID: <aa4c40ff0707192225r6b5e971fy59f78a525697f864@mail.gmail.com>
+Date: Thu, 19 Jul 2007 22:25:49 -0700
+From: "James Lamanna" <jlamanna@gmail.com>
+To: "Al Boldi" <a1426z@gawab.com>
+Subject: Re: [RFH] Partion table recovery
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200707200813.03553.a1426z@gawab.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH] Move KVM, paravirt, lguest, VMI and Xen under arch-level
- Virtualization option
-References: <1184905342.10380.263.camel@localhost.localdomain>
-In-Reply-To: <1184905342.10380.263.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Fri, 20 Jul 2007 08:24:01 +0300 (IDT)
+Content-Disposition: inline
+References: <200707200813.03553.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Any objections?
+On 7/19/07, Al Boldi <a1426z@gawab.com> wrote:
+> As always, a good friend of mine managed to scratch my partion table by
+> cat'ing /dev/full into /dev/sda.  I was able to push him out of the way, but
+> at least the first 100MB are gone.  I can probably live without the first
+> partion, but there are many partitions after that, which I hope should
+> easily be recoverable.
 >
-> Rusty.
-> ===
-> Having KVM appear in the middle of "drivers" is kinda strange, and
-> having it alone under a menu called "virtualization" doubly so.
+> I tried parted, but it's not working out for me.  Does anybody know of a
+> simple partition recovery tool, that would just scan the disk for lost
+> partions?
+
+Tried gpart?
+http://www.stud.uni-hannover.de/user/76201/gpart/
+
+
 >
-> 1) Move the "Virtualization" menu into the arch-specific i386 and
->    x86-64 Kconfig.
->   
+>
+> Thanks!
+>
+> --
+> Al
 
-Virtualization is hardly x86 specific.  How about moving it to
-top-level, and having individual items disable themselves on archs they
-don't apply to?
-
-Otherwise we end up with $NARCH copies of that Kconfig, each slightly
-different.  The top-level entry can be made to depend on the archs that
-actually have some virt capability, so as not to show empty an menu.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+-- James
