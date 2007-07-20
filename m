@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941128AbXGTQOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964993AbXGTQUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941128AbXGTQOW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 12:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758742AbXGTQOO
+	id S964993AbXGTQUa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 12:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbXGTQUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 12:14:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42875 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761355AbXGTQOM (ORCPT
+	Fri, 20 Jul 2007 12:20:21 -0400
+Received: from mga02.intel.com ([134.134.136.20]:18040 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933878AbXGTQUU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 12:14:12 -0400
-Date: Fri, 20 Jul 2007 09:12:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Magnus Damm <magnus.damm@gmail.com>
-cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: pata_platform: Fix NULL pointer dereference
-In-Reply-To: <20070720035058.25300.28389.sendpatchset@clockwork.opensource.se>
-Message-ID: <alpine.LFD.0.999.0707200910020.27249@woody.linux-foundation.org>
-References: <20070720035058.25300.28389.sendpatchset@clockwork.opensource.s
- e>
+	Fri, 20 Jul 2007 12:20:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,563,1175497200"; 
+   d="scan'208";a="268634961"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: build fix for x86_64...
+Date: Fri, 20 Jul 2007 09:20:15 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A01FA46A9@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070720085501.82715036.randy.dunlap@oracle.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: build fix for x86_64...
+Thread-Index: AcfK5e6vX7JpcwRyTlmqWkV6QmAbkwAAse4A
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>, "Andi Kleen" <ak@novell.com>
+Cc: "Arthur Jones" <arthur.jones@qlogic.com>,
+       "Vasily Tarasov" <vtaras@openvz.org>, <linux-kernel@vger.kernel.org>,
+       "Jan Kara" <jack@ucw.cz>, <linux-arch@vger.kernel.org>
+X-OriginalArrivalTime: 20 Jul 2007 16:20:16.0642 (UTC) FILETIME=[DBC15620:01C7CAE9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Half dozens?
 
+I was imagining having to have "help" messages ... which of course we don't.
 
-On Fri, 20 Jul 2007, Magnus Damm wrote:
-> 
-> pata_platform currently dereferences a NULL pointer in pata_platform_probe()
-> if pdev->dev.platform_data is set to NULL. This breakage was most likely
-> introduced by commit 5f45bc50976ee1f408f7171af155aec646655a37.
+> config COMPAT_FOR_U64_ALIGNMENT
+> 	bool
+> 	default y
 
-Ok, the *fix* looks real enough, but it seems that you have done your line 
-splitting with a word processor rather than with a source code editor:
+Plausible.
 
-> +	return ata_host_activate(host, platform_get_irq(pdev, 0),
-> +				 ata_interrupt, pp_info ? pp_info->irq_flags
-> +				 : 0, &pata_platform_sht);
+Randy suggested:
+>	def_bool y
 
-Please don't do things like this. Splitting up expressions across two 
-lines just to make the line length come out "right" is silly.
+Which is better.  But if we unconditionally set this CONFIG variable, then the
+code in fs/quota.c will have to read:
 
-So do the
+#if defined(CONFIG_COMPAT) && defined(CONFIG_COMPAT_FOR_U64_ALIGNMENT)
 
-	"pp_info ? pp_info->irq_flags : 0"
+We can keep it simpler if the Kconfig file does the conditional for us:
 
-expression on one line.
+config COMPAT_FOR_U64_ALIGNMENT
+	def_bool y
+	depends on COMPAT
 
-And if it means that the line is longe rthan 80 characters, then so be it. 
-It's ok. It's still more readable than the alternative.
+Then the patch looks like this:
 
-			Linus "nit-picking bastard" Torvalds
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 36c7b96..36c1582 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -425,6 +425,10 @@ config COMPAT
+ 	depends on IA32_SUPPORT
+ 	default y
+ 
++config COMPAT_FOR_U64_ALIGNMENT
++	def_bool y
++	depends on COMPAT
++
+ config IA64_MCA_RECOVERY
+ 	tristate "MCA recovery from errors other than TLB."
+ 
+diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+index 14bf8ce..c77510b 100644
+--- a/arch/x86_64/Kconfig
++++ b/arch/x86_64/Kconfig
+@@ -753,6 +753,10 @@ config COMPAT
+ 	depends on IA32_EMULATION
+ 	default y
+ 
++config COMPAT_FOR_U64_ALIGNMENT
++	def_bool y
++	depends on COMPAT
++
+ config SYSVIPC_COMPAT
+ 	bool
+ 	depends on COMPAT && SYSVIPC
+diff --git a/fs/quota.c b/fs/quota.c
+index e6577ac..99b24b5 100644
+--- a/fs/quota.c
++++ b/fs/quota.c
+@@ -387,7 +387,7 @@ asmlinkage long sys_quotactl(unsigned int cmd, const char __user *special, qid_t
+ 	return ret;
+ }
+ 
+-#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
++#if defined(CONFIG_COMPAT_FOR_U64_ALIGNMENT)
+ /*
+  * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
+  * and is necessary due to alignment problems.
