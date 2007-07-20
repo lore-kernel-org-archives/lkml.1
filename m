@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934976AbXGTPOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935179AbXGTPOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934976AbXGTPOP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 11:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933882AbXGTPOC
+	id S935179AbXGTPOm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 11:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934142AbXGTPOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 11:14:02 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45496 "EHLO mx1.redhat.com"
+	Fri, 20 Jul 2007 11:14:34 -0400
+Received: from ns.suse.de ([195.135.220.2]:49610 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934105AbXGTPOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 11:14:00 -0400
-Subject: Re: [PATCH] Use descriptor's functions instead of inline assembly
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
-In-Reply-To: <20070720142319.GA23448@slug>
-References: <1184939761.16311.22.camel@t60>  <20070720142319.GA23448@slug>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Fri, 20 Jul 2007 12:14:48 -0300
-Message-Id: <1184944488.16311.27.camel@t60>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	id S933882AbXGTPOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 11:14:33 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] [15/58] i386: Rewrite sched_clock
+Date: Fri, 20 Jul 2007 17:14:16 +0200
+User-Agent: KMail/1.9.6
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Daniel Walker <dwalker@mvista.com>
+References: <200707191154.642492000@suse.de> <200707201027.46532.ak@suse.de> <20070720141210.GA29979@Krystal>
+In-Reply-To: <20070720141210.GA29979@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707201714.16811.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-20 at 16:23 +0200, Frederik Deweerdt wrote:
-> On Fri, Jul 20, 2007 at 10:56:01AM -0300, Glauber de Oliveira Costa wrote:
-> > This patch provides a new set of functions for managing the descriptor
-> > tables that can be used instead of putting the raw assembly in .c files.
-> >     
-> > Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-> > 
-> > -	asm volatile ("str %0"  : "=m" (ctxt->tr));
-> > +	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
-> > +	store_idt((struct desc_ptr *)&ctxt->idt_limit);
-> > +	ctxt->tr = store_tr();
-> > 
-> Would'nt a store_tr(&ctxt->tr) be more homogeneous here?
-Indeed, it would. The main reason I let it this way was to keep it closer to
-the i386 paravirt code (which is the main reason I'm sending this
-patches - to pave the way for the x86_64 one), but they seem to be
-getting an argument for store_tr in current tree. So there's no arguable
-advantage on doing it my way at all ;-)
 
-Thanks
+> So if, after this, we run tsc_sched_clock() with an unstable TSC, we
+> read a last_val containing the interrupt's MSB and the last_val LSB. It
+> can particularity hurt if we are around a 32 bits overflow, because time
+> could "jump" forward of about 1.43 seconds on a 3 GHz system.
+> 
+> So I guess we need synchronization on the fast path, and therefore using
+> cmpxchg_local on x86_64
+
+On x86-64 the 64bit write is atomic against interrupts.
+
+You're right 32bit has a problem though. I'm not too happy about 
+cmpxchg though because that wouldn't work on some CPUs.
+
+I wonder if we can just get away with using a 32bit value on i386.
+Just for the purpose of keeping the value monotonic it should be good
+enough. Will think about it.
+
+Thanks for the review.
+
+-Andi
 
