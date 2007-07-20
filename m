@@ -1,642 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940219AbXGTBvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938680AbXGTBym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940219AbXGTBvX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jul 2007 21:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763544AbXGTBvL
+	id S938680AbXGTBym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jul 2007 21:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbXGTByg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 21:51:11 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:27187 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762121AbXGTBvH (ORCPT
+	Thu, 19 Jul 2007 21:54:36 -0400
+Received: from ns.oss.ntt.co.jp ([222.151.198.98]:42479 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761080AbXGTByf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 21:51:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TDe0PuKW5nEFi9zTYTgIjFbjUc/hO0DFdmUNIJkmSORJiEV1snDumKgsYW5D43eXhaYQ9pW4ZPs20TwuwVZLPZGlPAnZX7kdy+djwDH61FEWiRlAMsw7UjDxpu7u9kt56xzWAmniqPsUqB6V8miIum4IhO5FtWlsEBR2VGCEoTw=
-Message-ID: <91b13c310707191851h3bffaf2au7443d32c725dfb45@mail.gmail.com>
-Date: Fri, 20 Jul 2007 09:51:05 +0800
-From: "rae l" <crquan@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/2] net/core: merge the content of dev_mcast.c into dev.c
-Cc: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru,
-       "Patrick McHardy" <kaber@trash.net>, pekkas@netcore.fi,
-       jmorris@namei.org, linux-kernel@vger.kernel.org,
-       "Denis Cheng" <crquan@gmail.com>
-In-Reply-To: <1184758229305-git-send-email-crquan@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Jul 2007 21:54:35 -0400
+Subject: Re: [PATCH RFC] Debug handling of early spurious interrupts
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+In-Reply-To: <20070718154659.c8b5ffea.akpm@linux-foundation.org>
+References: <1184666997.5271.5.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20070718154659.c8b5ffea.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Fri, 20 Jul 2007 10:54:19 +0900
+Message-Id: <1184896459.27369.36.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070718.030306.50591269.davem@davemloft.net>
-	 <1184758229305-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/18/07, Denis Cheng <crquan@gmail.com> wrote:
-> - removed three function declarations from header file to mark them static,
-> - reduced one file
->
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
-> ---
->
-> this one is just merging by concatenating, and I'll try to adjust some
-> function definitions' order to make it more readable.
->
->  include/linux/netdevice.h |    3 -
->  net/core/Makefile         |    2 +-
->  net/core/dev.c            |  239 +++++++++++++++++++++++++++++++++++++++++-
->  net/core/dev_mcast.c      |  255 ---------------------------------------------
->  4 files changed, 237 insertions(+), 262 deletions(-)
->  delete mode 100644 net/core/dev_mcast.c
->
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index 9820ca1..ca68c58 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -1091,15 +1091,12 @@ extern int              register_netdev(struct net_device *dev);
->  extern void            unregister_netdev(struct net_device *dev);
->  /* Functions used for secondary unicast and multicast support */
->  extern void            dev_set_rx_mode(struct net_device *dev);
-> -extern void            __dev_set_rx_mode(struct net_device *dev);
->  extern int             dev_unicast_delete(struct net_device *dev, void *addr, int alen);
->  extern int             dev_unicast_add(struct net_device *dev, void *addr, int alen);
->  extern int             dev_mc_delete(struct net_device *dev, void *addr, int alen, int all);
->  extern int             dev_mc_add(struct net_device *dev, void *addr, int alen, int newonly);
->  extern int             dev_mc_sync(struct net_device *to, struct net_device *from);
->  extern void            dev_mc_unsync(struct net_device *to, struct net_device *from);
-> -extern int             __dev_addr_delete(struct dev_addr_list **list, int *count, void *addr, int alen, int all);
-> -extern int             __dev_addr_add(struct dev_addr_list **list, int *count, void *addr, int alen, int newonly);
->  extern void            dev_set_promiscuity(struct net_device *dev, int inc);
->  extern void            dev_set_allmulti(struct net_device *dev, int inc);
->  extern void            netdev_state_change(struct net_device *dev);
-> diff --git a/net/core/Makefile b/net/core/Makefile
-> index 4751613..54d28dd 100644
-> --- a/net/core/Makefile
-> +++ b/net/core/Makefile
-> @@ -7,7 +7,7 @@ obj-y := sock.o request_sock.o skbuff.o iovec.o datagram.o stream.o scm.o \
->
->  obj-$(CONFIG_SYSCTL) += sysctl_net_core.o
->
-> -obj-y               += dev.o ethtool.o dev_mcast.o dst.o netevent.o \
-> +obj-y               += dev.o ethtool.o dst.o netevent.o \
->                         neighbour.o rtnetlink.o utils.o link_watch.o filter.o
->
->  obj-$(CONFIG_XFRM) += flow.o
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index 6357f54..16842af 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -18,6 +18,7 @@
->   *             Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
->   *             Adam Sulmicki <adam@cfar.umd.edu>
->   *              Pekka Riikonen <priikone@poesidon.pspt.fi>
-> + *              Denis Cheng <crquan@gmail.com>
->   *
->   *     Changes:
->   *              D.J. Barrow     :       Fixed bug where dev->refcnt gets set
-> @@ -70,6 +71,32 @@
->   *                                     indefinitely on dev->refcnt
->   *             J Hadi Salim    :       - Backlog queue sampling
->   *                                     - netif_rx() feedback
-> + *              Denis Cheng     :       Merge dev_mcast.c into it
-> + */
-> +
-> +/*
-> + *     The original information in dev_mcast.c:
-> + *
-> + *     Linux NET3:     Multicast List maintenance.
-> + *
-> + *     Authors:
-> + *             Tim Kordas <tjk@nostromo.eeap.cwru.edu>
-> + *             Richard Underwood <richard@wuzz.demon.co.uk>
-> + *
-> + *     Stir fried together from the IP multicast and CAP patches above
-> + *             Alan Cox <Alan.Cox@linux.org>
-> + *
-> + *     Fixes:
-> + *             Alan Cox        :       Update the device on a real delete
-> + *                                     rather than any time but...
-> + *             Alan Cox        :       IFF_ALLMULTI support.
-> + *             Alan Cox        :       New format set_multicast_list() calls.
-> + *             Gleb Natapov    :       Remove dev_mc_lock.
-> + *
-> + *     This program is free software; you can redistribute it and/or
-> + *     modify it under the terms of the GNU General Public License
-> + *     as published by the Free Software Foundation; either version
-> + *     2 of the License, or (at your option) any later version.
->   */
->
->  #include <asm/uaccess.h>
-> @@ -2622,7 +2649,7 @@ void dev_set_allmulti(struct net_device *dev, int inc)
->   *     filtering it is put in promiscous mode while unicast addresses
->   *     are present.
->   */
-> -void __dev_set_rx_mode(struct net_device *dev)
-> +static void __dev_set_rx_mode(struct net_device *dev)
->  {
->         /* dev_open will call this function so the list will stay sane. */
->         if (!(dev->flags&IFF_UP))
-> @@ -2657,7 +2684,7 @@ void dev_set_rx_mode(struct net_device *dev)
->         netif_tx_unlock_bh(dev);
->  }
->
-> -int __dev_addr_delete(struct dev_addr_list **list, int *count,
-> +static int __dev_addr_delete(struct dev_addr_list **list, int *count,
->                       void *addr, int alen, int glbl)
->  {
->         struct dev_addr_list *da;
-> @@ -2683,7 +2710,7 @@ int __dev_addr_delete(struct dev_addr_list **list, int *count,
->         return -ENOENT;
->  }
->
-> -int __dev_addr_add(struct dev_addr_list **list, int *count,
-> +static int __dev_addr_add(struct dev_addr_list **list, int *count,
->                    void *addr, int alen, int glbl)
->  {
->         struct dev_addr_list *da;
-> @@ -4049,3 +4076,209 @@ EXPORT_SYMBOL(dev_load);
->  #endif
->
->  EXPORT_PER_CPU_SYMBOL(softnet_data);
-> +
-> +/*
-> + *     Device multicast list maintenance.
-> + *
-> + *     This is used both by IP and by the user level maintenance functions.
-> + *     Unlike BSD we maintain a usage count on a given multicast address so
-> + *     that a casual user application can add/delete multicasts used by
-> + *     protocols without doing damage to the protocols when it deletes the
-> + *     entries. It also helps IP as it tracks overlapping maps.
-> + *
-> + *     Device mc lists are changed by bh at least if IPv6 is enabled,
-> + *     so that it must be bh protected.
-> + *
-> + *     We block accesses to device mc filters with netif_tx_lock.
-> + */
-> +
-> +/*
-> + *     Delete a device level multicast
-> + */
-> +
-> +int dev_mc_delete(struct net_device *dev, void *addr, int alen, int glbl)
-> +{
-> +       int err;
-> +
-> +       netif_tx_lock_bh(dev);
-> +       err = __dev_addr_delete(&dev->mc_list, &dev->mc_count,
-> +                               addr, alen, glbl);
-> +       if (!err) {
-> +               /*
-> +                *      We have altered the list, so the card
-> +                *      loaded filter is now wrong. Fix it
-> +                */
-> +
-> +               __dev_set_rx_mode(dev);
-> +       }
-> +       netif_tx_unlock_bh(dev);
-> +       return err;
-> +}
-> +
-> +/*
-> + *     Add a device level multicast
-> + */
-> +
-> +int dev_mc_add(struct net_device *dev, void *addr, int alen, int glbl)
-> +{
-> +       int err;
-> +
-> +       netif_tx_lock_bh(dev);
-> +       err = __dev_addr_add(&dev->mc_list, &dev->mc_count, addr, alen, glbl);
-> +       if (!err)
-> +               __dev_set_rx_mode(dev);
-> +       netif_tx_unlock_bh(dev);
-> +       return err;
-> +}
-> +
-> +/**
-> + *     dev_mc_sync     - Synchronize device's multicast list to another device
-> + *     @to: destination device
-> + *     @from: source device
-> + *
-> + *     Add newly added addresses to the destination device and release
-> + *     addresses that have no users left. The source device must be
-> + *     locked by netif_tx_lock_bh.
-> + *
-> + *     This function is intended to be called from the dev->set_multicast_list
-> + *     function of layered software devices.
-> + */
-> +int dev_mc_sync(struct net_device *to, struct net_device *from)
-> +{
-> +       struct dev_addr_list *da;
-> +       int err = 0;
-> +
-> +       netif_tx_lock_bh(to);
-> +       for (da = from->mc_list; da != NULL; da = da->next) {
-> +               if (!da->da_synced) {
-> +                       err = __dev_addr_add(&to->mc_list, &to->mc_count,
-> +                                            da->da_addr, da->da_addrlen, 0);
-> +                       if (err < 0)
-> +                               break;
-> +                       da->da_synced = 1;
-> +                       da->da_users++;
-> +               } else if (da->da_users == 1) {
-> +                       __dev_addr_delete(&to->mc_list, &to->mc_count,
-> +                                         da->da_addr, da->da_addrlen, 0);
-> +                       __dev_addr_delete(&from->mc_list, &from->mc_count,
-> +                                         da->da_addr, da->da_addrlen, 0);
-> +               }
-> +       }
-> +       if (!err)
-> +               __dev_set_rx_mode(to);
-> +       netif_tx_unlock_bh(to);
-> +
-> +       return err;
-> +}
-> +EXPORT_SYMBOL(dev_mc_sync);
-> +
-> +
-> +/**
-> + *     dev_mc_unsync   - Remove synchronized addresses from the destination
-> + *                       device
-> + *     @to: destination device
-> + *     @from: source device
-> + *
-> + *     Remove all addresses that were added to the destination device by
-> + *     dev_mc_sync(). This function is intended to be called from the
-> + *     dev->stop function of layered software devices.
-> + */
-> +void dev_mc_unsync(struct net_device *to, struct net_device *from)
-> +{
-> +       struct dev_addr_list *da;
-> +
-> +       netif_tx_lock_bh(from);
-> +       netif_tx_lock_bh(to);
-> +
-> +       for (da = from->mc_list; da != NULL; da = da->next) {
-> +               if (!da->da_synced)
-> +                       continue;
-> +               __dev_addr_delete(&to->mc_list, &to->mc_count,
-> +                                 da->da_addr, da->da_addrlen, 0);
-> +               da->da_synced = 0;
-> +               __dev_addr_delete(&from->mc_list, &from->mc_count,
-> +                                 da->da_addr, da->da_addrlen, 0);
-> +       }
-> +       __dev_set_rx_mode(to);
-> +
-> +       netif_tx_unlock_bh(to);
-> +       netif_tx_unlock_bh(from);
-> +}
-> +EXPORT_SYMBOL(dev_mc_unsync);
-> +
-> +#ifdef CONFIG_PROC_FS
-> +static void *dev_mc_seq_start(struct seq_file *seq, loff_t *pos)
-> +{
-> +       struct net_device *dev;
-> +       loff_t off = 0;
-> +
-> +       read_lock(&dev_base_lock);
-> +       for_each_netdev(dev) {
-> +               if (off++ == *pos)
-> +                       return dev;
-> +       }
-> +       return NULL;
-> +}
-> +
-> +static void *dev_mc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-> +{
-> +       ++*pos;
-> +       return next_net_device((struct net_device *)v);
-> +}
-> +
-> +static void dev_mc_seq_stop(struct seq_file *seq, void *v)
-> +{
-> +       read_unlock(&dev_base_lock);
-> +}
-> +
-> +
-> +static int dev_mc_seq_show(struct seq_file *seq, void *v)
-> +{
-> +       struct dev_addr_list *m;
-> +       struct net_device *dev = v;
-> +
-> +       netif_tx_lock_bh(dev);
-> +       for (m = dev->mc_list; m; m = m->next) {
-> +               int i;
-> +
-> +               seq_printf(seq, "%-4d %-15s %-5d %-5d ", dev->ifindex,
-> +                          dev->name, m->dmi_users, m->dmi_gusers);
-> +
-> +               for (i = 0; i < m->dmi_addrlen; i++)
-> +                       seq_printf(seq, "%02x", m->dmi_addr[i]);
-> +
-> +               seq_putc(seq, '\n');
-> +       }
-> +       netif_tx_unlock_bh(dev);
-> +       return 0;
-> +}
-> +
-> +static const struct seq_operations dev_mc_seq_ops = {
-> +       .start = dev_mc_seq_start,
-> +       .next  = dev_mc_seq_next,
-> +       .stop  = dev_mc_seq_stop,
-> +       .show  = dev_mc_seq_show,
-> +};
-> +
-> +static int dev_mc_seq_open(struct inode *inode, struct file *file)
-> +{
-> +       return seq_open(file, &dev_mc_seq_ops);
-> +}
-> +
-> +static const struct file_operations dev_mc_seq_fops = {
-> +       .owner   = THIS_MODULE,
-> +       .open    = dev_mc_seq_open,
-> +       .read    = seq_read,
-> +       .llseek  = seq_lseek,
-> +       .release = seq_release,
-> +};
-> +
-> +#endif
-> +
-> +void __init dev_mcast_init(void)
-> +{
-> +       proc_net_fops_create("dev_mcast", 0, &dev_mc_seq_fops);
-> +}
-> +
-> +EXPORT_SYMBOL(dev_mc_add);
-> +EXPORT_SYMBOL(dev_mc_delete);
-> diff --git a/net/core/dev_mcast.c b/net/core/dev_mcast.c
-> deleted file mode 100644
-> index 99aece1..0000000
-> --- a/net/core/dev_mcast.c
-> +++ /dev/null
-> @@ -1,255 +0,0 @@
-> -/*
-> - *     Linux NET3:     Multicast List maintenance.
-> - *
-> - *     Authors:
-> - *             Tim Kordas <tjk@nostromo.eeap.cwru.edu>
-> - *             Richard Underwood <richard@wuzz.demon.co.uk>
-> - *
-> - *     Stir fried together from the IP multicast and CAP patches above
-> - *             Alan Cox <Alan.Cox@linux.org>
-> - *
-> - *     Fixes:
-> - *             Alan Cox        :       Update the device on a real delete
-> - *                                     rather than any time but...
-> - *             Alan Cox        :       IFF_ALLMULTI support.
-> - *             Alan Cox        :       New format set_multicast_list() calls.
-> - *             Gleb Natapov    :       Remove dev_mc_lock.
-> - *
-> - *     This program is free software; you can redistribute it and/or
-> - *     modify it under the terms of the GNU General Public License
-> - *     as published by the Free Software Foundation; either version
-> - *     2 of the License, or (at your option) any later version.
-> - */
-> -
-> -#include <linux/module.h>
-> -#include <asm/uaccess.h>
-> -#include <asm/system.h>
-> -#include <linux/bitops.h>
-> -#include <linux/types.h>
-> -#include <linux/kernel.h>
-> -#include <linux/string.h>
-> -#include <linux/mm.h>
-> -#include <linux/socket.h>
-> -#include <linux/sockios.h>
-> -#include <linux/in.h>
-> -#include <linux/errno.h>
-> -#include <linux/interrupt.h>
-> -#include <linux/if_ether.h>
-> -#include <linux/inet.h>
-> -#include <linux/netdevice.h>
-> -#include <linux/etherdevice.h>
-> -#include <linux/proc_fs.h>
-> -#include <linux/seq_file.h>
-> -#include <linux/init.h>
-> -#include <net/ip.h>
-> -#include <net/route.h>
-> -#include <linux/skbuff.h>
-> -#include <net/sock.h>
-> -#include <net/arp.h>
-> -
-> -
-> -/*
-> - *     Device multicast list maintenance.
-> - *
-> - *     This is used both by IP and by the user level maintenance functions.
-> - *     Unlike BSD we maintain a usage count on a given multicast address so
-> - *     that a casual user application can add/delete multicasts used by
-> - *     protocols without doing damage to the protocols when it deletes the
-> - *     entries. It also helps IP as it tracks overlapping maps.
-> - *
-> - *     Device mc lists are changed by bh at least if IPv6 is enabled,
-> - *     so that it must be bh protected.
-> - *
-> - *     We block accesses to device mc filters with netif_tx_lock.
-> - */
-> -
-> -/*
-> - *     Delete a device level multicast
-> - */
-> -
-> -int dev_mc_delete(struct net_device *dev, void *addr, int alen, int glbl)
-> -{
-> -       int err;
-> -
-> -       netif_tx_lock_bh(dev);
-> -       err = __dev_addr_delete(&dev->mc_list, &dev->mc_count,
-> -                               addr, alen, glbl);
-> -       if (!err) {
-> -               /*
-> -                *      We have altered the list, so the card
-> -                *      loaded filter is now wrong. Fix it
-> -                */
-> -
-> -               __dev_set_rx_mode(dev);
-> -       }
-> -       netif_tx_unlock_bh(dev);
-> -       return err;
-> -}
-> -
-> -/*
-> - *     Add a device level multicast
-> - */
-> -
-> -int dev_mc_add(struct net_device *dev, void *addr, int alen, int glbl)
-> -{
-> -       int err;
-> -
-> -       netif_tx_lock_bh(dev);
-> -       err = __dev_addr_add(&dev->mc_list, &dev->mc_count, addr, alen, glbl);
-> -       if (!err)
-> -               __dev_set_rx_mode(dev);
-> -       netif_tx_unlock_bh(dev);
-> -       return err;
-> -}
-> -
-> -/**
-> - *     dev_mc_sync     - Synchronize device's multicast list to another device
-> - *     @to: destination device
-> - *     @from: source device
-> - *
-> - *     Add newly added addresses to the destination device and release
-> - *     addresses that have no users left. The source device must be
-> - *     locked by netif_tx_lock_bh.
-> - *
-> - *     This function is intended to be called from the dev->set_multicast_list
-> - *     function of layered software devices.
-> - */
-> -int dev_mc_sync(struct net_device *to, struct net_device *from)
-> -{
-> -       struct dev_addr_list *da;
-> -       int err = 0;
-> -
-> -       netif_tx_lock_bh(to);
-> -       for (da = from->mc_list; da != NULL; da = da->next) {
-> -               if (!da->da_synced) {
-> -                       err = __dev_addr_add(&to->mc_list, &to->mc_count,
-> -                                            da->da_addr, da->da_addrlen, 0);
-> -                       if (err < 0)
-> -                               break;
-> -                       da->da_synced = 1;
-> -                       da->da_users++;
-> -               } else if (da->da_users == 1) {
-> -                       __dev_addr_delete(&to->mc_list, &to->mc_count,
-> -                                         da->da_addr, da->da_addrlen, 0);
-> -                       __dev_addr_delete(&from->mc_list, &from->mc_count,
-> -                                         da->da_addr, da->da_addrlen, 0);
-> -               }
-> -       }
-> -       if (!err)
-> -               __dev_set_rx_mode(to);
-> -       netif_tx_unlock_bh(to);
-> -
-> -       return err;
-> -}
-> -EXPORT_SYMBOL(dev_mc_sync);
-> -
-> -
-> -/**
-> - *     dev_mc_unsync   - Remove synchronized addresses from the destination
-> - *                       device
-> - *     @to: destination device
-> - *     @from: source device
-> - *
-> - *     Remove all addresses that were added to the destination device by
-> - *     dev_mc_sync(). This function is intended to be called from the
-> - *     dev->stop function of layered software devices.
-> - */
-> -void dev_mc_unsync(struct net_device *to, struct net_device *from)
-> -{
-> -       struct dev_addr_list *da;
-> -
-> -       netif_tx_lock_bh(from);
-> -       netif_tx_lock_bh(to);
-> -
-> -       for (da = from->mc_list; da != NULL; da = da->next) {
-> -               if (!da->da_synced)
-> -                       continue;
-> -               __dev_addr_delete(&to->mc_list, &to->mc_count,
-> -                                 da->da_addr, da->da_addrlen, 0);
-> -               da->da_synced = 0;
-> -               __dev_addr_delete(&from->mc_list, &from->mc_count,
-> -                                 da->da_addr, da->da_addrlen, 0);
-> -       }
-> -       __dev_set_rx_mode(to);
-> -
-> -       netif_tx_unlock_bh(to);
-> -       netif_tx_unlock_bh(from);
-> -}
-> -EXPORT_SYMBOL(dev_mc_unsync);
-> -
-> -#ifdef CONFIG_PROC_FS
-> -static void *dev_mc_seq_start(struct seq_file *seq, loff_t *pos)
-> -{
-> -       struct net_device *dev;
-> -       loff_t off = 0;
-> -
-> -       read_lock(&dev_base_lock);
-> -       for_each_netdev(dev) {
-> -               if (off++ == *pos)
-> -                       return dev;
-> -       }
-> -       return NULL;
-> -}
-> -
-> -static void *dev_mc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-> -{
-> -       ++*pos;
-> -       return next_net_device((struct net_device *)v);
-> -}
-> -
-> -static void dev_mc_seq_stop(struct seq_file *seq, void *v)
-> -{
-> -       read_unlock(&dev_base_lock);
-> -}
-> -
-> -
-> -static int dev_mc_seq_show(struct seq_file *seq, void *v)
-> -{
-> -       struct dev_addr_list *m;
-> -       struct net_device *dev = v;
-> -
-> -       netif_tx_lock_bh(dev);
-> -       for (m = dev->mc_list; m; m = m->next) {
-> -               int i;
-> -
-> -               seq_printf(seq, "%-4d %-15s %-5d %-5d ", dev->ifindex,
-> -                          dev->name, m->dmi_users, m->dmi_gusers);
-> -
-> -               for (i = 0; i < m->dmi_addrlen; i++)
-> -                       seq_printf(seq, "%02x", m->dmi_addr[i]);
-> -
-> -               seq_putc(seq, '\n');
-> -       }
-> -       netif_tx_unlock_bh(dev);
-> -       return 0;
-> -}
-> -
-> -static const struct seq_operations dev_mc_seq_ops = {
-> -       .start = dev_mc_seq_start,
-> -       .next  = dev_mc_seq_next,
-> -       .stop  = dev_mc_seq_stop,
-> -       .show  = dev_mc_seq_show,
-> -};
-> -
-> -static int dev_mc_seq_open(struct inode *inode, struct file *file)
-> -{
-> -       return seq_open(file, &dev_mc_seq_ops);
-> -}
-> -
-> -static const struct file_operations dev_mc_seq_fops = {
-> -       .owner   = THIS_MODULE,
-> -       .open    = dev_mc_seq_open,
-> -       .read    = seq_read,
-> -       .llseek  = seq_lseek,
-> -       .release = seq_release,
-> -};
-> -
-> -#endif
-> -
-> -void __init dev_mcast_init(void)
-> -{
-> -       proc_net_fops_create("dev_mcast", 0, &dev_mc_seq_fops);
-> -}
-> -
-> -EXPORT_SYMBOL(dev_mc_add);
-> -EXPORT_SYMBOL(dev_mc_delete);
-> --
-> 1.5.2.2
-Is there any more comments on this?
+On Wed, 2007-07-18 at 15:46 -0700, Andrew Morton wrote:
+> On Tue, 17 Jul 2007 19:09:57 +0900
+> Fernando Luis V__zquez Cao <fernando@oss.ntt.co.jp> wrote:
+> 
+> > With the advent of kdump it is possible that device drivers receive
+> > interrupts generated in the context of a previous kernel. Ideally
+> > quiescing the underlying devices should suffice but not all drivers
+> > do this, either because it is not possible or because they did not
+> > contemplate this case. Thus drivers ought to be able to handle
+> > interrupts coming in as soon as the interrupt handler is registered.
+> > 
+> > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> > ---
+> > 
+> > diff -urNp linux-2.6.22-orig/kernel/irq/manage.c linux-2.6.22/kernel/irq/manage.c
+> > --- linux-2.6.22-orig/kernel/irq/manage.c	2007-07-09 08:32:17.000000000 +0900
+> > +++ linux-2.6.22/kernel/irq/manage.c	2007-07-17 18:37:24.000000000 +0900
+> > @@ -537,6 +537,29 @@ int request_irq(unsigned int irq, irq_ha
+> >  
+> >  	select_smp_affinity(irq);
+> >  
+> > +#if defined(CONFIG_DEBUG_PENDING_IRQ) || defined(CONFIG_DEBUG_SHIRQ)
+> > +#ifndef CONFIG_DEBUG_PENDING_IRQ
+> > +	if (irqflags & IRQF_SHARED) {
+> > +		/*
+> > +		 * It's a shared IRQ -- the driver ought to be prepared for it
+> > +		 * to happen immediately, so let's make sure....
+> > +		 * We do this before actually registering it, to make sure that
+> > +		 * a 'real' IRQ doesn't run in parallel with our fake.
+> > +		 */
+> > +#endif /* !CONFIG_DEBUG_PENDING_IRQ */
+> > +		if (irqflags & IRQF_DISABLED) {
+> > +			unsigned long flags;
+> > +
+> > +			local_irq_save(flags);
+> > +			handler(irq, dev_id);
+> > +			local_irq_restore(flags);
+> > +		} else
+> > +			handler(irq, dev_id);
+> > +#ifndef CONFIG_DEBUG_PENDING_IRQ
+> > +	}
+> > +#endif /* !CONFIG_DEBUG_PENDING_IRQ */
+> > +#endif /* CONFIG_DEBUG_PENDING_IRQ || CONFIG_DEBUG_SHIRQ */
+> 
+> Even if we were going to merge this functionality as-is, I'd ask for some
+> sort of refactoring to fix up that ifdef maze.
+I a absolutely agree. My first impulse was to get rid of all the cpp
+kludge including the Kconfig setting CONFIG_DEBUG_SHIRQ, since, as you
+pointed out, request_irq() is not really performance critical.
+Unfortunately for the RFC I decided to be conservative and ended up with
+an "ifdef maze". Thank you for the heads-up.
 
->
->
+> But more substantial issues:
+> 
+> - This is presented as a "debug" feature, but it isn't a debug feature at
+>   all - it is new functionality which is unrelated to kernel development.
+Yup.
 
+>   Also, it is a "debug" feature which provides no debugging!  At the very
+>   least, one would expect to see it emit a printk to tell people that we
+>   have some driver which needs fixing.
+I am afraid that in some occasions the kernel may panic inside the
+interrupt handler, but I agree that we need to print a meaningful
+message for the general case (i.e. something goes wrong but we can
+recover). I will do that.
 
--- 
-Denis Cheng
-Linux Application Developer
+>   Also, this not-really-a-debug-feature is undesirably coupled with a
+>   real debugging feature: CONFIG_DEBUG_PENDING_IRQ.
+In the new version of the patch I will remove both
+CONFIG_DEBUG_PENDING_IRQ and CONFIG_DEBUG_SHIRQ. request_irq() and
+setup_irq() are not fast paths and free_irq() much less so.
 
-"One of my most productive days was throwing away 1000 lines of code."
- - Ken Thompson.
+> - Does this new feature really need its own Kconfig setting?  Why not enable
+>   it unconditionally?  request_irq() isn't exactly performance-critical.
+I guess the Kconfig setting is not needed. In fact, by enabling this
+feature unconditionally we would have _everyone_ (unknowing) testing an
+area which is a major pain point for kdump. I am not sure this is an
+acceptable default for all systems though. Opinions welcome.
+
+> - If poss, we really do want to find some way of emitting a warning when
+>   we detect such a device driver.  Like, call the handler and if it
+>   returned IRQ_HANDLED, start shouting.
+I will do that and submit updated patches.
+
+Thank you for your feedback, Andrew!
+
