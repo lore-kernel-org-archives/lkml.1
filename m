@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939073AbXGUPch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933407AbXGUPlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939073AbXGUPch (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 11:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761625AbXGUPc1
+	id S933407AbXGUPlQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 11:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXGUPlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 11:32:27 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50561 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760292AbXGUPc0 (ORCPT
+	Sat, 21 Jul 2007 11:41:05 -0400
+Received: from alnrmhc12.comcast.net ([206.18.177.52]:38991 "EHLO
+	alnrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbXGUPlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 11:32:26 -0400
-Date: Sat, 21 Jul 2007 17:32:25 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Robert Beckett <bob.beckett@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: try_module_get question
-In-Reply-To: <469B712D.80208@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0707211731440.21737@fbirervta.pbzchgretzou.qr>
-References: <469B712D.80208@googlemail.com>
+	Sat, 21 Jul 2007 11:41:03 -0400
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang\, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+	<200707171802.30903.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
+	<200707172150.44417.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
+	<20070721102520.GE1902@elf.ucw.cz>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Sat, 21 Jul 2007 11:35:43 -0400
+In-Reply-To: <20070721102520.GE1902@elf.ucw.cz> (Pavel Machek's message of
+	"Sat\, 21 Jul 2007 12\:25\:20 +0200")
+Message-ID: <87ps2lojlc.fsf@jbms.ath.cx>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek <pavel@ucw.cz> writes:
 
-On Jul 16 2007 14:22, Robert Beckett wrote:
-> Hi all,
->
-> Im a newcomer to kernel development, and have my first question :
->
-> I want to create a small module that simply powers on an FPGA, and powers it
-> off when it is released. Two other modules will then depend on this module and
-> control different devices programmed into the FPGA.
+[snip]
 
-How do they depend on it?
+> So it will be break at least battery status and "AC plugged in"
+> status, because those are handled by ACPI and we do not know how to
+> control them by hand.
 
-> So that the shared module
-> does not get removed before any of the device drivers, I want to do a
-> try_module_get from each driver targeting the shared module. What is the
-> easiest way to get a reference to the shared module?
->
-> My current thought is to export a function that will return a reference to it
-> (using THIS_MODULE from the shared module). The device driver modules can then
-> try_module_get the returned module. Is this the best way to do this?
->
-> Is there an alternative way? maybe based on a similar system to the device /
-> driver matching code?
-> There seem to be a lot of FAQs online saying that you need to get and put a
-> module before calling any function that may stall for example, but they dont
-> tell you how to get the module reference to use.
->
-> Or am I just missing something obvious?
->
-> Thanks
->
-> Robert Beckett.
+It seems that it should be possible to initialize ACPI as if the system
+just booted up normally.  Then battery status and such should be
+correct, since they are correct after normal initialization.
 
-	Jan
+It should be possible to make hibernate look just like a reboot to all
+of the devices, including ACPI stuff.
+
 -- 
+Jeremy Maitin-Shepard
