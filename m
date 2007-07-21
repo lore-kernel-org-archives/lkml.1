@@ -1,148 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941020AbXGUPNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941047AbXGUPOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941020AbXGUPNy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 11:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939219AbXGUPEc
+	id S941047AbXGUPOa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 11:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939491AbXGUPEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 11:04:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:37344 "EHLO
+	Sat, 21 Jul 2007 11:04:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:39272 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939243AbXGUPE3 (ORCPT
+	with ESMTP id S939104AbXGUPEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 11:04:29 -0400
+	Sat, 21 Jul 2007 11:04:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=FnKD1eEplu2C7+vZDQBsTob8pN9Pq+lz4EH3EXParZNZjLs15+VwYV+u06JXt3sCM0G1vx16ARyExOt3r/EEqkcMoZtCT/LO67A+uQaP54DN//Yk3jcr2pRlznqwd/SaIdkYAwS5Z04bsYEHLBJ5ahlDRXAAxNnvOfAQeXxR3cY=
+        b=IgC89nRJ32Ne1TAxnl1ZWUhkS+CaDRVQBEgbcGJQbQx/h4nWSV3yD9FQYOrEOuUHAhXv8EAxPm/+EFNoCrjQVTJyszHT7uF8PyWJ0Y1+uBfHjzKqbOS9v8AHZqUmUeaz4Cfw7v9gmdVQQ0r/B/ZSQbR4v4gmf+1z/+aBRwX9nSY=
 From: Jesper Juhl <jesper.juhl@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][24/37] Clean up duplicate includes in kernel/
-Date: Sat, 21 Jul 2007 17:03:29 +0200
+Subject: [PATCH][25/37] Clean up duplicate includes in mm/
+Date: Sat, 21 Jul 2007 17:03:32 +0200
 User-Agent: KMail/1.9.7
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, Rickard Faith <faith@redhat.com>,
-       Eric Biederman <ebiederm@xmission.com>, kexec@lists.infradead.org,
-       David Woodhouse <dwmw2@infradead.org>, linux-audit@redhat.com,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Paul McKenney <paulmck@us.ibm.com>,
-       Josh Triplett <josh@freedesktop.org>, Stephen Tweedie <sct@redhat.com>,
-       Shailabh Nagar <nagar@watson.ibm.com>,
-       john stultz <johnstul@us.ibm.com>,
-       Christoph Lameter <clameter@engr.sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
+       Jesper Juhl <jesper.juhl@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Christoph Rohland <hans-christoph.rohland@sap.com>,
+       Christoph Rohland <ch.rohland@gmx.net>, Hugh Dickins <hugh@veritas.com>,
+       Andi Kleen <ak@suse.de>, Luke Kenneth Casson Leighton <lkcl@lkcl.net>,
+       James Morris <jmorris@redhat.com>, Stephen Tweedie <sct@redhat.com>,
+       Rik van Riel <riel@redhat.com>
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707211703.30346.jesper.juhl@gmail.com>
+Message-Id: <200707211703.32870.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
 This patch cleans up duplicate includes in
-	kernel/
+	mm/
 
 
 Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 ---
 
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 145cbb7..5f7dba2 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -45,7 +45,6 @@
- #include <linux/init.h>
- #include <asm/types.h>
- #include <asm/atomic.h>
--#include <asm/types.h>
- #include <linux/fs.h>
- #include <linux/namei.h>
- #include <linux/mm.h>
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 464c2b1..9eef513 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -45,7 +45,6 @@
- #include <linux/resource.h>
- #include <linux/blkdev.h>
- #include <linux/task_io_accounting_ops.h>
--#include <linux/freezer.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index 25db14b..d8de12e 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -17,7 +17,6 @@
- #include <linux/highmem.h>
- #include <linux/syscalls.h>
- #include <linux/reboot.h>
--#include <linux/syscalls.h>
- #include <linux/ioport.h>
- #include <linux/hardirq.h>
- #include <linux/elf.h>
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index 2c2dd84..5d9e07e 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -45,7 +45,6 @@
- #include <linux/moduleparam.h>
- #include <linux/percpu.h>
- #include <linux/notifier.h>
--#include <linux/rcupdate.h>
- #include <linux/cpu.h>
- #include <linux/mutex.h>
- 
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index ddff332..dd413bf 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -35,7 +35,6 @@
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 71b84b4..888b96d 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -72,7 +72,6 @@
+ #include <linux/hugetlb.h>
+ #include <linux/kernel.h>
  #include <linux/sched.h>
- #include <asm/atomic.h>
- #include <linux/bitops.h>
--#include <linux/module.h>
- #include <linux/completion.h>
- #include <linux/moduleparam.h>
- #include <linux/percpu.h>
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 2222998..e0b2456 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -27,7 +27,6 @@
- #include <linux/capability.h>
- #include <linux/ctype.h>
- #include <linux/utsname.h>
--#include <linux/capability.h>
- #include <linux/smp_lock.h>
- #include <linux/fs.h>
+-#include <linux/mm.h>
+ #include <linux/nodemask.h>
+ #include <linux/cpuset.h>
+ #include <linux/gfp.h>
+@@ -82,7 +81,6 @@
+ #include <linux/interrupt.h>
  #include <linux/init.h>
-diff --git a/kernel/taskstats.c b/kernel/taskstats.c
-index 059431e..7d4d7f9 100644
---- a/kernel/taskstats.c
-+++ b/kernel/taskstats.c
-@@ -20,7 +20,6 @@
- #include <linux/taskstats_kern.h>
- #include <linux/tsacct_kern.h>
- #include <linux/delayacct.h>
--#include <linux/tsacct_kern.h>
- #include <linux/cpumask.h>
- #include <linux/percpu.h>
- #include <net/genetlink.h>
-diff --git a/kernel/time.c b/kernel/time.c
-index 5b81da0..6304942 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -34,7 +34,6 @@
- #include <linux/syscalls.h>
- #include <linux/security.h>
- #include <linux/fs.h>
--#include <linux/module.h>
+ #include <linux/compat.h>
+-#include <linux/mempolicy.h>
+ #include <linux/swap.h>
+ #include <linux/seq_file.h>
+ #include <linux/proc_fs.h>
+diff --git a/mm/shmem.c b/mm/shmem.c
+index fcd19d3..2c39925 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -49,7 +49,6 @@
+ #include <linux/ctype.h>
+ #include <linux/migrate.h>
+ #include <linux/highmem.h>
+-#include <linux/backing-dev.h>
  
  #include <asm/uaccess.h>
- #include <asm/unistd.h>
+ #include <asm/div64.h>
+diff --git a/mm/swap.c b/mm/swap.c
+index d3cb966..d93fa1e 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -24,12 +24,10 @@
+ #include <linux/module.h>
+ #include <linux/mm_inline.h>
+ #include <linux/buffer_head.h>	/* for try_to_release_page() */
+-#include <linux/module.h>
+ #include <linux/percpu_counter.h>
+ #include <linux/percpu.h>
+ #include <linux/cpu.h>
+ #include <linux/notifier.h>
+-#include <linux/init.h>
+ 
+ /* How many pages do we try to swap or page in/out together? */
+ int page_cluster;
