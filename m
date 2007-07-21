@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbXGUV3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934114AbXGUVad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933999AbXGUV3l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 17:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933726AbXGUV3M
+	id S934114AbXGUVad (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 17:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761519AbXGUVa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 17:29:12 -0400
-Received: from waste.org ([66.93.16.53]:49459 "EHLO waste.org"
+	Sat, 21 Jul 2007 17:30:26 -0400
+Received: from mail.tmr.com ([64.65.253.246]:54736 "EHLO posidon.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933685AbXGUV3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 17:29:10 -0400
-Date: Sat, 21 Jul 2007 16:28:52 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] mm: Remove slab destructors from kmem_cache_create().
-Message-ID: <20070721212851.GH11166@waste.org>
-References: <20070720012846.GA22487@linux-sh.org>
+	id S1760669AbXGUVaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 17:30:25 -0400
+Message-ID: <46A27AE7.9050706@tmr.com>
+Date: Sat, 21 Jul 2007 17:30:15 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.5) Gecko/20070716 SeaMonkey/1.1.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070720012846.GA22487@linux-sh.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linux Kernel M/L <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Final glitch1 report WRT cfs
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 10:28:46AM +0900, Paul Mundt wrote:
-> Slab destructors were no longer supported after Christoph's
-> c59def9f222d44bb7e2f0a559f2906191a0862d7 change. They've been
-> BUGs for both slab and slub, and slob never supported them
-> either.
+At least on my hardware, the cfs in 2.6.22-git13 runs as smoothly as the 
+perfect smoothness of cfs-v13, with two tuning changes:
+  sched_stat_granularity_ns = 1000000
+  sched_features = 14
 
-SLOB of course did support destructors, otherwise it wouldn't have
-worked.
+The change in "features" made a major improvement.
 
-But good riddance to destructors nonetheless.
+Having identified the cause of the better smoothness in the older 
+version, I'm going to put my efforts into other characterizations. The 
+test source will remain on the server, but I'm won't do more with it 
+unless someone finds it useful.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Bill Davidsen <davidsen@tmr.com>
+  "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
