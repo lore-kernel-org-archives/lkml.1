@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934628AbXGUGgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935786AbXGUGh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934628AbXGUGgl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 02:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXGUGgd
+	id S935786AbXGUGh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 02:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXGUGhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 02:36:33 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:54426 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753264AbXGUGgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 02:36:32 -0400
-Message-ID: <384999782.11861@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Sat, 21 Jul 2007 14:36:29 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 6/7] radixtree: introduce radix_tree_scan_hole()
-Message-ID: <20070721063629.GA7013@mail.ustc.edu.cn>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-References: <20070721044300.909424569@mail.ustc.edu.cn> <384993020.08966@ustc.edu.cn> <20070720224859.38aa0c21.akpm@linux-foundation.org>
+	Sat, 21 Jul 2007 02:37:13 -0400
+Received: from il.qumranet.com ([82.166.9.18]:36816 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753264AbXGUGhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 02:37:12 -0400
+Message-ID: <46A1A993.202@qumranet.com>
+Date: Sat, 21 Jul 2007 09:37:07 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070720224859.38aa0c21.akpm@linux-foundation.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+References: <1184970779.4012.38.camel@chaos>
+In-Reply-To: <1184970779.4012.38.camel@chaos>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Sat, 21 Jul 2007 09:37:07 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 10:48:59PM -0700, Andrew Morton wrote:
-> On Sat, 21 Jul 2007 12:43:06 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> 
-> > Introduce radix_tree_scan_hole(root, index, max_scan) to scan radix tree
-> > for the first hole. It will be used in interleaved readahead.
-> 
-> If you're ever feeling fantastically bored, please consider updating the
-> userspace radix-tree test harness for this?  Cook up a couple of testcases
-> for the new functionality?
+Thomas Gleixner wrote:
+> We are pleased to announce a project we've been working on for some 
+> time: the unified x86 architecture tree, or "arch/x86" - and we'd like 
+> to solicit feedback about it.
+>   
 
-Thanks for the reminding.  I'd add some test cases if I'm to optimize it.
+kvm will really like this.  while kvm will always have #ifdefs for i386
+and x86_64, this work will reduce them, and will make kvm code cleaner. 
+Of course, I also believe it makes sense from the non-kvm-centric point
+of view.
 
-But this _dumb_ scan function is obviously correct(and won't be too slow on
-1M readahead).  In fact it is pretty suitable for testing the optimized one ;)
+Thanks for doing this!
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
