@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbXGUEoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbXGUEob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbXGUEoA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 00:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbXGUEnu
+	id S1754171AbXGUEob (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 00:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbXGUEnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 00:43:50 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:49824 "HELO ustc.edu.cn"
+	Sat, 21 Jul 2007 00:43:51 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:49808 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1750768AbXGUEnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750864AbXGUEnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 21 Jul 2007 00:43:49 -0400
-Message-ID: <384993020.21779@ustc.edu.cn>
+Message-ID: <384993020.10920@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070721044347.111061630@mail.ustc.edu.cn>
+Message-Id: <20070721044347.008643456@mail.ustc.edu.cn>
 References: <20070721044300.909424569@mail.ustc.edu.cn>
 User-Agent: quilt/0.45-1
-Date: Sat, 21 Jul 2007 12:43:05 +0800
+Date: Sat, 21 Jul 2007 12:43:04 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 5/7] readahead: remove the limit max_sectors_kb imposed on max_readahead_kb
-Content-Disposition: inline; filename=remove-readahead-size-limit.patch
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 4/7] readahead: remove several readahead macros
+Content-Disposition: inline; filename=readahead-macros-cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the size limit max_sectors_kb imposed on max_readahead_kb.
+Remove VM_MAX_CACHE_HIT, MAX_RA_PAGES and MIN_RA_PAGES.
 
-The size restriction is unreasonable. Especially when max_sectors_kb cannot
-grow larger than max_hw_sectors_kb, which can be rather small for some disk
-drives.
-
-Cc: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/ll_rw_blk.c |    9 ---------
- 1 file changed, 9 deletions(-)
+ include/linux/mm.h |    2 --
+ mm/readahead.c     |   10 +---------
+ 2 files changed, 1 insertion(+), 11 deletions(-)
 
---- linux-2.6.22-rc6-mm1.orig/block/ll_rw_blk.c
-+++ linux-2.6.22-rc6-mm1/block/ll_rw_blk.c
-@@ -3945,7 +3945,6 @@ queue_max_sectors_store(struct request_q
- 			max_hw_sectors_kb = q->max_hw_sectors >> 1,
- 			page_kb = 1 << (PAGE_CACHE_SHIFT - 10);
- 	ssize_t ret = queue_var_store(&max_sectors_kb, page, count);
--	int ra_kb;
+--- linux-2.6.22-rc6-mm1.orig/include/linux/mm.h
++++ linux-2.6.22-rc6-mm1/include/linux/mm.h
+@@ -1148,8 +1148,6 @@ int write_one_page(struct page *page, in
+ /* readahead.c */
+ #define VM_MAX_READAHEAD	128	/* kbytes */
+ #define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
+-#define VM_MAX_CACHE_HIT    	256	/* max pages in a row in cache before
+-					 * turning readahead off */
  
- 	if (max_sectors_kb > max_hw_sectors_kb || max_sectors_kb < page_kb)
- 		return -EINVAL;
-@@ -3954,14 +3953,6 @@ queue_max_sectors_store(struct request_q
- 	 * values synchronously:
- 	 */
- 	spin_lock_irq(q->queue_lock);
--	/*
--	 * Trim readahead window as well, if necessary:
--	 */
--	ra_kb = q->backing_dev_info.ra_pages << (PAGE_CACHE_SHIFT - 10);
--	if (ra_kb > max_sectors_kb)
--		q->backing_dev_info.ra_pages =
--				max_sectors_kb >> (PAGE_CACHE_SHIFT - 10);
+ int do_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 			pgoff_t offset, unsigned long nr_to_read);
+--- linux-2.6.22-rc6-mm1.orig/mm/readahead.c
++++ linux-2.6.22-rc6-mm1/mm/readahead.c
+@@ -21,16 +21,8 @@ void default_unplug_io_fn(struct backing
+ }
+ EXPORT_SYMBOL(default_unplug_io_fn);
+ 
+-/*
+- * Convienent macros for min/max read-ahead pages.
+- * Note that MAX_RA_PAGES is rounded down, while MIN_RA_PAGES is rounded up.
+- * The latter is necessary for systems with large page size(i.e. 64k).
+- */
+-#define MAX_RA_PAGES	(VM_MAX_READAHEAD*1024 / PAGE_CACHE_SIZE)
+-#define MIN_RA_PAGES	DIV_ROUND_UP(VM_MIN_READAHEAD*1024, PAGE_CACHE_SIZE)
 -
- 	q->max_sectors = max_sectors_kb << 1;
- 	spin_unlock_irq(q->queue_lock);
- 
+ struct backing_dev_info default_backing_dev_info = {
+-	.ra_pages	= MAX_RA_PAGES,
++	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
+ 	.state		= 0,
+ 	.capabilities	= BDI_CAP_MAP_COPY,
+ 	.unplug_io_fn	= default_unplug_io_fn,
 
 --
