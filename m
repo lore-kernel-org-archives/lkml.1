@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763644AbXGUK5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763681AbXGULRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763644AbXGUK5f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 06:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759100AbXGUK51
+	id S1763681AbXGULRt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 07:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760795AbXGULRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 06:57:27 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:40330 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758957AbXGUK50 (ORCPT
+	Sat, 21 Jul 2007 07:17:41 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:53856 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760569AbXGULRk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 06:57:26 -0400
-Date: Sat, 21 Jul 2007 12:56:49 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-Message-ID: <20070721105649.GG3801@stusta.de>
-References: <1184970779.4012.38.camel@chaos>
+	Sat, 21 Jul 2007 07:17:40 -0400
+Date: Sat, 21 Jul 2007 13:18:08 +0200
+From: Sebastian Siewior <sebastian@breakpoint.cc>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i2o: defined but not used.
+Message-ID: <20070721111808.GA9145@ayoka.breakpoint.cc>
+References: <20070720225817.607502287@ayoka.breakpoint.cc> <20070721033133.ed47aa6a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1184970779.4012.38.camel@chaos>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070721033133.ed47aa6a.akpm@linux-foundation.org>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Breakpoint-Spam-Score: -1.4
+X-Breakpoint-Spam-Level: -
+X-Breakpoint-Spam-Status: No , -1.4 points, 5.0 required,  ALL_TRUSTED=-1.44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for doing this, it's definitely the way to go.
+* Andrew Morton | 2007-07-21 03:31:33 [-0700]:
 
-After a quick look over it, I noted a small mistake:
-After the arch/x86_64/kernel/Makefile -> arch/x86/kernel/Makefile_64 
-transition, the three foo-$(subst m,y,$(CONFIG_BAR)) got replaced with
-foo-$(CONFIG_BAR).
+>On Sat, 21 Jul 2007 00:58:01 +0200 Sebastian Siewior <sebastian@breakpoint.cc> wrote:
+>
+>> Got with randconfig
+>
+>randconfig apparently generates impossible configs.  Please always
+>run `make oldconfig' after the randconfig, then do the test build.
 
-Although the subst's look fishy, such changes shouldn't be part of the 
-architecture merge.
+Ah okey, I did not know this. 
 
-cu
-Adrian
+CONFIG_I2O=y
+# CONFIG_I2O_LCT_NOTIFY_ON_CHANGES is not set
 
--- 
+Is still in my .config after oldconfig.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Sebastian
 
