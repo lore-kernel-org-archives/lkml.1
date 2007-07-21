@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751855AbXGUWZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbXGUW0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751855AbXGUWZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 18:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbXGUWZr
+	id S1759090AbXGUW0m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 18:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXGUW0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 18:25:47 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:41596 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbXGUWZq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 18:25:46 -0400
-Date: Sun, 22 Jul 2007 00:39:22 +0200
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: More effective processing (Re: [PATCH 25/33] kbuild: use POSIX BRE in headers install target)
-Message-ID: <20070721223922.GO475@flower.upol.cz>
-References: <118468134441-git-send-email-sam@ravnborg.org> <11846813441741-git-send-email-sam@ravnborg.org> <1184681344376-git-send-email-sam@ravnborg.org> <E1ICAEU-0005an-5F@flower> <8bd0f97a0707210127m565f9b2cnc7a8a203f671e948@mail.gmail.com> <20070721100422.GK475@flower.upol.cz> <8bd0f97a0707211221l2c7fedeoea8612876350db6d@mail.gmail.com> <20070721203916.GA2912@uranus.ravnborg.org> <20070721221627.GN475@flower.upol.cz> <20070721221326.GC2912@uranus.ravnborg.org>
+	Sat, 21 Jul 2007 18:26:33 -0400
+Received: from waste.org ([66.93.16.53]:43252 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739AbXGUW0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 18:26:31 -0400
+Date: Sat, 21 Jul 2007 17:25:09 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+Message-ID: <20070721222509.GI11166@waste.org>
+References: <1184970779.4012.38.camel@chaos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070721221326.GC2912@uranus.ravnborg.org>
+In-Reply-To: <1184970779.4012.38.camel@chaos>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 12:13:26AM +0200, Sam Ravnborg wrote:
-> On Sun, Jul 22, 2007 at 12:16:27AM +0200, Oleg Verych wrote:
-> > 
-> > What do you think about this one? I want to propose to remove
-> > scripts/unifdef.c but to make clear policy about how to mark __KERNEL__
-> > sections in header files. We know how obfuscated C can be, and this also
-> > applies to preprocessing. There's known CodingStyle about some points.
-> > The thing is to specify rules, that will be easy for `sed` to do cleaup
-> > job.
-> > 
-> > ./linux/soundcard.h:#if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL)
-> >                       && !defined(_KERNEL)) || defined(USE_SEQ_MACROS)
-> > ./linux/stat.h:#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
-> > 
-> > Split __KERNEL__ check, make only positive, i.e.
-> > 
-> > #if defined(__KERNEL__)
-> > #ifdef __KERNEL__
-> > 
-> > ./linux/stat.h:#ifdef __KERNEL__
-> > 
-> > No `#else` and ending part to contain comment:
-> > 
-> > ./linux/smb_fs_sb.h:#endif /* __KERNEL__ */
-> > 
-> > Simple enough:
-> > 
-> > sed '/^#if[^_]*__KERNEL__/,/^#end[^_]*__KERNEL__/d'
-> 
-> What are you trying to say with the above?
-> Sorry but I lost track of part of the discussion but you seems to havea point here?
+On Sat, Jul 21, 2007 at 12:32:59AM +0200, Thomas Gleixner wrote:
+> How is the new arch/x86 and include/asm-x86 namespace layed out? Our 
+> foremost concern was to enable a 100% smooth transition to the new, 
+> shared architecture, while still enabling much more fine-grained future 
+> unification of the source code. To do this we consciously aimed for the 
+> strictest possible unification strategy: we only 'unified' those source 
+> files that are already bit for bit equal between the two architectures 
+> today. For all other files we used the following rule: if a file came 
+> from arch/i386/foo/bar.c, it gets moved to arch/x86/foo/bar_32.c, if it 
+> came from arch/x86_64/foo/bar.c it gets moved to arch/x86/foo/bar_64.c. 
+> We also generated arch/x86/foo/bar.c that simply #include's those two 
+> files (depending on whether we do a 32-bit or a 64-bit built). If a file 
+> only existed in only one of the architectures, it's moved to 
+> arch/x86/foo/bar.c straight away. (take a look at our git repository to 
+> see how this works out in practice.)
 
-I want to suggest more easy and tools-friendly way of processing header
-files in the headrer_install target. One line above, one paragraph in
-CodingStyle, one tree revision from KJ group.
-____
+Can we see some stats on:
+
+How many files were auto-merged?
+How many files got 32.c and 64.c extensions?
+How many existed only in one arch?
+
+-- 
+Mathematics is the supreme nostalgia of our time.
