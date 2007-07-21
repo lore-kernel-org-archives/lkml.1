@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938961AbXGUQDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935063AbXGUQOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938961AbXGUQDh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 12:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761923AbXGUQD3
+	id S935063AbXGUQOM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 12:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761259AbXGUQOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 12:03:29 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52685 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761185AbXGUQD2 (ORCPT
+	Sat, 21 Jul 2007 12:14:00 -0400
+Received: from rwcrmhc15.comcast.net ([204.127.192.85]:65426 "EHLO
+	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760292AbXGUQN7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 12:03:28 -0400
-Date: Sat, 21 Jul 2007 18:03:27 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
-Subject: Re: [PATCH] Use descriptor's functions instead of inline assembly
-In-Reply-To: <1184939761.16311.22.camel@t60>
-Message-ID: <Pine.LNX.4.64.0707211802050.21737@fbirervta.pbzchgretzou.qr>
-References: <1184939761.16311.22.camel@t60>
+	Sat, 21 Jul 2007 12:13:59 -0400
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, miltonm@bga.com,
+       stern@rowland.harvard.edu, ying.huang@intel.com,
+       linux-kernel@vger.kernel.org, david@lang.hm,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] Re: Hibernation considerations
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
+	<200707202302.07116.rjw@sisk.pl>
+	<E1ICDNw-0008HC-00@dorka.pomaz.szeredi.hu>
+	<200707212243.35602.nigel@nigel.suspend2.net>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Sat, 21 Jul 2007 12:13:56 -0400
+In-Reply-To: <200707212243.35602.nigel@nigel.suspend2.net> (Nigel Cunningham's
+	message of "Sat\, 21 Jul 2007 22\:43\:33 +1000")
+Message-ID: <87lkd9ohtn.fsf@jbms.ath.cx>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It seems that you could still potentially get a failure to freeze if one
+FUSE process depends on another, and the one that is frozen second just
+happens to be waiting on the one that is frozen first when it is frozen.
+I admit that this situation is unlikely, and perhaps acceptable.
 
-On Jul 20 2007 10:56, Glauber de Oliveira Costa wrote:
->diff --git a/arch/x86_64/kernel/head64.c b/arch/x86_64/kernel/head64.c
->index 6c34bdd..dde41d7 100644
->--- a/arch/x86_64/kernel/head64.c
->+++ b/arch/x86_64/kernel/head64.c
->@@ -70,7 +70,7 @@ void __init x86_64_start_kernel(char * real_mode_data)
-> 
-> 	for (i = 0; i < IDT_ENTRIES; i++)
-> 		set_intr_gate(i, early_idt_handler);
->-	asm volatile("lidt %0" :: "m" (idt_descr));
->+	load_idt((const struct desc_ptr *)&idt_descr);
+A larger concern is that it seems that freezing FUSE processes at all
+_will_ generate deadlocks if a non-synchronous or memory-map-supporting
+filesystem is loopback mounted from a FUSE filesystem.  In that case, if
+you attempt to sync or free memory once FUSE is frozen, you are sure to
+get a deadlock.
 
-Cast is not required, &idt_descr is already 'struct desc_ptr *'. (Also
-elsewhere)
-
-
-	Jan
 -- 
+Jeremy Maitin-Shepard
