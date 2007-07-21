@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbXGUFtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbXGUFvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762797AbXGUFtW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 01:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbXGUFtP
+	id S1763414AbXGUFvx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 01:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbXGUFvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 01:49:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41380 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754601AbXGUFtO (ORCPT
+	Sat, 21 Jul 2007 01:51:46 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:64588 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756193AbXGUFvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 01:49:14 -0400
-Date: Fri, 20 Jul 2007 22:48:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 6/7] radixtree: introduce radix_tree_scan_hole()
-Message-Id: <20070720224859.38aa0c21.akpm@linux-foundation.org>
-In-Reply-To: <384993020.08966@ustc.edu.cn>
-References: <20070721044300.909424569@mail.ustc.edu.cn>
-	<384993020.08966@ustc.edu.cn>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Jul 2007 01:51:45 -0400
+Date: Sat, 21 Jul 2007 01:50:46 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andi Kleen <ak@suse.de>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+In-Reply-To: <200707210740.19227.ak@suse.de>
+Message-ID: <Pine.LNX.4.58.0707210147340.29129@gandalf.stny.rr.com>
+References: <1184970779.4012.38.camel@chaos>
+ <6bffcb0e0707201655q664202e6v29b4e678de1b0d80@mail.gmail.com>
+ <200707210740.19227.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007 12:43:06 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-> Introduce radix_tree_scan_hole(root, index, max_scan) to scan radix tree
-> for the first hole. It will be used in interleaved readahead.
 
-If you're ever feeling fantastically bored, please consider updating the
-userspace radix-tree test harness for this?  Cook up a couple of testcases
-for the new functionality?
+> On Saturday 21 July 2007 01:55, Michal Piotrowski wrote:
+> >
+> > I really like this idea - code duplication is a bad thing.
+>
+> Did you actually look at the patch? It doesn't have a single line
+> less duplication than there was before. Everything that could
+> be easily shared was shared already.
+>
+> It's just new window dressing without any real advantages.
 
-Thanks.
+And did you read what tglx wrote?
 
-http://www.zip.com.au/~akpm/linux/patches/stuff/rtth.tar.gz is the latest.
+This patch was the beginning of the merger, not the end result. It strived
+for binary identical images. It was to put everything together as a
+_starting_point_!   The next thing to do after this is to start the
+merging.
+
+-- Steve
+
