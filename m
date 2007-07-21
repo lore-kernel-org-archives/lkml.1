@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbXGUWgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbXGUWnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbXGUWgw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 18:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbXGUWgo
+	id S1753243AbXGUWnQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 18:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbXGUWnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 18:36:44 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53703 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbXGUWgn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 18:36:43 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Latchesar Ionkov <lucho@ionkov.net>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: CTL_UNNUMBERED (Re: [PATCH] 9p: Don't use binary sysctl numbers.)
-References: <m1y7h9wpuo.fsf@ebiederm.dsl.xmission.com>
-	<20070721205709.GB5772@martell.zuzino.mipt.ru>
-Date: Sat, 21 Jul 2007 16:36:03 -0600
-In-Reply-To: <20070721205709.GB5772@martell.zuzino.mipt.ru> (Alexey Dobriyan's
-	message of "Sun, 22 Jul 2007 00:57:09 +0400")
-Message-ID: <m1odi5wfjg.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Sat, 21 Jul 2007 18:43:04 -0400
+Received: from aug.linbit.com ([212.69.162.22]:52602 "EHLO mail.linbit.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750855AbXGUWnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 18:43:03 -0400
+Date: Sun, 22 Jul 2007 00:43:00 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
+Message-ID: <20070721224300.GB18326@mail.linbit.com>
+Mail-Followup-To: Lars Ellenberg <lars.ellenberg@linbit.com>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <20070721203819.GA10706@mail.linbit.com> <Pine.LNX.4.64.0707212316530.21737@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707212316530.21737@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan <adobriyan@gmail.com> writes:
+On Sat, Jul 21, 2007 at 11:17:43PM +0200, Jan Engelhardt wrote:
+> 
+> On Jul 21 2007 22:38, Lars Ellenberg wrote:
+> >
+> >We implement shared-disk semantics in a shared-nothing cluster.
+> 
+> If nothing is shared, the disk is not shared, but got shared-disk
+> semantics? A little confusing.
 
->
-> That's separate patch but CTL_UNNUMBERED must die, because it's totally
-> unneeded. If you don't want sysctl(2) interface just SKIP ->ctl_name
-> initialization and save one line for something useful.
+Think of it as RAID1 over TCP.
+Typically you have one Node in Primary, the other as Secondary,
+replication target only.
+But you can also have both Active, for use with a cluster file system.
 
-As for the 9p code it doesn't seem to need or want a real binary
-interface.  The 9p debug code picking of a semi-random number and not
-patching it into sysctl.h like it should for a binary interface is
-an implementation bug, and a maintenance problem.
+So the semantics are like you have
+two (to come: N) nodes and a shared disk.
+only that there is not one shared disk,
+but two (N) replicated ones.
 
-Further it is a classic example of the silliness that goes on
-when people actually try and add to the binary interface.
+btw, regarding linux kernel CodingStyle issues.
+scripts/checkpatch.pl reports 2000+ lines of complaints.
+I'm working on it now, it is mostly whitespace (lame excuse: phil grew
+up with emacs and gnu coding style, sorry for that).
 
-So not assigning a binary number very much looks like the right thing
-to do for 9p.
-
-I expect if the change had not happened in a mega patch to 9p that
-seems to have changed everything the addition of a new user space
-interface would more likely have been caught in a code review.
-
-
-
-Now to the issue of using CTL_UNNUMBERED versus knowing that the magic
-value is zero and we can just leave it uninitialized.  I don't much
-care but given how often people who are not actively watching this
-mess up I tend to prefer the explicit value.  It is a practical
-question of how do we get the word out that we should not expand the
-binary interface anymore. 
-
-The only really practical way I can see us doing better then we are
-today is to have a separate tree that maps binary numbers into ascii
-strings and so we remove the ctl_name field entirely from ctl_table. 
-
-That way people attempting to assign binary numbers using old
-conventions will have code that doesn't even compile, and the
-developers themselves are more likely to spot the problem.
-
-Eric
+-- 
+: Lars Ellenberg                            Tel +43-1-8178292-0  :
+: LINBIT Information Technologies GmbH      Fax +43-1-8178292-82 :
+: Vivenotgasse 48, A-1120 Vienna/Europe    http://www.linbit.com :
+__
+please use the "List-Reply" function of your email client.
