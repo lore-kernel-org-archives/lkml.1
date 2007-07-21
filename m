@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938608AbXGUIlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935929AbXGUJDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938608AbXGUIlu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 04:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762875AbXGUIlS
+	id S935929AbXGUJDI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 05:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932127AbXGUJCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 04:41:18 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:33545 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762775AbXGUIlP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 04:41:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JBTIJEu9CT40BDJWdYFGvXBvIWuEc70X4RXZ5dO6sDQpKlVlSvJuwWHxqgNp0HNVmTDRyK954V4I1t+h24roZ40NBETjfWLypSTxLpPBYWs1Fa6V/JvEXySgHTSCruXoyL3kbEqGWK471v0ZiS6bzp72o+WgcKvlssFuHDdbxnQ=
-Message-ID: <6bffcb0e0707210141u2e7f1680s1818853424f753a0@mail.gmail.com>
-Date: Sat, 21 Jul 2007 10:41:15 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
-Cc: "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       rdunlap@xenotime.net, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <a781481a0707210136l272fc4fauaf14afce4178d9e4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 21 Jul 2007 05:02:55 -0400
+Received: from ozlabs.org ([203.10.76.45]:33951 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932121AbXGUJCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 05:02:55 -0400
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <1185005750.4012.100.camel@chaos>
+References: <1184970779.4012.38.camel@chaos> <200707210737.59552.ak@suse.de>
+	 <1185005750.4012.100.camel@chaos>
+Content-Type: text/plain
+Date: Sat, 21 Jul 2007 19:02:29 +1000
+Message-Id: <1185008549.6344.43.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>
-	 <a781481a0707201703h6318fe65td4c5c6f57bb7eb24@mail.gmail.com>
-	 <6bffcb0e0707201728u6deeccd1j453ff89d0767dccc@mail.gmail.com>
-	 <20070721010257.GA9561@suse.de>
-	 <20070720183733.c53b511b.akpm@linux-foundation.org>
-	 <20070721014419.GA10761@suse.de>
-	 <a781481a0707202021r977ae5fg9655dd2881836f13@mail.gmail.com>
-	 <a781481a0707202057q23a0ea6by97ee9b40e9fc5a0b@mail.gmail.com>
-	 <46A1BD31.4000804@googlemail.com>
-	 <a781481a0707210136l272fc4fauaf14afce4178d9e4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21/07/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> On 7/21/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> > Satyam Sharma pisze:
-> > > [...]
-> > > Gargh! My system obviously cannot boot without libata. Guess it's
-> > > time to go through git log and see how to fix that build breakage
-> > > myself ...
-> > >
-> > > Michal, how did you even manage to build / boot this kernel!
-> >
-> > I commented origin.patch and mm.patch in series file, reverted xfs patches,
-> > fixed libata build, deselected unionfs.
-> >
-> > Here is a patch for libata
-> >
-> > --- linux-work3-clean/drivers/ata/libata-core.c 2007-07-20 16:53:26.000000000 +0200
-> > +++ linux-work3/drivers/ata/libata-core.c       2007-07-20 17:26:30.000000000 +0200
-> > @@ -2036,7 +2036,7 @@ int ata_dev_configure(struct ata_device
-> >                 dev->max_sectors = min_t(unsigned int, ATA_MAX_SECTORS_128,
-> >                                          dev->max_sectors);
-> >
-> > -       if (ata_device_blacklisted(dev) & ATA_HORKAGE_ALPM) {
-> > +       if (ata_dev_blacklisted(dev) & ATA_HORKAGE_ALPM) {
-> >                 dev->horkage |= ATA_HORKAGE_ALPM;
-> >
-> >                 /* reset link pm_policy for this port to no pm */
->
->
-> And to think I went through all those hoops just to avoid *this* ... :-(
-> Anyway, please apply the attached patch and let's verify if we're both
-> actually bit by the same bug.
+On Sat, 2007-07-21 at 10:15 +0200, Thomas Gleixner wrote:
+> On Sat, 2007-07-21 at 07:37 +0200, Andi Kleen wrote: 
+> > On Saturday 21 July 2007 00:32, Thomas Gleixner wrote:
+> > > We are pleased to announce a project we've been working on for some
+> > > time: the unified x86 architecture tree, or "arch/x86" - and we'd like
+> > > to solicit feedback about it.
+> > 
+> > Well you know my position on this. I think it's a bad idea because
+> > it means we can never get rid of any old junk. IMNSHO arch/x86_64
+> > is significantly cleaner and simpler in many ways than arch/i386 and I would
+> > like to preserve that. Also in general arch/x86_64 is much easier to hack
+> > than arch/i386 because it's easier to regression test and in general
+> > has to care about much less junk. And I don't 
+> > know of any way to ever fix that for i386 besides splitting the old
+> > stuff off completely.
+> 
+> I disagree of course. 
+> 
+> I worked on both trees quite intensive over the last years and I broke
+> x86_64 more than once when hacking on i386 and vice versa. 
 
-kernel/params.c: In function 'kernel_param_sysfs_setup':
-kernel/params.c:571: error: implicit declaration of function 'printf'
-make[1]: *** [kernel/params.o] Error 1
-make: *** [kernel] Error 2
+Me too.
 
-fixed :)
+At the very least I'd like to see asm-x86/ for headers used by both.
 
-> A screenshot of my case is available at:
->
-> http://www.cse.iitk.ac.in/users/ssatyam/mtrr.show-bug.jpg
->
-> [ excuse the quality, it's not a digicam, but a cellphone-cam ]
->
-> Satyam
->
->
+That said, the merge is exactly as I'd have done it.  So if this were a
+democracy, I'd vote in favour.
 
-Regards,
-Michal
+Cheers,
+Rusty.
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
