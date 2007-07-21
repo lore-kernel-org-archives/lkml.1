@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764366AbXGUGcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934628AbXGUGgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764366AbXGUGcn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 02:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbXGUGcg
+	id S934628AbXGUGgl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 02:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXGUGgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 02:32:36 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59372
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbXGUGcf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 02:32:35 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Greg KH <greg@kroah.com>
-Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
-Date: Sat, 21 Jul 2007 02:32:20 -0400
-User-Agent: KMail/1.9.6
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Michael-Luke Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Rod Whitby <rod@whitby.id.au>, Russell King <rmk@arm.linux.org.uk>,
-       david@lang.hm
-References: <200707171703.31340.rob@landley.net> <200707202021.40009.rob@landley.net> <20070721005211.GC14362@kroah.com>
-In-Reply-To: <20070721005211.GC14362@kroah.com>
+	Sat, 21 Jul 2007 02:36:33 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:54426 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753264AbXGUGgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 02:36:32 -0400
+Message-ID: <384999782.11861@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sat, 21 Jul 2007 14:36:29 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 6/7] radixtree: introduce radix_tree_scan_hole()
+Message-ID: <20070721063629.GA7013@mail.ustc.edu.cn>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+References: <20070721044300.909424569@mail.ustc.edu.cn> <384993020.08966@ustc.edu.cn> <20070720224859.38aa0c21.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707210232.20665.rob@landley.net>
+In-Reply-To: <20070720224859.38aa0c21.akpm@linux-foundation.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 July 2007 8:52:11 pm Greg KH wrote:
-> On Fri, Jul 20, 2007 at 08:21:39PM -0400, Rob Landley wrote:
-> > >  Always look at the parent devices themselves for determining device
-> > >  context properties.
-> >
-> > For determining?
-> >
-> > What was the original language of this document?
->
-> Ok, that's just being mean, cut it out right now if you ever want my
-> help again.
+On Fri, Jul 20, 2007 at 10:48:59PM -0700, Andrew Morton wrote:
+> On Sat, 21 Jul 2007 12:43:06 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> 
+> > Introduce radix_tree_scan_hole(root, index, max_scan) to scan radix tree
+> > for the first hole. It will be used in interleaved readahead.
+> 
+> If you're ever feeling fantastically bored, please consider updating the
+> userspace radix-tree test harness for this?  Cook up a couple of testcases
+> for the new functionality?
 
-You're right, that was uncalled for and I apologize.
+Thanks for the reminding.  I'd add some test cases if I'm to optimize it.
 
-I got a little on edge from some of Kay's earlier comments ala:
-> You seem to miss the the very basic skills to collect the needed
-> information to do the job of documenting something.
+But this _dumb_ scan function is obviously correct(and won't be too slow on
+1M readahead).  In fact it is pretty suitable for testing the optimized one ;)
 
-Probably combined with jetlag.  I'll stop posting until I get some sleep.
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
