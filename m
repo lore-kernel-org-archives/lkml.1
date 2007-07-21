@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938464AbXGULgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938559AbXGULqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938464AbXGULgv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 07:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936733AbXGULgR
+	id S938559AbXGULqo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 07:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933334AbXGULqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 07:36:17 -0400
-Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:58781 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S933914AbXGULgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 07:36:12 -0400
-X-AntiVirus: PTMail-AV 0.3-0.90.3
-Subject: Re: libata [ata_piix] still no resume from S3 ?
-From: =?ISO-8859-1?Q?R=FAben?= Fonseca <krani1@0x82.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Linux Kernel Mailling List <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
-In-Reply-To: <46A0552E.30606@gmail.com>
-References: <20070712162450.GA7132@0x82.com> <469744DB.5070600@gmail.com>
-	 <20070714210117.GA20723@0x82.com> <469DD216.5040305@gmail.com>
-	 <20070719092053.GA21254@0x82.com> <469F2E4A.1020502@gmail.com>
-	 <20070719150436.GA9006@0x82.com>  <46A0552E.30606@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 21 Jul 2007 12:36:57 +0100
-Message-Id: <1185017817.7774.6.camel@0x82>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8bit
+	Sat, 21 Jul 2007 07:46:35 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:37248 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932184AbXGULqe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 07:46:34 -0400
+To: rjw@sisk.pl
+CC: miltonm@bga.com, stern@rowland.harvard.edu, ying.huang@intel.com,
+       linux-kernel@vger.kernel.org, david@lang.hm,
+       linux-pm@lists.linux-foundation.org, jbms@cmu.edu
+In-reply-to: <200707202302.07116.rjw@sisk.pl>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> <200707192228.05136.rjw@sisk.pl> <44037b3d409370919bddd8710e6064fc@bga.com> <200707202302.07116.rjw@sisk.pl>
+Message-Id: <E1ICDNw-0008HC-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 21 Jul 2007 13:44:32 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-20 at 15:24 +0900, Tejun Heo wrote:
-> Rúben Fonseca wrote:
-> > I wish I could disable this card reader. It is built in on the hardware,
-> > and there are no drivers for Linux. There is no option on the BIOS to
-> > disable the device. Is there any way (kernel parameters, magic program,
-> > etc) to disable this device without opening my laptop to cut the wires?
-> > :D
-> 
-> OIC.  How about not loading tifm_7xx1 module?  Does that make any
-> difference?
-> 
+> The problem with FUSE is related to the fact that the freezer can't
+> freeze uninterruptible tasks and we said that perhaps we might avoid
+> it if FUSE was made freezing-aware.  Still, no one has gone in this
+> direction and I don't know of any plans to do that.
 
-AFAIK the tifm_7xx1 module belongs to the other card reader I have on
-this laptop (see device ID 09.04.0). This one is a cardbus device and I
-can simply disconnect it on startup, and the tifm_7xx1 modulo is never
-loaded. Anyway I've tried without this card and module and it still
-doesn't work.
+I thought we have fully explored this direction.  Lots of emails, and
+an IRC session with Pavel.  Conclusion:
 
-The other card reader (device 09:04.2) is the hardwired one and I can't
-disconnect it :( If only I was sure that this was the problem, I would
-gladly open my laptop and cut this card reader's wires :)
+ - It can't be done without VFS surgery + adding various hacks to fuse
 
-Ruben
+ - VFS surgery for the sake of a working suspend is not realistic
 
+Although removing the freezer seems the cleanest solution, I'm not
+saying the freezer can't be fixed up in the mean time.
 
+Allowing tasks to remain in uninterruptible sleep seemed a nice way to
+get around the fuse issues.  What was the problem with that patch?  It
+was something that was supposed to have been tested in suspend2,
+wasn't it?
+
+The other one (trying to wake up task, so that may make other tasks
+freezable) didn't seem such a good approach to me.
+
+The theory is quite simple: while and after suspending devices, no
+tasks must be touching said devices.
+
+The very cleanest way to do this is in the drivers.  The very simplest
+way is the current freezer.  But may be there are possibilities
+between these two extremes.
+
+But I can almost guarantee you, that any attempt at fixing the issues
+though fuse will just result in an even bigger mess than what we
+currently have.
+
+Miklos
