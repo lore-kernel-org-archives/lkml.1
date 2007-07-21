@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934420AbXGUPqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936039AbXGUPs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934420AbXGUPqz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 11:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbXGUPqq
+	id S936039AbXGUPs2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 11:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbXGUPsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 11:46:46 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39277 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755305AbXGUPqq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 11:46:46 -0400
-Date: Sat, 21 Jul 2007 17:46:45 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: pata_platform: Fix NULL pointer dereference
-In-Reply-To: <alpine.LFD.0.999.0707200910020.27249@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707211746050.21737@fbirervta.pbzchgretzou.qr>
-References: <20070720035058.25300.28389.sendpatchset@clockwork.opensource.s
- e> <alpine.LFD.0.999.0707200910020.27249@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 21 Jul 2007 11:48:20 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55017 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755305AbXGUPsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 11:48:19 -0400
+Date: Sun, 22 Jul 2007 01:48:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Boutcher <boutcher@us.ibm.com>, Ryan Arnold <ryanarn@us.ibm.com>,
+       Colin Devilbiss <devilbis@us.ibm.com>,
+       Stephen Rothwell <sfr@au1.ibm.com>, Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH][05/37] Clean up duplicate includes in drivers/block/
+Message-Id: <20070722014823.f093a362.sfr@canb.auug.org.au>
+In-Reply-To: <200707211701.53199.jesper.juhl@gmail.com>
+References: <200707211701.53199.jesper.juhl@gmail.com>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__22_Jul_2007_01_48_23_+1000_a489aC1VSeQCf_8C"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Sun__22_Jul_2007_01_48_23_+1000_a489aC1VSeQCf_8C
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Jul 20 2007 09:12, Linus Torvalds wrote:
->Ok, the *fix* looks real enough, but it seems that you have done your line 
->splitting with a word processor rather than with a source code editor:
+On Sat, 21 Jul 2007 17:01:52 +0200 Jesper Juhl <jesper.juhl@gmail.com> wrot=
+e:
 >
->> +	return ata_host_activate(host, platform_get_irq(pdev, 0),
->> +				 ata_interrupt, pp_info ? pp_info->irq_flags
->> +				 : 0, &pata_platform_sht);
->
->Please don't do things like this. Splitting up expressions across two 
->lines just to make the line length come out "right" is silly.
->
->So do the
->
->	"pp_info ? pp_info->irq_flags : 0"
->
->expression on one line.
+> Hi,
+>=20
+> This patch cleans up duplicate includes in
+> 	drivers/block/
+>=20
+>=20
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Or just do
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-	return ata_host_activate(host, platform_get_irq(pdev, 0),
-	       ata_interrupt, pp_info ? pp_info->irq_flags : 0,
-	       &pata_platform_sht);
+--Signature=_Sun__22_Jul_2007_01_48_23_+1000_a489aC1VSeQCf_8C
+Content-Type: application/pgp-signature
 
-for returns, it's ok.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFGoirNTgG2atn1QN8RAhayAJ9rDrwhfljVgwspmJ6h9Z+D0Oik/ACfWFfP
+Eh9Ts5gNvt+uAHijh1TcXa8=
+=MVqB
+-----END PGP SIGNATURE-----
 
-	Jan
--- 
+--Signature=_Sun__22_Jul_2007_01_48_23_+1000_a489aC1VSeQCf_8C--
