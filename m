@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937328AbXGUN4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937703AbXGUN5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937328AbXGUN4h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 09:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762944AbXGUN4a
+	id S937703AbXGUN5z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 09:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763405AbXGUN5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 09:56:30 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3158 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761418AbXGUN43 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 09:56:29 -0400
-Date: Sat, 21 Jul 2007 09:56:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-cc: Miklos Szeredi <miklos@szeredi.hu>, <rjw@sisk.pl>, <miltonm@bga.com>,
-       <ying.huang@intel.com>, <linux-kernel@vger.kernel.org>, <david@lang.hm>,
-       <linux-pm@lists.linux-foundation.org>, <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <200707212243.35602.nigel@nigel.suspend2.net>
-Message-ID: <Pine.LNX.4.44L0.0707210954490.8201-100000@netrider.rowland.org>
+	Sat, 21 Jul 2007 09:57:47 -0400
+Received: from mail.tmr.com ([64.65.253.246]:44786 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761418AbXGUN5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 09:57:46 -0400
+Message-ID: <46A21105.9050402@tmr.com>
+Date: Sat, 21 Jul 2007 09:58:29 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gabriel C <nix.or.die@googlemail.com>
+CC: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-git13 crash
+References: <46A11E4B.3070002@tmr.com> <46A121DD.2090304@googlemail.com>
+In-Reply-To: <46A121DD.2090304@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007, Nigel Cunningham wrote:
+Gabriel C wrote:
+> Bill Davidsen wrote:
+>   
+>> built from 2.6.22-git9 config, used oldconfig. Crashes so early it 
+>> doesn't seem to get to the network card.
+>>
+>>   config: www.tmr.com/~davidsen/config-2.6.22-git13.gz
+>>   screen dump: www.tmr.com/~davidsen/dump-2.6.22-git13.jpg
+>>
+>> Not much info, and probably seen elsewhere.
+>>
+>>     
+>
+> Should be fixed by this commit :
+>
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9550b105b8646f916862aee3ab7b25020ca14159
+>   
+Thanks much for the quick reply, patches kernel building now.
 
-> What am I missing in the following suggested solution?
-> 
-> 1) In the freezer code, we implement a new TIF_LATEFREEZE process flag, which, 
-> when set, causes a  userspace process to be frozen with kernel threads 
-> instead of with userspace ones. When freezing, we freezing !TIF_LATEFREEZE, 
-> sync and then freeze TIF_LATEFREEZE and freezable kernel threads.
-> 
-> 2) In the fuse code, the PID of the process that will do the work gets passed 
-> to the fuse kernel code when the mount is done. The kernel code sets the 
-> TIF_LATEFREEZE flag, and resets it on umount.
-
-What happens when one FUSE filesystem makes use of another?  You'll 
-still end up with unfreezable processes, except that now you won't 
-detect them until the LATEFREEZE stage.
-
-Alan Stern
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
