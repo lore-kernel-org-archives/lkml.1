@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936242AbXGUPJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940351AbXGUPK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936242AbXGUPJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 11:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939386AbXGUPDx
+	id S940351AbXGUPK2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 11:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939233AbXGUPD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 11:03:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:39272 "EHLO
+	Sat, 21 Jul 2007 11:03:58 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:37344 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939373AbXGUPDv (ORCPT
+	with ESMTP id S939056AbXGUPD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 11:03:51 -0400
+	Sat, 21 Jul 2007 11:03:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=g22SD2+d8sD7n5cTudHNMu1kswPBFs0YABBOCvzb9cJ1A/SREqjx+e1P3r8tYS3CW/GJUZtJ+B8tvwfEGQgQVkX4FBeaTCbUtwEywdxmKKy9jRYf0UZ9krPwTy6Rke1ZZ7JNCxkpSwV02VH5rG/uYpSB59z9t5VP6MnpS8hlbjs=
+        b=R0LrfxFhNrMUCwozS66Ax/LpafLk++DBr28hIqdOfD8DUd+ouDrX2exGVyGU+V2bmBThQUbWl5vhpW+GcF1q5R6u/8B+PfmhGGkT90oWuvPH0qUP0wWCTj2bb5tOtndaWptQu9gn7g6RzwGYf0o1K9TCAQLecPQwlv4DtRFSB1A=
 From: Jesper Juhl <jesper.juhl@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][13/37] Clean up duplicate includes in drivers/scsi/
-Date: Sat, 21 Jul 2007 17:02:53 +0200
+Subject: [PATCH][15/37] Clean up duplicate includes in drivers/usb/
+Date: Sat, 21 Jul 2007 17:02:59 +0200
 User-Agent: KMail/1.9.7
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Jesper Juhl <jesper.juhl@gmail.com>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, James.Bottomley@hansenpartnership.com,
-       James Smart <james.smart@emulex.com>,
-       Christoph Hellwig <hch@infradead.org>
+       Greg Kroah-Hartman <greg@kroah.com>, gregkh@suse.de,
+       linux-usb-users@lists.sourceforge.net,
+       Tony Olech <tony.olech@elandigitalsystems.com>
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707211702.53876.jesper.juhl@gmail.com>
+Message-Id: <200707211702.59265.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
 This patch cleans up duplicate includes in
-	drivers/scsi/
+	drivers/usb/
 
 
 Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 ---
 
-diff --git a/drivers/scsi/NCR_D700.c b/drivers/scsi/NCR_D700.c
-index 3a80897..e0f1991 100644
---- a/drivers/scsi/NCR_D700.c
-+++ b/drivers/scsi/NCR_D700.c
-@@ -97,7 +97,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mca.h>
--#include <linux/interrupt.h>
+diff --git a/drivers/usb/host/u132-hcd.c b/drivers/usb/host/u132-hcd.c
+index 7f765ec..b38a9bd 100644
+--- a/drivers/usb/host/u132-hcd.c
++++ b/drivers/usb/host/u132-hcd.c
+@@ -51,7 +51,6 @@
+ #include <linux/usb.h>
+ #include <linux/workqueue.h>
+ #include <linux/platform_device.h>
+-#include <linux/pci_ids.h>
+ #include <linux/mutex.h>
  #include <asm/io.h>
- #include <scsi/scsi_host.h>
- #include <scsi/scsi_device.h>
-diff --git a/drivers/scsi/lpfc/lpfc_debugfs.c b/drivers/scsi/lpfc/lpfc_debugfs.c
-index 673cfe1..039892c 100644
---- a/drivers/scsi/lpfc/lpfc_debugfs.c
-+++ b/drivers/scsi/lpfc/lpfc_debugfs.c
-@@ -43,7 +43,6 @@
- #include "lpfc_crtn.h"
- #include "lpfc_vport.h"
- #include "lpfc_version.h"
--#include "lpfc_vport.h"
- #include "lpfc_debugfs.h"
- 
- #ifdef CONFIG_LPFC_DEBUG_FS
-diff --git a/drivers/scsi/lpfc/lpfc_init.c b/drivers/scsi/lpfc/lpfc_init.c
-index 07bd0dc..3a51266 100644
---- a/drivers/scsi/lpfc/lpfc_init.c
-+++ b/drivers/scsi/lpfc/lpfc_init.c
-@@ -43,7 +43,6 @@
- #include "lpfc_crtn.h"
- #include "lpfc_vport.h"
- #include "lpfc_version.h"
--#include "lpfc_vport.h"
- 
- static int lpfc_parse_vpd(struct lpfc_hba *, uint8_t *, int);
- static void lpfc_get_hba_model_desc(struct lpfc_hba *, uint8_t *, uint8_t *);
+ #include <asm/irq.h>
