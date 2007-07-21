@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937241AbXGUIQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937052AbXGUIXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937241AbXGUIQn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 04:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935486AbXGUIQE
+	id S937052AbXGUIXc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 04:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761067AbXGUIXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 04:16:04 -0400
-Received: from www.osadl.org ([213.239.205.134]:41468 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935080AbXGUIQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 04:16:01 -0400
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-Cc: Adrian Bunk <bunk@stusta.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <200707210942.48444.ak@suse.de>
-References: <1184970779.4012.38.camel@chaos> <200707210806.12880.ak@suse.de>
-	 <20070721073533.GE3801@stusta.de>  <200707210942.48444.ak@suse.de>
-Content-Type: text/plain
-Date: Sat, 21 Jul 2007 10:15:57 +0200
-Message-Id: <1185005757.4012.102.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Jul 2007 04:23:16 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:10306 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761021AbXGUIXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 04:23:14 -0400
+In-Reply-To: <adabqe67632.fsf@cisco.com>
+Subject: Re: [ofa-general] [PATCH 1/5] ehca: Supports large page MRs
+To: Roland Dreier <rdreier@cisco.com>
+Cc: general-bounces@lists.openfabrics.org,
+       Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+       Joachim Fenkes <fenkes@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, openib-general@openib.org,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFDBEFA17C.9FE35C61-ONC125731F.002DE742-C125731F.002E0843@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Sat, 21 Jul 2007 10:22:54 +0200
+X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 21/07/2007 10:23:03
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-21 at 09:42 +0200, Andi Kleen wrote:
-> > 
-> > It happens so often that someone accidentally breaks one architecture 
-> > because he didn't notice the code also gets used on the other 
-> > architecture.
-> 
-> That's not changing at all. Especially with even more sharing, (than I think
-> would be prudent) like Thomas treated, you'll likely have to test compile both
-> for most changes.
-
-And a shared code base makes it entirely clear, that you must recheck
-bot ARCHs when you touch code in there. 
-
-Right now it is not clear at all.
-
-	tglx
-
+Hi Roland!
+> I applied this, but I agree with checkpatch.pl:
+>
+>  > WARNING: externs should be avoided in .c files
+>  > #227: FILE: drivers/infiniband/hw/ehca/ehca_mrmw.c:67:
+>  > +extern int ehca_mr_largepage;
+>  >
+>  > WARNING: externs should be avoided in .c files
+>  > #949: FILE: drivers/infiniband/hw/ehca/hcp_if.c:753:
+>  > +   extern int ehca_debug_level;
+>
+> if you need to use a variable in more than one .c file, put the extern
+> declaration in a common header that's included everywhere you use the
+> variable, including the .c file that it is defined in.  That way the
+> compiler can see if you get confused about the type of the variable.
+That's true.
+> When you get a chance, please post a follow-on patch to fix this.
+Sure thing. Will do that for rc2.
+Thanks!
+Nam
 
