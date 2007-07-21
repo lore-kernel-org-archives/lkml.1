@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764289AbXGUTwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764753AbXGUT6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764289AbXGUTwv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 15:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758488AbXGUTwn
+	id S1764753AbXGUT6l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 15:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760573AbXGUT6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 15:52:43 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38772 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756266AbXGUTwn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 15:52:43 -0400
-Message-ID: <46A263FA.70501@zytor.com>
-Date: Sat, 21 Jul 2007 12:52:26 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
+	Sat, 21 Jul 2007 15:58:33 -0400
+Received: from lug-owl.de ([195.71.106.12]:36891 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759886AbXGUT6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 15:58:32 -0400
+Date: Sat, 21 Jul 2007 21:58:30 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Create clflush() inline, remove hardcoded wbinvd
-References: <1184885740.16311.19.camel@t60> <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org> <20070721181137.GH4152@rhun.haifa.ibm.com>
-In-Reply-To: <20070721181137.GH4152@rhun.haifa.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: from where comes "__moddi3"?
+Message-ID: <20070721195830.GK22998@lug-owl.de>
+Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0707211516480.6972@localhost.localdomain> <1185046274.5652.15.camel@lappy>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LHvWgpbS7VDUdu2f"
+Content-Disposition: inline
+In-Reply-To: <1185046274.5652.15.camel@lappy>
+X-Operating-System: Linux mail 2.6.18-4-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Muli Ben-Yehuda wrote:
-> 
-> Mostly looks good, but see below.
-> 
->> diff --git a/drivers/char/agp/efficeon-agp.c b/drivers/char/agp/efficeon-agp.c
->> index df8da72..41f46df 100644
->> --- a/drivers/char/agp/efficeon-agp.c
->> +++ b/drivers/char/agp/efficeon-agp.c
->> @@ -221,7 +221,7 @@ static int efficeon_create_gatt_table(struct agp_bridge_data *bridge)
->>  		SetPageReserved(virt_to_page((char *)page));
->>  
->>  		for (offset = 0; offset < PAGE_SIZE; offset += clflush_chunk)
->> -			asm volatile("clflush %0" : : "m" (*(char *)(page+offset)));
->> +			clflush((char *)page+offset);
-> 
-> The original code flushes (*(page+offset)) whereas the new code
-> flushes (pagee+offset). Assuming this is a bug-fix, it should go as a
-> separate patch.
-> 
 
-No, it doesn't.  There is a * in the inline, as there should be.
+--LHvWgpbS7VDUdu2f
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	-hpa
+On Sat, 2007-07-21 21:31:13 +0200, Peter Zijlstra <peterz@infradead.org> wr=
+ote:
+> On Sat, 2007-07-21 at 15:21 -0400, Robert P. J. Day wrote:
+>=20
+> use do_div().
+>=20
+> 16 works because gcc translates that into a right shift.
+
+Right shift?  Doesn't it just mask out everything but the low 4 bit?
+
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:             God put me on earth to accomplish a certain numbe=
+r of
+the second  :            things. Right now I am so far behind I will never =
+die.
+
+--LHvWgpbS7VDUdu2f
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGomVmHb1edYOZ4bsRAlE/AJ9vx7yDxhYHoTmed/JCGcrXC+JxpQCcCbTP
+Zn8FoUaCQPnLFxKnrTVHP4g=
+=LoK2
+-----END PGP SIGNATURE-----
+
+--LHvWgpbS7VDUdu2f--
