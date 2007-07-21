@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937218AbXGUIhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934525AbXGUIjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937218AbXGUIhs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 04:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbXGUIhh
+	id S934525AbXGUIjn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 04:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756966AbXGUIjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 04:37:37 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:32823 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbXGUIhg (ORCPT
+	Sat, 21 Jul 2007 04:39:36 -0400
+Received: from phoenix.clifford.at ([88.198.7.52]:51914 "EHLO
+	phoenix.clifford.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbXGUIjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 04:37:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JrsiFMxeqHg17pXI487hYYTrnbxHZjh6yUhGc8esJarQRucNLa2vQ8BupPiuH152tSRXhme2K3mi2Xb9tfmjVvNp+N+qsdW8bEuOSmM4DOEQ8ur3bIIB2RdhYVFnhsJvpaUCGJnNTqV4bwojuegd+xM2XAY0qH2BRzozsjKEYNs=
-Message-ID: <8bd0f97a0707210137j186554b6tb22e7f36237e862f@mail.gmail.com>
-Date: Sat, 21 Jul 2007 04:37:35 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Robert Schwebel" <r.schwebel@pengutronix.de>
-Subject: Re: blackfin - cmpxchg not atomic ?
-Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>, tonyko@lineo.ca,
-       robin.getz@analog.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070721072930.GS1678@pengutronix.de>
+	Sat, 21 Jul 2007 04:39:35 -0400
+Date: Sat, 21 Jul 2007 10:42:33 +0200
+From: Clifford Wolf <clifford@clifford.at>
+To: Shannon Nelson <shannon.nelson@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: DMA Engine vs. DMA Transfer API
+Message-ID: <20070721084233.GE21334@clifford.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070720202807.GA15009@Krystal>
-	 <8bd0f97a0707201336l6bed7c24i7014333ce356417f@mail.gmail.com>
-	 <20070721072930.GS1678@pengutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/21/07, Robert Schwebel <r.schwebel@pengutronix.de> wrote:
-> On Fri, Jul 20, 2007 at 04:36:12PM -0400, Mike Frysinger wrote:
-> > > Also, does you assembly stub _really_ modify memory atomically ? If yes,
-> > > then there should be no need for disabling interrupts. Else, I see a
-> > > major problem with SMP.
-> >
-> > that isnt the only problem with SMP on Blackfin
->
-> Could you ealborate?
+Hi Shannon, hi lkml,
 
-i'm pretty sure there's already been a thread on LKML about it ... the
-fact that our parts currently lack any sort of cache snooping or
-control over any other is a huge issue.
+I'm writing a driver for the built-in DMA controller of the Freescale
+MPC8349E PowerPC based microcontroller. Unfortunately the DMA-Engine
+API seams to be the totally wrong thing for that since this DMA controller
+has many features which are not available thru dmaengine afaics, such as:
 
-we've contracted a company to do SMP, but it'll have quite a bit of
-overhead since it'll need to do a lot of communication/message passing
-between cores to account for these hardware deficiencies.
--mike
+ * Scatter-Gather on source and/or destination
+ * Fifo modes for 8-, 16- and 32-bit (on source and dest)
+ * Snooping mode, Multiple direct PCI read modes, ...
+
+Also this DMA controller has only 4 channels (I do not know how many
+channels I/OAT has). So I needed a spooling subsystem so many drivers
+can easily share the available dma channels. The api also supports
+more than one backend device and automatically finds out which backend
+device fits a dma request best. I've named the entire thing dmatransfer
+api. A current devel snapshot can be found at:
+
+	http://www.clifford.at/priv/dmatransfer-20070711.diff
+
+(I am on vacation right now and don't have access to my test hardware. So
+the entire thing is 'frozen' right now until the second august week when
+I'm back in the office.)
+
+The smart infrasturcture adds some overhead: In a testcase copying 1GB of
+data from memory to memory in 64kB chunks (300MHz DDR SDRAM, 500MHz PowerPC
+CPU) this overhead is about 0.25% over controlling the dma controller
+directly without my framework.
+
+Afaics there is only one user of DMA Engine framework right now and only
+one driver: The network stack.
+
+any chances that we can migrate I/OAT to my more flexible DMA Engine
+framework and modify the network stack to use dmatransfer instead of
+dmaengine or in any other way integrate the APIs?
+
+yours,
+ - clifford
+
+-- 
+"In the future, airplanes will be flown by a dog and a pilot. And the
+dog's job will be to make sure that if the pilot tries to touch any of
+the buttons, the dog bites him." - Scott Adams (author of Dilbert).
