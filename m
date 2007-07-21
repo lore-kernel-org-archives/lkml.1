@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937564AbXGUKSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937046AbXGUKXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937564AbXGUKSu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 06:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760583AbXGUKSl
+	id S937046AbXGUKXF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 06:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760375AbXGUKWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 06:18:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59910 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759109AbXGUKSk (ORCPT
+	Sat, 21 Jul 2007 06:22:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:46216 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759100AbXGUKWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 06:18:40 -0400
-Date: Sat, 21 Jul 2007 03:18:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Bret Towe" <magnade@gmail.com>
-Cc: "Ulrich Kunitz" <kune@deine-taler.de>, linux-kernel@vger.kernel.org,
-       Jan Kratochvil <honza@jikos.cz>, Jiri Kosina <jkosina@suse.cz>,
-       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
-Subject: Re: Is PIE randomization breaking klibc binaries?
-Message-Id: <20070721031809.54d573a9.akpm@linux-foundation.org>
-In-Reply-To: <dda83e780707202302g177d09acg94e77f724e97f17a@mail.gmail.com>
-References: <20070720211300.GA21644@deine-taler.de>
-	<dda83e780707202302g177d09acg94e77f724e97f17a@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 21 Jul 2007 06:22:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YzDbozBSO+PH7Lirh7QnzgPrrpzT5MgU3BfXvV9qddOiEdjNVz91coBKnbliZozbIRQL0EuSshlI8I/HEsbivQ0EKOkYNwU1TIqK1qEPzMf0Cw177dnE77AaLTmjSmzzut9s221ufr4e13vDCkTZlpV11Hj02pU2r57OsF1PWj8=
+Message-ID: <92a12cdb0707210322m6670acaer768d078c5e358b0c@mail.gmail.com>
+Date: Sat, 21 Jul 2007 11:22:53 +0100
+From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix DMA on Dreamcast
+Cc: linux-kernel@vger.kernel.org, lethal@users.sourceforge.net
+In-Reply-To: <20070720120408.1f190269.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <92a12cdb0707191230g216feaf2ied3e95bacf4dd572@mail.gmail.com>
+	 <20070720120408.1f190269.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jul 2007 23:02:12 -0700 "Bret Towe" <magnade@gmail.com> wrote:
+On 20/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 19 Jul 2007 20:30:34 +0100
+> "Adrian McMenamin" <adrianmcmenamin@gmail.com> wrote:
+>
+> > I think my first attempt to post this may have got lost in space somewhere.
+> >
+> > Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+>
+> Please provide a description of what problem this change is solving, and how
+> it solves it.
+>
+Andrew
 
-> On 7/20/07, Ulrich Kunitz <kune@deine-taler.de> wrote:
-> > Since this week new linux-2.6/master kernels don't work with my
-> > initial ram disks. The sleep binary runs repeatingly into
-> > segmentation faults until the Busybox shell starts. My system is a
-> > x86-64 with Kubuntu Feisty Fawn.
-> >
-> > By bisecting I found out that the PIE randomization patch (commit 60bfba7e)
-> > appears to cause the segmentation faults.
-> >
-> > Digging further into the issue I found out, that the sleep binary
-> > on the initial ramdisk is a klibc binary. /usr/bin/file says it is
-> > statically linked and uses shared libraries. I have no clue about
-> > klibc, but the binaries seem to be statically linked, but load a
-> > shared library; probably at a fixed address. Other klibc binaries are also
-> > running into segmentation faults. Busybox is working, but it is
-> > statically linked and doesn't use a shared library.
-> >
-> > It looks like that the PIE randomization patch breaks klibc
-> > binaries on x86-64.
-> >
-> > --
-> > Uli Kunitz
-> > -
-> 
-> oh bugger I just spent a few hours bisecting to find this headache
-> only to find someone else had 8 hours ago... *sigh*
-> 
-> anyhow also seeing seg faults here on a amd64 ubuntu system
-> reverting the PIE randomization patch made it go away
+Sorry, just noticed this. Without this patch the Dreamcast won't boot
+when configured with the correct DMA settings in Kbuild. You can
+either patch the kernel or use the wrong settings in the build.
 
-(cc's added)
+Essentially the SH DMA API code is broken in that it doesn't correctly
+match the DMA virtual channel to the DMAC.
 
-I don't think we'll be fixing this in time for -rc1.  I'll revert
-it.  Thanks for the prompt and accurate reporting.
+The patch seems to fix this, though further testing has reveled there
+may either be an issue with the patch or an issue with other drivers
+using DMA and which have worked because they inadvertently relied on
+the breakage in the DMA API code.
