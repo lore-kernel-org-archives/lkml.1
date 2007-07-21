@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934543AbXGULVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764055AbXGULVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934543AbXGULVA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 07:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761228AbXGULUw
+	id S1764055AbXGULVq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 07:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760795AbXGULVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 07:20:52 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:51340 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752290AbXGULUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 07:20:51 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH] drivers/char/hpet.c: integer constant is too large for "long" type
-Date: Sat, 21 Jul 2007 14:19:44 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
+	Sat, 21 Jul 2007 07:21:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:33820 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761228AbXGULVf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 07:21:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BcgXokc9opH5yEEzI8fGjuMXHnPM3OaWtS24aOvk28wHoqQnefxxS5aAXHTWNhA8PaiDcYVsqSb/tVW+ShaRBQciCZJiEFScGyTwtUnL4hhdpKo/+VPgWwrC84RHGAEWdoVVolCuJas9NLngytVulQZYThf+TMcxsa/YY8b7Hus=
+Message-ID: <86802c440707210421h33a4fa50n9856bfe95e5b386f@mail.gmail.com>
+Date: Sat, 21 Jul 2007 04:21:34 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH] x86_64: use apic core id bits for core nums
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, joachim.deguara@amd.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200707211022.47859.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707211419.47680.caglar@pardus.org.tr>
+References: <86802c440707210056s745d44f1jc6437064741299eb@mail.gmail.com>
+	 <200707211022.47859.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+On 7/21/07, Andi Kleen <ak@suse.de> wrote:
+> On Saturday 21 July 2007 09:56:15 Yinghai Lu wrote:
+> > please check my version, we should use core id bits instead.
+> >
+> > it should replace
+> > [PATCH for review] [37/48] x86_64: make k8topology multi-core aware
+>
+> Yes, you're right the patch is not good. It should probably use
+> information from the regular CPU setup code, not touch cpuid
+> directly
 
-Following trivial patch silents
+need move some code into early_identify_cpu from identify_cpu in
+arch/x86_64/kernel/setup.c
+then could use that bits in bsp cpu info.
 
-drivers/char/hpet.c:76: warning: integer constant is too large for "long" type
+BTW:
+it seems for BSP only early_identify_cpu is called, and identify_cpu
+is only use in smp_callin for AP. Do i miss sth.
 
-warning (with gcc-3.4.6)
-
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
- 
- drivers/char/hpet.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index ba0e74a..23fadf5 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -73,7 +73,7 @@ static struct clocksource clocksource_hpet = {
-         .name           = "hpet",
-         .rating         = 250,
-         .read           = read_hpet,
--        .mask           = 0xffffffffffffffff,
-+        .mask           = 0xffffffffffffffffLL,
-         .mult           = 0, /*to be caluclated*/
-         .shift          = 10,
-         .flags          = CLOCK_SOURCE_IS_CONTINUOUS,
-
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+YH
