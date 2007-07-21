@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbXGUXMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbXGUX1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbXGUXMu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 19:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbXGUXMn
+	id S1755341AbXGUX1t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 19:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXGUX1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 19:12:43 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39419 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbXGUXMm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 19:12:42 -0400
-To: torvalds@linux-foundation.org
-Subject: [PATCH] make sparc32 PAGE_SHARED a read-mostly variable
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net
-Message-Id: <E1ICO7t-0001yp-RO@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sun, 22 Jul 2007 00:12:41 +0100
+	Sat, 21 Jul 2007 19:27:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36260 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751902AbXGUX1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 19:27:40 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: [PATCH] [9/58] x86_64: Always use builtin memcpy on gcc 4.3
+Date: Sun, 22 Jul 2007 01:27:35 +0200
+User-Agent: KMail/1.9.6
+Cc: jh@suse.cz, patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <200707191154.642492000@suse.de> <20070719095453.5434214E04@wotan.suse.de> <E1ICOBm-0003zf-Ms@flower>
+In-Reply-To: <E1ICOBm-0003zf-Ms@flower>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707220127.35975.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 22 July 2007 01:16:42 Oleg Verych wrote:
+> * From: Andi Kleen <ak@suse.de>
+> * Date: Thu, 19 Jul 2007 11:54:53 +0200 (CEST)
+> >
+> > Jan asked to always use the builtin memcpy on gcc 4.3 mainline because
+> > it should generate better code than the old macro. Let's try it.
+> 
+> Unfortunately such info is hard to find. The discuss@x86-64 list is
+> empty. So, let me ask how this memcpy relates to recently submitted
+> for glibc one [0]?
 
-same scheme as for sparc64, same rationale
+It doesn't relate at all. The kernel still uses its own memcpy.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/sparc/mm/init.c        |    3 +++
- arch/sparc/mm/srmmu.c       |    2 +-
- arch/sparc/mm/sun4c.c       |    2 +-
- include/asm-sparc/pgtable.h |    3 +--
- 4 files changed, 6 insertions(+), 4 deletions(-)
+Note that a lot of the traditional memcpy optimizations (like WC copies) 
+are pointless in kernel space because the kernel rarely deals with continuous 
+memory areas larger than a 4K page.
 
-diff --git a/arch/sparc/mm/init.c b/arch/sparc/mm/init.c
-index a532922..a1bef07 100644
---- a/arch/sparc/mm/init.c
-+++ b/arch/sparc/mm/init.c
-@@ -308,6 +308,9 @@ extern void sun4c_paging_init(void);
- extern void srmmu_paging_init(void);
- extern void device_scan(void);
- 
-+pgprot_t PAGE_SHARED __read_mostly;
-+EXPORT_SYMBOL(PAGE_SHARED);
-+
- void __init paging_init(void)
- {
- 	switch(sparc_cpu_model) {
-diff --git a/arch/sparc/mm/srmmu.c b/arch/sparc/mm/srmmu.c
-index ca26232..17b485f 100644
---- a/arch/sparc/mm/srmmu.c
-+++ b/arch/sparc/mm/srmmu.c
-@@ -2154,7 +2154,7 @@ void __init ld_mmu_srmmu(void)
- 	BTFIXUPSET_SIMM13(ptrs_per_pgd, SRMMU_PTRS_PER_PGD);
- 
- 	BTFIXUPSET_INT(page_none, pgprot_val(SRMMU_PAGE_NONE));
--	BTFIXUPSET_INT(page_shared, pgprot_val(SRMMU_PAGE_SHARED));
-+	PAGE_SHARED = pgprot_val(SRMMU_PAGE_SHARED);
- 	BTFIXUPSET_INT(page_copy, pgprot_val(SRMMU_PAGE_COPY));
- 	BTFIXUPSET_INT(page_readonly, pgprot_val(SRMMU_PAGE_RDONLY));
- 	BTFIXUPSET_INT(page_kernel, pgprot_val(SRMMU_PAGE_KERNEL));
-diff --git a/arch/sparc/mm/sun4c.c b/arch/sparc/mm/sun4c.c
-index bdd835f..a57a366 100644
---- a/arch/sparc/mm/sun4c.c
-+++ b/arch/sparc/mm/sun4c.c
-@@ -2155,7 +2155,7 @@ void __init ld_mmu_sun4c(void)
- 	BTFIXUPSET_SIMM13(user_ptrs_per_pgd, KERNBASE / SUN4C_PGDIR_SIZE);
- 
- 	BTFIXUPSET_INT(page_none, pgprot_val(SUN4C_PAGE_NONE));
--	BTFIXUPSET_INT(page_shared, pgprot_val(SUN4C_PAGE_SHARED));
-+	PAGE_SHARED = pgprot_val(SUN4C_PAGE_SHARED);
- 	BTFIXUPSET_INT(page_copy, pgprot_val(SUN4C_PAGE_COPY));
- 	BTFIXUPSET_INT(page_readonly, pgprot_val(SUN4C_PAGE_READONLY));
- 	BTFIXUPSET_INT(page_kernel, pgprot_val(SUN4C_PAGE_KERNEL));
-diff --git a/include/asm-sparc/pgtable.h b/include/asm-sparc/pgtable.h
-index a55f4c3..2cc235b 100644
---- a/include/asm-sparc/pgtable.h
-+++ b/include/asm-sparc/pgtable.h
-@@ -46,7 +46,6 @@ BTFIXUPDEF_SIMM13(user_ptrs_per_pgd)
- #define pgd_ERROR(e)   __builtin_trap()
- 
- BTFIXUPDEF_INT(page_none)
--BTFIXUPDEF_INT(page_shared)
- BTFIXUPDEF_INT(page_copy)
- BTFIXUPDEF_INT(page_readonly)
- BTFIXUPDEF_INT(page_kernel)
-@@ -66,7 +65,7 @@ BTFIXUPDEF_INT(page_kernel)
- #define PTE_SIZE		(PTRS_PER_PTE*4)
- 
- #define PAGE_NONE      __pgprot(BTFIXUP_INT(page_none))
--#define PAGE_SHARED    __pgprot(BTFIXUP_INT(page_shared))
-+extern pgprot_t PAGE_SHARED;
- #define PAGE_COPY      __pgprot(BTFIXUP_INT(page_copy))
- #define PAGE_READONLY  __pgprot(BTFIXUP_INT(page_readonly))
- 
--- 
-1.5.3.GIT
+The only difference from the patch is that instead of using an own
+heuristic when to use an out of line memcpy trust gcc's heuristic.
+
+-Andi
 
