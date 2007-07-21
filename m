@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765356AbXGUVHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765503AbXGUVP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765356AbXGUVHW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 17:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbXGUVHL
+	id S1765503AbXGUVP7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 17:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758043AbXGUVPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 17:07:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33225 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755159AbXGUVHJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 17:07:09 -0400
-Subject: Re: [PATCH 1/3] readahead: drop behind
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eric St-Laurent <ericstl34@sympatico.ca>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>, riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
-       Chris Snook <csnook@redhat.com>
-In-Reply-To: <1185051551.28982.4.camel@perkele>
-References: <20070721210005.000228000@chello.nl>
-	 <20070721210051.975382000@chello.nl>  <1185049747.27915.8.camel@perkele>
-	 <1185050276.5652.23.camel@lappy>  <1185051551.28982.4.camel@perkele>
-Content-Type: text/plain
-Date: Sat, 21 Jul 2007 23:06:39 +0200
-Message-Id: <1185051999.5652.25.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Jul 2007 17:15:48 -0400
+Received: from khc.piap.pl ([195.187.100.11]:49898 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755291AbXGUVPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 17:15:47 -0400
+To: Ben Greear <greearb@candelatech.com>
+Cc: andrei radulescu-banu <iubica2@yahoo.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Linux, tcpdump and vlan
+References: <997818.30021.qm@web56615.mail.re3.yahoo.com>
+	<m31wf226fw.fsf@maximus.localdomain>
+	<46A11C54.2090100@candelatech.com>
+	<m3sl7idmb4.fsf@maximus.localdomain>
+	<46A248FA.1050403@candelatech.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 21 Jul 2007 23:15:43 +0200
+In-Reply-To: <46A248FA.1050403@candelatech.com> (Ben Greear's message of "Sat, 21 Jul 2007 10:57:14 -0700")
+Message-ID: <m3ps2l5ugw.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-21 at 16:59 -0400, Eric St-Laurent wrote:
-> > They are against git of a few hours ago and the latest readahead patches
-> > from Wu (which don't apply cleanly either, but the rejects are trivial).
-> > 
-> > > It would be useful to have a temporary /proc tunable to enable/disable
-> > > the heuristic to help test the effects.
-> > 
-> > Right, I had such a patch somewhere,.. won't apply cleanly but should be
-> > obvious..
-> 
-> Thanks, I will merge theses and report back with some results.
-> 
-> After copying large files, I find my system sluggish. I hope your
-> changes will help.
+Ben Greear <greearb@candelatech.com> writes:
 
-Yeah, copying will still hurt. This will only help reading large files,
-not writing :-/
+>> IOW: I think all Ethernet interfaces should always be VLAN-aware,
+>> stripping the tag (only one) early on RX and adding it late on TX.
+>> That means tcpdump would see packets with exactly one tag removed
+>> (unless there was no tag), in both RX and TX.
+>>
+>> Tcpdump would need other means to get VLAN id...
+>>
+> What benefit will this add?  It will certainly decrease performance to
+> copy around
+> the header for every VLAN packet, so there would have to be a good reason to
+> add this logic...
 
-For that I still need an inspiring idea.
+I'd have to do some tests... Hopefully in this decade, forget it for
+now.
 
+The primary reason - consistency with hw VLAN cards -> simpler
+code.
+
+The performance is already decreased (not sure if it's noticeable)
+most of the time, i.e., when not transparently bridging VLAN
+trunks. Bridging VLAN trunks is, of course, theoretically possible,
+but it's rather not a common operation when using .1Q.
+That is, with header reordering, of course.
+
+Anyway, -ENOPATCH from me for now.
+-- 
+Krzysztof Halasa
