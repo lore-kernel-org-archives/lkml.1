@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937046AbXGUKXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938056AbXGUKZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937046AbXGUKXF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 06:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760375AbXGUKWy
+	id S938056AbXGUKZW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 06:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932685AbXGUKZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 06:22:54 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:46216 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759100AbXGUKWx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 06:22:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YzDbozBSO+PH7Lirh7QnzgPrrpzT5MgU3BfXvV9qddOiEdjNVz91coBKnbliZozbIRQL0EuSshlI8I/HEsbivQ0EKOkYNwU1TIqK1qEPzMf0Cw177dnE77AaLTmjSmzzut9s221ufr4e13vDCkTZlpV11Hj02pU2r57OsF1PWj8=
-Message-ID: <92a12cdb0707210322m6670acaer768d078c5e358b0c@mail.gmail.com>
-Date: Sat, 21 Jul 2007 11:22:53 +0100
-From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix DMA on Dreamcast
-Cc: linux-kernel@vger.kernel.org, lethal@users.sourceforge.net
-In-Reply-To: <20070720120408.1f190269.akpm@linux-foundation.org>
+	Sat, 21 Jul 2007 06:25:08 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37744 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759100AbXGUKZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 06:25:06 -0400
+Date: Sat, 21 Jul 2007 12:25:20 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: david@lang.hm
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+Message-ID: <20070721102520.GE1902@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org> <200707171802.30903.rjw@sisk.pl> <Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm> <200707172150.44417.rjw@sisk.pl> <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <92a12cdb0707191230g216feaf2ied3e95bacf4dd572@mail.gmail.com>
-	 <20070720120408.1f190269.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu, 19 Jul 2007 20:30:34 +0100
-> "Adrian McMenamin" <adrianmcmenamin@gmail.com> wrote:
->
-> > I think my first attempt to post this may have got lost in space somewhere.
-> >
-> > Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
->
-> Please provide a description of what problem this change is solving, and how
-> it solves it.
->
-Andrew
+Hi!
 
-Sorry, just noticed this. Without this patch the Dreamcast won't boot
-when configured with the correct DMA settings in Kbuild. You can
-either patch the kernel or use the wrong settings in the build.
+> from my point of view the ACPI S4 sleep mode has far more in common with 
+> suspend-to-ram then with the suspend-to-disk that I'm talking about
+> 
+> non-ACPI hibernate
+> 
+>   since the box powers off
+>     it uses zero power while suspended
+>     another OS could be run before a resume
+>     hardware can be swapped, suspend image could be sent around the world 
+>     to be restored on another system.
+>     restore makes no assumptions about the state of the hardware when it is 
+>     restored
+>     restore is slower (full BIOS boot is required)
+>   should be able to work on just about any hardware (the limit is the 
+>   ability to initialize the devices)
 
-Essentially the SH DMA API code is broken in that it doesn't correctly
-match the DMA virtual channel to the DMAC.
+So it will be break at least battery status and "AC plugged in"
+status, because those are handled by ACPI and we do not know how to
+control them by hand.
+								Pavel
 
-The patch seems to fix this, though further testing has reveled there
-may either be an issue with the patch or an issue with other drivers
-using DMA and which have worked because they inadvertently relied on
-the breakage in the DMA API code.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
