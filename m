@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936702AbXGUIDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936713AbXGUIJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936702AbXGUIDQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 04:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936010AbXGUICe
+	id S936713AbXGUIJS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 04:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760090AbXGUIJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 04:02:34 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:55408 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934427AbXGUICb (ORCPT
+	Sat, 21 Jul 2007 04:09:01 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:47650 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbXGUII7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 04:02:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=sia1gb7NUN1gkzjzvWs9AOJJm1a7Yw/GjbXflka4V37rtYGZewQ9ibTtsZi4lMp/19hK86UhpITHmzyRFxLWOU3VtlZ4a5+6fJBKVhOkh0Z5Us3A0TA9T4nyfhNKAEAnC5BMnFhP5MPGSh8tHzhp0SEI2VsDwF3KklHrsOJhwpY=
-Message-ID: <46A1BD31.4000804@googlemail.com>
-Date: Sat, 21 Jul 2007 10:00:49 +0200
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       rdunlap@xenotime.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
-References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>	 <20070720155912.079c5a27.akpm@linux-foundation.org>	 <20070720231052.GA19752@suse.de>	 <a781481a0707201643l17ea92fajfbc256a7a16a802f@mail.gmail.com>	 <a781481a0707201703h6318fe65td4c5c6f57bb7eb24@mail.gmail.com>	 <6bffcb0e0707201728u6deeccd1j453ff89d0767dccc@mail.gmail.com>	 <20070721010257.GA9561@suse.de>	 <20070720183733.c53b511b.akpm@linux-foundation.org>	 <20070721014419.GA10761@suse.de>	 <a781481a0707202021r977ae5fg9655dd2881836f13@mail.gmail.com> <a781481a0707202057q23a0ea6by97ee9b40e9fc5a0b@mail.gmail.com>
-In-Reply-To: <a781481a0707202057q23a0ea6by97ee9b40e9fc5a0b@mail.gmail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Sat, 21 Jul 2007 04:08:59 -0400
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: kbuild-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier@gentoo.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 25/33] kbuild: use POSIX BRE in headers install target
+In-Reply-To: <1184681344376-git-send-email-sam@ravnborg.org>
+References: <11846813423231-git-send-email-sam@ravnborg.org> <11846813431389-git-send-email-sam@ravnborg.org> <1184681343412-git-send-email-sam@ravnborg.org> <11846813432249-git-send-email-sam@ravnborg.org> <1184681343297-git-send-email-sam@ravnborg.org> <11846813432231-git-send-email-sam@ravnborg.org> <1184681343423-git-send-email-sam@ravnborg.org> <11846813432234-git-send-email-sam@ravnborg.org> <11846813441521-git-send-email-sam@ravnborg.org> <11846813443387-git-send-email-sam@ravnborg.org> <1184681344594-git-send-email-sam@ravnborg.org> <11846813444176-git-send-email-sam@ravnborg.org> <11846813442297-g   it-send-email-sam@ravnborg.org> <11846813443187-git-send-email-sam@ravnborg.org> <11846813   444171-git-send-email-sam@ravnborg.org> <1184681344985-git-send-email-sam@ravnborg.org> <11846813442810-git-send-email-sam@ravnborg.org> <118468134441-git-send-email-sam@ravnborg.org> <11846813441741-git-send-email-sam@ravnborg.org> <1184681344376-git-send-email-sam@ravnborg.org>
+Date: Sat, 21 Jul 2007 10:22:34 +0200
+Message-Id: <E1ICAEU-0005an-5F@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma pisze:
-> On 7/21/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
->> Hopefully this bug should be 100% reproducible at boot time anyway.
->> Don't care much for XFS and unionfs, but hoping deselecting ATA from
->> the config doesn't change the variables much in this equation. ]
-> 
-> 
-> Gargh! My system obviously cannot boot without libata. Guess it's
-> time to go through git log and see how to fix that build breakage
-> myself ...
-> 
-> Michal, how did you even manage to build / boot this kernel!
+* Date: Tue, 17 Jul 2007 16:08:54 +0200
+>
+> From: Mike Frysinger <vapier@gentoo.org>
+>
+> The sed expression used at the moment in scripts/Makefile.headersinst
+> relies on the (handy) GNU extension where you can escape ERE's in an
+> otherwise BRE without using the GNU -r option.  The following patch
+> replaces this "\+" usage with a functionally equivalent POSIX BRE compliant
+> "\{1,\}".
 
-I commented origin.patch and mm.patch in series file, reverted xfs patches,
-fixed libata build, deselected unionfs.
+Matching at least one occurrence, right?
 
-Here is a patch for libata
+> Tested with `make headers_install` against blackfin/x86_64/i386
+> targets.
+>
+> Stupid whiny OS X users and their crappy sed ;)
 
---- linux-work3-clean/drivers/ata/libata-core.c	2007-07-20 16:53:26.000000000 +0200
-+++ linux-work3/drivers/ata/libata-core.c	2007-07-20 17:26:30.000000000 +0200
-@@ -2036,7 +2036,7 @@ int ata_dev_configure(struct ata_device 
- 		dev->max_sectors = min_t(unsigned int, ATA_MAX_SECTORS_128,
- 					 dev->max_sectors);
- 
--	if (ata_device_blacklisted(dev) & ATA_HORKAGE_ALPM) {
-+	if (ata_dev_blacklisted(dev) & ATA_HORKAGE_ALPM) {
- 		dev->horkage |= ATA_HORKAGE_ALPM;
- 
- 		/* reset link pm_policy for this port to no pm */
+That may be. My games with strict POSIX sed syntax render busybox's sed
+as crap for example. So, you never know.
 
-Regards,
-Michal
+>  # Eliminate the contents of (and inclusions of) compiler.h
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+OK, that means annotations and non ANSI 'inline' thing. Lets see.
+
+>  HDRSED  := sed 	-e "s/ inline / __inline__ /g" \
+[]
+> -		-e "s/[[:space:]]__attribute_const__[[:space:]]\+/\ /g" \
+
+* [[:space:]] are more than tab and space isspace(3), is it more
+  effective to use [[:blank:]] instead?
+
+> +		-e 
+> "s/[[:space:]]__user[[:space:]]\{1,\}
+
+substitute one or more ' __user '
+
+> / /g" \
+
+with ' ', everywhere (flag 'g'). So, is it really needed that '\{' thing?
+
+> +		-e "s/(__user[[:space:]]\{1,\}/ (/g" \
+> +		-e "s/[[:space:]]__force[[:space:]]\{1,\}/ /g" \
+> +		-e "s/(__force[[:space:]]\{1,\}/ (/g" \
+> +		-e "s/[[:space:]]__iomem[[:space:]]\{1,\}/ /g" \
+> +		-e "s/(__iomem[[:space:]]\{1,\}/ (/g" \
+> +		-e "s/[[:space:]]__attribute_const__[[:space:]]\{1,\}/\ /g" \
+>  		-e "s/[[:space:]]__attribute_const__$$//" \
+
+Is it allowed to use identifiers like '__attribute_const__foo' or
+__attribute_const__[anything]? If it's not, last line is useless also.
+
+>  		-e "/^\#include <linux\/compiler.h>/d"
+whitespace is allowed   ^ here and is used for better readability
+sometimes.
+____
