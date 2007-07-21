@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763681AbXGULRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934543AbXGULVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763681AbXGULRt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 07:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760795AbXGULRl
+	id S934543AbXGULVA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 07:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761228AbXGULUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 07:17:41 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:53856 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760569AbXGULRk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 07:17:40 -0400
-Date: Sat, 21 Jul 2007 13:18:08 +0200
-From: Sebastian Siewior <sebastian@breakpoint.cc>
-To: Andrew Morton <akpm@linux-foundation.org>
+	Sat, 21 Jul 2007 07:20:52 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:51340 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752290AbXGULUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 07:20:51 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [PATCH] drivers/char/hpet.c: integer constant is too large for "long" type
+Date: Sat, 21 Jul 2007 14:19:44 +0300
+User-Agent: KMail/1.9.7
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i2o: defined but not used.
-Message-ID: <20070721111808.GA9145@ayoka.breakpoint.cc>
-References: <20070720225817.607502287@ayoka.breakpoint.cc> <20070721033133.ed47aa6a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20070721033133.ed47aa6a.akpm@linux-foundation.org>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Breakpoint-Spam-Score: -1.4
-X-Breakpoint-Spam-Level: -
-X-Breakpoint-Spam-Status: No , -1.4 points, 5.0 required,  ALL_TRUSTED=-1.44
+Message-Id: <200707211419.47680.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton | 2007-07-21 03:31:33 [-0700]:
+Hi;
 
->On Sat, 21 Jul 2007 00:58:01 +0200 Sebastian Siewior <sebastian@breakpoint.cc> wrote:
->
->> Got with randconfig
->
->randconfig apparently generates impossible configs.  Please always
->run `make oldconfig' after the randconfig, then do the test build.
+Following trivial patch silents
 
-Ah okey, I did not know this. 
+drivers/char/hpet.c:76: warning: integer constant is too large for "long" type
 
-CONFIG_I2O=y
-# CONFIG_I2O_LCT_NOTIFY_ON_CHANGES is not set
+warning (with gcc-3.4.6)
 
-Is still in my .config after oldconfig.
+Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+ 
+ drivers/char/hpet.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Sebastian
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index ba0e74a..23fadf5 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -73,7 +73,7 @@ static struct clocksource clocksource_hpet = {
+         .name           = "hpet",
+         .rating         = 250,
+         .read           = read_hpet,
+-        .mask           = 0xffffffffffffffff,
++        .mask           = 0xffffffffffffffffLL,
+         .mult           = 0, /*to be caluclated*/
+         .shift          = 10,
+         .flags          = CLOCK_SOURCE_IS_CONTINUOUS,
 
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
