@@ -1,144 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938877AbXGUAgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939189AbXGUAiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938877AbXGUAgh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 20:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbXGUAga
+	id S939189AbXGUAiI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 20:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762691AbXGUAh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 20:36:30 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:55847 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755005AbXGUAga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 20:36:30 -0400
-Date: Sat, 21 Jul 2007 02:36:10 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC updates
-Message-ID: <20070721023610.661bd9a3@poseidon.drzeus.cx>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Jul 2007 20:37:56 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:35868
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762874AbXGUAhz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 20:37:55 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Greg KH <greg@kroah.com>
+Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
+Date: Fri, 20 Jul 2007 20:37:48 -0400
+User-Agent: KMail/1.9.6
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Michael-Luke Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Rod Whitby <rod@whitby.id.au>, Russell King <rmk@arm.linux.org.uk>,
+       david@lang.hm
+References: <200707171703.31340.rob@landley.net> <200707181339.54192.rob@landley.net> <20070718234020.GA5971@kroah.com>
+In-Reply-To: <20070718234020.GA5971@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707202037.48871.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Wednesday 18 July 2007 7:40:20 pm Greg KH wrote:
+> On Wed, Jul 18, 2007 at 01:39:53PM -0400, Rob Landley wrote:
+> > PICK ONE!  JUST #*%(&#%& PICK ONE!  AAAAAAAAHHHHHHH!!!!!!!!!
+> >
+> > I don't care where it is.  Just put it somewhere I can find it, and keep
+> > it there.  All this gratuitous moving stuff around serves NO PURPOSE
+> > other than to break userspace.  I'm trying to document this so that the
+> > next time you go "oh wait, it should be at "/sys/tarantula/fruitbat" I
+> > can show that you're breaking an existing documented userspace API.
+> >
+> > There's a kernel config option to make symlinks from the old
+> > location.  /sys/block makes as much sense as any other location, and it's
+> > what's there now.
+>
+> Read the sysfs documentation file we just added, it describes how this
+> is all documented and should be used.  So well that I do not think you
+> need to try to document it again.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
+I'm not trying to document all of sysfs, I'm trying to document hotplug.  I 
+realize now I should have been more clear about that.
 
-to receive the following updates:
+I've been working on the document I just posted on and off since may,  
+(Possibly longer but I lost a lot of data in the hard drive crash on my 
+laptop last month.  For example, I can't find a copy of my 
+half-finished "history of hotplug" document and will probably need to start 
+over, although I've still got a few places to look to see if I backed up a 
+copy...)
 
- MAINTAINERS                 |    7 ++++++-
- drivers/mmc/host/at91_mci.c |   13 ++++++++++++-
- drivers/mmc/host/sdhci.c    |    2 ++
- drivers/mmc/host/sdhci.h    |    1 +
- 4 files changed, 21 insertions(+), 2 deletions(-)
+This document has been sitting mostly unchanged on my hard drive since OLS, 
+until I finally tracked down example code to do the netlink bit so I could 
+finish it.  I tried to bounce a copy of the "everything but netlink" version 
+off of kay by replying to his email with notes from OLS, and that's when I 
+bumped into the "he's spam-blocking me" issue.  It got lost in the shuffle of 
+OLS, and I just got back to it at the start of this thread.
 
-Marc Pignat (1):
-      mmc: at91_mci: wakeup on card insertion (or removal)
+Earlier today I read (and commented on, in the message to Cornelia Huck) the 
+copy of Documentation/sysfs-rules.txt.  (Ah, darn it.  I have too many open 
+windows on my desktop.  Hits "send" on message to Cornelia huck I _wrote_ 
+earlier today.)
 
-Pierre Ossman (2):
-      mmc: add maintainer for at91
-      sdhci: make sure to clear the error interrupt
+Documentation/sysfs-rules.txt doesn't talk about /sbin/hotplug or netlink 
+hotplug.  It doesn't say how to distinguish a char device from a block 
+device.  It mostly talks about finding stuff under the "/sys/devices" 
+directory, most of which isn't relevant to populating /dev.  It doesn't 
+clearly distinguish where you can find information in current kernels (2.6.22 
+and earlier) from stuff that hasn't gone into any existing release.  Ideally 
+I'd like to identify a subset of that information which is not only present 
+in current kernels but should remain findable at that location in future 
+kernels.  Over half the document is about what _not_ to do, and consists of 
+warnings about "buggy apps", despite the assumption that anything _not_ 
+explicitly documented is forbidden because most of the things sysfs exports 
+are considered unmaintainable.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fbe0dca..c9fab2b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -645,7 +645,12 @@ W: http://linux-atm.sourceforge.net
- S:     Maintained
- 
- ATMEL AT91 MCI DRIVER
--S:     Orphan
-+P:     Nicolas Ferre
-+M:     nicolas.ferre@rfo.atmel.com
-+L:     linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
-+W:     http://www.atmel.com/products/AT91/
-+W:     http://www.at91.com/
-+S:     Maintained
- 
- ATMEL MACB ETHERNET DRIVER
- P:     Haavard Skinnemoen
-diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-index 28c8818..15aab37 100644
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -903,8 +903,10 @@ static int __init at91_mci_probe(struct platform_device *pdev)
-        /*
-         * Add host to MMC layer
-         */
--       if (host->board->det_pin)
-+       if (host->board->det_pin) {
-                host->present = !at91_get_gpio_value(host->board->det_pin);
-+               device_init_wakeup(&pdev->dev, 1);
-+       }
-        else
-                host->present = -1;
- 
-@@ -940,6 +942,7 @@ static int __exit at91_mci_remove(struct platform_device *pdev)
-        host = mmc_priv(mmc);
- 
-        if (host->present != -1) {
-+               device_init_wakeup(&pdev->dev, 0);
-                free_irq(host->board->det_pin, host);
-                cancel_delayed_work(&host->mmc->detect);
-        }
-@@ -966,8 +969,12 @@ static int __exit at91_mci_remove(struct platform_device *pdev)
- static int at91_mci_suspend(struct platform_device *pdev, pm_message_t state)
- {
-        struct mmc_host *mmc = platform_get_drvdata(pdev);
-+       struct at91mci_host *host = mmc_priv(mmc);
-        int ret = 0;
- 
-+       if (device_may_wakeup(&pdev->dev))
-+               enable_irq_wake(host->board->det_pin);
-+
-        if (mmc)
-                ret = mmc_suspend_host(mmc, state);
- 
-@@ -977,8 +984,12 @@ static int at91_mci_suspend(struct platform_device *pdev, pm_message_t state)
- static int at91_mci_resume(struct platform_device *pdev)
- {
-        struct mmc_host *mmc = platform_get_drvdata(pdev);
-+       struct at91mci_host *host = mmc_priv(mmc);
-        int ret = 0;
- 
-+       if (device_may_wakeup(&pdev->dev))
-+               disable_irq_wake(host->board->det_pin);
-+
-        if (mmc)
-                ret = mmc_resume_host(mmc);
- 
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 10d15c3..4a24db0 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1024,6 +1024,8 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
- 
-        intmask &= ~(SDHCI_INT_CMD_MASK | SDHCI_INT_DATA_MASK);
- 
-+       intmask &= ~SDHCI_INT_ERROR;
-+
-        if (intmask & SDHCI_INT_BUS_POWER) {
-                printk(KERN_ERR "%s: Card is consuming too much power!\n",
-                        mmc_hostname(host->mmc));
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 7400f4b..a6c8704 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -107,6 +107,7 @@
- #define  SDHCI_INT_CARD_INSERT 0x00000040
- #define  SDHCI_INT_CARD_REMOVE 0x00000080
- #define  SDHCI_INT_CARD_INT    0x00000100
-+#define  SDHCI_INT_ERROR       0x00008000
- #define  SDHCI_INT_TIMEOUT     0x00010000
- #define  SDHCI_INT_CRC         0x00020000
- #define  SDHCI_INT_END_BIT     0x00040000
+I've read the stuff under Documentation/ABI/{stable,testing}, and would be 
+happy to refer to it rather than duplicating if I could get the info I needed 
+out of it.  Documentation/filesystems/sysfs.txt is still from Patrick Mochel 
+in 2003 and mostly about the kernel side rather than an API exported to 
+userspace, and sysfs-pci.txt in that directory is similar.  Is there more I 
+missed?
 
+> thanks,
+>
+> greg k-h
 
+Sorry, I'm not trying to be a pain.  I'm trying to document something I had to 
+figure out for myself experimentally in 2005, which has been broken for me by 
+kernel changes twice since then (when the "device" symlink went in back 
+around 2.6.14, and when subdirs turned to symlinks recently), and I'm told is 
+changing again with the additon of /sys/class/block (which means /sys/class/* 
+no longer contains just char devices).
+
+Ideally I'd like to come up with documentation that allows somebody to write 
+one program that works on existing AND on new kernels, hence "stable API".
+
+Rob
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
