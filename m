@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939951AbXGUPGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935358AbXGUPHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939951AbXGUPGy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 11:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939220AbXGUPDI
+	id S935358AbXGUPHj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 11:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938651AbXGUPDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 11:03:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:39272 "EHLO
+	Sat, 21 Jul 2007 11:03:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:37344 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939180AbXGUPDB (ORCPT
+	with ESMTP id S1764703AbXGUPDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 11:03:01 -0400
+	Sat, 21 Jul 2007 11:03:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=e3WbU6wvDrVGYe7LQCAXOojOx9Pnl/p243b8ue0kFS/j0rfJtRahBDOW2lCcJlGBs1iSf3R6vFjWr+emvbyIck45jIe4+dYldMG54t3NhD3aLc2fw/VKVBnXISoGIuYmnUIaDWAiKfz3T0M/Dk8d/jcgJeb+WPNvmvW/texWUCY=
+        b=bfogNGQ1FsV0raEzGY8ZnmqsY0oh3K9tcFmsUJRJfRCrjF9SIA4NEsSttCQjDmmCaJTK1VAoTkPD5bpDGX9CIhH0Qf63vjkzHaEdztaMR05etWXIlpzdJGqwqoxq+VWcfz1jvB5xPT1nbCeucVVE0GK3dxfvJIFUKD46TSLVSaM=
 From: Jesper Juhl <jesper.juhl@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][07/37] Clean up duplicate includes in drivers/hwmon/
-Date: Sat, 21 Jul 2007 17:02:01 +0200
+Subject: [PATCH][08/37] Clean up duplicate includes in drivers/input/
+Date: Sat, 21 Jul 2007 17:02:25 +0200
 User-Agent: KMail/1.9.7
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, Stelian Pop <stelian@popies.net>,
-       Michael Hanselmann <linux-kernel@hansmi.ch>,
-       Mark Hoffman <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, dtor@mail.ru,
+       linux-input@atrey.karlin.mff.cuni.cz, Philip Blundell <philb@gnu.org>
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707211702.01755.jesper.juhl@gmail.com>
+Message-Id: <200707211702.25926.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
 This patch cleans up duplicate includes in
-	drivers/hwmon/
+	drivers/input/
 
 
 Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 ---
 
-diff --git a/drivers/hwmon/ams/ams-core.c b/drivers/hwmon/ams/ams-core.c
-index 6db9737..a112a03 100644
---- a/drivers/hwmon/ams/ams-core.c
-+++ b/drivers/hwmon/ams/ams-core.c
-@@ -23,7 +23,6 @@
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/init.h>
--#include <linux/module.h>
- #include <asm/pmac_pfunc.h>
- #include <asm/of_platform.h>
+diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
+index 7392122..f0b22b8 100644
+--- a/drivers/input/keyboard/gpio_keys.c
++++ b/drivers/input/keyboard/gpio_keys.c
+@@ -22,7 +22,6 @@
+ #include <linux/delay.h>
+ #include <linux/platform_device.h>
+ #include <linux/input.h>
+-#include <linux/irq.h>
+ #include <linux/gpio_keys.h>
  
+ #include <asm/gpio.h>
