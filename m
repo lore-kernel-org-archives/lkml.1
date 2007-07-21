@@ -1,80 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762187AbXGUDsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbXGUD5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762187AbXGUDsb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 23:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXGUDsX
+	id S1759501AbXGUD5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 23:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbXGUD5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 23:48:23 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41455
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754015AbXGUDsW (ORCPT
+	Fri, 20 Jul 2007 23:57:14 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:49990 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbXGUD5N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 23:48:22 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Greg KH <greg@kroah.com>
-Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
-Date: Fri, 20 Jul 2007 23:48:14 -0400
-User-Agent: KMail/1.9.6
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Michael-Luke Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Rod Whitby <rod@whitby.id.au>, Russell King <rmk@arm.linux.org.uk>,
-       david@lang.hm
-References: <200707171703.31340.rob@landley.net> <20070720095401.68e9ce03@gondolin.boeblingen.de.ibm.com> <20070720080936.GA22047@kroah.com>
-In-Reply-To: <20070720080936.GA22047@kroah.com>
+	Fri, 20 Jul 2007 23:57:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UXRYWaZ7djTiB6+6iDuP/E97VHvM0y8lFICMpHu+jyDS0mcrnu4/7vTeR0xQAQ9iRb+yBZqcvjfltYbaG3hBvoIMNB92NQB6IpiChwFmCujmOwj6Fxe2BZ2gXI3KoGuxrXuDhC5T8sBCJ9jx9gDNXuuUaKp3vc2bVTAmyxXt+VM=
+Message-ID: <a781481a0707202057q23a0ea6by97ee9b40e9fc5a0b@mail.gmail.com>
+Date: Sat, 21 Jul 2007 09:27:09 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       rdunlap@xenotime.net, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <a781481a0707202021r977ae5fg9655dd2881836f13@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707202348.14759.rob@landley.net>
+References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>
+	 <20070720155912.079c5a27.akpm@linux-foundation.org>
+	 <20070720231052.GA19752@suse.de>
+	 <a781481a0707201643l17ea92fajfbc256a7a16a802f@mail.gmail.com>
+	 <a781481a0707201703h6318fe65td4c5c6f57bb7eb24@mail.gmail.com>
+	 <6bffcb0e0707201728u6deeccd1j453ff89d0767dccc@mail.gmail.com>
+	 <20070721010257.GA9561@suse.de>
+	 <20070720183733.c53b511b.akpm@linux-foundation.org>
+	 <20070721014419.GA10761@suse.de>
+	 <a781481a0707202021r977ae5fg9655dd2881836f13@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 July 2007 4:09:36 am Greg KH wrote:
-> On Fri, Jul 20, 2007 at 09:54:01AM +0200, Cornelia Huck wrote:
-> > On Fri, 20 Jul 2007 00:00:01 -0700,
-> >
-> > Greg KH <greg@kroah.com> wrote:
-> > > > I don't insist on it, mknod insists on it.  You cannot mknod a dev
-> > > > node without specifying block or char.
-> > > >
-> > > > You're saying that sysfs should provide major and minor numbers
-> > > > without anywhere specifying "char" or "block", meaning the major and
-> > > > minor numbers cannot be _used_.  I am insisting on getting the third
-> > > > piece of information without which "major" and "minor" are useless.
-> > > >
-> > > > I asked very specifically about this at OLS, several times.  What
-> > > > you're telling me now seems to contradict what you told me then.
+On 7/21/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> Hopefully this bug should be 100% reproducible at boot time anyway.
+> Don't care much for XFS and unionfs, but hoping deselecting ATA from
+> the config doesn't change the variables much in this equation. ]
+
+
+Gargh! My system obviously cannot boot without libata. Guess it's
+time to go through git log and see how to fix that build breakage
+myself ...
+
+Michal, how did you even manage to build / boot this kernel!
+
+
+> On 7/21/07, Greg KH <gregkh@suse.de> wrote:
+> > On Fri, Jul 20, 2007 at 06:37:33PM -0700, Andrew Morton wrote:
+> > > On Fri, 20 Jul 2007 18:02:57 -0700 Greg KH <gregkh@suse.de> wrote:
 > > >
-> > > Here's the rule:
-> > > 	If the SUBSYSTEM is "block", it's a block device.  Otherwise
-> > > 	it's a char device.
-> >
-> > That's actually quite confusing to the casual reader, since:
-> > > But also realize that the majority of events you will get have nothing
-> > > to do with device nodes.  I think you are forgetting this fact.
-> >
-> > So the rule should be:
-> > 	If the SUBSYSTEM is "block" (implying major/minor are provided),
-> > 	it's a block device.
-> > 	If the SUBSYSTEM is not "block", and major/minor are provided,
-> > 	it's a char device.
-> > 	If major/minor are not provided, the event/device is not
-> > 	relevant to device node creation.
+> > > > --- a/kernel/params.c
+> > > > +++ b/kernel/params.c
+> > > > @@ -567,7 +567,11 @@ static void __init kernel_param_sysfs_se
+> > > >     kobject_set_name(&mk->kobj, name);
+> > > >     kobject_init(&mk->kobj);
+> > > >     ret = kobject_add(&mk->kobj);
+> > > > -   BUG_ON(ret < 0);
+> > > > +   if (ret) {
+> > > > +           printk(KERN_ERR "module '%s' failed to be added to sysfs, "
+> > > > +                   "the system will be unstable now.\n", name);
+> > > > +           return;
+> > > > +   }
+> > >
+> > > It would be nice to print the value of `ret' too.
 >
-> Yes, that is much more descriptive, thanks.
+>
+> What I'm surprised about is that %eax doesn't seem to contain the
+> return value `ret' of kobject_add(). It's 1, which is funny, given:
+>
+> ret = kobject_add(&mk->kobj);
+> BUG_ON(ret < 0);
+>
+> One wouldn't expect BUG() -- or the corresponding exception handler --
+> to clobber registers, that would be a sad day.
 
-agreed, thanks.
 
-I'll try to post an updated version of my hotplug documentation later tonight.  
-(Just a _touch_ jetlagged at the moment, though.  It may only be 9:47 
-california time, but it's 11:47 on the east cost.  I think.)
+But I cracked this one alright. His .config has CONFIG_PROFILE_LIKELY=y
+which replaces unlikely() / likely() with do_check_likely() and forces
+gcc to clobber %eax with the condition itself, which in our case was
+(ret < 0) == TRUE, and thus, the "1" value we saw in %eax in the
+register dumps.
 
-> greg k-h
+We should probably document somewhere that CONFIG_PROFILE_LIKELY
+is not good for debugging.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Hmmm ... thinking out aloud here, but probably I don't need to fix that
+libata breakage at all. I'll just put the BUG_ON(ret < 0) back in the
+code, deselect PROFILE_LIKELY, and this time we _will_ have the
+return of kobject_add() in %eax ...
+
+
+That'll at least clear up the EEXIST vs EINVAL mystery, that'll be a
+good data point, yes.
+
+Anyway, I guess I must stop my running commentary -- will only post
+after this is cleared up now :-)
+
+Satyam
