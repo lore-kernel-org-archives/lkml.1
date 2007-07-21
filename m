@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764105AbXGUG2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764366AbXGUGcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764105AbXGUG2y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 02:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbXGUG2q
+	id S1764366AbXGUGcn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 02:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbXGUGcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 02:28:46 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60485 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbXGUG2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 02:28:46 -0400
-Date: Sat, 21 Jul 2007 08:30:00 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/7] console: fix section mismatch warning in vgacon.c
-Message-ID: <20070721063000.GA31426@uranus.ravnborg.org>
-References: <20070720212743.GB25064@uranus.ravnborg.org> <1184974649.4538.4.camel@daplas> <20070721054359.GA31109@uranus.ravnborg.org> <20070720230114.b06347de.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 21 Jul 2007 02:32:36 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59372
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbXGUGcf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 02:32:35 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Greg KH <greg@kroah.com>
+Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
+Date: Sat, 21 Jul 2007 02:32:20 -0400
+User-Agent: KMail/1.9.6
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Michael-Luke Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Rod Whitby <rod@whitby.id.au>, Russell King <rmk@arm.linux.org.uk>,
+       david@lang.hm
+References: <200707171703.31340.rob@landley.net> <200707202021.40009.rob@landley.net> <20070721005211.GC14362@kroah.com>
+In-Reply-To: <20070721005211.GC14362@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070720230114.b06347de.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200707210232.20665.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 20, 2007 at 11:01:14PM -0700, Andrew Morton wrote:
-> On Sat, 21 Jul 2007 07:43:59 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > On Sat, Jul 21, 2007 at 07:37:29AM +0800, Antonino A. Daplas wrote:
-> > > On Fri, 2007-07-20 at 23:27 +0200, Sam Ravnborg wrote:
-> > > > Fix following section mismatch warning:
-> > > > WARNING: vmlinux.o(.text+0x121e62): Section mismatch: reference to .init.text:__alloc_bootmem (between 'vgacon_startup' and 'vgacon_scrolldelta')
-> > > > 
-> > > > Browsing the code it seems that vgacon_scrollback_startup() is only
-> > > > called during the init phase so the reference to the .init.text
-> > > > section is OK.
-> > > > Teach modpost not to warn using ___init_refok.
-> > > > 
-> > > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > > Acked-by: Antonino Daplas <adaplas@gmail.com>
-> > 
-> > Thanks. Will you take care of forwarding it it or do we rely
-> > on Andrew in this area?
-> > 
-> 
-> I tossed it into the next batch for Linus.  Tomorrow, I guess.
+On Friday 20 July 2007 8:52:11 pm Greg KH wrote:
+> On Fri, Jul 20, 2007 at 08:21:39PM -0400, Rob Landley wrote:
+> > >  Always look at the parent devices themselves for determining device
+> > >  context properties.
+> >
+> > For determining?
+> >
+> > What was the original language of this document?
+>
+> Ok, that's just being mean, cut it out right now if you ever want my
+> help again.
 
-OK, thanks.
+You're right, that was uncalled for and I apologize.
 
-	Sam
+I got a little on edge from some of Kay's earlier comments ala:
+> You seem to miss the the very basic skills to collect the needed
+> information to do the job of documenting something.
+
+Probably combined with jetlag.  I'll stop posting until I get some sleep.
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
