@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765651AbXGUMnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933598AbXGUMo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765651AbXGUMnm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 08:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761890AbXGUMne
+	id S933598AbXGUMo3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 08:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762340AbXGUMoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 08:43:34 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:43584 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755321AbXGUMnd (ORCPT
+	Sat, 21 Jul 2007 08:44:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60110 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762811AbXGUMoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 08:43:33 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Sat, 21 Jul 2007 22:43:33 +1000
-User-Agent: KMail/1.9.6
-Cc: rjw@sisk.pl, miltonm@bga.com, stern@rowland.harvard.edu,
-       ying.huang@intel.com, linux-kernel@vger.kernel.org, david@lang.hm,
-       linux-pm@lists.linux-foundation.org, jbms@cmu.edu
-References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> <200707202302.07116.rjw@sisk.pl> <E1ICDNw-0008HC-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1ICDNw-0008HC-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart15622834.9J3sI0TMqq";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707212243.35602.nigel@nigel.suspend2.net>
+	Sat, 21 Jul 2007 08:44:20 -0400
+Date: Sat, 21 Jul 2007 13:44:18 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Sebastian Siewior <sebastian@breakpoint.cc>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] compat_ioctl requires CONFIG_BLOCK
+Message-ID: <20070721124418.GA23802@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Sebastian Siewior <sebastian@breakpoint.cc>,
+	linux-kernel@vger.kernel.org
+References: <20070720225817.050195257@ayoka.breakpoint.cc> <200707210108.58478.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707210108.58478.arnd@arndb.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart15622834.9J3sI0TMqq
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, Jul 21, 2007 at 01:08:57AM +0200, Arnd Bergmann wrote:
+> On Saturday 21 July 2007, Sebastian Siewior wrote:
+> > 
+> > Got with randconfig
+> > include/linux/loop.h:66: error: expected specifier-qualifier-list before
+> > 'request_queue_t'
+> > make[1]: *** [fs/compat_ioctl.o] Error 1
+> > 
+> > parts of compat ioctl require CONFIG_BLOCK to be set.
+> > 
+> > Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
+> > Index: b/fs/compat_ioctl.c
+> > ===================================================================
+> > --- a/fs/compat_ioctl.c
+> > +++ b/fs/compat_ioctl.c
+> > @@ -63,7 +63,9 @@
+> > ?#include <linux/wireless.h>
+> > ?#include <linux/atalk.h>
+> > ?#include <linux/blktrace_api.h>
+> > +#ifdef CONFIG_BLOCK
+> > ?#include <linux/loop.h>
+> > +#endif
+> 
+> Adding #ifdef around an #include is considered bad style. Better just
+> make loop.h compile without any conditionals. Does the below
+> patch work for you?
 
-Hi.
+That patch looks good, but even better would be adding a compat_ioctl
+handler to the loop driver.  IIRC you even have an old patch for that :)
 
-On Saturday 21 July 2007 21:44:32 Miklos Szeredi wrote:
-> > The problem with FUSE is related to the fact that the freezer can't
-> > freeze uninterruptible tasks and we said that perhaps we might avoid
-> > it if FUSE was made freezing-aware.  Still, no one has gone in this
-> > direction and I don't know of any plans to do that.
->=20
-> I thought we have fully explored this direction.  Lots of emails, and
-> an IRC session with Pavel.  Conclusion:
-
-What am I missing in the following suggested solution?
-
-1) In the freezer code, we implement a new TIF_LATEFREEZE process flag, whi=
-ch,=20
-when set, causes a  userspace process to be frozen with kernel threads=20
-instead of with userspace ones. When freezing, we freezing !TIF_LATEFREEZE,=
-=20
-sync and then freeze TIF_LATEFREEZE and freezable kernel threads.
-
-2) In the fuse code, the PID of the process that will do the work gets pass=
-ed=20
-to the fuse kernel code when the mount is done. The kernel code sets the=20
-TIF_LATEFREEZE flag, and resets it on umount.
-
-Sorry, but this is a hit-and-run email - I'm off to bed now.
-
-Regards,
-
-Nigel
-
---nextPart15622834.9J3sI0TMqq
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGof93N0y+n1M3mo0RAtjIAKC72IcfI+29n7sCdQKpsiXhWk7lawCg8f9I
-js3PkNzEYGPN456Kc60+f34=
-=/GN/
------END PGP SIGNATURE-----
-
---nextPart15622834.9J3sI0TMqq--
