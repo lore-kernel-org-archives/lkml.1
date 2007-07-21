@@ -1,32 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763901AbXGUTDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764598AbXGUTDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763901AbXGUTDH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 15:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763248AbXGUTB6
+	id S1764598AbXGUTDj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 15:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbXGUTDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 15:01:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42895 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763196AbXGUTB5 (ORCPT
+	Sat, 21 Jul 2007 15:03:12 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36477 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763853AbXGUTDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 15:01:57 -0400
-Message-Id: <20070721210005.000228000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Sat, 21 Jul 2007 23:00:05 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
-       Chris Snook <csnook@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 0/3] readahead drop behind and size adjustment
+	Sat, 21 Jul 2007 15:03:09 -0400
+Date: Sat, 21 Jul 2007 12:02:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix theoretical ccids_{read,write}_lock() race
+Message-Id: <20070721120235.7505338a.akpm@linux-foundation.org>
+In-Reply-To: <20070721150206.GA1083@tv-sign.ru>
+References: <20070721115712.GA871@tv-sign.ru>
+	<20070721123159.GB1769@elte.hu>
+	<20070721141814.GA1013@tv-sign.ru>
+	<20070721150206.GA1083@tv-sign.ru>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The various readahead bits I have lying about.
+On Sat, 21 Jul 2007 19:02:06 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-Wu, would you agree with asking Andrew to stick these behind your latest
-readahead series?
+> Make sure that spin_unlock_wait() is properly ordered wrt atomic_inc().
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+> --- t/net/dccp/ccid.c~ccid	2006-12-18 18:17:31.000000000 +0300
+> +++ t/net/dccp/ccid.c	2007-07-21 18:29:21.000000000 +0400
+> @@ -40,6 +40,7 @@ static inline void ccids_write_unlock(vo
+>  static inline void ccids_read_lock(void)
+>  {
+>  	atomic_inc(&ccids_lockct);
+> +	smp_mb__after_atomic_inc();
+>  	spin_unlock_wait(&ccids_lock);
+>  }
+>  
 
+Why not just use standard rwlocks in there?
 
+(This is probably an FAQ, but it should be).
