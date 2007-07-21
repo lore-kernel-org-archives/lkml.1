@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbXGUQjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbXGUQlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757581AbXGUQjD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 12:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbXGUQiw
+	id S1759075AbXGUQlw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 12:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbXGUQlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 12:38:52 -0400
-Received: from mail.screens.ru ([213.234.233.54]:36859 "EHLO mail.screens.ru"
+	Sat, 21 Jul 2007 12:41:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:59836 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbXGUQiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 12:38:52 -0400
-Date: Sat, 21 Jul 2007 20:39:47 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH] pi-futex: set PF_EXITING without taking ->pi_lock
-Message-ID: <20070721163947.GA1129@tv-sign.ru>
-References: <20070721115712.GA871@tv-sign.ru> <20070721123159.GB1769@elte.hu> <20070721141814.GA1013@tv-sign.ru> <20070721150547.GA23560@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750767AbXGUQlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 12:41:44 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
+Date: Sat, 21 Jul 2007 18:41:39 +0200
+User-Agent: KMail/1.9.6
+Cc: "Satyam Sharma" <satyam.sharma@gmail.com>, "Greg KH" <gregkh@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>, rdunlap@xenotime.net,
+       LKML <linux-kernel@vger.kernel.org>
+References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com> <a781481a0707210136l272fc4fauaf14afce4178d9e4@mail.gmail.com> <6bffcb0e0707210900h505f04aaq98e0f4b17139d94b@mail.gmail.com>
+In-Reply-To: <6bffcb0e0707210900h505f04aaq98e0f4b17139d94b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070721150547.GA23560@elte.hu>
-User-Agent: Mutt/1.5.11
+Message-Id: <200707211841.39339.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/21, Ingo Molnar wrote:
+On Saturday 21 July 2007 18:00:52 Michal Piotrowski wrote:
+> Hi Andi,
 > 
-> * Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> On 21/07/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> > On 7/21/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> > > Satyam Sharma pisze:
+> > > > [...]
+> > > > Gargh! My system obviously cannot boot without libata. Guess it's
+> > > > time to go through git log and see how to fix that build breakage
+> > > > myself ...
+> > > >
+> > > > Michal, how did you even manage to build / boot this kernel!
+> > >
+> > > I commented origin.patch and mm.patch in series file, reverted xfs patches,
+> > > fixed libata build, deselected unionfs.
+> > >
+> > > Here is a patch for libata
+> > >
+> > > --- linux-work3-clean/drivers/ata/libata-core.c 2007-07-20 16:53:26.000000000 +0200
+> > > +++ linux-work3/drivers/ata/libata-core.c       2007-07-20 17:26:30.000000000 +0200
+> > > @@ -2036,7 +2036,7 @@ int ata_dev_configure(struct ata_device
+> > >                 dev->max_sectors = min_t(unsigned int, ATA_MAX_SECTORS_128,
+> > >                                          dev->max_sectors);
+> > >
+> > > -       if (ata_device_blacklisted(dev) & ATA_HORKAGE_ALPM) {
+> > > +       if (ata_dev_blacklisted(dev) & ATA_HORKAGE_ALPM) {
+> > >                 dev->horkage |= ATA_HORKAGE_ALPM;
+> > >
+> > >                 /* reset link pm_policy for this port to no pm */
+> >
+> >
+> > And to think I went through all those hoops just to avoid *this* ... :-(
+> > Anyway, please apply the attached patch and let's verify if we're both
+> > actually bit by the same bug. A screenshot of my case is available at:
+> >
+> > http://www.cse.iitk.ac.in/users/ssatyam/mtrr.show-bug.jpg
 > 
-> > 	static inline void ccids_read_lock(void)
-> > 	{
-> > 		atomic_inc(&ccids_lockct);
-> > 		spin_unlock_wait(&ccids_lock);
-> > 	}
-> > 
-> > This looks racy, in theory atomic_inc() and spin_unlock_wait() could 
-> > be re-ordered. However, in this particular case we have an "optimized" 
-> > smp_mb_after_atomic_inc(), perhaps it is good that the caller can 
-> > choose the "right" barrier by hand.
+> Yep, the same bug here.
 > 
-> _all_ default locking and atomic APIs should be barrier-safe i believe. 
-> (and that includes atomic_inc() too) Most people dont have barriers on 
-> their mind when their code. _If_ someone is barrier-conscious then we 
-> should have barrier-less APIs too for that purpose of squeezing the last 
-> half cycle out of the code, but it should be a non-default choice. The 
-> reason: nobody notices an unnecessary barrier, but a missing barrier can 
-> be nasty.
-
-Personally, I agree (but I am not sure the idea to make atomic_inc()
-barrier-safe would be very popular).
-
-Question: should we make spinlock_t barrier-safe?
-
-Suppose that the task "p" does
-
-	current->state = TASK_INTERRUPIBLE;
-	mb();
-
-	if (CONDITION)
-		break;
-
-	schedule();
-
-and another CPU does
-
-	CONDITION = 1;
-	try_to_wake_up(p);
+> My hunt file shows me this
+> 
+> GOOD
+> x86_64-mm-i386-string-out-of-line.patch
+> BAD
+> 
+> Andi?
 
 
-This is commonly used, but not correct _in theory_. If wake_up() happens
-when p->array != NULL, we have
+Does it still happen with the i386-string-out-of-line version from
+firstfloor.org:/pub/ak/x86_64/quilt/patches/ ? 
 
-	CONDITION = 1;			// [1]
-	spin_lock(rq->lock);
-	task->state = TASK_RUNNING;	// [2]
+I fixed some issues there.
 
-and we can miss an event. Because in theory [1] may leak into the critical
-section, and could be re-ordered with [2].
-
-Another problem is that try_to_wake_up() first checks task->state and does
-nothing if it is TASK_RUNNING, so we need a full mb(), not just wmb().
-
-Should we change spin_lock(), or introduce smp_mb_before_spinlock(), or I
-missed something?
-
-NOTE: I do not pretend to know what kind of barrier spin_lock() provides
-in practice, but according to the documentation lock() is only a one-way
-barrier.
-
-(I am glad I have an opportunity to raise this issue again :)
-
-Oleg.
+-Andi
 
