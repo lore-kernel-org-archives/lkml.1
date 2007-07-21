@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937927AbXGULg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938464AbXGULgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937927AbXGULg1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 07:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933235AbXGULgG
+	id S938464AbXGULgv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 07:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936733AbXGULgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 07:36:06 -0400
-Received: from quark.didntduck.org ([69.55.226.66]:42695 "EHLO
-	quark.didntduck.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761853AbXGULgB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 07:36:01 -0400
-Message-ID: <46A1EF57.2020304@didntduck.org>
-Date: Sat, 21 Jul 2007 07:34:47 -0400
-From: Brian Gerst <bgerst@didntduck.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-References: <1184970779.4012.38.camel@chaos> <200707210737.59552.ak@suse.de> <1185005750.4012.100.camel@chaos>
-In-Reply-To: <1185005750.4012.100.camel@chaos>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Jul 2007 07:36:17 -0400
+Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:58781 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S933914AbXGULgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 07:36:12 -0400
+X-AntiVirus: PTMail-AV 0.3-0.90.3
+Subject: Re: libata [ata_piix] still no resume from S3 ?
+From: =?ISO-8859-1?Q?R=FAben?= Fonseca <krani1@0x82.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Linux Kernel Mailling List <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+In-Reply-To: <46A0552E.30606@gmail.com>
+References: <20070712162450.GA7132@0x82.com> <469744DB.5070600@gmail.com>
+	 <20070714210117.GA20723@0x82.com> <469DD216.5040305@gmail.com>
+	 <20070719092053.GA21254@0x82.com> <469F2E4A.1020502@gmail.com>
+	 <20070719150436.GA9006@0x82.com>  <46A0552E.30606@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 21 Jul 2007 12:36:57 +0100
+Message-Id: <1185017817.7774.6.camel@0x82>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Sat, 2007-07-21 at 07:37 +0200, Andi Kleen wrote: 
->> On Saturday 21 July 2007 00:32, Thomas Gleixner wrote:
->>> As an initial matter, we made it painstakingly sure that the resulting
->>> .o files in a 32-bit build are bit for bit equal.
->> You got not a single line less code duplication then, so i don't really
->> see the point of this.
+On Fri, 2007-07-20 at 15:24 +0900, Tejun Heo wrote:
+> Rúben Fonseca wrote:
+> > I wish I could disable this card reader. It is built in on the hardware,
+> > and there are no drivers for Linux. There is no option on the BIOS to
+> > disable the device. Is there any way (kernel parameters, magic program,
+> > etc) to disable this device without opening my laptop to cut the wires?
+> > :D
 > 
-> Really ? 
+> OIC.  How about not loading tifm_7xx1 module?  Does that make any
+> difference?
 > 
-> The script detected 15 identical files with a simple cmp.
-> 
-> It also unified another 10 by simply looking at the only line in there
-> "include <the other arch/file>"
-> 
-> And there is more of that, when you take the time and look closely at
-> the _32.[ch] _64.[ch] files which are created by the merge.
 
-Looking at the include files, many more are near-identical in trivial
-ways, such as whitespace, comments, local variable names, or guard #ifdefs.
+AFAIK the tifm_7xx1 module belongs to the other card reader I have on
+this laptop (see device ID 09.04.0). This one is a cardbus device and I
+can simply disconnect it on startup, and the tifm_7xx1 modulo is never
+loaded. Anyway I've tried without this card and module and it still
+doesn't work.
 
---
-				Brian Gerst
+The other card reader (device 09:04.2) is the hardwired one and I can't
+disconnect it :( If only I was sure that this was the problem, I would
+gladly open my laptop and cut this card reader's wires :)
+
+Ruben
+
+
