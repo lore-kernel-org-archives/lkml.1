@@ -1,194 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbXGURQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbXGURzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759978AbXGURQc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 13:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbXGURQU
+	id S1756293AbXGURzs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 13:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXGURzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 13:16:20 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:27418 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753324AbXGURQS (ORCPT
+	Sat, 21 Jul 2007 13:55:39 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:48585 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753330AbXGURzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 13:16:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:content-disposition:from:organization:to:subject:date:user-agent:disposition-notification-to:mime-version:content-type:content-transfer-encoding:message-id;
-        b=Rj+NmvHUK1eHvWH/GJ7mBEUk5OoKo4sax9p3758Js+dJQdZhXafGMYhLj1QNjb/FDXBz9Sg6Ol3Ho/xSS/udm6CFYNHaXclbBNwSiGa8x/xs+uS4RBSo0RQka5NRmy94BROW5fotBAOqoT7fBKZlGrFZEtIK9DvVFqo05qhJKtQ=
-Content-Disposition: inline
-From: Natalie Protasevich <protasnb@gmail.com>
-Organization: LKML
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
-       linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-input@atrey.karlin.mff.cuni.cz, bugme-daemon@kernel-bugs.osdl.org
-Subject: [BUG] Open Kernel Bugs
-Date: Sat, 21 Jul 2007 10:16:12 -0700
-User-Agent: KMail/1.9.1
+	Sat, 21 Jul 2007 13:55:38 -0400
+Message-ID: <46A24846.7050803@gmail.com>
+Date: Sat, 21 Jul 2007 19:54:14 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Theodore Tso <tytso@mit.edu>, Al Boldi <a1426z@gawab.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFH] Partition table recovery
+References: <200707200813.03553.a1426z@gawab.com> <200707201429.34419.a1426z@gawab.com> <20070720113914.GJ22998@lug-owl.de> <200707201522.17270.a1426z@gawab.com> <20070720160614.GG26752@thunk.org>
+In-Reply-To: <20070720160614.GG26752@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707211016.12205.protasnb@gmail.com>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the first listing of the open bugs that will  be sent out and will 
-contain bugs on specific areas.
+On 07/20/2007 06:06 PM, Theodore Tso wrote:
+
+> It wouldn't be that hard to put a backup partition table at the beginning
+> of an ext2/3 filesystem.  No one is currently using the space between
+> offset 512 and 1023 bytes, and it would be an easy place to stash a
+> backup copy of the partition table.  We wouldn't be able to use the MBR
+> format, since information about extended partitions are stored scattered
+> across the disk.
+
+I was looking into this, but I'm afraid I believe it's not a very good idea.
+
+> So for the sake of argument, I'll propose the following partition
+> backup, starting at offset 512 and going for 512 bytes to byte #1023:
+> 
+> offset 
+> from 512  Description
+> -------   -----------
+> 0..7      Signature ASCII: "PARTBAK1"
+> 8..9      Part-type: 1=MBR
+
+Not sure what you mean with this type field. You were suggesting to only 
+backup "Plain Ol' Partition" tables anyway weren't you?
+
+> 10	  # of heads
+> 11	  # sectors
+
+This is a problem. Today the CHS fields in the partition entries don't mean 
+much of anything anymore and Linux happily ignores them but DOS and (hence) 
+Windows 9x do not. From time to time I still have the Windows 98 install 
+that's sitting in a corner of my disk throw a fit just by having set the 
+BIOS from LBA to Large (meaning the geometry the BIOS pretends the disk has 
+changes) for example. Old DOS installs that I keep around for the purpose of 
+hardware testing with the originally supplied drivers make for even more of 
+a "don't touch, don't touch!" thing -- various version of DOS throw fits for 
+various reasons.
+
+As such, really the only functional thing to do is backup _whatever_ is 
+there in the CHS fields in the entries currently and unfortunately this can 
+vary between entries, and certainly between runs of whatever program creates 
+them. For example, the user may have adjusted the layout in the BIOS or some 
+or all partitions may have been created while the disk was in a different 
+machine all together. That is to say, really no attempt should be made at 
+being smart about the CHS values -- a backup should just store the actual 
+(16-byte) partition table entry.
+
+> 12	  # of partitions in the backup
+> 13..15    Reserved (must be zero)
+> 16..31	  first part entry
+> ...
+> 496..511 31st partition entry
+
+And this is the biggest problem. IDE for example allows 63 partitions and 
+while in practice not many people will actually also have used that many, 31 
+isn't hugely roomy either especially due to the way extended partitions are 
+kept.
+
+An extended partition is a partition with type (0x05 || 0x0F || 0x85) the 
+first sector of which contains another partition table. That second-level 
+partition table generally consists of two entries; the first for the logical 
+(actual) partition and the second being yet another extended partition, 
+where walking the list gets you all.
+
+However, there can be more than just 1 extended partition on a disk and this 
+isn't (or wasn't...) in fact uncommon. Windows 9x at least used to create 
+multiple partitions as 1 primary and the rest (even if just 1 as well) as 
+logicals inside one 0x05/0x0F extended. When you then installed Linux onto 
+the same disk, needed more than the 3 MBR entries left, and wanted to make 
+sure that Windows wouldn't trip over any non-fat entries in the list of 
+extended partitions (which it did) you'd create 1 0x85 "Linux only" extended 
+  in the MBR that Windows just ignores -- not a problem since it couldn't 
+read any of the filesystems on them anyway.
+
+This already means you need to keep more information that just the logicals 
+(the actual partitions) since you can't reliably restore the tables from a 
+list of them alone.
+
+Moveover, the "generally consists of two entries" above isn't guaranteed 
+either. The second-level table _can_ contain more than 1 logical. Linux 
+never minded much of anything and back when I was experimenting with more 
+operating systems (on one disk) they did -- I used to mostly create my 
+partition tables with Norton Diskedit at the time...
+
+A bullet-proof backup then has to really store these actual second-level 
+tables verbatim again as you can't assume too much about them meaning you're 
+going to be storing a complete 4-entry table for every logical which 
+ofcourse eats space in the available 512 bytes / 31 entries _way_ too fast.
+
+Moreover once more -- why stop at "normal" logicals? I for example have a 
+MINIX 2 partition sitting on this disk and it uses a subpartitioning scheme 
+through the same DOS-style second-level partition-table setup. First entry 
+in the second-level table is generally used for / and third for /usr meaning 
+two additional partitions. And if two aren't bad enough, from time to time 
+(when after buying a new disk my ogg vorbis collection hasn't yet grown to 
+fill it again yet) I keep a FreeBSD install around which means 6 or so 
+additional "slices".
+
+Ignoring those alien partitions is sort of okay, but as said, with only 512 
+bytes to spare, this is all inevitable going to be a "sorta works most of 
+the time perhaps" sort of solution. The best solution is a little program 
+that backs things up verbatim to wherever you want (such as a floppy or USB 
+stick for example).
 
-The bugs on the list below are about a year old and most of them  confirmed 
-(or  claimed) to still  be a problem.
+sfdisk -d already works most of the time. Not as a verbatim tool (I actually 
+semi-frequently use a "sfdisk -d /dev/hda | sfdisk" invocation as a way to 
+_rewrite_ the CHS fields to other values after changing machines around on a 
+disk) but something you'd backup on the FS level should, in my opinion, need 
+to be less fragile than would be possible with just 512 bytes available.
 
-It would be appreciated if the corresponding maintenance team could take a 
-look, close off any which are fixed and see if we can fix any which aren't.
+Rene.
 
-NOTE: when replying to this email, please add the bug number to the Subject in 
-the form [Bug 1234] so that bugzilla will capture the discussion. 
-Thanks.
-
-
-bugzilla: timers
-
-[BUG 7967] TIMER_ABSTIME cleared resulting in userland deadlock
-	http://bugzilla.kernel.org/show_bug.cgi?id=7967
-
-
-bugzilla: parallel
-
-[BUG 7492] parport doesn't work if DMA is used
-	http://bugzilla.kernel.org/show_bug.cgi?id=7492
-
-
-bugzilla: network
-
-[BUG 8106] tx_errors and tx_fifo_errors not updated consistantly
-	http://bugzilla.kernel.org/show_bug.cgi?id=8106  - error reporting
-
-[BUG 7856] b44 WOL problem (bcm4401)
-	http://bugzilla.kernel.org/show_bug.cgi?id=7856
-
-[BUG 5839] uli526x partially recognizing interface
-	http://bugzilla.kernel.org/show_bug.cgi?id=5839
-
-[BUG 6613] iptables broken on 32-bit PReP (ARCH=ppc)
-	 http://bugzilla.kernel.org/show_bug.cgi?id=6613
-
-
-bugzilla: sound (ALSA)
-
-[BUG 7195] pc doesn't correctly shut down because of hda_intel
-	http://bugzilla.kernel.org/show_bug.cgi?id=7195
-
-[BUG 6244] cs46xx in Thinkapad A21m after suspend/resume doesn't play
-	http://bugzilla.kernel.org/process_bug.cgi?id=6244
-
-
-bugzilla: scheduler
-
-[BUG 7372] Unusable system (ie slow) when copying large files.
-	http://bugzilla.kernel.org/show_bug.cgi?id=7372
-
-
-bugzilla: input
-
-[BUG 7746] Support for unicode dead keys
-	http://bugzilla.kernel.org/show_bug.cgi?id=7746
-
-[BUG 7941] The atkbd module makes system unusable
-	http://bugzilla.kernel.org/process_bug.cgi?id=7941
-
-
-bugzilla: dvb-usb
-
-[BUG 8179] Yuan ub300 card not working/tuning
-	http://bugzilla.kernel.org/show_bug.cgi?id=8179
-
-
-bugzilla: PCI
-
-[BUG 7528] pci=assign-busses needed on DELL Latitude D810
-	http://bugzilla.kernel.org/show_bug.cgi?id=7528
-
-[BUG 8187] 2.6.20 "PCI: Quirks" patch breaks X11 on I82801
-	http://bugzilla.kernel.org/show_bug.cgi?id=8187
-
-[BUG 7917] "PCI: Failed to allocate mem resource" for PCI E-to-PCI Bridge
-	http://bugzilla.kernel.org/show_bug.cgi?id=7917
-
-
-bugzilla: i386
-
-[BUG 5565] Guess of i386 APIC PTE area scribble
-	http://bugzilla.kernel.org/show_bug.cgi?id=5565
-
-[BUG 7589] libata: does not work anymore on VIA VT8251 AHCI/SATA 4-Port 
-Controller
-	http://bugzilla.kernel.org/show_bug.cgi?id=7589
-
-
-bugzilla: Interrupts
-
-[BUG 7673] Memory card reader 5-in-1 don't working on Lenovo N100 3000
-	http://bugzilla.kernel.org/show_bug.cgi?id=7673
-
-
-bugzilla: I/O - Storage
-
-[BUG 7921] oops in 2.6.20-rc6-git3 &&udf && pktcdvd
-	http://bugzilla.kernel.org/show_bug.cgi?id=7921
-
-[BUG 7507] pata_it821x: system freezes
-	http://bugzilla.kernel.org/show_bug.cgi?id=7507
-
-[BUG 7506] it821x: long wait time due to dma_timer_expiry
-	http://bugzilla.kernel.org/show_bug.cgi?id=7506
-
-[BUG 7703] hpt366 does not find drives
-	http://bugzilla.kernel.org/show_bug.cgi?id=7703
-
-[BUG 6516] wrong value for avgqu-sz
-	http://bugzilla.kernel.org/show_bug.cgi?id=6516
-
-bugzilla: serial
-
-[BUG 7750] open/close loop causes disabled irq
-	http://bugzilla.kernel.org/show_bug.cgi?id=7750
-
-
-bugzilla: PCMCIA
-
-[BUG 7788] System freeze as soon as PCMCIA card is inserted
-	http://bugzilla.kernel.org/show_bug.cgi?id=7788
-
-[BUG 8118] Wrong device identifiers returned in lspci for pccard with RL5c476 
-II (rev 80)
-	http://bugzilla.kernel.org/show_bug.cgi?id=8118
-
-[BUG 8262] PCMCIA: socket *** DANGER *** unable to remove socket power
-	http://bugzilla.kernel.org/show_bug.cgi?id=8262
-
-[BUG 7215] PCMCIA network card causes either X or kernel to freeze
-	http://bugzilla.kernel.org/show_bug.cgi?id=7215
-
-
-bugzilla: SCSI
-
-[BUG 4880] dpt_i2o.c does not register itself with sysfs
-	http://bugzilla.kernel.org/show_bug.cgi?id=4880
-
-
-bugzilla: File Systems
-
-[BUG 6124] mount of UDF fs ignores UID and GID options
-	http://bugzilla.kernel.org/show_bug.cgi?id=6124
-
-
-bugzilla: USB
-
-[BUG 8104] kernel floods console with "connect-debounce failed"
-	http://bugzilla.kernel.org/show_bug.cgi?id=8104
-
------------------------------------------------------------------------------
------------------------------------------------------------------------------
------------------------------
-
--------------------------------------------------------
