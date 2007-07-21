@@ -1,52 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933765AbXGUAKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938293AbXGUAK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933765AbXGUAKl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 20:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbXGUAKb
+	id S938293AbXGUAK7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 20:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932788AbXGUAKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 20:10:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53539 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756384AbXGUAKa (ORCPT
+	Fri, 20 Jul 2007 20:10:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:43394 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763786AbXGUAKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 20:10:30 -0400
-Message-ID: <46A14D0C.7090007@zytor.com>
-Date: Fri, 20 Jul 2007 17:02:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 20 Jul 2007 20:10:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=lLiLVjenuXK5oPNUwj3PAKnUBo9Gst5dCns/ne46Du5x8GUxFxo//RsqFbDfQ7LoeElehoWnNaiRy9V/eVwION/SZVtDR8dHzs5irW+WPnzYg9LJ/kl4mZmAuIAymBq8hQxi/s6IcEYCbzMmsrMUhxURoBIQ1a6YRUtiFa8tbhM=
+Message-ID: <d9b9d95f0707201710g14d8a905s222c1209358f0196@mail.gmail.com>
+Date: Sat, 21 Jul 2007 01:10:35 +0100
+From: "Renato Golin" <rengolin@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: joydev.c and saitek cyborg evo force
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0706201156410.23812@jikos.suse.cz>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-References: <1184970779.4012.38.camel@chaos>	<46A1396F.4090204@garzik.org> <20070721005512.3db5fd77@the-village.bc.nu>
-In-Reply-To: <20070721005512.3db5fd77@the-village.bc.nu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_107127_6796335.1184976635086"
+References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
+	 <Pine.LNX.4.64.0706050008160.5177@jikos.suse.cz>
+	 <d9b9d95f0706041546h4eef0b4eo2e191968be13d59a@mail.gmail.com>
+	 <Pine.LNX.4.64.0706121436070.10204@jikos.suse.cz>
+	 <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com>
+	 <d120d5000706120613o7a328e59v3cba37f0ced88e77@mail.gmail.com>
+	 <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com>
+	 <Pine.LNX.4.64.0706121715480.10204@jikos.suse.cz>
+	 <d9b9d95f0706141524p3686a41cn882d8f086e4f62cc@mail.gmail.com>
+	 <Pine.LNX.4.64.0706201156410.23812@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Fri, 20 Jul 2007 18:38:39 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
-> 
->> I agree with Andi...  it's quite nice to be able to leave some arch/i386 
->> stuff, and not carry it over to arch/x86-64.
-> 
-> Its easy enough to push that stuff into arch/x86/legacy and have one
-> subdirectory of stuff to pull in for ancient systems.
+------=_Part_107127_6796335.1184976635086
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-The other thing is that "legacy" in this context is fungible.  No IOMMU
-was legacy until the Intel x86-64 chips came out, and I can promise you
-that some legacy code will be necessary once we start seeing VIA and
-others come out with embedded x86-64.
+On 20/06/07, Jiri Kosina <jkosina@suse.cz> wrote:
+> Could you please send me the report descriptor of the device, so that I
+> could debug it locally here?
 
-On the other hand, it's pretty bloody safe to assume that we'll never
-see an x86-64 chip without CPUID, CMOV, FXSAVE, SSE-2, CMPXCHG, etc.
+Hi Jiri,
 
-	-hpa
+sorry for the delay, below the report descriptor and attached is the
+full report when I've connected the joystick.
+
+
+report descriptor (size 851, read 851) =  05 01 09 04 a1 01 09 01 a1
+00 85 06 09 30 15 00 26 00 10 35 00 46 00 10 75 10 95 01 81 02 09 31
+81 02 05 02 09 bb 26 ff 00 46 ff 00 75 08 81 02 05 09 19 01 29 0c 25
+01 45 01 75 01 95 0c 81 02 05 01 09 39 25 07 46 3b 01 55 00 65 44 75
+04 95 01 81 42 65 00 05 02 09 ba 26 ff 00 46 ff 00 75 08 81 02 c0 05
+0f 09 92 a1 02 85 02 09 a6 09 a4 09 a0 09 9f 25 01 45 00 75 01 95 04
+81 02 75 04 95 01 81 03 09 22 75 07 25 09 81 02 09 94 75 01 25 01 81
+02 75 08 81 03 c0 09 21 a1 02 85 0b 09 22 25 09 91 02 09 25 a1 02 09
+26 09 30 09 32 09 31 09 33 09 34 09 40 09 41 15 01 25 08 91 00 c0 09
+53 25 0c 75 05 91 02 09 56 15 00 25 01 75 01 91 02 09 55 a1 02 05 01
+09 30 09 31 95 02 91 02 c0 05 0f 09 50 27 fe ff 00 00 47 fe ff 00 00
+75 10 95 01 55 fd 66 01 10 91 02 55 00 65 00 09 57 26 ff 00 46 68 01
+75 08 65 44 91 02 65 00 09 54 27 fe ff 00 00 47 fe ff 00 00 75 10 55
+fd 66 01 10 91 02 55 00 65 00 09 58 a1 02 05 0a 09 01 09 02 26 2b 01
+45 00 95 02 91 02 c0 05 0f 09 a7 27 fe ff 00 00 47 fe ff 00 00 95 01
+55 fd 66 01 10 91 02 55 00 65 00 c0 09 5a a1 02 85 0c 09 23 26 2b 01
+45 00 91 02 09 5c 26 10 27 46 10 27 55 fd 66 01 10 91 02 55 00 65 00
+09 5b 25 7f 75 08 91 02 09 5e 26 10 27 75 10 55 fd 66 01 10 91 02 55
+00 65 00 09 5d 25 7f 75 08 91 02 c0 09 73 a1 02 85 0d 09 23 26 2b 01
+45 00 75 10 91 02 09 70 15 81 25 7f 36 f0 d8 46 10 27 75 08 91 02 c0
+09 6e a1 02 85 0e 09 23 15 00 26 2b 01 35 00 45 00 75 10 91 02 09 70
+25 7f 46 10 27 75 08 91 02 09 6f 15 81 36 f0 d8 91 02 09 71 15 00 26
+ff 00 35 00 46 68 01 91 02 09 72 26 10 27 46 10 27 75 10 55 fd 66 01
+10 91 02 55 00 65 00 c0 09 5f a1 02 85 0f 09 23 26 2b 01 45 00 91 02
+09 61 15 9c 25 64 36 f0 d8 46 10 27 75 08 91 02 09 62 91 02 09 60 16
+0c fe 26 f4 01 75 10 91 02 09 65 15 00 26 e8 03 35 00 91 02 09 63 25
+64 75 08 91 02 09 64 91 02 c0 09 77 a1 02 85 51 09 22 25 09 45 00 91
+02 09 78 a1 02 09 7b 09 79 09 7a 15 01 25 03 91 00 c0 09 7c 15 00 26
+fe 00 91 02 c0 09 92 a1 02 85 52 09 96 a1 02 09 9a 09 99 09 97 09 98
+09 9b 09 9c 15 01 25 06 91 00 c0 c0 05 ff 0a 01 03 a1 02 85 40 0a 02
+03 a1 02 1a 11 03 2a 20 03 25 10 91 00 c0 0a 03 03 15 00 27 ff ff 00
+00 75 10 91 02 c0 05 0f 09 7d a1 02 85 43 09 7e 26 80 00 46 10 27 75
+08 91 02 c0 09 85 a1 02 85 44 09 86 27 ff ff 00 00 45 00 75 10 91 02
+09 87 91 02 09 88 91 02 c0 05 ff 0a 00 01 a1 02 85 81 05 01 09 30 15
+81 25 7f 36 f0 d8 46 10 27 75 08 91 02 09 31 91 02 c0 05 0f 09 7f a1
+02 85 0b 09 80 15 00 26 ff 7f 35 00 45 00 75 0f b1 03 09 a9 25 01 75
+01 b1 03 09 83 26 ff 00 75 08 b1 03 09 84 25 10 b1 03 09 a8 a1 02 09
+73 09 6e 09 5a 09 5f 95 04 b1 03 c0 c0 c0
+
+cheers,
+--renato
+
+Reclaim your digital rights, eliminate DRM, learn more at
+http://www.defectivebydesign.org/what_is_drm
+
+------=_Part_107127_6796335.1184976635086
+Content-Type: application/x-gzip; name=joy-dmesg.log.gz
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f4dcfco2
+Content-Disposition: attachment; filename="joy-dmesg.log.gz"
+
+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
+------=_Part_107127_6796335.1184976635086--
