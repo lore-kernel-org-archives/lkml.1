@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbXGUR4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbXGUR5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759158AbXGUR4e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 13:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXGUR40
+	id S1760248AbXGUR5f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 13:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXGUR5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 13:56:26 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41154 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752563AbXGUR4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 13:56:25 -0400
-Date: Sat, 21 Jul 2007 19:56:39 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Cc: david@lang.hm, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-Message-ID: <20070721175639.GA3701@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org> <200707171802.30903.rjw@sisk.pl> <Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm> <200707172150.44417.rjw@sisk.pl> <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm> <20070721102520.GE1902@elf.ucw.cz> <87ps2lojlc.fsf@jbms.ath.cx>
+	Sat, 21 Jul 2007 13:57:25 -0400
+Received: from ns2.lanforge.com ([66.165.47.211]:45312 "EHLO ns2.lanforge.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753164AbXGUR5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 13:57:24 -0400
+Message-ID: <46A248FA.1050403@candelatech.com>
+Date: Sat, 21 Jul 2007 10:57:14 -0700
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ps2lojlc.fsf@jbms.ath.cx>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: andrei radulescu-banu <iubica2@yahoo.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Linux, tcpdump and vlan
+References: <997818.30021.qm@web56615.mail.re3.yahoo.com>	<m31wf226fw.fsf@maximus.localdomain>	<46A11C54.2090100@candelatech.com> <m3sl7idmb4.fsf@maximus.localdomain>
+In-Reply-To: <m3sl7idmb4.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Krzysztof Halasa wrote:
+> Ben Greear <greearb@candelatech.com> writes:
+>
+>   
+>> There is already a flag you can set on vlan devices (reorder-header)
+>> that strips the VLAN tag before presenting it to user-space.
+>>     
+>
+> Sure, but isn't it only valid for VLAN device (not the main ethX)?
+> I.e., can you have the tag stripped from frames captured on ethX?
+>   
+No.  I don't see a good reason to strip on ethX.  That hardware accel 
+VLANs strip
+is an inconvenience in my opinion, no need to force it in software as well.
+>> On tx, if it shows up on the vlan device, we add that device's VID to
+>> the header if no VID is currently in the SKB.  If it is in the SKB header
+>> we change the VID to be the tx dev's VID (if it was different).  This allows user-space
+>> to send a raw ethernet frame on a vlan device and have it automatically
+>> go out of the box on the correct vlan.  User-space can also send raw VLAN frames
+>> and have those also go out on the correct VLAN.
+>>     
+>
+> Well... I think the tag should be added unconditionally (for things like
+> QinQ) but that's trivial and minor.
+>   
+I think that for Q in Q, we would need some explicit flag on each skb to 
+know when to add or modify
+the VID.  I was never able to think of an automatic solution that worked 
+in all cases
+(bridging, writing raw packets from user space, normal receive, normal 
+transmit, ...)
 
-> Pavel Machek <pavel@ucw.cz> writes:
-> 
-> [snip]
-> 
-> > So it will be break at least battery status and "AC plugged in"
-> > status, because those are handled by ACPI and we do not know how to
-> > control them by hand.
-> 
-> It seems that it should be possible to initialize ACPI as if the system
-> just booted up normally.  Then battery status and such should be
-> correct, since they are correct after normal initialization.
-> 
-> It should be possible to make hibernate look just like a reboot to all
-> of the devices, including ACPI stuff.
+Modifying the bridging code would fix that path, and adding a socket opt 
+to deal with writing
+raw packets from user-space should handle the other tricky case I believe.
 
-Patch to make that work with swsusp/shutdown method would be indeed
-welcome. It does not work today.
-									Pavel
+> IOW: I think all Ethernet interfaces should always be VLAN-aware,
+> stripping the tag (only one) early on RX and adding it late on TX.
+> That means tcpdump would see packets with exactly one tag removed
+> (unless there was no tag), in both RX and TX.
+>
+> Tcpdump would need other means to get VLAN id...
+>   
+What benefit will this add?  It will certainly decrease performance to 
+copy around
+the header for every VLAN packet, so there would have to be a good reason to
+add this logic...
+
+Ben
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ben Greear <greearb@candelatech.com> 
+Candela Technologies Inc  http://www.candelatech.com
+
+
