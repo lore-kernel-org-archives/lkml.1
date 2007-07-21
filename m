@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934538AbXGUN2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764622AbXGUNbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934538AbXGUN2q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 09:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755574AbXGUN2h
+	id S1764622AbXGUNbf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 09:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755574AbXGUNbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 09:28:37 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:63551 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753886AbXGUN2g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 09:28:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pIQghWgqDynBMILLa/4uvPzbQ8ai2kcKd0O78avi9Qavu1lxVdiSQLeHEPIOsrvEH3nD/zWw9bDg0nzEndUwIv0HQKS+aFbiWjPFAELmTLy8Rajv2OgFtN/QOZAd9eTNyHv8DbJ1LfsBdx4qJQbO+UbmVIsrPo5mH2eKx0D+pNY=
-Message-ID: <5d6222a80707210628y232adb63l7467b1e34f592cdb@mail.gmail.com>
-Date: Sat, 21 Jul 2007 10:28:34 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@osdl.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Arjan van de Ven" <arjan@infradead.org>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <200707211028.32465.ak@suse.de>
+	Sat, 21 Jul 2007 09:31:24 -0400
+Received: from ns1.suse.de ([195.135.220.2]:57159 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755522AbXGUNbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 09:31:23 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+Subject: NFS mount gives ENETDOWN in -git15
+Date: Sat, 21 Jul 2007 15:31:17 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1184970779.4012.38.camel@chaos> <200707210737.59552.ak@suse.de>
-	 <1185005750.4012.100.camel@chaos> <200707211028.32465.ak@suse.de>
+Message-Id: <200707211531.17750.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/21/07, Andi Kleen <ak@suse.de> wrote:
-> [of which several just #include <asm-generic/foo.h] ?
->
-> I suppose msidef.h and hypertransport.h should be shared agreed;
-> for the others it is not obvious. spinlock_types will likely fork soon;
-> it used to be different in the past already and will be again.
-Why will it fork? I don't think it will ever happen that the trees
-will have large pieces that _has_ to be different one from the other.
-So if it's forking to achieve some benefits, why can't i386 get the
-benefits too? I think this is the whole point here.
 
-Surely as it is today (and just because it wasn't merged earlier and
-the past!), the x86_64 tree has a bunch of things that are quite
-better structured than the i386 (and maybe vice-versa, but I must
-admit that unlike Steven Roasted, I like the x86_64 a lot more). But
-in the long term,  it tends to just get the best of each picked up.
+I tried to mount another nfs mount on a system running with nfsroot.
+But I get
 
-And oh yeah, i386 is older, has a lot more corner cases, but even if
-it does count against the merge, we have a net win at the end.
+# mount basil:/home /basil/home/
+mount: Network is down
 
+The network is not down of course, the system is happily running with nfs root from that
+server. Userland is older SUSE 10.0
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+Excerpt from strace mount:
 
-"The less confident you are, the more serious you have to act."
+-Andi
+
+socket(PF_INET, SOCK_STREAM, IPPROTO_TCP) = 3
+bind(3, {sa_family=AF_INET, sin_port=htons(938), sin_addr=inet_addr("0.0.0.0")}, 16) = -1 EADDRINUSE (Address already in use)
+bind(3, {sa_family=AF_INET, sin_port=htons(939), sin_addr=inet_addr("0.0.0.0")}, 16) = 0
+connect(3, {sa_family=AF_INET, sin_port=htons(900), sin_addr=inet_addr("10.23.204.1")}, 16) = 0
+uname({sys="Linux", node="bigfoot", ...}) = 0
+geteuid()                               = 0
+getegid()                               = 0
+getgroups(0, NULL)                      = 1
+getgroups(1, [0])                       = 1
+gettimeofday({1185029510, 644658}, NULL) = 0
+write(3, "\200\0\0Td*\362{\0\0\0\0\0\0\0\2\0\1\206\245\0\0\0\2\0"..., 88) = 88
+poll([{fd=3, events=POLLIN, revents=POLLIN}], 1, 20000) = 1
+read(3, "\200\0\0<d*\362{\0\0\0\1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 4000) = 64
+socket(PF_INET, SOCK_STREAM, IPPROTO_TCP) = 5
+bind(5, {sa_family=AF_INET, sin_port=htons(939), sin_addr=inet_addr("0.0.0.0")}, 16) = -1 EADDRINUSE (Address already in use)
+bind(5, {sa_family=AF_INET, sin_port=htons(940), sin_addr=inet_addr("0.0.0.0")}, 16) = 0
+socket(PF_INET, SOCK_STREAM, IPPROTO_TCP) = 6
+bind(6, {sa_family=AF_INET, sin_port=htons(0), sin_addr=inet_addr("0.0.0.0")}, 16) = 0
+connect(6, {sa_family=AF_INET, sin_port=htons(111), sin_addr=inet_addr("10.23.204.1")}, 16) = 0
+write(6, "\200\0\0008i \25\301\0\0\0\0\0\0\0\2\0\1\206\240\0\0\0"..., 60) = 60
+poll([{fd=6, events=POLLIN, revents=POLLIN}], 1, 60000) = 1
+read(6, "\200\0\0\34i \25\301\0\0\0\1\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 400) = 32
+close(6)                                = 0
+uname({sys="Linux", node="bigfoot", ...}) = 0
+close(3)                                = 0
+close(3)                                = -1 EBADF (Bad file descriptor)
+rt_sigprocmask(SIG_BLOCK, ~[TRAP SEGV RTMIN RT_1], NULL, 8) = 0
+mount("basil:/home", "/basil/home/", "nfs", MS_POSIXACL|MS_ACTIVE|MS_NOUSER|0xec0000, 0x51ba60) = -1 ENETDOWN (Network is down)
