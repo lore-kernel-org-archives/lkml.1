@@ -1,89 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938577AbXGUAdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938877AbXGUAgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938577AbXGUAdZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 20:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759016AbXGUAdS
+	id S938877AbXGUAgh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 20:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbXGUAga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 20:33:18 -0400
-Received: from gate.crashing.org ([63.228.1.57]:50350 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753277AbXGUAdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 20:33:18 -0400
-Subject: Re: [git patches] two warning fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
-       linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <m3644e2abd.fsf@maximus.localdomain>
-References: <20070718235504.GA9601@havoc.gtf.org>
-	 <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
-	 <469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain>
-	 <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
-	 <m3644e2abd.fsf@maximus.localdomain>
-Content-Type: text/plain
-Date: Sat, 21 Jul 2007 10:32:53 +1000
-Message-Id: <1184977973.5439.45.camel@localhost.localdomain>
+	Fri, 20 Jul 2007 20:36:30 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:55847 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755005AbXGUAga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 20:36:30 -0400
+Date: Sat, 21 Jul 2007 02:36:10 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] MMC updates
+Message-ID: <20070721023610.661bd9a3@poseidon.drzeus.cx>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-20 at 20:34 +0200, Krzysztof Halasa wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> 
-> > More people *should* generally ask themselves: "was the warning worth it?" 
-> > and then, if the answer is "no", they shouldn't add code, they should 
-> > remove the thing that causes the warning in the first place.
-> 
-> Sure. If a routine uses must_check yet its return value may be
-> safely ignored then that must_check is simply misplaced and should
-> be removed. It does not mean all must_checks are bad - each of them
-> isn't bad unless one can demonstrate it is.
-> 
-> Back to sysfs_create_bin_file() - if one can demonstrate a caller
-> can safely ignore the return value (which, it seems, is the
-> case), then exactly this very must_check should be removed
+Linus, please pull from
 
-Typically, the EDID creation in radeonfb :-)
+        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
 
-In fact, I'm not even sure there's -any- user of those sysfs files. I
-added them back then to allow distros to extract the EDID infos that
-were probed by radeonfb to properly configure the X server (because on
-some machines, the EDID is coming from the firmware/BIOS, not from DDC,
-and X can't get at it). I don't know if they ever used them.
+to receive the following updates:
 
-In any case, it doesn't make sense to abort initialization of the driver
-if for some reasons those files can't be created (for example, the core
-fbdev starts exposing EDID files, radeonfb isn't properly updated, name
-clash, error). Aborting the initialization will make sure that on some
-machines such as powermacs with radeon, whatever error is displayed will
-never be seen by the user.
+ MAINTAINERS                 |    7 ++++++-
+ drivers/mmc/host/at91_mci.c |   13 ++++++++++++-
+ drivers/mmc/host/sdhci.c    |    2 ++
+ drivers/mmc/host/sdhci.h    |    1 +
+ 4 files changed, 21 insertions(+), 2 deletions(-)
 
-That's a typical, but I have plenty more.
+Marc Pignat (1):
+      mmc: at91_mci: wakeup on card insertion (or removal)
 
-For example, the powermac thermal control drivers. They work pretty well
-by themselves. They also expose via sysfs all the current values, fan
-speeds, temps ,etc... for the sake of whoever wants to do a GUI or
-"monitor" what's going on, but that is not critical to the operation of
-the driver. Thus, failure to create those files is not critical.
+Pierre Ossman (2):
+      mmc: add maintainer for at91
+      sdhci: make sure to clear the error interrupt
 
-I have plenty other examples.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fbe0dca..c9fab2b 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -645,7 +645,12 @@ W: http://linux-atm.sourceforge.net
+ S:     Maintained
+ 
+ ATMEL AT91 MCI DRIVER
+-S:     Orphan
++P:     Nicolas Ferre
++M:     nicolas.ferre@rfo.atmel.com
++L:     linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++W:     http://www.atmel.com/products/AT91/
++W:     http://www.at91.com/
++S:     Maintained
+ 
+ ATMEL MACB ETHERNET DRIVER
+ P:     Haavard Skinnemoen
+diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
+index 28c8818..15aab37 100644
+--- a/drivers/mmc/host/at91_mci.c
++++ b/drivers/mmc/host/at91_mci.c
+@@ -903,8 +903,10 @@ static int __init at91_mci_probe(struct platform_device *pdev)
+        /*
+         * Add host to MMC layer
+         */
+-       if (host->board->det_pin)
++       if (host->board->det_pin) {
+                host->present = !at91_get_gpio_value(host->board->det_pin);
++               device_init_wakeup(&pdev->dev, 1);
++       }
+        else
+                host->present = -1;
+ 
+@@ -940,6 +942,7 @@ static int __exit at91_mci_remove(struct platform_device *pdev)
+        host = mmc_priv(mmc);
+ 
+        if (host->present != -1) {
++               device_init_wakeup(&pdev->dev, 0);
+                free_irq(host->board->det_pin, host);
+                cancel_delayed_work(&host->mmc->detect);
+        }
+@@ -966,8 +969,12 @@ static int __exit at91_mci_remove(struct platform_device *pdev)
+ static int at91_mci_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+        struct mmc_host *mmc = platform_get_drvdata(pdev);
++       struct at91mci_host *host = mmc_priv(mmc);
+        int ret = 0;
+ 
++       if (device_may_wakeup(&pdev->dev))
++               enable_irq_wake(host->board->det_pin);
++
+        if (mmc)
+                ret = mmc_suspend_host(mmc, state);
+ 
+@@ -977,8 +984,12 @@ static int at91_mci_suspend(struct platform_device *pdev, pm_message_t state)
+ static int at91_mci_resume(struct platform_device *pdev)
+ {
+        struct mmc_host *mmc = platform_get_drvdata(pdev);
++       struct at91mci_host *host = mmc_priv(mmc);
+        int ret = 0;
+ 
++       if (device_may_wakeup(&pdev->dev))
++               disable_irq_wake(host->board->det_pin);
++
+        if (mmc)
+                ret = mmc_resume_host(mmc);
+ 
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 10d15c3..4a24db0 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1024,6 +1024,8 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
+ 
+        intmask &= ~(SDHCI_INT_CMD_MASK | SDHCI_INT_DATA_MASK);
+ 
++       intmask &= ~SDHCI_INT_ERROR;
++
+        if (intmask & SDHCI_INT_BUS_POWER) {
+                printk(KERN_ERR "%s: Card is consuming too much power!\n",
+                        mmc_hostname(host->mmc));
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 7400f4b..a6c8704 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -107,6 +107,7 @@
+ #define  SDHCI_INT_CARD_INSERT 0x00000040
+ #define  SDHCI_INT_CARD_REMOVE 0x00000080
+ #define  SDHCI_INT_CARD_INT    0x00000100
++#define  SDHCI_INT_ERROR       0x00008000
+ #define  SDHCI_INT_TIMEOUT     0x00010000
+ #define  SDHCI_INT_CRC         0x00020000
+ #define  SDHCI_INT_END_BIT     0x00040000
 
-Thus, we have two choices here:
 
- - The simple one: sysfs_create_blah() displays a warning when it fails
-and has no must_check
+-- 
+     -- Pierre Ossman
 
- - The one that adds code everywhere (the current one):
-sysfs_create_blah() returns an error, has much_check, and thus all
-callers like I described abvoe need to add code to test it and print a
-warning. Lots of added .text and .data for little benefit.
-
-Cheers,
-Ben.
-
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
