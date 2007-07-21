@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932751AbXGUTga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXGUTh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932751AbXGUTga (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 15:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758910AbXGUTgT
+	id S932908AbXGUTh3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 15:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761616AbXGUThP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 15:36:19 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:50556 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755380AbXGUTgR (ORCPT
+	Sat, 21 Jul 2007 15:37:15 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:36720
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758488AbXGUThN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 15:36:17 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 21 Jul 2007 15:34:21 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: from where comes "__moddi3"?
-In-Reply-To: <1185046274.5652.15.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0707211532140.8143@localhost.localdomain>
-References: <Pine.LNX.4.64.0707211516480.6972@localhost.localdomain>
- <1185046274.5652.15.camel@lappy>
+	Sat, 21 Jul 2007 15:37:13 -0400
+Date: Sat, 21 Jul 2007 12:35:50 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@ucw.cz>
+cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+In-Reply-To: <20070721175639.GA3701@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0707211232580.6577@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+ <200707171802.30903.rjw@sisk.pl> <Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
+ <200707172150.44417.rjw@sisk.pl> <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
+ <20070721102520.GE1902@elf.ucw.cz> <87ps2lojlc.fsf@jbms.ath.cx>
+ <20070721175639.GA3701@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, TW_JL 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007, Peter Zijlstra wrote:
+On Sat, 21 Jul 2007, Pavel Machek wrote:
 
-> On Sat, 2007-07-21 at 15:21 -0400, Robert P. J. Day wrote:
-> > again, probably displaying my abject ignorance, but i wrote a
-> > trivial module that tries to "var % 15", and i get:
-> >
-> >   WARNING: "__moddi3" undefined!
-> >
-> > and, not surprisingly, when i try to insmod:
-> >
-> >   insmod: error inserting 'seq.ko': -1 Unknown symbol in module
-> >
-> > (using 16 rather than 15 works fine, as i assume that the modulus
-> > call is simply replaced by an optimized  bitwise comparison.)
-> >
-> >   so ... from where comes __moddi3?  i know there are places in the
-> > kernel source tree that do non-power-of-2 moduli, and they work fine,
-> > no?  thanks.
+> Hi!
 >
-> let me guess, 32 bit kernel, and var is 64 bit?
-
-um ... yeah.  duh.  var type is actually loff_t.  i should have
-realized that.
-
-> gcc translates that into a libgcc call, which we _explicitly_ do not
-> have because 64bit divisions are expensive!
+>> Pavel Machek <pavel@ucw.cz> writes:
+>>
+>> [snip]
+>>
+>>> So it will be break at least battery status and "AC plugged in"
+>>> status, because those are handled by ACPI and we do not know how to
+>>> control them by hand.
+>>
+>> It seems that it should be possible to initialize ACPI as if the system
+>> just booted up normally.  Then battery status and such should be
+>> correct, since they are correct after normal initialization.
+>>
+>> It should be possible to make hibernate look just like a reboot to all
+>> of the devices, including ACPI stuff.
 >
-> use do_div().
+> Patch to make that work with swsusp/shutdown method would be indeed
+> welcome. It does not work today.
 
-gotcha.  thanks.
+is this a problem in the restore path?
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+with the kexec approach (and ignoring suspend to ram and disk for the 
+moment) the system will actually get shutdown completely after the image 
+is written. on resume it gets cold booted. at this point the ACPI stuff 
+should have no problem
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+now if the ACPI drivers are storing something in ram about the battery 
+status and AC power status, but don't re-check after the resume, it seems 
+to me that they can't possibly be reliable anyway. if they do re-check 
+after the resume then where's the problem?
+
+David Lang
