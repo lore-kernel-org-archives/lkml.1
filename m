@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbXGUW0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbXGUW1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759090AbXGUW0m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 18:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXGUW0d
+	id S1759090AbXGUW1X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 18:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXGUW1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 18:26:33 -0400
-Received: from waste.org ([66.93.16.53]:43252 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750739AbXGUW0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 18:26:31 -0400
-Date: Sat, 21 Jul 2007 17:25:09 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-Message-ID: <20070721222509.GI11166@waste.org>
-References: <1184970779.4012.38.camel@chaos>
+	Sat, 21 Jul 2007 18:27:06 -0400
+Received: from 83-216-141-215.markhi700.adsl.metronet.co.uk ([83.216.141.215]:4408
+	"EHLO mx.hindley.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754599AbXGUW1F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 18:27:05 -0400
+Date: Sat, 21 Jul 2007 23:13:04 +0100
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Subject: [PATCH] 3c59x, check return of pci_enable_device()
+Message-ID: <20070721221304.GD10630@hindley.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184970779.4012.38.camel@chaos>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Mark Hindley <mark@hindley.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 21, 2007 at 12:32:59AM +0200, Thomas Gleixner wrote:
-> How is the new arch/x86 and include/asm-x86 namespace layed out? Our 
-> foremost concern was to enable a 100% smooth transition to the new, 
-> shared architecture, while still enabling much more fine-grained future 
-> unification of the source code. To do this we consciously aimed for the 
-> strictest possible unification strategy: we only 'unified' those source 
-> files that are already bit for bit equal between the two architectures 
-> today. For all other files we used the following rule: if a file came 
-> from arch/i386/foo/bar.c, it gets moved to arch/x86/foo/bar_32.c, if it 
-> came from arch/x86_64/foo/bar.c it gets moved to arch/x86/foo/bar_64.c. 
-> We also generated arch/x86/foo/bar.c that simply #include's those two 
-> files (depending on whether we do a 32-bit or a 64-bit built). If a file 
-> only existed in only one of the architectures, it's moved to 
-> arch/x86/foo/bar.c straight away. (take a look at our git repository to 
-> see how this works out in practice.)
+commit 36d139ccebba6a1082b743fbedb53c5a5097987c
+Author: Mark Hindley <mark@hindley.org.uk>
+Date:   Sat Jul 21 22:56:08 2007 +0100
 
-Can we see some stats on:
+    Check return of pci_enable_device in vortex_up().
+    
+    Signed-off-by: Mark Hindley <mark@hindley.org.uk>
 
-How many files were auto-merged?
-How many files got 32.c and 64.c extensions?
-How many existed only in one arch?
-
--- 
-Mathematics is the supreme nostalgia of our time.
+diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
+index f26ca33..192e74b 100644
+--- a/drivers/net/3c59x.c
++++ b/drivers/net/3c59x.c
+@@ -1490,13 +1490,17 @@ vortex_up(struct net_device *dev)
+ 	struct vortex_private *vp = netdev_priv(dev);
+ 	void __iomem *ioaddr = vp->ioaddr;
+ 	unsigned int config;
+-	int i, mii_reg1, mii_reg5;
++	int i, mii_reg1, mii_reg5, err;
+ 
+ 	if (VORTEX_PCI(vp)) {
+ 		pci_set_power_state(VORTEX_PCI(vp), PCI_D0);	/* Go active */
+ 		if (vp->pm_state_valid)
+ 			pci_restore_state(VORTEX_PCI(vp));
+-		pci_enable_device(VORTEX_PCI(vp));
++		err = pci_enable_device(VORTEX_PCI(vp));
++		if (err) {
++			printk(KERN_WARNING "%s: Could not enable device \n",
++				dev->name);
++		}
+ 	}
+ 
+ 	/* Before initializing select the active media port. */
