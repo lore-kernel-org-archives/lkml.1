@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934319AbXGUJEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934723AbXGUJGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934319AbXGUJEB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 05:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932473AbXGUJDm
+	id S934723AbXGUJGS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 05:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbXGUJGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 05:03:42 -0400
-Received: from cust198-202.dsl.versadsl.be ([62.166.198.202]:49061 "HELO
-	idefix.wisa.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S937887AbXGUJDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 05:03:41 -0400
-Date: Sat, 21 Jul 2007 11:03:37 +0200 (CEST)
-From: =?ISO-8859-1?Q?Dani=EBl_Mantione?= <daniel.mantione@freepascal.org>
-X-X-Sender: daniel@idefix.wisa.be
-To: Bodo Eggert <7eggert@gmx.de>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Keyboard programming needs root
-In-Reply-To: <E1IBaAo-00016n-7j@be1.lrz>
-Message-ID: <Pine.LNX.4.61.0707211102500.27563@idefix.wisa.be>
-References: <8GK58-g5-5@gated-at.bofh.it> <8IFXs-1xs-21@gated-at.bofh.it>
- <8IHcN-3pZ-5@gated-at.bofh.it> <E1IBaAo-00016n-7j@be1.lrz>
+	Sat, 21 Jul 2007 05:06:05 -0400
+Received: from www17.your-server.de ([213.133.104.17]:54358 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753310AbXGUJGE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 05:06:04 -0400
+Message-ID: <46A1CB36.5010609@m3y3r.de>
+Date: Sat, 21 Jul 2007 11:00:38 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="657924-1441627593-1185008617=:27563"
+To: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: New wake ups from sky2
+References: <46A10CC3.6050909@m3y3r.de> <20070720225038.7635da3f@oldman>
+In-Reply-To: <20070720225038.7635da3f@oldman>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Stephen Hemminger schrieb:
+> Thomas Meyer <thomas@m3y3r.de> wrote:
+>
+>   
+>> Today i did a git pull to be up to date again and i noticed in the
+>> powertop tool that i'll get this new entry
+>>
+>>   14,2% (  9,1)     <kernel core> : sky2_probe (sky2_idle)
+>>
+>> with around 10 interrupts per second.
+>>
+>> i think (i.e. i don't know and just guessing!) this commit is
+>> responsible for these wake ups:
+>>
+>> git show eb35cf60e462491249166182e3e755d3d5d91a28
+>>
+>> Author: Stephen Hemminger <shemminger@osdl.org>
+>> Date:   Tue Jun 13 17:17:31 2006 +0900
+>>
+>>     [PATCH] sky2: stop/start hardware idle timer on suspend/resume
+>>
+>>     The resume bug was caused not by an early interrupt but because the idle
+>>     timeout was not being stopped on suspend.  Also disable hardware IRQ's
+>>     on suspend.  Will need to revisit this with hotplug?
+>>
+>>     Signed-off-by: Stephen Hemminger <shemminger@osdl.org>
+>>     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+>>
+>> Any ideas?
+>>
+>>     
+>
+> Last version has idle timer enabled.
+> It is a tradeoff between device hanging due to lost interrupt or wasting power.
+> You can make the timeout longer by setting idle_timeout module parameter larger,
+> (or zero which will disable it).
+>   
+Ok. But do you need to start the timer when no cable is plugged in, like
+in the case above?
 
---657924-1441627593-1185008617=:27563
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+mfg
+thomas
 
-
-
-Op Thu, 19 Jul 2007, schreef Bodo Eggert:
-
-> Dani=EBl Mantione <daniel.mantione@freepascal.org> wrote:
-> > Op Thu, 19 Jul 2007, schreef Dmitry Torokhov:
-> >> On 7/14/07, Daniel Mantione <daniel.mantione@freepascal.org> wrote:
->=20
-> > To make this discussion productive, I want to work towards a solution. =
-I
-> > don't mind how I can make the keyboard work as it should, I just want i=
-t
-> > work. Think of the needs of a user interface, you walk through controls
-> > using tab and shift+tab, put common commands under the function keys an=
-d
-> > shift/control/alt combinations. Cursor control in an editor is done wit=
-h
-> > the navigation pad on your keyboard: arrows, home/end/pgup/pgdown, plus
-> > shift/control/alt combinations with them.
-> >=20
-> > That is all, nothing fancy. Could the kernel support a way to do this?
->=20
-> It could, but nobody had the idea of combining a cooked mode and a raw mo=
-de
-> like DOS provides. OK, DOS did not do a good job, you had to peek the shi=
-ft
-> status separately, but you had the assigned character as well as the
-> (translated) scancode. IIRC, X11 does the same, but with the scancodes
-> (and the mouse coordinates?) included.
-
-Well, let's go for it then. Where to start?
-
-Greetings,
-
-Dani=EBl Mantione
---657924-1441627593-1185008617=:27563--
