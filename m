@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbXGUETc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbXGUEVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbXGUETc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 00:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbXGUETY
+	id S1760793AbXGUEVA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 00:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbXGUEUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 00:19:24 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:47592 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750734AbXGUETX (ORCPT
+	Sat, 21 Jul 2007 00:20:52 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:28211 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbXGUEUv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 00:19:23 -0400
-Date: Sat, 21 Jul 2007 06:32:56 +0200
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Simon Arlott <simon@fire.lp0.eu>, Denis Cheng <crquan@gmail.com>,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Fixing lables after GNU indent (Re: [PATCH 1/2] run scripts/Lindent on it to match Documentation/CodingStyle)
-Message-ID: <20070721043256.GH475@flower.upol.cz>
-References: <1184489571313-git-send-email-crquan@gmail.com> <4699EEA9.6070709@simon.arlott.org.uk> <20070720170743.GF14791@parisc-linux.org> <E1IBzQw-0000Im-55@flower> <20070720205418.GK14791@parisc-linux.org>
+	Sat, 21 Jul 2007 00:20:51 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CABImoUarR7PE/2dsb2JhbAA
+X-IronPort-AV: i="4.16,565,1175497200"; 
+   d="scan'208"; a="186015047:sNHT25266168"
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org, fenkes@de.ibm.com, stefan.roscher@de.ibm.com
+Subject: Re: [ofa-general] [PATCH 5/5] ehca: Support small QP queues
+X-Message-Flag: Warning: May contain useful information
+References: <200707201604.17991.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 20 Jul 2007 21:20:49 -0700
+In-Reply-To: <200707201604.17991.hnguyen@linux.vnet.ibm.com> (Hoang-Nam Nguyen's message of "Fri, 20 Jul 2007 16:04:17 +0200")
+Message-ID: <adawswu5qvy.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070720205418.GK14791@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+X-OriginalArrivalTime: 21 Jul 2007 04:20:50.0238 (UTC) FILETIME=[84FC8DE0:01C7CB4E]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[]
-> > > sed -i -e 's/^\t*      \(\w*:\)/ \1/' "$@"
-> > >
-> > > which will replace the leading tabs and spaces with one space.
-> > > It should leave case labels unmolested, as they should be indented with
-> > > tabs, not 6 spaces.
-> > >
-> > > Any regexp ninjas want to have a go at something better?
-> > 
-> > I'm the one. Trying to write portable, optimized and easy to
-> > understand scripts [0].
-> > 
-> > Please, describe more what must be done, and i will do it. Case labels
-> > are handled very strangely in you example.
-> 
-> OK.  indent will indent labels to a column number that's a multiple of
-> 8, plus 6.  So it may start in column 6, 14, 20, 28, etc.  I'm not quite
-> sure what the definition of a label is; I had it as \w*: up there, but I
-> don't know if that would match the _.  The point is to *not* handle case
-> labels, only goto labels.
+thanks, applied.  I fixed this up myself to work with commit 20c2df83,
+which got rid of the destructor argument to kmem_cache_create() -- you
+probably want to check my tree to make sure it's OK.
 
-t=`printf '\t'`
-sed -i "s_^\($t*\)  *\([^:]*:\)_\1\2_" "$@"
-                                  ^-_
-I'm not sure about leaving one space `here, otherwise it removes
-spaces between (supposedly right indented) line start, i.e. nothing or
-tab(s), and a label, i.e. `label_name:' without space before colon;
-`label_name' here actually not a colon, let's leave that kind of
-breakage to compiler.
+Also the same as I said before about checkpatch.pl's warning:
 
-The variable $t is used for readability of the regex and because POSIX
-BREs leave undefined characters after a backslash, POSIX sed defines
-only \n as a new line.
+WARNING: externs should be avoided in .c files
+#337: FILE: drivers/infiniband/hw/ehca/ehca_pd.c:91:
++	extern struct kmem_cache *small_qp_cache;
 
---
--o--=O`C
- #oo'L O
-<___=E M
+please fix that up when you get a chance
