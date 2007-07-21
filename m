@@ -1,76 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762973AbXGUU52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764573AbXGUU6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762973AbXGUU52 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 16:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbXGUU5T
+	id S1764573AbXGUU6X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 16:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbXGUU6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 16:57:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:18529 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753592AbXGUU5S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 16:57:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=CDuatzs/jRq2WCTxGyAfapG3aq1wVD6oC+I0EXIZ+hjyCWZRSFAKL8JVKJCJZkRUb3kHB/yITase3LyUqKRncak6L8/LnJlbU0Y4qUQ5YHFeN2cEvqiynEK8W1BlcR75hovbZz0jFc77gzXiX8OHbt+Su3mTBArI/hA2oxMEx5o=
-Date: Sun, 22 Jul 2007 00:57:09 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Eric Van Hensbergen <ericvh@gmail.com>,
-       Latchesar Ionkov <lucho@ionkov.net>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: CTL_UNNUMBERED (Re: [PATCH] 9p: Don't use binary sysctl numbers.)
-Message-ID: <20070721205709.GB5772@martell.zuzino.mipt.ru>
-References: <m1y7h9wpuo.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
+	Sat, 21 Jul 2007 16:58:17 -0400
+Received: from aug.linbit.com ([212.69.162.22]:37750 "EHLO mail.linbit.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752801AbXGUU6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 16:58:15 -0400
+X-Greylist: delayed 1187 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Jul 2007 16:58:15 EDT
+Date: Sat, 21 Jul 2007 22:38:19 +0200
+From: Lars Ellenberg <lars@linbit.com>
+To: Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: drbd-user@linbit.com
+Subject: [DRIVER SUBMISSION] DRBD wants to go mainline
+Message-ID: <20070721203819.GA10706@mail.linbit.com>
+Mail-Followup-To: Jens Axboe <axboe@kernel.dk>,
+	Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>,
+	drbd-user@lists.linbit.com
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1y7h9wpuo.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 21, 2007 at 12:53:19PM -0600, Eric W. Biederman wrote:
-> The recent 9p commit: bd238fb431f31989898423c8b6496bc8c4204a86
-> that supposedly only moved files also introduced a new 9p sysctl
-> interface that did not properly register it's sysctl binary numbers,
-> and since it was only for debugging clearly did not need a binary fast
-> path in any case.  So this patch just remove the binary numbers.
->
-> See Documentation/sysctl/ctl_unnumbered.txt for more details.
->
-> While I was at it I cleaned up the sysctl initializers a little as
-> well so there is less to read.
 
-> --- a/net/9p/sysctl.c
-> +++ b/net/9p/sysctl.c
-> @@ -28,15 +28,10 @@
+	DRBD wants to go mainline.
+	please have a look at the "for-linus" branch of
+	git://git.drbd.org/home/git/linux-drbd.git.
 
-> -enum {
-> -	P9_SYSCTL_NET = 487,
-> -	P9_SYSCTL_DEBUG = 1,
-> -};
-> -
-> -static ctl_table p9_table[] = {
-> +static struct ctl_table p9_table[] = {
->  #ifdef CONFIG_NET_9P_DEBUG
->  	{
-> -		.ctl_name       = P9_SYSCTL_DEBUG,
-> +		.ctl_name       = CTL_UNNUMBERED,
+Longer story:
 
-That's separate patch but CTL_UNNUMBERED must die, because it's totally
-unneeded. If you don't want sysctl(2) interface just SKIP ->ctl_name
-initialization and save one line for something useful.
+Hi there,
 
-	{
-		.procname       = "prove_locking",
-		.data		= &prove_locking,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler	= &proc_dointvec,
-	},
+for lkml readers who don't know about DRBD yet:
+DRBD is the distributed replicated block device,
+a stacked block device driver as developed mainly
+by Lars Ellenberg and Philipp Reisner
+both employed at Linbit.
 
-Or too late for -rc1?
+We implement shared-disk semantics in a shared-nothing cluster.
 
+yes, we even support cluster file systems (OCFS2, GFS2)
+[support for this is somewhat clumsy, still,
+mainly userland/setup/convenience issues.
+but that will improve.]
+
+to actually use it you will need some userland tools
+(drbdadm, drbdmeta, drbdsetup).
+
+most unfortunate current limitations:
+we support only 2 nodes directly;
+but we are working on that, too :)
+
+I'm going to give a presentation/BoF about it
+at linux-conf.eu in September.
+
+Currently we are at "stable version 8.0.y" (y == 4 right now,
+8.0.5 to be released within a few days.
+
+we have a project home page http://www.drbd.org
+we have some mention on the linux-HA project http://www.linux-ha.org/DRBD
+(both are slightly out-dated, unfortunately...)
+our subversion repository (yeah, sorry, there has been no git back then)
+is at http://svn.drbd.org/drbd/branches/drbd-8.0
+
+and, we have a user base...
+[drbd-user readers who are in a position to do so:
+please help us get this into mainline! ]
+
+Now, finally, we have a git repository of the kernel module part, too:
+ git://git.drbd.org/home/git/linux-drbd.git
+
+it has two branches currently,
+ master, which tracks ...torvalds/linux-2.6.git, and 
+ for-linus, which tracks the cleaned up patch meant for inclusin in
+mainline.
+so if interessted please do
+ git fetch git://git.drbd.org/home/git/linux-drbd.git +for-linus:drbd-8.0
+to get a local branch named drbd-8.0 where you can inspect it.
+see below for a diffstat of master..for-linus.
+
+Jens, Andrew, anyone: please review,
+and give me advice how to proceed from here.
+
+technically, would you prefer
+frequent rebase of the "for-linus" branch,
+or rather merges back and forth?
+
+Cheers,
+
+	Lars
+
+
+
+
+The only not drbd specific files touched
+are listed explicitly here:
+
+=====================
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index a4a3119..76f84bc 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -272,6 +272,8 @@ config BLK_DEV_CRYPTOLOOP
+ 	  instead, which can be configured to be on-disk compatible with the
+ 	  cryptoloop device.
+ 
++source "drivers/block/drbd/Kconfig"
++
+ config BLK_DEV_NBD
+ 	tristate "Network block device support"
+ 	depends on NET
+diff --git a/drivers/block/Makefile b/drivers/block/Makefile
+index 819c829..b27e16a 100644
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -31,3 +31,4 @@ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+ 
+ obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
+ obj-$(CONFIG_LGUEST_GUEST)	+= lguest_blk.o
++obj-$(CONFIG_BLK_DEV_DRBD)	+= drbd/
+diff --git a/include/linux/major.h b/include/linux/major.h
+index 0cb9805..2dbd7c1 100644
+--- a/include/linux/major.h
++++ b/include/linux/major.h
+@@ -145,6 +145,8 @@
+ #define UNIX98_PTY_MAJOR_COUNT	8
+ #define UNIX98_PTY_SLAVE_MAJOR	(UNIX98_PTY_MASTER_MAJOR+UNIX98_PTY_MAJOR_COUNT)
+ 
++#define DRBD_MAJOR		147
++
+ #define RTF_MAJOR		150
+ #define RAW_MAJOR		162
+=====================
+
+(yes, block major 147 is assigned by LANANA,
+ as documented in Documentation/devices.txt already)
+
+git-diff master..for-linus | diffstat
+ drivers/block/Kconfig              |    2 
+ drivers/block/Makefile             |    1 
+ drivers/block/drbd/Kconfig         |   32 
+ drivers/block/drbd/Makefile        |    7 
+ drivers/block/drbd/drbd_actlog.c   | 1456 ++++++++++++++++
+ drivers/block/drbd/drbd_bitmap.c   | 1184 +++++++++++++
+ drivers/block/drbd/drbd_buildtag.c |    6 
+ drivers/block/drbd/drbd_int.h      | 1894 ++++++++++++++++++++
+ drivers/block/drbd/drbd_main.c     | 3249 +++++++++++++++++++++++++++++++++++
+ drivers/block/drbd/drbd_nl.c       | 1847 ++++++++++++++++++++
+ drivers/block/drbd/drbd_proc.c     |  267 ++
+ drivers/block/drbd/drbd_receiver.c | 3356 +++++++++++++++++++++++++++++++++++++
+ drivers/block/drbd/drbd_req.c      | 1169 ++++++++++++
+ drivers/block/drbd/drbd_req.h      |  320 +++
+ drivers/block/drbd/drbd_strings.c  |  106 +
+ drivers/block/drbd/drbd_worker.c   | 1046 +++++++++++
+ drivers/block/drbd/drbd_wrappers.h |  144 +
+ drivers/block/drbd/lru_cache.c     |  370 ++++
+ drivers/block/drbd/lru_cache.h     |  147 +
+ include/linux/drbd.h               |  284 +++
+ include/linux/drbd_config.h        |   55 
+ include/linux/drbd_limits.h        |  124 +
+ include/linux/drbd_nl.h            |  105 +
+ include/linux/drbd_tag_magic.h     |   78 
+ include/linux/major.h              |    2 
+ 25 files changed, 17251 insertions(+)
+
+ 
+
+-- 
+: Lars Ellenberg                            Tel +43-1-8178292-0  :
+: LINBIT Information Technologies GmbH      Fax +43-1-8178292-82 :
+: Vivenotgasse 48, A-1120 Vienna/Europe    http://www.linbit.com :
