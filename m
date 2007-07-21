@@ -1,86 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbXGUR5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760702AbXGUR7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760248AbXGUR5f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 13:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXGUR5Z
+	id S1760702AbXGUR7K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 13:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbXGUR66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 13:57:25 -0400
-Received: from ns2.lanforge.com ([66.165.47.211]:45312 "EHLO ns2.lanforge.com"
+	Sat, 21 Jul 2007 13:58:58 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:2199 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753164AbXGUR5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 13:57:24 -0400
-Message-ID: <46A248FA.1050403@candelatech.com>
-Date: Sat, 21 Jul 2007 10:57:14 -0700
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	id S1753664AbXGUR65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 13:58:57 -0400
+Date: Sat, 21 Jul 2007 19:58:57 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Boutcher <boutcher@us.ibm.com>, Ryan Arnold <ryanarn@us.ibm.com>,
+       Colin Devilbiss <devilbis@us.ibm.com>,
+       Stephen Rothwell <sfr@au1.ibm.com>
+Subject: Re: [PATCH][05/37] Clean up duplicate includes in drivers/block/
+Message-ID: <20070721175856.GO11657@kernel.dk>
+References: <200707211701.53199.jesper.juhl@gmail.com>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: andrei radulescu-banu <iubica2@yahoo.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <997818.30021.qm@web56615.mail.re3.yahoo.com>	<m31wf226fw.fsf@maximus.localdomain>	<46A11C54.2090100@candelatech.com> <m3sl7idmb4.fsf@maximus.localdomain>
-In-Reply-To: <m3sl7idmb4.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707211701.53199.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Ben Greear <greearb@candelatech.com> writes:
->
->   
->> There is already a flag you can set on vlan devices (reorder-header)
->> that strips the VLAN tag before presenting it to user-space.
->>     
->
-> Sure, but isn't it only valid for VLAN device (not the main ethX)?
-> I.e., can you have the tag stripped from frames captured on ethX?
->   
-No.  I don't see a good reason to strip on ethX.  That hardware accel 
-VLANs strip
-is an inconvenience in my opinion, no need to force it in software as well.
->> On tx, if it shows up on the vlan device, we add that device's VID to
->> the header if no VID is currently in the SKB.  If it is in the SKB header
->> we change the VID to be the tx dev's VID (if it was different).  This allows user-space
->> to send a raw ethernet frame on a vlan device and have it automatically
->> go out of the box on the correct vlan.  User-space can also send raw VLAN frames
->> and have those also go out on the correct VLAN.
->>     
->
-> Well... I think the tag should be added unconditionally (for things like
-> QinQ) but that's trivial and minor.
->   
-I think that for Q in Q, we would need some explicit flag on each skb to 
-know when to add or modify
-the VID.  I was never able to think of an automatic solution that worked 
-in all cases
-(bridging, writing raw packets from user space, normal receive, normal 
-transmit, ...)
+On Sat, Jul 21 2007, Jesper Juhl wrote:
+> Hi,
+> 
+> This patch cleans up duplicate includes in
+> 	drivers/block/
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-Modifying the bridging code would fix that path, and adding a socket opt 
-to deal with writing
-raw packets from user-space should handle the other tricky case I believe.
-
-> IOW: I think all Ethernet interfaces should always be VLAN-aware,
-> stripping the tag (only one) early on RX and adding it late on TX.
-> That means tcpdump would see packets with exactly one tag removed
-> (unless there was no tag), in both RX and TX.
->
-> Tcpdump would need other means to get VLAN id...
->   
-What benefit will this add?  It will certainly decrease performance to 
-copy around
-the header for every VLAN packet, so there would have to be a good reason to
-add this logic...
-
-Ben
-
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
 -- 
-Ben Greear <greearb@candelatech.com> 
-Candela Technologies Inc  http://www.candelatech.com
-
+Jens Axboe
 
