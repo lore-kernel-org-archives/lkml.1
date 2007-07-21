@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765707AbXGUTWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765499AbXGUTXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765707AbXGUTWW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 15:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761100AbXGUTWO
+	id S1765499AbXGUTXY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 15:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbXGUTXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 15:22:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57857 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761202AbXGUTWM (ORCPT
+	Sat, 21 Jul 2007 15:23:16 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:50058 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756508AbXGUTXO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 15:22:12 -0400
-Date: Sat, 21 Jul 2007 12:21:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix theoretical ccids_{read,write}_lock() race
-Message-Id: <20070721122149.62c73ba5.akpm@linux-foundation.org>
-In-Reply-To: <20070721191104.GA83@tv-sign.ru>
-References: <20070721115712.GA871@tv-sign.ru>
-	<20070721123159.GB1769@elte.hu>
-	<20070721141814.GA1013@tv-sign.ru>
-	<20070721150206.GA1083@tv-sign.ru>
-	<20070721120235.7505338a.akpm@linux-foundation.org>
-	<20070721191104.GA83@tv-sign.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Jul 2007 15:23:14 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 21 Jul 2007 15:21:25 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: from where comes "__moddi3"?
+Message-ID: <Pine.LNX.4.64.0707211516480.6972@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007 23:11:04 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-> On 07/21, Andrew Morton wrote:
-> >
-> > On Sat, 21 Jul 2007 19:02:06 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> > 
-> > > Make sure that spin_unlock_wait() is properly ordered wrt atomic_inc().
-> > > 
-> > > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> > > 
-> > > --- t/net/dccp/ccid.c~ccid	2006-12-18 18:17:31.000000000 +0300
-> > > +++ t/net/dccp/ccid.c	2007-07-21 18:29:21.000000000 +0400
-> > > @@ -40,6 +40,7 @@ static inline void ccids_write_unlock(vo
-> > >  static inline void ccids_read_lock(void)
-> > >  {
-> > >  	atomic_inc(&ccids_lockct);
-> > > +	smp_mb__after_atomic_inc();
-> > >  	spin_unlock_wait(&ccids_lock);
-> > >  }
-> > >  
-> > 
-> > Why not just use standard rwlocks in there?
-> > 
-> > (This is probably an FAQ, but it should be).
-> 
-> Perhaps because read_lock() doesn't allow to sleep?
-> 
+  again, probably displaying my abject ignorance, but i wrote a
+trivial module that tries to "var % 15", and i get:
 
-down_read() does.
+  WARNING: "__moddi3" undefined!
 
-afaict the code doesn't sleep while holding that lock anwyay.
+and, not surprisingly, when i try to insmod:
+
+  insmod: error inserting 'seq.ko': -1 Unknown symbol in module
+
+(using 16 rather than 15 works fine, as i assume that the modulus
+call is simply replaced by an optimized  bitwise comparison.)
+
+  so ... from where comes __moddi3?  i know there are places in the
+kernel source tree that do non-power-of-2 moduli, and they work fine,
+no?  thanks.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
