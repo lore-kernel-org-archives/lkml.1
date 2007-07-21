@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762284AbXGUUp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762973AbXGUU52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762284AbXGUUp0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 16:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXGUUpO
+	id S1762973AbXGUU52 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 16:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbXGUU5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 16:45:14 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:39926 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758AbXGUUpN (ORCPT
+	Sat, 21 Jul 2007 16:57:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:18529 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753592AbXGUU5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 16:45:13 -0400
-Date: Sat, 21 Jul 2007 23:44:58 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Create clflush() inline, remove hardcoded wbinvd
-Message-ID: <20070721204458.GG1193@rhun.ibm.com>
-References: <1184885740.16311.19.camel@t60> <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org> <20070721181137.GH4152@rhun.haifa.ibm.com> <46A263FA.70501@zytor.com> <20070721201634.GF1193@rhun.ibm.com> <46A26A2E.7070305@zytor.com>
-Mime-Version: 1.0
+	Sat, 21 Jul 2007 16:57:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=CDuatzs/jRq2WCTxGyAfapG3aq1wVD6oC+I0EXIZ+hjyCWZRSFAKL8JVKJCJZkRUb3kHB/yITase3LyUqKRncak6L8/LnJlbU0Y4qUQ5YHFeN2cEvqiynEK8W1BlcR75hovbZz0jFc77gzXiX8OHbt+Su3mTBArI/hA2oxMEx5o=
+Date: Sun, 22 Jul 2007 00:57:09 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Eric Van Hensbergen <ericvh@gmail.com>,
+       Latchesar Ionkov <lucho@ionkov.net>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: CTL_UNNUMBERED (Re: [PATCH] 9p: Don't use binary sysctl numbers.)
+Message-ID: <20070721205709.GB5772@martell.zuzino.mipt.ru>
+References: <m1y7h9wpuo.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46A26A2E.7070305@zytor.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <m1y7h9wpuo.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 21, 2007 at 01:18:54PM -0700, H. Peter Anvin wrote:
-> Muli Ben-Yehuda wrote:
-> > 
-> > So it looks like we have a purely syntactic patch that does something
-> > different than the original code in one of the above places. What am I
-> > missing?
-> > 
-> 
-> +static inline void clflush(volatile void *__p)
-> +{
-> +	asm volatile("clflush %0" : "+m" (*(char __force *)__p));
->                                           ^
-> +}
+On Sat, Jul 21, 2007 at 12:53:19PM -0600, Eric W. Biederman wrote:
+> The recent 9p commit: bd238fb431f31989898423c8b6496bc8c4204a86
+> that supposedly only moved files also introduced a new 9p sysctl
+> interface that did not properly register it's sysctl binary numbers,
+> and since it was only for debugging clearly did not need a binary fast
+> path in any case.  So this patch just remove the binary numbers.
+>
+> See Documentation/sysctl/ctl_unnumbered.txt for more details.
+>
+> While I was at it I cleaned up the sysctl initializers a little as
+> well so there is less to read.
 
-Ok, let's try again:
+> --- a/net/9p/sysctl.c
+> +++ b/net/9p/sysctl.c
+> @@ -28,15 +28,10 @@
 
-You're changing this (pageattr.c)
+> -enum {
+> -	P9_SYSCTL_NET = 487,
+> -	P9_SYSCTL_DEBUG = 1,
+> -};
+> -
+> -static ctl_table p9_table[] = {
+> +static struct ctl_table p9_table[] = {
+>  #ifdef CONFIG_NET_9P_DEBUG
+>  	{
+> -		.ctl_name       = P9_SYSCTL_DEBUG,
+> +		.ctl_name       = CTL_UNNUMBERED,
 
-                asm volatile("clflush (%0)" :: "r" (adr + i));
+That's separate patch but CTL_UNNUMBERED must die, because it's totally
+unneeded. If you don't want sysctl(2) interface just SKIP ->ctl_name
+initialization and save one line for something useful.
 
-into this:
+	{
+		.procname       = "prove_locking",
+		.data		= &prove_locking,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= &proc_dointvec,
+	},
 
-		asm volatile("clflush %0" : "+m" (*(char __force*)(adr + i)));
-
-The original one calls clflush with (adr + i), the new one with (*(adr
-+ i)). Are these calls equivalent? if not, and I don't think they are,
-you are changing the semantics of the code (presumably, because it
-fixes a bug), and *that should be a separate patch*.
-
-Cheers,
-Muli
+Or too late for -rc1?
 
