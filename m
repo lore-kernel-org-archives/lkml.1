@@ -1,60 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765503AbXGUVP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932922AbXGUVRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765503AbXGUVP7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 17:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758043AbXGUVPs
+	id S932922AbXGUVRw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 17:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761218AbXGUVRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 17:15:48 -0400
-Received: from khc.piap.pl ([195.187.100.11]:49898 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755291AbXGUVPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 17:15:47 -0400
-To: Ben Greear <greearb@candelatech.com>
-Cc: andrei radulescu-banu <iubica2@yahoo.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Linux, tcpdump and vlan
-References: <997818.30021.qm@web56615.mail.re3.yahoo.com>
-	<m31wf226fw.fsf@maximus.localdomain>
-	<46A11C54.2090100@candelatech.com>
-	<m3sl7idmb4.fsf@maximus.localdomain>
-	<46A248FA.1050403@candelatech.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 21 Jul 2007 23:15:43 +0200
-In-Reply-To: <46A248FA.1050403@candelatech.com> (Ben Greear's message of "Sat, 21 Jul 2007 10:57:14 -0700")
-Message-ID: <m3ps2l5ugw.fsf@maximus.localdomain>
+	Sat, 21 Jul 2007 17:17:44 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:36645 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760505AbXGUVRo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 17:17:44 -0400
+Date: Sat, 21 Jul 2007 23:17:43 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Lars Ellenberg <lars@linbit.com>
+cc: Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
+       lkml <linux-kernel@vger.kernel.org>, drbd-user@linbit.com
+Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
+In-Reply-To: <20070721203819.GA10706@mail.linbit.com>
+Message-ID: <Pine.LNX.4.64.0707212316530.21737@fbirervta.pbzchgretzou.qr>
+References: <20070721203819.GA10706@mail.linbit.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Greear <greearb@candelatech.com> writes:
 
->> IOW: I think all Ethernet interfaces should always be VLAN-aware,
->> stripping the tag (only one) early on RX and adding it late on TX.
->> That means tcpdump would see packets with exactly one tag removed
->> (unless there was no tag), in both RX and TX.
->>
->> Tcpdump would need other means to get VLAN id...
->>
-> What benefit will this add?  It will certainly decrease performance to
-> copy around
-> the header for every VLAN packet, so there would have to be a good reason to
-> add this logic...
+On Jul 21 2007 22:38, Lars Ellenberg wrote:
+>
+>We implement shared-disk semantics in a shared-nothing cluster.
 
-I'd have to do some tests... Hopefully in this decade, forget it for
-now.
+If nothing is shared, the disk is not shared, but got shared-disk
+semantics? A little confusing.
 
-The primary reason - consistency with hw VLAN cards -> simpler
-code.
 
-The performance is already decreased (not sure if it's noticeable)
-most of the time, i.e., when not transparently bridging VLAN
-trunks. Bridging VLAN trunks is, of course, theoretically possible,
-but it's rather not a common operation when using .1Q.
-That is, with header reordering, of course.
-
-Anyway, -ENOPATCH from me for now.
+	Jan
 -- 
-Krzysztof Halasa
