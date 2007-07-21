@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937703AbXGUN5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936094AbXGUODX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937703AbXGUN5z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 09:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763405AbXGUN5r
+	id S936094AbXGUODX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 10:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762941AbXGUODM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 09:57:47 -0400
-Received: from mail.tmr.com ([64.65.253.246]:44786 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761418AbXGUN5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 09:57:46 -0400
-Message-ID: <46A21105.9050402@tmr.com>
-Date: Sat, 21 Jul 2007 09:58:29 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 21 Jul 2007 10:03:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:49962 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762944AbXGUODL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 10:03:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uInxXT12jD3vijCgGLip7u/H3B6GL+rstHYy0j/EIQXfTUqIxNRKufs0VvE6Jd5fv5Krdh+8cNx1ojFkkahUlICMv15KLr3KZueDDkwUdT9Uk4Hdcv8FMEXrzSRqUzwUdag6qCSUMSZiie66UXXKR+3YygjTYysIMfN7yzD25O4=
+Message-ID: <3cea2ee30707210703p5865ef77j103eb9e7499dd95b@mail.gmail.com>
+Date: Sat, 21 Jul 2007 10:03:09 -0400
+From: "Andrew Gallatin" <gallatin@gmail.com>
+To: "Jan-Bernd Themann" <ossthema@de.ibm.com>
+Subject: Re: [RFC 0/1] lro: Generic Large Receive Offload for TCP traffic
+Cc: netdev <netdev@vger.kernel.org>, "Christoph Raisch" <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, "Marcus Eder" <meder@de.ibm.com>,
+       "Thomas Klein" <tklein@de.ibm.com>,
+       "Stefan Roscher" <stefan.roscher@de.ibm.com>,
+       "David Miller" <davem@davemloft.net>, "Jeff Garzik" <jeff@garzik.org>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+In-Reply-To: <200707201741.45079.ossthema@de.ibm.com>
 MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>
-CC: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-git13 crash
-References: <46A11E4B.3070002@tmr.com> <46A121DD.2090304@googlemail.com>
-In-Reply-To: <46A121DD.2090304@googlemail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707201741.45079.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Bill Davidsen wrote:
->   
->> built from 2.6.22-git9 config, used oldconfig. Crashes so early it 
->> doesn't seem to get to the network card.
->>
->>   config: www.tmr.com/~davidsen/config-2.6.22-git13.gz
->>   screen dump: www.tmr.com/~davidsen/dump-2.6.22-git13.jpg
->>
->> Not much info, and probably seen elsewhere.
->>
->>     
+On 7/20/07, Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
+> Hi,
 >
-> Should be fixed by this commit :
+> Thanks a lot for your comments so far.
+> This generic LRO patch differs from the last one in several points.
+> A new interface for a "receive in pages" mode has been added and tested
+> with an eHEA prototype. Seems to work well.
 >
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9550b105b8646f916862aee3ab7b25020ca14159
->   
-Thanks much for the quick reply, patches kernel building now.
+> Does this extended interface seem to be sufficient?
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+Thank you for this!
 
+At least for me, I find it is best to try to use an interface rather
+than simply reading a diff.  So I will port Myri10GE to use the new
+interface so that I can give better feedback,  I'll try my best to do
+this  by early next week.
+
+Thank you again,
+
+Drew
