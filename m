@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbXGUWXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751855AbXGUWZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbXGUWXb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 18:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761504AbXGUWXG
+	id S1751855AbXGUWZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 18:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbXGUWZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 18:23:06 -0400
-Received: from hu-out-0506.google.com ([72.14.214.225]:5527 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760671AbXGUWXB (ORCPT
+	Sat, 21 Jul 2007 18:25:47 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:41596 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbXGUWZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 18:23:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=tfhgH2ung03uq1zEzWq1eGAefOSObE97e5L2X8B2hsVwf+JSmXRaxcR7iqoPyhdqv1J+9DH6+K49R+cegwZpYUfIvoicYUr8SmkUoqtSK+ppQvf4ZMCO7JMC6Lkdziqh8xf2cgET/RylsnH77ykSYTYFXZN1D/EYPYst5kimmLA=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH][hid] Fix a NULL pointer dereference when we fail to allocate memory
-Date: Sun, 22 Jul 2007 00:06:20 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michael Haboustak <mike-@cinci.rr.com>, Andreas Gal <gal@uci.edu>,
-       Vojtech Pavlik <vojtech@suse.cz>, Greg Kroah-Hartman <greg@kroah.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Sat, 21 Jul 2007 18:25:46 -0400
+Date: Sun, 22 Jul 2007 00:39:22 +0200
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: More effective processing (Re: [PATCH 25/33] kbuild: use POSIX BRE in headers install target)
+Message-ID: <20070721223922.GO475@flower.upol.cz>
+References: <118468134441-git-send-email-sam@ravnborg.org> <11846813441741-git-send-email-sam@ravnborg.org> <1184681344376-git-send-email-sam@ravnborg.org> <E1ICAEU-0005an-5F@flower> <8bd0f97a0707210127m565f9b2cnc7a8a203f671e948@mail.gmail.com> <20070721100422.GK475@flower.upol.cz> <8bd0f97a0707211221l2c7fedeoea8612876350db6d@mail.gmail.com> <20070721203916.GA2912@uranus.ravnborg.org> <20070721221627.GN475@flower.upol.cz> <20070721221326.GC2912@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707220006.20359.jesper.juhl@gmail.com>
+In-Reply-To: <20070721221326.GC2912@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Jul 22, 2007 at 12:13:26AM +0200, Sam Ravnborg wrote:
+> On Sun, Jul 22, 2007 at 12:16:27AM +0200, Oleg Verych wrote:
+> > 
+> > What do you think about this one? I want to propose to remove
+> > scripts/unifdef.c but to make clear policy about how to mark __KERNEL__
+> > sections in header files. We know how obfuscated C can be, and this also
+> > applies to preprocessing. There's known CodingStyle about some points.
+> > The thing is to specify rules, that will be easy for `sed` to do cleaup
+> > job.
+> > 
+> > ./linux/soundcard.h:#if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL)
+> >                       && !defined(_KERNEL)) || defined(USE_SEQ_MACROS)
+> > ./linux/stat.h:#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
+> > 
+> > Split __KERNEL__ check, make only positive, i.e.
+> > 
+> > #if defined(__KERNEL__)
+> > #ifdef __KERNEL__
+> > 
+> > ./linux/stat.h:#ifdef __KERNEL__
+> > 
+> > No `#else` and ending part to contain comment:
+> > 
+> > ./linux/smb_fs_sb.h:#endif /* __KERNEL__ */
+> > 
+> > Simple enough:
+> > 
+> > sed '/^#if[^_]*__KERNEL__/,/^#end[^_]*__KERNEL__/d'
+> 
+> What are you trying to say with the above?
+> Sorry but I lost track of part of the discussion but you seems to havea point here?
 
-If, in usb_hid_configure(), we fail to allocate storage for 'usbhid', 
- "if (!(usbhid = kzalloc(sizeof(struct usbhid_device), GFP_KERNEL)))", 
-then we'll jump to the 'fail:' label where we have this code:
-        usb_free_urb(usbhid->urbin);
-        usb_free_urb(usbhid->urbout);
-        usb_free_urb(usbhid->urbctrl);
-Since we got here because we couldn't allocate storage for 'usbhid', 
-what we have here is a NULL pointer dereference - ouch...
-
-This patch solves that little problem by adding a new 
-'fail_no_usbhid:' label after the problematic calls to 
-usb_free_urb() and jumps to that one instead, in the problem case.
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/hid/usbhid/hid-core.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index b2baeae..3ff7468 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -743,7 +743,7 @@ static struct hid_device *usb_hid_configure(struct usb_interface *intf)
- 	hid->quirks = quirks;
- 
- 	if (!(usbhid = kzalloc(sizeof(struct usbhid_device), GFP_KERNEL)))
--		goto fail;
-+		goto fail_no_usbhid;
- 
- 	hid->driver_data = usbhid;
- 	usbhid->hid = hid;
-@@ -877,6 +877,7 @@ fail:
- 	usb_free_urb(usbhid->urbin);
- 	usb_free_urb(usbhid->urbout);
- 	usb_free_urb(usbhid->urbctrl);
-+fail_no_usbhid:
- 	hid_free_buffers(dev, hid);
- 	hid_free_device(hid);
- 
+I want to suggest more easy and tools-friendly way of processing header
+files in the headrer_install target. One line above, one paragraph in
+CodingStyle, one tree revision from KJ group.
+____
