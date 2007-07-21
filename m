@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762868AbXGUGLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934639AbXGUGMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762868AbXGUGLW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 02:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXGUGLI
+	id S934639AbXGUGMo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 02:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbXGUGMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 02:11:08 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:49856 "EHLO proxima.lp0.eu"
+	Sat, 21 Jul 2007 02:12:37 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:49860 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752678AbXGUGLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 02:11:06 -0400
+	id S1752908AbXGUGMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 02:12:36 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
 	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=bzvFbvdVrgYtuiUHNpGKGastw5FUDj8jsm2ZZHjAIFFVL0SS6Gfv4VZfq72loAEbtveD2w6lqv6Zj/kTGc1FxPvvlOk/X493FIbg1WevZ65G1ngyrn7lcUPZtyo2dr2E;
-Message-ID: <46A1A375.3020900@simon.arlott.org.uk>
-Date: Sat, 21 Jul 2007 07:11:01 +0100
+	b=DLAN9fEWQCH2PyFzvMobqB4fpc/aEcn5zmndBgmWK+1q7t0yKlTAJ4RsSWnRS1rd1WO0exfLdBbjS9hhuIVGuBPxNqQlC5ImUk6WBYX6l3mp2OqBJB5f+TdzWv83EFOc;
+Message-ID: <46A1A3D0.4010704@simon.arlott.org.uk>
+Date: Sat, 21 Jul 2007 07:12:32 +0100
 From: Simon Arlott <simon@fire.lp0.eu>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
@@ -32,18 +32,16 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 20/07/07 19:00, Matthew Wilcox wrote:
 > On Fri, Jul 20, 2007 at 06:36:02PM +0100, Simon Arlott wrote:
->> On 20/07/07 18:07, Matthew Wilcox wrote:
->> > sed -i -e 's/^\t*      \(\w*:\)/ \1/' "$@"
->> > 
->> > which will replace the leading tabs and spaces with one space.
->> 
->> ... isn't the space thing a workaround for a "diff -p" bug?
+>> Mass
+>> replacing any labels run through Lindent with space prefixes would seem
+>> like a bad idea :/
 > 
-> Yes.  I like not being affected by bugs.  If you prefer to be affected
-> by bugs, that's up to you.
+> We don't tend to mass-run code through Lindent.  This may or may not be
+> a bad thing, but the fact is that it just doesn't happen.
 
-Changing the code to fix a utility bug is madness. I think it's been
-fixed too...
+I realise that, and it would be a big mess to do so - but when code is
+run through it, it shouldn't modify existing good code into slightly
+worse code.
 
 -- 
 Simon Arlott
