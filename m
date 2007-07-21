@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933325AbXGUO1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXGUO56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933325AbXGUO1A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 10:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbXGUO0v
+	id S932840AbXGUO56 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 10:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbXGUO5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 10:26:51 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53401 "EHLO smtps.tip.net.au"
+	Sat, 21 Jul 2007 10:57:49 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45573 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752374AbXGUO0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 10:26:50 -0400
-Date: Sun, 22 Jul 2007 00:27:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>,
-       sparclinux@vger.kernel.org, paulus@samba.org,
-       "David S. Miller" <davem@davemloft.net>, wli@holomorphy.com
-Subject: [PATCH] constify of_platform_driver match_table
-Message-Id: <20070722002701.77622474.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752374AbXGUO5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 10:57:49 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 2/4] [cpuid driver] Simplify smp_call_function_single() call sequence
+Date: Sat, 21 Jul 2007 17:57:55 +0300
+Message-Id: <1185029877880-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.2.4
+In-Reply-To: <11850298772540-git-send-email-avi@qumranet.com>
+References: <11850298772540-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+smp_call_function_single() now knows how to call the function on the
+current cpu.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- include/linux/of_platform.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/i386/kernel/cpuid.c |   22 +++-------------------
+ 1 files changed, 3 insertions(+), 19 deletions(-)
 
-Built for PowerPC allmodconfig and ppc64_defconfig and Sparc and Sparc64
-defconfig.
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index 22c3837..448f70b 100644
---- a/include/linux/of_platform.h
-+++ b/include/linux/of_platform.h
-@@ -32,7 +32,7 @@ extern struct bus_type of_platform_bus_type;
- struct of_platform_driver
- {
- 	const char		*name;
--	struct of_device_id	*match_table;
-+	const struct of_device_id	*match_table;
- 	struct module		*owner;
+diff --git a/arch/i386/kernel/cpuid.c b/arch/i386/kernel/cpuid.c
+index 5c2faa1..5665dd2 100644
+--- a/arch/i386/kernel/cpuid.c
++++ b/arch/i386/kernel/cpuid.c
+@@ -45,8 +45,6 @@
  
- 	int	(*probe)(struct of_device* dev,
+ static struct class *cpuid_class;
+ 
+-#ifdef CONFIG_SMP
+-
+ struct cpuid_command {
+ 	u32 reg;
+ 	u32 *data;
+@@ -64,25 +62,11 @@ static inline void do_cpuid(int cpu, u32 reg, u32 * data)
+ {
+ 	struct cpuid_command cmd;
+ 
+-	preempt_disable();
+-	if (cpu == smp_processor_id()) {
+-		cpuid(reg, &data[0], &data[1], &data[2], &data[3]);
+-	} else {
+-		cmd.reg = reg;
+-		cmd.data = data;
++	cmd.reg = reg;
++	cmd.data = data;
+ 
+-		smp_call_function_single(cpu, cpuid_smp_cpuid, &cmd, 1, 1);
+-	}
+-	preempt_enable();
++	smp_call_function_single(cpu, cpuid_smp_cpuid, &cmd, 1, 1);
+ }
+-#else				/* ! CONFIG_SMP */
+-
+-static inline void do_cpuid(int cpu, u32 reg, u32 * data)
+-{
+-	cpuid(reg, &data[0], &data[1], &data[2], &data[3]);
+-}
+-
+-#endif				/* ! CONFIG_SMP */
+ 
+ static loff_t cpuid_seek(struct file *file, loff_t offset, int orig)
+ {
 -- 
-1.5.2.3
+1.5.2.4
 
