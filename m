@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937694AbXGUON3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938222AbXGUORU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937694AbXGUON3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 10:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760448AbXGUONV
+	id S938222AbXGUORU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 10:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757619AbXGUORM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 10:13:21 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:54201 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757619AbXGUONU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 10:13:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jqXhxg5FXvcc+3DszBsNpacqeA1klho3Zw2dkYAKxiHknC/dklYYahRdGAIMQw9mcmMMn4Aqz7RQvj4lUv2RxhwNH8vaml9tlTS1Z9sIPfJqmwvqvHGtZCOsfd/WtoZdC3Kms/dqlhm0DGpkEpUr32jra3sG5hKsK45G5/h9nyw=
-Message-ID: <7e5f60720707210713o4ff0825eu463abee77dc1f04c@mail.gmail.com>
-Date: Sat, 21 Jul 2007 16:13:19 +0200
-From: "Peter Bortas" <bortas@gmail.com>
-To: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
-Subject: Re: [PATCH] Fix DMA on Dreamcast
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lethal@users.sourceforge.net, marcus@mc.pp.se
-In-Reply-To: <92a12cdb0707210506t5cf58cc4gc5b70f335545dc3f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Jul 2007 10:17:12 -0400
+Received: from mail.screens.ru ([213.234.233.54]:40480 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757493AbXGUORK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 10:17:10 -0400
+Date: Sat, 21 Jul 2007 18:18:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@mandriva.com>
+Subject: Re: [PATCH] pi-futex: set PF_EXITING without taking ->pi_lock
+Message-ID: <20070721141814.GA1013@tv-sign.ru>
+References: <20070721115712.GA871@tv-sign.ru> <20070721123159.GB1769@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <92a12cdb0707191230g216feaf2ied3e95bacf4dd572@mail.gmail.com>
-	 <20070720120408.1f190269.akpm@linux-foundation.org>
-	 <92a12cdb0707210322m6670acaer768d078c5e358b0c@mail.gmail.com>
-	 <7e5f60720707210424w48f9dc10hff044d702f7bd1d3@mail.gmail.com>
-	 <92a12cdb0707210506t5cf58cc4gc5b70f335545dc3f@mail.gmail.com>
+In-Reply-To: <20070721123159.GB1769@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/21/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
-> On 21/07/07, Peter Bortas <bortas@gmail.com> wrote:
->
-> >
-> > Sidenote: Does Linux handle the Dreamcast DMA errata?
-> >
->
-> You need to explain what you mean (at least to me!).
->
-> If you mean will it degrade gracefully - not without this patch if set
-> to the (correct) defconfig. With iffy settings it will.
+On 07/21, Ingo Molnar wrote:
+> 
+> * Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> 
+> > It is a bit annoying that do_exit() takes ->pi_lock to set PF_EXITING.
+> > All we need is to synchronize with lookup_pi_state() which saw this task
+> > without PF_EXITING under ->pi_lock.
+> > 
+> > Change do_exit() to use spin_unlock_wait().
+> > 
+> > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 
-If I remember correctly (and that's a big if since I last looked at it
-in 2001) some revisions of the Dreamcast hardware would sporadically
-lock up if you scheduled a new DMA request to quickly after a previous
-one, even if you checked the ready bit. It's worked around by a delay
-of X microseconds as recommended by Sega engineers. I don't remember
-the value of X, nor where exactly in the flow this workaround should
-be applied.
+Thanks!
 
-Adding Marcus in case he has a better memory than me.
+> > -	spin_lock_irq(&tsk->pi_lock);
+> > -	tsk->flags |= PF_EXITING;
+> > -	spin_unlock_irq(&tsk->pi_lock);
+> > +	smp_mb();
+> > +	spin_unlock_wait(&tsk->pi_lock);
+> 
+> hm, isnt spin_unlock_wait() an SMP barrier in itself?
 
--- 
-Peter Bortas
+no, only barrier() due to cpu_relax()
+
+> (if not then it should be.)
+
+I think you are right, I can't imagine a valid usage of spin_unlock_wait()
+without a barrier.
+
+For example, from net/dccp/ccid.c
+
+	static void ccids_write_lock(void)
+	{
+		spin_lock(&ccids_lock);
+		while (atomic_read(&ccids_lockct) != 0) {
+			spin_unlock(&ccids_lock);
+			yield();
+			spin_lock(&ccids_lock);
+		}
+	}
+
+	static inline void ccids_read_lock(void)
+	{
+		atomic_inc(&ccids_lockct);
+		spin_unlock_wait(&ccids_lock);
+	}
+
+This looks racy, in theory atomic_inc() and spin_unlock_wait() could be
+re-ordered. However, in this particular case we have an "optimized"
+smp_mb_after_atomic_inc(), perhaps it is good that the caller can choose
+the "right" barrier by hand.
+
+Oleg.
+
