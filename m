@@ -1,139 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbXGURzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbXGUR4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756293AbXGURzs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 13:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXGURzj
+	id S1759158AbXGUR4e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 13:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXGUR40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 13:55:39 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:48585 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbXGURzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 13:55:38 -0400
-Message-ID: <46A24846.7050803@gmail.com>
-Date: Sat, 21 Jul 2007 19:54:14 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Sat, 21 Jul 2007 13:56:26 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41154 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752563AbXGUR4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 13:56:25 -0400
+Date: Sat, 21 Jul 2007 19:56:39 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: david@lang.hm, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+Message-ID: <20070721175639.GA3701@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org> <200707171802.30903.rjw@sisk.pl> <Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm> <200707172150.44417.rjw@sisk.pl> <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm> <20070721102520.GE1902@elf.ucw.cz> <87ps2lojlc.fsf@jbms.ath.cx>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Al Boldi <a1426z@gawab.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFH] Partition table recovery
-References: <200707200813.03553.a1426z@gawab.com> <200707201429.34419.a1426z@gawab.com> <20070720113914.GJ22998@lug-owl.de> <200707201522.17270.a1426z@gawab.com> <20070720160614.GG26752@thunk.org>
-In-Reply-To: <20070720160614.GG26752@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87ps2lojlc.fsf@jbms.ath.cx>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/20/2007 06:06 PM, Theodore Tso wrote:
+Hi!
 
-> It wouldn't be that hard to put a backup partition table at the beginning
-> of an ext2/3 filesystem.  No one is currently using the space between
-> offset 512 and 1023 bytes, and it would be an easy place to stash a
-> backup copy of the partition table.  We wouldn't be able to use the MBR
-> format, since information about extended partitions are stored scattered
-> across the disk.
-
-I was looking into this, but I'm afraid I believe it's not a very good idea.
-
-> So for the sake of argument, I'll propose the following partition
-> backup, starting at offset 512 and going for 512 bytes to byte #1023:
+> Pavel Machek <pavel@ucw.cz> writes:
 > 
-> offset 
-> from 512  Description
-> -------   -----------
-> 0..7      Signature ASCII: "PARTBAK1"
-> 8..9      Part-type: 1=MBR
+> [snip]
+> 
+> > So it will be break at least battery status and "AC plugged in"
+> > status, because those are handled by ACPI and we do not know how to
+> > control them by hand.
+> 
+> It seems that it should be possible to initialize ACPI as if the system
+> just booted up normally.  Then battery status and such should be
+> correct, since they are correct after normal initialization.
+> 
+> It should be possible to make hibernate look just like a reboot to all
+> of the devices, including ACPI stuff.
 
-Not sure what you mean with this type field. You were suggesting to only 
-backup "Plain Ol' Partition" tables anyway weren't you?
-
-> 10	  # of heads
-> 11	  # sectors
-
-This is a problem. Today the CHS fields in the partition entries don't mean 
-much of anything anymore and Linux happily ignores them but DOS and (hence) 
-Windows 9x do not. From time to time I still have the Windows 98 install 
-that's sitting in a corner of my disk throw a fit just by having set the 
-BIOS from LBA to Large (meaning the geometry the BIOS pretends the disk has 
-changes) for example. Old DOS installs that I keep around for the purpose of 
-hardware testing with the originally supplied drivers make for even more of 
-a "don't touch, don't touch!" thing -- various version of DOS throw fits for 
-various reasons.
-
-As such, really the only functional thing to do is backup _whatever_ is 
-there in the CHS fields in the entries currently and unfortunately this can 
-vary between entries, and certainly between runs of whatever program creates 
-them. For example, the user may have adjusted the layout in the BIOS or some 
-or all partitions may have been created while the disk was in a different 
-machine all together. That is to say, really no attempt should be made at 
-being smart about the CHS values -- a backup should just store the actual 
-(16-byte) partition table entry.
-
-> 12	  # of partitions in the backup
-> 13..15    Reserved (must be zero)
-> 16..31	  first part entry
-> ...
-> 496..511 31st partition entry
-
-And this is the biggest problem. IDE for example allows 63 partitions and 
-while in practice not many people will actually also have used that many, 31 
-isn't hugely roomy either especially due to the way extended partitions are 
-kept.
-
-An extended partition is a partition with type (0x05 || 0x0F || 0x85) the 
-first sector of which contains another partition table. That second-level 
-partition table generally consists of two entries; the first for the logical 
-(actual) partition and the second being yet another extended partition, 
-where walking the list gets you all.
-
-However, there can be more than just 1 extended partition on a disk and this 
-isn't (or wasn't...) in fact uncommon. Windows 9x at least used to create 
-multiple partitions as 1 primary and the rest (even if just 1 as well) as 
-logicals inside one 0x05/0x0F extended. When you then installed Linux onto 
-the same disk, needed more than the 3 MBR entries left, and wanted to make 
-sure that Windows wouldn't trip over any non-fat entries in the list of 
-extended partitions (which it did) you'd create 1 0x85 "Linux only" extended 
-  in the MBR that Windows just ignores -- not a problem since it couldn't 
-read any of the filesystems on them anyway.
-
-This already means you need to keep more information that just the logicals 
-(the actual partitions) since you can't reliably restore the tables from a 
-list of them alone.
-
-Moveover, the "generally consists of two entries" above isn't guaranteed 
-either. The second-level table _can_ contain more than 1 logical. Linux 
-never minded much of anything and back when I was experimenting with more 
-operating systems (on one disk) they did -- I used to mostly create my 
-partition tables with Norton Diskedit at the time...
-
-A bullet-proof backup then has to really store these actual second-level 
-tables verbatim again as you can't assume too much about them meaning you're 
-going to be storing a complete 4-entry table for every logical which 
-ofcourse eats space in the available 512 bytes / 31 entries _way_ too fast.
-
-Moreover once more -- why stop at "normal" logicals? I for example have a 
-MINIX 2 partition sitting on this disk and it uses a subpartitioning scheme 
-through the same DOS-style second-level partition-table setup. First entry 
-in the second-level table is generally used for / and third for /usr meaning 
-two additional partitions. And if two aren't bad enough, from time to time 
-(when after buying a new disk my ogg vorbis collection hasn't yet grown to 
-fill it again yet) I keep a FreeBSD install around which means 6 or so 
-additional "slices".
-
-Ignoring those alien partitions is sort of okay, but as said, with only 512 
-bytes to spare, this is all inevitable going to be a "sorta works most of 
-the time perhaps" sort of solution. The best solution is a little program 
-that backs things up verbatim to wherever you want (such as a floppy or USB 
-stick for example).
-
-sfdisk -d already works most of the time. Not as a verbatim tool (I actually 
-semi-frequently use a "sfdisk -d /dev/hda | sfdisk" invocation as a way to 
-_rewrite_ the CHS fields to other values after changing machines around on a 
-disk) but something you'd backup on the FS level should, in my opinion, need 
-to be less fragile than would be possible with just 512 bytes available.
-
-Rene.
-
+Patch to make that work with swsusp/shutdown method would be indeed
+welcome. It does not work today.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
