@@ -1,80 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbXGUSny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbXGUSyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbXGUSny (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 14:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXGUSnp
+	id S1759510AbXGUSyS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 14:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbXGUSyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 14:43:45 -0400
-Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:43242 "HELO
-	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753536AbXGUSno (ORCPT
+	Sat, 21 Jul 2007 14:54:04 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45934 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590AbXGUSyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 14:43:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=kSXrdW0JetckS/q9Nskb+1WG6LNinHcQAFBmedb3snnS3p3nJwBDxPvCeBfwJEhEYlsftodOLt3VB+u0LROj0sUvCFWlzlbIhsUTvbQFixic+4LxLQxLCCkyJ0Ua6uYqVI1QH48FlcBqpMefP7cYg2uwrK8RpcpYdkncLEg93zk=  ;
-X-YMail-OSG: ms4XIJ4VM1lk1D0V37H2RPvKBBilyluvcOaKaETdSafiRfzkeYhBONWpQG9q.r_lmQWzUO0JeQ--
-From: David Brownell <david-b@pacbell.net>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Subject: Re: [PATCH][14/37] Clean up duplicate includes in drivers/spi/
-Date: Sat, 21 Jul 2007 11:24:52 -0700
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       spi-devel-general@lists.sourceforge.net, Nicolas Pitre <nico@cam.org>,
-       Aubrey Li <aubrey.li@analog.com>
-References: <200707211702.56466.jesper.juhl@gmail.com>
-In-Reply-To: <200707211702.56466.jesper.juhl@gmail.com>
+	Sat, 21 Jul 2007 14:54:00 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: Latchesar Ionkov <lucho@ionkov.net>, <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] 9p: Don't use binary sysctl numbers.
+Date: Sat, 21 Jul 2007 12:53:19 -0600
+Message-ID: <m1y7h9wpuo.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707211124.53195.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 July 2007, Jesper Juhl wrote:
-> Hi,
-> 
-> This patch cleans up duplicate includes in
-> 	drivers/spi/
-> 
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-ACK ... although, on general principles I suspect there are more
-needless includes to remove, these are just especially obvious.  :)
+The recent 9p commit: bd238fb431f31989898423c8b6496bc8c4204a86
+that supposedly only moved files also introduced a new 9p sysctl
+interface that did not properly register it's sysctl binary numbers,
+and since it was only for debugging clearly did not need a binary fast
+path in any case.  So this patch just remove the binary numbers.
 
+See Documentation/sysctl/ctl_unnumbered.txt for more details.
 
-> ---
-> 
-> diff --git a/drivers/spi/pxa2xx_spi.c b/drivers/spi/pxa2xx_spi.c
-> index e51311b..16bf66b 100644
-> --- a/drivers/spi/pxa2xx_spi.c
-> +++ b/drivers/spi/pxa2xx_spi.c
-> @@ -26,7 +26,6 @@
->  #include <linux/dma-mapping.h>
->  #include <linux/spi/spi.h>
->  #include <linux/workqueue.h>
-> -#include <linux/errno.h>
->  #include <linux/delay.h>
->  
->  #include <asm/io.h>
-> diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-> index 48587c2..88362b4 100644
-> --- a/drivers/spi/spi_bfin5xx.c
-> +++ b/drivers/spi/spi_bfin5xx.c
-> @@ -39,7 +39,6 @@
->  #include <linux/dma-mapping.h>
->  #include <linux/spi/spi.h>
->  #include <linux/workqueue.h>
-> -#include <linux/errno.h>
->  #include <linux/delay.h>
->  
->  #include <asm/io.h>
-> 
+While I was at it I cleaned up the sysctl initializers a little as
+well so there is less to read.
 
+Cc: Latchesar Ionkov <lucho@ionkov.net>
+Cc: Eric Van Hensbergen <ericvh@gmail.com>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ net/9p/sysctl.c |   21 ++++++++-------------
+ 1 files changed, 8 insertions(+), 13 deletions(-)
+
+diff --git a/net/9p/sysctl.c b/net/9p/sysctl.c
+index e7fe706..8b61027 100644
+--- a/net/9p/sysctl.c
++++ b/net/9p/sysctl.c
+@@ -28,15 +28,10 @@
+ #include <linux/init.h>
+ #include <net/9p/9p.h>
+ 
+-enum {
+-	P9_SYSCTL_NET = 487,
+-	P9_SYSCTL_DEBUG = 1,
+-};
+-
+-static ctl_table p9_table[] = {
++static struct ctl_table p9_table[] = {
+ #ifdef CONFIG_NET_9P_DEBUG
+ 	{
+-		.ctl_name       = P9_SYSCTL_DEBUG,
++		.ctl_name       = CTL_UNNUMBERED,
+ 		.procname       = "debug",
+ 		.data           = &p9_debug_level,
+ 		.maxlen         = sizeof(int),
+@@ -44,21 +39,21 @@ static ctl_table p9_table[] = {
+ 		.proc_handler   = &proc_dointvec
+ 	},
+ #endif
+-	{	.ctl_name	= 0 },
++	{},
+ };
+ 
+-static ctl_table p9_net_table[] = {
++static struct ctl_table p9_net_table[] = {
+ 	{
+-		.ctl_name	= P9_SYSCTL_NET,
++		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "9p",
+ 		.maxlen		= 0,
+ 		.mode		= 0555,
+ 		.child		= p9_table,
+ 	},
+-	{	.ctl_name	= 0 },
++	{},
+ };
+ 
+-static ctl_table p9_ctl_table[] = {
++static struct ctl_table p9_ctl_table[] = {
+ 	{
+ 		.ctl_name	= CTL_NET,
+ 		.procname	= "net",
+@@ -66,7 +61,7 @@ static ctl_table p9_ctl_table[] = {
+ 		.mode		= 0555,
+ 		.child		= p9_net_table,
+ 	},
+-	{	.ctl_name	= 0 },
++	{},
+ };
+ 
+ static struct ctl_table_header *p9_table_header;
+-- 
+1.5.1.1.181.g2de0
 
