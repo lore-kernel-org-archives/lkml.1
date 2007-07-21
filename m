@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933734AbXGUGET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934284AbXGUGGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933734AbXGUGET (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 02:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbXGUGEG
+	id S934284AbXGUGGa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 02:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761040AbXGUGGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 02:04:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45168 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755259AbXGUGEC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 02:04:02 -0400
-Date: Fri, 20 Jul 2007 23:03:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/8] compacting file_ra_state
-Message-Id: <20070720230344.bed611b6.akpm@linux-foundation.org>
-In-Reply-To: <20070721055706.GA5097@one.firstfloor.org>
-References: <20070721035733.951838089@mail.ustc.edu.cn>
-	<20070721035850.977231489@mail.ustc.edu.cn>
-	<384990797.09024@ustc.edu.cn>
-	<alpine.LFD.0.999.0707202126250.27249@woody.linux-foundation.org>
-	<20070721055706.GA5097@one.firstfloor.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 21 Jul 2007 02:06:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59498 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760563AbXGUGGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 02:06:21 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+Date: Sat, 21 Jul 2007 08:06:11 +0200
+User-Agent: KMail/1.9.6
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+References: <1184970779.4012.38.camel@chaos> <200707210740.19227.ak@suse.de> <Pine.LNX.4.58.0707210147340.29129@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0707210147340.29129@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707210806.12880.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007 07:57:06 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+On Saturday 21 July 2007 07:50:46 Steven Rostedt wrote:
+ 
+> This patch was the beginning of the merger, not the end result. It strived
+> for binary identical images. It was to put everything together as a
+> _starting_point_!   The next thing to do after this is to start the
+> merging.
 
-> On Fri, Jul 20, 2007 at 09:27:01PM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Sat, 21 Jul 2007, Fengguang Wu wrote:
-> > >
-> > > Sorry, forgot to prefix the patch titles with [readahead].
-> > > Should I repost?
-> > 
-> > Not for me, but on the other hand, I'd prefer for this to be in -mm a bit, 
-> 
-> Haven't the readahead patches already essentially been in -mm* for some time?
-> I thought the new patches were some some restructured code, but essentially
-> the tested algorithms? 
-> 
+Well we've been merging what makes sense since several years. So it's not 
+really starting anything that hasn't already occurred.
 
-The all-singing all-dancging readahead code was in -mm for maybe a year. 
-Then the much-reduced, feasible-for-merging code was in -mm for several
-months.  It went mainline this week.
-
-This new patch series is some optimisation and algorithm tweaking on top of
-the recently-merged well-tested stuff.  Waiting for 2.6.24 is appropriate.
-
-
+-Andi
