@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933407AbXGUPlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934420AbXGUPqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933407AbXGUPlQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 11:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXGUPlF
+	id S934420AbXGUPqz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 11:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbXGUPqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 11:41:05 -0400
-Received: from alnrmhc12.comcast.net ([206.18.177.52]:38991 "EHLO
-	alnrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbXGUPlD (ORCPT
+	Sat, 21 Jul 2007 11:46:46 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39277 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755305AbXGUPqq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 11:41:03 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: david@lang.hm, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang\, Ying" <ying.huang@intel.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
-	<200707171802.30903.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
-	<200707172150.44417.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
-	<20070721102520.GE1902@elf.ucw.cz>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Sat, 21 Jul 2007 11:35:43 -0400
-In-Reply-To: <20070721102520.GE1902@elf.ucw.cz> (Pavel Machek's message of
-	"Sat\, 21 Jul 2007 12\:25\:20 +0200")
-Message-ID: <87ps2lojlc.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
+	Sat, 21 Jul 2007 11:46:46 -0400
+Date: Sat, 21 Jul 2007 17:46:45 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: pata_platform: Fix NULL pointer dereference
+In-Reply-To: <alpine.LFD.0.999.0707200910020.27249@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707211746050.21737@fbirervta.pbzchgretzou.qr>
+References: <20070720035058.25300.28389.sendpatchset@clockwork.opensource.s
+ e> <alpine.LFD.0.999.0707200910020.27249@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
 
-[snip]
+On Jul 20 2007 09:12, Linus Torvalds wrote:
+>Ok, the *fix* looks real enough, but it seems that you have done your line 
+>splitting with a word processor rather than with a source code editor:
+>
+>> +	return ata_host_activate(host, platform_get_irq(pdev, 0),
+>> +				 ata_interrupt, pp_info ? pp_info->irq_flags
+>> +				 : 0, &pata_platform_sht);
+>
+>Please don't do things like this. Splitting up expressions across two 
+>lines just to make the line length come out "right" is silly.
+>
+>So do the
+>
+>	"pp_info ? pp_info->irq_flags : 0"
+>
+>expression on one line.
 
-> So it will be break at least battery status and "AC plugged in"
-> status, because those are handled by ACPI and we do not know how to
-> control them by hand.
+Or just do
 
-It seems that it should be possible to initialize ACPI as if the system
-just booted up normally.  Then battery status and such should be
-correct, since they are correct after normal initialization.
+	return ata_host_activate(host, platform_get_irq(pdev, 0),
+	       ata_interrupt, pp_info ? pp_info->irq_flags : 0,
+	       &pata_platform_sht);
 
-It should be possible to make hibernate look just like a reboot to all
-of the devices, including ACPI stuff.
+for returns, it's ok.
 
+
+	Jan
 -- 
-Jeremy Maitin-Shepard
