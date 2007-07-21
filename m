@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763786AbXGUC4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935087AbXGUDDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763786AbXGUC4d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 22:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbXGUC40
+	id S935087AbXGUDDK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 23:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbXGUDC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 22:56:26 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:40799 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbXGUC4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 22:56:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lsPe+RCc07vzas+iCBqvjNrRRToVwgNkIPTBk/5mO9vYuVtPReRjy6EGEX5xU2JW4z9tx1dnQ9aKOh0g76NR/0xY+lOm/4ZqNd72yGkPAmxO40HkZ/2KAm09p70liPzDuY0es9PvoBI1iUAH7v1sP7H8n6IWbNcxVl03IoI38Ng=
-Message-ID: <86802c440707201956n6f3579e3g7eb807c6cd4c0d24@mail.gmail.com>
-Date: Fri, 20 Jul 2007 19:56:24 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@osdl.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Andi Kleen" <ak@suse.de>, "Arjan van de Ven" <arjan@infradead.org>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <20070720224033.GA12358@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jul 2007 23:02:57 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54538 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756241AbXGUDC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jul 2007 23:02:56 -0400
+Date: Fri, 20 Jul 2007 20:02:54 -0700
+From: sukadev@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [PATCH 4/5] [V2] Define is_global_init() and is_container_init()
+Message-ID: <20070721030254.GA5344@us.ibm.com>
+References: <20070719071206.GE10195@us.ibm.com> <20070719072158.GD28216@us.ibm.com> <20070720154113.db9fb8a4.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1184970779.4012.38.camel@chaos> <46A1396F.4090204@garzik.org>
-	 <20070720224033.GA12358@elte.hu>
+In-Reply-To: <20070720154113.db9fb8a4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/20/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Jeff Garzik <jeff@garzik.org> wrote:
->
-> > I agree with Andi...  it's quite nice to be able to leave some
-> > arch/i386 stuff, and not carry it over to arch/x86-64.
->
-> we can leave those few items in arch/x86 just as much. No need to keep
-> around a legacy tree for that.
+Andrew Morton [akpm@linux-foundation.org] wrote:
+| On Thu, 19 Jul 2007 00:21:58 -0700
+| sukadev@us.ibm.com wrote:
+| 
+| > --- lx26-22-rc6-mm1a.orig/kernel/pid.c	2007-07-16 12:55:15.000000000 -0700
+| > +++ lx26-22-rc6-mm1a/kernel/pid.c	2007-07-16 13:10:48.000000000 -0700
+| > @@ -69,6 +69,13 @@ struct pid_namespace init_pid_ns = {
+| >  	.last_pid = 0,
+| >  	.child_reaper = &init_task
+| >  };
+| > +EXPORT_SYMBOL(init_pid_ns);
+| > +
+| > +int is_global_init(struct task_struct *tsk)
+| > +{
+| > +	return tsk == init_pid_ns.child_reaper;
+| > +}
+| > +EXPORT_SYMBOL(is_global_init);
+| 
+| I don't immediately see why init_pid_ns was exported to modules.
 
-how about making all files ans directories take _32 or _64 in the name?
-except the files or dir that are shared.
+| 
+| It would need to be exported if is_global_init() was made static inline in a
+| header (which seems like a sensible thing to do), but it wasn't.
 
-for example: k8_bus.c is only need by 64 ===> change it to k8_bus_64.c
-mach-generic===> mach-generic_32
+It did not need to be exported in this patch.
 
-YH
+I have a couple of follow-on patches that cleaned up some header-file
+dependencies and made is_global_init() inline. Those patches are
+changing a bit as I merge them with Pavel Emelianov's pid ns changes.
+
+I will send a separate patch to inline is_global_init().
+
+Suka
