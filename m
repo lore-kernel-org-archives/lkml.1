@@ -1,83 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936713AbXGUIJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934926AbXGUILk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936713AbXGUIJS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 04:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760090AbXGUIJB
+	id S934926AbXGUILk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 04:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760259AbXGUILY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 04:09:01 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:47650 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbXGUII7 (ORCPT
+	Sat, 21 Jul 2007 04:11:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:37198 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbXGUILU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 04:08:59 -0400
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: kbuild-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier@gentoo.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 25/33] kbuild: use POSIX BRE in headers install target
-In-Reply-To: <1184681344376-git-send-email-sam@ravnborg.org>
-References: <11846813423231-git-send-email-sam@ravnborg.org> <11846813431389-git-send-email-sam@ravnborg.org> <1184681343412-git-send-email-sam@ravnborg.org> <11846813432249-git-send-email-sam@ravnborg.org> <1184681343297-git-send-email-sam@ravnborg.org> <11846813432231-git-send-email-sam@ravnborg.org> <1184681343423-git-send-email-sam@ravnborg.org> <11846813432234-git-send-email-sam@ravnborg.org> <11846813441521-git-send-email-sam@ravnborg.org> <11846813443387-git-send-email-sam@ravnborg.org> <1184681344594-git-send-email-sam@ravnborg.org> <11846813444176-git-send-email-sam@ravnborg.org> <11846813442297-g   it-send-email-sam@ravnborg.org> <11846813443187-git-send-email-sam@ravnborg.org> <11846813   444171-git-send-email-sam@ravnborg.org> <1184681344985-git-send-email-sam@ravnborg.org> <11846813442810-git-send-email-sam@ravnborg.org> <118468134441-git-send-email-sam@ravnborg.org> <11846813441741-git-send-email-sam@ravnborg.org> <1184681344376-git-send-email-sam@ravnborg.org>
-Date: Sat, 21 Jul 2007 10:22:34 +0200
-Message-Id: <E1ICAEU-0005an-5F@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Sat, 21 Jul 2007 04:11:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bCwp2b2JXXXFUTCyoirEOLQw5/QcjR42D7T8QBW+TB9LXcFAAcNnrsyQm9WCaP+/KHu/ThwPkKBjkHNg2AanOsHulPPRVXXAVWU4ysYKOkK8aYiGpkU37prgQB2EiLb3ZqGEOovmi44le1Fxbtzriilem5uCHVlyZiRhZh1/swM=
+Message-ID: <6bffcb0e0707210111n41c1a193k7ce92aeee8e3047d@mail.gmail.com>
+Date: Sat, 21 Jul 2007 10:11:19 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: [broken-out-2007-07-20-00-22] kernel bug at kernel/params:570
+Cc: "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       rdunlap@xenotime.net, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <a781481a0707202300t781345afu1ca1154a1d14e5d8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6bffcb0e0707200932p2b905e21g7970172ca7eb4da7@mail.gmail.com>
+	 <a781481a0707201643l17ea92fajfbc256a7a16a802f@mail.gmail.com>
+	 <a781481a0707201703h6318fe65td4c5c6f57bb7eb24@mail.gmail.com>
+	 <6bffcb0e0707201728u6deeccd1j453ff89d0767dccc@mail.gmail.com>
+	 <20070721010257.GA9561@suse.de>
+	 <20070720183733.c53b511b.akpm@linux-foundation.org>
+	 <20070721014419.GA10761@suse.de>
+	 <a781481a0707202021r977ae5fg9655dd2881836f13@mail.gmail.com>
+	 <a781481a0707202057q23a0ea6by97ee9b40e9fc5a0b@mail.gmail.com>
+	 <a781481a0707202300t781345afu1ca1154a1d14e5d8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Date: Tue, 17 Jul 2007 16:08:54 +0200
+On 21/07/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> Ok, this worked:
 >
-> From: Mike Frysinger <vapier@gentoo.org>
+> > His .config has CONFIG_PROFILE_LIKELY=y
+> > which replaces unlikely() / likely() with do_check_likely() and forces
+> > gcc to clobber %eax with the condition itself, which in our case was
+> > (ret < 0) == TRUE, and thus, the "1" value we saw in %eax in the
+> > register dumps.
 >
-> The sed expression used at the moment in scripts/Makefile.headersinst
-> relies on the (handy) GNU extension where you can escape ERE's in an
-> otherwise BRE without using the GNU -r option.  The following patch
-> replaces this "\+" usage with a functionally equivalent POSIX BRE compliant
-> "\{1,\}".
-
-Matching at least one occurrence, right?
-
-> Tested with `make headers_install` against blackfin/x86_64/i386
-> targets.
+> The usage of unlikely() in BUG_ON and CONFIG_PROFILE_LIKELY=y
+> meant %eax that held `ret' from kobject_add() was being lost.
 >
-> Stupid whiny OS X users and their crappy sed ;)
+> With that turned off:
+>
+> 0xc136071b      call   0xc1103744 <kobject_add>
+> [ ret i.e. %eax = kobject_add() ]
+> 0xc1360720      test   %eax,%eax
+> [ %eax = %eax && %eax = %eax ]
+> [ probably gcc thinks this is an efficient < 0 check on i386 :-) ]
+> 0xc1360722      jns    0xc1360728
+> [ if false jump down below, else: ]
+> 0xc1360724      ud2a
+> [ invalid opcode exception. /* from BUG */ ]
+> 0xc1360726      jmp    0xc1360726
+> [ for (;;) ; /* from BUG */ ]
+>
+> > We should probably document somewhere that CONFIG_PROFILE_LIKELY
+> > is not good for debugging.
+> >
+> > Hmmm ... thinking out aloud here, but probably I don't need to fix that
+> > libata breakage at all. I'll just put the BUG_ON(ret < 0) back in the
+> > code, deselect PROFILE_LIKELY, and this time we _will_ have the
+> > return of kobject_add() in %eax ...
+>
+> So %eax retained its value. I reproduced Michal's oops (without having
+> to select CONFIG_ATA, because param_sysfs_init() is called way
+> earlier than searching for root block device during boot -- which is what
+> my system didn't like without ATA), and yes, I saw:
+>
+> %eax == ffffffea == -22 == -EINVAL.
+>
+> But:
+>
+> When I replace the BUG_ON() with Greg's (or my modified) patch,
+> the kernel ignores that error as we wanted, but _still_ crashes before
+> finding the root block device (because ATA is not in kernel and my
+> system seems to require it). Unfortunately, lots of dmesg output
+> has scrolled up by then, and our "printk" is lost. Because of no
+> CONFIG_ATA, nothing gets written to disk either. I don't have a
+> serial cable around, netconsole not up yet at that point.
 
-That may be. My games with strict POSIX sed syntax render busybox's sed
-as crap for example. So, you never know.
+Neither serial nor net console doesn't work, system hangs very early.
 
->  # Eliminate the contents of (and inclusions of) compiler.h
+>
+> Ugh, I'm running out of ideas.
+>
+> Satyam
+>
 
-OK, that means annotations and non ANSI 'inline' thing. Lets see.
+Regards,
+Michal
 
->  HDRSED  := sed 	-e "s/ inline / __inline__ /g" \
-[]
-> -		-e "s/[[:space:]]__attribute_const__[[:space:]]\+/\ /g" \
-
-* [[:space:]] are more than tab and space isspace(3), is it more
-  effective to use [[:blank:]] instead?
-
-> +		-e 
-> "s/[[:space:]]__user[[:space:]]\{1,\}
-
-substitute one or more ' __user '
-
-> / /g" \
-
-with ' ', everywhere (flag 'g'). So, is it really needed that '\{' thing?
-
-> +		-e "s/(__user[[:space:]]\{1,\}/ (/g" \
-> +		-e "s/[[:space:]]__force[[:space:]]\{1,\}/ /g" \
-> +		-e "s/(__force[[:space:]]\{1,\}/ (/g" \
-> +		-e "s/[[:space:]]__iomem[[:space:]]\{1,\}/ /g" \
-> +		-e "s/(__iomem[[:space:]]\{1,\}/ (/g" \
-> +		-e "s/[[:space:]]__attribute_const__[[:space:]]\{1,\}/\ /g" \
->  		-e "s/[[:space:]]__attribute_const__$$//" \
-
-Is it allowed to use identifiers like '__attribute_const__foo' or
-__attribute_const__[anything]? If it's not, last line is useless also.
-
->  		-e "/^\#include <linux\/compiler.h>/d"
-whitespace is allowed   ^ here and is used for better readability
-sometimes.
-____
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
