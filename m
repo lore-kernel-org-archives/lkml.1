@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbXGUDrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762187AbXGUDsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762006AbXGUDrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 23:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbXGUDrB
+	id S1762187AbXGUDsb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 23:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXGUDsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 23:47:01 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:46991 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754015AbXGUDrA (ORCPT
+	Fri, 20 Jul 2007 23:48:23 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41455
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754015AbXGUDsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 23:47:00 -0400
-Message-ID: <46A181A5.5010203@cosmosbay.com>
-Date: Sat, 21 Jul 2007 05:46:45 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Fri, 20 Jul 2007 23:48:22 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Greg KH <greg@kroah.com>
+Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
+Date: Fri, 20 Jul 2007 23:48:14 -0400
+User-Agent: KMail/1.9.6
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Michael-Luke Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Rod Whitby <rod@whitby.id.au>, Russell King <rmk@arm.linux.org.uk>,
+       david@lang.hm
+References: <200707171703.31340.rob@landley.net> <20070720095401.68e9ce03@gondolin.boeblingen.de.ibm.com> <20070720080936.GA22047@kroah.com>
+In-Reply-To: <20070720080936.GA22047@kroah.com>
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org,
-       linux-net@vger.kernel.org
-Subject: Re: posible latency issues in seq_read
-References: <46A125F4.3030504@nortel.com> <75b66ecd0707201518j45ef8bb7q7e48462ffbbc9c58@mail.gmail.com> <46A1399C.8010405@nortel.com>
-In-Reply-To: <46A1399C.8010405@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 21 Jul 2007 05:46:54 +0200 (CEST)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707202348.14759.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen a écrit :
-> Lee Revell wrote:
->> On 7/20/07, Chris Friesen <cfriesen@nortel.com> wrote:
-> 
->>> We've run into an issue (on 2.6.10) where calling "lsof" triggers lost
->>> packets on our server.  Preempt is disabled, and NAPI is enabled.
-> 
->> Can you reproduce with a recent kernel?  Lots of latency issues have
->> been fixed since then.
-> 
-> Unfortunately I have to fix it on this version (the bug was found on 
-> shipped product), so if there was a difference I'd have to isolate the 
-> changes and backport them.  Also, I can't run the software that triggers 
-> the problem on a newer kernel as it has dependencies on various patches 
-> that are not in mainline.
-> 
-> Basically what I'd like to know is whether calling schedule() in 
-> seq_read() is safe or whether it would break assumptions made by 
-> seq_file users.
-> 
+On Friday 20 July 2007 4:09:36 am Greg KH wrote:
+> On Fri, Jul 20, 2007 at 09:54:01AM +0200, Cornelia Huck wrote:
+> > On Fri, 20 Jul 2007 00:00:01 -0700,
+> >
+> > Greg KH <greg@kroah.com> wrote:
+> > > > I don't insist on it, mknod insists on it.  You cannot mknod a dev
+> > > > node without specifying block or char.
+> > > >
+> > > > You're saying that sysfs should provide major and minor numbers
+> > > > without anywhere specifying "char" or "block", meaning the major and
+> > > > minor numbers cannot be _used_.  I am insisting on getting the third
+> > > > piece of information without which "major" and "minor" are useless.
+> > > >
+> > > > I asked very specifically about this at OLS, several times.  What
+> > > > you're telling me now seems to contradict what you told me then.
+> > >
+> > > Here's the rule:
+> > > 	If the SUBSYSTEM is "block", it's a block device.  Otherwise
+> > > 	it's a char device.
+> >
+> > That's actually quite confusing to the casual reader, since:
+> > > But also realize that the majority of events you will get have nothing
+> > > to do with device nodes.  I think you are forgetting this fact.
+> >
+> > So the rule should be:
+> > 	If the SUBSYSTEM is "block" (implying major/minor are provided),
+> > 	it's a block device.
+> > 	If the SUBSYSTEM is not "block", and major/minor are provided,
+> > 	it's a char device.
+> > 	If major/minor are not provided, the event/device is not
+> > 	relevant to device node creation.
+>
+> Yes, that is much more descriptive, thanks.
 
-It wont help much. seq_read() is fine in itself.
+agreed, thanks.
 
-The problem is in established_get_next() and established_get_first() not 
-allowing softirq processing, while scanning a possibly huge hash table, even 
-if few sockets are hashed in.
+I'll try to post an updated version of my hotplug documentation later tonight.  
+(Just a _touch_ jetlagged at the moment, though.  It may only be 9:47 
+california time, but it's 11:47 on the east cost.  I think.)
 
-As cond_resched_softirq() was added in linux-2.6.11, you probably *need* to 
-check the diffs between linux-2.6.10 & linux-2.6.11
+> greg k-h
 
-files :
-
-include/linux/sched.h
-net/core/sock.c      (__release_sock() latency)
-net/ipv4/tcp_ipv4.c  (/proc/net/tcp latency)
-
-
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
