@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbXGUFmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXGUFm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762263AbXGUFmB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 01:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbXGUFly
+	id S1762801AbXGUFm4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 01:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbXGUFmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 01:41:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58699 "EHLO mx2.suse.de"
+	Sat, 21 Jul 2007 01:42:46 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:49209 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755384AbXGUFlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 01:41:53 -0400
-From: Andi Kleen <ak@suse.de>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-Date: Sat, 21 Jul 2007 07:40:18 +0200
-User-Agent: KMail/1.9.1
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@osdl.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Arjan van de Ven" <arjan@infradead.org>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-References: <1184970779.4012.38.camel@chaos> <6bffcb0e0707201655q664202e6v29b4e678de1b0d80@mail.gmail.com>
-In-Reply-To: <6bffcb0e0707201655q664202e6v29b4e678de1b0d80@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1755384AbXGUFmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 01:42:46 -0400
+Date: Sat, 21 Jul 2007 07:43:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/7] console: fix section mismatch warning in vgacon.c
+Message-ID: <20070721054359.GA31109@uranus.ravnborg.org>
+References: <20070720212743.GB25064@uranus.ravnborg.org> <1184974649.4538.4.camel@daplas>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707210740.19227.ak@suse.de>
+In-Reply-To: <1184974649.4538.4.camel@daplas>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 July 2007 01:55, Michal Piotrowski wrote:
-> Hi,
->
-> On 21/07/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > We are pleased to announce a project we've been working on for some
-> > time: the unified x86 architecture tree, or "arch/x86" - and we'd like
-> > to solicit feedback about it.
-> >
-> > What is this about?
->
-> [..]
->
-> > As usual, comments and suggestions are welcome!
->
-> I really like this idea - code duplication is a bad thing.
+On Sat, Jul 21, 2007 at 07:37:29AM +0800, Antonino A. Daplas wrote:
+> On Fri, 2007-07-20 at 23:27 +0200, Sam Ravnborg wrote:
+> > Fix following section mismatch warning:
+> > WARNING: vmlinux.o(.text+0x121e62): Section mismatch: reference to .init.text:__alloc_bootmem (between 'vgacon_startup' and 'vgacon_scrolldelta')
+> > 
+> > Browsing the code it seems that vgacon_scrollback_startup() is only
+> > called during the init phase so the reference to the .init.text
+> > section is OK.
+> > Teach modpost not to warn using ___init_refok.
+> > 
+> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Acked-by: Antonino Daplas <adaplas@gmail.com>
 
-Did you actually look at the patch? It doesn't have a single line
-less duplication than there was before. Everything that could
-be easily shared was shared already. 
+Thanks. Will you take care of forwarding it it or do we rely
+on Andrew in this area?
 
-It's just new window dressing without any real advantages.
-
--Andi
+	Sam
