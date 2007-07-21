@@ -1,85 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765510AbXGUWBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933721AbXGUWDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765510AbXGUWBO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 18:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760582AbXGUWBD
+	id S933721AbXGUWDB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 18:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762993AbXGUWCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 18:01:03 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43744 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759591AbXGUWBB (ORCPT
+	Sat, 21 Jul 2007 18:02:54 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:60760 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762972AbXGUWCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 18:01:01 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46A28217.2060005@s5r6.in-berlin.de>
-Date: Sun, 22 Jul 2007 00:00:55 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Sat, 21 Jul 2007 18:02:53 -0400
+Date: Sun, 22 Jul 2007 00:16:27 +0200
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: More effective processing (Re: [PATCH 25/33] kbuild: use POSIX BRE in headers install target)
+Message-ID: <20070721221627.GN475@flower.upol.cz>
+References: <1184681344985-git-send-email-sam@ravnborg.org> <11846813442810-git-send-email-sam@ravnborg.org> <118468134441-git-send-email-sam@ravnborg.org> <11846813441741-git-send-email-sam@ravnborg.org> <1184681344376-git-send-email-sam@ravnborg.org> <E1ICAEU-0005an-5F@flower> <8bd0f97a0707210127m565f9b2cnc7a8a203f671e948@mail.gmail.com> <20070721100422.GK475@flower.upol.cz> <8bd0f97a0707211221l2c7fedeoea8612876350db6d@mail.gmail.com> <20070721203916.GA2912@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       jidong xiao <jidong.xiao@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: what does select statement mean in Kconfig file?
-References: <4104961b0707210634gea4e240x11b043b4e64c7840@mail.gmail.com>	<Pine.LNX.4.64.0707210938190.22394@localhost.localdomain>	<46A2397C.4050100@s5r6.in-berlin.de> <m3lkd95tzf.fsf@maximus.localdomain>
-In-Reply-To: <m3lkd95tzf.fsf@maximus.localdomain>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070721203916.GA2912@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
-> 
->> The latter is sometimes hard or impossible to satisfy.  Therefore the
->> select statement should be used with care, i.e. only for library-type
->> helper code which itself shouldn't depend on further options.
-> 
-> How about depending on common dependency?
-> 
-> Something like
-> 
-> config A
-> 	bool XXX
-> 	depends on ARM
-> 
-> config B
-> 	depends on ARM
-> 	select A
-> 
-> 
-> or:
-> 
-> if ARM
-> 	config A
-> 		bool XXX
-> endif
-> 
-> if ARM
-> 	config B
-> 		select A
-> endif
+On Sat, Jul 21, 2007 at 10:39:16PM +0200, Sam Ravnborg wrote:
+> On Sat, Jul 21, 2007 at 03:21:43PM -0400, Mike Frysinger wrote:
+[]
+> > while you could try and make a claim against memory/cpu effeciency, i
+> > fail to see how the first or last claims could possibly be backed up
 
-That's OK.  Or generally, if A depends on X and B wants to select A,
-then it has to be guaranteed by whatever means that X is enabled,
-because "make XYZconfig" cannot select recursively.  Duplicating A's
-dependencies as dependencies for B is one way to ensure that A's
-dependencies are satisfied when B selects A.  Another way is to select
-not only A but also A's dependencies.
+Less \{\(\\n\t\+\)\} [0] stuff make readings regex much easier. My
+confusion shows that i didn't used \{ much, because have another ways
+so far. And even after my quick testing i didn't realize that there
+was unrelated to main task whitespace cleanup.
 
-That's why I wrote "/shouldn't/ depend on further options" rather than
-"/must not/ depend on further options".
+[0] http://sed.sf.net/grabbag/tutorials/lookup_tables.txt
 
-But whatever you do, as soon as you add a "select A", you have to watch
-if anybody eventually makes A dependent on something else.  Therefore
-think twice before you use select.
+> > but again, if you feel that strongly about it, you're certainly free
+> > to post a patch
+> 
+> I would much more prefer this functionality to be integrated into unifdef.
+> There is no good reason to have two different preprocesisng methonds, one
+> being the sed based one and the other the unidef one.
 
-Also, while select makes it easy for users to enable options, it makes
-it somewhat difficult for users to /disable/ options.  So there are also
-tradeoffs in usability.  This essentially means that you should never
-select huge subsystems.  As I said, only library-like helpers are
-suitable for select.
--- 
-Stefan Richter
--=====-=-=== -=== =-=-=
-http://arcgraph.de/sr/
+Clear definition of the task will help to design a solution. I can do
+the job, but figuring out all possible corner cases from current
+solutions, mixed in Makefiles or everywhere else is not option.
+
+> A sinlge dedicated program that contian the sum of the functionality would
+> be faster too.
+
+What do you think about this one? I want to propose to remove
+scripts/unifdef.c but to make clear policy about how to mark __KERNEL__
+sections in header files. We know how obfuscated C can be, and this also
+applies to preprocessing. There's known CodingStyle about some points.
+The thing is to specify rules, that will be easy for `sed` to do cleaup
+job.
+
+./linux/soundcard.h:#if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL)
+                      && !defined(_KERNEL)) || defined(USE_SEQ_MACROS)
+./linux/stat.h:#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
+
+Split __KERNEL__ check, make only positive, i.e.
+
+#if defined(__KERNEL__)
+#ifdef __KERNEL__
+
+./linux/stat.h:#ifdef __KERNEL__
+
+No `#else` and ending part to contain comment:
+
+./linux/smb_fs_sb.h:#endif /* __KERNEL__ */
+
+Simple enough:
+
+sed '/^#if[^_]*__KERNEL__/,/^#end[^_]*__KERNEL__/d'
+____
