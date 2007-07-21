@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbXGUTid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933373AbXGUTk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033AbXGUTid (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 15:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759450AbXGUTi0
+	id S933373AbXGUTk5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 15:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765525AbXGUTkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 15:38:26 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:50621 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756299AbXGUTiZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 15:38:25 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 21 Jul 2007 15:36:31 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Use menuconfig objects - Fusion
-In-Reply-To: <Pine.LNX.4.64.0707212135060.21737@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0707211536140.8335@localhost.localdomain>
-References: <200705102317.l4ANHrUC001117@shell0.pdx.osdl.net>
- <Pine.LNX.4.64.0707182035080.5385@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0707211501570.5853@localhost.localdomain>
- <Pine.LNX.4.64.0707212112060.21737@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0707211513170.6770@localhost.localdomain>
- <Pine.LNX.4.64.0707212135060.21737@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sat, 21 Jul 2007 15:40:37 -0400
+Received: from 1wt.eu ([62.212.114.60]:3858 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764995AbXGUTkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 15:40:35 -0400
+Date: Sat, 21 Jul 2007 21:40:28 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: Al Boldi <a1426z@gawab.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFH] Partion table recovery
+Message-ID: <20070721194027.GH943@1wt.eu>
+References: <200707200813.03553.a1426z@gawab.com> <4FEA8E81-3BA7-4F8C-AFD2-6B93487A9AD5@cam.ac.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4FEA8E81-3BA7-4F8C-AFD2-6B93487A9AD5@cam.ac.uk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007, Jan Engelhardt wrote:
-
->
-> On Jul 21 2007 15:15, Robert P. J. Day wrote:
-> >> >wouldn't it be philosophically cleaner if the internals of a
-> >> >menuconfig structure *automatically* depended on selection of the
-> >> >menuconfig and the "if" part was implicit?
-> >>
-> >> "menuconfig" is not a start marker like "menu" was. Hence it has no
-> >> "stop" marker either. We would need a new object type for that.
+On Fri, Jul 20, 2007 at 08:35:45AM +0100, Anton Altaparmakov wrote:
+> On 20 Jul 2007, at 06:13, Al Boldi wrote:
+> >As always, a good friend of mine managed to scratch my partion  
+> >table by
+> >cat'ing /dev/full into /dev/sda.  I was able to push him out of the  
+> >way, but
+> >at least the first 100MB are gone.  I can probably live without the  
+> >first
+> >partion, but there are many partitions after that, which I hope should
+> >easily be recoverable.
 > >
-> >http://www.linuxrocket.net/index.cgi?a=MailArchiver&ma=ShowMail&Id=525787
->
-> Exactly like that. But kconfig don't have selectablemenu (yet).
+> >I tried parted, but it's not working out for me.  Does anybody know  
+> >of a
+> >simple partition recovery tool, that would just scan the disk for lost
+> >partions?
+> 
+> parted and its derivatives are pile of crap...  They cause corruption  
+> to totally healthy systems at the best of times.  Don't go near them.
+> 
+> Use TestDisk (http://www.cgsecurity.org/wiki/TestDisk) and be happy.   
+> (-:
 
-well, fine ... i'll see what i can do.  :-)
+Thanks for this link Anton, it looks awesome and I'll add it to my
+collection :-)
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+I mostly use vche (virtual console hex editor) to look for strings, find
+offsets and/or fix data by hand. This should make me save some time !
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Regards,
+Willy
+
