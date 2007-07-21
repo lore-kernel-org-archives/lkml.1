@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933363AbXGUHZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934183AbXGUH3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933363AbXGUHZK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 03:25:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758187AbXGUHY7
+	id S934183AbXGUH3u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 03:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758453AbXGUH3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 03:24:59 -0400
-Received: from ozlabs.org ([203.10.76.45]:43424 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754171AbXGUHY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 03:24:58 -0400
-Subject: Re: [PATCH 7/7] readahead: basic support of interleaved reads
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070721044347.388744012@mail.ustc.edu.cn>
-References: <20070721044300.909424569@mail.ustc.edu.cn>
-	 <20070721044347.388744012@mail.ustc.edu.cn>
-Content-Type: text/plain
-Date: Sat, 21 Jul 2007 17:24:39 +1000
-Message-Id: <1185002679.6344.30.camel@localhost.localdomain>
+	Sat, 21 Jul 2007 03:29:43 -0400
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:60895 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754171AbXGUH3m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 03:29:42 -0400
+Date: Sat, 21 Jul 2007 09:29:30 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, tonyko@lineo.ca,
+       robin.getz@analog.com, linux-kernel@vger.kernel.org
+Subject: Re: blackfin - cmpxchg not atomic ?
+Message-ID: <20070721072930.GS1678@pengutronix.de>
+References: <20070720202807.GA15009@Krystal> <8bd0f97a0707201336l6bed7c24i7014333ce356417f@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0707201336l6bed7c24i7014333ce356417f@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-21 at 12:43 +0800, Fengguang Wu wrote:
-> plain text document attachment (readahead-interleaved-reads.patch)
-> This is a simplified version of the pagecache context based readahead.
-> It handles the case of multiple threads reading on the same fd and invalidating
-> each others' readahead state. It does the trick by scanning the pagecache and
-> recovering the current read stream's readahead status.
+On Fri, Jul 20, 2007 at 04:36:12PM -0400, Mike Frysinger wrote:
+> > Also, does you assembly stub _really_ modify memory atomically ? If yes,
+> > then there should be no need for disabling interrupts. Else, I see a
+> > major problem with SMP.
 > 
-> The algorithm works in a opportunistic way, in that it do not try to detect
-> interleaved reads _actively_, which requires a probe into the page cache(which
-> means a little more overheads for random reads). It only tries to handle a
-> previously started sequential readahead whose state was overwritten by
-> another concurrent stream, and it can do this job pretty well.
+> that isnt the only problem with SMP on Blackfin
 
-Hi Fengguang,
+Could you ealborate?
 
-	This is really clever!
-
-	Only one slight complaint: I wonder if "radix_tree_scan_hole" could be
-expressed as "radix_tree_extent_size" which return the number of
-populated indices up to "max_scan".  Returning a length seems more
-intuitive to me (and I think gets rid of the wraparound error case?)
-
-Cheers,
-Rusty.
+Robert
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
 
