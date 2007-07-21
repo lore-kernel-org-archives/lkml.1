@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935578AbXGULZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764245AbXGUL36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935578AbXGULZB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 07:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760569AbXGULYy
+	id S1764245AbXGUL36 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 07:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761744AbXGUL3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 07:24:54 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:49934 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758063AbXGULYx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 07:24:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=q5ZAXdBOqiQNWxOlmSJUvkNjSffq35BrquyohfwQTfD90yTXHS+yDIN5xlZK5SCKxLcGz5FcpwikLEzXH5S3QVY9cGKDr1QEBue3Fb/iMxeNKou/2+pBgRoPPUVj3qGWP4NOUYt6m0plr0S/DmpaNPg5v1yR4ziKrPoHB6CUDrM=
-Message-ID: <7e5f60720707210424w48f9dc10hff044d702f7bd1d3@mail.gmail.com>
-Date: Sat, 21 Jul 2007 13:24:52 +0200
-From: "Peter Bortas" <bortas@gmail.com>
-To: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
-Subject: Re: [PATCH] Fix DMA on Dreamcast
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lethal@users.sourceforge.net
-In-Reply-To: <92a12cdb0707210322m6670acaer768d078c5e358b0c@mail.gmail.com>
+	Sat, 21 Jul 2007 07:29:50 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:39466 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761228AbXGUL3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 07:29:49 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: dougthompson@xmission.com
+Subject: [PATCH] Remove unusued edac_reset_delay_period function
+Date: Sat, 21 Jul 2007 14:28:42 +0300
+User-Agent: KMail/1.9.7
+Cc: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-References: <92a12cdb0707191230g216feaf2ied3e95bacf4dd572@mail.gmail.com>
-	 <20070720120408.1f190269.akpm@linux-foundation.org>
-	 <92a12cdb0707210322m6670acaer768d078c5e358b0c@mail.gmail.com>
+Message-Id: <200707211428.45973.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/21/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
-> On 20/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Thu, 19 Jul 2007 20:30:34 +0100
-> > "Adrian McMenamin" <adrianmcmenamin@gmail.com> wrote:
-> >
-> > > I think my first attempt to post this may have got lost in space somewhere.
-> > >
-> > > Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-> >
-> > Please provide a description of what problem this change is solving, and how
-> > it solves it.
-> >
-> Andrew
->
-> Sorry, just noticed this. Without this patch the Dreamcast won't boot
-> when configured with the correct DMA settings in Kbuild. You can
-> either patch the kernel or use the wrong settings in the build.
->
-> Essentially the SH DMA API code is broken in that it doesn't correctly
-> match the DMA virtual channel to the DMAC.
->
-> The patch seems to fix this, though further testing has reveled there
-> may either be an issue with the patch or an issue with other drivers
-> using DMA and which have worked because they inadvertently relied on
-> the breakage in the DMA API code.
+Hi;
 
-Sidenote: Does Linux handle the Dreamcast DMA errata?
+Following patch removes unused [1] edac_reset_delay_period function to silent
 
+drivers/edac/edac_mc.c:334: warning: 'edac_reset_delay_period' defined but not used
+
+compile warning.
+
+[1] 
+caglar@zangetsu linux-2.6 $ grep edac_reset_delay_period * -r
+drivers/edac/edac_mc.c: * edac_reset_delay_period
+drivers/edac/edac_mc.c:static void edac_reset_delay_period(struct mem_ctl_info *mci, unsigned long value)
+
+Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+
+ drivers/edac/edac_mc.c |   17 -----------------
+ 1 files changed, 0 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/edac/edac_mc.c b/drivers/edac/edac_mc.c
+index 4471be3..c36a19a 100644
+--- a/drivers/edac/edac_mc.c
++++ b/drivers/edac/edac_mc.c
+@@ -327,23 +327,6 @@ static void edac_mc_workq_teardown(struct mem_ctl_info *mci)
+ 	}
+ }
+ 
+-/*
+- * edac_reset_delay_period
+- */
+-static void edac_reset_delay_period(struct mem_ctl_info *mci, unsigned long value)
+-{
+-	/* cancel the current workq request */
+-	edac_mc_workq_teardown(mci);
+-
+-	/* lock the list of devices for the new setup */
+-	mutex_lock(&mem_ctls_mutex);
+-
+-	/* restart the workq request, with new delay value */
+-	edac_mc_workq_setup(mci, value);
+-
+-	mutex_unlock(&mem_ctls_mutex);
+-}
+-
+ /* Return 0 on success, 1 on failure.
+  * Before calling this function, caller must
+  * assign a unique value to mci->mc_idx.
+
+Cheers
 -- 
-Peter Bortas
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
