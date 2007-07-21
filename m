@@ -1,221 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934281AbXGUBzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934197AbXGUCAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934281AbXGUBzz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 21:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbXGUBzq
+	id S934197AbXGUCAh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 22:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbXGUCA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 21:55:46 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:11923 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751102AbXGUBzp (ORCPT
+	Fri, 20 Jul 2007 22:00:29 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:61176 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752660AbXGUCA2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 21:55:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=hO5OK3HTPIeWkMIWiAKGuygnMcsR1tFZlsSoejD9S+z2aqv5LEj1jLevfEEXbUVxvU0SFzd1QAYAjbzv4TnTEQT/Dy02RwBIQQ70+upJ5IXxMkKRbRHVzK2PmLquLh2XFQ1hvJNb1Fb3pDHEeT8IJ7u+/ZP2LjgCIH9DZ+BnlmU=
-Message-ID: <3ae72650707201855l39b79e3clabb7d6a7460c8eba@mail.gmail.com>
-Date: Sat, 21 Jul 2007 03:55:43 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Dave Jones" <davej@redhat.com>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: film at 11: kernel update breaks udev.
-In-Reply-To: <20070721013640.GA8423@redhat.com>
+	Fri, 20 Jul 2007 22:00:28 -0400
+Date: Fri, 20 Jul 2007 21:59:24 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+In-Reply-To: <200707210155.42814.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.58.0707202120060.21951@gandalf.stny.rr.com>
+References: <1184970779.4012.38.camel@chaos> <200707210155.42814.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070721010424.GA4411@redhat.com>
-	 <3ae72650707201809l33019f56i202c1a1ddd61007f@mail.gmail.com>
-	 <20070721011630.GA7017@redhat.com>
-	 <3ae72650707201828s22593ef7o7e66ebc2026d36ca@mail.gmail.com>
-	 <20070721013640.GA8423@redhat.com>
-X-Google-Sender-Auth: 77556edc4d90f3cb
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/21/07, Dave Jones <davej@redhat.com> wrote:
-> On Sat, Jul 21, 2007 at 03:28:12AM +0200, Kay Sievers wrote:
->  > On 7/21/07, Dave Jones <davej@redhat.com> wrote:
->  > > On Sat, Jul 21, 2007 at 03:09:55AM +0200, Kay Sievers wrote:
->  > >  > On 7/21/07, Dave Jones <davej@redhat.com> wrote:
->  > >  > > Just one of my machines to 2.6.22.1, and got this during boot..
->  > >  > >
->  > >  > > Starting udev: udevd-event[619]: udev_node_symlink: symlink(../../sdc/dev/disk/by-uuid/2d773baf-8174-10a6-14db-a78e0e676e89) failed: File exists
->  > >  > >
->  > >  > > Under 2.6.21, all was fine.
->  > >  > >
->  > >  > > sdc is one disk of a 3 disk raid5 set.
->  > >  > > The raidset still manages to come up despite this.
->  > >  > >
->  > >  > > This is a Fedora 7 box, with udev-106-4.1.fc7
->  > >  > >
->  > >  > > What changed this time?
->  > >  >
->  > >  > CONFIG_BLK_DEV_BSG=y?
->  > >  >
->  > >  > There's a name-clash, because bsg tries to create devices with the same name.
->  > >  > James sent a patch, it's on lkml.
->  > >
->  > > BSG isn't in 2.6.22
->  >
->  > Ok. There has nothing else changed, that I could think of what could cause this.
->  >
->  > The code in udev that prints this message looks like:
->  >    err("symlink(%s, %s) failed: %s", linktarget, filename, strerror(errno));
->  >
->  > That doesn't really match what you posted. Are there chars missing?
->
-> Umm. Now I'm confused. Note above that it's talking about sdc.
-> /dev/disk/by-uuid/ contains ..
->
-> lrwxrwxrwx 1 root root  9 2007-07-17 20:35 2d773baf-8174-10a6-14db-a78e0e676e89 -> ../../sdd
-> lrwxrwxrwx 1 root root 10 2007-07-20 18:44 3B69-1AFD -> ../../sdl1
-> lrwxrwxrwx 1 root root 10 2007-07-20 19:06 46A1-3FCB -> ../../sdi1
-> lrwxrwxrwx 1 root root 10 2007-07-17 20:35 4e728818-fcf1-21ee-07a5-302b72bc6129 -> ../../sdc1
-> lrwxrwxrwx 1 root root 10 2007-07-17 20:35 5f435361-5797-4a8c-a285-c72fa455d401 -> ../../sda1
-> lrwxrwxrwx 1 root root  9 2007-07-17 20:35 9502a546-dd98-41df-8916-45032d801b69 -> ../../md0
-> lrwxrwxrwx 1 root root 10 2007-07-17 20:35 ed102ac9-5615-c34b-5fe7-1a9029705ebf -> ../../sda2
->
-> note that uuid matches sdd instead.
->
->  > And what does:
->  >   udevtest /block/sdc
->  > print?
->
-> parse_file: reading '/etc/udev/rules.d/05-udev-early.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/40-multipath.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/50-udev.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/60-libsane.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/60-net.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/60-pcmcia.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/60-wacom.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/85-pcscd_ccid.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/85-pcscd_egate.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/90-alsa.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/90-hal.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/95-pam-console.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/bluetooth.rules' as rules file
-> This program is for debugging only, it does not create any node,
-> or run any program specified by a RUN key. It may show incorrect results,
-> if rules match against subsystem specfic kernel event variables.
->
-> main: looking at device '/block/sdc' from subsystem 'block'
-> run_program: '/bin/bash -c '/sbin/lsmod | /bin/grep ^dm_multipath''
-> run_program: '/bin/bash' (stdout) 'dm_multipath           28889  0 '
-> run_program: '/bin/bash' returned with status 0
-> run_program: '/lib/udev/usb_id -x'
-> run_program: '/lib/udev/usb_id' returned with status 1
-> run_program: '/lib/udev/scsi_id -g -x -s /block/sdc -d /dev/.tmp-8-32'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_VENDOR=ATA'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_MODEL=WDC_WD2500KS-00M'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_REVISION=02.0'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_SERIAL=SATA_WDC_WD2500KS-00_WD-WCANK6187088'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_SERIAL_SHORT=WD-WCANK6187088'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_TYPE=disk'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_BUS=scsi'
-> run_program: '/lib/udev/scsi_id' returned with status 0
-> udev_rules_get_name: add symlink 'disk/by-id/scsi-SATA_WDC_WD2500KS-00_WD-WCANK6187088'
-> run_program: '/lib/udev/path_id /block/sdc'
-> run_program: '/lib/udev/path_id' (stdout) 'ID_PATH=pci-0000:05:05.0-scsi-0:0:0:0'
-> run_program: '/lib/udev/path_id' returned with status 0
-> udev_rules_get_name: add symlink 'disk/by-path/pci-0000:05:05.0-scsi-0:0:0:0'
-> run_program: '/lib/udev/vol_id --export /dev/.tmp-8-32'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_USAGE=raid'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_TYPE=linux_raid_member'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_VERSION=0.90.0'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_UUID=2d773baf-8174-10a6-14db-a78e0e676e89'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_LABEL='
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_LABEL_SAFE='
-> run_program: '/lib/udev/vol_id' returned with status 0
-> udev_rules_get_name: add symlink 'disk/by-uuid/2d773baf-8174-10a6-14db-a78e0e676e89'
-> run_program: '/lib/udev/edd_id --export /dev/.tmp-8-32'
-> run_program: '/lib/udev/edd_id' (stderr) 'no kernel EDD support'
-> run_program: '/lib/udev/edd_id' returned with status 2
-> udev_rules_get_name: no node name set, will use kernel name 'sdc'
-> udev_device_event: device '/block/sdc' already in database, validate currently present symlinks
-> udev_node_add: creating device node '/dev/sdc', major = '8', minor = '32', mode = '0640', uid = '0', gid = '6'
-> udev_node_add: creating symlink '/dev/disk/by-id/scsi-SATA_WDC_WD2500KS-00_WD-WCANK6187088' to '../../sdc'
-> udev_node_add: creating symlink '/dev/disk/by-path/pci-0000:05:05.0-scsi-0:0:0:0' to '../../sdc'
-> udev_node_add: creating symlink '/dev/disk/by-uuid/2d773baf-8174-10a6-14db-a78e0e676e89' to '../../sdc'
-> main: run: '/sbin/multipath -v0 8:32'
-> main: run: 'socket:/org/kernel/udev/monitor'
-> main: run: 'socket:/org/freedesktop/hal/udev_event'
-> main: run: '/sbin/pam_console_apply /dev/sdc /dev/disk/by-id/scsi-SATA_WDC_WD2500KS-00_WD-WCANK6187088 /dev/disk/by-path/pci-0000:05:05.0-scsi-0:0:0:0 /dev/disk/by-uuid/2d773baf-8174-10a6-14db-a78e0e676e89'
->
->
->
-> running udevtest on sdd gets me ..
->
-> parse_file: reading '/etc/udev/rules.d/05-udev-early.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/40-multipath.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/50-udev.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/60-libsane.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/60-net.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/60-pcmcia.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/60-wacom.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/85-pcscd_ccid.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/85-pcscd_egate.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/90-alsa.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/90-hal.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/95-pam-console.rules' as rules file
-> parse_file: reading '/etc/udev/rules.d/bluetooth.rules' as rules file
-> This program is for debugging only, it does not create any node,
-> or run any program specified by a RUN key. It may show incorrect results,
-> if rules match against subsystem specfic kernel event variables.
->
-> main: looking at device '/block/sdd' from subsystem 'block'
-> run_program: '/bin/bash -c '/sbin/lsmod | /bin/grep ^dm_multipath''
-> run_program: '/bin/bash' (stdout) 'dm_multipath           28889  0 '
-> run_program: '/bin/bash' returned with status 0
-> run_program: '/lib/udev/usb_id -x'
-> run_program: '/lib/udev/usb_id' returned with status 1
-> run_program: '/lib/udev/scsi_id -g -x -s /block/sdd -d /dev/.tmp-8-48'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_VENDOR=ATA'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_MODEL=WDC_WD2500KS-00M'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_REVISION=02.0'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_SERIAL=SATA_WDC_WD2500KS-00_WD-WCANK6240588'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_SERIAL_SHORT=WD-WCANK6240588'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_TYPE=disk'
-> run_program: '/lib/udev/scsi_id' (stdout) 'ID_BUS=scsi'
-> run_program: '/lib/udev/scsi_id' returned with status 0
-> udev_rules_get_name: add symlink 'disk/by-id/scsi-SATA_WDC_WD2500KS-00_WD-WCANK6240588'
-> run_program: '/lib/udev/path_id /block/sdd'
-> run_program: '/lib/udev/path_id' (stdout) 'ID_PATH=pci-0000:05:05.0-scsi-1:0:0:0'
-> run_program: '/lib/udev/path_id' returned with status 0
-> udev_rules_get_name: add symlink 'disk/by-path/pci-0000:05:05.0-scsi-1:0:0:0'
-> run_program: '/lib/udev/vol_id --export /dev/.tmp-8-48'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_USAGE=raid'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_TYPE=linux_raid_member'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_VERSION=0.90.0'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_UUID=2d773baf-8174-10a6-14db-a78e0e676e89'
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_LABEL='
-> run_program: '/lib/udev/vol_id' (stdout) 'ID_FS_LABEL_SAFE='
-> run_program: '/lib/udev/vol_id' returned with status 0
-> udev_rules_get_name: add symlink 'disk/by-uuid/2d773baf-8174-10a6-14db-a78e0e676e89'
-> run_program: '/lib/udev/edd_id --export /dev/.tmp-8-48'
-> run_program: '/lib/udev/edd_id' (stderr) 'no kernel EDD support'
-> run_program: '/lib/udev/edd_id' returned with status 2
-> udev_rules_get_name: no node name set, will use kernel name 'sdd'
-> udev_device_event: device '/block/sdd' already in database, validate currently present symlinks
-> udev_node_add: creating device node '/dev/sdd', major = '8', minor = '48', mode = '0640', uid = '0', gid = '6'
-> udev_node_add: creating symlink '/dev/disk/by-id/scsi-SATA_WDC_WD2500KS-00_WD-WCANK6240588' to '../../sdd'
-> udev_node_add: creating symlink '/dev/disk/by-path/pci-0000:05:05.0-scsi-1:0:0:0' to '../../sdd'
-> udev_node_add: creating symlink '/dev/disk/by-uuid/2d773baf-8174-10a6-14db-a78e0e676e89' to '../../sdd'
-> main: run: '/sbin/multipath -v0 8:48'
-> main: run: 'socket:/org/kernel/udev/monitor'
-> main: run: 'socket:/org/freedesktop/hal/udev_event'
-> main: run: '/sbin/pam_console_apply /dev/sdd /dev/disk/by-id/scsi-SATA_WDC_WD2500KS-00_WD-WCANK6240588 /dev/disk/by-path/pci-0000:05:05.0-scsi-1:0:0:0 /dev/disk/by-uuid/2d773baf-8174-10a6-14db-a78e0e676e89'
->
->
-> note, same uuid. wtf?
+On Sat, 21 Jul 2007, Arnd Bergmann wrote:
 
-The devices are competing about the same symlink, because they contain
-the same metadata. But all of them are USAGE="raid" which should not
-create any uuid-links at all.
+> On Saturday 21 July 2007, Thomas Gleixner wrote:
 
-Let's look at your rules, what does:
-   grep by-uuid /etc/udev/rules.d/*.rules
-print?
+>
+> In my experience, it's very helpful to have a single set of header
+> files, and merging the two versions of one header usually exposes
+> bugs that have been fixed in only one of the two, so you get
+> to fix actual bugs in the process.
 
-Kay
+This can still be done after the merge tglx did.
+
+>
+> In the s390 merge, I also started out in an attempt to guarantee
+> unchanged object files, much like what you describe. However, it
+> turned out that fixing it in the process is actually easier.
+> Either way, 'diff -D __x86_64__' is a great tool for a start, you
+> should try it out to see how easy it is to merge a lot of files.
+>
+> To put it into perspective, I think the s390 merge was a lot easier
+> than the x86 merge, because there is only a very limited set of
+> hardware configurations for s390 compared to others. We ended up
+> doing the full merge with three people within less than a week
+> and no separate files at all.
+
+This is the big reason they wanted to keep it binary identical. Since
+there are just way too many different configs out there in the x86
+world
+
+>
+> OTOH, the powerpc merge is now going into its third year, mostly
+> because it was started with the intention to remove all cruft
+> in the process and to only allow sane code into the new architecture.
+
+I'd expect x86 to move much faster, just because there are more developers
+and users of x86 PCs than there are for powerpc.
+
+>
+> The steps that I'd suggest instead are:
+>
+> * merge all exported header files of the two architectures. This
+>   alone is a worthy goal, because it allows us to get rid of
+>   the ugly code for deciding which version to use in installed
+>   headers and elsewhere.
+
+I don't see why this can't be done after the first "Big" merge.
+
+>
+> * Create an arch/x86/Makefile that descends into ../i386/* and
+>   ../x86_64/* instead of its subdirectories.
+
+The thing that Thomas pointed out, is that physical location of the source
+actually does matter. Having two files side by side with the same name
+except for a _32.c and _64.c, makes a developer want to merge them.
+
+A perfect example is looking at both
+  arch/x86/kernel/module_{32,64}.c
+One would be encouraged to make that into a single file. But having
+a arch/i386/kernel/module.c and a arch/x86_64/kernel/module.c would
+take some time before anyone would care.
+
+>
+> * Merge the arch/x86/* subdirectories, one at a time, starting with
+>   the low-hanging fruit like oprofile or pci, and do the hard
+>   ones like mm and kernel last.
+
+Your looking at a 10year plus merge with that approach. I think that is
+exactly what Ingo and Thomas _dont_ want.  Doing it as the big bang way as
+is posted in this patch is the fastest way to get where we want to go.
+
+>
+> Unfortunately, I don't think I'll spend much time on this, so I
+> don't get to decide on it, but you asked for feedback ;-)
+>
+
+I'm actually looking forward to helping out here ;-)
+
+-- Steve
+
