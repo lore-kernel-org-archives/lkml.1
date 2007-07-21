@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936309AbXGUKRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937564AbXGUKSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936309AbXGUKRn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 06:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932340AbXGUKRe
+	id S937564AbXGUKSu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 06:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760583AbXGUKSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 06:17:34 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39535 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932324AbXGUKRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 06:17:33 -0400
-Date: Sat, 21 Jul 2007 12:17:41 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-Message-ID: <20070721101741.GD1902@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0707161015490.3410-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0707162137220.19248@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707162137220.19248@asgard.lang.hm>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Sat, 21 Jul 2007 06:18:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59910 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759109AbXGUKSk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 06:18:40 -0400
+Date: Sat, 21 Jul 2007 03:18:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Bret Towe" <magnade@gmail.com>
+Cc: "Ulrich Kunitz" <kune@deine-taler.de>, linux-kernel@vger.kernel.org,
+       Jan Kratochvil <honza@jikos.cz>, Jiri Kosina <jkosina@suse.cz>,
+       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: Is PIE randomization breaking klibc binaries?
+Message-Id: <20070721031809.54d573a9.akpm@linux-foundation.org>
+In-Reply-To: <dda83e780707202302g177d09acg94e77f724e97f17a@mail.gmail.com>
+References: <20070720211300.GA21644@deine-taler.de>
+	<dda83e780707202302g177d09acg94e77f724e97f17a@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 20 Jul 2007 23:02:12 -0700 "Bret Towe" <magnade@gmail.com> wrote:
 
-> >Part of the problem here is that ACPI already has its own terminology,
-> >and you're trying to invent a new one instead of using the existing
-> >one.
+> On 7/20/07, Ulrich Kunitz <kune@deine-taler.de> wrote:
+> > Since this week new linux-2.6/master kernels don't work with my
+> > initial ram disks. The sleep binary runs repeatingly into
+> > segmentation faults until the Busybox shell starts. My system is a
+> > x86-64 with Kubuntu Feisty Fawn.
 > >
-> >I agree, it would be good to have a non-ACPI-specific hibernation mode,
-> >something which would look to ACPI like a normal shutdown.  But I'm not
-> >so sure this is possible.
-> 
-> why would it not be possible?
-> 
-> >You have to understand that the ACPI spec is weird and complex.  The
-> >mere fact that you have written a system image to disk changes the way
-> >ACPI regards the shutdown procedure.  Even though you may treat all the
-> >devices and the rest of the hardware exactly the same, it's a different
-> >operation as far as ACPI is concerned, with different requirements.
+> > By bisecting I found out that the PIE randomization patch (commit 60bfba7e)
+> > appears to cause the segmentation faults.
 > >
-> >Yes, it's bizarre.  Why do you think so many people have complained so
-> >vehemently about ACPI for all these years?
+> > Digging further into the issue I found out, that the sleep binary
+> > on the initial ramdisk is a klibc binary. /usr/bin/file says it is
+> > statically linked and uses shared libraries. I have no clue about
+> > klibc, but the binaries seem to be statically linked, but load a
+> > shared library; probably at a fixed address. Other klibc binaries are also
+> > running into segmentation faults. Busybox is working, but it is
+> > statically linked and doesn't use a shared library.
+> >
+> > It looks like that the PIE randomization patch breaks klibc
+> > binaries on x86-64.
+> >
+> > --
+> > Uli Kunitz
+> > -
 > 
-> so let's act as if ACPI doesn't exist and make a suspend-to-disk that 
-> works without it and looks to ACPI like a complete power off/on cycle (but 
-> looks to the user like a suspend/resume cycle)
+> oh bugger I just spent a few hours bisecting to find this headache
+> only to find someone else had 8 hours ago... *sigh*
+> 
+> anyhow also seeing seg faults here on a amd64 ubuntu system
+> reverting the PIE randomization patch made it go away
 
-...if you act as if ACPI does not exist, you'll loose AC/battery power
-status upon resume, and maybe more, because ACPI handles that.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cc's added)
+
+I don't think we'll be fixing this in time for -rc1.  I'll revert
+it.  Thanks for the prompt and accurate reporting.
