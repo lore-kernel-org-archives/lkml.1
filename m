@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935559AbXGUWMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934963AbXGUWMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935559AbXGUWMA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 18:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935382AbXGUWLk
+	id S934963AbXGUWMi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 18:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935134AbXGUWL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 18:11:40 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44246 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935315AbXGUWLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 18:11:38 -0400
-Subject: Re: [PATCH][09/37] Clean up duplicate includes in
-	drivers/macintosh/
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org
-In-Reply-To: <200707211702.30610.jesper.juhl@gmail.com>
-References: <200707211702.30610.jesper.juhl@gmail.com>
-Content-Type: text/plain
-Date: Sun, 22 Jul 2007 08:11:14 +1000
-Message-Id: <1185055874.5439.49.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sat, 21 Jul 2007 18:11:59 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:22370 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935552AbXGUWL6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 18:11:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=nlvSZZqx8pdo+RO0tR2GwhiRXpElIrQsa0BC9t8iHlmCd0DmDclukFdX9Tbogg0CYnTwCC67ZMNJE+G/Dyt6Anksry+FMaxFNcHCl64r/mWNuZaIh9O1gFlSJtPGofQiTZ5CFCDExNt84bf8dt3s+u+E2PHI6ILaZm8EwqCK+p8=
+Message-ID: <46A282B2.8070501@googlemail.com>
+Date: Sun, 22 Jul 2007 00:03:30 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: voyager_{thread,cat}.c compile warnings
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-21 at 17:02 +0200, Jesper Juhl wrote:
-> Hi,
-> 
-> This patch cleans up duplicate includes in
-> 	drivers/macintosh/
-> 
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+Hi,
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I noticed this warnings on current git:
 
-> ---
-> 
-> diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
-> index 4177ff0..2c21d4f 100644
-> --- a/drivers/macintosh/rack-meter.c
-> +++ b/drivers/macintosh/rack-meter.c
-> @@ -30,7 +30,6 @@
->  #include <asm/machdep.h>
->  #include <asm/pmac_feature.h>
->  #include <asm/dbdma.h>
-> -#include <asm/dbdma.h>
->  #include <asm/macio.h>
->  #include <asm/keylargo.h>
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+...
+
+arch/i386/mach-voyager/voyager_thread.c: In function 'thread':
+arch/i386/mach-voyager/voyager_thread.c:113: warning: no return statement in function returning non-void
+
+...
+
+I think return 0; is missing on line 112 here.
+
+
+...
+
+arch/i386/mach-voyager/voyager_cat.c: In function 'voyager_cat_init':
+arch/i386/mach-voyager/voyager_cat.c:685: warning: comparison is always false due to limited range of data type
+arch/i386/mach-voyager/voyager_cat.c:755: warning: comparison is always false due to limited range of data type
+
+...
+
+
+Regards,
+
+Gabriel C
 
