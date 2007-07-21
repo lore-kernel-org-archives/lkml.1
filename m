@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935781AbXGUKh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762937AbXGUK4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935781AbXGUKh6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 06:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089AbXGUKhv
+	id S1762937AbXGUK4F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 06:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758957AbXGUKz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 06:37:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58827 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbXGUKhu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 06:37:50 -0400
-Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
-From: David Woodhouse <dwmw2@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <1184970779.4012.38.camel@chaos>
-References: <1184970779.4012.38.camel@chaos>
-Content-Type: text/plain
-Date: Sat, 21 Jul 2007 11:37:46 +0100
-Message-Id: <1185014266.14697.136.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 21 Jul 2007 06:55:57 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38381 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758285AbXGUKz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 06:55:56 -0400
+Date: Sat, 21 Jul 2007 12:56:11 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH -mm 0/5] Freezer update
+Message-ID: <20070721105611.GF1902@elf.ucw.cz>
+References: <200707180929.31511.rjw@sisk.pl> <20070718010353.27965df7.akpm@linux-foundation.org> <200707181044.15662.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707181044.15662.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-21 at 00:32 +0200, Thomas Gleixner wrote:
-> We are pleased to announce a project we've been working on for some 
-> time: the unified x86 architecture tree, or "arch/x86" - and we'd like
-> to solicit feedback about it. 
+Hi!
 
-Oooh, shiny. We've been talking about how useful this would be for
-years. Experience with the unification of PowerPC shows that it's
-definitely the right thing to do -- it reduces the number of gratuitous
-differences between 32-bit and 64-bit code, and makes it far more easier
-to ensure that bug-fixes and new features get added to both at the same
-time.
-
-> When should this go upstream?
-> -----------------------------
+> > > The patches in these series update the freezer to eliminate some existing
+> > > shortcomings,
+> > 
+> > argh.
+> > 
+> > I have a backlog of maybe 300 patches here which I am cheerfully ignoring
+> > while concentrating on preventing 2.6.23 from being less of a disaster than
+> > it has already been.
+> > 
+> > Please, stop writing patches.  Maybe do something to help get 2.6.23 off
+> > its back.  Like, go review some of the code which people are cheerfully
+> > merging five minutes after having written it.
+> > 
+> > > so please consider them as 2.6.23 material.
+> > 
+> > The door for new 2.6.23 material shut two weeks ago.  Here, at least.
+> > 
+> > Later, OK?
 > 
-> We actually think that the sooner we get over with this, the better.
+> OK, and sorry for the trouble.
 
-I'm inclined to agree.
-
+Actually, 1 and 2 from that series seem like .23 material to me. 1 is
+(harmless docs update, and 2 is trivial bugfix for fuse.
+								Pavel
 -- 
-dwmw2
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
