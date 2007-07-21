@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXGUFm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbXGUFtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762801AbXGUFm4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 01:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbXGUFmq
+	id S1762797AbXGUFtW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 01:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbXGUFtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 01:42:46 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:49209 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755384AbXGUFmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 01:42:46 -0400
-Date: Sat, 21 Jul 2007 07:43:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/7] console: fix section mismatch warning in vgacon.c
-Message-ID: <20070721054359.GA31109@uranus.ravnborg.org>
-References: <20070720212743.GB25064@uranus.ravnborg.org> <1184974649.4538.4.camel@daplas>
+	Sat, 21 Jul 2007 01:49:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41380 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754601AbXGUFtO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 01:49:14 -0400
+Date: Fri, 20 Jul 2007 22:48:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 6/7] radixtree: introduce radix_tree_scan_hole()
+Message-Id: <20070720224859.38aa0c21.akpm@linux-foundation.org>
+In-Reply-To: <384993020.08966@ustc.edu.cn>
+References: <20070721044300.909424569@mail.ustc.edu.cn>
+	<384993020.08966@ustc.edu.cn>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1184974649.4538.4.camel@daplas>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 21, 2007 at 07:37:29AM +0800, Antonino A. Daplas wrote:
-> On Fri, 2007-07-20 at 23:27 +0200, Sam Ravnborg wrote:
-> > Fix following section mismatch warning:
-> > WARNING: vmlinux.o(.text+0x121e62): Section mismatch: reference to .init.text:__alloc_bootmem (between 'vgacon_startup' and 'vgacon_scrolldelta')
-> > 
-> > Browsing the code it seems that vgacon_scrollback_startup() is only
-> > called during the init phase so the reference to the .init.text
-> > section is OK.
-> > Teach modpost not to warn using ___init_refok.
-> > 
-> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Acked-by: Antonino Daplas <adaplas@gmail.com>
+On Sat, 21 Jul 2007 12:43:06 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-Thanks. Will you take care of forwarding it it or do we rely
-on Andrew in this area?
+> Introduce radix_tree_scan_hole(root, index, max_scan) to scan radix tree
+> for the first hole. It will be used in interleaved readahead.
 
-	Sam
+If you're ever feeling fantastically bored, please consider updating the
+userspace radix-tree test harness for this?  Cook up a couple of testcases
+for the new functionality?
+
+Thanks.
+
+http://www.zip.com.au/~akpm/linux/patches/stuff/rtth.tar.gz is the latest.
