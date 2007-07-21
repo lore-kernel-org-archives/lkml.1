@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939145AbXGUAon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935873AbXGUAtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939145AbXGUAon (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jul 2007 20:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbXGUAod
+	id S935873AbXGUAtx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jul 2007 20:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbXGUAtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jul 2007 20:44:33 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:33939 "EHLO
+	Fri, 20 Jul 2007 20:49:45 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:33062 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756071AbXGUAoc (ORCPT
+	with ESMTP id S1755469AbXGUAtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jul 2007 20:44:32 -0400
-Date: Fri, 20 Jul 2007 17:43:49 -0700
+	Fri, 20 Jul 2007 20:49:45 -0400
+Date: Fri, 20 Jul 2007 17:49:06 -0700
 From: Greg KH <greg@kroah.com>
 To: Rob Landley <rob@landley.net>
 Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
@@ -18,7 +18,7 @@ Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
        Rod Whitby <rod@whitby.id.au>, Russell King <rmk@arm.linux.org.uk>,
        david@lang.hm
 Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
-Message-ID: <20070721004348.GA14362@kroah.com>
+Message-ID: <20070721004906.GB14362@kroah.com>
 References: <200707171703.31340.rob@landley.net> <200707181339.54192.rob@landley.net> <20070719101617.08c867a7@gondolin.boeblingen.de.ibm.com> <200707202021.40009.rob@landley.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,35 +29,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, Jul 20, 2007 at 08:21:39PM -0400, Rob Landley wrote:
-> Ok, back up.  /sys/devices does not contain all the information necessary to 
-> populate /dev, because it hasn't got things like 
-> ramdisks, /dev/zero, /dev/console which are THERE in sysfs, which may or may 
-> not be supported by the kernel (the kernel might have ramdisk support, might 
-> not).
+> I'm not trying to document /sys/devices.  I'm trying to document hotplug, 
+> populating /dev, and things like firmware loading that fall out of that.  
+> This requires use of sysfs, and I'm only trying to document as much of sysfs 
+> as you need to do that.
 
-Welcome to 2007:
+Like I stated before, you do not need to even have sysfs mounted to have
+a dynamic /dev.
 
-$ ls /sys/devices/virtual/mem/
-full  kmem  kmsg  mem  null  port  random  urandom  zero
-$ ls /sys/devices/virtual/tty/
-console  tty12  tty19  tty25  tty31  tty38  tty44  tty50  tty57  tty63
-ptmx     tty13  tty2   tty26  tty32  tty39  tty45  tty51  tty58  tty7
-tty      tty14  tty20  tty27  tty33  tty4   tty46  tty52  tty59  tty8
-tty0     tty15  tty21  tty28  tty34  tty40  tty47  tty53  tty6   tty9
-tty1     tty16  tty22  tty29  tty35  tty41  tty48  tty54  tty60
-tty10    tty17  tty23  tty3   tty36  tty42  tty49  tty55  tty61
-tty11    tty18  tty24  tty30  tty37  tty43  tty5   tty56  tty62
+And why do you need to document populating /dev dynamically?  udev
+already solves this problem for you, it's not like people are going off
+and reinventing udev for their own enjoyment would not at least look at
+how it solves this problem first.
 
-I suggest you take a close look at the kernel before making statements
-like the above :)
+To do otherwise would be foolish :)
 
-> These things could also, in future, have their major and minor numbers 
-> dynamically (even randomly) assigned.  That's been discussed on this list.
+Firmware loading is fine to document if you wish to do so.  But again,
+why?  We already have multiple userspace programs that provide this
+feature for them.  Perhaps you want to document how to add firmware to a
+system in order for these different programs to pick them up?
 
-I tried that once, it will require some core api kernel changes and a
-lot of infrastrucure work to get that to work properly.  Not that it
-will never happen in the future, but it's just not a trivial change at
-the moment...
+Or perhaps you want to document how to add this kind of functionality to
+your kernel driver so that it can handle firmware loading by using the
+firmware interface that the kernel provides?
+
+If you just want to document the hotplug/uevent api, then do just that.
+However I think you are overreaching with your scope here and getting
+mighty confused in the process.
 
 thanks,
 
