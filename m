@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXGUJ2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbXGUJaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762944AbXGUJ2U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 05:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760148AbXGUJ2K
+	id S1763459AbXGUJaa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 05:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbXGUJaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 05:28:10 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51950 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756444AbXGUJ2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 05:28:09 -0400
-Date: Sat, 21 Jul 2007 11:28:19 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: oleg@tv-sign.ru, rjw@sisk.pl, linux-kernel@vger.kernel.org
-Subject: Re: malicious filesystems (was Re: [linux-pm] Re: [PATCH] Remove process freezer from suspend to RAM
-Message-ID: <20070721092819.GA1902@elf.ucw.cz>
-References: <20070714212102.GA214@tv-sign.ru> <E1IA3oR-0002wg-00@dorka.pomaz.szeredi.hu>
+	Sat, 21 Jul 2007 05:30:21 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:49488 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755261AbXGUJaU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 05:30:20 -0400
+Date: Sat, 21 Jul 2007 11:43:54 +0200
+To: Andreas Schwab <schwab@suse.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, kbuild-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 25/33] kbuild: use POSIX BRE in headers install target
+Message-ID: <20070721094353.GJ475@flower.upol.cz>
+References: <11846813442297-git-send-email-sam@ravnborg.org> <11846813443187-git-send-email-sam@ravnborg.org> <11846813444171-git-send-email-sam@ravnborg.org> <1184681344985-git-send-email-sam@ravnborg.org> <11846813442810-git-send-email-sam@ravnborg.org> <118468134441-git-send-email-sam@ravnborg.org> <11846813441741-git-send-email-sam@ravnborg.org> <1184681344376-git-send-email-sam@ravnborg.org> <E1ICAEU-0005an-5F@flower> <jewswu9ncf.fsf@sykes.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1IA3oR-0002wg-00@dorka.pomaz.szeredi.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <jewswu9ncf.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2007-07-15 15:06:59, Miklos Szeredi wrote:
-> > > SIGKILL won't work on a stopped task.  Neither on a traced task.
-> > 
-> > Why do you think so? It works in both cases (ptracer can use
-> > PT_TRACE_EXIT, but the task is killed anyway).
+On Sat, Jul 21, 2007 at 10:23:44AM +0200, Andreas Schwab wrote:
+> Oleg Verych <olecom@flower.upol.cz> writes:
 > 
-> Just from experience with tasks stuck in "T" state.  After for example
-> an UML dies, some of the processes only react to SIGCONT, but not to
-> SIGKILL.
+> >> +		-e 
+> >> "s/[[:space:]]__user[[:space:]]\{1,\}
+> >
+> > substitute one or more ' __user '
 > 
-> I have no idea why this happens.
+> Substitute ' __user' followed by one or more ' '.  \{\} applies only to
+> the last RE atom.
 
-Anyway that should be fixed, not used as excuse for fuse misbehaviour.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Right, that's why i've used '  *' sometimes.
+
+Thanks.
+
+> Andreas.
+> 
+____
