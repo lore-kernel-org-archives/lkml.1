@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765428AbXGUM27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763384AbXGUMbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765428AbXGUM27 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 08:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762391AbXGUM2v
+	id S1763384AbXGUMbP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 08:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762340AbXGUMa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 08:28:51 -0400
-Received: from ns.suse.de ([195.135.220.2]:54076 "EHLO mx1.suse.de"
+	Sat, 21 Jul 2007 08:30:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39683 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762340AbXGUM2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 08:28:50 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86_64: use apic core id bits for core nums
-Date: Sat, 21 Jul 2007 14:28:46 +0200
-User-Agent: KMail/1.9.6
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, joachim.deguara@amd.com,
-       linux-kernel@vger.kernel.org
-References: <86802c440707210056s745d44f1jc6437064741299eb@mail.gmail.com> <200707211022.47859.ak@suse.de> <86802c440707210421h33a4fa50n9856bfe95e5b386f@mail.gmail.com>
-In-Reply-To: <86802c440707210421h33a4fa50n9856bfe95e5b386f@mail.gmail.com>
+	id S1762057AbXGUMaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 08:30:55 -0400
+Date: Sat, 21 Jul 2007 14:30:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Brian Gerst <bgerst@didntduck.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+Message-ID: <20070721123032.GA1769@elte.hu>
+References: <1184970779.4012.38.camel@chaos> <200707210737.59552.ak@suse.de> <1185005750.4012.100.camel@chaos> <46A1EF57.2020304@didntduck.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707211428.46711.ak@suse.de>
+In-Reply-To: <46A1EF57.2020304@didntduck.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 July 2007 13:21:34 Yinghai Lu wrote:
-> On 7/21/07, Andi Kleen <ak@suse.de> wrote:
-> > On Saturday 21 July 2007 09:56:15 Yinghai Lu wrote:
-> > > please check my version, we should use core id bits instead.
-> > >
-> > > it should replace
-> > > [PATCH for review] [37/48] x86_64: make k8topology multi-core aware
-> >
-> > Yes, you're right the patch is not good. It should probably use
-> > information from the regular CPU setup code, not touch cpuid
-> > directly
+
+* Brian Gerst <bgerst@didntduck.org> wrote:
+
+> > And there is more of that, when you take the time and look closely 
+> > at the _32.[ch] _64.[ch] files which are created by the merge.
 > 
-> need move some code into early_identify_cpu from identify_cpu in
-> arch/x86_64/kernel/setup.c
-> then could use that bits in bsp cpu info.
+> Looking at the include files, many more are near-identical in trivial 
+> ways, such as whitespace, comments, local variable names, or guard 
+> #ifdefs.
 
-Yes something like this
- 
-> BTW:
-> it seems for BSP only early_identify_cpu is called, and identify_cpu
-> is only use in smp_callin for AP. Do i miss sth.
+yeah. And by moving them next to each other, people actually have the 
+real incentive to look and ponder: "these two files do similar things 
+but they look so different. Does it _have_ to be so?". Often the answer 
+is: no, it could really be shared.
 
-identify_cpu calls early_identify_cpu as first thing.
+And even when things will continue to be different, it's nice to have 
+them side by side for documentation purposes as well. "we do this 
+differently on 64-bit, because ...".
 
--Andi
+Key to starting all these cleanups is to create plain and simple 
+physical proximity - and our transition arch/x86 and include/asm-x86 
+achieves that - nothing more, nothing less.
 
+	Ingo
