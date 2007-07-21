@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935813AbXGUGVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764105AbXGUG2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935813AbXGUGVK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 02:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXGUGUy
+	id S1764105AbXGUG2y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 02:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbXGUG2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 02:20:54 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:35350 "EHLO smtp.ocgnet.org"
+	Sat, 21 Jul 2007 02:28:46 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60485 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753129AbXGUGUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 02:20:53 -0400
-Date: Sat, 21 Jul 2007 15:20:32 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: werner <werner@copaya.yi.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Incompatibilities of kmem_cache_create
-Message-ID: <20070721062032.GA1814@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	werner <werner@copaya.yi.org>, linux-kernel@vger.kernel.org
-References: <1184997001.28478@werner>
-MIME-Version: 1.0
+	id S1752701AbXGUG2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 02:28:46 -0400
+Date: Sat, 21 Jul 2007 08:30:00 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/7] console: fix section mismatch warning in vgacon.c
+Message-ID: <20070721063000.GA31426@uranus.ravnborg.org>
+References: <20070720212743.GB25064@uranus.ravnborg.org> <1184974649.4538.4.camel@daplas> <20070721054359.GA31109@uranus.ravnborg.org> <20070720230114.b06347de.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184997001.28478@werner>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070720230114.b06347de.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 21, 2007 at 02:50:01AM -0300, werner wrote:
-> Of the kernel 2.6.22-git15 of this night,  kmem_cache_create is not
-> compatible and causes compiling errors of some fundamental programs.
-> Before, this error didnt occur.
+On Fri, Jul 20, 2007 at 11:01:14PM -0700, Andrew Morton wrote:
+> On Sat, 21 Jul 2007 07:43:59 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-Slab destructors haven't been supported in the kernel for ages, anything
-that's relying on them to work out-of-tree is fundamentally broken.
+> > On Sat, Jul 21, 2007 at 07:37:29AM +0800, Antonino A. Daplas wrote:
+> > > On Fri, 2007-07-20 at 23:27 +0200, Sam Ravnborg wrote:
+> > > > Fix following section mismatch warning:
+> > > > WARNING: vmlinux.o(.text+0x121e62): Section mismatch: reference to .init.text:__alloc_bootmem (between 'vgacon_startup' and 'vgacon_scrolldelta')
+> > > > 
+> > > > Browsing the code it seems that vgacon_scrollback_startup() is only
+> > > > called during the init phase so the reference to the .init.text
+> > > > section is OK.
+> > > > Teach modpost not to warn using ___init_refok.
+> > > > 
+> > > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> > > Acked-by: Antonino Daplas <adaplas@gmail.com>
+> > 
+> > Thanks. Will you take care of forwarding it it or do we rely
+> > on Andrew in this area?
+> > 
+> 
+> I tossed it into the next batch for Linus.  Tomorrow, I guess.
 
-> At least this happened on compiling the externel modules for btrfs and
-> ndiskwrapper.    Principally the compatibility of the Kernel with older
-> and new versions of the file systems have to be observed very good, for
-> the reliability to can read dates.
-> 
-> Thus this should be checked, and corrected
-> 
-Indeed it should. You can correct this by removing the extraneous NULL
-parameter for the slab dtor from the kmem_cache_create() callsite in the
-out-of-tree code. All of the in-tree users were already converted.
+OK, thanks.
+
+	Sam
