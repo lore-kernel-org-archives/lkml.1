@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937568AbXGUJDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934319AbXGUJEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937568AbXGUJDe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 05:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932473AbXGUJDX
+	id S934319AbXGUJEB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 05:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932473AbXGUJDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 05:03:23 -0400
-Received: from mx1.suse.de ([195.135.220.2]:45225 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932470AbXGUJDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 05:03:21 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Oleg Verych <olecom@flower.upol.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       kbuild-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier@gentoo.org>,
+	Sat, 21 Jul 2007 05:03:42 -0400
+Received: from cust198-202.dsl.versadsl.be ([62.166.198.202]:49061 "HELO
+	idefix.wisa.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S937887AbXGUJDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 05:03:41 -0400
+Date: Sat, 21 Jul 2007 11:03:37 +0200 (CEST)
+From: =?ISO-8859-1?Q?Dani=EBl_Mantione?= <daniel.mantione@freepascal.org>
+X-X-Sender: daniel@idefix.wisa.be
+To: Bodo Eggert <7eggert@gmx.de>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 25/33] kbuild: use POSIX BRE in headers install target
-References: <11846813423231-git-send-email-sam@ravnborg.org>
-	<11846813432249-git-send-email-sam@ravnborg.org>
-	<1184681343297-git-send-email-sam@ravnborg.org>
-	<11846813432231-git-send-email-sam@ravnborg.org>
-	<1184681343423-git-send-email-sam@ravnborg.org>
-	<11846813432234-git-send-email-sam@ravnborg.org>
-	<11846813441521-git-send-email-sam@ravnborg.org>
-	<11846813443387-git-send-email-sam@ravnborg.org>
-	<1184681344594-git-send-email-sam@ravnborg.org>
-	<11846813444176-git-send-email-sam@ravnborg.org> <11846813442297-g
-	it-send-email-sam@ravnborg.org>
-	<11846813443187-git-send-email-sam@ravnborg.org> <11846813
-	444171-git-send-email-sam@ravnborg.org>
-	<1184681344985-git-send-email-sam@ravnborg.org>
-	<11846813442810-git-send-email-sam@ravnborg.org>
-	<118468134441-git-send-email-sam@ravnborg.org>
-	<11846813441741-git-send-email-sam@ravnborg.org>
-	<1184681344376-git-send-email-sam@ravnborg.org>
-	<E1ICAEU-0005an-5F@flower> <jewswu9ncf.fsf@sykes.suse.de>
-	<Pine.LNX.4.64.0707211038150.21737@fbirervta.pbzchgretzou.qr>
-X-Yow: I always have fun because I'm out of my mind!!!
-Date: Sat, 21 Jul 2007 11:03:19 +0200
-In-Reply-To: <Pine.LNX.4.64.0707211038150.21737@fbirervta.pbzchgretzou.qr>
-	(Jan Engelhardt's message of "Sat\, 21 Jul 2007 10\:39\:40 +0200 \(CEST\)")
-Message-ID: <jer6n29lig.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+Subject: Re: Keyboard programming needs root
+In-Reply-To: <E1IBaAo-00016n-7j@be1.lrz>
+Message-ID: <Pine.LNX.4.61.0707211102500.27563@idefix.wisa.be>
+References: <8GK58-g5-5@gated-at.bofh.it> <8IFXs-1xs-21@gated-at.bofh.it>
+ <8IHcN-3pZ-5@gated-at.bofh.it> <E1IBaAo-00016n-7j@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="657924-1441627593-1185008617=:27563"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@computergmbh.de> writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Uhm, would not it be easier to just use 's/\b__user\b//g' ?
+--657924-1441627593-1185008617=:27563
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-\b is not POSIX.
 
-Andreas.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Op Thu, 19 Jul 2007, schreef Bodo Eggert:
+
+> Dani=EBl Mantione <daniel.mantione@freepascal.org> wrote:
+> > Op Thu, 19 Jul 2007, schreef Dmitry Torokhov:
+> >> On 7/14/07, Daniel Mantione <daniel.mantione@freepascal.org> wrote:
+>=20
+> > To make this discussion productive, I want to work towards a solution. =
+I
+> > don't mind how I can make the keyboard work as it should, I just want i=
+t
+> > work. Think of the needs of a user interface, you walk through controls
+> > using tab and shift+tab, put common commands under the function keys an=
+d
+> > shift/control/alt combinations. Cursor control in an editor is done wit=
+h
+> > the navigation pad on your keyboard: arrows, home/end/pgup/pgdown, plus
+> > shift/control/alt combinations with them.
+> >=20
+> > That is all, nothing fancy. Could the kernel support a way to do this?
+>=20
+> It could, but nobody had the idea of combining a cooked mode and a raw mo=
+de
+> like DOS provides. OK, DOS did not do a good job, you had to peek the shi=
+ft
+> status separately, but you had the assigned character as well as the
+> (translated) scancode. IIRC, X11 does the same, but with the scancodes
+> (and the mouse coordinates?) included.
+
+Well, let's go for it then. Where to start?
+
+Greetings,
+
+Dani=EBl Mantione
+--657924-1441627593-1185008617=:27563--
