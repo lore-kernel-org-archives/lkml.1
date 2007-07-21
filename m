@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbXGUWXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761017AbXGUWYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbXGUWXK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 18:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXGUWWx
+	id S1761017AbXGUWYv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 18:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbXGUWYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 18:22:53 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:55093 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbXGUWWw (ORCPT
+	Sat, 21 Jul 2007 18:24:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33101 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752395AbXGUWYm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 18:22:52 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 21 Jul 2007 18:15:39 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Mike Frysinger <vapier.adi@gmail.com>
-cc: Sam Ravnborg <sam@ravnborg.org>, kbuild-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [kbuild-devel] [PATCH 25/33] kbuild: use POSIX BRE in headers
- install target
-In-Reply-To: <8bd0f97a0707211512t46db7eedid21c759613d06a75@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707211814560.17020@localhost.localdomain>
-References: <11846813442810-git-send-email-sam@ravnborg.org>
- <11846813441741-git-send-email-sam@ravnborg.org> <1184681344376-git-send-email-sam@ravnborg.org>
- <E1ICAEU-0005an-5F@flower> <8bd0f97a0707210127m565f9b2cnc7a8a203f671e948@mail.gmail.com>
- <20070721100422.GK475@flower.upol.cz> <8bd0f97a0707211221l2c7fedeoea8612876350db6d@mail.gmail.com>
- <20070721203916.GA2912@uranus.ravnborg.org> <8bd0f97a0707211503y3de01d30n9b283237103fbc4@mail.gmail.com>
- <20070721221142.GB2912@uranus.ravnborg.org>
- <8bd0f97a0707211512t46db7eedid21c759613d06a75@mail.gmail.com>
+	Sat, 21 Jul 2007 18:24:42 -0400
+Message-ID: <46A2879F.5050702@zytor.com>
+Date: Sat, 21 Jul 2007 15:24:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.646, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	TW_NL 0.08, TW_VN 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Create clflush() inline, remove hardcoded wbinvd
+References: <1184885740.16311.19.camel@t60> <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org> <20070721181137.GH4152@rhun.haifa.ibm.com> <46A263FA.70501@zytor.com> <20070721201634.GF1193@rhun.ibm.com> <46A26A2E.7070305@zytor.com> <20070721204458.GG1193@rhun.ibm.com> <46A28425.2010202@zytor.com>
+In-Reply-To: <46A28425.2010202@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007, Mike Frysinger wrote:
+H. Peter Anvin wrote:
+> Muli Ben-Yehuda wrote:
+>> Ok, let's try again:
+>>
+>> You're changing this (pageattr.c)
+>>
+>>                 asm volatile("clflush (%0)" :: "r" (adr + i));
+>>
+>> into this:
+>>
+>> 		asm volatile("clflush %0" : "+m" (*(char __force*)(adr + i)));
+>>
+>> The original one calls clflush with (adr + i), the new one with (*(adr
+>> + i)). Are these calls equivalent?
+> 
+> Yes, they are.  The parentheses which are part of the old assembly
+> string has the same effect as the asterisk operator in C.
+> 
+> The difference between the two is that the latter form allows the C
+> compiler to select the addressing mode, which allows the full range of
+> addressing modes, whereas the former forces it to use a single register
+> indirect.
+> 
 
-> On 7/21/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > On Sat, Jul 21, 2007 at 06:03:00PM -0400, Mike Frysinger wrote:
-> > > On 7/21/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > > >I would much more prefer this functionality to be integrated into unifdef.
-> > > >There is no good reason to have two different preprocesisng methonds, one
-> > > >being the sed based one and the other the unidef one.
-> > > >
-> > > >A sinlge dedicated program that contian the sum of the functionality would
-> > > >be faster too.
-> > >
-> > > which functionality ?  normalizing of whitespace or all these
-> > > linux-specific hacks ?  unifdef serves one specific function which is
-> > > stated in its manpage: remove preprocessor conditionals from code.
-> >
-> > At present the kernel has a private copy of unidef. So adjusting the
-> > private copy for the needs of the kernels seems like a god plan.
->
-> didnt realize the kernel had integrated it since it didnt at first ...
-> so yeah, extending it however we see fit should be fine
-> -mike
+Just to be absolutely obvious about it:
 
-just for the entertainment value:
+: tazenda 15 ; cat demo.c
+#define __force
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=217840
+static inline void clflush1(volatile void *__p)
+{
+        asm volatile("clflush %0" : "+m" (*(char __force *)__p));
+}
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+static inline void clflush2(volatile void *__p)
+{
+        asm volatile("clflush (%0)" :: "r" (__p));
+}
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+void demo(void *q)
+{
+        clflush1(q);
+        clflush2(q);
+}
+: tazenda 16 ; gcc -m32 -O3 -S demo.c
+: tazenda 17 ; cat demo.s
+        .file   "demo.c"
+        .text
+        .p2align 4,,15
+.globl demo
+        .type   demo, @function
+demo:
+        pushl   %ebp
+        movl    %esp, %ebp
+        movl    8(%ebp), %eax
+#APP
+        clflush (%eax)
+        clflush (%eax)
+#NO_APP
+        popl    %ebp
+        ret
+        .size   demo, .-demo
+        .ident  "GCC: (GNU) 4.1.2 20070626 (Red Hat 4.1.2-13)"
+        .section        .note.GNU-stack,"",@progbits
