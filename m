@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbXGUFNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbXGUFVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759050AbXGUFNk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 01:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbXGUFNd
+	id S1760644AbXGUFVk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 01:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbXGUFVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 01:13:33 -0400
-Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:2079 "EHLO
-	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753280AbXGUFNc (ORCPT
+	Sat, 21 Jul 2007 01:21:32 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:59037 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753447AbXGUFVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 01:13:32 -0400
-Date: Sat, 21 Jul 2007 07:05:50 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: where is the code for read system call?
-Message-ID: <20070721050544.GA27684@vanheusden.com>
-References: <A3258B497F1C1441AD36A2E8B45FD62858CFA6@scsmsx412.amr.corp.intel.com>
+	Sat, 21 Jul 2007 01:21:31 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: david@lang.hm
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Sat, 21 Jul 2007 15:21:33 +1000
+User-Agent: KMail/1.9.6
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, Milton Miller <miltonm@bga.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ying Huang <ying.huang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0707201830470.5241-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0707201540260.5166@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707201540260.5166@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD62858CFA6@scsmsx412.amr.corp.intel.com>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Sun Jul 22 00:42:24 CEST 2007
-X-Message-Flag: www.vanheusden.com
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: multipart/signed;
+  boundary="nextPart2838332.GM7CrxbZlW";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707211521.34619.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> My application reads from socket. I need to change the behavior of read
-> system call for an experiment. Can someone point me to code?
+--nextPart2838332.GM7CrxbZlW
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Wouldn't it be easier to create a preload-library-wrapper around glibc?
+Hi.
 
+On Saturday 21 July 2007 08:43:20 david@lang.hm wrote:
+> On Fri, 20 Jul 2007, Alan Stern wrote:
+>=20
+> > On Fri, 20 Jul 2007, Jeremy Maitin-Shepard wrote:
+> >
+> >>>> when doing a suspend-to-ram you get to a point where you just don't =
+use
+> >>>> any userspace.
+> >>
+> >>> What do you mean?  How can you prevent user tasks from running?  That=
+'s
+> >>> basically what the freezer does, and the whole point of this approach
+> >>> is to eliminate the freezer.  Right?
+> >>
+> >> Presumably no tasks at all would be scheduled.
+> >
+> > How would you prevent tasks from being scheduled?  How would you
+> > prevent drivers from deadlocking because in order to put their device
+> > in a low-power state they need to acquire a lock which is held by a
+> > user task?
+>=20
+> you give up on the suspend becouse you have no way of getting the user=20
+> task to give up the lock.
+>=20
+> however, kernel locks should not be held by user tasks, user tasks are no=
+t=20
+> expected to behave in rational ways, allowing them to compete with kernel=
+=20
+> tasks for locks is a sure way to get a deadlock or indefinate stall.
+>=20
+> what locks are accessed this way?
 
-Folkert van Heusden
+Any userspace process can do a syscall. In the process of the syscall, it c=
+an=20
+take kernel locks, and it can schedule (eg, while seeking to take a second=
+=20
+lock).
 
--- 
-MultiTail is a versatile tool for watching logfiles and output of
-commands. Filtering, coloring, merging, diff-view, etc.
-http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+Regards,
+
+Nigel
+
+--nextPart2838332.GM7CrxbZlW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGoZfeN0y+n1M3mo0RAj6/AJ9et0G6U5Y14K100BwjpBe6GjZCzwCfe18X
+ohg4CBTRkSJLm+//08uJJAI=
+=jkir
+-----END PGP SIGNATURE-----
+
+--nextPart2838332.GM7CrxbZlW--
