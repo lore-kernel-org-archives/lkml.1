@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbXGUFVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761252AbXGUFjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760644AbXGUFVk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 01:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbXGUFVc
+	id S1761252AbXGUFjT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 01:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXGUFjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 01:21:32 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:59037 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbXGUFVb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 01:21:31 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: david@lang.hm
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Sat, 21 Jul 2007 15:21:33 +1000
-User-Agent: KMail/1.9.6
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, Milton Miller <miltonm@bga.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ying Huang <ying.huang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0707201830470.5241-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0707201540260.5166@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707201540260.5166@asgard.lang.hm>
+	Sat, 21 Jul 2007 01:39:04 -0400
+Received: from mail.suse.de ([195.135.220.2]:34964 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754553AbXGUFjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 01:39:03 -0400
+From: Andi Kleen <ak@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC, Announce] Unified x86 architecture, arch/x86
+Date: Sat, 21 Jul 2007 07:37:58 +0200
+User-Agent: KMail/1.9.1
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+References: <1184970779.4012.38.camel@chaos>
+In-Reply-To: <1184970779.4012.38.camel@chaos>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2838332.GM7CrxbZlW";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707211521.34619.nigel@nigel.suspend2.net>
+Content-Disposition: inline
+Message-Id: <200707210737.59552.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2838332.GM7CrxbZlW
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Saturday 21 July 2007 00:32, Thomas Gleixner wrote:
+> We are pleased to announce a project we've been working on for some
+> time: the unified x86 architecture tree, or "arch/x86" - and we'd like
+> to solicit feedback about it.
 
-Hi.
+Well you know my position on this. I think it's a bad idea because
+it means we can never get rid of any old junk. IMNSHO arch/x86_64
+is significantly cleaner and simpler in many ways than arch/i386 and I would
+like to preserve that. Also in general arch/x86_64 is much easier to hack
+than arch/i386 because it's easier to regression test and in general
+has to care about much less junk. And I don't 
+know of any way to ever fix that for i386 besides splitting the old
+stuff off completely.
 
-On Saturday 21 July 2007 08:43:20 david@lang.hm wrote:
-> On Fri, 20 Jul 2007, Alan Stern wrote:
->=20
-> > On Fri, 20 Jul 2007, Jeremy Maitin-Shepard wrote:
-> >
-> >>>> when doing a suspend-to-ram you get to a point where you just don't =
-use
-> >>>> any userspace.
-> >>
-> >>> What do you mean?  How can you prevent user tasks from running?  That=
-'s
-> >>> basically what the freezer does, and the whole point of this approach
-> >>> is to eliminate the freezer.  Right?
-> >>
-> >> Presumably no tasks at all would be scheduled.
-> >
-> > How would you prevent tasks from being scheduled?  How would you
-> > prevent drivers from deadlocking because in order to put their device
-> > in a low-power state they need to acquire a lock which is held by a
-> > user task?
->=20
-> you give up on the suspend becouse you have no way of getting the user=20
-> task to give up the lock.
->=20
-> however, kernel locks should not be held by user tasks, user tasks are no=
-t=20
-> expected to behave in rational ways, allowing them to compete with kernel=
-=20
-> tasks for locks is a sure way to get a deadlock or indefinate stall.
->=20
-> what locks are accessed this way?
+Besides radical file movements like this are bad anyways. They cause
+a big break in patchkits and forward/backwards porting that doesn't 
+really help anybody.
 
-Any userspace process can do a syscall. In the process of the syscall, it c=
-an=20
-take kernel locks, and it can schedule (eg, while seeking to take a second=
-=20
-lock).
+> This causes double maintenance
+> even for functionality that is conceptually the same for the 32-bit and
+> the 64-bit tree. (such as support for standard PC platform architecture
+> devices)
 
-Regards,
+It's not really the same platform: one is PC hardware going back forever
+with zillions of bugs, the other is modern PC platforms which much less
+bugs and quirks
 
-Nigel
+To see it otherwise it's more a junkification of arch/x86_64 than
+a cleanup of arch/i386 -- in fact you didn't really clean up arch/i386 
+at all.
 
---nextPart2838332.GM7CrxbZlW
-Content-Type: application/pgp-signature
+> How did we do it?
+> -----------------
+>
+> As an initial matter, we made it painstakingly sure that the resulting
+> .o files in a 32-bit build are bit for bit equal.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+You got not a single line less code duplication then, so i don't really
+see the point of this.
 
-iD8DBQBGoZfeN0y+n1M3mo0RAj6/AJ9et0G6U5Y14K100BwjpBe6GjZCzwCfe18X
-ohg4CBTRkSJLm+//08uJJAI=
-=jkir
------END PGP SIGNATURE-----
-
---nextPart2838332.GM7CrxbZlW--
+-Andi
