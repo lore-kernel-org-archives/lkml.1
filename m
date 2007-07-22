@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762759AbXGVThk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763328AbXGVTik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762759AbXGVThk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 15:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbXGVThb
+	id S1763328AbXGVTik (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 15:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbXGVTic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 15:37:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45231 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754073AbXGVTha (ORCPT
+	Sun, 22 Jul 2007 15:38:32 -0400
+Received: from lazybastard.de ([212.112.238.170]:55266 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754073AbXGVTib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 15:37:30 -0400
-Date: Sun, 22 Jul 2007 12:37:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-cc: Git Mailing List <git@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Git help for kernel archeology, suppress diffs caused by CVS
- keyword expansion
-In-Reply-To: <9e4733910707221212v2f6cc1c4kf7a35e84f351e4cd@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0707221234250.3607@woody.linux-foundation.org>
-References: <9e4733910707221148g69d7600bk632abb7452ce9c7c@mail.gmail.com> 
- <alpine.LFD.0.999.0707221205080.3607@woody.linux-foundation.org>
- <9e4733910707221212v2f6cc1c4kf7a35e84f351e4cd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sun, 22 Jul 2007 15:38:31 -0400
+Date: Sun, 22 Jul 2007 21:34:50 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: drivers/mtd/devices/doc2000.c - address of 'eccbuf' will always evaluate as 'true' , warnings
+Message-ID: <20070722193449.GA11479@lazybastard.org>
+References: <46A349E6.3030207@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46A349E6.3030207@googlemail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 22 Jul 2007, Jon Smirl wrote:
-
-> On 7/22/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> > 
-> > On Sun, 22 Jul 2007, Jon Smirl wrote:
-> > >
-> > > It would really be useful if git diff had an option for suppressing
-> > > diffs caused by CVS keyword expansion.
-> > 
-> > I really think it's not a "git diff" issue, but it might be a "import"
-> > issue.
-> > 
-> > IOW, I think you'd be a *lot* better off just not importing those things
-> > in the first place (which is what CVS does internally), or possibly
-> > importing them as two trees (ie you'd have the "non-log" version and the
-> > "log expansion" version, so that you can track and compare both).
-> > 
-> > Doing the thing at "diff" time is certainly possible, but this is simply
-> > much better done as a totally independent preprocessing phase. The diff
-> > handling is already some of the more complex parts (and very central), it
-> > would be much simpler and efficient to not try to make that thing fancier,
-> > and instead solve the problem at the front-end.
+On Sun, 22 July 2007 14:13:26 +0200, Gabriel C wrote:
 > 
-> These diffs are coming from companies doing GPL compliance without
-> really wanting to comply. CVS servers are not made available.
+> I noticed this warnings on current git with gcc 4.2.1
+> 
+> ....
+> 
+> drivers/mtd/devices/doc2000.c: In function 'doc_read':
+> drivers/mtd/devices/doc2000.c:635: warning: the address of 'eccbuf' will always evaluate as 'true'
+> drivers/mtd/devices/doc2000.c: In function 'doc_write':
+> drivers/mtd/devices/doc2000.c:899: warning: the address of 'eccbuf' will always evaluate as 'true'
+> 
+> ....
+> 
+> This patch fixes it but maybe there is a better way to do it.
+> 
+> 
+> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+> ---
+> 
+> 
+> diff --git a/drivers/mtd/devices/doc2000.c b/drivers/mtd/devices/doc2000.c
+> index c73e96b..ce8fbf5 100644
+> --- a/drivers/mtd/devices/doc2000.c
+> +++ b/drivers/mtd/devices/doc2000.c
+> @@ -632,7 +632,7 @@ static int doc_read(struct mtd_info *mtd, loff_t from, size_t len,
+>  			len = ((from | 0x1ff) + 1) - from;
+>  
+>  		/* The ECC will not be calculated correctly if less than 512 is read */
+> -		if (len != 0x200 && eccbuf)
+> +		if (len != 0x200 && eccbuf != NULL)
+>  			printk(KERN_WARNING
+>  			       "ECC needs a full sector read (adr: %lx size %lx)\n",
+>  			       (long) from, (long) len);
+> @@ -896,7 +896,7 @@ static int doc_write(struct mtd_info *mtd, loff_t to, size_t len,
+>  		/* Let the caller know we completed it */
+>  		*retlen += len;
+>  
+> -		if (eccbuf) {
+> +		if (eccbuf != NULL) {
+>  			unsigned char x[8];
+>  			size_t dummy;
+>  			int ret;
 
-That wasn't what I said. 
+The patches doesn't fix anything.  If you take a look at git history for
+the file, you may find this:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7f8a894066b826a4baea49c2a3adbba0a56a192f
 
-You want to supporess the CVS keyword expansion.
+And if I read the patch correctly, Thomas merely forgot to remove these
+two checks on eccbuf.  So the correct patch would remove '&& eccbuf'
+from one conditional and nuke the other completely.
 
-I'm telling you that you should just do so.
+Care to send such a patch?
 
-But I'm *also* telling you that this has nothing to do with "git diff".
+Jörn
 
-The way to get "git diff" to not show the CVS expansion is to *remove* the 
-CVS expansion. By simply running some pre-processing on the patches 
-*before* you put them into git in the first place (or, like Dscho 
-suggested: you could do it later too, by using git filter-branch).
-
-Once you have the version that doesn't have the CVS log, "git diff" will 
-automatically do the rigth thing.
-
-In other words, I'm just saying that you're trying to solve the wrong 
-problem. Once you solve the *right* problem, the wrong problem just goes 
-away.
-
-			Linus
+-- 
+ticks = jiffies;
+while (ticks == jiffies);
+ticks = jiffies;
+-- /usr/src/linux/init/main.c
