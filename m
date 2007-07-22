@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759064AbXGVCXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbXGVC3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759064AbXGVCXE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 22:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbXGVCWx
+	id S1758920AbXGVC3V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 22:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXGVC3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 22:22:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49171
+	Sat, 21 Jul 2007 22:29:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52574
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750909AbXGVCWw (ORCPT
+	by vger.kernel.org with ESMTP id S1750909AbXGVC3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 22:22:52 -0400
-Date: Sat, 21 Jul 2007 19:22:51 -0700 (PDT)
-Message-Id: <20070721.192251.122832397.davem@davemloft.net>
-To: hch@infradead.org
-Cc: vonbrand@inf.utfsm.cl, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: sparc64: ERROR: "sys_ioctl" [arch/sparc64/solaris/solaris.ko]
- undefined!
+	Sat, 21 Jul 2007 22:29:05 -0400
+Date: Sat, 21 Jul 2007 19:29:04 -0700 (PDT)
+Message-Id: <20070721.192904.10298367.davem@davemloft.net>
+To: ossthema@de.ibm.com
+Cc: netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
+       tklein@de.ibm.com, stefan.roscher@de.ibm.com, johnpol@2ka.mipt.ru
+Subject: Re: [RFC 1/1] lro: Generic Large Receive Offload for TCP traffic
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070720161154.GA17382@infradead.org>
-References: <7157.1184937882@laptop13.inf.utfsm.cl>
-	<20070720161154.GA17382@infradead.org>
+In-Reply-To: <200707201741.49290.ossthema@de.ibm.com>
+References: <200707201741.49290.ossthema@de.ibm.com>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,22 +27,17 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Hellwig <hch@infradead.org>
-Date: Fri, 20 Jul 2007 17:11:54 +0100
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Date: Fri, 20 Jul 2007 17:41:48 +0200
 
-> On Fri, Jul 20, 2007 at 09:24:42AM -0400, Horst H. von Brand wrote:
-> > When building v2.6.22-3478-g275afca on sparc64 (.config attached) I get:
-> > 
-> >   MODPOST vmlinux
-> >   Building modules, stage 2.
-> >   MODPOST 463 modules
-> > ERROR: "sys_ioctl" [arch/sparc64/solaris/solaris.ko] undefined!
+> Generic LRO patch
 > 
-> Sorry, my fault.
-> 
-> It looked to me like sparc64 exports sys_ioctl on it's own, but it only
-> exports compat_sys_ioctl on it's own.
-> 
-> Here's the fix:
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-Applied, thanks!
+I have no general objections to this patch.
+
+However I'd like to see at least one or two uses of these APIs before
+we put it in, and it sounds as if we have at least two pending and
+in the works if not ready already, so that shouldn't be an issue.
+
+Thanks.
