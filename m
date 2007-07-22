@@ -1,117 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759670AbXGVQ2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbXGVQ3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759670AbXGVQ2T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 12:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbXGVQ2I
+	id S1760036AbXGVQ3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 12:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbXGVQ3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 12:28:08 -0400
-Received: from thunk.org ([69.25.196.29]:52689 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755052AbXGVQ2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 12:28:06 -0400
-Date: Sun, 22 Jul 2007 12:28:02 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFH] Partition table recovery
-Message-ID: <20070722162802.GA20174@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Al Boldi <a1426z@gawab.com>,
-	linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <200707200813.03553.a1426z@gawab.com> <46A24846.7050803@gmail.com> <20070722011141.GJ26752@thunk.org> <200707220710.31402.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707220710.31402.a1426z@gawab.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sun, 22 Jul 2007 12:29:12 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:39418 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754844AbXGVQ3L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 12:29:11 -0400
+To: stern@rowland.harvard.edu
+CC: nigel@suspend2.net, jbms@cmu.edu, miklos@szeredi.hu, rjw@sisk.pl,
+       miltonm@bga.com, ying.huang@intel.com, linux-kernel@vger.kernel.org,
+       david@lang.hm, linux-pm@lists.linux-foundation.org
+In-reply-to: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org>
+	(message from Alan Stern on Sun, 22 Jul 2007 11:26:23 -0400 (EDT))
+Subject: Re: [linux-pm] Re: Hibernation considerations
+References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org>
+Message-Id: <E1ICeHX-00025u-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 22 Jul 2007 18:27:43 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 07:10:31AM +0300, Al Boldi wrote:
-> Sounds great, but it may be advisable to hook this into the partition 
-> modification routines instead of mkfs/fsck.  Which would mean that the 
-> partition manager could ask the kernel to instruct its fs subsystem to 
-> update the backup partition table for each known fs-type that supports such 
-> a feature.
+> The only thing to do is what Rafael has been working on: unfreeze
+> things, hope the tasks sort themselves out, and try again.
 
-Well, let's think about this a bit.  What are the requirements?
+Have we some proof, that this will untangle the freezing tasks in a
+limited time?  Or will it just make the problem harder to trigger?
 
-1) The partition manager should be able explicitly request that a new
-backup of the partition tables be stashed in each filesystem that has
-room for such a backup.  That way, when the user affirmatively makes a
-partition table change, it can get backed up in all of the right
-places automatically.
-
-2) The fsck program should *only* stash a backup of the partition
-table if there currently isn't one in the filesystem.  It may be that
-the partition table has been corrupted, and so merely doing an fsck
-should not transfer a current copy of the partition table to the
-filesystem-secpfic backup area.  It could be that the partition table
-was only partially recovered, and we don't want to overwrite the
-previously existing backups except on an explicit request from the
-system administrator.
-
-3) The mkfs program should automatically create a backup of the
-current partition table layout.  That way we get a backup in the newly
-created filesystem as soon as it is created.
-
-4) The exact location of the backup may vary from filesystem to
-filesystem.  For ext2/3/4, bytes 512-1023 are always unused, and don't
-interfere with the boot sector at bytes 0-511, so that's the obvious
-location.  Other filesystems may have that location in use, and some
-other location might be a better place to store it.  Ideally it will
-be a well-known location, that isn't dependent on finding an inode
-table, or some such, but that may not be possible for all filesystems.
-
-OK, so how about this as a solution that meets the above requirements?
-
-/sbin/partbackup <device> [<fspart>]
-
-	Will scan <device> (i.e., /dev/hda, /dev/sdb, etc.) and create
-	a 512 byte partition backup, using the format I've previously
-	described.  If <fspart> is specified on the command line, it
-	will use the blkid library to determine the filesystem type of
-	<fspart>, and then attempt to execute
-	/dev/partbackupfs.<fstype> to write the partition backup to
-	<fspart>.  If <fspart> is '-', then it will write the 512 byte
-	partition table to stdout.  If <fspart> is not specified on
-	the command line, /sbin/partbackup will iterate over all
-	partitions in <device>, use the blkid library to attempt to
-	determine the correct filesystem type, and then execute 
-	/sbin/partbackupfs.<fstype> if such a backup program exists.
-
-/sbin/partbackupfs.<fstype> <fspart>
-
-	... is a filesystem specific program for filesystem type
-	<fstype>.  It will assure that <fspart> (i.e., /dev/hda1,
-	/dev/sdb3) is of an appropriate filesystem type, and then read
-	512 bytes from stdin and write it out to <fspart> to an
-	appropriate place for that filesystem.
-
-Partition managers will be encouraged to check to see if
-/sbin/partbackup exists, and if so, after the partition table is
-written, will check to see if /sbin/partbackup exists, and if so, to
-call it with just one argument (i.e., /sbin/partbackup /dev/hdb).
-They SHOULD provide an option for the user to suppress the backup from
-happening, but the backup should be the default behavior.
-
-An /etc/mkfs.<fstype> program is encouraged to run /sbin/partbackup
-with two arguments (i.e., /sbin/partbackup /dev/hdb /dev/hdb3) when
-creating a filesystem.
-
-An /etc/fsck.<fstype> program is encouraged to check to see if a
-partition backup exists (assuming the filesystem supports it), and if
-not, call /sbin/partbackup with two arguments.
-
-A filesystem utility package for a particular filesystem type is
-encouraged to make the above changes to its mkfs and fsck programs, as
-well as provide an /sbin/partbackupfs.<fstype> program.
-
-I would do this all in userspace, though.  Is there any reason to get
-the kernel involved?  I don't think so.
-
-						- Ted
+Miklos
