@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbXGVREy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbXGVRHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbXGVREy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 13:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXGVREs
+	id S1761650AbXGVRHM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 13:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbXGVRG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 13:04:48 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:4207 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755464AbXGVREr (ORCPT
+	Sun, 22 Jul 2007 13:06:59 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52146 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755464AbXGVRG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 13:04:47 -0400
-Date: Sun, 22 Jul 2007 11:05:19 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: processor family setting for Pentium D
-In-reply-to: <fa.mkagl9LGp73SZOVteb979N2BWtI@ifi.uio.no>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <46A38E4F.1080107@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.mkagl9LGp73SZOVteb979N2BWtI@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Sun, 22 Jul 2007 13:06:59 -0400
+Date: Sun, 22 Jul 2007 18:06:57 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: sparse breakage (x86_64: Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu)
+Message-ID: <20070722170657.GB21668@ftp.linux.org.uk>
+References: <20070722160809.GA5803@martell.zuzino.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070722160809.GA5803@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote:
-> Probably a stupid question, but I spent some time searching the net
-> for an answer without success:
-> 
-> What is the correct setting of the "Processor family" configuration
-> option for a 32 bit kernel which is going to run on an Intel
-> Pentium D 940 processor (cpu family 15, model 6)? It doesn't seem
-> to fit any of the available selections.
-> 
-> More generally, what is the correct way of selecting the processor
-> family option for a CPU whose name doesn't appear anywhere in the
-> prompts or help texts in arch/i386/Kconfig.cpu? I guess there must
-> be a way of deducing it from the content of /proc/cpuinfo, only I
-> cannot figure out how.
-> 
-> Thanks,
-> Tilman
+On Sun, Jul 22, 2007 at 08:08:09PM +0400, Alexey Dobriyan wrote:
+> Andi, with new vDSO code sparse fails to check with usual invocation here:
 
-Pentium D is based on the Pentium 4 (basically two P4 chips in one 
-package), therefore that option would be the one you would want.
+Fucks with CF and not in a good way...
 
-If it's not listed in the menu, then you pretty much have to go on what 
-else is in there that's similar. Likely Pentium D should be added to the 
-menu listing for Pentium 4 though.
+CF := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+$(obj)/vclock_gettime.o: CFLAGS = $(CF)
+$(obj)/vgetcpu.o: CFLAGS = $(CF)
 
+s/CF/CCF/ in there (arch/x86_64/vdso/Makefile) fixes gcc problems; sparse
+ones remain and I'll look into that when I get some sleep (26 hours uptime
+right now).  I think I have a good idea of what's going on there, but
+I'd rather not touch that code until tonight.
+
+For now just rename the variable in makefile (obviously the right thing
+to do) and that will give you sparse runs not aborted at that point.
