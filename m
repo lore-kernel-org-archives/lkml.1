@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbXGVLSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763502AbXGVLjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbXGVLSX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 07:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbXGVLSO
+	id S1763502AbXGVLjZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 07:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbXGVLjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 07:18:14 -0400
-Received: from mail.trixing.net ([87.230.125.58]:41610 "EHLO mail.trixing.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759259AbXGVLSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 07:18:13 -0400
-Message-ID: <46A33D03.3000105@l4x.org>
-Date: Sun, 22 Jul 2007 13:18:27 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	Sun, 22 Jul 2007 07:39:16 -0400
+Received: from web57705.mail.re3.yahoo.com ([68.142.236.59]:30781 "HELO
+	web57705.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755079AbXGVLjP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 07:39:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=c3zW3Y2SlTyUvMOR627esEfBe0w74bdGB23LQtmrHDkexhCckbfZIXmsYj8q0daszhul+klmqxlGhPvbc7zinj8VBJjlbIe3ExjHIoy0PoZ8dWipqACvc/0fDS8UK8GjV8S1n07PFeDsh9PU2Nc7inkzI8SR66MsTDXaJIJFtHg=;
+X-YMail-OSG: CXkGSscVM1lCqI3DIvSieM3og4BbjZC3qwGyzyWse2GiGxiWOW65urA7DkLT637Br6rRoAbliSzwbx0H1i0Rv6NXi6ggAcph3fuYzkAs2McOEsVPjC8UbIYKL5hpbsA8i9uwqG3BDB9taps-
+X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.119
+Date: Sun, 22 Jul 2007 04:39:14 -0700 (PDT)
+From: Jacob A <jacoba51-tmp@yahoo.com>
+Subject: Re: 2.4 Q: list of open files per inode?
+To: Al Viro <viro@ftp.linux.org.uk>, Jan Engelhardt <jengelh@computergmbh.de>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-References: <20070720091707.GA26717@linux-sh.org> <46A0C199.8050401@l4x.org> <20070720151543.GA28274@linux-sh.org>
-In-Reply-To: <20070720151543.GA28274@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.195
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: [GIT PULL] Trivial sh64 updates for 2.6.23-rc1
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Message-ID: <259547.37103.qm@web57705.mail.re3.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Fri, Jul 20, 2007 at 04:07:21PM +0200, Jan Dittmer wrote:
->> Paul Mundt wrote:
->> Tangential question. Which is the currently recommended cross toolchain
->> for sh64? With "gcc 3.2 20020529", "binutils 020306 20030206" (some
->> binary toolchain from ~2 years ago somewhere off the web) I get [1]
+Al,
 
-<error snipped>
+I'm using the open/close call as a way for processes to register/unregister with a watchdog driver that I'm writing.
+I thought that I can save the housekeeping within the driver, but it looks like It would be easier just to maintain my own list
+and be done with it.
 
->> gcc 3.4.x, 4.0.x, 4.1.x don't build for me from source
->> (target -superh-linux-gnu, binutils 2.15.x or 2.17.x).
+Jacob
+
+----- Original Message ----
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Jacob A <jacoba51-tmp@yahoo.com>; linux-kernel@vger.kernel.org
+Sent: Thursday, July 19, 2007 7:38:10 PM
+Subject: Re: 2.4 Q: list of open files per inode?
+
+On Thu, Jul 19, 2007 at 01:41:03PM +0200, Jan Engelhardt wrote:
 > 
-> I've been using sh64-linux targetted toolchains created from the gentoo
-> crossdev, which works fine with stock versions. I can send you a tarball
-> of the toolchain off-list if you like.
+> On Jul 19 2007 02:01, Jacob A wrote:
+> >
+> > How can a device driver go over the  list of all the files that are open on a
+> > specific inode instance?
+> 
+> pseudo-code:
+> 
+> task_list_lock;
+> for each process; do
+>     lock_fdtable;
+>     for each filedescriptor; do
+>         do_something(fd->file_ptr);
+>     unlock_fdtable;
+> task_list_unlock;
 
-Binutils, gcc versions would be fine to. Meanwhile I got binutils
-2.17.50.0.17.20070615 and gcc 4.1.3 20070704 (prerelease) to compile
-(supplying it with uclibc- and lk-headers). But compiling 2.6.22-git17
-now fails with
+Not again...
 
-  CC      drivers/video/cfbimgblt.o
-  CC      drivers/video/fb_defio.o
-  LD      drivers/video/built-in.o
-  LD      drivers/built-in.o
-sh64-linux-ld: sh3 architecture of input file `drivers/media/built-in.o'
-is incompatible with sh5 output
-sh64-linux-ld: sh3 architecture of input file `drivers/i2c/built-in.o'
-is incompatible with sh5 output
-make[2]: *** [drivers/built-in.o] Error 1
-make[1]: *** [drivers] Error 2
-make: *** [_all] Error 2
+There are other things that can keep file open.  SCM_RIGHTS, references
+held by syscall in progress, etc., etc.
 
-Known?
+The real question is why does driver want to do that?  Details, please...
 
-Thanks,
 
-Jan
+
