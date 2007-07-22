@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933045AbXGVMuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933203AbXGVMve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933045AbXGVMuZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 08:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760801AbXGVMuH
+	id S933203AbXGVMve (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 08:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760801AbXGVMvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 08:50:07 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:5317 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755099AbXGVMuG (ORCPT <rfc822;Linux-Kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 08:50:06 -0400
-Date: Sun, 22 Jul 2007 16:50:39 +0400
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: Linux-Kernel@vger.kernel.org
-Cc: hpa@zytor.com
-Subject: [PATCH 2/2] x86: ignore_int cleanup
-Message-ID: <20070722125039.GB20538@dnb.sw.ru>
-Mail-Followup-To: Linux-Kernel@vger.kernel.org, hpa@zytor.com
-MIME-Version: 1.0
+	Sun, 22 Jul 2007 08:51:24 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49986 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755099AbXGVMvW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 08:51:22 -0400
+Date: Sun, 22 Jul 2007 13:51:20 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Jacob A <jacoba51-tmp@yahoo.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.4 Q: list of open files per inode?
+Message-ID: <20070722125120.GY21668@ftp.linux.org.uk>
+References: <259547.37103.qm@web57705.mail.re3.yahoo.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: SWsoft
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <259547.37103.qm@web57705.mail.re3.yahoo.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- for argument was pushed to the stack, but printk use only three of
-  them.
+On Sun, Jul 22, 2007 at 04:39:14AM -0700, Jacob A wrote:
+> Al,
+> 
+> I'm using the open/close call as a way for processes to register/unregister with a watchdog driver that I'm writing.
+> I thought that I can save the housekeeping within the driver, but it looks like It would be easier just to maintain my own list
+> and be done with it.
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
----
- arch/i386/kernel/head.S |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+What do you mean "register with a watchdog driver"?  The process that
+had opened file might be long gone while the file remains open...
 
-diff --git a/arch/i386/kernel/head.S b/arch/i386/kernel/head.S
-index 7c52b22..9bcd106 100644
---- a/arch/i386/kernel/head.S
-+++ b/arch/i386/kernel/head.S
-@@ -481,10 +481,9 @@ ignore_int:
- 	cmpl $2,early_recursion_flag
- 	je hlt_loop
- 	incl early_recursion_flag
--	pushl 16(%esp)
--	pushl 24(%esp)
--	pushl 32(%esp)
--	pushl 40(%esp)
-+	pushl 20(%esp)
-+	pushl 28(%esp)
-+	pushl 36(%esp)
- 	pushl $int_msg
- #ifdef CONFIG_EARLY_PRINTK
- 	call early_printk
--- 
-1.5.2.2
+What kind of information do you keep for each struct file?
 
-
+PS: stop top-posting
