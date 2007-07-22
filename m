@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762337AbXGVIup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbXGVIvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762337AbXGVIup (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 04:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbXGVIui
+	id S1762892AbXGVIvW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 04:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760155AbXGVIvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 04:50:38 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6801 "EHLO kernel.dk"
+	Sun, 22 Jul 2007 04:51:07 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59090 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756463AbXGVIuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 04:50:37 -0400
-Date: Sun, 22 Jul 2007 10:50:41 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>, riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH 3/3] readahead: scale max readahead size depending on
-	memory size
-Message-ID: <20070722085041.GS11657@kernel.dk>
-References: <20070721210005.000228000@chello.nl> <20070721210052.497469000@chello.nl> <20070722082434.GR11657@kernel.dk> <1185093405.20032.205.camel@twins>
-MIME-Version: 1.0
+	id S1758329AbXGVIvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 04:51:05 -0400
+Date: Sun, 22 Jul 2007 10:52:17 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>, Jens Axboe <axboe@kernel.dk>,
+       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>,
+       drbd-user@linbit.com
+Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
+Message-ID: <20070722085217.GA27849@uranus.ravnborg.org>
+References: <20070721203819.GA10706@mail.linbit.com> <p73hcnxuxji.fsf@bingen.suse.de> <20070722060925.GD18326@mail.linbit.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1185093405.20032.205.camel@twins>
+In-Reply-To: <20070722060925.GD18326@mail.linbit.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22 2007, Peter Zijlstra wrote:
-> On Sun, 2007-07-22 at 10:24 +0200, Jens Axboe wrote:
-> > On Sat, Jul 21 2007, Peter Zijlstra wrote:
-> 
-> > > +static __init int readahead_init(void)
-> > > +{
-> > > +	/*
-> > > +	 * Scale the max readahead window with system memory
-> > > +	 *
-> > > +	 *   64M:   128K
-> > > +	 *  128M:   180K
-> > > +	 *  256M:   256K
-> > > +	 *  512M:   360K
-> > > +	 *    1G:   512K
-> > > +	 *    2G:   724K
-> > > +	 *    4G:  1024K
-> > > +	 *    8G:  1448K
-> > > +	 *   16G:  2048K
-> > > +	 */
-> > > +	ra_pages = int_sqrt(totalram_pages/16);
-> > > +	if (ra_pages > (2 << (20 - PAGE_SHIFT)))
-> > > +		ra_pages = 2 << (20 - PAGE_SHIFT);
-> > > +
-> > > +	return 0;
-> > > +}
-> > 
-> > How did you come up with these numbers?
-> 
-> Well, most other places in the kernel where we scale by memory size we
-> use the a sqrt curve, and the specific scale was the result of some
-> fiddling, these numbers looked sane to me, nothing special.
-> 
-> Would you suggest a different set, and if so, do you have any rationale
-> for them?
+> there is just one logical piece, the drbd module...
+> it is all in its own subdirectory.
 
-I just wish you had a rationale behind them, I don't think it's that
-great of a series. I agree with the low point of 128k. Then it'd be sane
-to try and determine what the upper limit of ra window size goodness is,
-which is probably impossible since it depends on the hardware a lot. But
-lets just say the upper value is 2mb, then I think it's pretty silly
-_not_ to use 2mb on a 1g machine for instance. So more aggressive
-scaling.
+For review purposes the split is often file based.
+Something along the lines of:
 
-Then there's the relationship between nr of requests and ra size. When
-you leave everything up to a simple sqrt of total_ram type thing, then
-you are sure to hit stupid values that cause a queue size of a number of
-full requests, plus a small one at the end. Clearly not optimal!
+Makefile + Kconfig
+include/linux/drdb*   <= why 5 files for one module?
+drdb_main.c
+drdb_req.{c+h}
+etc..
 
--- 
-Jens Axboe
+So essentially smaller pieces that can be revied but when ready for inclusion
+it should go in as _one_ commit to avoid breaking bisect.
 
+But please finish off all the CodingStyle issue before submission so the
+review can concentrate on the actual content.
+
+Quickly browsing drdb_int.h shows that there are a few issues yet to sort out.
+typedef usage, funny macros, volatile etc.
+
+	Sam
