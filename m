@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764617AbXGVUQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764498AbXGVUTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764617AbXGVUQz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 16:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762666AbXGVUQp
+	id S1764498AbXGVUTp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 16:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762635AbXGVUTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 16:16:45 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:57756 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762638AbXGVUQo (ORCPT
+	Sun, 22 Jul 2007 16:19:37 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:12661 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762633AbXGVUTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 16:16:44 -0400
-Date: Sun, 22 Jul 2007 13:21:20 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "jidong xiao" <jidong.xiao@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Is there a linux-serial mail list?
-Message-Id: <20070722132120.263e72c3.randy.dunlap@oracle.com>
-In-Reply-To: <4104961b0707220753m41b22498y1610c51eab910d2f@mail.gmail.com>
-References: <4104961b0707220753m41b22498y1610c51eab910d2f@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Jul 2007 16:19:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MV553KuITOrQwWA4WaGUuFR5Y37q7X3ZkAtShy6GOqIYDoBIVaesPALp5DjA4cuOHLG3Jl8oWmyvWFaVXJfzH8rz9In3t0BzYOG3ek4qZBwnhd/uLVBQ6PkKnaIW5yndXhpd5HKlwJKrPBqFWYHrWPTlUEP6N41AwQy638veXSY=
+Message-ID: <19061b0b0707221319q5311ce55p25e289cc452fe57@mail.gmail.com>
+Date: Sun, 22 Jul 2007 21:19:34 +0100
+From: Bartek <poemann@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Pata support for IDE Controller 82801G ICH7 in Linux 2.6.22
+Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <6bffcb0e0707221155l5bf7702r449846be48940a42@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <19061b0b0707220259h207f27d7wa836b1973c547e63@mail.gmail.com>
+	 <6bffcb0e0707220311v5b145050hbd911e37b6f14c80@mail.gmail.com>
+	 <19061b0b0707221021p4ca776d9k737121ddf553b1ce@mail.gmail.com>
+	 <6bffcb0e0707221155l5bf7702r449846be48940a42@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jul 2007 22:53:48 +0800 jidong xiao wrote:
+2007/7/22, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>:
+> Ok, this controller is supported.
+>
+> Did you forgot about CONFIG_PATA_MPIIX=y?
 
-> and how to subscribe it?
-> 
-> Thanks
-> Jason Xiao
+I did not mention it in my previous message, but I made a few
+different compilation of Linux, also with that option (compiled
+directly to the kernel and as a module). And it did not work. But, to
+be sure I recompiled kernel again with CONFIG_PATA_MPIIX=y and it did
+not work. So, if the controller is supported, where is the problem?
 
-It's all here:
-http://vger.kernel.org/vger-lists.html#linux-serial
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Bartek
