@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbXGVEVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbXGVEWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbXGVEVT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 00:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbXGVEVJ
+	id S1756073AbXGVEWx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 00:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbXGVEWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 00:21:09 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:4238 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbXGVEVH (ORCPT
+	Sun, 22 Jul 2007 00:22:45 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:1604 "EHLO
+	asav06.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbXGVEWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 00:21:07 -0400
-Date: Sun, 22 Jul 2007 07:20:57 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Create clflush() inline, remove hardcoded wbinvd
-Message-ID: <20070722042057.GJ1193@rhun.ibm.com>
-References: <1184885740.16311.19.camel@t60> <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org> <20070721181137.GH4152@rhun.haifa.ibm.com> <46A263FA.70501@zytor.com> <20070721201634.GF1193@rhun.ibm.com> <46A26A2E.7070305@zytor.com> <20070721204458.GG1193@rhun.ibm.com> <46A28425.2010202@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 22 Jul 2007 00:22:44 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AusRAPh4okZKhRO4Rmdsb2JhbACHM4gcAQEBIwYM
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [patch 1/3] m68k/mac: Make mac_hid_mouse_emulate_buttons() declaration visible
+Date: Sun, 22 Jul 2007 00:22:40 -0400
+User-Agent: KMail/1.9.3
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org
+References: <20070720164043.523003359@mail.of.borg> <d120d5000707201151q433f1f3eteb479109291a54bd@mail.gmail.com> <Pine.LNX.4.64.0707211026070.18493@anakin>
+In-Reply-To: <Pine.LNX.4.64.0707211026070.18493@anakin>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46A28425.2010202@zytor.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200707220022.41797.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 21, 2007 at 03:09:41PM -0700, H. Peter Anvin wrote:
-> Muli Ben-Yehuda wrote:
+Hi Geert,
+
+On Saturday 21 July 2007 04:27, Geert Uytterhoeven wrote:
+> On Fri, 20 Jul 2007, Dmitry Torokhov wrote:
 > > 
-> > Ok, let's try again:
-> > 
-> > You're changing this (pageattr.c)
-> > 
-> >                 asm volatile("clflush (%0)" :: "r" (adr + i));
-> > 
-> > into this:
-> > 
-> > 		asm volatile("clflush %0" : "+m" (*(char __force*)(adr + i)));
-> > 
-> > The original one calls clflush with (adr + i), the new one with (*(adr
-> > + i)). Are these calls equivalent?
+> > I am OK with adding a new header file. I was just saying that placing
+> > that declaration in linux/hid.h makes about the same sense as putting
+> > it into linux/scsi.h
 > 
-> Yes, they are.  The parentheses which are part of the old assembly
-> string has the same effect as the asterisk operator in C.
+> At first I just wanted to move it. Then I thought about the angry
+> comments I would get about not moving it to a header file ;-)
+> 
+> <linux/hid.h> looked like the best candidate. <linux/kbd_kern.h> is
+> another option.
+> 
 
-Ah, I see. Thanks for the explanation!
+linux/kbd_kern.h sounds much better.
 
-Cheers,
-Muli
+-- 
+Dmitry
