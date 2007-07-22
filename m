@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761818AbXGVJFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764206AbXGVJHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761818AbXGVJFg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 05:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761272AbXGVJFK
+	id S1764206AbXGVJHQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 05:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761242AbXGVJHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 05:05:10 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:9766 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761120AbXGVJFH (ORCPT
+	Sun, 22 Jul 2007 05:07:01 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:36875 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761120AbXGVJHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 05:05:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=XLUamsXp3l1pOJ41EMQCrSK5LsqnxCQJF+cx3avyE08rxwvkTnfPYhyd+haahR18NBXX7tQtmDJ/60ea+if6Kw1XuUVol3AK39R2AcRHB6TM1ZvBEGPsU8x2Wj9dVkwbSJHvhhC+Vt0lRjJXWQbZ2S1L7LIxBtMEcIGYQRKDpN4=
-Message-ID: <84144f020707220205y57370351ge478537c649800b2@mail.gmail.com>
-Date: Sun, 22 Jul 2007 12:05:05 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Sam Ravnborg" <sam@ravnborg.org>
+	Sun, 22 Jul 2007 05:07:00 -0400
+Date: Sun, 22 Jul 2007 11:06:59 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Lars Ellenberg <lars.ellenberg@linbit.com>
+cc: Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
+       lkml <linux-kernel@vger.kernel.org>
 Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Cc: "Andi Kleen" <andi@firstfloor.org>, "Jens Axboe" <axboe@kernel.dk>,
-       "Andrew Morton" <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>,
-       drbd-user@linbit.com
-In-Reply-To: <20070722085217.GA27849@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+In-Reply-To: <20070721224300.GB18326@mail.linbit.com>
+Message-ID: <Pine.LNX.4.64.0707221105480.15705@fbirervta.pbzchgretzou.qr>
 References: <20070721203819.GA10706@mail.linbit.com>
-	 <p73hcnxuxji.fsf@bingen.suse.de>
-	 <20070722060925.GD18326@mail.linbit.com>
-	 <20070722085217.GA27849@uranus.ravnborg.org>
-X-Google-Sender-Auth: 6cd1ee1da73f78e4
+ <Pine.LNX.4.64.0707212316530.21737@fbirervta.pbzchgretzou.qr>
+ <20070721224300.GB18326@mail.linbit.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
 
-On 7/22/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> So essentially smaller pieces that can be revied but when ready for inclusion
-> it should go in as _one_ commit to avoid breaking bisect.
+On Jul 22 2007 00:43, Lars Ellenberg wrote:
+>On Sat, Jul 21, 2007 at 11:17:43PM +0200, Jan Engelhardt wrote:
+>> On Jul 21 2007 22:38, Lars Ellenberg wrote:
+>> >
+>> >We implement shared-disk semantics in a shared-nothing cluster.
+>> 
+>> If nothing is shared, the disk is not shared, but got shared-disk
+>> semantics? A little confusing.
+>
+>Think of it as RAID1 over TCP.
 
-Or alternatively, put all Kconfig and Makefile changes in the last patch.
+And what does it do better than raid1-over-NBD? (Which is already N-disk,
+and, logically, seems to support cluster filesystems)
+
+>Typically you have one Node in Primary, the other as Secondary,
+>replication target only.
+>But you can also have both Active, for use with a cluster file system.
+>
+>So the semantics are like you have
+>two (to come: N) nodes and a shared disk.
+>only that there is not one shared disk,
+>but two (N) replicated ones.
+>
+>btw, regarding linux kernel CodingStyle issues.
+>scripts/checkpatch.pl reports 2000+ lines of complaints.
+>I'm working on it now, it is mostly whitespace (lame excuse: phil grew
+>up with emacs and gnu coding style, sorry for that).
+>
+
+	Jan
+-- 
