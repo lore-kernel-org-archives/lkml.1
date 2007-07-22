@@ -1,44 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763661AbXGVJka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbXGVJpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763661AbXGVJka (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 05:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761685AbXGVJkW
+	id S1759950AbXGVJpM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 05:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbXGVJoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 05:40:22 -0400
-Received: from il.qumranet.com ([82.166.9.18]:35696 "EHLO il.qumranet.com"
+	Sun, 22 Jul 2007 05:44:55 -0400
+Received: from mga09.intel.com ([134.134.136.24]:53691 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757530AbXGVJkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 05:40:22 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: sebastian@breakpoint.cc, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH] KVM: Require CONFIG_ANON_INODES
-Date: Sun, 22 Jul 2007 12:40:30 +0300
-Message-Id: <11850972303808-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.2.4
+	id S1755468AbXGVJoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 05:44:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,568,1175497200"; 
+   d="scan'208";a="108639100"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [GIT PATCH 0/2] stripe-queue for 2.6.23 consideration
+To: akpm@linux-foundation.org, neilb@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Date: Sun, 22 Jul 2007 02:44:52 -0700
+Message-ID: <20070722094115.18906.64495.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Found by Sebastian Siewior and randconfig.
+Andrew, Neil,
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- drivers/kvm/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+The stripe-queue patches are showing solid performance improvement.
 
-diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
-index 2f661e5..6cecc39 100644
---- a/drivers/kvm/Kconfig
-+++ b/drivers/kvm/Kconfig
-@@ -11,6 +11,7 @@ if VIRTUALIZATION
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support"
- 	depends on X86 && EXPERIMENTAL
-+	select ANON_INODES
- 	---help---
- 	  Support hosting fully virtualized guest machines using hardware
- 	  virtualization extensions.  You will need a fairly recent
--- 
-1.5.2.4
+	git://lost.foo-projects.org/~dwillia2/git/iop md-for-linus
 
+ drivers/md/raid5.c         | 1484 ++++++++++++++++++++++++++++++++------------
+ include/linux/raid/raid5.h |   87 +++-
+ 2 files changed, 1164 insertions(+), 407 deletions(-)
+
+Dan Williams (2):
+      raid5: add the stripe_queue object for tracking raid io requests (take2)
+      raid5: use stripe_queues to prioritize the "most deserving" requests (take4)
+
+I initially considered them 2.6.24 material but after fixing the sync+io
+data corruption regression, fixing the large 'stripe_cache_size' values
+performance regression, and seeing how well it performed on my IA
+platform I would like them to be considered for 2.6.23.  That being said
+I have not yet tested expand operations or raid6.
+
+Without any tuning a 4 disk (SATA) RAID5 array can reach 190MB/s.  Previously
+performance was around 90MB/s.  Blktrace data confirms that less reads are
+occurring and more writes are being merged.
+
+$ mdadm --create /dev/md0 /dev/sd[abcd] -n 4 -l 5 --assume-clean
+$ blktrace /dev/sd[abcd] &
+$ for i in `seq 1 3`; do dd if=/dev/zero of=/dev/md0 bs=1024k count=1024; done
+$ fg ^C
+$ blkparse /dev/sda /dev/sdb /dev/sdc /dev/sdd
+
+=====pre-patch=====
+Total (sda):
+ Reads Queued:       3,136,   12,544KiB	 Writes Queued:     187,068,  748,272KiB
+ Read Dispatches:      676,   12,384KiB	 Write Dispatches:   30,949,  737,052KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:      662,   12,080KiB	 Writes Completed:   30,630,  736,964KiB
+ Read Merges:        2,452,    9,808KiB	 Write Merges:      155,885,  623,540KiB
+ IO unplugs:             1        	 Timer unplugs:           1
+
+Total (sdb):
+ Reads Queued:       1,541,    6,164KiB	 Writes Queued:      91,224,  364,896KiB
+ Read Dispatches:      323,    6,184KiB	 Write Dispatches:   14,603,  335,528KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:      303,    6,124KiB	 Writes Completed:   13,650,  328,520KiB
+ Read Merges:        1,209,    4,836KiB	 Write Merges:       76,080,  304,320KiB
+ IO unplugs:             0        	 Timer unplugs:           0
+
+Total (sdc):
+ Reads Queued:       1,372,    5,488KiB	 Writes Queued:      82,995,  331,980KiB
+ Read Dispatches:      297,    5,280KiB	 Write Dispatches:   13,258,  304,020KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:      268,    4,948KiB	 Writes Completed:   12,320,  298,668KiB
+ Read Merges:        1,067,    4,268KiB	 Write Merges:       69,154,  276,616KiB
+ IO unplugs:             0        	 Timer unplugs:           0
+
+Total (sdd):
+ Reads Queued:       1,383,    5,532KiB	 Writes Queued:      80,186,  320,744KiB
+ Read Dispatches:      307,    5,008KiB	 Write Dispatches:   13,241,  298,400KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:      276,    4,888KiB	 Writes Completed:   12,677,  294,324KiB
+ Read Merges:        1,050,    4,200KiB	 Write Merges:       66,772,  267,088KiB
+ IO unplugs:             0        	 Timer unplugs:           0
+
+
+=====post-patch=====
+Total (sda):
+ Reads Queued:         117,      468KiB	 Writes Queued:      71,511,  286,044KiB
+ Read Dispatches:       17,      308KiB	 Write Dispatches:    8,412,  699,204KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        6,       96KiB	 Writes Completed:    3,704,  321,552KiB
+ Read Merges:           96,      384KiB	 Write Merges:       67,880,  271,520KiB
+ IO unplugs:            14        	 Timer unplugs:          15
+
+Total (sdb):
+ Reads Queued:          88,      352KiB	 Writes Queued:      56,687,  226,748KiB
+ Read Dispatches:       11,      288KiB	 Write Dispatches:    8,142,  686,412KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        8,      184KiB	 Writes Completed:    2,770,  257,740KiB
+ Read Merges:           76,      304KiB	 Write Merges:       54,005,  216,020KiB
+ IO unplugs:            16        	 Timer unplugs:          17
+
+Total (sdc):
+ Reads Queued:          60,      240KiB	 Writes Queued:      61,863,  247,452KiB
+ Read Dispatches:        7,      248KiB	 Write Dispatches:    8,302,  699,832KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        5,      144KiB	 Writes Completed:    2,907,  258,900KiB
+ Read Merges:           50,      200KiB	 Write Merges:       58,926,  235,704KiB
+ IO unplugs:            20        	 Timer unplugs:          23
+
+Total (sdd):
+ Reads Queued:          61,      244KiB	 Writes Queued:      66,330,  265,320KiB
+ Read Dispatches:       10,      180KiB	 Write Dispatches:    9,326,  694,012KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        4,      112KiB	 Writes Completed:    3,562,  285,912KiB
+ Read Merges:           47,      188KiB	 Write Merges:       62,751,  251,004KiB
+ IO unplugs:            16        	 Timer unplugs:          17
+
+Tiobench measures >90% performance increases on my IA platform with none of the read
+performance anomalies seen on previous takes:
+
+File Size (MB)
+Blk Size (KB)
+Avg Rate (MB/s)
+
+=====pre-patch=====
+File   Blk      Num     Avg
+Size   Size     Thr     Rate
+----   -----    ---     ------
+2048   4096     1       71.79
+2048   4096     2       55.86
+2048   4096     4       43.43
+2048   4096     8       40.88
+2048   131072   1       72.02
+2048   131072   2       54.67
+2048   131072   4       42.85
+2048   131072   8       41.51
+
+=====post-patch=====
+File   Blk      Num     Avg
+Size   Size     Thr     Rate
+----   -----    ---     ------
+2048   4096     1       142.34
+2048   4096     2       71.6
+2048   4096     4       53.28
+2048   4096     8       50.46
+2048   131072   1       140.86
+2048   131072   2       72.94
+2048   131072   4       52.16
+2048   131072   8       50.18
+
+Andrew, please add this git tree to -mm.  Neil, if you are comfortable with the
+current state please ack and I will send a last minute pull request for 2.6.23.
+
+Thanks,
+Dan
