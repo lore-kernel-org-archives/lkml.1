@@ -1,37 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbXGVAtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbXGVAto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757163AbXGVAtZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 20:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbXGVAtR
+	id S1757786AbXGVAto (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 20:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbXGVAt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 20:49:17 -0400
+	Sat, 21 Jul 2007 20:49:29 -0400
 Received: from wa-out-1112.google.com ([209.85.146.177]:18518 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753715AbXGVAtQ (ORCPT
+	with ESMTP id S1754097AbXGVAt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 20:49:16 -0400
+	Sat, 21 Jul 2007 20:49:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=eTYRZ/cFg/kQjBuCoZjPfa3w4oI/REvhEnZ0cByNTgkQUd3/ESgx/gf1JDtFiTbcfW4uCgT9ir6hXdvF3rwShin1enJYyVS9OlIk5Ebrl/qIj1enTseAUkFOLSWaL7n784uC3xGrTk5mxRc2iK5mp1Q/jaAljujEl5XZqGArvnI=
-Message-ID: <86802c440707211749s10c2e97bl1e0a3b86714916d9@mail.gmail.com>
-Date: Sat, 21 Jul 2007 17:49:15 -0700
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=fs+d8vQL2nrs2o6ePxMOaTQI+hBg5UrX7IEdqvsxWWkmZtcZkdrbbTuWNQ4vjc1LH5Gg+3Jxqsbb4lflXy/0a8fvyCjB5wo1MFZLcPyNADUV6F47bYNEKz0hvzkispNHDVD9iefWW4aSVsjs9Vyau3o8S/U97TPQ1OrrC66Vico=
+Message-ID: <86802c440707211749g7a45623aka16f6e647f8da885@mail.gmail.com>
+Date: Sat, 21 Jul 2007 17:49:26 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH 0/3] x86_64: apicid_to_node when acpi=off or no srat
+Subject: [PATCH 1/3] x86_64: store core id bits in cpuinfo_x86
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_141648_8981100.1185065366868"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+------=_Part_141648_8981100.1185065366868
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Please check the three patches about the apicid_to_node initialization
-when acpi=off or srat is not defined with BIOS.
+[PATCH 1/3] x86_64: store core id bits in cpuinfo_x86
 
-Thanks
+We need to store core id bits to cpuinfo_x86 in early_identify_cpu. So we
+use it to create acpiid_to_node array in k8topolgy.c
 
-YH
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+ arch/x86_64/kernel/setup.c     |   72 +++++++++++++++++++++++++++--------------
+ include/asm-x86_64/processor.h |    1
+ 2 files changed, 49 insertions(+), 24 deletions(-)
+
+------=_Part_141648_8981100.1185065366868
+Content-Type: text/x-patch; name=1.patch; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f4etq5bn
+Content-Disposition: attachment; filename="1.patch"
+
+CmRpZmYgLS1naXQgYS9hcmNoL3g4Nl82NC9rZXJuZWwvc2V0dXAuYyBiL2FyY2gveDg2XzY0L2tl
+cm5lbC9zZXR1cC5jCmluZGV4IDMzZWY3MTguLjI0ZTZhNTIgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2
+XzY0L2tlcm5lbC9zZXR1cC5jCisrKyBiL2FyY2gveDg2XzY0L2tlcm5lbC9zZXR1cC5jCkBAIC00
+OTksMTggKzUwNSw3IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBhbWRfZGV0ZWN0X2NtcChzdHJ1Y3Qg
+Y3B1aW5mb194ODYgKmMpCiAJaW50IG5vZGUgPSAwOwogCXVuc2lnbmVkIGFwaWNpZCA9IGhhcmRf
+c21wX3Byb2Nlc3Nvcl9pZCgpOwogI2VuZGlmCi0JdW5zaWduZWQgZWN4ID0gY3B1aWRfZWN4KDB4
+ODAwMDAwMDgpOwotCi0JYy0+eDg2X21heF9jb3JlcyA9IChlY3ggJiAweGZmKSArIDE7Ci0KLQkv
+KiBDUFUgdGVsbGluZyB1cyB0aGUgY29yZSBpZCBiaXRzIHNoaWZ0PyAqLwotCWJpdHMgPSAoZWN4
+ID4+IDEyKSAmIDB4RjsKLQotCS8qIE90aGVyd2lzZSByZWNvbXB1dGUgKi8KLQlpZiAoYml0cyA9
+PSAwKSB7Ci0JCXdoaWxlICgoMSA8PCBiaXRzKSA8IGMtPng4Nl9tYXhfY29yZXMpCi0JCQliaXRz
+Kys7Ci0JfQorCWJpdHMgPSBjLT54ODZfY29yZWlkX2JpdHM7CiAKIAkvKiBMb3cgb3JkZXIgYml0
+cyBkZWZpbmUgdGhlIGNvcmUgaWQgKGluZGV4IG9mIGNvcmUgaW4gc29ja2V0KSAqLwogCWMtPmNw
+dV9jb3JlX2lkID0gYy0+cGh5c19wcm9jX2lkICYgKCgxIDw8IGJpdHMpLTEpOwpAQCAtNTQ2LDYg
+KzU0MSwzNCBAQCBzdGF0aWMgdm9pZCBfX2luaXQgYW1kX2RldGVjdF9jbXAoc3RydWN0IGNwdWlu
+Zm9feDg2ICpjKQogI2VuZGlmCiB9CiAKK3N0YXRpYyB2b2lkIF9fY3B1aW5pdCBlYXJseV9pbml0
+X2FtZChzdHJ1Y3QgY3B1aW5mb194ODYgKmMpCit7CisjaWZkZWYgQ09ORklHX1NNUAorCXVuc2ln
+bmVkIGJpdHM7CisJdW5zaWduZWQgZWN4OworCisJLyogTXVsdGkgY29yZSBDUFU/ICovCisJaWYg
+KGMtPmV4dGVuZGVkX2NwdWlkX2xldmVsIDwgMHg4MDAwMDAwOCkKKwkJcmV0dXJuOworCisJZWN4
+ID0gY3B1aWRfZWN4KDB4ODAwMDAwMDgpOworCisJYy0+eDg2X21heF9jb3JlcyA9IChlY3ggJiAw
+eGZmKSArIDE7CisKKwkvKiBDUFUgdGVsbGluZyB1cyB0aGUgY29yZSBpZCBiaXRzIHNoaWZ0PyAq
+LworCWJpdHMgPSAoZWN4ID4+IDEyKSAmIDB4RjsKKworCS8qIE90aGVyd2lzZSByZWNvbXB1dGUg
+Ki8KKwlpZiAoYml0cyA9PSAwKSB7CisJCXdoaWxlICgoMSA8PCBiaXRzKSA8IGMtPng4Nl9tYXhf
+Y29yZXMpCisJCQliaXRzKys7CisJfQorCisJYy0+eDg2X2NvcmVpZF9iaXRzID0gYml0czsKKwor
+I2VuZGlmCit9CisKIHN0YXRpYyB2b2lkIF9fY3B1aW5pdCBpbml0X2FtZChzdHJ1Y3QgY3B1aW5m
+b194ODYgKmMpCiB7CiAJdW5zaWduZWQgbGV2ZWw7CkBAIC03NjgsNiArNzkxLDcgQEAgc3RydWN0
+IGNwdV9tb2RlbF9pbmZvIHsKIHZvaWQgX19jcHVpbml0IGVhcmx5X2lkZW50aWZ5X2NwdShzdHJ1
+Y3QgY3B1aW5mb194ODYgKmMpCiB7CiAJdTMyIHRmbXM7CisJdTMyIHhsdmw7CiAKIAljLT5sb29w
+c19wZXJfamlmZnkgPSBsb29wc19wZXJfamlmZnk7CiAJYy0+eDg2X2NhY2hlX3NpemUgPSAtMTsK
+QEAgLTc3OCw2ICs4MDIsNyBAQCB2b2lkIF9fY3B1aW5pdCBlYXJseV9pZGVudGlmeV9jcHUoc3Ry
+dWN0IGNwdWluZm9feDg2ICpjKQogCWMtPng4Nl9jbGZsdXNoX3NpemUgPSA2NDsKIAljLT54ODZf
+Y2FjaGVfYWxpZ25tZW50ID0gYy0+eDg2X2NsZmx1c2hfc2l6ZTsKIAljLT54ODZfbWF4X2NvcmVz
+ID0gMTsKKwljLT54ODZfY29yZWlkX2JpdHMgPSAwOwogCWMtPmV4dGVuZGVkX2NwdWlkX2xldmVs
+ID0gMDsKIAltZW1zZXQoJmMtPng4Nl9jYXBhYmlsaXR5LCAwLCBzaXplb2YgYy0+eDg2X2NhcGFi
+aWxpdHkpOwogCkBAIC04MTQsMTggKzgzOSw2IEBAIHZvaWQgX19jcHVpbml0IGVhcmx5X2lkZW50
+aWZ5X2NwdShzdHJ1Y3QgY3B1aW5mb194ODYgKmMpCiAjaWZkZWYgQ09ORklHX1NNUAogCWMtPnBo
+eXNfcHJvY19pZCA9IChjcHVpZF9lYngoMSkgPj4gMjQpICYgMHhmZjsKICNlbmRpZgotfQotCi0v
+KgotICogVGhpcyBkb2VzIHRoZSBoYXJkIHdvcmsgb2YgYWN0dWFsbHkgcGlja2luZyBhcGFydCB0
+aGUgQ1BVIHN0dWZmLi4uCi0gKi8KLXZvaWQgX19jcHVpbml0IGlkZW50aWZ5X2NwdShzdHJ1Y3Qg
+Y3B1aW5mb194ODYgKmMpCi17Ci0JaW50IGk7Ci0JdTMyIHhsdmw7Ci0KLQllYXJseV9pZGVudGlm
+eV9jcHUoYyk7Ci0KIAkvKiBBTUQtZGVmaW5lZCBmbGFnczogbGV2ZWwgMHg4MDAwMDAwMSAqLwog
+CXhsdmwgPSBjcHVpZF9lYXgoMHg4MDAwMDAwMCk7CiAJYy0+ZXh0ZW5kZWRfY3B1aWRfbGV2ZWwg
+PSB4bHZsOwpAQCAtODQ2LDYgKzg1OSwyMyBAQCB2b2lkIF9fY3B1aW5pdCBpZGVudGlmeV9jcHUo
+c3RydWN0IGNwdWluZm9feDg2ICpjKQogCQkJYy0+eDg2X2NhcGFiaWxpdHlbMl0gPSBjcHVpZF9l
+ZHgoMHg4MDg2MDAwMSk7CiAJfQogCisJc3dpdGNoIChjLT54ODZfdmVuZG9yKSB7CisJY2FzZSBY
+ODZfVkVORE9SX0FNRDoKKwkJZWFybHlfaW5pdF9hbWQoYyk7CisJCWJyZWFrOworCX0KKworfQor
+CisvKgorICogVGhpcyBkb2VzIHRoZSBoYXJkIHdvcmsgb2YgYWN0dWFsbHkgcGlja2luZyBhcGFy
+dCB0aGUgQ1BVIHN0dWZmLi4uCisgKi8KK3ZvaWQgX19jcHVpbml0IGlkZW50aWZ5X2NwdShzdHJ1
+Y3QgY3B1aW5mb194ODYgKmMpCit7CisJaW50IGk7CisKKwllYXJseV9pZGVudGlmeV9jcHUoYyk7
+CisKIAlpbml0X3NjYXR0ZXJlZF9jcHVpZF9mZWF0dXJlcyhjKTsKIAogCWMtPmFwaWNpZCA9IHBo
+eXNfcGtnX2lkKDApOwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9hc20teDg2XzY0L3Byb2Nlc3Nvci5o
+IGIvaW5jbHVkZS9hc20teDg2XzY0L3Byb2Nlc3Nvci5oCmluZGV4IGVmYzg3YTUuLmE1YWMzMDkg
+MTAwNjQ0Ci0tLSBhL2luY2x1ZGUvYXNtLXg4Nl82NC9wcm9jZXNzb3IuaAorKysgYi9pbmNsdWRl
+L2FzbS14ODZfNjQvcHJvY2Vzc29yLmgKQEAgLTYzLDYgKzYzLDcgQEAgc3RydWN0IGNwdWluZm9f
+eDg2IHsKIAlpbnQJeDg2X3RsYnNpemU7CS8qIG51bWJlciBvZiA0SyBwYWdlcyBpbiBEVExCL0lU
+TEIgY29tYmluZWQoaW4gcGFnZXMpKi8KICAgICAgICAgX191OCAgICB4ODZfdmlydF9iaXRzLCB4
+ODZfcGh5c19iaXRzOwogCV9fdTgJeDg2X21heF9jb3JlczsJLyogY3B1aWQgcmV0dXJuZWQgbWF4
+IGNvcmVzIHZhbHVlICovCisJX191OAl4ODZfY29yZWlkX2JpdHM7IC8qIGNwdWlkIHJldHVybmVk
+IGNvcmUgaWQgYml0cyAqLwogICAgICAgICBfX3UzMiAgIHg4Nl9wb3dlcjsgCQogCV9fdTMyICAg
+ZXh0ZW5kZWRfY3B1aWRfbGV2ZWw7CS8qIE1heCBleHRlbmRlZCBDUFVJRCBmdW5jdGlvbiBzdXBw
+b3J0ZWQgKi8KIAl1bnNpZ25lZCBsb25nIGxvb3BzX3Blcl9qaWZmeTsK
+------=_Part_141648_8981100.1185065366868--
