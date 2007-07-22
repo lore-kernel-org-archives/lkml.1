@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbXGVQIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756305AbXGVQOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbXGVQIY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 12:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXGVQIP
+	id S1756305AbXGVQOm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 12:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXGVQOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 12:08:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:47164 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbXGVQIO (ORCPT
+	Sun, 22 Jul 2007 12:14:33 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:34978 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857AbXGVQOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 12:08:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=S8RCEMjwPVuU671zO/wjTcxAoOsA1emjYxmwitT7UxL2PhuzIz3V0DHp2N06cV1UxaL5FOFrlF6r9obAi8BrTB5Wusml31gW/DGqF3XlgcTAiEy5wAlZYcSPcOXhDXWtk/kwhZqvG6GxWNSqNmYYzhlu2ZcsQBDVwuSwmFMlN0M=
-Date: Sun, 22 Jul 2007 20:08:09 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: ak@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: sparse breakage (x86_64: Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu)
-Message-ID: <20070722160809.GA5803@martell.zuzino.mipt.ru>
+	Sun, 22 Jul 2007 12:14:32 -0400
+Message-ID: <46A38240.7060800@s5r6.in-berlin.de>
+Date: Sun, 22 Jul 2007 18:13:52 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Lars Ellenberg <lars.ellenberg@linbit.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
+References: <20070721203819.GA10706@mail.linbit.com>	 <p73hcnxuxji.fsf@bingen.suse.de> <20070722055235.GQ11657@kernel.dk>	 <20070722135814.GA32371@mail.linbit.com> <a781481a0707220831y67bcd64k34d52c3150c27dc1@mail.gmail.com>
+In-Reply-To: <a781481a0707220831y67bcd64k34d52c3150c27dc1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi, with new vDSO code sparse fails to check with usual invocation here:
+Satyam Sharma wrote:
+> On 7/22/07, Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
+>> 94 WARNING: declaring multiple variables together should be avoided
+>>     int snr, enr;
+>>     does this really need to become two lines?
+> 
+> No, if these are some unimportant temporary/automatic variables in
+> some function.
+> 
+> Yes, if they are members of some struct (also comment them in
+> this case -- in fact give full kernel-doc style comments).
 
-	$ make C=2 CF="-Wno-decl -Wno-shadow -Wno-context -D__CHECK_ENDIAN__"
-		...
-	  CHECK   arch/x86_64/vdso/vclock_gettime.c
-	arch/x86_64/vdso/vclock_gettime.c:51:11: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:47:28: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:48:20: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:49:21: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:38:14: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:39:25: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:80:11: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:75:28: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:76:14: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:77:12: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:78:15: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:79:13: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:87:6: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:102:6: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:111:4: error: expected structure or union
-	arch/x86_64/vdso/vclock_gettime.c:111:4: error: expected structure or union
-	  CC      arch/x86_64/vdso/vclock_gettime.o
-	cc1: error: unrecognized command line option "-Wno-decl"
-	cc1: error: unrecognized command line option "-Wno-context"
-	make[2]: *** [arch/x86_64/vdso/vclock_gettime.o] Error 1
-	make[1]: *** [arch/x86_64/vdso] Error 2
-	make: *** [_all] Error 2
-
+Don't overdo comments.  Comments eventually get out of date and are then
+dangerously misleading.  Comment API elements.  Comment on the Why if it
+isn't obvious.  It shouldn't be necessary to comment on the How, because
+that should be coded in an obvious way in the first place.
+-- 
+Stefan Richter
+-=====-=-=== -=== =-==-
+http://arcgraph.de/sr/
