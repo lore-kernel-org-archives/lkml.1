@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762358AbXGVVaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764926AbXGVVaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762358AbXGVVaB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 17:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbXGVV3x
+	id S1764926AbXGVVaf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 17:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXGVVaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 17:29:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33294 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753383AbXGVV3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 17:29:52 -0400
-Subject: Re: [git patches] two warning fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
-       linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <46A2D6F7.9080309@garzik.org>
-References: <20070718235504.GA9601@havoc.gtf.org>
-	 <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
-	 <469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain>
-	 <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
-	 <m3644e2abd.fsf@maximus.localdomain>
-	 <1184977973.5439.45.camel@localhost.localdomain>
-	 <46A2D6F7.9080309@garzik.org>
-Content-Type: text/plain
-Date: Mon, 23 Jul 2007 07:29:20 +1000
-Message-Id: <1185139760.5439.52.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Jul 2007 17:30:12 -0400
+Received: from fed1rmmtao101.cox.net ([68.230.241.45]:64569 "EHLO
+	fed1rmmtao101.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762466AbXGVVaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 17:30:04 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Paul Eggert <eggert@CS.UCLA.EDU>, Matthew Wilcox <matthew@wil.cx>,
+       Denis Cheng <crquan@gmail.com>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: Re: diffutils: C labels misdetected as functions
+References: <1184489571313-git-send-email-crquan@gmail.com>
+	<4699EEA9.6070709@simon.arlott.org.uk>
+	<20070720170743.GF14791@parisc-linux.org>
+	<46A0F282.8070103@simon.arlott.org.uk>
+	<20070720180019.GJ14791@parisc-linux.org>
+	<46A1A375.3020900@simon.arlott.org.uk>
+	<20070721135200.GQ14791@parisc-linux.org>
+	<46A25BE0.7000104@simon.arlott.org.uk>
+	<87abtogu6u.fsf@penguin.cs.ucla.edu>
+	<46A3AD07.1070504@simon.arlott.org.uk>
+Date: Sun, 22 Jul 2007 14:30:00 -0700
+In-Reply-To: <46A3AD07.1070504@simon.arlott.org.uk> (Simon Arlott's message of
+	"Sun, 22 Jul 2007 20:16:23 +0100")
+Message-ID: <7vtzrwqg87.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Simon Arlott <simon@fire.lp0.eu> writes:
 
-> Not necessarily as simple as that -- you need to make sure you don't 
-> pass something bogus to a sysfs_remove_blah() function at 
-> unregister/unload time, if sysfs_create_blah() failed.
-> 
-> Certainly sysfs_foo() failure is often ignorable in the sense that you 
-> want the driver to keep loading... but that does not imply that it is 
-> strictly ignorable, if you also consider the associated cleanup code.
+> On 22/07/07 19:38, Paul Eggert wrote:
+>> 
+>> Anyway, to work around your problem without changing "diff", you can
+>> use "diff -u -F '^[[:alpha:]$_](|.*[^:])$'" instead of "diff -u -p".
+>
+> Perhaps git could do this (or similar) as a workaround? (Cc:ed)
+>
+>> Or you can put a single space before the labels in question: they'll
+>> still stand out plenty.
+>
+> The code should definitely not need to be modified to work around a
+> diff bug.
 
-It should be trivial enough to have sysfs_create_blah() do enough
-initializations before it can fail so that sysfs_remove_blah() do the
-right thing regardless.
+I think the word "bug" is just about documentation.  Promising
+"show C function" and including labels and/or not showing all
+functions would be a bug, but given that diff is about showing
+textual differences between two text files with arbitrary kind
+of contents, I do not think it is reasonable to take that "show
+C function" promise too literally.
 
-It's actually a major PITA for a driver that creates a whole bunch of
-sysfs files to have to track precisely which ones were created
-successfully for the error path. If it's a single function, goto does
-the trick but if for some reason it's not, it's really annoying.
+To avoid this, the description of the feature could be reworded
+to "shows lines that match pattern '^[[:alpha:]$_]' on context
+lines, intent of the option being that the pattern tends to
+match the beginning of function in C language and help the
+reader to locate the context more easily, with a caveat that the
+pattern matching is not meant to capture all functions nor only
+functions --- there will be false matches."
 
-Ben.
+But that would be too long.  And as Paul showed, you can narrow
+or widen the set of lines that are shown with the -F option.  I
+do not think this deserves to be called a "bug".
 
+You can define your own customized "function name" pattern in
+your .git/config (or $HOME/.gitconfig) file to be used by the
+git-diff family with recent enough git via the attributes
+mechanism, but I do not think we should change the default,
+unless GNU diff changes its default.  Personally I'd rather not
+see it change, though.
 
