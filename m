@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXGVPqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbXGVPpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbXGVPqT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 11:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbXGVPob
+	id S1759449AbXGVPpy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 11:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbXGVPo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 11:44:31 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:8114 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757962AbXGVPo3 (ORCPT
+	Sun, 22 Jul 2007 11:44:26 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:60825 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753725AbXGVPoZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 11:44:29 -0400
+	Sun, 22 Jul 2007 11:44:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
-        b=sBHNv6rHctk1L2oDkIlrf241cvveA+Gqvm/1el432TZ1kI6v4TPJ6eOBUN2OUDI9N/ahiAROY0p1FJgWrbuKkWFbtIi1/CnYNU/QdsZNIFlqO3CEkEAyrfww+YaZy0PGD3stmFTRzdcp1dYajld+vxu2wCqyegl2P5mNtApf9LA=
-Message-Id: <20070722153355.037575187@gmail.com>
+        b=Oz8OfNRRHhXKG98gd37rerxD4yXfl+ymQyf01DBRkvbIeYjdpRrxkP3pB67n9bTUGr6SdUcy73juywpweYaU1Ou5Qb6OqeDO86Sd7WnkFl5s17xPiL5yrHBONqywcVDVwUqKU+OU8Rax9LHtUPYQSHjfPtVG9DgwKFOb+wkWoX4=
+Message-Id: <20070722153349.369335694@gmail.com>
 References: <20070722153312.083951746@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Jul 2007 00:33:16 +0900
+Date: Mon, 23 Jul 2007 00:33:15 +0900
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [patch 4/9] topology: remove topology_dev_map
-Content-Disposition: inline; filename=topology-cpuhotplug-cleanup.patch
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Dmitriy Zavin <dmitriyz@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>, Ashok Raj <ashok.raj@intel.com>,
+       Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [patch 3/9] cpu: deliver CPU_UP_CANCELED only to NOTIFY_OKed callbacks with CPU_UP_PREPARE
+Content-Disposition: inline; filename=cpuhotplug-nr-calls.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By previous cpu hotplug notifier change, we don't need to track
-topology_dev existence for each cpu by topology_dev_map.
+From: Akinobu Mita <akinobu.mita@gmail.com>
 
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+The functions in a CPU notifier chain is called with CPU_UP_PREPARE event
+before making the CPU online. If one of the callback returns NOTIFY_BAD,
+it stops to deliver CPU_UP_PREPARE event, and CPU online operation is canceled.
+Then CPU_UP_CANCELED event is delivered to the functions in a CPU notifier
+chain again.
+
+This CPU_UP_CANCELED event is delivered to the functions which have been
+called with CPU_UP_PREPARE, not delivered to the functions which haven't
+been called with CPU_UP_PREPARE.
+
+The problem that makes existing cpu hotplug error handlings complex is
+that the CPU_UP_CANCELED event is delivered to the function that has
+returned NOTIFY_BAD, too.
+
+Usually we don't expect to call destructor function against the
+object that has failed to initialize. It is like:
+
+	err = register_something();
+	if (err) {
+		unregister_something();
+		return err;
+	}
+
+So it is natural to deliver CPU_UP_CANCELED event only to the functions
+that have returned NOTIFY_OK with CPU_UP_PREPARE event and not to call
+the function that have returned NOTIFY_BAD. This is what this patch is doing.
+
+Otherwise, every cpu hotplug notifiler has to track whether
+notifiler event is failed or not for each cpu.
+(drivers/base/topology.c is doing this with topology_dev_map)
+
+Similary this patch makes same thing with CPU_DOWN_PREPARE and
+CPU_DOWN_FAILED evnets.
+
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
 ---
- drivers/base/topology.c |   11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+ kernel/cpu.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Index: 2.6-git/drivers/base/topology.c
+Index: 2.6-git/kernel/cpu.c
 ===================================================================
---- 2.6-git.orig/drivers/base/topology.c
-+++ 2.6-git/drivers/base/topology.c
-@@ -94,27 +94,18 @@ static struct attribute_group topology_a
- 	.name = "topology"
- };
- 
--static cpumask_t topology_dev_map = CPU_MASK_NONE;
--
- /* Add/Remove cpu_topology interface for CPU device */
- static int __cpuinit topology_add_dev(unsigned int cpu)
- {
--	int rc;
- 	struct sys_device *sys_dev = get_cpu_sysdev(cpu);
- 
--	rc = sysfs_create_group(&sys_dev->kobj, &topology_attr_group);
--	if (!rc)
--		cpu_set(cpu, topology_dev_map);
--	return rc;
-+	return sysfs_create_group(&sys_dev->kobj, &topology_attr_group);
- }
- 
- static void __cpuinit topology_remove_dev(unsigned int cpu)
- {
- 	struct sys_device *sys_dev = get_cpu_sysdev(cpu);
- 
--	if (!cpu_isset(cpu, topology_dev_map))
--		return;
--	cpu_clear(cpu, topology_dev_map);
- 	sysfs_remove_group(&sys_dev->kobj, &topology_attr_group);
- }
- 
+--- 2.6-git.orig/kernel/cpu.c
++++ 2.6-git/kernel/cpu.c
+@@ -150,6 +150,7 @@ static int _cpu_down(unsigned int cpu, i
+ 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+ 					hcpu, -1, &nr_calls);
+ 	if (err == NOTIFY_BAD) {
++		nr_calls--;
+ 		__raw_notifier_call_chain(&cpu_chain, CPU_DOWN_FAILED | mod,
+ 					  hcpu, nr_calls, NULL);
+ 		printk("%s: attempt to take down CPU %u failed\n",
+@@ -233,6 +234,7 @@ static int __cpuinit _cpu_up(unsigned in
+ 	ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
+ 							-1, &nr_calls);
+ 	if (ret == NOTIFY_BAD) {
++		nr_calls--;
+ 		printk("%s: attempt to bring up CPU %u failed\n",
+ 				__FUNCTION__, cpu);
+ 		ret = -EINVAL;
 
 -- 
