@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbXGVRAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbXGVREy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbXGVRAn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 13:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbXGVRAd
+	id S1760760AbXGVREy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 13:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXGVREs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 13:00:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:28906 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755211AbXGVRAb (ORCPT
+	Sun, 22 Jul 2007 13:04:48 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:4207 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755464AbXGVREr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 13:00:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=ePqy+sdIiyQrkJmfAD4ICbwcQGlpSo8sAWRzbJ5/TFtDB/JEjyZr5NUPkTCFWWZt+JSfdC8LqXizZt/8q+PrkzR2limOcCqAuL37AYd6QPQZvuZzke0nktfUam5BIL7OVnKdvwnm41qU4IhsDILvIx81fAvZ06Pdl2C8otP9SdY=
-Message-ID: <46A38CA3.9010302@googlemail.com>
-Date: Sun, 22 Jul 2007 18:58:11 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Dag Brattli <dagb@cs.uit.no>, netdev@vger.kernel.org
-Subject: [PATCH] Fix irlan_eth.c - unused variable 'in_dev' warning
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Jul 2007 13:04:47 -0400
+Date: Sun, 22 Jul 2007 11:05:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: processor family setting for Pentium D
+In-reply-to: <fa.mkagl9LGp73SZOVteb979N2BWtI@ifi.uio.no>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <46A38E4F.1080107@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-15; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.mkagl9LGp73SZOVteb979N2BWtI@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tilman Schmidt wrote:
+> Probably a stupid question, but I spent some time searching the net
+> for an answer without success:
+> 
+> What is the correct setting of the "Processor family" configuration
+> option for a 32 bit kernel which is going to run on an Intel
+> Pentium D 940 processor (cpu family 15, model 6)? It doesn't seem
+> to fit any of the available selections.
+> 
+> More generally, what is the correct way of selecting the processor
+> family option for a CPU whose name doesn't appear anywhere in the
+> prompts or help texts in arch/i386/Kconfig.cpu? I guess there must
+> be a way of deducing it from the content of /proc/cpuinfo, only I
+> cannot figure out how.
+> 
+> Thanks,
+> Tilman
 
-I got this warning on current git:
+Pentium D is based on the Pentium 4 (basically two P4 chips in one 
+package), therefore that option would be the one you would want.
 
-...
+If it's not listed in the menu, then you pretty much have to go on what 
+else is in there that's similar. Likely Pentium D should be added to the 
+menu listing for Pentium 4 though.
 
-net/irda/irlan/irlan_eth.c: In function 'irlan_eth_send_gratuitous_arp':
-net/irda/irlan/irlan_eth.c:301: warning: unused variable 'in_dev'
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-...
-
-This is because CONFIG_INET is not set in my config.
-
-
-Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
-
----
-
-diff --git a/net/irda/irlan/irlan_eth.c b/net/irda/irlan/irlan_eth.c
-index c421521..ea0b21a 100644
---- a/net/irda/irlan/irlan_eth.c
-+++ b/net/irda/irlan/irlan_eth.c
-@@ -298,6 +298,7 @@ void irlan_eth_flow_indication(void *instance, void *sap, LOCAL_FLOW flow)
-  */
- void irlan_eth_send_gratuitous_arp(struct net_device *dev)
- {
-+#ifdef CONFIG_INET
- 	struct in_device *in_dev;
- 
- 	/*
-@@ -305,7 +306,6 @@ void irlan_eth_send_gratuitous_arp(struct net_device *dev)
- 	 * is useful if we have changed access points on the same
- 	 * subnet.
- 	 */
--#ifdef CONFIG_INET
- 	IRDA_DEBUG(4, "IrLAN: Sending gratuitous ARP\n");
- 	rcu_read_lock();
- 	in_dev = __in_dev_get_rcu(dev);
