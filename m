@@ -1,213 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762246AbXGVS3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761898AbXGVSk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762246AbXGVS3O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 14:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758388AbXGVS25
+	id S1761898AbXGVSk2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 14:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759610AbXGVSkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 14:28:57 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:37690 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758618AbXGVS24 (ORCPT
+	Sun, 22 Jul 2007 14:40:19 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:41834
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759016AbXGVSkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 14:28:56 -0400
-Subject: [GIT PATCH] final piece of the SCSI merge for 2.6.22
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <Jens.Axboe@oracle.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 22 Jul 2007 13:28:53 -0500
-Message-Id: <1185128933.3431.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 8bit
+	Sun, 22 Jul 2007 14:40:18 -0400
+Date: Sun, 22 Jul 2007 20:42:02 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/5] Use list_for_each_entry(_safe) instead of list_for_each(_safe)
+Message-ID: <20070722184202.GF27415@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This final piece contains driver updates (mainly qla2xx and the long
-delayed ATA update for libsas) plus fix ups for bsg which Jens and Tomo
-want to take through the scsi tree.
+This patchset converts list_for_each(_safe) to
+list_for_each_entry(_safe) in the following files:
 
-The patch is available here:
+kernel/exit.c
+kernel/time/clocksource.c
+kernel/user.c
+mm/oom_kill.c
+mm/page_alloc.c
+ 
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-
-The short changelog is:
-
-Adam Radford (1):
-      3w-9xxx: add support for 9690SA
-
-Adrian Bunk (3):
-      seagate: make seagate_st0x_detect() static
-      wd33c93: cleanups
-      small cleanups
-
-Al Viro (1):
-      iscsi_tcp: buggered kmalloc()
-
-Andrew Vasquez (8):
-      qla2xxx: Update version number to 8.02.00-k2.
-      qla2xxx: Add ISP25XX support.
-      qla2xxx: Use pci_try_set_mwi().
-      qla2xxx: Use PCI-X/PCI-Express read control interfaces.
-      qla2xxx: Re-factor isp_operations to static structures.
-      qla2xxx: Correct setting of 'current' and 'supported' speeds during FDMI r
-      qla2xxx: Generalize iIDMA support.
-      qla2xxx: Generalize FW-Interface-2 support.
-
-Darrick J. Wong (13):
-      sas_ata: Implement sas_task_abort for ATA devices
-      sas_ata: Assign sas_task to scsi_cmnd to enable EH for ATA devices
-      libsas: Unknown STP devices should be reported to libata as unknown.
-      libsas: Accept SAM_GOOD for ATAPI devices in sas_ata_task_done
-      sas_ata: Don't copy aic94xx's sactive to ata_port
-      sas_ata: ata_post_internal should abort the sas_task
-      sas_ata: sas_ata_qc_issue should return AC_ERR_*
-      sas_ata: Satisfy libata qc function locking requirements
-      aic94xx: Don't call pci_map_sg for already-mapped scatterlists
-      Migrate libsas ATA code into a separate file
-      libsas: support NCQ for SATA disks
-      aic94xx: SATA tag mask not set correctly
-      Add SATA support to libsas
-
-David Miller (1):
-      ESP: Increase ESP_BUS_TIMEOUT to 275.
-
-FUJITA Tomonori (5):
-      bsg: unexport sg v3 helper functions
-      bsg: fix bsg_unregister_queue
-      libsas: kill unused smp_portal code
-      libsas: add SAS management protocol handler
-      transport_sas: add SAS management protocol support
-
-Gwendal Grignou (1):
-      mpt fusion: update Kconfig help
-
-Heiko Carstens (1):
-      zfcp: NULL vs 0 usage
-
-James Bottomley (13):
-      libsas: make ATA functions selectable by a config option
-      bsg: make class backlinks
-      bsg: fix bsg_register_queue error path
-      libsas: fix scr_read/write users and update the libata documentation
-      scsi_transport_sas: add destructor for bsg
-      bsg: separate bsg and SCSI (so SCSI can be modular)
-      libsas: fix lockdep issue with ATA
-      libsas, aic94xx: fix dma mapping cockups with ATA
-      libsas: fixup NCQ for SATA disks
-      libsas: better error handling in sas_ex_discover_end_dev()
-      aic94xx: add SATAPI support
-      libsas: fix up sas_smp_phy_control()
-      libsas: Add SATA support to STP piece for SATA on SAS expanders
-
-Jan Engelhardt (1):
-      Use menuconfig objects
-
-Kristian Høgsberg (1):
-      Make scsi_host_template::proc_name const char * instead of char *.
-
-Matthew Wilcox (1):
-      a4000t, zorro7xx, mvme16x, bvme6000,sim710: xxx_device_remove seems buggy
-
-Prakash, Sathya (4):
-      mpt fusion: add support for Brocade branded LSI FC HBA
-      mpt fusion: deregister from transport layer if PCI registration failed
-      add PCI_VENDOR_ID macro for Brocade in pci_ids.h
-      mpt fusion: add sysfs attributes to display IOC parameters
-
-Salyzyn, Mark (3):
-      aacraid: add vpd to inquiry
-      aacraid: incorrect dma mapping mask during blinkled recover or user initia
-      aacraid: correct valid container response in management ioctl
-
-Shyam Sundar (1):
-      qla2xxx: Validate mid-layer 'underflow' during check-condition handling.
-
-Swen Schillig (2):
-      zfcp: code cleanup
-      zfcp: Replace kmalloc/memset with kzalloc
-
-And the diffstat:
-
- Documentation/DocBook/libata.tmpl   |    5 
- block/Kconfig                       |    2 
- block/bsg.c                         |   61 -
- block/scsi_ioctl.c                  |   13 
- drivers/firewire/fw-sbp2.c          |    2 
- drivers/message/fusion/Kconfig      |    1 
- drivers/message/fusion/mptbase.c    |  382 ++++++++++--
- drivers/message/fusion/mptbase.h    |    9 
- drivers/message/fusion/mptfc.c      |    3 
- drivers/message/fusion/mptsas.c     |   72 ++
- drivers/message/fusion/mptscsih.c   |  153 ++++
- drivers/message/fusion/mptscsih.h   |    1 
- drivers/message/fusion/mptspi.c     |    9 
- drivers/s390/scsi/zfcp_aux.c        |    9 
- drivers/s390/scsi/zfcp_def.h        |    1 
- drivers/s390/scsi/zfcp_erp.c        |    3 
- drivers/s390/scsi/zfcp_fsf.c        |    2 
- drivers/s390/scsi/zfcp_qdio.c       |  113 +--
- drivers/scsi/3w-9xxx.c              |   67 +-
- drivers/scsi/3w-9xxx.h              |    5 
- drivers/scsi/Kconfig                |   10 
- drivers/scsi/a4000t.c               |    3 
- drivers/scsi/aacraid/aachba.c       |  140 ++++
- drivers/scsi/aacraid/aacraid.h      |   14 
- drivers/scsi/aacraid/commsup.c      |   16 
- drivers/scsi/aic94xx/aic94xx_dev.c  |    2 
- drivers/scsi/aic94xx/aic94xx_init.c |    3 
- drivers/scsi/aic94xx/aic94xx_task.c |   20 
- drivers/scsi/bvme6000_scsi.c        |    3 
- drivers/scsi/esp_scsi.h             |    2 
- drivers/scsi/iscsi_tcp.c            |    2 
- drivers/scsi/libsas/Kconfig         |    7 
- drivers/scsi/libsas/Makefile        |    1 
- drivers/scsi/libsas/sas_ata.c       |  817 ++++++++++++++++++++++++++
- drivers/scsi/libsas/sas_discover.c  |  402 ------------
- drivers/scsi/libsas/sas_expander.c  |  230 +++----
- drivers/scsi/libsas/sas_init.c      |    1 
- drivers/scsi/libsas/sas_internal.h  |    3 
- drivers/scsi/libsas/sas_scsi_host.c |   74 ++
- drivers/scsi/mvme16x_scsi.c         |    3 
- drivers/scsi/pcmcia/Kconfig         |    7 
- drivers/scsi/qla2xxx/qla_attr.c     |   33 -
- drivers/scsi/qla2xxx/qla_dbg.c      | 1114 +++++++++++++++++++++++++++++-------
- drivers/scsi/qla2xxx/qla_dbg.h      |   38 +
- drivers/scsi/qla2xxx/qla_def.h      |   22 
- drivers/scsi/qla2xxx/qla_fw.h       |   36 +
- drivers/scsi/qla2xxx/qla_gbl.h      |    6 
- drivers/scsi/qla2xxx/qla_gs.c       |   82 +-
- drivers/scsi/qla2xxx/qla_init.c     |  136 ++--
- drivers/scsi/qla2xxx/qla_inline.h   |    4 
- drivers/scsi/qla2xxx/qla_iocb.c     |   10 
- drivers/scsi/qla2xxx/qla_isr.c      |   55 +
- drivers/scsi/qla2xxx/qla_mbx.c      |   58 -
- drivers/scsi/qla2xxx/qla_os.c       |  380 +++++++-----
- drivers/scsi/qla2xxx/qla_sup.c      |   35 -
- drivers/scsi/qla2xxx/qla_version.h  |    2 
- drivers/scsi/scsi_debug.c           |    2 
- drivers/scsi/scsi_sysctl.c          |    1 
- drivers/scsi/scsi_sysfs.c           |   16 
- drivers/scsi/scsi_transport_fc.c    |    2 
- drivers/scsi/scsi_transport_sas.c   |  125 ++++
- drivers/scsi/seagate.c              |    2 
- drivers/scsi/sim710.c               |    3 
- drivers/scsi/sr.c                   |    2 
- drivers/scsi/wd33c93.c              |    4 
- drivers/scsi/zorro7xx.c             |    3 
- include/linux/blkdev.h              |    5 
- include/linux/bsg.h                 |    4 
- include/linux/libata.h              |    1 
- include/linux/pci_ids.h             |    2 
- include/scsi/libsas.h               |   15 
- include/scsi/sas_ata.h              |   60 +
- include/scsi/scsi_host.h            |    2 
- include/scsi/scsi_transport_sas.h   |   11 
- 74 files changed, 3649 insertions(+), 1295 deletions(-)
-
-James
-
-
+      El trabajo es el refugio de los que no tienen nada que hacer
+                            (Oscar Wilde)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
