@@ -1,83 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXGVS5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763115AbXGVTF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbXGVS5j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 14:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762145AbXGVS5a
+	id S1763115AbXGVTF7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 15:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760130AbXGVTFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 14:57:30 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:33760
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760888AbXGVS53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 14:57:29 -0400
-Date: Sun, 22 Jul 2007 11:56:04 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Arjan van de Ven <arjan@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-Subject: Re: Power Management framework proposal
-In-Reply-To: <1185125189.2714.13.camel@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0707221130380.6350@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
- <1185125189.2714.13.camel@laptopd505.fenrus.org>
+	Sun, 22 Jul 2007 15:05:46 -0400
+Received: from [212.12.190.174] ([212.12.190.174]:33970 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759610AbXGVTFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 15:05:45 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-fsdevel@vger.kernel.org
+Subject: Re: [RFH] Partition table recovery
+Date: Sun, 22 Jul 2007 22:05:53 +0300
+User-Agent: KMail/1.5
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200707200813.03553.a1426z@gawab.com> <200707220710.31402.a1426z@gawab.com> <20070722162802.GA20174@thunk.org>
+In-Reply-To: <20070722162802.GA20174@thunk.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707222205.53556.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jul 2007, Arjan van de Ven wrote:
-
->> this approach would allow the transition of ALL drivers to the new mode of
->> operation in one fell swoop, and then adding additional power management
->> features is just adding to the existing list rather then implementing new
->> functions.
+Theodore Tso wrote:
+> On Sun, Jul 22, 2007 at 07:10:31AM +0300, Al Boldi wrote:
+> > Sounds great, but it may be advisable to hook this into the partition
+> > modification routines instead of mkfs/fsck.  Which would mean that the
+> > partition manager could ask the kernel to instruct its fs subsystem to
+> > update the backup partition table for each known fs-type that supports
+> > such a feature.
 >
+> Well, let's think about this a bit.  What are the requirements?
 >
-> I have a concern with this approach though. It seems to assume that
-> there is one global thing somewhere that sets the system state; in my
-> experience that is the wrong approach; in fact there is a very definite
-> evidence that there are many decisions on power that are to be made
-> local at a high frequency. An example of this is the processor speed;
-> the ondemand governer does exactly this for the cpus that can switch
-> speeds fast; it's just impossible to beat such a local, fast decision
-> with anything on a global scale.
-
-the intent was not to have one global call that sets the mode on all 
-devices, but rather have one call for each device/subsystem, just the same 
-call in each case.
-
-there's also nothing that says that there can only be one thing setting 
-the mode (although that does mean a fourth call 'report_current_mode()' or 
-similar is needed). and if you choose to have two pieces of software 
-managing the same device things could get 'interesting'.
-
-as for the speed that such decisions need to be made.
-
-this API is not saying anything about the speed of the decisions.
-it's also not saying anything about if the decision makeing is being done 
-by kernelspace or userspace. it's just providing a common way for whatever 
-software is doing the decision makeing to find out it's options and set 
-the modes.
-
-one way to represent this in sysfs (as a possible userspace API) would be
-power/mode (read to see what mode the device is in, write to set the mode)
-power/modelist
-power/switching_delay (outputs the delay matrix showing the cost of switching from mode to mode)
-although I'm not sure how you would allow the system to report an error 
-this way.
-
-if you have the ondemand governer running, it uses these API's to make 
-it's changes, but if you didn't want to run the ondemand governer you 
-could just do course speed settings through sysfs.
-
-> On the other hand, some things (the high level goals and constraints)
-> are obviously global.
+> 1) The partition manager should be able explicitly request that a new
+> backup of the partition tables be stashed in each filesystem that has
+> room for such a backup.  That way, when the user affirmatively makes a
+> partition table change, it can get backed up in all of the right
+> places automatically.
 >
-> However, your design seems to want to put the low level settings in a
-> global thing, and that is just a mistake.
+> 2) The fsck program should *only* stash a backup of the partition
+> table if there currently isn't one in the filesystem.  It may be that
+> the partition table has been corrupted, and so merely doing an fsck
+> should not transfer a current copy of the partition table to the
+> filesystem-secpfic backup area.  It could be that the partition table
+> was only partially recovered, and we don't want to overwrite the
+> previously existing backups except on an explicit request from the
+> system administrator.
+>
+> 3) The mkfs program should automatically create a backup of the
+> current partition table layout.  That way we get a backup in the newly
+> created filesystem as soon as it is created.
+>
+> 4) The exact location of the backup may vary from filesystem to
+> filesystem.  For ext2/3/4, bytes 512-1023 are always unused, and don't
+> interfere with the boot sector at bytes 0-511, so that's the obvious
+> location.  Other filesystems may have that location in use, and some
+> other location might be a better place to store it.  Ideally it will
+> be a well-known location, that isn't dependent on finding an inode
+> table, or some such, but that may not be possible for all filesystems.
+>
+> OK, so how about this as a solution that meets the above requirements?
+>
+> /sbin/partbackup <device> [<fspart>]
+>
+> 	Will scan <device> (i.e., /dev/hda, /dev/sdb, etc.) and create
+> 	a 512 byte partition backup, using the format I've previously
+> 	described.  If <fspart> is specified on the command line, it
+> 	will use the blkid library to determine the filesystem type of
+> 	<fspart>, and then attempt to execute
+> 	/dev/partbackupfs.<fstype> to write the partition backup to
+> 	<fspart>.  If <fspart> is '-', then it will write the 512 byte
+> 	partition table to stdout.  If <fspart> is not specified on
+> 	the command line, /sbin/partbackup will iterate over all
+> 	partitions in <device>, use the blkid library to attempt to
+> 	determine the correct filesystem type, and then execute
+> 	/sbin/partbackupfs.<fstype> if such a backup program exists.
+>
+> /sbin/partbackupfs.<fstype> <fspart>
+>
+> 	... is a filesystem specific program for filesystem type
+> 	<fstype>.  It will assure that <fspart> (i.e., /dev/hda1,
+> 	/dev/sdb3) is of an appropriate filesystem type, and then read
+> 	512 bytes from stdin and write it out to <fspart> to an
+> 	appropriate place for that filesystem.
+>
+> Partition managers will be encouraged to check to see if
+> /sbin/partbackup exists, and if so, after the partition table is
+> written, will check to see if /sbin/partbackup exists, and if so, to
+> call it with just one argument (i.e., /sbin/partbackup /dev/hdb).
+> They SHOULD provide an option for the user to suppress the backup from
+> happening, but the backup should be the default behavior.
+>
+> An /etc/mkfs.<fstype> program is encouraged to run /sbin/partbackup
+> with two arguments (i.e., /sbin/partbackup /dev/hdb /dev/hdb3) when
+> creating a filesystem.
+>
+> An /etc/fsck.<fstype> program is encouraged to check to see if a
+> partition backup exists (assuming the filesystem supports it), and if
+> not, call /sbin/partbackup with two arguments.
+>
+> A filesystem utility package for a particular filesystem type is
+> encouraged to make the above changes to its mkfs and fsck programs, as
+> well as provide an /sbin/partbackupfs.<fstype> program.
 
-I'm proposing a single function name per device, not a single function for 
-the entire system.
+Great!
 
-David Lang
+> I would do this all in userspace, though.  Is there any reason to get
+> the kernel involved?  I don't think so.
+
+Yes, doing things in userspace, when possible, is much better.  But, a change 
+in the partition table has to be relayed to the kernel, and when that change 
+happens to be on a mounted disk, then the partition manager complains of not 
+being able to update the kernel's view.  So how can this be addressed?
+
+
+Thanks!
+
+--
+Al
+
