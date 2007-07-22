@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932928AbXGVXsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933279AbXGVXsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932928AbXGVXsS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 19:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759620AbXGVXsD
+	id S933279AbXGVXsu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 19:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760613AbXGVXsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 19:48:03 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:38833 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758295AbXGVXsB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 19:48:01 -0400
-X-Greylist: delayed 526 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Jul 2007 19:48:00 EDT
-Subject: Re: voyager_{thread,cat}.c compile warnings
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: =?ISO-8859-1?Q?C=E9dric?= Augonnet <cedric.augonnet@gmail.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       J.E.J.Bottomley@HansenPartnership.com
-In-Reply-To: <f56c1ba00707221549k768d7df9ke983160e634f4fe3@mail.gmail.com>
-References: <46A282B2.8070501@googlemail.com>
-	 <f56c1ba00707220833m267491afg277a028e6c103e31@mail.gmail.com>
-	 <f56c1ba00707221549k768d7df9ke983160e634f4fe3@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Sun, 22 Jul 2007 18:39:10 -0500
-Message-Id: <1185147550.3431.19.camel@localhost.localdomain>
+	Sun, 22 Jul 2007 19:48:36 -0400
+Received: from ozlabs.org ([203.10.76.45]:53677 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765562AbXGVXsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 19:48:35 -0400
+Subject: Re: [patch 3/9] cpu: deliver CPU_UP_CANCELED only to NOTIFY_OKed
+	callbacks with CPU_UP_PREPARE
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       Dmitriy Zavin <dmitriyz@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>, Ashok Raj <ashok.raj@intel.com>
+In-Reply-To: <20070722153349.369335694@gmail.com>
+References: <20070722153312.083951746@gmail.com>
+	 <20070722153349.369335694@gmail.com>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 09:48:10 +1000
+Message-Id: <1185148090.6344.108.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-22 at 18:49 -0400, Cédric Augonnet wrote:
-> iff -urN a/arch/i386/mach-voyager/voyager_cat.c
-> b/arch/i386/mach-voyager/voyager_cat.c
-> --- /home/gonnet/tmp/linux-2.6.22/arch/i386/mach-voyager/voyager_cat.c  2007-07-20 11:50:17.000000000 -0400
-> +++ linux-2.6.22/arch/i386/mach-voyager/voyager_cat.c   2007-07-22
-> 11:24:34.000000000 -0400
-> @@ -682,7 +682,7 @@
->                         outb(VOYAGER_CAT_END, CAT_CMD);
->                         continue;
->                 }
-> -               if(eprom_size > sizeof(eprom_buf)) {
-> +               if((unsigned)eprom_size > sizeof(eprom_buf)) {
+On Mon, 2007-07-23 at 00:33 +0900, Akinobu Mita wrote:
+> plain text document attachment (cpuhotplug-nr-calls.patch)
+> From: Akinobu Mita <akinobu.mita@gmail.com>
+> 
+> The functions in a CPU notifier chain is called with CPU_UP_PREPARE event
+> before making the CPU online. If one of the callback returns NOTIFY_BAD,
+> it stops to deliver CPU_UP_PREPARE event, and CPU online operation is canceled.
+> Then CPU_UP_CANCELED event is delivered to the functions in a CPU notifier
+> chain again.
+> 
+> This CPU_UP_CANCELED event is delivered to the functions which have been
+> called with CPU_UP_PREPARE, not delivered to the functions which haven't
+> been called with CPU_UP_PREPARE.
+> 
+> The problem that makes existing cpu hotplug error handlings complex is
+> that the CPU_UP_CANCELED event is delivered to the function that has
+> returned NOTIFY_BAD, too.
+> 
+> Usually we don't expect to call destructor function against the
+> object that has failed to initialize. It is like:
+> 
+> 	err = register_something();
+> 	if (err) {
+> 		unregister_something();
+> 		return err;
+> 	}
+> 
+> So it is natural to deliver CPU_UP_CANCELED event only to the functions
+> that have returned NOTIFY_OK with CPU_UP_PREPARE event and not to call
+> the function that have returned NOTIFY_BAD. This is what this patch is doing.
+> 
+> Otherwise, every cpu hotplug notifiler has to track whether
+> notifiler event is failed or not for each cpu.
+> (drivers/base/topology.c is doing this with topology_dev_map)
+> 
+> Similary this patch makes same thing with CPU_DOWN_PREPARE and
+> CPU_DOWN_FAILED evnets.
+> 
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-Actually, no.  If gcc can deduce that the comparison is always false
-then I want it not to build the body of the if.  The only thing I don't
-know how to do is to shut up the warning in this case.  What you've done
-is make gcc pretend it doesn't know the if is always false.
+This makes a great deal of sense; I consider it a bugfix.
 
->                         printk("**WARNING**: Voyager insufficient size
-> to read EPROM data, module 0x%x.  Need %d\n", i, eprom_size);
->                         outb(VOYAGER_CAT_END, CAT_CMD);
->                         continue;
-> @@ -752,7 +752,7 @@
->                         outb(VOYAGER_CAT_END, CAT_CMD);
->                         continue;
->                 }
-> -               if(eprom_size > sizeof(eprom_buf)) {
-> +               if((unsigned)eprom_size > sizeof(eprom_buf)) {
->                         printk("**WARNING**: Voyager insufficient size
-> to read EPROM data, module 0x%x.  Need %d\n", i, eprom_size);
->                         outb(VOYAGER_CAT_END, CAT_CMD);
->                         continue;
-> diff -urN a/arch/i386/mach-voyager/voyager_thread.c
-> b/arch/i386/mach-voyager/voyager_thread.c
-> --- /home/gonnet/tmp/linux-2.6.22/arch/i386/mach-voyager/voyager_thread.c       2007-07-20 11:50:17.000000000 -0400
-> +++
-> linux-2.6.22/arch/i386/mach-voyager/voyager_thread.c        2007-07-22
-> 11:27:13.000000000 -0400
-> @@ -92,7 +92,7 @@
->         }
->  }
->  
-> -static int
-> +static void
->  thread(void *unused)
->  {
->         printk(KERN_NOTICE "Voyager starting monitor thread\n");
-
-You didn't actually compile this, did you?  Apparently the signature of
-the kthread_run function changed from returning void to returning int.
-Unfortunately the person who fixed this up forgot to add a return 0 at
-the end of the voyager thread() function .. which is the correct fix.
-
-James
+Thanks!
+Rusty.
 
 
