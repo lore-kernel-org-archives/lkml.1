@@ -1,42 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbXGVWBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbXGVWCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757630AbXGVWBX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 18:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765192AbXGVWAy
+	id S1762790AbXGVWCY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 18:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764539AbXGVWCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 18:00:54 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:57503 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765190AbXGVWAw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 18:00:52 -0400
-Date: Mon, 23 Jul 2007 00:00:50 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Jon Smirl <jonsmirl@gmail.com>, Git Mailing List <git@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Git tree for old kernels from before the current tree
-In-Reply-To: <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr>
-References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com>
- <Pine.LNX.4.64.0707222257540.32367@fbirervta.pbzchgretzou.qr>
- <20070722211314.GA13850@linux-sh.org> <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr>
+	Sun, 22 Jul 2007 18:02:04 -0400
+Received: from mx2.suse.de ([195.135.220.15]:37354 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754419AbXGVWCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 18:02:01 -0400
+To: "Oliver Pinter" <oliver.pntr@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: [ANNOUNCE][GIT PATCH] Kconfig.cpu cosmetics
+References: <6101e8c40707221311l19a7e39r36b99bcb2dcaaae1@mail.gmail.com>
+	<6101e8c40707221316t744c7c15pc7ed8f179e0bab25@mail.gmail.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 23 Jul 2007 00:56:54 +0200
+In-Reply-To: <6101e8c40707221316t744c7c15pc7ed8f179e0bab25@mail.gmail.com>
+Message-ID: <p73zm1ot5c9.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Oliver Pinter" <oliver.pntr@gmail.com> writes:
+> 
+> Here is one patch, Kconfig.cpu, this patch add the Pentium D processor
+> for help, because number of person has the question: I have Pentium D,
+> and which CPU chose  I.
 
-On Jul 22 2007 23:46, Jan Engelhardt wrote:
->On Jul 23 2007 06:13, Paul Mundt wrote:
->>> 
->>Err, that's crap. Have you even looked at gitweb? There's at least:
->>
->>git://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
->>This has trees all the way back to 2.5.0.
+Your patch does a lot more than that; please do only one thing per patch.
+Also x86-64 probably should get it too.
 
-Actually back to 2.4.0, including history. That I'd call mission done then :)
+-Andi
 
-
-	Jan
--- 
