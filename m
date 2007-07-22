@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932711AbXGVXLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932843AbXGVXLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932711AbXGVXLS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 19:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765416AbXGVXK6
+	id S932843AbXGVXLl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 19:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765625AbXGVXL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 19:10:58 -0400
-Received: from mail11.syd.optusnet.com.au ([211.29.132.192]:34842 "EHLO
-	mail11.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765463AbXGVXK5 (ORCPT
+	Sun, 22 Jul 2007 19:11:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54667 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765416AbXGVXLZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 19:10:57 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: -mm merge plans for 2.6.23
-Date: Tue, 24 Jul 2007 10:08:19 +1000
-User-Agent: KMail/1.9.5
-Cc: ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <200707102015.44004.kernel@kolivas.org>
-In-Reply-To: <200707102015.44004.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2374
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 22 Jul 2007 19:11:25 -0400
+Subject: Re: [linux-pm] Power Management framework proposal
+From: Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: Igor Stoppa <igor.stoppa@nokia.com>,
+       "ext linux-pm-bounces@lists.linux-foundation.org" 
+	<linux-pm-bounces@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	 <1185091022.19678.28.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
+	 <1185105911.29238.43.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 22 Jul 2007 16:09:26 -0700
+Message-Id: <1185145766.2714.27.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707241008.20512.kernel@kolivas.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 July 2007 20:15, Con Kolivas wrote:
-> On Tuesday 10 July 2007 18:31, Andrew Morton wrote:
-> > When replying, please rewrite the subject suitably and try to Cc: the
-> > appropriate developer(s).
->
-> ~swap prefetch
->
-> Nick's only remaining issue which I could remotely identify was to make it
-> cpuset aware:
-> http://marc.info/?l=linux-mm&m=117875557014098&w=2
-> as discussed with Paul Jackson it was cpuset aware:
-> http://marc.info/?l=linux-mm&m=117895463120843&w=2
->
-> I fixed all bugs I could find and improved it as much as I could last
-> kernel cycle.
->
-> Put me and the users out of our misery and merge it now or delete it
-> forever please. And if the meaningless handwaving that I 100% expect as a
-> response begins again, then that's fine. I'll take that as a no and you can
-> dump it.
+> >> son anyway)
+> >
+> > I don't think you have got it right: the only info being passed is the
+> > standard cpufreq list of frequencies; everything else is part of the
+> > cpufreq driver.
+> 
+> to make the decisions the software makeing the decision needs to know how 
+> much power would be used at each freq setting.
 
-The window for 2.6.23 has now closed and your position on this is clear. I've 
-been supporting this code in -mm for 21 months since 16-Oct-2005 without any 
-obvious decision for this code forwards or backwards.
+power used at a certain frequency is not a single variable. 
+In fact, on most laptops and other similarly power aware devices, it's
+in fact better for power consumption to always go to the maximum
+frequency as quickly as possible, so that you can be idle for the
+longest possible time after that. Good luck finding a generic way to
+represent such things in a (userspace) interface....
 
-I am no longer part of your operating system's kernel's world; thus I cannot 
-support this code any longer. Unless someone takes over the code base for 
-swap prefetch you have to assume it is now unmaintained and should delete it.
 
-Please respect my request to not be contacted further regarding this or any 
-other kernel code.
-
--- 
--ck
