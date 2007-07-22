@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762726AbXGVPBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbXGVPWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762726AbXGVPBX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 11:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXGVPBO
+	id S1756717AbXGVPWT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 11:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXGVPWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 11:01:14 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:55607 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755756AbXGVPBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 11:01:12 -0400
-Subject: [GIT PULL #2] LED updates
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 22 Jul 2007 16:00:26 +0100
-Message-Id: <1185116426.6819.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sun, 22 Jul 2007 11:22:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:5056 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752595AbXGVPWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 11:22:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=Hod8zwzxRN1rTu7hhLlOcCgbDi8YTe+Io81L0bDHbJy154q//TMxsUBwmeNTTI4aziWpBuy9gC56HeFqT/0lpubRbJARRHfSwxAr9QH2o7ul37r2Gdn8TKC8B8+skt6fJSLnDYlJ2h6t9m+796Q9gzp8/Culoqwum4t/SIszVpg=
+Message-ID: <46A37595.2010305@googlemail.com>
+Date: Sun, 22 Jul 2007 17:19:49 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linux-scsi@vger.kernel.org
+Subject: [PATCH] drivers/scsi/g_NCR5380.c - "NCR53C400_PSEUDO_DMA" is not
+ defined 
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi,
 
-Could you please pull from:
+got this warning with current git :
 
-git://git.o-hand.com/linux-rpurdie-leds for-linus
+...
 
-This adds a couple of new LED drivers and converts the LED class away
-from struct class_device as well as some bug fixes. Most of this has
-been in -mm for a while as it just missed the 2.6.22 merge window.
+In file included from drivers/scsi/g_NCR5380_mmio.c:9:
+drivers/scsi/g_NCR5380.c:559:5: warning: "NCR53C400_PSEUDO_DMA" is not defined
 
-Thanks,
+...
 
-Richard (LED maintainer)
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+---
 
- arch/avr32/boards/atngw100/setup.c    |   31 +++++
- arch/avr32/configs/atngw100_defconfig |   16 ++
- drivers/leds/Kconfig                  |   22 ++-
- drivers/leds/Makefile                 |    1 
- drivers/leds/led-class.c              |   49 +++-----
- drivers/leds/led-triggers.c           |   27 +++-
- drivers/leds/leds-gpio.c              |  199 ++++++++++++++++++++++++++++++++++
- drivers/leds/leds-locomo.c            |    2 
- drivers/leds/leds.h                   |    8 -
- drivers/leds/ledtrig-timer.c          |   49 +++-----
- include/linux/leds.h                  |   17 ++
- 11 files changed, 343 insertions(+), 78 deletions(-)
-
-David Brownell (2):
-      leds: Teach leds-gpio to handle timer-unsafe GPIOs
-      leds: leds-gpio for ngw100
-
-Jan Engelhardt (1):
-      leds: Use menuconfig objects II - LED
-
-Raphael Assenat (1):
-      leds: Add generic GPIO LED driver
-
-Richard Purdie (3):
-      leds: Fix trigger unregister_simple if register_simple fails
-      leds: Add warning printks in error paths
-      leds: Convert from struct class_device to struct device
-
-
+diff --git a/drivers/scsi/g_NCR5380.c b/drivers/scsi/g_NCR5380.c
+index 880f70d..607336f 100644
+--- a/drivers/scsi/g_NCR5380.c
++++ b/drivers/scsi/g_NCR5380.c
+@@ -556,7 +556,7 @@ generic_NCR5380_biosparam(struct scsi_device *sdev, struct block_device *bdev,
+ }
+ #endif
+ 
+-#if NCR53C400_PSEUDO_DMA
++#ifdef NCR53C400_PSEUDO_DMA
+ 
+ /**
+  *	NCR5380_pread		-	pseudo DMA read
