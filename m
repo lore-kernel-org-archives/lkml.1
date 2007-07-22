@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765849AbXGVJy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765725AbXGVJ7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765849AbXGVJy6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 05:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758284AbXGVJyt
+	id S1765725AbXGVJ7U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 05:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbXGVJ7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 05:54:49 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:38709 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757273AbXGVJys (ORCPT
+	Sun, 22 Jul 2007 05:59:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38432 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756598AbXGVJ7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 05:54:48 -0400
-Message-ID: <46A3295D.8050908@wpkg.org>
-Date: Sun, 22 Jul 2007 11:54:37 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: jengelh@computergmbh.de
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Jul 2007 05:59:13 -0400
+Date: Sun, 22 Jul 2007 10:59:06 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Lever <chuck.lever@oracle.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] fix broken handling of port=... in NFS option parsing
+Message-ID: <20070722095906.GX21668@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote
+	Obviously broken on little-endian; fortunately, the option is
+not frequently used...
 
-> On Jul 22 2007 00:43, Lars Ellenberg wrote:
-
->>Think of it as RAID1 over TCP.
-> 
-> And what does it do better than raid1-over-NBD? (Which is already N-disk,
-> and, logically, seems to support cluster filesystems)
-
-I don't know about DRDB, but NBD doesn't handle network disconnections 
-at all (well, almost).
-
-So basically, disconnect a NBD-connected system for a while (switch, 
-cabling problem, operator error etc.), and you need lots of effort, 
-perhaps restarts, to get the things to a functioning state (devices 
-offlined, kicked out etc.).
-
-I wouldn't call such raid-over-NBD setup reliable.
-
-
-A better question would be: what does it do better than raid1-over-iSCSI?
-
-iSCSI can recover from disconnections very well when configured 
-properly; but when a disconnection is in place, most of the system will 
-just "hang/freeze" (that is, from the user perspective - the system will 
-be waiting for the I/O to complete, until the systems are connected again).
-
-
-A brief reading of "official DRBD FAQ" didn't give me an answer to that 
-problem.
-
-
--- 
-Tomasz Chmielewski
-http://wpkg.org
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index b34b7a7..b2a851c 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -732,7 +732,7 @@ static int nfs_parse_mount_options(char *raw,
+ 				return 0;
+ 			if (option < 0 || option > 65535)
+ 				return 0;
+-			mnt->nfs_server.address.sin_port = htonl(option);
++			mnt->nfs_server.address.sin_port = htons(option);
+ 			break;
+ 		case Opt_rsize:
+ 			if (match_int(args, &mnt->rsize))
