@@ -1,85 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760896AbXGVH0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbXGVHiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760896AbXGVH0V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 03:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbXGVH0N
+	id S1760855AbXGVHiU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 03:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbXGVHiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 03:26:13 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36521 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753703AbXGVH0M (ORCPT
+	Sun, 22 Jul 2007 03:38:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56490
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752668AbXGVHh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 03:26:12 -0400
-Date: Sun, 22 Jul 2007 08:26:11 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: David Miller <davem@davemloft.net>
+	Sun, 22 Jul 2007 03:37:59 -0400
+Date: Sun, 22 Jul 2007 00:37:58 -0700 (PDT)
+Message-Id: <20070722.003758.08651359.davem@davemloft.net>
+To: viro@ftp.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, sam@ravnborg.org
-Subject: [PATCH] sparc32 missing exports
-Message-ID: <20070722072611.GU21668@ftp.linux.org.uk>
-References: <20070721.232207.26531557.davem@davemloft.net> <20070722063149.GQ21668@ftp.linux.org.uk> <20070722063511.GR21668@ftp.linux.org.uk> <20070721.233949.35357470.davem@davemloft.net> <20070722072206.GT21668@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Subject: Re: [RFC] Kconfig fun with sparc32/sparc64 rtc drivers
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <20070722072206.GT21668@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+References: <20070722063511.GR21668@ftp.linux.org.uk>
+	<20070721.233949.35357470.davem@davemloft.net>
+	<20070722072206.GT21668@ftp.linux.org.uk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... and with that on top of js-rtc patch we are down to floppy_hardirq
-as sparc32 allmodconfig-without-SUN4 list of missing symbols.  floppy_hardirq
-is a separate story...
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Sun, 22 Jul 2007 08:22:06 +0100
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
->From d278b08de78546f146c4cebe74b51ff74bbe8695 Mon Sep 17 00:00:00 2001
-From: Al Viro <viro@zeniv.linux.org.uk>
-Date: Sat, 21 Jul 2007 23:08:39 -0400
-Subject: [PATCH] sparc32: missing exports
+> On Sat, Jul 21, 2007 at 11:39:49PM -0700, David Miller wrote:
+> > No objections.
+> 
+> >From 6fc7f305af19f2020c14a002061a8ce8b7812307 Mon Sep 17 00:00:00 2001
+> From: Al Viro <viro@zeniv.linux.org.uk>
+> Date: Sun, 22 Jul 2007 03:14:37 -0400
+> Subject: [PATCH] deal with rtc/sun_mostek_rtc conflict on sparc32
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/sparc/kernel/sparc_ksyms.c |    3 +++
- arch/sparc/prom/printf.c        |    2 ++
- 2 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/arch/sparc/kernel/sparc_ksyms.c b/arch/sparc/kernel/sparc_ksyms.c
-index 55bac51..7b4abde 100644
---- a/arch/sparc/kernel/sparc_ksyms.c
-+++ b/arch/sparc/kernel/sparc_ksyms.c
-@@ -161,6 +161,8 @@ EXPORT_SYMBOL(BTFIXUP_CALL(mmu_get_scsi_one));
- EXPORT_SYMBOL(BTFIXUP_CALL(mmu_release_scsi_sgl));
- EXPORT_SYMBOL(BTFIXUP_CALL(mmu_release_scsi_one));
- 
-+EXPORT_SYMBOL(BTFIXUP_CALL(pgprot_noncached));
-+
- #ifdef CONFIG_SBUS
- EXPORT_SYMBOL(sbus_root);
- EXPORT_SYMBOL(dma_chain);
-@@ -260,6 +262,7 @@ EXPORT_SYMBOL(__memmove);
- /* Moving data to/from userspace. */
- EXPORT_SYMBOL(__copy_user);
- EXPORT_SYMBOL(__strncpy_from_user);
-+EXPORT_SYMBOL(__strnlen_user);
- 
- /* Networking helper routines. */
- EXPORT_SYMBOL(__csum_partial_copy_sparc_generic);
-diff --git a/arch/sparc/prom/printf.c b/arch/sparc/prom/printf.c
-index 27fdac9..a36ab9c 100644
---- a/arch/sparc/prom/printf.c
-+++ b/arch/sparc/prom/printf.c
-@@ -13,6 +13,7 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/module.h>
- 
- #include <asm/openprom.h>
- #include <asm/oplib.h>
-@@ -44,3 +45,4 @@ prom_printf(char *fmt, ...)
- 
- 	prom_write(ppbuf, i);
- }
-+EXPORT_SYMBOL(prom_printf);
--- 
-1.5.3.GIT
-
+Applied.
