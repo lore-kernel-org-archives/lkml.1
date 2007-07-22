@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbXGVGf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbXGVGiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbXGVGf0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 02:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbXGVGfO
+	id S1760202AbXGVGiR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 02:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbXGVGiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 02:35:14 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34201 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752455AbXGVGfM (ORCPT
+	Sun, 22 Jul 2007 02:38:08 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:47331 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbXGVGiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 02:35:12 -0400
-Date: Sun, 22 Jul 2007 07:35:11 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [RFC] Kconfig fun with sparc32/sparc64 rtc drivers
-Message-ID: <20070722063511.GR21668@ftp.linux.org.uk>
-References: <20070722054356.GO21668@ftp.linux.org.uk> <20070721.225413.23605608.davem@davemloft.net> <20070722061924.GP21668@ftp.linux.org.uk> <20070721.232207.26531557.davem@davemloft.net> <20070722063149.GQ21668@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 22 Jul 2007 02:38:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Al31/iDiYKWLjpmsmUZTr+PH+tVdCFIlbwVU1MrTZ4px2OkIdissRdgt3LJItsBLRcdoQyI+ExGV0LH0paSxhPWQZvzL+NdkROGiLUI2AUCLYoa8owDuktMuorV2tYNutjhGHlk41zYm20uPh51d2hs8mu1/EVVH6gvzT09M8sU=
+Message-ID: <a781481a0707212338q75995340w8e0d352bce4f3f6a@mail.gmail.com>
+Date: Sun, 22 Jul 2007 12:08:06 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [00/37] Clean up duplicate includes
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <a781481a0707211930l7e712dedo474a5e9e44e84adc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070722063149.GQ21668@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+References: <200707211701.23911.jesper.juhl@gmail.com>
+	 <a781481a0707211930l7e712dedo474a5e9e44e84adc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 07:31:49AM +0100, Al Viro wrote:
-> On Sat, Jul 21, 2007 at 11:22:07PM -0700, David Miller wrote:
-> > From: Al Viro <viro@ftp.linux.org.uk>
-> > Date: Sun, 22 Jul 2007 07:19:24 +0100
-> > 
-> > > We probably ought to make drivers/sbus/char/rtc.c sparc32-only,
-> > > then - AFAICS it simply won't be able to register misc device and that
-> > > will be it.  ACK?
-> > 
-> > ACK.
-> > 
-> > > > 2) all the __sparc_v9__ crap is removed from drivers/char/rtc.c
-> > > > 3) all the __sparc__ crap is changed to CONFIG_SPARC32 in same
-> > > > 4) CONFIG_RTC is not longer allows on sparc64, only sparc32 with PCI
-> > > 
-> > > Umm...  OK, that takes care of sparc64 side of things, which is probably
-> > > all we realistically care about.  Except that it still leaves broken sparc32
-> > > defconfig - we have RTC=m, SUN_MOSTEK_RTC=m and kbuild won't deal with it...
-> > 
-> > That definitely needs to be fixed and I'm willing to entertain
-> > any suggestion on how to deal with it.
-> 
-> Crude and simple way would be to add
-> 
-> config JS_RTC
-> 	tristate "JavaStation RTC"
-> 	depends on SPARC32 && PCI
-> 	<copy help from RTC with s/will be called rtc/will be called js-rtc>
-> 
-> in drivers/char/Kconfig, slap plain and simple !SPARC in RTC dependencies
-> and put
-> js-rtc-y = rtc.o
-> obj-$(JS_RTC) += js-rtc.o
-> in drivers/char/Makefile
-> 
-> Objections?
+On 7/22/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> On 7/21/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> > [...]
+> > These are the patches in this series :
+>
+> Ok, I've reviewed all patches in this series except:
+>
+> >  [PATCH][12/37] Clean up duplicate includes in drivers/net/
+> >  [PATCH][28/37] Clean up duplicate includes in net/ipv4/
+> >  [PATCH][32/37] Clean up duplicate includes in net/sunrpc/
 
-Oh, and s/CONFIG_RTC/CONFIG_JS_RTC/ in arch/sparc/defconfig, of course.
+And I also looked over these three after your resends.
+
+> Anyway, the entire series was OK, just removing a #include
+> line when that exact same header was already #include'd in
+> the same file. [ I also wonder if this patchset ends up exposing
+> some header-include-ordering problems that were previously
+> hidden, actually. ]
+
+Like you said you built an allmodconfig, everything should be OK.
+[ Except for modules that didn't get included in allmodconfig because
+your arch might not have supported it -- but even then, your patches
+are obviously correct and will only expose issues elsewhere if we do
+see any build breakage, but which isn't likely in any case. ]
+
+So the entire series is reviewed and looks good to me :-)
+
+Thanks,
+Satyam
