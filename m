@@ -1,130 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbXGVRVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbXGVR2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761467AbXGVRVh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 13:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbXGVRV2
+	id S1760760AbXGVR2b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 13:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbXGVR2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 13:21:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:33973 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbXGVRV0 (ORCPT
+	Sun, 22 Jul 2007 13:28:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42193 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755100AbXGVR2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 13:21:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YUH8rNw7S3sqFOpgEQNPrR52HLAEPCz1XAYyoTklefPQY0Dv7zbRJUcHgxGISZyPhoC0FfGr5PCFzlUJJq1QzfoZZ3nWdejw2aZOprYdHJ85GZrIbxOuv+5PO2uuIdKbxdY/a/VkI04eNkOIfvMJhu08AbxnY5V7b6GicZ/GPKw=
-Message-ID: <19061b0b0707221021p4ca776d9k737121ddf553b1ce@mail.gmail.com>
-Date: Sun, 22 Jul 2007 18:21:25 +0100
-From: Bartek <poemann@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Pata support for IDE Controller 82801G ICH7 in Linux 2.6.22
-Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <6bffcb0e0707220311v5b145050hbd911e37b6f14c80@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 22 Jul 2007 13:28:20 -0400
+Subject: Re: Power Management framework proposal
+From: Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 22 Jul 2007 10:26:28 -0700
+Message-Id: <1185125189.2714.13.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19061b0b0707220259h207f27d7wa836b1973c547e63@mail.gmail.com>
-	 <6bffcb0e0707220311v5b145050hbd911e37b6f14c80@mail.gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22/07/07, Bartek <poemann@gmail.com> wrote:
-> Hi
->
-> I have a laptop Asus A6JM with Intel IDE Controller 82801G ICH7
-> Family. I wanna give a try a new PATA driver instead the old one
-> (IDE), so I compiled these modules in the Linux 2.6.22 (CONFIG_IDE is
-> not set) :
-> # SCSI device support
-> CONFIG_SCSI=y
-> CONFIG_SCSI_TGT=m
-> CONFIG_SCSI_NETLINK=y
-> CONFIG_SCSI_PROC_FS=y
->
-> # SCSI support type (disk, tape, CD-ROM)
-> CONFIG_BLK_DEV_SD=y
-> CONFIG_BLK_DEV_SR=m
-> CONFIG_CHR_DEV_SCH=m
->
-> # Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-> CONFIG_SCSI_MULTI_LUN=y
-> CONFIG_SCSI_SCAN_ASYNC=y
-> CONFIG_SCSI_WAIT_SCAN=m
->
-> # SCSI Transports
-> CONFIG_SCSI_SPI_ATTRS=m
-> CONFIG_SCSI_FC_ATTRS=m
-> CONFIG_SCSI_ISCSI_ATTRS=m
-> CONFIG_SCSI_SAS_ATTRS=m
-> CONFIG_SCSI_SAS_LIBSAS=m
->
-> # SATA/PATA driver configuration
-> CONFIG_ATA=m
-> CONFIG_ATA_ACPI=y
-> CONFIG_SATA_AHCI=m
-> CONFIG_ATA_PIIX=m
-> CONFIG_ATA_GENERIC=m
-> CONFIG_PATA_PCMCIA=m
->
-> Then I added to /etc/initramfs-tools/modules these modules:
-> ata_generic, libata, ata_piix
-> After installing the new kernel and rebooting, the system stopped
-> showing a message:
-> "Waiting for root file system..."
-> Then, after 2 or 3 minutes initramfs shell appeared. So I checked if
-> 82801G controller is supported, and I found this in
-> linux/drivers/ata/ata_piix.c
-> /* 82801GB/GR/GH (ICH7, identical to ICH6) */
-> { 0x8086, 0x27c0, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich6_sata_ahci },
-> /* 2801GBM/GHM (ICH7M, identical to ICH6M) */
-> { 0x8086, 0x27c4, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich6m_sata_ahci },
->
-> My question is there a Linux PATA driver for the IDE Controller 82801G
-> ICH7 Family or is there any plan to support it?
->
-> My /etc/fstab looks like:
-> # /etc/fstab: static file system information.
-> #
-> # <file system> <mount point>   <type>  <options>       <dump>  <pass>
-> proc            /proc           proc    defaults        0       0
-> LABEL=ROOT       /               ext3    defaults,errors=remount-ro 0       1
-> LABEL=BOOT       /boot           ext3    defaults        0       2
-> LABEL=HOME       /home           ext3
-> noatime,defaults,errors=remount-ro         0       2
-> LABEL=SWAP       none            swap    sw              0       0
->
-> The fragment of /boot/grub/menu.lst
-> title           Debian GNU/Linux, kernel 2.6.22
-> root            (hd0,0)
-> kernel          /vmlinuz-2.6.22 root=LABEL=ROOT ro vga=792
-> initrd          /initrd.img-2.6.22
-> savedefault
->
-> Output of lspci -vvv
-> 00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE
-> Controller (rev 02) (prog-if 8a [Master SecP PriP])
->         Subsystem: ASUSTeK Computer Inc. Unknown device 1237
->         Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
-> ParErr- Stepping- SERR- FastB2B-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium
-> >TAbort- <TAbort- <MAbort- >SERR- <PERR-
->         Latency: 0
->         Interrupt: pin A routed to IRQ 20
->         Region 0: I/O ports at 01f0 [size=8]
->         Region 1: I/O ports at 03f4 [size=1]
->         Region 2: I/O ports at 0170 [size=8]
->         Region 3: I/O ports at 0374 [size=1]
->         Region 4: I/O ports at ffa0 [size=16]
+On Sat, 2007-07-21 at 23:49 -0700, david@lang.hm wrote:
 
-Hi again,
+> this approach would allow the transition of ALL drivers to the new mode of 
+> operation in one fell swoop, and then adding additional power management 
+> features is just adding to the existing list rather then implementing new 
+> functions.
 
-Michal Piotrowski (thanks Michal :)) took me a private notice that I
-should send output of lspci -n instead of lspci -vvv, so here it is
-(part of, I hope that's enough):
 
-00:1f.1 0101: 8086:27df (rev 02)
+I have a concern with this approach though. It seems to assume that
+there is one global thing somewhere that sets the system state; in my
+experience that is the wrong approach; in fact there is a very definite
+evidence that there are many decisions on power that are to be made
+local at a high frequency. An example of this is the processor speed;
+the ondemand governer does exactly this for the cpus that can switch
+speeds fast; it's just impossible to beat such a local, fast decision
+with anything on a global scale.
 
-Regards
-Bartek
+On the other hand, some things (the high level goals and constraints)
+are obviously global.
+
+However, your design seems to want to put the low level settings in a
+global thing, and that is just a mistake.
+
+
