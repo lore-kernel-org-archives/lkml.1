@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbXGVOZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbXGVO2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758843AbXGVOZV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 10:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbXGVOZK
+	id S1759531AbXGVO2T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 10:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbXGVO2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 10:25:10 -0400
-Received: from main.gmane.org ([80.91.229.2]:56526 "EHLO ciao.gmane.org"
+	Sun, 22 Jul 2007 10:28:12 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:45591 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751348AbXGVOZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 10:25:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "treul" <lgijnpuhx@gmail.com>
-Subject: dma hardware underrun
-Date: Sun, 22 Jul 2007 21:59:44 +0800
-Message-ID: <f7vnsh$aun$1@sea.gmane.org>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 58.24.170.49
-X-MSMail-Priority: Normal
-X-Newsreader: Microsoft Outlook Express 6.00.2900.3138
-X-RFC2646: Format=Flowed; Original
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+	id S1751363AbXGVO2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 10:28:10 -0400
+Subject: Re: MMC/SD Root filesystem suspend/resume problems
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070722160534.3ccfc8f9@poseidon.drzeus.cx>
+References: <1184860419.29634.10.camel@localhost.localdomain>
+	 <20070719190309.28708be8@poseidon.drzeus.cx>
+	 <1185110313.6819.8.camel@localhost.localdomain>
+	 <20070722160534.3ccfc8f9@poseidon.drzeus.cx>
+Content-Type: text/plain
+Date: Sun, 22 Jul 2007 15:28:00 +0100
+Message-Id: <1185114480.6819.24.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sun, 2007-07-22 at 16:05 +0200, Pierre Ossman wrote:
+> On Sun, 22 Jul 2007 14:18:33 +0100
+> Richard Purdie <rpurdie@rpsys.net> wrote:
+> > I enabled the MMC_UNSAFE_RESUME option and the problems I was seeing
+> > was "fixed". I think having this option is a bad idea (in its current
+> > form) as it doesn't actually stop filesystem corruption.
+> > 
+> > With the option disabled, if a filesystem is mounted when you suspend
+> > my tests show the filesystem is corrupted. At least if the option is
+> > enabled, the filesystem is only corrupted if you remove the card
+> > whilst suspended which is more preferable.
+> 
+> I disagree. With this option you get silent corruption, without you get
+> noisy corruption. And I would always prefer the latter, even if it
+> increases the risk of it happening.
 
+Corruption is corruption and it shouldn't happen if we can avoid it. It
+happens with complete certainty in one case and only happens in the
+other if the user does something which is a fairly obvious bad idea
+(which is documented as such).
 
-I'm currently experiencing a tough DMA underrun problem.
+> > I guess the solution would be to abort the suspend if mounted systems
+> > were detected and the option was disabled? Alternatively the option
+> > could be "auto" enabled only for mounted systems maybe with a printk
+> > warning?
+> 
+> This is a general problem for all removable/hotpluggable storage. So
+> sticking it in the MMC block device would be the wrong layer IMO.
 
-The system is like:
+It is however if the MMC layer is going to add Kconfig options which
+corrupt things, it can add things to start fixing things too. If those
+things can be adapted into more generic code paths, so much the better.
 
-                 global bus
-                      ||
-data-compressor ------||------//---- memory
-IDE-PCI harddisk -----||
-data-decompressor ----||
-data-consumer --------||
-                      ||
+> Until the filesystems can be made to store something sane on disk
+> before the suspend, I'd say this is best handled in user space. Let the
+> user space tools refuse to initiate the suspend as long as any
+> removable devices are mounted.
 
-1. harddisk has the compressed data, read to compressed buffer by DMA1;
-2. data-decompressor gets data from compressed buffer by DMA2, and puts 
-decompressed data to decompressed buffers in ISR;
-3. data-consumer eats the decompressed data at an uncompromisable speed;
+Given I can suspend the device with "echo mem > /sys/power/state", that
+implies we need to fix echo? ;-)
 
-The data-consumer encounters DMA underrun...
+> > Of course the best solution would be to have filesystems support
+> > suspend/resume requests since other subsystems like pcmcia also suffer
+> > this problem and would benefit from this but I accept that teaching
+> > filesystems this is more difficult.
+> > 
+> 
+> Doesn't mean we shouldn't do it. 
 
-My debugging result shows the underrun goes away if I put 2 printf's in the 
-harddisk ISR. The printf is at milli-seconds whereas the duration of the 
-original ISR is at lower magnitude. In addition, I find a SATA-PCI harddisk 
-does not have the underrun problem. IDE-PCI device gets the trouble.
+Agreed.
 
-In addition, all interrupts are at the same priority and ISR's can not be 
-preempted by others.
+> And if we keep papering over the problems, you reduce the motivation
+> of fixing this properly.
 
-So, do you have any idea about where the root cause can be hiding? Or what 
-do you think of adding printf's in ISR? (performance? incurring other 
-problems by disabling interrupt too long?)
+Maybe although I don't like existing functionality being broken even if
+its less than ideal.
 
-Thanks!!
+Regards.
 
-
--treul
-
-
+Richard
 
