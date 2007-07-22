@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbXGVA2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbXGVAaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbXGVA2Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 20:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXGVA2E
+	id S1756251AbXGVAaM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 20:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbXGVA36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 20:28:04 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35994 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751948AbXGVA2B (ORCPT
+	Sat, 21 Jul 2007 20:29:58 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:49288 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbXGVA35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 20:28:01 -0400
-X-Sasl-enc: qGcg4DB+nSGF7g+HSCMoZkJaOAYzEPDdKwJBtqtYKsk+ 1185064080
-Message-ID: <46A2A5A6.50709@imap.cc>
-Date: Sun, 22 Jul 2007 02:32:38 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Sat, 21 Jul 2007 20:29:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Up2n5Yiop0LMailnORP5KkfgpCBPhbIwJOy09nkl1bwsx2F6MJXJ1bMZpmgPG8Y5s6WFMoeMV1fPhlfPAn2XraH7A9wozMiU7wXJXsOkRUj8g9WLtkZIyfaaXIwo5glgJ1ckeKbGZKOzpyicnuDbOc4RlC+n6Ro2kv8mgFVVL9o=
+From: Denis Vlasenko <vda.linux@googlemail.com>
+To: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: [PATCH] [9/58] x86_64: Always use builtin memcpy on gcc 4.3
+Date: Sun, 22 Jul 2007 01:29:50 +0100
+User-Agent: KMail/1.8.2
+Cc: Andi Kleen <ak@suse.de>, jh@suse.cz, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+References: <200707191154.642492000@suse.de> <20070719095453.5434214E04@wotan.suse.de> <E1ICOBm-0003zf-Ms@flower>
+In-Reply-To: <E1ICOBm-0003zf-Ms@flower>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Tilman Schmidt <tilman@imap.cc>, Andrew Morton <akpm@linux-foundation.org>,
-       Karsten Keil <kkeil@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [more PATCHes] Use menuconfig objects - CONFIG_ISDN_I4L
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <Pine.LNX.4.64.0707101107340.11053@fbirervta.pbzchgretzou.qr> <46980610.9080705@imap.cc> <Pine.LNX.4.64.0707141200310.25352@fbirervta.pbzchgretzou.qr> <20070715131144.3467DFC040@xenon.ts.pxnet.com> <Pine.LNX.4.64.0707182020440.5385@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0707182020440.5385@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9F631C152E8C64313B7D862E"
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707220129.50223.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9F631C152E8C64313B7D862E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sunday 22 July 2007 00:16, Oleg Verych wrote:
+> * From: Andi Kleen <ak@suse.de>
+> * Date: Thu, 19 Jul 2007 11:54:53 +0200 (CEST)
+> >
+> > Jan asked to always use the builtin memcpy on gcc 4.3 mainline because
+> > it should generate better code than the old macro. Let's try it.
+> 
+> Unfortunately such info is hard to find. The discuss@x86-64 list is
+> empty. So, let me ask how this memcpy relates to recently submitted
+> for glibc one [0]?
+> 
+> [0] <http://permalink.gmane.org/gmane.comp.lib.glibc.alpha/12217>
 
-Hi,
+Am I stupid or the files attached to that post demonstrate than "new"
+code isn't much better and sometimes worse (aligned 4096 byte memcpy
+went from 558 to 648 for Core 2)?
 
-sorry for the late reply.
-On 18.07.2007 20:22 Jan Engelhardt wrote:
-> here are two more changes I propose for the isdn submenu(s).
-> They go on top of Tilman's patch; each of the two following patches is =
-
-> independent of another.
-> Opinions please :)
-
-These are fine by me.
-
-Thanks
-Tilman
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig9F631C152E8C64313B7D862E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGoqWwMdB4Whm86/kRAvg7AJ4tMn/kX6w4TrIZhMPJowsn9BiVDgCeMSGc
-YfKYjUOupe24+i/QGNWEqRE=
-=Y9Kn
------END PGP SIGNATURE-----
-
---------------enig9F631C152E8C64313B7D862E--
+Beware that text files in test-memcpy.tar.bz2 seem to have
+simple_memcpy / builtin_memcpy / memcpy columns swapped
+(-old and -new files have them in different order).
+--
+vda
