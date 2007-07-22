@@ -1,314 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764113AbXGVJNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764724AbXGVJSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764113AbXGVJNh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 05:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761017AbXGVJN0
+	id S1764724AbXGVJSL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 05:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764549AbXGVJRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 05:13:26 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:51675 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761013AbXGVJNX (ORCPT
+	Sun, 22 Jul 2007 05:17:39 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:40493 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764512AbXGVJRh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 05:13:23 -0400
-Message-ID: <46A31F55.2000009@gmail.com>
-Date: Sun, 22 Jul 2007 11:11:49 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Rene Herman <rene.herman@gmail.com>,
-       Al Boldi <a1426z@gawab.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFH] Partition table recovery
-References: <200707200813.03553.a1426z@gawab.com> <200707201429.34419.a1426z@gawab.com> <20070720113914.GJ22998@lug-owl.de> <200707201522.17270.a1426z@gawab.com> <20070720160614.GG26752@thunk.org> <46A24846.7050803@gmail.com> <20070722011141.GJ26752@thunk.org>
-In-Reply-To: <20070722011141.GJ26752@thunk.org>
-Content-Type: multipart/mixed;
- boundary="------------020807070509090408090102"
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Sun, 22 Jul 2007 05:17:37 -0400
+Subject: Re: [PATCH 3/3] readahead: scale max readahead size depending on
+	memory size
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>, riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
+       Chris Snook <csnook@redhat.com>
+In-Reply-To: <20070722085041.GS11657@kernel.dk>
+References: <20070721210005.000228000@chello.nl>
+	 <20070721210052.497469000@chello.nl> <20070722082434.GR11657@kernel.dk>
+	 <1185093405.20032.205.camel@twins>  <20070722085041.GS11657@kernel.dk>
+Content-Type: text/plain
+Date: Sun, 22 Jul 2007 11:17:32 +0200
+Message-Id: <1185095852.20032.229.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020807070509090408090102
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-
-On 07/22/2007 03:11 AM, Theodore Tso wrote:
-
->> This is a problem. Today the CHS fields in the partition entries don't
->> mean much of anything anymore and Linux happily ignores them but DOS
->> and (hence) Windows 9x do not. From time to time I still have the
->> Windows 98 install that's sitting in a corner of my disk throw a fit
->> just by having set the BIOS from LBA to Large (meaning the geometry the
->> BIOS pretends the disk has changes) for example. Old DOS installs that
->> I keep around for the purpose of hardware testing with the originally
->> supplied drivers make for even more of a "don't touch, don't touch!"
->> thing -- various version of DOS throw fits for various reasons.
+On Sun, 2007-07-22 at 10:50 +0200, Jens Axboe wrote:
+> On Sun, Jul 22 2007, Peter Zijlstra wrote:
+> > On Sun, 2007-07-22 at 10:24 +0200, Jens Axboe wrote:
+> > > On Sat, Jul 21 2007, Peter Zijlstra wrote:
+> > 
+> > > > +static __init int readahead_init(void)
+> > > > +{
+> > > > +	/*
+> > > > +	 * Scale the max readahead window with system memory
+> > > > +	 *
+> > > > +	 *   64M:   128K
+> > > > +	 *  128M:   180K
+> > > > +	 *  256M:   256K
+> > > > +	 *  512M:   360K
+> > > > +	 *    1G:   512K
+> > > > +	 *    2G:   724K
+> > > > +	 *    4G:  1024K
+> > > > +	 *    8G:  1448K
+> > > > +	 *   16G:  2048K
+> > > > +	 */
+> > > > +	ra_pages = int_sqrt(totalram_pages/16);
+> > > > +	if (ra_pages > (2 << (20 - PAGE_SHIFT)))
+> > > > +		ra_pages = 2 << (20 - PAGE_SHIFT);
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > 
+> > > How did you come up with these numbers?
+> > 
+> > Well, most other places in the kernel where we scale by memory size we
+> > use the a sqrt curve, and the specific scale was the result of some
+> > fiddling, these numbers looked sane to me, nothing special.
+> > 
+> > Would you suggest a different set, and if so, do you have any rationale
+> > for them?
 > 
-> This is true, but that's due to the fundamentally broken nature of CHS.
-> You need them to boot, and that's about it.  I will say up front that I
-> don't particularly care about legacy operating system such as DOS,
-> Windows 98, or Minix 3.  So the idea of simply having the number of heads
-> and sectors in the partition header is that we can reconstruct CHS fields
-> such that it is likely with modern hardware you will get it right.
+> I just wish you had a rationale behind them, I don't think it's that
+> great of a series.
 
-Well, I still don't believe this all to be a great idea but it was sort of 
-fun so the attached does largely what you want -- build a list of all data 
-partitions.
+Well, I was quite ignorant of the issues you just pointed out. Thanks
+those do indeed provide basis for a more solid set.
 
-The heads/sectors fields it for now just gets from the HDIO_GETGEO call. A 
-better source would be guessing the values from the partition table itself 
-but that _also_ doesn't make too much sense. If you're reconstructing a 
-sanitized version of the table anyway, it makes better sense to reconstruct 
-it with the values HDIO_GETGEO returns at restoration time.
+>  I agree with the low point of 128k.
 
-I kept your suggested format, but in fact, the 64-bit "start" value seems 
-not very useful if we're getting the value from a 32-bit field in the old 
-partition tables anyway. With that shrunk down to 32-bit again, there would 
-be enough room for the complete partition table entry...
+Perhaps that should be enforced then, because currently a system with
+<64M will get less.
 
-> For ancient systems that do all sorts of weird things such as ECHS,
-> etc., yeah, you're pretty much doomed, and the bigger danger comes
-> from futzing with BIOS settings, et. al.  But it's 2007, gosh darn it!
-> "Here's a quarter, kid, buy yourself a real computer".  :-)
+>  Then it'd be sane
+> to try and determine what the upper limit of ra window size goodness is,
+> which is probably impossible since it depends on the hardware a lot. But
+> lets just say the upper value is 2mb, then I think it's pretty silly
+> _not_ to use 2mb on a 1g machine for instance. So more aggressive
+> scaling.
 
-Thanks, but real computers won't host my ISA cards...
+Right, I was being a little conservative here.
 
-> Yes, I'm very aware of the extended partitioning scheme mess.  What I
-> was proposing to back up here is only the real partitions, not the
-> fake extended partitions.  The idea is to store *just* enough
-> information so that a partition table manager can recover the
-> partition tables in such a way that the original filesystem
-> information can be recovered.
+> Then there's the relationship between nr of requests and ra size. When
+> you leave everything up to a simple sqrt of total_ram type thing, then
+> you are sure to hit stupid values that cause a queue size of a number of
+> full requests, plus a small one at the end. Clearly not optimal!
 
-This should do I guess. It enters all data partitions into the list, in the 
-order in which they are encountered and sets a flag to signify that a 
-partition was a logical rather than primary. Another option would be to just 
-reserve the first 4 entries for the primaries and the rest for the logicals 
-but this saves entries if there are fewer than 4 primaries and was in fact 
-easier...
+And this is where Wu's point of power of two series comes into play,
+right?
 
-The program enters partitions in what should be the same order as Linux 
-itself does. Primaries from slot 0 to 3 as normal (but not backed up to 
-entry 0 to 3 as said -- the LOGICAL flag indentifies them), extended 
-partitions in the MBR in the order as encountered, with the logicals in the 
-second-level table as encountered, and following only the first extented in 
-the second-level table.
+So something like:
 
-Made it into a generic C program -- didn't look at e2fsprogs sources yet.
-
-Need to be off now and haven't yet stared at this as long as I'd like so 
-don't slap me if I've left a few bugs in (although it seems to work nicely). 
-The program dumps the backup sector to stdout -- it's ofcourse easy to 
-change it to print the entries out so they're easy to compare against, say, 
-"fdisk -l -us".
-
-Oh, and once you've looked at it, please throw it away. As said, I still 
-don't think it's a great idea ;-)
-
-Rene.
+  roundup_pow_of_two(int_sqrt((totalram_pages << (PAGE_SHIFT-10))))
 
 
---------------020807070509090408090102
-Content-Type: text/plain;
- name="backup.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="backup.c"
+		memory in MB		RA window in KB
+                            64                            128
+                           128                            256
+                           256                            256
+                           512                            512
+                          1024                            512
+                          2048                           1024
+                          4096                           1024
+                          8192                           2048
+                         16384                           2048
+                         32768                           4096
+                         65536                           4096
 
-/*
- * Public Domain 2007, Rene Herman
- *
- * gcc -W -Wall -DTEST -D_LARGEFILE64_SOURCE -o backup backup.c
- *
- */
 
-#include <stdlib.h>
 
-enum {
-	DOS_EXTENDED   = 0x05,
-	WIN98_EXTENDED = 0x0f,
-	LINUX_EXTENDED = 0x85,
-};
 
-struct partition {
-        unsigned char boot_ind;
-	unsigned char __1[3];
-        unsigned char sys_ind;
-	unsigned char __2[3];
-        unsigned int start;
-        unsigned int size;
-} __attribute__((packed));
-
-struct entry {
-	unsigned char flags;
-	unsigned char type;
-	unsigned short __1;
-	unsigned long long start;
-	unsigned int size;
-} __attribute__((packed));
-
-enum {
-	ENTRY_FLAG_LOGICAL  = 0x01,
-	ENTRY_FLAG_BOOTABLE = 0x80,
-};
-
-struct backup {
-	unsigned char signature[8];
-	unsigned short type;
-	unsigned char heads;
-	unsigned char sectors;
-	unsigned char count;
-	unsigned char __1[3];
-	struct entry table[31];
-} __attribute__((packed));
-
-#define BACKUP_SIGNATURE "PARTBAK1"
-
-enum {
-	BACKUP_TYPE_MBR = 1,
-};
-
-struct backup backup = {
-	.signature = BACKUP_SIGNATURE,
-	.type	   = BACKUP_TYPE_MBR,
-};
-
-int is_extended(struct partition *entry)
-{
-	int ret = 0;
-
-	switch (entry->sys_ind) {
-	case DOS_EXTENDED:
-	case WIN98_EXTENDED:
-	case LINUX_EXTENDED:
-		ret = 1;
-	}
-	return ret;
-}
-
-unsigned char *get_sector(unsigned int n);
-void put_sector(unsigned char *sector);
-
-int do_sector(unsigned int offset, unsigned int start)
-{
-	unsigned char *sector;
-	struct partition *partition;
-	struct partition *extended = NULL;
-
-	start += offset;
-	sector = get_sector(start);
-	if (!sector) 
-		return -1;
-
-	if (sector[510] != 0x55 || sector[511] != 0xaa) {
-		put_sector(sector);
-		return -1;
-	}
-
-	partition = (struct partition *)(sector + 510 - 4 * sizeof *partition);
-	do {
-		struct entry *entry;
-
-		if (!partition->size)
-			continue;
-
-		if (is_extended(partition)) {
-			if (!offset)
-				do_sector(partition->start, 0);
-			else if (!extended)
-				extended = partition;
-			continue;
-		}
-		entry = backup.table + backup.count++;
-
-		entry->flags = partition->boot_ind;
-		if (offset)
-			entry->flags |= ENTRY_FLAG_LOGICAL;
-		entry->type  = partition->sys_ind;
-		entry->start = start + partition->start;
-		entry->size  = partition->size;
-
-	} while (++partition < (struct partition *)(sector + 510));
-
-	if (extended)
-		do_sector(offset, extended->start);
-
-	put_sector(sector);
-	return 0;
-}
-
-#ifdef TEST
-#include <stdio.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include <linux/hdreg.h>
-
-int fd;
-
-unsigned char *get_sector(unsigned int n)
-{
-	unsigned char *sector = malloc(512);
-
-	if (!sector)
-		return NULL;
-
-	if (lseek64(fd, (off64_t)n << 9, SEEK_SET) < 0)
-		goto free;
-
-	if (read(fd, sector, 512) != 512) {
-  free:		
-		free(sector);
-		sector = NULL;
-	}
-	return sector;
-}
-
-void put_sector(unsigned char *sector)
-{
-	free(sector);
-}
-
-int main(int argc, char *argv[])
-{
-	struct stat buf;
-	struct hd_geometry geometry;
-
-	if (argc != 2) {
-		printf("%s <blkdev>\n", argv[0]);
-		return EXIT_FAILURE;
-	}
-	fd = open(argv[1], O_RDONLY);
-	if (fd < 0) {
-		perror("open");
-		return EXIT_FAILURE;
-	}
-	if (fstat(fd, &buf) < 0 || !S_ISBLK(buf.st_mode)) {
-		perror("stat");
-		return EXIT_FAILURE;
-	}
-	if (ioctl(fd, HDIO_GETGEO, &geometry) == 0) {
-		backup.heads = geometry.heads;
-		backup.sectors = geometry.sectors;
-	}
-	if (do_sector(0, 0) < 0)
-		return EXIT_FAILURE;
-
-	if (close(fd) < 0) {
-		perror("close");
-		return EXIT_FAILURE;
-	}
-	if (write(STDOUT_FILENO, &backup, sizeof backup) != sizeof backup) {
-		perror("write");
-		return EXIT_FAILURE;
-	}
-	return EXIT_SUCCESS;
-}
-#endif
-
---------------020807070509090408090102--
