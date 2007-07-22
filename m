@@ -1,314 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbXGVQwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbXGVQxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760387AbXGVQwR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 12:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755599AbXGVQwG
+	id S1761509AbXGVQxE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 12:53:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbXGVQwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 12:52:06 -0400
-Received: from mx.fr.bfs.de ([194.95.226.137]:54443 "EHLO mail.fr.bfs.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755211AbXGVQwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 12:52:04 -0400
-Message-ID: <46A38B1E.3090605@bfs.de>
-Date: Sun, 22 Jul 2007 18:51:42 +0200
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: crash with 2.6.22.1 crash:ll_rw_blk.c blk_remove_plug()
-References: <469DD37C.8050200@bfs.de> <20070718103342.GI11657@kernel.dk> <469DF233.5080902@bfs.de> <20070718110724.GN11657@kernel.dk> <469E072E.7080400@bfs.de> <20070718123142.GV11657@kernel.dk>
-In-Reply-To: <20070718123142.GV11657@kernel.dk>
-Content-Type: multipart/mixed;
- boundary="------------060709070501040109030508"
+	Sun, 22 Jul 2007 12:52:53 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:40205 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755003AbXGVQww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 12:52:52 -0400
+Date: Sun, 22 Jul 2007 18:52:44 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Nicolas Pitre <nico@cam.org>
+Subject: [ANNOUNCE] SDIO soon in mainline
+Message-ID: <20070722185244.587d5bdc@poseidon.drzeus.cx>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060709070501040109030508
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+I am happy to announce that SDIO support will soon be a standard
+feature in Linux. No more proprietary stacks with all the troubles
+(legal and technical) that go with them.
 
-hello all,
-on my asus notebook tm620 there is a crash with 2.6.22 and 2.6.21
+The new code is written from scratch by yours truly and Nicolas Pitre.
+There were several stacks out there that were recently made available
+under the GPL, but none of them were in any shape to be merged into the
+kernel.
 
-....
-Using IPI Shortcut mode
-WARNING: at block/ll_rw_blk.c:1575 blk_remove_plug()
- [<c01ac87e>] blk_remove_plug+0x36/0x5a
- [<c01ac8b6>] __generic_unplug_device+0x14/0x1f
- [<c01ad587>] __make_request+0x39b/0x49c
- [<c01abc8c>] generic_make_request+0x228/0x255
- [<c01adb54>] submit_bio+0xa5/0xac
- [<c013e233>] mempool_alloc+0x37/0xae
- [<c01314dc>] submit+0xc2/0x11d
- [<c0131585>] bio_read_page+0x24/0x27
- [<c013188b>] swsusp_check+0x4f/0xaf
- [<c012f6c2>] software_resume+0x5f/0x108
- [<c037867e>] kernel_init+0xb0/0x212
- [<c0103a16>] ret_from_fork+0x6/0x1c
- [<c03785ce>] kernel_init+0x0/0x212
- [<c03785ce>] kernel_init+0x0/0x212
- [<c010465b>] kernel_thread_helper+0x7/0x10
- =======================
-Freeing unused kernel memory: 272k freed
-....
+Current status is that basic functionality is in place. There is a
+driver model (with device matching and module auto-loading) and
+functions for easy register access. It is also possible to receive
+interrupts from the card.
 
-I attached two files with the kernel bootmessage
+There is only one driver in the tree right now (for the standard GPS
+interface), but it should be complete enough for everyone to see how
+the API works.
 
-1. bug.txt.gz
- kernel 2.6.22.1 created with netconsole, last lines were missing i added them by hand
+The pieces still missing are mostly performance related:
 
-2. out.txt.gz
-  simple a dmesg from kernel 2.6.18, works fine
+- No clock speed change.
 
+- No wide bus support
 
-additional observations:
-removing 'resume=/dev/hda1' from grub lets the crash disappear but the drive still does not work because
-ata_id[772]: main: HDIO_GET_IDENTITY failed for '/dev/.tmp-3-0'
+- Interrupts are polled
 
-there is a bug in the hd detection code:
-2.6.22.1
-hda: 8032MB, CHS=1024/255/63
- hda: hda1 hda2 hda3
- hda: p2 exceeds device capacity
- hda: p3 exceeds device capacity
+- No support for combo (mem+IO) cards
 
-2.6.18
-hda: 39070080 sectors (20003 MB), CHS=38760/16/63, UDMA(100)
-hda: cache flushes supported
- hda: hda1 hda2 hda3
-Probing IDE interface ide1...
+The last point is unlikely to change as neither Nicolas nor I currently
+possess such a card. As usual, patches/hardware is welcome.
 
+So what we'd like to see now is extensive testing. Try the stack out on
+every MMC controller you can find and review as much of the code as
+possible. With some luck, we'll be able to get this ready in time for
+the next merge window.
 
-here the output from fdisk:
+You can find the code in -mm and as just the SDIO stuff on top of
+Linus' tree:
 
- fdisk -l
+git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git#sdio
 
-Disk /dev/hda: 20.0 GB, 20003880960 bytes
-255 heads, 63 sectors/track, 2432 cylinders
-Units = cylinders of 16065 * 512 = 8225280 bytes
+(PS. I've posted this both to LKML and LAKML. Interested readers should
+probably check both lists for replies)
 
-   Device Boot      Start         End      Blocks   Id  System
-/dev/hda1               1         131     1052226   82  Linux swap / Solaris
-/dev/hda2   *         132        1437    10490445   83  Linux
-/dev/hda3            1438        2432     7992337+  83  Linux
+Rgds
+-- 
+     -- Pierre Ossman
 
-
-
-is it possible that this leads to a chain of events causing the crash in ll_rw_blk.c ?
-
-if someone is interested in the .config please mail me directly, i have not subscribed the lkml.
-
-re,
- wh
-
-
-
---------------060709070501040109030508
-Content-Type: application/x-gzip;
- name="bug.txt.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="bug.txt.gz"
-
-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
-JwAA
---------------060709070501040109030508
-Content-Type: application/x-gzip;
- name="out.txt.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="out.txt.gz"
-
-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
-a86ZwUAAAA==
---------------060709070501040109030508--
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
