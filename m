@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764769AbXGVUpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764881AbXGVUrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764769AbXGVUpx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 16:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763003AbXGVUpq
+	id S1764881AbXGVUrU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 16:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763003AbXGVUrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 16:45:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:58816 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760632AbXGVUpp (ORCPT
+	Sun, 22 Jul 2007 16:47:06 -0400
+Received: from lazybastard.de ([212.112.238.170]:38448 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763186AbXGVUrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 16:45:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fnJPyW3+BF3yuSONBZpVo4KUDY4xi+e3cLtsCgcRW8fqQjrnEn8zby04zOeyYOHpR3Zt/7XzQGQWo7ubjzYaXkV31e0+r8X0k7bkrWwF5hMHFfqnLRTPRjFtMar6EtmLB/hqP5G1TeNknqgNtmzEGhdM20z8KGfiDH4sQ7ELm3E=
-Message-ID: <6101e8c40707221345gc24ed3o5ef3d379b85b400e@mail.gmail.com>
-Date: Sun, 22 Jul 2007 22:45:44 +0200
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: Fwd: [ANNOUNCE][GIT PATCH] Kconfig.cpu cosmetics
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0707222235130.32367@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Jul 2007 16:47:05 -0400
+Date: Sun, 22 Jul 2007 22:43:25 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: drivers/mtd/devices/doc2000.c - address of 'eccbuf' will always evaluate as 'true' , warnings
+Message-ID: <20070722204325.GB11479@lazybastard.org>
+References: <46A349E6.3030207@googlemail.com> <20070722193449.GA11479@lazybastard.org> <46A3BE29.50501@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <6101e8c40707221311l19a7e39r36b99bcb2dcaaae1@mail.gmail.com>
-	 <6101e8c40707221316t744c7c15pc7ed8f179e0bab25@mail.gmail.com>
-	 <Pine.LNX.4.64.0707222235130.32367@fbirervta.pbzchgretzou.qr>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46A3BE29.50501@googlemail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/22/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
-> On Jul 22 2007 22:16, Oliver Pinter wrote:
-> > Hi all!
-> >
-> > Here is one patch, Kconfig.cpu, this patch add the Pentium D processor
-> > for help, because number of person has the question: I have Pentium D,
-> > and which CPU chose  I.
-> >
-> > arch/i386/Kconfig.cpu |   18 +++++++++---------
-> > 1 files changed, 9 insertions(+), 9 deletions(-)
->
-> But why move the config entry?
->
+On Sun, 22 July 2007 22:29:29 +0200, Gabriel C wrote:
+> 
+> @@ -896,25 +896,6 @@ static int doc_write(struct mtd_info *mtd, loff_t to, size_t len,
+>  		/* Let the caller know we completed it */
+>  		*retlen += len;
+>  
+> -		if (eccbuf) {
+> -			unsigned char x[8];
+> -			size_t dummy;
+> -			int ret;
+> -
+> -			/* Write the ECC data to flash */
+> -			for (di=0; di<6; di++)
+> -				x[di] = eccbuf[di];
+> -
+> -			x[6]=0x55;
+> -			x[7]=0x55;
+> -
+> -			ret = doc_write_oob_nolock(mtd, to, 8, &dummy, x);
+> -			if (ret) {
+> -				mutex_unlock(&this->lock);
+> -				return ret;
+> -			}
+> -		}
+> -
+>  		to += len;
+>  		left -= len;
+>  		buf += len;
 
-I thinked, sorted the items by time-line:
-the old sort im Kconfig is i386..Pentium{I,II,III}..Core2..Pentium4
-and the time line is    93 .. 95-99 .. 2006 .. 2001
+You should remove the condition, but not the conditional code.
 
-and the new sort is:
-... Pentium4 .. Core2
+Jörn
 
-as the CPU-s manufactured.
-
-
->
->
->         Jan
-> --
->
-
-Thanks
-Oliver
+-- 
+A quarrel is quickly settled when deserted by one party; there is
+no battle unless there be two.
+-- Seneca
