@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbXGVNys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbXGVNz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbXGVNys (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 09:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbXGVNyi
+	id S1753379AbXGVNz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 09:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXGVNzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 09:54:38 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:30173 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbXGVNyh (ORCPT
+	Sun, 22 Jul 2007 09:55:06 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48625 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751363AbXGVNzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 09:54:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=tl30xODeef8mrpImI/r1Xv6Zk5736ntl2kPTSl9xcEWzcPK4TBE/+5HyumuFszjkJ9+Zf4GEv0N8tEUH1OqhITbyT7XwBBPuIzXBsIO6Ybh8aEIyYa7PjOBgoLqB0fvzdqhmwiTQGsmqwRnFIudjUOIpS4CEzWAWW/GShQuN1BQ=
-Message-ID: <46A36115.3070600@googlemail.com>
-Date: Sun, 22 Jul 2007 15:52:21 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Sun, 22 Jul 2007 09:55:01 -0400
+X-Sasl-enc: h++5+w8arB4cg8O2ZS6t/64XHqsAYNcwL3Iei+1O8co2 1185112499
+Message-ID: <46A362CC.1030600@imap.cc>
+Date: Sun, 22 Jul 2007 15:59:40 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Lieven Willems <lw_linux@hotmail.com>, Alan Cox <alan@redhat.com>,
-       linux-scsi@vger.kernel.org
-Subject: drivers/scsi/sym53c416.c - address of 'sym53c416*' will always evaluate
- as 'true' , warnings
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: processor family setting for Pentium D
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2B1F7B2F6C9B8DA447982B4F"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2B1F7B2F6C9B8DA447982B4F
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-I got this warnings on current git with gcc 4.2.1 :
+Probably a stupid question, but I spent some time searching the net
+for an answer without success:
+
+What is the correct setting of the "Processor family" configuration
+option for a 32 bit kernel which is going to run on an Intel
+Pentium D 940 processor (cpu family 15, model 6)? It doesn't seem
+to fit any of the available selections.
+
+More generally, what is the correct way of selecting the processor
+family option for a CPU whose name doesn't appear anywhere in the
+prompts or help texts in arch/i386/Kconfig.cpu? I guess there must
+be a way of deducing it from the content of /proc/cpuinfo, only I
+cannot figure out how.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
-...
+--------------enig2B1F7B2F6C9B8DA447982B4F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-drivers/scsi/sym53c416.c: In function 'sym53c416_detect':
-drivers/scsi/sym53c416.c:638: warning: the address of 'sym53c416' will always evaluate as 'true'
-drivers/scsi/sym53c416.c:644: warning: the address of 'sym53c416_1' will always evaluate as 'true'
-drivers/scsi/sym53c416.c:650: warning: the address of 'sym53c416_2' will always evaluate as 'true'
-drivers/scsi/sym53c416.c:656: warning: the address of 'sym53c416_3' will always evaluate as 'true'
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-...
+iD8DBQFGo2LVMdB4Whm86/kRAtuPAJ4wvnDlDbs+ZbERtBltL20LG+fbfQCfT+rS
+Hzu6v9lsCdFWqTm2cVwGumk=
+=Q2TH
+-----END PGP SIGNATURE-----
 
-
-Regards,
-
-Gabriel C
+--------------enig2B1F7B2F6C9B8DA447982B4F--
