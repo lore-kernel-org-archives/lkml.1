@@ -1,140 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbXGVPsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761085AbXGVPsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760192AbXGVPsR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 11:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757736AbXGVPow
+	id S1761085AbXGVPsp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 11:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759360AbXGVPo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 11:44:52 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:60825 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758969AbXGVPov (ORCPT
+	Sun, 22 Jul 2007 11:44:57 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:8114 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759159AbXGVPoz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 11:44:51 -0400
+	Sun, 22 Jul 2007 11:44:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
-        b=lKPNxYM0/H3PUUmN/Enclodo8EFdbT2anb3FGlCKA+w5i4DO+MaFWg0m8xQrTxlROt4WprWE6Ql6Og8L2Xaqt6xW/gBVX0hc3fMBjypY7VDkED9e9Z+GLKSkGsR7qpX3pcOHQ5AP2WkWBocWjljLWp4um8nqrCg53Lsm7oX/n2c=
-Message-Id: <20070722153416.233445834@gmail.com>
+        b=txu+1GdXU1NUDeiEoJC6njqxOZPDZyUlqv8rL9k0s7ft8Cn1TwtqqUGsTMUOF3nT4pS9DeMUZoGqBTTH7yXuW0Fxqaeo4k5a5xXyx7N05VUNwa171Rt5Iqwgak56C5LjOZcSY+5l5TA3Tuw6YxPYKRDDxdfRD4pCHOPBPRdBV6Y=
+Message-Id: <20070722153420.859827955@gmail.com>
 References: <20070722153312.083951746@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Jul 2007 00:33:20 +0900
+Date: Mon, 23 Jul 2007 00:33:21 +0900
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Andi Kleen <andi@firstfloor.org>, Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [patch 8/9] mce: fix cpu hotplug error handling
-Content-Disposition: inline; filename=mce-cpuhotplug.patch
+Cc: Ashok Raj <ashok.raj@intel.com>, Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [patch 9/9] intel_cacheinfo: fix cpu hotplug error handling
+Content-Disposition: inline; filename=intel-cacheinfo-cpu-hotplug.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+- Fix resource leakage in error case within detect_cache_attributes()
 
-- Clear kobject in percpu device_mce before calling sysdev_register() with
+- Don't register hotcpu notifier when cache_add_dev() returns error
 
-  Because mce_create_device() may fail and it leaves kobject filled with
-  junk. It will be the problem when mce_create_device() will be called
-  next time.
+- Introduce cache_dev_map cpumask to track whether cache interface for
+  CPU is successfully added by cache_add_dev() or not.
 
-- Fix error handling in mce_create_device()
+  cache_add_dev() may fail with out of memory error. In order to
+  avoid cache_remove_dev() with that uninitialized cache interface when
+  CPU_DEAD event is delivered we need to have the cache_dev_map cpumask.
 
-  Error handling should not do sysdev_remove_file() with not yet added
-  attributes.
+  (We cannot change cache_add_dev() from CPU_ONLINE event handler
+  to CPU_UP_PREPARE event handler. Because cache_add_dev() needs
+  to do cpuid and store the results with its CPU online.)
 
-- Don't register hotcpu notifier when mce_create_device() returns error
-
-- Do mce_create_device() in CPU_UP_PREPARE instead of CPU_ONLINE
-
-Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Ashok Raj <ashok.raj@intel.com>
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
 ---
- arch/x86_64/kernel/mce.c |   39 +++++++++++++++++++++++++++++----------
- 1 file changed, 29 insertions(+), 10 deletions(-)
+ arch/i386/kernel/cpu/intel_cacheinfo.c |   64 +++++++++++++++++++++++----------
+ 1 file changed, 45 insertions(+), 19 deletions(-)
 
-Index: 2.6-git/arch/x86_64/kernel/mce.c
+Index: 2.6-git/arch/i386/kernel/cpu/intel_cacheinfo.c
 ===================================================================
---- 2.6-git.orig/arch/x86_64/kernel/mce.c
-+++ 2.6-git/arch/x86_64/kernel/mce.c
-@@ -690,16 +690,29 @@ static __cpuinit int mce_create_device(u
- 	if (!mce_available(&cpu_data[cpu]))
- 		return -EIO;
+--- 2.6-git.orig/arch/i386/kernel/cpu/intel_cacheinfo.c
++++ 2.6-git/arch/i386/kernel/cpu/intel_cacheinfo.c
+@@ -466,6 +466,11 @@ static void __init cache_remove_shared_c
  
-+	memset(&per_cpu(device_mce, cpu).kobj, 0, sizeof(struct kobject));
- 	per_cpu(device_mce,cpu).id = cpu;
- 	per_cpu(device_mce,cpu).cls = &mce_sysclass;
+ static void free_cache_attributes(unsigned int cpu)
+ {
++	int i;
++
++	for (i = 0; i < num_cache_leaves; i++)
++		cache_remove_shared_cpu_map(cpu, i);
++
+ 	kfree(cpuid4_info[cpu]);
+ 	cpuid4_info[cpu] = NULL;
+ }
+@@ -473,8 +478,8 @@ static void free_cache_attributes(unsign
+ static int __cpuinit detect_cache_attributes(unsigned int cpu)
+ {
+ 	struct _cpuid4_info	*this_leaf;
+-	unsigned long 		j;
+-	int 			retval;
++	unsigned long		j;
++	int			retval;
+ 	cpumask_t		oldmask;
  
- 	err = sysdev_register(&per_cpu(device_mce,cpu));
+ 	if (num_cache_leaves == 0)
+@@ -491,19 +496,26 @@ static int __cpuinit detect_cache_attrib
+ 		goto out;
+ 
+ 	/* Do cpuid and store the results */
+-	retval = 0;
+ 	for (j = 0; j < num_cache_leaves; j++) {
+ 		this_leaf = CPUID4_INFO_IDX(cpu, j);
+ 		retval = cpuid4_cache_lookup(j, this_leaf);
+-		if (unlikely(retval < 0))
++		if (unlikely(retval < 0)) {
++			int i;
++
++			for (i = 0; i < j; i++)
++				cache_remove_shared_cpu_map(cpu, i);
+ 			break;
++		}
+ 		cache_shared_cpu_map_setup(cpu, j);
+ 	}
+ 	set_cpus_allowed(current, oldmask);
+ 
+ out:
+-	if (retval)
+-		free_cache_attributes(cpu);
++	if (retval) {
++		kfree(cpuid4_info[cpu]);
++		cpuid4_info[cpu] = NULL;
++	}
++
+ 	return retval;
+ }
+ 
+@@ -647,13 +659,14 @@ static void cpuid4_cache_sysfs_exit(unsi
+ 
+ static int __cpuinit cpuid4_cache_sysfs_init(unsigned int cpu)
+ {
++	int err;
+ 
+ 	if (num_cache_leaves == 0)
+ 		return -ENOENT;
+ 
+-	detect_cache_attributes(cpu);
+-	if (cpuid4_info[cpu] == NULL)
+-		return -ENOENT;
++	err = detect_cache_attributes(cpu);
 +	if (err)
 +		return err;
+ 
+ 	/* Allocate all required memory */
+ 	cache_kobject[cpu] = kzalloc(sizeof(struct kobject), GFP_KERNEL);
+@@ -672,13 +685,15 @@ err_out:
+ 	return -ENOMEM;
+ }
+ 
++static cpumask_t cache_dev_map = CPU_MASK_NONE;
 +
-+	for (i = 0; mce_attributes[i]; i++) {
-+		err = sysdev_create_file(&per_cpu(device_mce,cpu),
-+					 mce_attributes[i]);
-+		if (err)
-+			goto error;
+ /* Add/Remove cache interface for CPU device */
+ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
+ {
+ 	unsigned int cpu = sys_dev->id;
+ 	unsigned long i, j;
+ 	struct _index_kobject *this_object;
+-	int retval = 0;
++	int retval;
+ 
+ 	retval = cpuid4_cache_sysfs_init(cpu);
+ 	if (unlikely(retval < 0))
+@@ -688,6 +703,10 @@ static int __cpuinit cache_add_dev(struc
+ 	kobject_set_name(cache_kobject[cpu], "%s", "cache");
+ 	cache_kobject[cpu]->ktype = &ktype_percpu_entry;
+ 	retval = kobject_register(cache_kobject[cpu]);
++	if (retval < 0) {
++		cpuid4_cache_sysfs_exit(cpu);
++		return retval;
 +	}
  
--	if (!err) {
--		for (i = 0; mce_attributes[i]; i++)
--			sysdev_create_file(&per_cpu(device_mce,cpu),
--				mce_attributes[i]);
-+	return 0;
-+error:
-+	while (i--) {
-+		sysdev_remove_file(&per_cpu(device_mce,cpu),
-+				   mce_attributes[i]);
+ 	for (i = 0; i < num_cache_leaves; i++) {
+ 		this_object = INDEX_KOBJECT_PTR(cpu,i);
+@@ -707,6 +726,9 @@ static int __cpuinit cache_add_dev(struc
+ 			break;
+ 		}
  	}
-+	sysdev_unregister(&per_cpu(device_mce,cpu));
++	if (!retval)
++		cpu_set(cpu, cache_dev_map);
 +
- 	return err;
+ 	return retval;
  }
  
-@@ -711,7 +724,6 @@ static void mce_remove_device(unsigned i
- 		sysdev_remove_file(&per_cpu(device_mce,cpu),
- 			mce_attributes[i]);
- 	sysdev_unregister(&per_cpu(device_mce,cpu));
--	memset(&per_cpu(device_mce, cpu).kobj, 0, sizeof(struct kobject));
+@@ -715,13 +737,14 @@ static void __cpuexit cache_remove_dev(s
+ 	unsigned int cpu = sys_dev->id;
+ 	unsigned long i;
+ 
+-	for (i = 0; i < num_cache_leaves; i++) {
+-		cache_remove_shared_cpu_map(cpu, i);
++	if (!cpu_isset(cpu, cache_dev_map))
++		return;
++	cpu_clear(cpu, cache_dev_map);
++
++	for (i = 0; i < num_cache_leaves; i++)
+ 		kobject_unregister(&(INDEX_KOBJECT_PTR(cpu,i)->kobj));
+-	}
+ 	kobject_unregister(cache_kobject[cpu]);
+ 	cpuid4_cache_sysfs_exit(cpu);
+-	return;
  }
  
- /* Get notified when a cpu comes on/off. Be hotplug friendly. */
-@@ -719,18 +731,21 @@ static int
- mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ static int __cpuinit cacheinfo_cpu_callback(struct notifier_block *nfb,
+@@ -746,7 +769,7 @@ static int __cpuinit cacheinfo_cpu_callb
+ 
+ static struct notifier_block __cpuinitdata cacheinfo_cpu_notifier =
  {
- 	unsigned int cpu = (unsigned long)hcpu;
-+	int err = 0;
+-    .notifier_call = cacheinfo_cpu_callback,
++	.notifier_call = cacheinfo_cpu_callback,
+ };
  
- 	switch (action) {
--	case CPU_ONLINE:
--	case CPU_ONLINE_FROZEN:
--		mce_create_device(cpu);
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
-+		err = mce_create_device(cpu);
- 		break;
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
- 		mce_remove_device(cpu);
- 		break;
- 	}
--	return NOTIFY_OK;
-+	return err ? NOTIFY_BAD : NOTIFY_OK;
- }
+ static int __cpuinit cache_sysfs_init(void)
+@@ -756,12 +779,15 @@ static int __cpuinit cache_sysfs_init(vo
+ 	if (num_cache_leaves == 0)
+ 		return 0;
  
- static struct notifier_block mce_cpu_notifier = {
-@@ -745,9 +760,13 @@ static __init int mce_init_device(void)
- 	if (!mce_available(&boot_cpu_data))
- 		return -EIO;
- 	err = sysdev_class_register(&mce_sysclass);
-+	if (err)
-+		return err;
- 
+-	register_hotcpu_notifier(&cacheinfo_cpu_notifier);
+-
  	for_each_online_cpu(i) {
--		mce_create_device(i);
-+		err = mce_create_device(i);
+-		cacheinfo_cpu_callback(&cacheinfo_cpu_notifier, CPU_ONLINE,
+-			(void *)(long)i);
++		int err;
++		struct sys_device *sys_dev = get_cpu_sysdev(i);
++
++		err = cache_add_dev(sys_dev);
 +		if (err)
 +			return err;
  	}
++	register_hotcpu_notifier(&cacheinfo_cpu_notifier);
  
- 	register_hotcpu_notifier(&mce_cpu_notifier);
+ 	return 0;
+ }
 
 -- 
