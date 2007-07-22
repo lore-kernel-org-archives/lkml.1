@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbXGVVzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbXGVWBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762856AbXGVVzq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 17:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXGVVzj
+	id S1757630AbXGVWBX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 18:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765192AbXGVWAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 17:55:39 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:42158
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755443AbXGVVzi (ORCPT
+	Sun, 22 Jul 2007 18:00:54 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57503 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765190AbXGVWAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 17:55:38 -0400
-Date: Sun, 22 Jul 2007 14:54:09 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, jbms@cmu.edu,
-       rjw@sisk.pl, miltonm@bga.com, ying.huang@intel.com,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <Pine.LNX.4.44L0.0707221608140.16031-100000@netrider.rowland.org>
-Message-ID: <Pine.LNX.4.64.0707221451550.6350@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707221608140.16031-100000@netrider.rowland.org>
+	Sun, 22 Jul 2007 18:00:52 -0400
+Date: Mon, 23 Jul 2007 00:00:50 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Paul Mundt <lethal@linux-sh.org>
+cc: Jon Smirl <jonsmirl@gmail.com>, Git Mailing List <git@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Git tree for old kernels from before the current tree
+In-Reply-To: <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr>
+References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com>
+ <Pine.LNX.4.64.0707222257540.32367@fbirervta.pbzchgretzou.qr>
+ <20070722211314.GA13850@linux-sh.org> <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jul 2007, Alan Stern wrote:
 
-> On Sun, 22 Jul 2007, Miklos Szeredi wrote:
->
->>> The only thing to do is what Rafael has been working on: unfreeze
->>> things, hope the tasks sort themselves out, and try again.
+On Jul 22 2007 23:46, Jan Engelhardt wrote:
+>On Jul 23 2007 06:13, Paul Mundt wrote:
+>>> 
+>>Err, that's crap. Have you even looked at gitweb? There's at least:
 >>
->> Have we some proof, that this will untangle the freezing tasks in a
->> limited time?  Or will it just make the problem harder to trigger?
->
-> Of course there's no proof.  Just the opposite -- if things get hung up
-> the first time, they might get hung up the second time.  And the
-> third...
->
-> But it ought to make the problem harder to trigger.  For the present
-> that's a worthwhile improvement.
+>>git://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
+>>This has trees all the way back to 2.5.0.
 
-it gives the system more tries to find a spot in time where the deadlock 
-doesn't happen, if you find one you can continue.
+Actually back to 2.4.0, including history. That I'd call mission done then :)
 
-but even if things keep getting hung up, at least you are backing out of 
-each try safely and can eventually tell the user "I give up, try shutting 
-some things down and suspending again"
 
-David Lang
+	Jan
+-- 
