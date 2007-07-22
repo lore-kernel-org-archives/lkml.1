@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbXGVX1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbXGVX1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932213AbXGVX1O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 19:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXGVX0z
+	id S932806AbXGVX1f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 19:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761790AbXGVX1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 19:26:55 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:41470 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751401AbXGVX0y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 19:26:54 -0400
-Date: Mon, 23 Jul 2007 01:26:18 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>, Jeff Garzik <jeff@garzik.org>
-Cc: xen-devel@lists.xensource.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: drivers/net/xen-netfront.c: bogus code
-Message-ID: <20070722232618.GO26212@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 22 Jul 2007 19:27:00 -0400
+Received: from systemlinux.org ([83.151.29.59]:57502 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759567AbXGVX07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 19:26:59 -0400
+Date: Mon, 23 Jul 2007 01:23:38 +0200
+From: Andre Noll <maan@systemlinux.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linus 2.6.23-rc1
+Message-ID: <20070722232338.GI30660@skl-net.de>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070722221001.GH30660@skl-net.de> <200707230022.11831.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="itqfrb9Qq3wY07cp"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <200707230022.11831.ak@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted the following bogus code
-in drivers/net/xen-netfront.c:
 
-<--  snip  -->
+--itqfrb9Qq3wY07cp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-...
-static void xennet_alloc_rx_buffers(struct net_device *dev)
-{
-...
-        for (nr_flips = i = 0; ; i++) {
-                skb = __skb_dequeue(&np->rx_batch);
-                if (skb == NULL)
-                        break;
+On 00:22, Andi Kleen wrote:
+> > /usr/bin/ld: section .text [ffffffffff700500 -> ffffffffff7007e3] overl=
+aps section .gnu.version_d [ffffffffff7004d8 -> ffffffffff70050f]
+>=20
+> Does this patch fix it?
 
-                skb->dev = dev;
+Nope, with 0x600 I still get the same error. But it helped to further
+increase VDSO_TEXT_OFFSET to 0xc00. I tried 0x700, 0x800,... and 0xc00
+is the smallest value in this series that makes the error go away, i.e.
+the patch below works for me.
 
-                id = xennet_rxidx(req_prod + i);
+Thanks
+Andre
 
-                BUG_ON(np->rx_skbs[id]);
-                np->rx_skbs[id] = skb;
 
-                ref = gnttab_claim_grant_reference(&np->gref_rx_head);
-                BUG_ON((signed short)ref < 0);
-                np->grant_rx_ref[id] = ref;
+diff --git a/arch/x86_64/vdso/voffset.h b/arch/x86_64/vdso/voffset.h
+index 5304204..61667d5 100644
+--- a/arch/x86_64/vdso/voffset.h
++++ b/arch/x86_64/vdso/voffset.h
+@@ -1 +1 @@
+-#define VDSO_TEXT_OFFSET 0x500
++#define VDSO_TEXT_OFFSET 0xc00
 
-                pfn = page_to_pfn(skb_shinfo(skb)->frags[0].page);
-                vaddr = page_address(skb_shinfo(skb)->frags[0].page);
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
 
-                req = RING_GET_REQUEST(&np->rx, req_prod + i);
-                gnttab_grant_foreign_access_ref(ref,
-                                                np->xbdev->otherend_id,
-                                                pfn_to_mfn(pfn),
-                                                0);
+--itqfrb9Qq3wY07cp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-                req->id = id;
-                req->gref = ref;
-        }
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-        if (nr_flips != 0) {
-...
+iD8DBQFGo+b6Wto1QDEAkw8RArGbAJwJbu+M4aTGgpL+QVfqBZhQKol7CACfe3LS
+rhHR2vbEfgKVR+Qm6cW7ytQ=
+=7A4e
+-----END PGP SIGNATURE-----
 
-<--  snip  -->
-
-Note that "nr_flips" is always 0 in the last line.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--itqfrb9Qq3wY07cp--
