@@ -1,45 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762428AbXGVSlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762332AbXGVSrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762428AbXGVSlr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 14:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbXGVSlk
+	id S1762332AbXGVSrb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 14:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758652AbXGVSrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 14:41:40 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:13262 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757482AbXGVSlk (ORCPT
+	Sun, 22 Jul 2007 14:47:24 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:37178
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758627AbXGVSrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 14:41:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Ktd5QcmNiGQWRCOKn4S6zM4F+yOlmCEfsmGwLlJy0ajmvzznM17zuTTEBgOm/pjVMV8tTHgzQlFhHo1kvIjXKvNsb2/sgiHTjVkntn33dZyVxsSiPcNCxkzEnHJnjdk4o1HCWNVwKnCxeuxYB3xHrhhojgjihNk6l6YPF57LrSk=
-Message-ID: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
-Date: Sun, 22 Jul 2007 19:41:39 +0100
-From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Problems with framebuffer in 2.6.22-git17
-Cc: lethal@users.sourceforge.net
+	Sun, 22 Jul 2007 14:47:23 -0400
+Date: Sun, 22 Jul 2007 20:49:13 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 1/5] kernel/exit.c: Use list_for_each_entry(_safe) instead of list_for_each(_safe)
+Message-ID: <20070722184913.GG27415@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070722184202.GF27415@traven>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070722184202.GF27415@traven>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I ma having problems with the pvr2 fb on the Dreamcast in 2.6.22-git17
-- when the code is executed it appears to lock the Dreamcast up.
+kernel/exit.c: Convert list_for_each(_safe) to
+list_for_each_entry(_safe) in forget_original_parent(), exit_notify()
+and do_wait()
 
-The problem seems to be:
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
- fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
+--
 
-In drivers/video/fbmem.c
+diff --git a/kernel/exit.c b/kernel/exit.c
+index ca6a11b..ac84684 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -680,8 +680,7 @@ reparent_thread(struct task_struct *p, struct task_struct *father, int traced)
+ static void
+ forget_original_parent(struct task_struct *father, struct list_head *to_release)
+ {
+-	struct task_struct *p, *reaper = father;
+-	struct list_head *_p, *_n;
++	struct task_struct *p, *n, *reaper = father;
+ 
+ 	do {
+ 		reaper = next_thread(reaper);
+@@ -699,9 +698,8 @@ forget_original_parent(struct task_struct *father, struct list_head *to_release)
+ 	 *
+ 	 * Search them and reparent children.
+ 	 */
+-	list_for_each_safe(_p, _n, &father->children) {
++	list_for_each_entry_safe(p, n, &father->children, sibling) {
+ 		int ptrace;
+-		p = list_entry(_p, struct task_struct, sibling);
+ 
+ 		ptrace = p->ptrace;
+ 
+@@ -729,8 +727,7 @@ forget_original_parent(struct task_struct *father, struct list_head *to_release)
+ 		if (unlikely(ptrace && p->exit_state == EXIT_ZOMBIE && p->exit_signal == -1))
+ 			list_add(&p->ptrace_list, to_release);
+ 	}
+-	list_for_each_safe(_p, _n, &father->ptrace_children) {
+-		p = list_entry(_p, struct task_struct, ptrace_list);
++	list_for_each_entry_safe(p, n, &father->ptrace_children, ptrace_list) {
+ 		choose_new_parent(p, reaper);
+ 		reparent_thread(p, father, 1);
+ 	}
+@@ -1502,12 +1499,9 @@ repeat:
+ 	tsk = current;
+ 	do {
+ 		struct task_struct *p;
+-		struct list_head *_p;
+ 		int ret;
+ 
+-		list_for_each(_p,&tsk->children) {
+-			p = list_entry(_p, struct task_struct, sibling);
+-
++		list_for_each_entry(p, &tsk->children, sibling) {
+ 			ret = eligible_child(pid, options, p);
+ 			if (!ret)
+ 				continue;
+@@ -1589,9 +1583,8 @@ check_continued:
+ 			}
+ 		}
+ 		if (!flag) {
+-			list_for_each(_p, &tsk->ptrace_children) {
+-				p = list_entry(_p, struct task_struct,
+-						ptrace_list);
++			list_for_each_entry(p, &tsk->ptrace_children,
++					    ptrace_list) {
+ 				if (!eligible_child(pid, options, p))
+ 					continue;
+ 				flag = 1;
 
-This hasn't been an issue before, so are there any recent changes that
-might have caused this?
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-(fb_notifier_call_chain calls a succession of stubs ending in
-__blocking_notifier_call_chain in kernel/sys.c)
-
-Adrian
+             If liberty means anything at all, it means the
+           right to tell people what they do not want to hear
+                            (George Orwell)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
