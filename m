@@ -1,100 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765473AbXGVW31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765596AbXGVWmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765473AbXGVW31 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 18:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759298AbXGVW3S
+	id S1765596AbXGVWmW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 18:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759837AbXGVWmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 18:29:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37412 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759090AbXGVW3R (ORCPT
+	Sun, 22 Jul 2007 18:42:13 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:33047 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759260AbXGVWmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 18:29:17 -0400
-Subject: Re: Power Management framework proposal
-From: Arjan van de Ven <arjan@infradead.org>
-To: david@lang.hm
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707221130380.6350@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
-	 <1185125189.2714.13.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0707221130380.6350@asgard.lang.hm>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 22 Jul 2007 15:27:20 -0700
-Message-Id: <1185143240.2714.24.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Sun, 22 Jul 2007 18:42:12 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Mon, 23 Jul 2007 08:42:17 +1000
+User-Agent: KMail/1.9.6
+Cc: nigel@suspend2.net, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, miltonm@bga.com,
+       ying.huang@intel.com, linux-kernel@vger.kernel.org, david@lang.hm,
+       linux-pm@lists.linux-foundation.org
+References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart49403152.UEObEegZSz";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200707230842.22121.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-22 at 11:56 -0700, david@lang.hm wrote:
-> >
-> > I have a concern with this approach though. It seems to assume that
-> > there is one global thing somewhere that sets the system state; in my
-> > experience that is the wrong approach; in fact there is a very definite
-> > evidence that there are many decisions on power that are to be made
-> > local at a high frequency. An example of this is the processor speed;
-> > the ondemand governer does exactly this for the cpus that can switch
-> > speeds fast; it's just impossible to beat such a local, fast decision
-> > with anything on a global scale.
-> 
-> the intent was not to have one global call that sets the mode on all 
-> devices, but rather have one call for each device/subsystem, just the same 
-> call in each case.
-> 
-> there's also nothing that says that there can only be one thing setting 
-> the mode (although that does mean a fourth call 'report_current_mode()' or 
-> similar is needed). and if you choose to have two pieces of software 
-> managing the same device things could get 'interesting'.
-> 
-> as for the speed that such decisions need to be made.
-> 
-> this API is not saying anything about the speed of the decisions.
-> it's also not saying anything about if the decision makeing is being done 
-> by kernelspace or userspace. it's just providing a common way for whatever 
-> software is doing the decision makeing to find out it's options and set 
-> the modes.
+--nextPart49403152.UEObEegZSz
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Hi Alan.
 
-but it makes for a layer between the device and the setting of the
-modes..  which sort of would defeat the option of having things truely
-local.
+On Monday 23 July 2007 01:26:23 Alan Stern wrote:
+> On Sun, 22 Jul 2007, Nigel Cunningham wrote:
+>=20
+> > Hi.
+> >=20
+> > On Sunday 22 July 2007 02:13:56 Jeremy Maitin-Shepard wrote:
+> > > It seems that you could still potentially get a failure to freeze if =
+one
+> > > FUSE process depends on another, and the one that is frozen second ju=
+st
+> > > happens to be waiting on the one that is frozen first when it is froz=
+en.
+> > > I admit that this situation is unlikely, and perhaps acceptable.
+> > >=20
+> > > A larger concern is that it seems that freezing FUSE processes at all
+> > > _will_ generate deadlocks if a non-synchronous or memory-map-supporti=
+ng
+> > > filesystem is loopback mounted from a FUSE filesystem.  In that case,=
+ if
+> > > you attempt to sync or free memory once FUSE is frozen, you are sure =
+to
+> > > get a deadlock.
+> >=20
+> > Ok. So then (in response to Alan too), how about keeping a tree of moun=
+ts,=20
+> > akin to the device tree, and working from the deepest nodes up? (In=20
+> > conjunction with what I already suggested)?
+>=20
+> Face it, Nigel, this is a losing battle.  You can try to come up with
+> ever-more complex schemes to try and force FUSE into the freezer's
+> framework, but it just won't fit.  Or if it does, the next filesystem
+> to come along will require an even more baroque type of special-case=20
+> handling.
 
-Settings don't mean much in general (in specific cases, maybe), it's the
-requirements that matter. The *intent* matters. Linus forced this into
-cpufreq way back, and while I and perhaps others thought he was just
-being silly, 6 years later it turns out he was absolutely right.
+It does seem to be a losing battle, but I'm wondering whether that's really=
+=20
+because it's an intractable problem, or because people have given up on it=
+=20
+before its time. We are talking about a computer system, so things should b=
+e=20
+predictable.
+=20
+> The general problem is that task A may be in an unfreezable state,
+> waiting for task B to do something, while task B is already frozen. =20
+> Since there's no reasonable way to determine that A really is waiting
+> for B, you're just stuck.  (To make matters worse, A may not even
+> realize which task it is waiting for; it may know only that it's
+> waiting for somebody to do something!)  A and B could be user tasks,=20
+> kernel threads, or one of each.
 
-Maybe something else
-A power policy management framework doesn't need a unified framework (I
-know this for a fact, I'm hoping to release the code within a few
-weeks). A unified interface doesn't even help one single bit: the
-semantics of each part is *extremely* different even if you make it look
-the same; the sameness is only cosmetic.
+I guess I want to persist because all of these issues aren't utterly=20
+unsolvable. It's just that we don't have the infrastructure yet to figure o=
+ut=20
+the solutions to these issues trivially. Take, for example, the locking=20
+issue. If we could call some function to say "What process holds this lock?=
+",=20
+then task A could know that it's waiting on task B and put that information=
+=20
+somewhere. We could then use the information to freeze task B before task A.
 
-The consequences of managing a disk vs managing a cpu vs managing the
-LCD brightness via the X server are all very different. The tradeoffs
-you need to make are all very different. The things you want to control
-are all very different. Trying to force a standard interface makes the
-interface for a specific subsystem go away from the *actual* best
-interface for that subsystem, for no gain since the thing that manages
-the policy needs to have different parts for each *anyway*.
+=20
+> The only thing to do is what Rafael has been working on: unfreeze
+> things, hope the tasks sort themselves out, and try again.
 
+That's what I'm questioning. Is there a more reliable way and we've just gi=
+ven=20
+up too quickly?
 
+Regards,
 
-Now I realize that the needs for "hard small embedded" are different
-from "PC like", and to be honest, I don't think it's entirely possible
-to unify them; I don't think it's even worthwhile to pursue that (look
-at where those attempts have gotten us so far)... but I suspect even in
-the small embedded space a standard, forced and thus unnatural interface
-isn't what is needed.
+Nigel
+=2D-=20
+Nigel Cunningham
+Christian Reformed Church of Cobden
+103 Curdie Street, Cobden 3266, Victoria, Australia
+Ph. +61 3 5595 1185 / +61 417 100 574
+Communal Worship: 11 am Sunday.
 
+--nextPart49403152.UEObEegZSz
+Content-Type: application/pgp-signature
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQBGo91ON0y+n1M3mo0RAh03AKDRmdkrsY1b1GQSRR3mIPlpHtqZZACfS3cL
+Z8GCPQak9O8SuPpS/WxGbRA=
+=5hPA
+-----END PGP SIGNATURE-----
+
+--nextPart49403152.UEObEegZSz--
