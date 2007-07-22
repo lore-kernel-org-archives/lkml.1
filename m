@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbXGVFwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759492AbXGVFyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025AbXGVFwo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 01:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXGVFwg
+	id S1759492AbXGVFyY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 01:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXGVFyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 01:52:36 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:5777 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbXGVFwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 01:52:35 -0400
-Date: Sun, 22 Jul 2007 07:52:36 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Lars Ellenberg <lars@linbit.com>, Andrew Morton <akpm@osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>, drbd-user@linbit.com
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Message-ID: <20070722055235.GQ11657@kernel.dk>
-References: <20070721203819.GA10706@mail.linbit.com> <p73hcnxuxji.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73hcnxuxji.fsf@bingen.suse.de>
+	Sun, 22 Jul 2007 01:54:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46460
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751529AbXGVFyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 01:54:14 -0400
+Date: Sat, 21 Jul 2007 22:54:13 -0700 (PDT)
+Message-Id: <20070721.225413.23605608.davem@davemloft.net>
+To: viro@ftp.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [RFC] Kconfig fun with sparc32/sparc64 rtc drivers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070722054356.GO21668@ftp.linux.org.uk>
+References: <20070720161154.GA17382@infradead.org>
+	<20070721.192251.122832397.davem@davemloft.net>
+	<20070722054356.GO21668@ftp.linux.org.uk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22 2007, Andi Kleen wrote:
-> Lars Ellenberg <lars@linbit.com> writes:
-> > 
-> > Jens, Andrew, anyone: please review,
-> > and give me advice how to proceed from here.
-> 
-> The standard procedure would be to post all the source code in logical
-> pieces on the list for review. Then iterate until all comments are
-> addressed.
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Sun, 22 Jul 2007 06:43:56 +0100
 
-Yep, cleanup the style issues (that make sense) from checkpatch and then
-psot as a series of patches that can be reviewed. Linking to a git tree
-wont get you very far.
+> seems to imply that CONFIG_RTC has no business whatsoever on sparc64 builds,
+> let alone in defconfig - JavaStation had never gone sparc64.  OTOH, we
+> have explicit scanning ISA bus in addition to EBUS in drivers/char/rtc.c
+> in case of __sparc_v9__, so it looks like help above ought to be changed.
+> OTTH, the isa-scanning code looks odd - for comparison, FreeBSD has
+> the same logics for ebus (looks for node called "rtc"), but the isa probe
+> in the same driver (sys/sparc64/sparc64/rtc.c) is
 
--- 
-Jens Axboe
+It doesn't get built on sparc64 any more.
 
+If you look at the current tree:
+
+1) we handle all of the sparc64 RTC stuff in arch/sparc64/kernel/time
+2) all the __sparc_v9__ crap is removed from drivers/char/rtc.c
+3) all the __sparc__ crap is changed to CONFIG_SPARC32 in same
+4) CONFIG_RTC is not longer allows on sparc64, only sparc32 with PCI
