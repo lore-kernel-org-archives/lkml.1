@@ -1,76 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763257AbXGVTrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763763AbXGVTtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763257AbXGVTrU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 15:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758425AbXGVTrG
+	id S1763763AbXGVTtS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 15:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbXGVTtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 15:47:06 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46165 "EHLO
+	Sun, 22 Jul 2007 15:49:11 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46169 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756958AbXGVTrF (ORCPT
+	with ESMTP id S1756799AbXGVTtK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 15:47:05 -0400
-Date: Sun, 22 Jul 2007 21:47:02 +0200 (CEST)
+	Sun, 22 Jul 2007 15:49:10 -0400
+Date: Sun, 22 Jul 2007 21:49:09 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jon Smirl <jonsmirl@gmail.com>
-cc: Git Mailing List <git@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Git help for kernel archeology, suppress diffs caused by CVS
- keyword expansion
-In-Reply-To: <9e4733910707221148g69d7600bk632abb7452ce9c7c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707222139400.15705@fbirervta.pbzchgretzou.qr>
-References: <9e4733910707221148g69d7600bk632abb7452ce9c7c@mail.gmail.com>
+cc: Linus Nilsson <lajnold@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org
+Subject: Re: [PATCH] Documentation: Fix a mispelt "probably" in SubmittingPatches.
+In-Reply-To: <4e63727f0707210849n671122dbp74969594fc04f5c8@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0707222147480.15705@fbirervta.pbzchgretzou.qr>
+References: <4e63727f0707210849n671122dbp74969594fc04f5c8@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jul 22 2007 14:48, Jon Smirl wrote:
->
-> It would really be useful if git diff had an option for suppressing
-> diffs caused by CVS keyword expansion. I run into this problem over
-> and over when trying to recover stuff out of old kernel sources that
-> people checked into CVS and then posted CVS diffs to fulfill their GPL
-> obligations. I sometimes wonder if vendors are doing this on purpose
-> to make it more difficult to recover the changes they made to the
-> code.
->
-> To prevent this in the future, I'd love to see a patch removing all
-> CVS keywords from the kernel sources.
+>Subject: Re: [PATCH] Documentation: Fix a mispelt "probably" in
+>    SubmittingPatches.
 
-I say: yes please. Even svn (which Linus dislikes very much) has cvs
-keywords disabled by default. And at the same time, a patch to
-CodingStyle not to include CVS tags, and a patch to checkpatch.pl
-to enforce it :)
-
-> Quick grep of kernel shows 1,535 $Id, 197 $Log, 441 $Revision, 144 $Date. I
-> guestimate that this would remove about 5,000 lines form the kernel source
-> and touch 1,700 files. Would this be accept or do those expansions contain
-> useful info?
-
-Common argument for $Id$ tags has been, that upon a problem, a user
-can look into dmesg (or whatever log is appropraite - it's not
-limited to the kernel) for the version string instead of figuring it
-out himself (by means or rpm -q, or whatever hides it).
-
-For the Linux kernel however, I do not think it is important, since:
-
-- the code of a module changes faster than you can think (e.g.
-  a change in the network code touched a network filesystem). Result:
-  same $Id$ tag in the vendor's version AND the mainline version.
-  So the tag is useless.
-
-- you know what version you are running, mingetty usually prints it
-  for you; uname -a also shows it.
-
-- if you have a problem, people kindly ask you to bisect anyway, in
-  which case $Id$ numbers become irrelevant anyway, because you got
-  the git SHA1 ids.
-
-Yep, that's pretty much it from my side. Conclusion: Remove CVS
-tags from kernel.
-
+<irony>
+Can you fix the one in your subject too?
+</irony>
 
 
 	Jan
