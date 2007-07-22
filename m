@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbXGVB5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbXGVCKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbXGVB5U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 21:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbXGVB5J
+	id S1757940AbXGVCKh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 22:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXGVCKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 21:57:09 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:40829 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbXGVB5I (ORCPT
+	Sat, 21 Jul 2007 22:10:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52306
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753388AbXGVCKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 21:57:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G20aBcefaogDYzsXpGk64nA0fCQFwjaYQt+neDuqCIY5zpebQ0nxKueO4tY38dH6wInKZp5E9yraMK2+xi16dMCDqKtfooIhsIm/DYff2BUIn3D+BAJ1XBNwrhJna5fnipSM0bpwtRkX1PENgN3TchscY06j42mqGaCRhXtz9Wg=
-Message-ID: <625fc13d0707211857l4952cf1wec0d038859512bea@mail.gmail.com>
-Date: Sat, 21 Jul 2007 20:57:06 -0500
-From: "Josh Boyer" <jwboyer@gmail.com>
-To: "Dave Jones" <davej@redhat.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, paulus@samba.org
-Subject: Re: fix modular compilation of pmu_battery
-In-Reply-To: <20070721184201.GA23306@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 21 Jul 2007 22:10:20 -0400
+Date: Sat, 21 Jul 2007 19:10:19 -0700 (PDT)
+Message-Id: <20070721.191019.28395100.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org, paulus@samba.org,
+       wli@holomorphy.com
+Subject: Re: [PATCH] constify of_platform_driver name
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070722002303.df29f666.sfr@canb.auug.org.au>
+References: <20070722002303.df29f666.sfr@canb.auug.org.au>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070721184201.GA23306@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/21/07, Dave Jones <davej@redhat.com> wrote:
-> pmu_battery fails to compile as a module on ppc64.
->
-> ERROR: "pmu_batteries" [drivers/power/pmu_battery.ko] undefined!
-> ERROR: "pmu_battery_count" [drivers/power/pmu_battery.ko] undefined!
-> ERROR: "pmu_power_flags" [drivers/power/pmu_battery.ko] undefined!
->
-> Signed-off-by: Dave Jones <davej@redhat.com>
->
-> --- linux-2.6.22.noarch/drivers/macintosh/via-pmu.c~    2007-07-20 20:45:27.000000000 -0400
-> +++ linux-2.6.22.noarch/drivers/macintosh/via-pmu.c     2007-07-20 20:45:52.000000000 -0400
-> @@ -2842,10 +2842,10 @@ EXPORT_SYMBOL(pmu_wait_complete);
->  EXPORT_SYMBOL(pmu_suspend);
->  EXPORT_SYMBOL(pmu_resume);
->  EXPORT_SYMBOL(pmu_unlock);
-> -#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-> +#if defined(CONFIG_PM)
->  EXPORT_SYMBOL(pmu_enable_irled);
->  EXPORT_SYMBOL(pmu_battery_count);
->  EXPORT_SYMBOL(pmu_batteries);
->  EXPORT_SYMBOL(pmu_power_flags);
-> -#endif /* CONFIG_PM && CONFIG_PPC32 */
-> +#endif
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Sun, 22 Jul 2007 00:23:03 +1000
 
-Paul has a different fix for this pending on the linuxppc-dev list.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/pcmcia/m8xx_pcmcia.c |    2 +-
+>  include/linux/of_platform.h  |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Built for PowerPC allmodconfig and ppc64_defconfig, and for Sparc and
+> Sparc64 defconfig.
 
-josh
+Acked-by: David S. Miller <davem@davemloft.net>
