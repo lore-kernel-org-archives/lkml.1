@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761324AbXGVO4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbXGVO7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761324AbXGVO4q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 10:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbXGVO4i
+	id S1761752AbXGVO7h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 10:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXGVO7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 10:56:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44768 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753362AbXGVO4i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 10:56:38 -0400
-Date: Sun, 22 Jul 2007 16:56:36 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Lars Ellenberg <lars.ellenberg@linbit.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Message-ID: <20070722145636.GA31276@one.firstfloor.org>
-References: <20070721203819.GA10706@mail.linbit.com> <p73hcnxuxji.fsf@bingen.suse.de> <20070722055235.GQ11657@kernel.dk> <20070722135814.GA32371@mail.linbit.com>
+	Sun, 22 Jul 2007 10:59:30 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:46450 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754323AbXGVO73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 10:59:29 -0400
+Date: Sun, 22 Jul 2007 16:59:26 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: MMC/SD Root filesystem suspend/resume problems
+Message-ID: <20070722165926.54caeca5@poseidon.drzeus.cx>
+In-Reply-To: <1185114480.6819.24.camel@localhost.localdomain>
+References: <1184860419.29634.10.camel@localhost.localdomain>
+	<20070719190309.28708be8@poseidon.drzeus.cx>
+	<1185110313.6819.8.camel@localhost.localdomain>
+	<20070722160534.3ccfc8f9@poseidon.drzeus.cx>
+	<1185114480.6819.24.camel@localhost.localdomain>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070722135814.GA32371@mail.linbit.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 03:58:14PM +0200, Lars Ellenberg wrote:
-> On Sun, Jul 22, 2007 at 07:52:36AM +0200, Jens Axboe wrote:
-> > On Sun, Jul 22 2007, Andi Kleen wrote:
-> > > Lars Ellenberg <lars@linbit.com> writes:
-> > > > 
-> > > > Jens, Andrew, anyone: please review,
-> > > > and give me advice how to proceed from here.
-> > > 
-> > > The standard procedure would be to post all the source code in logical
-> > > pieces on the list for review. Then iterate until all comments are
-> > > addressed.
-> > 
-> > Yep, cleanup the style issues (that make sense) from checkpatch and then
-> > psot as a series of patches that can be reviewed. Linking to a git tree
-> > wont get you very far.
-> 
-> it got me far enough, for the first try, anyways :-)
-> I did not spam the lkml with patches, and still got some very useful
-> advice (no idea how I could overlook the checkpatch.pl complaints).
-> 
-> If each patch of a series needs to compile and work,
-
-That's not needed for review. The final submission can then be
-in a single patch. It's just impossible to read a really large
-single patch. Ideally you space the posting also out over time.to not
-tax the review resources too much.
-
-Another standard trick for compileable patch series is to only add the 
-Kconfig at the end.
-
-> 13 ERROR: no space between function name and open parenthesis '('
->     this is about our ERR_IF() macro...
->     suggestions, anyone?
->     do need I to explicitly write these out?
-
-Preferable yes.
+On Sun, 22 Jul 2007 15:28:00 +0100
+Richard Purdie <rpurdie@rpsys.net> wrote:
 
 > 
->  8 ERROR: Macros with multiple statements should be enclosed in a do - while loop
->  1 ERROR: Macros with complex values should be enclosed in parenthesis
->     these are "netlink packet definition language" in drbd_nl.h,
->     which is sort of clean, and preprocessor magic in drbd_nl.c.
->     suggestions how to handle this cleanly,
->     without making it more ugly?
->     autogenerate code by other means?
->     write it out by hand, and lose the nice and clean drbd_nl.h?
+> Corruption is corruption and it shouldn't happen if we can avoid it.
+> It happens with complete certainty in one case and only happens in the
+> other if the user does something which is a fairly obvious bad idea
+> (which is documented as such).
+> 
 
-No, you can ignore it then.
+The corruption will only occur if the filesystem is dirty. Granted, the
+mount will be dead and useless, but I wouldn't call that corruption.
 
-> 94 WARNING: declaring multiple variables together should be avoided
->     int snr, enr;
->     does this really need to become two lines?
-
-Probably not.
+Anyway, this behaviour was selected after seeing the long discussion
+about how USB should handle the same problem. It was decided that it
+was best to play it safe and remove any devices that couldn't be
+determined to have remained in the slot. We also have the USB_PERSIST
+option these days, which does the same thing as MMC_UNSAFE_RESUME.
 
 > 
-> 33 WARNING: line over 80 characters
->     hmmm. get more ugly...
->     probably need some helper functions and temp variables?
+> Given I can suspend the device with "echo mem > /sys/power/state",
+> that implies we need to fix echo? ;-)
+> 
 
-Yes smaller functions are better in general.
+Or that direct usage of /sys/power/state is only for those who know
+what they are doing (and have umounted their filesystems beforehand).
 
--Andi
+> 
+> > And if we keep papering over the problems, you reduce the motivation
+> > of fixing this properly.
+> 
+> Maybe although I don't like existing functionality being broken even
+> if its less than ideal.
+> 
+
+I am of the opinion that it was more broken before I touched it. Silent
+corruption is never acceptable in my book. But if it is in yours, just
+enable MMC_UNSAFE_RESUME and you'll have the old behaviour.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
