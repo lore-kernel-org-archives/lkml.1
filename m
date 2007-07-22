@@ -1,199 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764019AbXGVK7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764975AbXGVLF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764019AbXGVK7S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 06:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbXGVK7I
+	id S1764975AbXGVLF5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 07:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbXGVLFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 06:59:08 -0400
-Received: from ozlabs.org ([203.10.76.45]:54991 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753697AbXGVK7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 06:59:07 -0400
-Subject: [PATCH] Fix lguest clock when jiffies not available
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@gmail.com>,
-       tglx <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Sun, 22 Jul 2007 20:58:19 +1000
-Message-Id: <1185101899.6344.92.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sun, 22 Jul 2007 07:05:48 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:3361 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753697AbXGVLFr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 07:05:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=qC2CdWpMdHTODbp7jol4/QOgBIEabw363EsYWUetFCu4G/Z3s2xqlpUQLwXx2IenGakVnnXz+9TXLmdKBpJGcVHc2gnokUbYC3Ax2cSdxdEwnmsO/aQEU4JBUxPWu8C/qHTwCjAj/yOPs3MA9JV3y/396sQtQFgfF12UC2RRPbU=
+Message-ID: <46A33985.4060007@googlemail.com>
+Date: Sun, 22 Jul 2007 13:03:33 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mhoffman@lightlink.com, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] hwmon: Add missing __devexit tags in various drivers
+References: <46A28920.9060704@googlemail.com> <20070722120948.0609d79b@hyperion.delvare>
+In-Reply-To: <20070722120948.0609d79b@hyperion.delvare>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Ingo, Thomas cc'd in case this issue effects normal jiffies clock too? ]
-
-When the Host TSC is unreliable or can change, lguest guests use the
-jiffies clock.  However, the clock value seems to creep upwards in
-sub-jiffies increments, and then tick_handle_periodic() goes into an
-infinite loop.
-
-Instead, the host writes the current time into the lguest page on
-every interrupt.  This doesn't cost much but is more precise and at
-least as accurate as the jiffies clock.  It also gets rid of the
-GET_WALLCLOCK hypercall.
-
-Also, delay setting sched_clock until our clock is set up, otherwise
-the early printk timestamps can go backwards.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff -r 144835834edd drivers/lguest/hypercalls.c
---- a/drivers/lguest/hypercalls.c	Sat Jul 21 11:12:01 2007 +1000
-+++ b/drivers/lguest/hypercalls.c	Sun Jul 22 20:49:12 2007 +1000
-@@ -44,12 +44,6 @@ static void do_hcall(struct lguest *lg, 
- 		else
- 			guest_pagetable_flush_user(lg);
- 		break;
--	case LHCALL_GET_WALLCLOCK: {
--		struct timespec ts;
--		ktime_get_real_ts(&ts);
--		regs->eax = ts.tv_sec;
--		break;
--	}
- 	case LHCALL_BIND_DMA:
- 		regs->eax = bind_dma(lg, regs->edx, regs->ebx,
- 				     regs->ecx >> 8, regs->ecx & 0xFF);
-@@ -160,6 +154,8 @@ static void initialize(struct lguest *lg
- 	    || put_user(lg->guestid, &lg->lguest_data->guestid))
- 		kill_guest(lg, "bad guest page %p", lg->lguest_data);
- 
-+	write_timestamp(lg);
-+
- 	/* This is the one case where the above accesses might have
- 	 * been the first write to a Guest page.  This may have caused
- 	 * a copy-on-write fault, but the Guest might be referring to
-@@ -190,3 +186,11 @@ void do_hypercalls(struct lguest *lg)
- 		clear_hcall(lg);
- 	}
- }
-+
-+void write_timestamp(struct lguest *lg)
-+{
-+	struct timespec now;
-+	ktime_get_real_ts(&now);
-+	if (put_user(now, &lg->lguest_data->time))
-+		kill_guest(lg, "Writing timestamp");
-+}
-diff -r 144835834edd drivers/lguest/interrupts_and_traps.c
---- a/drivers/lguest/interrupts_and_traps.c	Sat Jul 21 11:12:01 2007 +1000
-+++ b/drivers/lguest/interrupts_and_traps.c	Sun Jul 22 20:47:51 2007 +1000
-@@ -107,6 +107,7 @@ void maybe_do_interrupt(struct lguest *l
- 		clear_bit(irq, lg->irqs_pending);
- 		set_guest_interrupt(lg, idt->a, idt->b, 0);
- 	}
-+	write_timestamp(lg);
- }
- 
- static int has_err(unsigned int trap)
-diff -r 144835834edd drivers/lguest/lg.h
---- a/drivers/lguest/lg.h	Sat Jul 21 11:12:01 2007 +1000
-+++ b/drivers/lguest/lg.h	Sun Jul 22 20:49:03 2007 +1000
-@@ -243,6 +243,7 @@ unsigned long get_dma_buffer(struct lgue
- 
- /* hypercalls.c: */
- void do_hypercalls(struct lguest *lg);
-+void write_timestamp(struct lguest *lg);
- 
- #define kill_guest(lg, fmt...)					\
- do {								\
-diff -r 144835834edd drivers/lguest/lguest.c
---- a/drivers/lguest/lguest.c	Sat Jul 21 11:12:01 2007 +1000
-+++ b/drivers/lguest/lguest.c	Sun Jul 22 19:14:19 2007 +1000
-@@ -345,15 +345,24 @@ static void __init lguest_init_IRQ(void)
- 
- static unsigned long lguest_get_wallclock(void)
- {
--	return hcall(LHCALL_GET_WALLCLOCK, 0, 0, 0);
-+	return lguest_data.time.tv_sec;
- }
- 
- static cycle_t lguest_clock_read(void)
- {
-+	unsigned long sec, nsec;
-+
- 	if (lguest_data.tsc_khz)
- 		return native_read_tsc();
--	else
--		return jiffies;
-+
-+	/* Standard loop to make sure we get matching seconds & nanoseconds */
-+	do {
-+		sec = lguest_data.time.tv_sec;
-+		rmb();
-+		nsec = lguest_data.time.tv_nsec;
-+		rmb();
-+	} while (unlikely(lguest_data.time.tv_sec != sec));
-+	return sec*1000000000ULL + nsec;
- }
- 
- /* This is what we tell the kernel is our clocksource.  */
-@@ -361,6 +370,8 @@ static struct clocksource lguest_clock =
- 	.name		= "lguest",
- 	.rating		= 400,
- 	.read		= lguest_clock_read,
-+	.mask		= CLOCKSOURCE_MASK(64),
-+	.mult		= 1,
- };
- 
- static unsigned long long lguest_sched_clock(void)
-@@ -430,22 +441,17 @@ static void lguest_time_init(void)
- {
- 	set_irq_handler(0, lguest_time_irq);
- 
--	/* We use the TSC if the Host tells us we can, otherwise a dumb
--	 * jiffies-based clock. */
-+	/* We use the TSC if the Host tells us we can, otherwise we use
-+	 * the timestamp the Host sets. */
- 	if (lguest_data.tsc_khz) {
- 		lguest_clock.shift = 22;
- 		lguest_clock.mult = clocksource_khz2mult(lguest_data.tsc_khz,
- 							 lguest_clock.shift);
--		lguest_clock.mask = CLOCKSOURCE_MASK(64);
- 		lguest_clock.flags = CLOCK_SOURCE_IS_CONTINUOUS;
--	} else {
--		/* To understand this, start at kernel/time/jiffies.c... */
--		lguest_clock.shift = 8;
--		lguest_clock.mult = (((u64)NSEC_PER_SEC<<8)/ACTHZ) << 8;
--		lguest_clock.mask = CLOCKSOURCE_MASK(32);
- 	}
- 	clock_base = lguest_clock_read();
- 	clocksource_register(&lguest_clock);
-+	paravirt_ops.sched_clock = lguest_sched_clock;
- 
- 	/* We can't set cpumask in the initializer: damn C limitations! */
- 	lguest_clockevent.cpumask = cpumask_of_cpu(0);
-@@ -590,7 +596,6 @@ __init void lguest_init(void *boot)
- 	paravirt_ops.time_init = lguest_time_init;
- 	paravirt_ops.set_lazy_mode = lguest_lazy_mode;
- 	paravirt_ops.wbinvd = lguest_wbinvd;
--	paravirt_ops.sched_clock = lguest_sched_clock;
- 
- 	hcall(LHCALL_LGUEST_INIT, __pa(&lguest_data), 0, 0);
- 
-diff -r 144835834edd include/linux/lguest.h
---- a/include/linux/lguest.h	Sat Jul 21 11:12:01 2007 +1000
-+++ b/include/linux/lguest.h	Sun Jul 22 19:10:30 2007 +1000
-@@ -17,7 +17,6 @@
- #define LHCALL_TS		8
- #define LHCALL_SET_CLOCKEVENT	9
- #define LHCALL_HALT		10
--#define LHCALL_GET_WALLCLOCK	11
- #define LHCALL_BIND_DMA		12
- #define LHCALL_SEND_DMA		13
- #define LHCALL_SET_PTE		14
-@@ -64,6 +63,9 @@ struct lguest_data
- 	/* Virtual address of page fault. */
- 	unsigned long cr2;
- 
-+	/* Wallclock time. */
-+	struct timespec time;
-+
- 	/* Async hypercall ring.  0xFF == done, 0 == pending. */
- 	u8 hcall_status[LHCALL_RING_SIZE];
- 	struct hcall_ring hcalls[LHCALL_RING_SIZE];
+Jean Delvare wrote:
+> On Sun, 22 Jul 2007 00:30:56 +0200, Gabriel C wrote:
+>> I noticed this warnings on current git:
+>>
+>> drivers/hwmon/pc87360.c:1082: warning: 'pc87360_remove' defined but not used
+>> drivers/hwmon/sis5595.c:580: warning: 'sis5595_remove' defined but not used
+>> drivers/hwmon/smsc47m1.c:608: warning: 'smsc47m1_remove' defined but not used
+>> drivers/hwmon/via686a.c:648: warning: 'via686a_remove' defined but not used
+>> drivers/hwmon/vt8231.c:755: warning: 'vt8231_remove' defined but not used
 
 
+Thx , the patch fixes all this warnings.
+
+
+> 
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> ---
+>  drivers/hwmon/it87.c     |    2 +-
+>  drivers/hwmon/pc87360.c  |    2 +-
+>  drivers/hwmon/sis5595.c  |    2 +-
+>  drivers/hwmon/smsc47m1.c |    2 +-
+>  drivers/hwmon/via686a.c  |    2 +-
+>  drivers/hwmon/vt8231.c   |    4 ++--
+>  drivers/hwmon/w83627hf.c |    2 +-
+>  7 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> --- linux-2.6.23-pre.orig/drivers/hwmon/it87.c	2007-07-22 11:51:47.000000000 +0200
+> +++ linux-2.6.23-pre/drivers/hwmon/it87.c	2007-07-22 11:56:48.000000000 +0200
+> @@ -252,7 +252,7 @@ struct it87_data {
+>  
+>  
+>  static int it87_probe(struct platform_device *pdev);
+> -static int it87_remove(struct platform_device *pdev);
+> +static int __devexit it87_remove(struct platform_device *pdev);
+>  
+>  static int it87_read_value(struct it87_data *data, u8 reg);
+>  static void it87_write_value(struct it87_data *data, u8 reg, u8 value);
+> --- linux-2.6.23-pre.orig/drivers/hwmon/pc87360.c	2007-07-22 09:54:08.000000000 +0200
+> +++ linux-2.6.23-pre/drivers/hwmon/pc87360.c	2007-07-22 11:56:48.000000000 +0200
+> @@ -220,7 +220,7 @@ struct pc87360_data {
+>   */
+>  
+>  static int pc87360_probe(struct platform_device *pdev);
+> -static int pc87360_remove(struct platform_device *pdev);
+> +static int __devexit pc87360_remove(struct platform_device *pdev);
+>  
+>  static int pc87360_read_value(struct pc87360_data *data, u8 ldi, u8 bank,
+>  			      u8 reg);
+> --- linux-2.6.23-pre.orig/drivers/hwmon/sis5595.c	2007-07-22 09:54:08.000000000 +0200
+> +++ linux-2.6.23-pre/drivers/hwmon/sis5595.c	2007-07-22 11:56:48.000000000 +0200
+> @@ -187,7 +187,7 @@ struct sis5595_data {
+>  static struct pci_dev *s_bridge;	/* pointer to the (only) sis5595 */
+>  
+>  static int sis5595_probe(struct platform_device *pdev);
+> -static int sis5595_remove(struct platform_device *pdev);
+> +static int __devexit sis5595_remove(struct platform_device *pdev);
+>  
+>  static int sis5595_read_value(struct sis5595_data *data, u8 reg);
+>  static void sis5595_write_value(struct sis5595_data *data, u8 reg, u8 value);
+> --- linux-2.6.23-pre.orig/drivers/hwmon/smsc47m1.c	2007-07-22 09:54:08.000000000 +0200
+> +++ linux-2.6.23-pre/drivers/hwmon/smsc47m1.c	2007-07-22 11:56:48.000000000 +0200
+> @@ -134,7 +134,7 @@ struct smsc47m1_sio_data {
+>  
+>  
+>  static int smsc47m1_probe(struct platform_device *pdev);
+> -static int smsc47m1_remove(struct platform_device *pdev);
+> +static int __devexit smsc47m1_remove(struct platform_device *pdev);
+>  static struct smsc47m1_data *smsc47m1_update_device(struct device *dev,
+>  		int init);
+>  
+> --- linux-2.6.23-pre.orig/drivers/hwmon/via686a.c	2007-07-22 09:54:08.000000000 +0200
+> +++ linux-2.6.23-pre/drivers/hwmon/via686a.c	2007-07-22 11:56:48.000000000 +0200
+> @@ -314,7 +314,7 @@ struct via686a_data {
+>  static struct pci_dev *s_bridge;	/* pointer to the (only) via686a */
+>  
+>  static int via686a_probe(struct platform_device *pdev);
+> -static int via686a_remove(struct platform_device *pdev);
+> +static int __devexit via686a_remove(struct platform_device *pdev);
+>  
+>  static inline int via686a_read_value(struct via686a_data *data, u8 reg)
+>  {
+> --- linux-2.6.23-pre.orig/drivers/hwmon/vt8231.c	2007-07-22 09:54:08.000000000 +0200
+> +++ linux-2.6.23-pre/drivers/hwmon/vt8231.c	2007-07-22 11:56:48.000000000 +0200
+> @@ -167,7 +167,7 @@ struct vt8231_data {
+>  
+>  static struct pci_dev *s_bridge;
+>  static int vt8231_probe(struct platform_device *pdev);
+> -static int vt8231_remove(struct platform_device *pdev);
+> +static int __devexit vt8231_remove(struct platform_device *pdev);
+>  static struct vt8231_data *vt8231_update_device(struct device *dev);
+>  static void vt8231_init_device(struct vt8231_data *data);
+>  
+> @@ -751,7 +751,7 @@ exit_release:
+>  	return err;
+>  }
+>  
+> -static int vt8231_remove(struct platform_device *pdev)
+> +static int __devexit vt8231_remove(struct platform_device *pdev)
+>  {
+>  	struct vt8231_data *data = platform_get_drvdata(pdev);
+>  	int i;
+> --- linux-2.6.23-pre.orig/drivers/hwmon/w83627hf.c	2007-07-22 11:51:49.000000000 +0200
+> +++ linux-2.6.23-pre/drivers/hwmon/w83627hf.c	2007-07-22 11:56:48.000000000 +0200
+> @@ -384,7 +384,7 @@ struct w83627hf_sio_data {
+>  
+>  
+>  static int w83627hf_probe(struct platform_device *pdev);
+> -static int w83627hf_remove(struct platform_device *pdev);
+> +static int __devexit w83627hf_remove(struct platform_device *pdev);
+>  
+>  static int w83627hf_read_value(struct w83627hf_data *data, u16 reg);
+>  static int w83627hf_write_value(struct w83627hf_data *data, u16 reg, u16 value);
+> 
+> 
