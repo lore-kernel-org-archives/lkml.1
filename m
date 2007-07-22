@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764098AbXGVUGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764187AbXGVUKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764098AbXGVUGf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 16:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762070AbXGVUG2
+	id S1764187AbXGVUKg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 16:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762070AbXGVUK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 16:06:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34012 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762022AbXGVUG1 (ORCPT
+	Sun, 22 Jul 2007 16:10:29 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:1603 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759016AbXGVUK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 16:06:27 -0400
-Date: Sun, 22 Jul 2007 21:06:12 +0100
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: New wake ups from sky2
-Message-ID: <20070722210612.1fa32740@oldman>
-In-Reply-To: <46A1CB36.5010609@m3y3r.de>
-References: <46A10CC3.6050909@m3y3r.de>
-	<20070720225038.7635da3f@oldman>
-	<46A1CB36.5010609@m3y3r.de>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Jul 2007 16:10:28 -0400
+Date: Sun, 22 Jul 2007 16:09:30 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: nigel@suspend2.net, <jbms@cmu.edu>, <rjw@sisk.pl>, <miltonm@bga.com>,
+       <ying.huang@intel.com>, <linux-kernel@vger.kernel.org>, <david@lang.hm>,
+       <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <E1ICeHX-00025u-00@dorka.pomaz.szeredi.hu>
+Message-ID: <Pine.LNX.4.44L0.0707221608140.16031-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007 11:00:38 +0200
-Thomas Meyer <thomas@m3y3r.de> wrote:
+On Sun, 22 Jul 2007, Miklos Szeredi wrote:
 
-> Stephen Hemminger schrieb:
-> > Thomas Meyer <thomas@m3y3r.de> wrote:
-> >
-> >   
-> >> Today i did a git pull to be up to date again and i noticed in the
-> >> powertop tool that i'll get this new entry
-> >>
-> >>   14,2% (  9,1)     <kernel core> : sky2_probe (sky2_idle)
-> >>
-> >> with around 10 interrupts per second.
-> >>
-> >> i think (i.e. i don't know and just guessing!) this commit is
-> >> responsible for these wake ups:
-> >>
-> >> git show eb35cf60e462491249166182e3e755d3d5d91a28
-> >>
-> >> Author: Stephen Hemminger <shemminger@osdl.org>
-> >> Date:   Tue Jun 13 17:17:31 2006 +0900
-> >>
-> >>     [PATCH] sky2: stop/start hardware idle timer on suspend/resume
-> >>
-> >>     The resume bug was caused not by an early interrupt but because the idle
-> >>     timeout was not being stopped on suspend.  Also disable hardware IRQ's
-> >>     on suspend.  Will need to revisit this with hotplug?
-> >>
-> >>     Signed-off-by: Stephen Hemminger <shemminger@osdl.org>
-> >>     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-> >>
-> >> Any ideas?
-> >>
-> >>     
-> >
-> > Last version has idle timer enabled.
-> > It is a tradeoff between device hanging due to lost interrupt or wasting power.
-> > You can make the timeout longer by setting idle_timeout module parameter larger,
-> > (or zero which will disable it).
-> >   
-> Ok. But do you need to start the timer when no cable is plugged in, like
-> in the case above?
+> > The only thing to do is what Rafael has been working on: unfreeze
+> > things, hope the tasks sort themselves out, and try again.
+> 
+> Have we some proof, that this will untangle the freezing tasks in a
+> limited time?  Or will it just make the problem harder to trigger?
 
-Probably not, because risk of missed PHY interrupt is miniscule.
+Of course there's no proof.  Just the opposite -- if things get hung up
+the first time, they might get hung up the second time.  And the
+third...
+
+But it ought to make the problem harder to trigger.  For the present 
+that's a worthwhile improvement.
+
+Alan Stern
+
