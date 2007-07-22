@@ -1,119 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764724AbXGVJSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765312AbXGVJSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764724AbXGVJSL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 05:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764549AbXGVJRj
+	id S1765312AbXGVJSv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 05:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761060AbXGVJSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 05:17:39 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:40493 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764512AbXGVJRh (ORCPT
+	Sun, 22 Jul 2007 05:18:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50398 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764549AbXGVJSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 05:17:37 -0400
-Subject: Re: [PATCH 3/3] readahead: scale max readahead size depending on
-	memory size
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>, riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
-       Chris Snook <csnook@redhat.com>
-In-Reply-To: <20070722085041.GS11657@kernel.dk>
-References: <20070721210005.000228000@chello.nl>
-	 <20070721210052.497469000@chello.nl> <20070722082434.GR11657@kernel.dk>
-	 <1185093405.20032.205.camel@twins>  <20070722085041.GS11657@kernel.dk>
-Content-Type: text/plain
-Date: Sun, 22 Jul 2007 11:17:32 +0200
-Message-Id: <1185095852.20032.229.camel@twins>
+	Sun, 22 Jul 2007 05:18:31 -0400
+Date: Sun, 22 Jul 2007 11:18:27 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Create clflush() inline, remove hardcoded wbinvd
+Message-ID: <20070722091826.GA28313@one.firstfloor.org>
+References: <1184885740.16311.19.camel@t60> <200707202119.l6KLJwcd004205@tazenda.hos.anvin.org> <20070720212741.GB565@one.firstfloor.org> <46A12A3A.4020305@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A12A3A.4020305@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-22 at 10:50 +0200, Jens Axboe wrote:
-> On Sun, Jul 22 2007, Peter Zijlstra wrote:
-> > On Sun, 2007-07-22 at 10:24 +0200, Jens Axboe wrote:
-> > > On Sat, Jul 21 2007, Peter Zijlstra wrote:
+On Fri, Jul 20, 2007 at 02:33:46PM -0700, H. Peter Anvin wrote:
+> Andi Kleen wrote:
+> > On Fri, Jul 20, 2007 at 02:19:58PM -0700, H. Peter Anvin wrote:
+> >> Create an inline function for clflush(), with the proper arguments,
+> >> and use it instead of hard-coding the instruction.
+> >>
+> >> This also removes one instance of hard-coded wbinvd, based on a patch
+> >> by Bauder de Oliveira Costa.
 > > 
-> > > > +static __init int readahead_init(void)
-> > > > +{
-> > > > +	/*
-> > > > +	 * Scale the max readahead window with system memory
-> > > > +	 *
-> > > > +	 *   64M:   128K
-> > > > +	 *  128M:   180K
-> > > > +	 *  256M:   256K
-> > > > +	 *  512M:   360K
-> > > > +	 *    1G:   512K
-> > > > +	 *    2G:   724K
-> > > > +	 *    4G:  1024K
-> > > > +	 *    8G:  1448K
-> > > > +	 *   16G:  2048K
-> > > > +	 */
-> > > > +	ra_pages = int_sqrt(totalram_pages/16);
-> > > > +	if (ra_pages > (2 << (20 - PAGE_SHIFT)))
-> > > > +		ra_pages = 2 << (20 - PAGE_SHIFT);
-> > > > +
-> > > > +	return 0;
-> > > > +}
-> > > 
-> > > How did you come up with these numbers?
-> > 
-> > Well, most other places in the kernel where we scale by memory size we
-> > use the a sqrt curve, and the specific scale was the result of some
-> > fiddling, these numbers looked sane to me, nothing special.
-> > 
-> > Would you suggest a different set, and if so, do you have any rationale
-> > for them?
+> > I don't see much sense in it. CLFLUSH is not priviledged, paravirt
+> > doesn't need to change and this adds just an unnecessary layer of abstraction.
 > 
-> I just wish you had a rationale behind them, I don't think it's that
-> great of a series.
+> The main reason is that everyone seems to invoke it either incorrectly
 
-Well, I was quite ignorant of the issues you just pointed out. Thanks
-those do indeed provide basis for a more solid set.
+Where is it incorrect? 
 
->  I agree with the low point of 128k.
-
-Perhaps that should be enforced then, because currently a system with
-<64M will get less.
-
->  Then it'd be sane
-> to try and determine what the upper limit of ra window size goodness is,
-> which is probably impossible since it depends on the hardware a lot. But
-> lets just say the upper value is 2mb, then I think it's pretty silly
-> _not_ to use 2mb on a 1g machine for instance. So more aggressive
-> scaling.
-
-Right, I was being a little conservative here.
-
-> Then there's the relationship between nr of requests and ra size. When
-> you leave everything up to a simple sqrt of total_ram type thing, then
-> you are sure to hit stupid values that cause a queue size of a number of
-> full requests, plus a small one at the end. Clearly not optimal!
-
-And this is where Wu's point of power of two series comes into play,
-right?
-
-So something like:
-
-  roundup_pow_of_two(int_sqrt((totalram_pages << (PAGE_SHIFT-10))))
-
-
-		memory in MB		RA window in KB
-                            64                            128
-                           128                            256
-                           256                            256
-                           512                            512
-                          1024                            512
-                          2048                           1024
-                          4096                           1024
-                          8192                           2048
-                         16384                           2048
-                         32768                           4096
-                         65536                           4096
-
-
-
-
+-Andi
