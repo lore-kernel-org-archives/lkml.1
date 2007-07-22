@@ -1,97 +1,387 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbXGVPoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbXGVPog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbXGVPoS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 11:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXGVPoG
+	id S1758638AbXGVPog (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 11:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbXGVPoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 11:44:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:8114 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751325AbXGVPoE (ORCPT
+	Sun, 22 Jul 2007 11:44:15 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:60825 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754354AbXGVPoN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 11:44:04 -0400
+	Sun, 22 Jul 2007 11:44:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:user-agent:date:from:to:subject;
-        b=BuO7OEVZ48ejKAuV9mhBG4+eFLa8XeUlmzM0PFpf7j3K3E2vkgr67Q+0zwXA5VJ6DMtOXn6y5uAAfa4imZ/vCQaq+xAicYmrxDPZ99gI5IyX+nZaokFticd/F1xtgx4NCCN3H663XsI+RAcVSv9XBvSEuQyQOMfCx3RhtqCXSKM=
-Message-Id: <20070722153312.083951746@gmail.com>
+        h=received:message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
+        b=dMybUMXXztTrTH+AmM60EWYTcQ6joOzovQCPmUH7jM0bCv5Cs3BPz1ZTscmkIMLesQK8c1JJwJdaco7C9kh4sTQekv1PzZ8iqlPfNHI/62eNUEY0xpBKMQglMOMDnU0zLOrGvEMAVccr43xmxUqtYnYtUNWYIAOhqLx7mA7iS34=
+Message-Id: <20070722153334.147016780@gmail.com>
+References: <20070722153312.083951746@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Jul 2007 00:33:12 +0900
+Date: Mon, 23 Jul 2007 00:33:13 +0900
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: [patch 0/9] CPU hotplug error handling fixes take2
+Cc: Christoph Lameter <clameter@sgi.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [patch 1/9] slab: cleanup cpuup_callback()
+Content-Disposition: inline; filename=slab-refactor.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series of patches fixes the error handling for cpu hotplug.
-The problem is revealed by CPU hotplug/unplug test with fault-injection.
+cpuup_callback() is too long.
+This patch factors out CPU_UP_CANCELLED and CPU_UP_PREPARE handlings
+from cpuup_callback().
 
-The changes from previous patchset:
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-- Removed the patch titled sysfs: avoid kmem_cache_free(NULL)
-  Because it was merged into mainline.
+---
+ mm/slab.c |  301 ++++++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 159 insertions(+), 142 deletions(-)
 
-- Removed the patch titled sysdev: add error check in sysdev_register()
-  It turned out that the patch needs more fixes for microcode and
-  cpufreq. So I'll separate them from this series of patches.
+Index: 2.6-git/mm/slab.c
+===================================================================
+--- 2.6-git.orig/mm/slab.c
++++ 2.6-git/mm/slab.c
+@@ -1156,105 +1156,181 @@ static inline int cache_free_alien(struc
+ }
+ #endif
+ 
+-static int __cpuinit cpuup_callback(struct notifier_block *nfb,
+-				    unsigned long action, void *hcpu)
++static void __cpuinit cpuup_canceled(long cpu)
++{
++	struct kmem_cache *cachep;
++	struct kmem_list3 *l3 = NULL;
++	int node = cpu_to_node(cpu);
++
++	list_for_each_entry(cachep, &cache_chain, next) {
++		struct array_cache *nc;
++		struct array_cache *shared;
++		struct array_cache **alien;
++		cpumask_t mask;
++
++		mask = node_to_cpumask(node);
++		/* cpu is dead; no one can alloc from it. */
++		nc = cachep->array[cpu];
++		cachep->array[cpu] = NULL;
++		l3 = cachep->nodelists[node];
++
++		if (!l3)
++			goto free_array_cache;
++
++		spin_lock_irq(&l3->list_lock);
++
++		/* Free limit for this kmem_list3 */
++		l3->free_limit -= cachep->batchcount;
++		if (nc)
++			free_block(cachep, nc->entry, nc->avail, node);
++
++		if (!cpus_empty(mask)) {
++			spin_unlock_irq(&l3->list_lock);
++			goto free_array_cache;
++		}
++
++		shared = l3->shared;
++		if (shared) {
++			free_block(cachep, shared->entry,
++				   shared->avail, node);
++			l3->shared = NULL;
++		}
++
++		alien = l3->alien;
++		l3->alien = NULL;
++
++		spin_unlock_irq(&l3->list_lock);
++
++		kfree(shared);
++		if (alien) {
++			drain_alien_cache(cachep, alien);
++			free_alien_cache(alien);
++		}
++free_array_cache:
++		kfree(nc);
++	}
++	/*
++	 * In the previous loop, all the objects were freed to
++	 * the respective cache's slabs,  now we can go ahead and
++	 * shrink each nodelist to its limit.
++	 */
++	list_for_each_entry(cachep, &cache_chain, next) {
++		l3 = cachep->nodelists[node];
++		if (!l3)
++			continue;
++		drain_freelist(cachep, l3, l3->free_objects);
++	}
++}
++
++static int __cpuinit cpuup_prepare(long cpu)
+ {
+-	long cpu = (long)hcpu;
+ 	struct kmem_cache *cachep;
+ 	struct kmem_list3 *l3 = NULL;
+ 	int node = cpu_to_node(cpu);
+ 	const int memsize = sizeof(struct kmem_list3);
+ 
+-	switch (action) {
+-	case CPU_LOCK_ACQUIRE:
+-		mutex_lock(&cache_chain_mutex);
+-		break;
+-	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
++	/*
++	 * We need to do this right in the beginning since
++	 * alloc_arraycache's are going to use this list.
++	 * kmalloc_node allows us to add the slab to the right
++	 * kmem_list3 and not this cpu's kmem_list3
++	 */
++
++	list_for_each_entry(cachep, &cache_chain, next) {
+ 		/*
+-		 * We need to do this right in the beginning since
+-		 * alloc_arraycache's are going to use this list.
+-		 * kmalloc_node allows us to add the slab to the right
+-		 * kmem_list3 and not this cpu's kmem_list3
++		 * Set up the size64 kmemlist for cpu before we can
++		 * begin anything. Make sure some other cpu on this
++		 * node has not already allocated this
+ 		 */
++		if (!cachep->nodelists[node]) {
++			l3 = kmalloc_node(memsize, GFP_KERNEL, node);
++			if (!l3)
++				goto bad;
++			kmem_list3_init(l3);
++			l3->next_reap = jiffies + REAPTIMEOUT_LIST3 +
++			    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
+ 
+-		list_for_each_entry(cachep, &cache_chain, next) {
+ 			/*
+-			 * Set up the size64 kmemlist for cpu before we can
+-			 * begin anything. Make sure some other cpu on this
+-			 * node has not already allocated this
++			 * The l3s don't come and go as CPUs come and
++			 * go.  cache_chain_mutex is sufficient
++			 * protection here.
+ 			 */
+-			if (!cachep->nodelists[node]) {
+-				l3 = kmalloc_node(memsize, GFP_KERNEL, node);
+-				if (!l3)
+-					goto bad;
+-				kmem_list3_init(l3);
+-				l3->next_reap = jiffies + REAPTIMEOUT_LIST3 +
+-				    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
+-
+-				/*
+-				 * The l3s don't come and go as CPUs come and
+-				 * go.  cache_chain_mutex is sufficient
+-				 * protection here.
+-				 */
+-				cachep->nodelists[node] = l3;
+-			}
+-
+-			spin_lock_irq(&cachep->nodelists[node]->list_lock);
+-			cachep->nodelists[node]->free_limit =
+-				(1 + nr_cpus_node(node)) *
+-				cachep->batchcount + cachep->num;
+-			spin_unlock_irq(&cachep->nodelists[node]->list_lock);
++			cachep->nodelists[node] = l3;
+ 		}
+ 
+-		/*
+-		 * Now we can go ahead with allocating the shared arrays and
+-		 * array caches
+-		 */
+-		list_for_each_entry(cachep, &cache_chain, next) {
+-			struct array_cache *nc;
+-			struct array_cache *shared = NULL;
+-			struct array_cache **alien = NULL;
++		spin_lock_irq(&cachep->nodelists[node]->list_lock);
++		cachep->nodelists[node]->free_limit =
++			(1 + nr_cpus_node(node)) *
++			cachep->batchcount + cachep->num;
++		spin_unlock_irq(&cachep->nodelists[node]->list_lock);
++	}
+ 
+-			nc = alloc_arraycache(node, cachep->limit,
+-						cachep->batchcount);
+-			if (!nc)
++	/*
++	 * Now we can go ahead with allocating the shared arrays and
++	 * array caches
++	 */
++	list_for_each_entry(cachep, &cache_chain, next) {
++		struct array_cache *nc;
++		struct array_cache *shared = NULL;
++		struct array_cache **alien = NULL;
++
++		nc = alloc_arraycache(node, cachep->limit,
++					cachep->batchcount);
++		if (!nc)
++			goto bad;
++		if (cachep->shared) {
++			shared = alloc_arraycache(node,
++				cachep->shared * cachep->batchcount,
++				0xbaadf00d);
++			if (!shared)
+ 				goto bad;
+-			if (cachep->shared) {
+-				shared = alloc_arraycache(node,
+-					cachep->shared * cachep->batchcount,
+-					0xbaadf00d);
+-				if (!shared)
+-					goto bad;
+-			}
+-			if (use_alien_caches) {
+-                                alien = alloc_alien_cache(node, cachep->limit);
+-                                if (!alien)
+-                                        goto bad;
+-                        }
+-			cachep->array[cpu] = nc;
+-			l3 = cachep->nodelists[node];
+-			BUG_ON(!l3);
++		}
++		if (use_alien_caches) {
++			alien = alloc_alien_cache(node, cachep->limit);
++			if (!alien)
++				goto bad;
++		}
++		cachep->array[cpu] = nc;
++		l3 = cachep->nodelists[node];
++		BUG_ON(!l3);
+ 
+-			spin_lock_irq(&l3->list_lock);
+-			if (!l3->shared) {
+-				/*
+-				 * We are serialised from CPU_DEAD or
+-				 * CPU_UP_CANCELLED by the cpucontrol lock
+-				 */
+-				l3->shared = shared;
+-				shared = NULL;
+-			}
++		spin_lock_irq(&l3->list_lock);
++		if (!l3->shared) {
++			/*
++			 * We are serialised from CPU_DEAD or
++			 * CPU_UP_CANCELLED by the cpucontrol lock
++			 */
++			l3->shared = shared;
++			shared = NULL;
++		}
+ #ifdef CONFIG_NUMA
+-			if (!l3->alien) {
+-				l3->alien = alien;
+-				alien = NULL;
+-			}
+-#endif
+-			spin_unlock_irq(&l3->list_lock);
+-			kfree(shared);
+-			free_alien_cache(alien);
++		if (!l3->alien) {
++			l3->alien = alien;
++			alien = NULL;
+ 		}
++#endif
++		spin_unlock_irq(&l3->list_lock);
++		kfree(shared);
++		free_alien_cache(alien);
++	}
++	return 0;
++bad:
++	return -ENOMEM;
++}
++
++static int __cpuinit cpuup_callback(struct notifier_block *nfb,
++				    unsigned long action, void *hcpu)
++{
++	long cpu = (long)hcpu;
++	int err = 0;
++
++	switch (action) {
++	case CPU_LOCK_ACQUIRE:
++		mutex_lock(&cache_chain_mutex);
++		break;
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++		err = cpuup_prepare(cpu);
+ 		break;
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+@@ -1291,72 +1367,13 @@ static int __cpuinit cpuup_callback(stru
+ #endif
+ 	case CPU_UP_CANCELED:
+ 	case CPU_UP_CANCELED_FROZEN:
+-		list_for_each_entry(cachep, &cache_chain, next) {
+-			struct array_cache *nc;
+-			struct array_cache *shared;
+-			struct array_cache **alien;
+-			cpumask_t mask;
+-
+-			mask = node_to_cpumask(node);
+-			/* cpu is dead; no one can alloc from it. */
+-			nc = cachep->array[cpu];
+-			cachep->array[cpu] = NULL;
+-			l3 = cachep->nodelists[node];
+-
+-			if (!l3)
+-				goto free_array_cache;
+-
+-			spin_lock_irq(&l3->list_lock);
+-
+-			/* Free limit for this kmem_list3 */
+-			l3->free_limit -= cachep->batchcount;
+-			if (nc)
+-				free_block(cachep, nc->entry, nc->avail, node);
+-
+-			if (!cpus_empty(mask)) {
+-				spin_unlock_irq(&l3->list_lock);
+-				goto free_array_cache;
+-			}
+-
+-			shared = l3->shared;
+-			if (shared) {
+-				free_block(cachep, shared->entry,
+-					   shared->avail, node);
+-				l3->shared = NULL;
+-			}
+-
+-			alien = l3->alien;
+-			l3->alien = NULL;
+-
+-			spin_unlock_irq(&l3->list_lock);
+-
+-			kfree(shared);
+-			if (alien) {
+-				drain_alien_cache(cachep, alien);
+-				free_alien_cache(alien);
+-			}
+-free_array_cache:
+-			kfree(nc);
+-		}
+-		/*
+-		 * In the previous loop, all the objects were freed to
+-		 * the respective cache's slabs,  now we can go ahead and
+-		 * shrink each nodelist to its limit.
+-		 */
+-		list_for_each_entry(cachep, &cache_chain, next) {
+-			l3 = cachep->nodelists[node];
+-			if (!l3)
+-				continue;
+-			drain_freelist(cachep, l3, l3->free_objects);
+-		}
++		cpuup_canceled(cpu);
+ 		break;
+ 	case CPU_LOCK_RELEASE:
+ 		mutex_unlock(&cache_chain_mutex);
+ 		break;
+ 	}
+-	return NOTIFY_OK;
+-bad:
+-	return NOTIFY_BAD;
++	return err ? NOTIFY_BAD : NOTIFY_OK;
+ }
+ 
+ static struct notifier_block __cpuinitdata cpucache_notifier = {
 
-- Added slab fix noticed by Gautham R Shenoy
-
-The series of patches:
-
-[patch 1/9] slab: cleanup cpuup_callback()
-[patch 2/9] slab: fix memory leak in cpu hotplug error path
-[patch 3/9] cpu: deliver CPU_UP_CANCELED only to NOTIFY_OKed callbacks
-            with CPU_UP_PREPARE
-[patch 4/9] topology: remove topology_dev_map
-[patch 5/9] thermal_throttle: fix cpu hotplug error handling
-[patch 6/9] msr: fix cpu hotplug error handling
-[patch 7/9] cpuid: fix cpu hotplug error handling
-[patch 8/9] mce: fix cpu hotplug error handling
-[patch 9/9] intel_cacheinfo: fix cpu hotplug error handling
-
-The patch 1/9 factors out some code from cpuup_callback() to simplify
-what the patch 2/9 does.
-
-The patch 2/9 fixes memory leak in allocation failure path. Also it
-avoids the memory leak that will be introduced by the patch 3/9.
-
-The patch 3/9 changes the behavior when one of the callbacks in notifier
-chain returns NOTIFY_BAD with CPU_UP_PREPARE event. This change makes
-cpu hotplug error handling simple.
-
-The patch 4/9 simplifies the cpu hotplug event handling in topology.c
-enabled by the patch 3/9.
-
-The patch 5-9/9 are cpu hotplug error handling fixes in drivers.
-Mainly these patches shift some callbacks from CPU_ONLINE to CPU_UP_PREPARE.
-
-CPU hotplug/unplug test script:
-
-----------[ cut here ]----------
-
-#!/bin/bash
-
-FAILTYPE=failslab
-CPU=1
-CPU_ONLINE=/sys/devices/system/cpu/cpu${CPU}/online
-
-faulty_system()
-{
-	bash -c "echo 1 > /proc/self/make-it-fail && exec $*"
-}
-
-[ "$UID" == 0 ] || exit 1
-[ -n "$FAILTYPE" -a -f /debug/$FAILTYPE/probability ] || exit 1
-[ -f $CPU_ONLINE ] || exit 1
-
-echo N > /debug/$FAILTYPE/ignore-gfp-wait
-echo Y > /debug/$FAILTYPE/task-filter
-echo 1 > /debug/$FAILTYPE/probability
-echo -1 > /debug/$FAILTYPE/times
-
-while true
-do
-	faulty_system "echo 0 > $CPU_ONLINE"
-	faulty_system "echo 1 > $CPU_ONLINE"
-done
+-- 
