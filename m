@@ -1,153 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763013AbXGVI7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763387AbXGVI7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763013AbXGVI7X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 04:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbXGVI7P
+	id S1763387AbXGVI7y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 04:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760834AbXGVI7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 04:59:15 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:56986 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756796AbXGVI7O (ORCPT
+	Sun, 22 Jul 2007 04:59:44 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:44530
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760767AbXGVI7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 04:59:14 -0400
-Subject: Re: [PATCH 3/3] readahead: scale max readahead size depending on
-	memory size
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
-       Chris Snook <csnook@redhat.com>
-In-Reply-To: <385093918.09754@ustc.edu.cn>
-References: <20070721210005.000228000@chello.nl>
-	 <20070721210052.497469000@chello.nl>  <385093918.09754@ustc.edu.cn>
-Content-Type: text/plain
-Date: Sun, 22 Jul 2007 10:59:11 +0200
-Message-Id: <1185094751.20032.221.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Jul 2007 04:59:42 -0400
+Date: Sun, 22 Jul 2007 01:58:50 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Igor Stoppa <igor.stoppa@nokia.com>
+cc: "ext linux-pm-bounces@lists.linux-foundation.org" 
+	<linux-pm-bounces@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Power Management framework proposal
+In-Reply-To: <1185091022.19678.28.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+ <1185091022.19678.28.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-22 at 16:45 +0800, Fengguang Wu wrote:
-> On Sat, Jul 21, 2007 at 11:00:08PM +0200, Peter Zijlstra wrote:
-> > Scale the default max readahead size with the system memory size.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  block/ll_rw_blk.c  |    2 +-
-> >  include/linux/fs.h |    1 +
-> >  mm/readahead.c     |   32 ++++++++++++++++++++++++++++++++
-> >  3 files changed, 34 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/block/ll_rw_blk.c
-> > ===================================================================
-> > --- linux-2.6.orig/block/ll_rw_blk.c
-> > +++ linux-2.6/block/ll_rw_blk.c
-> > @@ -208,7 +208,7 @@ void blk_queue_make_request(request_queu
-> >  	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
-> >  	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
-> >  	q->make_request_fn = mfn;
-> > -	q->backing_dev_info.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-> > +	bdi_ra_init(&q->backing_dev_info);
-> 
-> fs/fuse/inode.c has another line to be converted.
+On Sun, 22 Jul 2007, Igor Stoppa wrote:
 
-Drad, right you are. Will grep a bit.
+> Hi,
+> On Sat, 2007-07-21 at 23:49 -0700, ext
+> linux-pm-bounces@lists.linux-foundation.org wrote:
+>> I'm deliberatly breaking the threading on this so that people who have
+>> tuned out the hibernation thread can take a look at this.
+>>
+>> below is the proposal that I made at the bottom of one of the posts on the
+>> hibernation thread.
+>
+> I have the impression that you are trying to describe a mix of the clock
+> and latency frameworks.
+>
+> Could you elaborate on how your proposal is incompatible with enhancing
+> the clock framework?
 
-> >  	q->backing_dev_info.state = 0;
-> >  	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
-> >  	blk_queue_max_sectors(q, SAFE_MAX_SECTORS);
-> > Index: linux-2.6/include/linux/fs.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/fs.h
-> > +++ linux-2.6/include/linux/fs.h
-> > @@ -1696,6 +1696,7 @@ extern long do_splice_direct(struct file
-> >  
-> >  extern void
-> >  file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping);
-> > +extern void bdi_ra_init(struct backing_dev_info *bdi);
-> >  extern loff_t no_llseek(struct file *file, loff_t offset, int origin);
-> >  extern loff_t generic_file_llseek(struct file *file, loff_t offset, int origin);
-> >  extern loff_t remote_llseek(struct file *file, loff_t offset, int origin);
-> > Index: linux-2.6/mm/readahead.c
-> > ===================================================================
-> > --- linux-2.6.orig/mm/readahead.c
-> > +++ linux-2.6/mm/readahead.c
-> > @@ -42,6 +42,38 @@ file_ra_state_init(struct file_ra_state 
-> >  }
-> >  EXPORT_SYMBOL_GPL(file_ra_state_init);
-> >  
-> > +static unsigned long ra_pages;
-> > +
-> > +static __init int readahead_init(void)
-> > +{
-> > +	/*
-> > +	 * Scale the max readahead window with system memory
-> > +	 *
-> > +	 *   64M:   128K
-> > +	 *  128M:   180K
-> > +	 *  256M:   256K
-> > +	 *  512M:   360K
-> > +	 *    1G:   512K
-> > +	 *    2G:   724K
-> > +	 *    4G:  1024K
-> > +	 *    8G:  1448K
-> > +	 *   16G:  2048K
-> > +	 */
-> > +	ra_pages = int_sqrt(totalram_pages/16);
-> > +	if (ra_pages > (2 << (20 - PAGE_SHIFT)))
-> > +		ra_pages = 2 << (20 - PAGE_SHIFT);
-> 
-> We can elaborate on the numbers ;)
-> 
-> How about the following rules?
-> - limit it under 1MB: we have to consider latencies
+It's not that I think it's incompatible with any existing powersaving 
+tools (in fact I hope it's not)
 
-readahead is done async and we have these cond_resched() things
-sprinkled all over, no?
+it's that I think that this (or something similar) could be made to cover 
+all thevarious power options instead of CPU's having one interface, ACPI 
+capable drivers having another, embeded devices presenting a third, etc
 
-> - make them alignment-friendly, i.e. 128K, 256K, 512K, 1M.
+this was triggered by the mess of different function calls for different 
+purposes that are used for the suspend functions where you have a bunch of 
+different functions that are each supposed to be called at a specific time 
+from a specific mode during the suspend process. with all these different 
+functions driver writes tend to not bother implementing any of them, and 
+it seems like there is a fairly steady stream of new functions that end up 
+being needed. the initial intent was to just change this into a generic 
+set of calls that every driver writer would implement the minimum set of, 
+and make it trivially extensable to future capabilities of hardware.
 
-Would that actually matter? but yeah, that seems like a sane suggestion.
-roundup_pow_of_two() comes to mind.
+one other effect of this is that driver writers would see the mode 
+interface from day one rather then just completely ignoring it. right now 
+device driver authors tend to thing " why worry about figuring out how to 
+implement 'prepare to suspend', 'late suspend', 'suspend', 'quiese but 
+don't suspend', etc" if they aren't really interested in working on 
+suspend, it's not really clear what each of these should do even after 
+reading the docs on it. however listing the power modes that a device can 
+be in, documenting the cost of switching between them, and implementing 
+the transition is something very straightforward for the device driver 
+author to do (and they don't have to worry about the details of how and 
+when the various modes get used, that's up to the suspend/powersaving 
+software to figure out). as such I expect that the driver support for 
+powersaving modes to improve. in fact, I expect that some driver writers 
+will implement a whole bunch of modes, just to show off the features of 
+the hardware. and even if nothing uses the modes right now at least they 
+are implemented and documented for future use (and it should be trivial to 
+have a test routine that just runs every driver you have hardware for 
+through every mode transition to make sure that they all work, so the less 
+commonly used modes shouldn't bitrot too badly)
 
-> My original plan is to simply do the following:
-> 
-> - #define VM_MAX_READAHEAD        128     /* kbytes */
-> + #define VM_MAX_READAHEAD        512     /* kbytes */
+while I was describing the issues to my roomates over dinner I realized 
+that the same type of functions are needed for the CPU clocks.
 
-Yeah, the trouble I have with that is that it might adversely affect
-tiny systems (although the trash detection might mitigate that impact)
+if you have an accepted framework in place there that can do what I 
+described, please consider extending it to cover other types of devices 
+and drivers.
 
-> I'd like to post some numbers to back-up the discussion:
-> 
->   readahead   readahead
->        size        miss
->        128K         38%
->        512K         45%
->       1024K         49%
-> 
-> The numbers are measured on a fresh booted KDE desktop.
-> 
-> The majority misses come from the larger mmap read-arounds.
+I want sanity and functionality far more then credit :-)
 
-the mmap code never gets into readahead unless madvise(MADV_SEQUENTIAL)
-is used afaik.
+David Lang
 
-> Sequential readahead hits are pretty high and not quite affected by
-> the readahead size, thanks to its size ramp-up process.
-> 
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +subsys_initcall(readahead_init);
-> 
-> Remove the global ra_pages and fold readahead_init() into bdi_ra_init()?
-> bdi_ra_init will only be called several times I guess.
+> It looks like you are proposing a brand new shiny thing that frankly I
+> would be happy to leave alone, unless it is crystal clear that the clock
+> fw cannot be improved.
+>
+> The clocfk fw is used for OMAP and other architectures (including SH,
+> iirc) and so far it has provided very good support for our power
+> management needs (Nokia 770 and N800).
+>
+> Currently we are working on DVFS for OMAP2 (see slides presented at the
+> linux-pm summit for OLS 2007 http://tinyurl.com/28tact ) and even if the
+> current prototype is not actively involving the clock fw, our final goal
+> is to make it capable of supporting atomic transactions for changing the
+> core parameters.
 
-I guess we could, this just seemed like a proper setup where more things
-could grow into.
+thanks for the link. I've read through it, and it looks like there is a 
+lot of the same ideas in your proposal. I think you are passing too much 
+info up the chain to the part makeing the decision (that part doesn't need 
+to know the details of the voltage/freq choices, the %power/%capability 
+numbers I suggested are in many ways more what they are making decision 
+son anyway)
 
+in the slideshow you list in the sequence of changing the cpu speed to pre 
+and post notify drivers. what exactly are the drivers expected to do with 
+the notification? are you asking them to pause and then re-initialize for 
+the new power level?
+
+> OMAP3 will require suspend to ram implementation where the content of
+> system memory is retained, while parts or all the SoC are switched off.
+> The plan is still to have a clock fw based implementation (plus
+> interaction with the power rails, of course).
+>
+> I think these are good examples of the non-ACPI systems you are
+> mentioning.
+
+yes, I think they are.
+
+> To make any proposal that has some chance of being accepted, you have to
+> compare it against the existing solution, explaining:
+>
+> -what it is bringing in terms of new functionalities
+> -how it is different
+
+it unifies all power/performance trade-offs (including power on/off) into 
+a single API, but decouples that API from the implementation details of 
+exactly what the technical details of the different modes are and how the 
+changes are made.
+
+for some subsystems this would be little more then renameing existing 
+fucntions, for others it would be converting several indepndant functions 
+into one, discoverable api
+
+> -why the current implementation cannot simply be enhanced
+
+which current implementation should be enhanced? and with the massive 
+broadening of functionality should it retain the same name, or should it 
+get renamed to something more generic?
+
+the cpufreq implementation is very close to what I'm proposing, it would 
+need to get broadend to cover other devices (like disk drives, wireless 
+cards, etc), is this really the right thing to do or should the more 
+generic API go in for external use and then the existing cpufreq be called 
+from the set_mode() call?
+
+> You can refer to the linux-pm archives for examples of failed attempts
+> over the last year or so, just search for "framework" in the subject.
+
+I'll try to do some digging.
+
+David Lang
