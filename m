@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762083AbXGVPAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762726AbXGVPBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762083AbXGVPAw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 11:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbXGVPAp
+	id S1762726AbXGVPBX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 11:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXGVPBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 11:00:45 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:55605 "EHLO tim.rpsys.net"
+	Sun, 22 Jul 2007 11:01:14 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:55607 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbXGVPAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 11:00:44 -0400
-Subject: [GIT PULL #2] Backlight updates
+	id S1755756AbXGVPBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 11:01:12 -0400
+Subject: [GIT PULL #2] LED updates
 From: Richard Purdie <rpurdie@rpsys.net>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Sun, 22 Jul 2007 16:00:28 +0100
-Message-Id: <1185116428.6819.35.camel@localhost.localdomain>
+Date: Sun, 22 Jul 2007 16:00:26 +0100
+Message-Id: <1185116426.6819.33.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
@@ -26,36 +26,42 @@ Linus,
 
 Could you please pull from:
 
-git://git.o-hand.com/linux-rpurdie-backlight for-linus
+git://git.o-hand.com/linux-rpurdie-leds for-linus
 
-This converts the backlight/lcd class away from struct class_device and
-includes a couple of bugfixes.
+This adds a couple of new LED drivers and converts the LED class away
+from struct class_device as well as some bug fixes. Most of this has
+been in -mm for a while as it just missed the 2.6.22 merge window.
 
 Thanks,
 
-Richard (Backlight maintainer)
+Richard (LED maintainer)
 
- drivers/acpi/video.c                 |    4 -
- drivers/usb/misc/appledisplay.c      |    4 -
- drivers/video/aty/aty128fb.c         |    2 
- drivers/video/aty/atyfb_base.c       |    2 
- drivers/video/aty/radeon_backlight.c |    4 -
- drivers/video/backlight/Kconfig      |   26 ++++---
- drivers/video/backlight/backlight.c  |  125 ++++++++++++++---------------------
- drivers/video/backlight/cr_bllcd.c   |    2 
- drivers/video/backlight/lcd.c        |  112 ++++++++++++++-----------------
- drivers/video/nvidia/nv_backlight.c  |    2 
- drivers/video/riva/fbdev.c           |    2 
- include/linux/backlight.h            |   11 ++-
- include/linux/lcd.h                  |   14 ++-
- 13 files changed, 148 insertions(+), 162 deletions(-)
+ arch/avr32/boards/atngw100/setup.c    |   31 +++++
+ arch/avr32/configs/atngw100_defconfig |   16 ++
+ drivers/leds/Kconfig                  |   22 ++-
+ drivers/leds/Makefile                 |    1 
+ drivers/leds/led-class.c              |   49 +++-----
+ drivers/leds/led-triggers.c           |   27 +++-
+ drivers/leds/leds-gpio.c              |  199 ++++++++++++++++++++++++++++++++++
+ drivers/leds/leds-locomo.c            |    2 
+ drivers/leds/leds.h                   |    8 -
+ drivers/leds/ledtrig-timer.c          |   49 +++-----
+ include/linux/leds.h                  |   17 ++
+ 11 files changed, 343 insertions(+), 78 deletions(-)
 
-Andrew Morton (1):
-      leds: cr_bllcd.c: build fix
+David Brownell (2):
+      leds: Teach leds-gpio to handle timer-unsafe GPIOs
+      leds: leds-gpio for ngw100
 
-David Brownell (1):
-      backlight: Fix order of Kconfig entries
+Jan Engelhardt (1):
+      leds: Use menuconfig objects II - LED
 
-Richard Purdie (1):
-      backlight: Convert from struct class_device to struct device
+Raphael Assenat (1):
+      leds: Add generic GPIO LED driver
+
+Richard Purdie (3):
+      leds: Fix trigger unregister_simple if register_simple fails
+      leds: Add warning printks in error paths
+      leds: Convert from struct class_device to struct device
+
 
