@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764881AbXGVUrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764955AbXGVUtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764881AbXGVUrU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 16:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763003AbXGVUrG
+	id S1764955AbXGVUtt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 16:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763509AbXGVUtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 16:47:06 -0400
-Received: from lazybastard.de ([212.112.238.170]:38448 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763186AbXGVUrF (ORCPT
+	Sun, 22 Jul 2007 16:49:42 -0400
+Received: from mga02.intel.com ([134.134.136.20]:17419 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763213AbXGVUtm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 16:47:05 -0400
-Date: Sun, 22 Jul 2007 22:43:25 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: drivers/mtd/devices/doc2000.c - address of 'eccbuf' will always evaluate as 'true' , warnings
-Message-ID: <20070722204325.GB11479@lazybastard.org>
-References: <46A349E6.3030207@googlemail.com> <20070722193449.GA11479@lazybastard.org> <46A3BE29.50501@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46A3BE29.50501@googlemail.com>
-User-Agent: Mutt/1.5.9i
+	Sun, 22 Jul 2007 16:49:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,569,1175497200"; 
+   d="scan'208";a="269180131"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: DMA Engine vs. DMA Transfer API
+Date: Sun, 22 Jul 2007 13:49:40 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02B81E50@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20070721084233.GE21334@clifford.at>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: DMA Engine vs. DMA Transfer API
+Thread-Index: AcfLcquZISPqHOltRsqYRkzk71HTsABLdQYg
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Clifford Wolf" <clifford@clifford.at>,
+       "lkml" <linux-kernel@vger.kernel.org>
+Cc: "Williams, Dan J" <dan.j.williams@intel.com>
+X-OriginalArrivalTime: 22 Jul 2007 20:49:41.0192 (UTC) FILETIME=[D3676C80:01C7CCA1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 July 2007 22:29:29 +0200, Gabriel C wrote:
-> 
-> @@ -896,25 +896,6 @@ static int doc_write(struct mtd_info *mtd, loff_t to, size_t len,
->  		/* Let the caller know we completed it */
->  		*retlen += len;
->  
-> -		if (eccbuf) {
-> -			unsigned char x[8];
-> -			size_t dummy;
-> -			int ret;
-> -
-> -			/* Write the ECC data to flash */
-> -			for (di=0; di<6; di++)
-> -				x[di] = eccbuf[di];
-> -
-> -			x[6]=0x55;
-> -			x[7]=0x55;
-> -
-> -			ret = doc_write_oob_nolock(mtd, to, 8, &dummy, x);
-> -			if (ret) {
-> -				mutex_unlock(&this->lock);
-> -				return ret;
-> -			}
-> -		}
-> -
->  		to += len;
->  		left -= len;
->  		buf += len;
+Clifford Wolf [mailto:clifford@clifford.at] 
+>
+>Hi Shannon, hi lkml,
 
-You should remove the condition, but not the conditional code.
+Hi Clifford,
 
-Jörn
+>I'm writing a driver for the built-in DMA controller of the Freescale
+>MPC8349E PowerPC based microcontroller. Unfortunately the DMA-Engine
+>API seams to be the totally wrong thing for that since this 
+>DMA controller
+>has many features which are not available thru dmaengine 
+>[...]
 
--- 
-A quarrel is quickly settled when deserted by one party; there is
-no battle unless there be two.
--- Seneca
+This has been one of the biggest issues with the original dmaengine
+interface - it didn't play well with others.  Since then a few folks
+have taken a couple shots at it, but Dan Williams recently has done it
+best in his changes aimed at rolling in his RAID accelleration engine.
+Most of what you are looking for is already available - see the recent
+changes in the dmaengine that allow for multiple DMA clients, multiple
+DMA engines, and a method for selecting DMA services based upon the
+capabilities needed.
+
+If these changes still don't quite fit your need, let us know and we can
+probably help you work it out.
+
+Now, you go back to your vacation and I'll go back to my quiet Sunday
+afternoon.
+
+sln
+--
+======================================================================
+Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
+Shannon.Nelson@intel.com                I don't speak for Intel
+(503) 712-7659                    Parents can't afford to be squeamish.
