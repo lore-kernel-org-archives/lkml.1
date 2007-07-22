@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765095AbXGVM7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbXGVNH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765095AbXGVM7M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 08:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761001AbXGVM65
+	id S932926AbXGVNH6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 09:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760713AbXGVNHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 08:58:57 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:41226 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754369AbXGVM64 (ORCPT
+	Sun, 22 Jul 2007 09:07:49 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57510 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755127AbXGVNHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 08:58:56 -0400
-Date: Sun, 22 Jul 2007 15:58:48 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: do_swap_page() and !CONFIG_SWAP
-Message-ID: <20070722125848.GA6182@localdomain>
+	Sun, 22 Jul 2007 09:07:48 -0400
+Date: Sun, 22 Jul 2007 15:07:47 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jacob A <jacoba51-tmp@yahoo.com>
+cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: 2.4 Q: list of open files per inode?
+In-Reply-To: <333685.87286.qm@web57707.mail.re3.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0707221506090.15705@fbirervta.pbzchgretzou.qr>
+References: <333685.87286.qm@web57707.mail.re3.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Is there any valid reason (except memory corruption) for do_swap_page() 
-to be called in a x86_64 2.6.21.5 kernel where CONFIG_SWAP is not selected?
+On Jul 22 2007 05:45, Jacob A wrote:
+>
+>Ah, yes, this was my intention, to keep the state in filp->private_data.
+>But then at a timer routine I wanted to go over all the filps associated with the device
+>and check/modify the state. That's why I needed the open files list.
 
-If not, does it make sense to put there something in lines of:
+No. For each private_data that you allocate, create a linked list
+that also has them. In other words:
 
-       print_bad_pte(vma, orig_pte, address);
-       panic("unexpected swap pte - possible page table memory corruption\n");
 
-?
+struct mystuff {
+	struct list_head list;
+	int other_fluff;
+};
 
+int mydriver_open()
+{
+	struct mystuff *pd = kmalloc(...);
+	filp->private_data = pd;
+	list_add(&pd->list);
+}
+
+int mydriver_close()
+{
+	struct mystuff *pd = filp->private_data;
+	list_del(&pd->list);
+	free(pd);
+}
+
+Simple as that. *Of course* this requires that the file descriptor remains
+open. But that should not be a problem, would it?
+
+
+    Jan
 -- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+
+
+
+>
+
+    Jan
+-- 
+
+
+
+>
+
+	Jan
+-- 
