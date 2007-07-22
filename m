@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765337AbXGVVXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762358AbXGVVaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765337AbXGVVXj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 17:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbXGVVXa
+	id S1762358AbXGVVaB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 17:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbXGVV3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 17:23:30 -0400
-Received: from neon.samage.net ([85.17.153.66]:36941 "EHLO neon.samage.net"
+	Sun, 22 Jul 2007 17:29:53 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33294 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755841AbXGVVX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 17:23:29 -0400
-Message-ID: <54649.81.207.0.53.1185139404.squirrel@secure.samage.net>
-In-Reply-To: <20070722162802.GA20174@thunk.org>
-References: <200707200813.03553.a1426z@gawab.com>
-    <46A24846.7050803@gmail.com> <20070722011141.GJ26752@thunk.org>
-    <200707220710.31402.a1426z@gawab.com>
-    <20070722162802.GA20174@thunk.org>
-Date: Sun, 22 Jul 2007 23:23:24 +0200 (CEST)
-Subject: Re: [RFH] Partition table recovery
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Theodore Tso" <tytso@mit.edu>, "Al Boldi" <a1426z@gawab.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
-MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: ba572e8a3bde05b4b19613c12a9e49fc
+	id S1753383AbXGVV3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 17:29:52 -0400
+Subject: Re: [git patches] two warning fixes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net
+In-Reply-To: <46A2D6F7.9080309@garzik.org>
+References: <20070718235504.GA9601@havoc.gtf.org>
+	 <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
+	 <469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain>
+	 <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
+	 <m3644e2abd.fsf@maximus.localdomain>
+	 <1184977973.5439.45.camel@localhost.localdomain>
+	 <46A2D6F7.9080309@garzik.org>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 07:29:20 +1000
+Message-Id: <1185139760.5439.52.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, July 22, 2007 18:28, Theodore Tso wrote:
-> On Sun, Jul 22, 2007 at 07:10:31AM +0300, Al Boldi wrote:
->> Sounds great, but it may be advisable to hook this into the partition
->> modification routines instead of mkfs/fsck.  Which would mean that the
->> partition manager could ask the kernel to instruct its fs subsystem to
->> update the backup partition table for each known fs-type that supports such
->> a feature.
->
-> Well, let's think about this a bit.  What are the requirements?
->
-> 1) The partition manager should be able explicitly request that a new
-> backup of the partition tables be stashed in each filesystem that has
-> room for such a backup.  That way, when the user affirmatively makes a
-> partition table change, it can get backed up in all of the right
-> places automatically.
->
-> 2) The fsck program should *only* stash a backup of the partition
-> table if there currently isn't one in the filesystem.  It may be that
-> the partition table has been corrupted, and so merely doing an fsck
-> should not transfer a current copy of the partition table to the
-> filesystem-secpfic backup area.  It could be that the partition table
-> was only partially recovered, and we don't want to overwrite the
-> previously existing backups except on an explicit request from the
-> system administrator.
->
-> 3) The mkfs program should automatically create a backup of the
-> current partition table layout.  That way we get a backup in the newly
-> created filesystem as soon as it is created.
->
-> 4) The exact location of the backup may vary from filesystem to
-> filesystem.  For ext2/3/4, bytes 512-1023 are always unused, and don't
-> interfere with the boot sector at bytes 0-511, so that's the obvious
-> location.  Other filesystems may have that location in use, and some
-> other location might be a better place to store it.  Ideally it will
-> be a well-known location, that isn't dependent on finding an inode
-> table, or some such, but that may not be possible for all filesystems.
 
-To be on the safe side, maybe also add a checksum, timestamp and
-something identifying the disk the filesystem was created on.
+> Not necessarily as simple as that -- you need to make sure you don't 
+> pass something bogus to a sysfs_remove_blah() function at 
+> unregister/unload time, if sysfs_create_blah() failed.
+> 
+> Certainly sysfs_foo() failure is often ignorable in the sense that you 
+> want the driver to keep loading... but that does not imply that it is 
+> strictly ignorable, if you also consider the associated cleanup code.
 
-Regards,
+It should be trivial enough to have sysfs_create_blah() do enough
+initializations before it can fail so that sysfs_remove_blah() do the
+right thing regardless.
 
-Indan
+It's actually a major PITA for a driver that creates a whole bunch of
+sysfs files to have to track precisely which ones were created
+successfully for the error path. If it's a single function, goto does
+the trick but if for some reason it's not, it's really annoying.
+
+Ben.
 
 
