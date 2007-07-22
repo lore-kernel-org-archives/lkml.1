@@ -1,41 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbXGVIG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761060AbXGVIKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbXGVIG2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 04:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXGVIGC
+	id S1761060AbXGVIKc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 04:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbXGVIKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 04:06:02 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:10691 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754913AbXGVIFz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 04:05:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=uOh1fhDhG950G/dlt/tNVVRHlGPmCkCgsfm4T5qEYdg2blgcyxYHD5g25p27NEIqm
-	UAzYLbgtM4gpsJC7bR3IQ==
-Date: Sun, 22 Jul 2007 01:05:33 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86_64: offset apicid_to_node before use it before
- init_cpu_to_node
-In-Reply-To: <86802c440707211749x3258891fhbb72a155dc484e86@mail.gmail.com>
-Message-ID: <alpine.DEB.0.99.0707220104550.6665@chino.kir.corp.google.com>
-References: <86802c440707211749x3258891fhbb72a155dc484e86@mail.gmail.com>
+	Sun, 22 Jul 2007 04:10:16 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:39869 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1750993AbXGVIKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 04:10:12 -0400
+Message-ID: <385091802.23116@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 22 Jul 2007 16:10:10 +0800
+From: Fengguang Wu <fengguang.wu@gmail.com>
+To: Dave Jones <davej@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
+       Chris Snook <csnook@redhat.com>
+Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
+Message-ID: <20070722081010.GA6317@mail.ustc.edu.cn>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>
+References: <20070721210005.000228000@chello.nl> <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070722024428.GA724@redhat.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007, Yinghai Lu wrote:
+On Sat, Jul 21, 2007 at 10:44:28PM -0400, Dave Jones wrote:
+> On Sun, Jul 22, 2007 at 10:39:23AM +0800, Fengguang Wu wrote:
+>  
+>  > It makes sense to raise it beyond 128K.  1M default readahead
+>  > absolutely makes sense for sequential workloads.  For the desktop,
+>  > this increases boot speed and readahead misses, both due to more
+>  > aggressive mmap read-around. Most users will be glad to feel the
+>  > speedup, and happily ignore the readahead misses, which may be
+>  > "invisible" in case of large memory.
+>  > 
+>  > In theory, the distributions can do the same tuning.  So we have an
+>  > interesting question for Dave:
+>  >         Does fedora desktop raise the default readahead size? Why or
+>  >         why not?  It goes so far to do userland readahead ;)
+>  
+> Fedora takes whatever defaults for readahead the kernel.org kernel has.
+> The only reasoning being if anyone reported VM bugs, we'd be able
+> to say to interested upstream developers "we're running the stock VM".
+> without having to get the user to try and reproduce on unpatched
+> kernels.
 
-> [PATCH 3/3] x86_64: offset apicid_to_node before use it before
-> init_cpu_to_node
+Thank you.  Now I'm more confident that the kernel should have a
+reasonable default readahead size. The current one is 5+ years old and
+should be updated now.
+
+>  > - drop behind
+>  > 
+>  > Sorry, I still doubt it will benefit all/most workloads. Leave it off
+>  > by default, and leave the enabling decision to Dave? I do hope that
+>  > it help general desktops.
 > 
+> It's not a subject that I'm intimatly familiar with, and when it
+> comes to decisions like this, I tend to just take whatever the
+> upstream defaults are.
 
-Does this preserve the correct fake apicid_to_node mapping for the 
-emulated case such as numa=fake=32?
+- It will avoid large-file-reads-thrashing-my-desktop problem,
+  so most desktop users should like it. But sure there will be counter
+  cases when a user want to keep the data cached.
+- File servers may hurt from it. Imagine a mp3/png file server. The
+  files are large enough to trigger drop-behind, but small (and hot)
+  enough to be cached. Also when a new fedora DVD iso is released, it
+  may be cached for some days. These are only the obvious cases.
+
+So I opt for it being made tunable, safe, and turned off by default.
+
