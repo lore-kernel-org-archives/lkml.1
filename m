@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbXGVRdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761998AbXGVRmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758758AbXGVRdd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 13:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbXGVRdA
+	id S1761998AbXGVRmX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 13:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbXGVRmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 13:33:00 -0400
-Received: from homer.mvista.com ([63.81.120.158]:50820 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757391AbXGVRc7 (ORCPT
+	Sun, 22 Jul 2007 13:42:14 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:65244 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753566AbXGVRmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 13:32:59 -0400
-Subject: [PATCH -rt] temporary WARN_ON removal
-From: Daniel Walker <dwalker@mvista.com>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 22 Jul 2007 10:22:41 -0700
-Message-Id: <1185124961.2573.14.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Sun, 22 Jul 2007 13:42:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=cY3rm4JskTQK/csKC3iwnssaPykJtkHcCyyrJU9YAPslBfqk0eCC7+kDtgXdvzHJUkbhAtRAOYXDHTdFofKAUCK4hYyTDVKW8dgO9Jgg8Lay0CgzD2+eWAhrCX+u2sCQXlnJRr78o0FB9RvVAehYjnGpkxy52bsIUBuBmROcnu4=
+Message-ID: <46A3966B.9000601@googlemail.com>
+Date: Sun, 22 Jul 2007 19:39:55 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linux-scsi@vger.kernel.org
+Subject: [PATCH] Fix drivers/scsi/fdomain.c , CONFIG_PCI=n warnings
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-These two WARN_ON calls send my system into a boot hang. They trigger
-over and over , some examples below.
+I get this warnings on current git when CONFIG_PCI is not set :
 
-[   58.438501] WARNING: at kernel/sched.c:3785 schedule()
-[   58.443444]  [<c039b224>] schedule+0x74/0x110
-[   58.447772]  [<c039a67f>] rest_init+0x4f/0x60
-[   58.452092]  [<c0490a8f>] start_kernel+0x2cf/0x310
-[   58.456848]  [<c0490210>] unknown_bootoption+0x0/0x250
-[   58.461951]  =======================
-[   58.465496] WARNING: at kernel/sched.c:3683 schedule_debug()
-[   58.471118]  [<c039ae0c>] __schedule+0x4cc/0x760
-[   58.475702]  [<c010511a>] print_trace_address+0x1a/0x30
-[   58.480893]  [<c0129a2b>] printk+0x1b/0x20
-[   58.484957]  [<c01051f8>] show_trace_log_lvl+0x28/0x30
-[   58.490060]  [<c039b1de>] schedule+0x2e/0x110
-[   58.494385]  [<c039a67f>] rest_init+0x4f/0x60
-[   58.498709]  [<c0490a8f>] start_kernel+0x2cf/0x310
-[   58.503465]  [<c0490210>] unknown_bootoption+0x0/0x250
-[   58.508569]  =======================
+...
 
-On closer inspection I'm not sure they are correctly placed. They could
-trigger or not depending on when/if certain threads run.
+drivers/scsi/fdomain.c:390: warning: 'PCI_dev' defined but not used
+drivers/scsi/fdomain.c:1768: warning: 'fdomain_pci_tbl' defined but not used
 
-Here is a patch to comment them out. This should go into the
-preempt-realtime-sched.patch 
+...
 
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
-Index: linux-2.6.22.1/kernel/sched.c
-===================================================================
---- linux-2.6.22.1.orig/kernel/sched.c	2007-07-22 17:18:38.000000000 +0000
-+++ linux-2.6.22.1/kernel/sched.c	2007-07-22 17:17:48.000000000 +0000
-@@ -3680,7 +3680,7 @@ static noinline void __schedule_bug(stru
-  */
- static inline void schedule_debug(struct task_struct *prev)
- {
--	WARN_ON(system_state == SYSTEM_BOOTING);
-+	//WARN_ON(system_state == SYSTEM_BOOTING);
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+
+---
+
+diff --git a/drivers/scsi/fdomain.c b/drivers/scsi/fdomain.c
+index 36169d5..5d282e6 100644
+--- a/drivers/scsi/fdomain.c
++++ b/drivers/scsi/fdomain.c
+@@ -387,7 +387,9 @@ static void __iomem *    bios_mem;
+ static int               bios_major;
+ static int               bios_minor;
+ static int               PCI_bus;
++#ifdef CONFIG_PCI
+ static struct pci_dev	*PCI_dev;
++#endif
+ static int               Quantum;	/* Quantum board variant */
+ static int               interrupt_level;
+ static volatile int      in_command;
+@@ -1764,6 +1766,7 @@ struct scsi_host_template fdomain_driver_template = {
+ };
  
- 	/*
- 	 * Test if we are atomic.  Since do_exit() needs to call into
-@@ -3782,7 +3782,7 @@ asmlinkage void __sched __schedule(void)
-  */
- asmlinkage void __sched schedule(void)
- {
--	WARN_ON(system_state == SYSTEM_BOOTING);
-+	//WARN_ON(system_state == SYSTEM_BOOTING);
- 	/*
- 	 * Test if we have interrupts disabled.
- 	 */
-
-
+ #ifndef PCMCIA
++#ifdef CONFIG_PCI
+ 
+ static struct pci_device_id fdomain_pci_tbl[] __devinitdata = {
+ 	{ PCI_VENDOR_ID_FD, PCI_DEVICE_ID_FD_36C70,
+@@ -1771,7 +1774,7 @@ static struct pci_device_id fdomain_pci_tbl[] __devinitdata = {
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(pci, fdomain_pci_tbl);
+-
++#endif
+ #define driver_template fdomain_driver_template
+ #include "scsi_module.c"
+ 
