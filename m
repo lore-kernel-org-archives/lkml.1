@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbXGVE4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbXGVE5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbXGVE4O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 00:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXGVE4E
+	id S1756208AbXGVE5X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 00:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXGVE5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 00:56:04 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:40209 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbXGVE4C (ORCPT
+	Sun, 22 Jul 2007 00:57:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:45531 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751005AbXGVE5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 00:56:02 -0400
+	Sun, 22 Jul 2007 00:57:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CWO1ExmvRGJ576SdBZqlraqEmrk8zMkFTwz3+Sp4HVm4QMxN3JTjQpA+Vls/ZffmvxfgkJih5LAiPY6M5xyAuoKOJLovApVd+4aDk853oyfDGYXxWVZbHB+qCv5vY0Sn05vancpFnaEm/XEWXr9ojGuSKXlxv8LZnko7fMM1xwI=
-Message-ID: <c96265a60707212156v5cfad301q8c3d75bf65863048@mail.gmail.com>
-Date: Sat, 21 Jul 2007 21:56:00 -0700
-From: "Mark Tiefenbruck" <mark@fluxbox.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: Dell Inspiron 1501 fails to boot in 2.6.21+
-In-Reply-To: <1185017631.4012.111.camel@chaos>
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=HZgDM5F6WRxhXKsQ2IZm+SntRVlKEItsUsa+5kw8x03/NeiLhOi8ffB46AWBSy+85SfZKX+QSQ0XReU+FgM7kxqZjv89p3Yq2N6la4bHyPZSGAd9S0EmI7lZDAu98D9x8ScLwNq8vCchdqt2RFAsDZU2zAVBdL/fs54nNzUcza8=
+Message-ID: <86802c440707212157kbe46ffbk2483880b187eaa9f@mail.gmail.com>
+Date: Sat, 21 Jul 2007 21:57:08 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>
+Subject: [PATCH 2/3] x86_64: use core id bits for apicid_to_node initialization v2
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c96265a60707201937t39f9b69ep48e76ed61ce1044e@mail.gmail.com>
-	 <1185017631.4012.111.camel@chaos>
-X-Google-Sender-Auth: 06f3dcc887e889ad
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_143113_7196464.1185080228424"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Can you please try the following command line options in any
-> combination:
->
-> hpet=disable
-> nohz=off
-> highres=off
-> nolapic_timer
+------=_Part_143113_7196464.1185080228424
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I've now tried running the kernel with all combinations of
-hpet=disable, nolapic_timer, and clocksource=pm_timer|acpi_pm. I feel
-like hpet=disable was probably unnecessary, since I have HPET disabled
-in my BIOS. I didn't bother with nohz and highres=off, since I don't
-believe those options are present in the version of the kernel I'm
-testing. None of these made any difference, but I can try the rest of
-the combinations, if you think I should. Just to make sure, I should
-be placing these after the kernel path in grub.conf, right?
+Please check the updated version to current tree.
 
-I noticed during these tests that the cursor still blinks when it
-reaches the point where it stops printing things. This seems like good
-evidence that, indeed, the kernel is still active but is waiting for a
-response. Or maybe the hardware does that itself.
+[PATCH 2/3] x86_64: use core id bits for apicid_to_node initialization
 
-I checked on what happens when I enable HPET in my BIOS. In the
-working kernel, it gets to the boot scripts and stops doing anything
-useful when letting udev process events. With the newer kernels, it
-halts in the same place as before.
+We shoud use core id bits instead of max cores, in case later with AMD
+downcores Quad core Opteron.
 
-So, what next? I am of course willing to give out reasonable
-information about my system and try out patches.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-  Mark
+------=_Part_143113_7196464.1185080228424
+Content-Type: text/x-patch; name=2x.patch; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f4f2tbxv
+Content-Disposition: attachment; filename="2x.patch"
+
+ZGlmZiAtLWdpdCBhL2FyY2gveDg2XzY0L21tL2s4dG9wb2xvZ3kuYyBiL2FyY2gveDg2XzY0L21t
+L2s4dG9wb2xvZ3kuYwppbmRleCBhOTYwMDZmLi43Y2JkNThhIDEwMDY0NAotLS0gYS9hcmNoL3g4
+Nl82NC9tbS9rOHRvcG9sb2d5LmMKKysrIGIvYXJjaC94ODZfNjQvbW0vazh0b3BvbG9neS5jCkBA
+IC00NCwxMiArNDQsMTQgQEAgaW50IF9faW5pdCBrOF9zY2FuX25vZGVzKHVuc2lnbmVkIGxvbmcg
+c3RhcnQsIHVuc2lnbmVkIGxvbmcgZW5kKQogeyAKIAl1bnNpZ25lZCBsb25nIHByZXZiYXNlOwog
+CXN0cnVjdCBib290bm9kZSBub2Rlc1s4XTsKLQlpbnQgbm9kZWlkLCBpLCBqLCBuYjsKKwlpbnQg
+bm9kZWlkLCBpLCBuYjsKIAl1bnNpZ25lZCBjaGFyIG5vZGVpZHNbOF07CiAJaW50IGZvdW5kID0g
+MDsKIAl1MzIgcmVnOwogCXVuc2lnbmVkIG51bW5vZGVzOwotCXVuc2lnbmVkIG51bV9jb3JlczsK
+Kwl1bnNpZ25lZCBjb3JlczsKKwl1bnNpZ25lZCBiaXRzOworCWludCBqOwogCiAJaWYgKCFlYXJs
+eV9wY2lfYWxsb3dlZCgpKQogCQlyZXR1cm4gLTE7CkBAIC02MCw5ICs2Miw2IEBAIGludCBfX2lu
+aXQgazhfc2Nhbl9ub2Rlcyh1bnNpZ25lZCBsb25nIHN0YXJ0LCB1bnNpZ25lZCBsb25nIGVuZCkK
+IAogCXByaW50ayhLRVJOX0lORk8gIlNjYW5uaW5nIE5VTUEgdG9wb2xvZ3kgaW4gTm9ydGhicmlk
+Z2UgJWRcbiIsIG5iKTsgCiAKLQludW1fY29yZXMgPSAoY3B1aWRfZWN4KDB4ODAwMDAwMDgpICYg
+MHhmZikgKyAxOwotCXByaW50ayhLRVJOX0lORk8gIkNQVSBoYXMgJWQgbnVtX2NvcmVzXG4iLCBu
+dW1fY29yZXMpOwotCiAJcmVnID0gcmVhZF9wY2lfY29uZmlnKDAsIG5iLCAwLCAweDYwKTsgCiAJ
+bnVtbm9kZXMgPSAoKHJlZyA+PiA0KSAmIDB4RikgKyAxOwogCWlmIChudW1ub2RlcyA8PSAxKQpA
+QCAtMTY4LDExICsxNjcsMTUgQEAgaW50IF9faW5pdCBrOF9zY2FuX25vZGVzKHVuc2lnbmVkIGxv
+bmcgc3RhcnQsIHVuc2lnbmVkIGxvbmcgZW5kKQogCX0gCiAJcHJpbnRrKEtFUk5fSU5GTyAiVXNp
+bmcgbm9kZSBoYXNoIHNoaWZ0IG9mICVkXG4iLCBtZW1ub2RlX3NoaWZ0KTsgCiAKKwkvKiB1c2Ug
+dGhlIGNvcmVpZCBiaXRzIGZyb20gZWFybHlfaWRlbnRpZnlfY3B1ICovCisJYml0cyA9IGJvb3Rf
+Y3B1X2RhdGEueDg2X2NvcmVpZF9iaXRzOworCWNvcmVzID0gKDE8PGJpdHMpOworCiAJZm9yIChp
+ID0gMDsgaSA8IDg7IGkrKykgewogCQlpZiAobm9kZXNbaV0uc3RhcnQgIT0gbm9kZXNbaV0uZW5k
+KSB7IAogCQkJbm9kZWlkID0gbm9kZWlkc1tpXTsKLQkJCWZvciAoaiA9IDA7IGogPCBudW1fY29y
+ZXM7IGorKykKLQkJCQlhcGljaWRfdG9fbm9kZVsobm9kZWlkICogbnVtX2NvcmVzKSArIGpdID0g
+aTsKKwkJCWZvciAoaiA9IDA7IGogPCBjb3JlczsgaisrKQorCQkJCWFwaWNpZF90b19ub2RlWyhu
+b2RlaWQgPDwgYml0cykgKyBqXSA9IGk7CiAJCQlzZXR1cF9ub2RlX2Jvb3RtZW0oaSwgbm9kZXNb
+aV0uc3RhcnQsIG5vZGVzW2ldLmVuZCk7IAogCQl9IAogCX0K
+------=_Part_143113_7196464.1185080228424--
