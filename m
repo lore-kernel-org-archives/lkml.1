@@ -1,150 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756974AbXGVPbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbXGVPdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756974AbXGVPbV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 11:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbXGVPbO
+	id S1758646AbXGVPdb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 11:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXGVPdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 11:31:14 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:60953 "EHLO
+	Sun, 22 Jul 2007 11:33:24 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:62984 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbXGVPbN (ORCPT
+	with ESMTP id S1750950AbXGVPdW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 11:31:13 -0400
+	Sun, 22 Jul 2007 11:33:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ahr/pcfaASdjGRdrNvd6d1R3ymQx00QHpU28wxj7mjc7lBgJrNwvvV9VcZPPlELwK5sRUCTT1WLUMnhJ7tkLqvqh2rNeWf9+EXv2zBAXdeHoOGqYIqz5fJxQeA/zGZ7lWfARfCeongYZHpxh53YzKBSGH9+bIPoUsIqqEpnyz08=
-Message-ID: <a781481a0707220831y67bcd64k34d52c3150c27dc1@mail.gmail.com>
-Date: Sun, 22 Jul 2007 21:01:12 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Lars Ellenberg" <lars.ellenberg@linbit.com>
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Cc: "Jens Axboe" <jens.axboe@oracle.com>, "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070722135814.GA32371@mail.linbit.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=CH8DjLPxvqLrcSjDhZ6sYXr9rsX+mZLyS9+sdG5hLNVI1+4n98y4n2AB3KKz17Z9X76Q9zvyIQtgj6JfBd4Lbu6mhpkoNqFMFKg7wUmQ29TY2inQqmnkiStx71kEKqxcpdbdI/g4AG+FU9Vm1lHTYGgXUgbKMW/5+ceI5hxTJP0=
+Message-ID: <f56c1ba00707220833m267491afg277a028e6c103e31@mail.gmail.com>
+Date: Sun, 22 Jul 2007 11:33:21 -0400
+From: "=?ISO-8859-1?Q?C=E9dric_Augonnet?=" <cedric.augonnet@gmail.com>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Subject: Re: voyager_{thread,cat}.c compile warnings
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <46A282B2.8070501@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070721203819.GA10706@mail.linbit.com>
-	 <p73hcnxuxji.fsf@bingen.suse.de> <20070722055235.GQ11657@kernel.dk>
-	 <20070722135814.GA32371@mail.linbit.com>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_102398_1722779.1185118401216"
+References: <46A282B2.8070501@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/22/07, Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
-> On Sun, Jul 22, 2007 at 07:52:36AM +0200, Jens Axboe wrote:
-> > [...]
-> > Yep, cleanup the style issues (that make sense) from checkpatch and then
-> > psot as a series of patches that can be reviewed. Linking to a git tree
-> > wont get you very far.
+------=_Part_102398_1722779.1185118401216
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi,
+
+2007/7/21, Gabriel C <nix.or.die@googlemail.com>:
+> Hi,
 >
-> it got me far enough, for the first try, anyways :-)
-> I did not spam the lkml with patches, and still got some very useful
-> advice (no idea how I could overlook the checkpatch.pl complaints).
+> I noticed this warnings on current git:
 >
-> If each patch of a series needs to compile and work,
-> there will probably only one 17kB patch...
-> it is difficult to split one module into a series of patches.
-> Or am I missing something?
-
-If not too much bother, you could even present the patchset in a way
-that reflects how the driver code evolved to its present state in v8.0.4.
-
-> may I bother you again to comment on this, please:
 >
-> I am now down to
->  5 CHECK: memory barrier without comment
->     these are directly connected with our homegrown kernel thread stuff.
->     will vanish as soon as we convert to kthread.h API.
+> ...
 >
->  4 CHECK: spinlock_t definition without comment
->  3 CHECK: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
->  3 CHECK: if this code is redundant consider removing it
->  2 CHECK: Use #include <linux/types.h> instead of <asm/types.h>
->     need to check those, still.
+> arch/i386/mach-voyager/voyager_thread.c: In function 'thread':
+> arch/i386/mach-voyager/voyager_thread.c:113: warning: no return statement=
+ in function returning non-void
 >
-> 72 ERROR: braces {} are not necessary for single statement blocks
->     one branch needs them, the othe does not.
->     what now? CodingStyle and checkpatch.pl disagree.
-
-Submit a patch to checkpatch.pl (or preferably CodingStyle, I dislike
-with the way it blatantly disregards K&R convention in this matter :-)
-
-> 13 ERROR: no space between function name and open parenthesis '('
->     this is about our ERR_IF() macro...
->     suggestions, anyone?
-
-There shouldn't be any space between function/macro name and open
-parenthesis. However, there *must* be a space between C language
-keyword (if, while, for) and open parenthesis.
-
->     do need I to explicitly write these out?
-
-Yup, do consider that. Also consider making them functions. Macros
-are _generally_ evil and *always* horrible.
-
->  8 ERROR: Macros with multiple statements should be enclosed in a do - while loop
-
-You don't want to break if-else constructs.
-
->  1 ERROR: Macros with complex values should be enclosed in parenthesis
-
-I'm not sure know when / why checkpatch.pl reports this. I don't want to
-pull your tree so can't check for myself, but note some obvious rules:
-
-1. Macro definition must always include parenthesis around the entire
-definition (unless it's a do { somehting; } while (0) kind of macro).
-2. Use parenthesis around wherever it uses the passed argument(s).
-
->     these are "netlink packet definition language" in drbd_nl.h,
->     which is sort of clean, and preprocessor magic in drbd_nl.c.
->     suggestions how to handle this cleanly,
->     without making it more ugly?
->     autogenerate code by other means?
->     write it out by hand, and lose the nice and clean drbd_nl.h?
-
-1. Open-code it if it is trivial enough and there's no point
-obfuscating anything.
-2. Consider making the macro a function. Probably inline, most probably not.
-3. Macros must NOT evaluate the passed argument twice -- consider the
-possible damages of someone who doesn't know it's a macro and therefore
-passing in an expression that has side-effects (*boom, crash*).
-
->  1 ERROR: Don't use kernel_thread(): see Documentation/feature-removal-schedule.txt
->     yes. working on that.
->     will take some days, though.
+> ...
 >
->  1 ERROR: Missing Signed-off-by: line(s)
+> I think return 0; is missing on line 112 here.
+>
 
-Patches submitted to LKML should conform to guidelines in:
+I guess there is no use in always returning 0, simply not returning anythin=
+g and
+putting a void type might be cleaner, especially as this function
+seems to never
+return.
 
-* Documentation/SubmittingPatches in kernel sources
-* http://www.zipworld.com.au/~akpm/linux/patches/stuff/tpp.txt
+>
+> arch/i386/mach-voyager/voyager_cat.c: In function 'voyager_cat_init':
+> arch/i386/mach-voyager/voyager_cat.c:685: warning: comparison is always f=
+alse due to limited range of data type
+> arch/i386/mach-voyager/voyager_cat.c:755: warning: comparison is always f=
+alse due to limited range of data type
+>
 
-> 94 WARNING: declaring multiple variables together should be avoided
->     int snr, enr;
->     does this really need to become two lines?
+Hum perhaps it does not like the comparision of a __u16 and an unsigned int=
+ ?
 
-No, if these are some unimportant temporary/automatic variables in
-some function.
+I enclose some dummy patch that should perhaps solve these issues,
+could not test it as i don't have the hardware... just my 2 cents.
+Don't know if casting is an
+acceptable workaround though.
 
-Yes, if they are members of some struct (also comment them in
-this case -- in fact give full kernel-doc style comments).
+>
+>
+> Regards,
+>
+> Gabriel C
+>
 
-> 33 WARNING: line over 80 characters
->     hmmm. get more ugly...
->     probably need some helper functions and temp variables?
+Cheers,
+C=E9dric
 
-Yes, do consider breaking functions that go significantly beyond
-80 lines into smaller ones. If it's just 4-5 columns beyond 80, and
-breaking the line would actually hurt readability, don't bother.
+------=_Part_102398_1722779.1185118401216
+Content-Type: text/x-diff; name=voyager.patch; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f4fouwxm
+Content-Disposition: attachment; filename="voyager.patch"
 
->  4 WARNING: multiple assignments should be avoided
->     x = y = 0;
->     is sometimes a convenient initialization.
->     you don't like it?
-
-Yes, we don't appreciate such usage at all. Please fix this.
-
-Satyam
+U3VibWl0dGVkIGJ5OiBDZWRyaWMgQXVnb25uZXQgPGNlZHJpYy5hdWdvbm5ldEBlbnMtbHlvbi5v
+cmc+Ci0tLQpkaWZmIC11ck4gYS9hcmNoL2kzODYvbWFjaC12b3lhZ2VyL3ZveWFnZXJfY2F0LmMg
+Yi9hcmNoL2kzODYvbWFjaC12b3lhZ2VyL3ZveWFnZXJfY2F0LmMKLS0tIC9ob21lL2dvbm5ldC90
+bXAvbGludXgtMi42LjIyL2FyY2gvaTM4Ni9tYWNoLXZveWFnZXIvdm95YWdlcl9jYXQuYwkyMDA3
+LTA3LTIwIDExOjUwOjE3LjAwMDAwMDAwMCAtMDQwMAorKysgbGludXgtMi42LjIyL2FyY2gvaTM4
+Ni9tYWNoLXZveWFnZXIvdm95YWdlcl9jYXQuYwkyMDA3LTA3LTIyIDExOjI0OjM0LjAwMDAwMDAw
+MCAtMDQwMApAQCAtNjgyLDcgKzY4Miw3IEBACiAJCQlvdXRiKFZPWUFHRVJfQ0FUX0VORCwgQ0FU
+X0NNRCk7CiAJCQljb250aW51ZTsKIAkJfQotCQlpZihlcHJvbV9zaXplID4gc2l6ZW9mKGVwcm9t
+X2J1ZikpIHsKKwkJaWYoKHVuc2lnbmVkKWVwcm9tX3NpemUgPiBzaXplb2YoZXByb21fYnVmKSkg
+ewogCQkJcHJpbnRrKCIqKldBUk5JTkcqKjogVm95YWdlciBpbnN1ZmZpY2llbnQgc2l6ZSB0byBy
+ZWFkIEVQUk9NIGRhdGEsIG1vZHVsZSAweCV4LiAgTmVlZCAlZFxuIiwgaSwgZXByb21fc2l6ZSk7
+CiAJCQlvdXRiKFZPWUFHRVJfQ0FUX0VORCwgQ0FUX0NNRCk7CiAJCQljb250aW51ZTsKQEAgLTc1
+Miw3ICs3NTIsNyBAQAogCQkJb3V0YihWT1lBR0VSX0NBVF9FTkQsIENBVF9DTUQpOwogCQkJY29u
+dGludWU7CiAJCX0KLQkJaWYoZXByb21fc2l6ZSA+IHNpemVvZihlcHJvbV9idWYpKSB7CisJCWlm
+KCh1bnNpZ25lZCllcHJvbV9zaXplID4gc2l6ZW9mKGVwcm9tX2J1ZikpIHsKIAkJCXByaW50aygi
+KipXQVJOSU5HKio6IFZveWFnZXIgaW5zdWZmaWNpZW50IHNpemUgdG8gcmVhZCBFUFJPTSBkYXRh
+LCBtb2R1bGUgMHgleC4gIE5lZWQgJWRcbiIsIGksIGVwcm9tX3NpemUpOwogCQkJb3V0YihWT1lB
+R0VSX0NBVF9FTkQsIENBVF9DTUQpOwogCQkJY29udGludWU7CmRpZmYgLXVyTiBhL2FyY2gvaTM4
+Ni9tYWNoLXZveWFnZXIvdm95YWdlcl90aHJlYWQuYyBiL2FyY2gvaTM4Ni9tYWNoLXZveWFnZXIv
+dm95YWdlcl90aHJlYWQuYwotLS0gL2hvbWUvZ29ubmV0L3RtcC9saW51eC0yLjYuMjIvYXJjaC9p
+Mzg2L21hY2gtdm95YWdlci92b3lhZ2VyX3RocmVhZC5jCTIwMDctMDctMjAgMTE6NTA6MTcuMDAw
+MDAwMDAwIC0wNDAwCisrKyBsaW51eC0yLjYuMjIvYXJjaC9pMzg2L21hY2gtdm95YWdlci92b3lh
+Z2VyX3RocmVhZC5jCTIwMDctMDctMjIgMTE6Mjc6MTMuMDAwMDAwMDAwIC0wNDAwCkBAIC05Miw3
+ICs5Miw3IEBACiAJfQogfQogCi1zdGF0aWMgaW50CitzdGF0aWMgdm9pZAogdGhyZWFkKHZvaWQg
+KnVudXNlZCkKIHsKIAlwcmludGsoS0VSTl9OT1RJQ0UgIlZveWFnZXIgc3RhcnRpbmcgbW9uaXRv
+ciB0aHJlYWRcbiIpOwo=
+------=_Part_102398_1722779.1185118401216--
