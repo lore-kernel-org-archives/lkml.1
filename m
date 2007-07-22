@@ -1,61 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762124AbXGVS0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762246AbXGVS3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762124AbXGVS0O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 14:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758618AbXGVSZ7
+	id S1762246AbXGVS3O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 14:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758388AbXGVS25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 14:25:59 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:52165 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758388AbXGVSZ6 (ORCPT
+	Sun, 22 Jul 2007 14:28:57 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:37690 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758618AbXGVS24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 14:25:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=PcEJVg9q3CWeLRBxRYUlHEaBpCNYWiEH9F/USoMOUCODVo0Qy4aPz2LQBxG5H3ZjocXqSrK7kgpg9Nj2ezdZ4NRAs42s3hRNVF4wi7nhohwGCUZpPfWuc1vzb3en6MGwOvFW+lALe6UcJyYEAJL8VDnGJp4XJVbT3vYUmiYlGtI=
-Message-ID: <46A3A0A9.3020100@googlemail.com>
-Date: Sun, 22 Jul 2007 20:23:37 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] Fix drivers/char/cyclades.c warning with CONFIG_PCI=n
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Jul 2007 14:28:56 -0400
+Subject: [GIT PATCH] final piece of the SCSI merge for 2.6.22
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 22 Jul 2007 13:28:53 -0500
+Message-Id: <1185128933.3431.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This final piece contains driver updates (mainly qla2xx and the long
+delayed ATA update for libsas) plus fix ups for bsg which Jens and Tomo
+want to take through the scsi tree.
 
-when CONFIG_PCI is not set I get this warning :
+The patch is available here:
 
-...
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-drivers/char/cyclades.c: In function 'cy_init':
-drivers/char/cyclades.c:5488: warning: label 'err_unr' defined but not used
+The short changelog is:
 
-...
+Adam Radford (1):
+      3w-9xxx: add support for 9690SA
+
+Adrian Bunk (3):
+      seagate: make seagate_st0x_detect() static
+      wd33c93: cleanups
+      small cleanups
+
+Al Viro (1):
+      iscsi_tcp: buggered kmalloc()
+
+Andrew Vasquez (8):
+      qla2xxx: Update version number to 8.02.00-k2.
+      qla2xxx: Add ISP25XX support.
+      qla2xxx: Use pci_try_set_mwi().
+      qla2xxx: Use PCI-X/PCI-Express read control interfaces.
+      qla2xxx: Re-factor isp_operations to static structures.
+      qla2xxx: Correct setting of 'current' and 'supported' speeds during FDMI r
+      qla2xxx: Generalize iIDMA support.
+      qla2xxx: Generalize FW-Interface-2 support.
+
+Darrick J. Wong (13):
+      sas_ata: Implement sas_task_abort for ATA devices
+      sas_ata: Assign sas_task to scsi_cmnd to enable EH for ATA devices
+      libsas: Unknown STP devices should be reported to libata as unknown.
+      libsas: Accept SAM_GOOD for ATAPI devices in sas_ata_task_done
+      sas_ata: Don't copy aic94xx's sactive to ata_port
+      sas_ata: ata_post_internal should abort the sas_task
+      sas_ata: sas_ata_qc_issue should return AC_ERR_*
+      sas_ata: Satisfy libata qc function locking requirements
+      aic94xx: Don't call pci_map_sg for already-mapped scatterlists
+      Migrate libsas ATA code into a separate file
+      libsas: support NCQ for SATA disks
+      aic94xx: SATA tag mask not set correctly
+      Add SATA support to libsas
+
+David Miller (1):
+      ESP: Increase ESP_BUS_TIMEOUT to 275.
+
+FUJITA Tomonori (5):
+      bsg: unexport sg v3 helper functions
+      bsg: fix bsg_unregister_queue
+      libsas: kill unused smp_portal code
+      libsas: add SAS management protocol handler
+      transport_sas: add SAS management protocol support
+
+Gwendal Grignou (1):
+      mpt fusion: update Kconfig help
+
+Heiko Carstens (1):
+      zfcp: NULL vs 0 usage
+
+James Bottomley (13):
+      libsas: make ATA functions selectable by a config option
+      bsg: make class backlinks
+      bsg: fix bsg_register_queue error path
+      libsas: fix scr_read/write users and update the libata documentation
+      scsi_transport_sas: add destructor for bsg
+      bsg: separate bsg and SCSI (so SCSI can be modular)
+      libsas: fix lockdep issue with ATA
+      libsas, aic94xx: fix dma mapping cockups with ATA
+      libsas: fixup NCQ for SATA disks
+      libsas: better error handling in sas_ex_discover_end_dev()
+      aic94xx: add SATAPI support
+      libsas: fix up sas_smp_phy_control()
+      libsas: Add SATA support to STP piece for SATA on SAS expanders
+
+Jan Engelhardt (1):
+      Use menuconfig objects
+
+Kristian Høgsberg (1):
+      Make scsi_host_template::proc_name const char * instead of char *.
+
+Matthew Wilcox (1):
+      a4000t, zorro7xx, mvme16x, bvme6000,sim710: xxx_device_remove seems buggy
+
+Prakash, Sathya (4):
+      mpt fusion: add support for Brocade branded LSI FC HBA
+      mpt fusion: deregister from transport layer if PCI registration failed
+      add PCI_VENDOR_ID macro for Brocade in pci_ids.h
+      mpt fusion: add sysfs attributes to display IOC parameters
+
+Salyzyn, Mark (3):
+      aacraid: add vpd to inquiry
+      aacraid: incorrect dma mapping mask during blinkled recover or user initia
+      aacraid: correct valid container response in management ioctl
+
+Shyam Sundar (1):
+      qla2xxx: Validate mid-layer 'underflow' during check-condition handling.
+
+Swen Schillig (2):
+      zfcp: code cleanup
+      zfcp: Replace kmalloc/memset with kzalloc
+
+And the diffstat:
+
+ Documentation/DocBook/libata.tmpl   |    5 
+ block/Kconfig                       |    2 
+ block/bsg.c                         |   61 -
+ block/scsi_ioctl.c                  |   13 
+ drivers/firewire/fw-sbp2.c          |    2 
+ drivers/message/fusion/Kconfig      |    1 
+ drivers/message/fusion/mptbase.c    |  382 ++++++++++--
+ drivers/message/fusion/mptbase.h    |    9 
+ drivers/message/fusion/mptfc.c      |    3 
+ drivers/message/fusion/mptsas.c     |   72 ++
+ drivers/message/fusion/mptscsih.c   |  153 ++++
+ drivers/message/fusion/mptscsih.h   |    1 
+ drivers/message/fusion/mptspi.c     |    9 
+ drivers/s390/scsi/zfcp_aux.c        |    9 
+ drivers/s390/scsi/zfcp_def.h        |    1 
+ drivers/s390/scsi/zfcp_erp.c        |    3 
+ drivers/s390/scsi/zfcp_fsf.c        |    2 
+ drivers/s390/scsi/zfcp_qdio.c       |  113 +--
+ drivers/scsi/3w-9xxx.c              |   67 +-
+ drivers/scsi/3w-9xxx.h              |    5 
+ drivers/scsi/Kconfig                |   10 
+ drivers/scsi/a4000t.c               |    3 
+ drivers/scsi/aacraid/aachba.c       |  140 ++++
+ drivers/scsi/aacraid/aacraid.h      |   14 
+ drivers/scsi/aacraid/commsup.c      |   16 
+ drivers/scsi/aic94xx/aic94xx_dev.c  |    2 
+ drivers/scsi/aic94xx/aic94xx_init.c |    3 
+ drivers/scsi/aic94xx/aic94xx_task.c |   20 
+ drivers/scsi/bvme6000_scsi.c        |    3 
+ drivers/scsi/esp_scsi.h             |    2 
+ drivers/scsi/iscsi_tcp.c            |    2 
+ drivers/scsi/libsas/Kconfig         |    7 
+ drivers/scsi/libsas/Makefile        |    1 
+ drivers/scsi/libsas/sas_ata.c       |  817 ++++++++++++++++++++++++++
+ drivers/scsi/libsas/sas_discover.c  |  402 ------------
+ drivers/scsi/libsas/sas_expander.c  |  230 +++----
+ drivers/scsi/libsas/sas_init.c      |    1 
+ drivers/scsi/libsas/sas_internal.h  |    3 
+ drivers/scsi/libsas/sas_scsi_host.c |   74 ++
+ drivers/scsi/mvme16x_scsi.c         |    3 
+ drivers/scsi/pcmcia/Kconfig         |    7 
+ drivers/scsi/qla2xxx/qla_attr.c     |   33 -
+ drivers/scsi/qla2xxx/qla_dbg.c      | 1114 +++++++++++++++++++++++++++++-------
+ drivers/scsi/qla2xxx/qla_dbg.h      |   38 +
+ drivers/scsi/qla2xxx/qla_def.h      |   22 
+ drivers/scsi/qla2xxx/qla_fw.h       |   36 +
+ drivers/scsi/qla2xxx/qla_gbl.h      |    6 
+ drivers/scsi/qla2xxx/qla_gs.c       |   82 +-
+ drivers/scsi/qla2xxx/qla_init.c     |  136 ++--
+ drivers/scsi/qla2xxx/qla_inline.h   |    4 
+ drivers/scsi/qla2xxx/qla_iocb.c     |   10 
+ drivers/scsi/qla2xxx/qla_isr.c      |   55 +
+ drivers/scsi/qla2xxx/qla_mbx.c      |   58 -
+ drivers/scsi/qla2xxx/qla_os.c       |  380 +++++++-----
+ drivers/scsi/qla2xxx/qla_sup.c      |   35 -
+ drivers/scsi/qla2xxx/qla_version.h  |    2 
+ drivers/scsi/scsi_debug.c           |    2 
+ drivers/scsi/scsi_sysctl.c          |    1 
+ drivers/scsi/scsi_sysfs.c           |   16 
+ drivers/scsi/scsi_transport_fc.c    |    2 
+ drivers/scsi/scsi_transport_sas.c   |  125 ++++
+ drivers/scsi/seagate.c              |    2 
+ drivers/scsi/sim710.c               |    3 
+ drivers/scsi/sr.c                   |    2 
+ drivers/scsi/wd33c93.c              |    4 
+ drivers/scsi/zorro7xx.c             |    3 
+ include/linux/blkdev.h              |    5 
+ include/linux/bsg.h                 |    4 
+ include/linux/libata.h              |    1 
+ include/linux/pci_ids.h             |    2 
+ include/scsi/libsas.h               |   15 
+ include/scsi/sas_ata.h              |   60 +
+ include/scsi/scsi_host.h            |    2 
+ include/scsi/scsi_transport_sas.h   |   11 
+ 74 files changed, 3649 insertions(+), 1295 deletions(-)
+
+James
 
 
-Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
-
----
-
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index 9e0adfe..1fa0bda 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -5485,8 +5485,11 @@ static int __init cy_init(void)
- #endif
- 
- 	return 0;
-+
-+#ifdef CONFIG_PCI
- err_unr:
- 	tty_unregister_driver(cy_serial_driver);
-+#endif
- err_frtty:
- 	put_tty_driver(cy_serial_driver);
- err:
