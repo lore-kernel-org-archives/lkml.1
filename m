@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760083AbXGVCbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759886AbXGVCeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760083AbXGVCbE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 22:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759540AbXGVCan
+	id S1759886AbXGVCeS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 22:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbXGVCeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 22:30:43 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:34021 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759486AbXGVCam (ORCPT
+	Sat, 21 Jul 2007 22:34:10 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:35866
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753766AbXGVCeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 22:30:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YvYg3AzINBvO1eSIxy7CWv17/RVTYaxOK12kj6V1C5DL6S4md7j8JBPNPDQBY4UojdHeABqLtTOjpTcHrT1cAcZxQCJbnXgk/ZH+J577p10MmcI4gygzVPNEJIMI00YHQAy8XPh6Hs4QCCtzaTB/oSGahJrEU+yic7J8D9VqCV4=
-Message-ID: <a781481a0707211930l7e712dedo474a5e9e44e84adc@mail.gmail.com>
-Date: Sun, 22 Jul 2007 08:00:41 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: [00/37] Clean up duplicate includes
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200707211701.23911.jesper.juhl@gmail.com>
+	Sat, 21 Jul 2007 22:34:09 -0400
+Date: Sat, 21 Jul 2007 19:32:55 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Huang, Ying" <ying.huang@intel.com>
+cc: Milton Miller <miltonm@bga.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J.Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <1185070634.3517.11.camel@caritas-dev.intel.com>
+Message-ID: <Pine.LNX.4.64.0707211926350.6747@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm> 
+ <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org> 
+ <200707172217.01890.rjw@sisk.pl> <87odiag45q.fsf@jbms.ath.cx> 
+ <200707151433.34625.rjw@sisk.pl> <200707172320.16279.rjw@sisk.pl> 
+ <40fa2626aff7b6b590ad6aa4737fc873@bga.com>  <1184942918.13737.23.camel@caritas-dev.intel.com>
+  <Pine.LNX.4.64.0707200845200.19248@asgard.lang.hm>
+ <1185070634.3517.11.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200707211701.23911.jesper.juhl@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/21/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> [...]
-> These are the patches in this series :
+On Sun, 22 Jul 2007, Huang, Ying wrote:
 
-Ok, I've reviewed all patches in this series except:
+> On Fri, 2007-07-20 at 08:48 -0700, david@lang.hm wrote:
+>>> Backuping target memory before kexec and restoring it after kexec is
+>>> planed feature for kexec jump. But I will work on image writing/reading
+>>> first.
+>>
+>> if we can get a list of what memory is safe to backup/restore then the
+>> reading/writing of the image should be able to be done in userspace.
+>
+> The backup/restore here has nothing to do with the read/write of the
+> image. It means instead of preserving memory for a new kernel like that
+> of crash-dump, the memory for a new kernel is backupped before kexec and
+> restored after kexec by the kexec kernel.
 
->  [PATCH][12/37] Clean up duplicate includes in drivers/net/
->  [PATCH][28/37] Clean up duplicate includes in net/ipv4/
->  [PATCH][32/37] Clean up duplicate includes in net/sunrpc/
+Ok, I see the miscommunication here. you are talking about freeing up 
+memory for the second kernel instead of reserving it from boot time.
 
-which I did not find anywhere ... not even on netdev@
+I'm talking about getting the second kernel a list of what memory pages it 
+should write to the image
 
-Anyway, the entire series was OK, just removing a #include
-line when that exact same header was already #include'd in
-the same file. [ I also wonder if this patchset ends up exposing
-some header-include-ordering problems that were previously
-hidden, actually. ]
+if we can get the info for the list I'm looking for we should be able to 
+demonstrate the kexec based hibernate.
 
-> Please consider applying these patches.
+the change you are talking about in an enhancment that is useful after 
+that point to save some memory.
 
-I think these are trivial and obvious enough -- can probably be
-merged together into single patch by Andrew and just slammed
-into the kernel tree :-)
+>>> If the "scatter copy" is replaced by "scatter swap", we need not the
+>>> inverse list, and the state of kexeced kernel can be backuped too. There
+>>> are "scatter copy" support in normal kexec implementation in
+>>> "relocate_kernel".
+>>
+>> what do you mean by "scatter swap"
+>
+> copy:	dest=src
+> swap:	tmp=dest; dest=src; src=tmp
+>
+> If memory is swapped, no information is lost, both that of kexec kernel
+> and kexeced kernel.
 
-Thanks,
-Satyam
+I'm missing why you need to preserve this memory
+
+if you are talking about memory that will be used by the second kernel 
+when you kexec to it then you don't need to preserve it (since it will be 
+overwritten by the second kernel). if you aren't talking about memory that 
+will be used by the second kernel why do you need to move it?
+
+David Lang
