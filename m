@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbXGVCou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758353AbXGVDN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759242AbXGVCou (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jul 2007 22:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbXGVCon
+	id S1758353AbXGVDN2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jul 2007 23:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXGVDNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jul 2007 22:44:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43927 "EHLO mx1.redhat.com"
+	Sat, 21 Jul 2007 23:13:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48337 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753470AbXGVCon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jul 2007 22:44:43 -0400
-Date: Sat, 21 Jul 2007 22:44:28 -0400
-From: Dave Jones <davej@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
-Message-ID: <20070722024428.GA724@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>
-References: <20070721210005.000228000@chello.nl> <20070722023923.GA6438@mail.ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070722023923.GA6438@mail.ustc.edu.cn>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1753271AbXGVDNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jul 2007 23:13:18 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86_64 vDSO: install unstripped copies on disk
+X-Zippy-Says: HAIR TONICS, please!!
+Message-Id: <20070722031312.681484D05C1@magilla.localdomain>
+Date: Sat, 21 Jul 2007 20:13:12 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 10:39:23AM +0800, Fengguang Wu wrote:
- 
- > It makes sense to raise it beyond 128K.  1M default readahead
- > absolutely makes sense for sequential workloads.  For the desktop,
- > this increases boot speed and readahead misses, both due to more
- > aggressive mmap read-around. Most users will be glad to feel the
- > speedup, and happily ignore the readahead misses, which may be
- > "invisible" in case of large memory.
- > 
- > In theory, the distributions can do the same tuning.  So we have an
- > interesting question for Dave:
- >         Does fedora desktop raise the default readahead size? Why or
- >         why not?  It goes so far to do userland readahead ;)
- 
-Fedora takes whatever defaults for readahead the kernel.org kernel has.
-The only reasoning being if anyone reported VM bugs, we'd be able
-to say to interested upstream developers "we're running the stock VM".
-without having to get the user to try and reproduce on unpatched
-kernels.
- 
- > - drop behind
- > 
- > Sorry, I still doubt it will benefit all/most workloads. Leave it off
- > by default, and leave the enabling decision to Dave? I do hope that
- > it help general desktops.
+This keeps an unstripped copy of the vDSO images built before they are
+stripped and embedded in the kernel.  The unstripped copies get installed
+in $(MODLIB)/vdso/ by "make install".  These files can be useful when they
+contain source-level debugging information.
 
-It's not a subject that I'm intimatly familiar with, and when it
-comes to decisions like this, I tend to just take whatever the
-upstream defaults are.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86_64/Makefile      |    1 +
+ arch/x86_64/vdso/Makefile |   20 ++++++++++++++++----
+ 2 files changed, 17 insertions(+), 4 deletions(-)
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+diff --git a/arch/x86_64/Makefile b/arch/x86_64/Makefile
+index 93fc1f2..c0905ae 100644
+--- a/arch/x86_64/Makefile
++++ b/arch/x86_64/Makefile
+@@ -107,6 +107,7 @@ fdimage fdimage144 fdimage288 isoimage: vmlinux
+ 
+ install:
+ 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(BOOTIMAGE) $@ 
++	$(Q)$(MAKE) $(build)=arch/x86_64/vdso $@
+ ifeq ($(CONFIG_IA32_EMULATION),y)
+ 	$(Q)$(MAKE) $(build)=arch/x86_64/ia32 $@
+ endif
+diff --git a/arch/x86_64/vdso/Makefile b/arch/x86_64/vdso/Makefile
+index faaa72f..20ecf05 100644
+--- a/arch/x86_64/vdso/Makefile
++++ b/arch/x86_64/vdso/Makefile
+@@ -13,7 +13,7 @@ vobjs := $(foreach F,$(vobjs-y),$(obj)/$F)
+ 
+ $(obj)/vdso.o: $(obj)/vdso.so
+ 
+-targets += vdso.so vdso.lds $(vobjs-y) vdso-syms.o
++targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y) vdso-syms.o
+ 
+ # The DSO images are built using a special linker script.
+ quiet_cmd_syscall = SYSCALL $@
+@@ -25,14 +25,18 @@ export CPPFLAGS_vdso.lds += -P -C -U$(ARCH)
+ vdso-flags = -fPIC -shared -Wl,-soname=linux-vdso.so.1 \
+ 		 $(call ld-option, -Wl$(comma)--hash-style=sysv) \
+ 		-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
+-SYSCFLAGS_vdso.so = $(vdso-flags)
++SYSCFLAGS_vdso.so.dbg = $(vdso-flags)
+ 
+ $(obj)/vdso.o: $(src)/vdso.S $(obj)/vdso.so
+ 
+-$(obj)/vdso.so: $(src)/vdso.lds $(vobjs) FORCE
++$(obj)/vdso.so.dbg: $(src)/vdso.lds $(vobjs) FORCE
+ 	$(call if_changed,syscall)
+ 
+-CF := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64
++$(obj)/%.so: OBJCOPYFLAGS := -S
++$(obj)/%.so: $(obj)/%.so.dbg FORCE
++	$(call if_changed,objcopy)
++
++CF := $(PROFILING) -mcmodel=small -fPIC -O2 -fasynchronous-unwind-tables -m64
+ 
+ $(obj)/vclock_gettime.o: CFLAGS = $(CF)
+ $(obj)/vgetcpu.o: CFLAGS = $(CF)
+@@ -47,3 +51,11 @@ $(obj)/built-in.o: ld_flags += -R $(obj)/vdso-syms.o
+ SYSCFLAGS_vdso-syms.o = -r -d
+ $(obj)/vdso-syms.o: $(src)/vdso.lds $(vobjs) FORCE
+ 	$(call if_changed,syscall)
++
++quiet_cmd_vdso_install = INSTALL $@
++      cmd_vdso_install = cp $@.dbg $(MODLIB)/vdso/$@
++vdso.so:
++	@mkdir -p $(MODLIB)/vdso
++	$(call cmd,vdso_install)
++
++install: vdso.so
