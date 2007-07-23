@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbXGWNxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbXGWN5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645AbXGWNxk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 09:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbXGWNxd
+	id S1758017AbXGWN5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 09:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbXGWN5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 09:53:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49584 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbXGWNxd convert rfc822-to-8bit (ORCPT
+	Mon, 23 Jul 2007 09:57:32 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:5867 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbXGWN5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 09:53:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>, stern@rowland.harvard.edu
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Mon, 23 Jul 2007 16:01:07 +0200
-User-Agent: KMail/1.9.5
-Cc: oliver@neukum.org, nigel@nigel.suspend2.net, nigel@suspend2.net,
-       jbms@cmu.edu, miltonm@bga.com, ying.huang@intel.com,
-       linux-kernel@vger.kernel.org, david@lang.hm,
-       linux-pm@lists.linux-foundation.org
-References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org> <200707231431.30372.oliver@neukum.org> <E1ICxdo-0004w2-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1ICxdo-0004w2-00@dorka.pomaz.szeredi.hu>
+	Mon, 23 Jul 2007 09:57:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XNcQ2zQ6aXWNhgQgCfGosCHnOkqdkfFI+0zMMNR4O3jBHrhlax+awSrVF0a/WLjf/eJFRwKzurmsp2BwscsLgfv8ACRYncHAGwz5bTOz/txvvtxZBB/nWPRHzQwMYN9HlwLKe7wsyJeKTm7SORz7gSpJ3rYCj15QCvld9lcXIgA=
+Message-ID: <625fc13d0707230657r62144bd0i190d9b21a5641429@mail.gmail.com>
+Date: Mon, 23 Jul 2007 08:57:29 -0500
+From: "Josh Boyer" <jwboyer@gmail.com>
+To: "Jan Dittmer" <jdi@l4x.org>
+Subject: Re: alpha, i386,mips,powerpc,ppc,xtensa compile brakage (was Re: Linus 2.6.23-rc1)
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <46A45544.8090303@l4x.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707231601.09541.rjw@sisk.pl>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <46A45544.8090303@l4x.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 23 July 2007 15:08, Miklos Szeredi wrote:
-> > > > The reason is that we want them to "park" in safe places, ie. where there
-> > > > are no locks held etc.  Thus, these safe places need to be chosen somehow
-> > > > and since they are not marked throughout the code, we choose the obvious
-> > > > one. :-)
-> > > 
-> > > Why shouldn't locks be held?
-> > > 
-> > > No locks which are required for suspend must be held, sure.  But
-> > > otherwise holding locks doesn't matter at all.
-> > 
-> > If you can provide a way to tell them apart, this would work.
-> 
-> Without some marking we can't tell obviously.
-> 
-> Are there many such locks?  We can easily check by adding some
-> debugging code to the lock primitives, to make them yell if they are
-> used during suspend.
+On 7/23/07, Jan Dittmer <jdi@l4x.org> wrote:
+> # ppc/bamboo_defconfig: broke
+>
+>    GEN     .version
+>    CHK     include/linux/compile.h
+>    UPD     include/linux/compile.h
+>    CC      init/version.o
+>    LD      init/built-in.o
+>    LD      .tmp_vmlinux1
+> drivers/built-in.o(.text+0x1ebda): In function `store_uevent':
+> drivers/base/core.c:312: undefined reference to `kobject_actions'
+> drivers/built-in.o(.text+0x1ebe6):drivers/base/core.c:312: undefined reference to `kobject_actions'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> make: *** [_all] Error 2
 
-This way we can only obtain information from systems that use hibernation
-quite often.
+This is the HOTPLUG one that GregKH knows about and has a patch for I
+think.  Not PPC specific.
 
-Alan has recently proposed to introduce "suspend locks" to be acquired during
-a suspend/hibernation and such that we can leave uninterruptible tasks that
-don't hold any of them.
-
-Unfortunately, I have no link to his original message at hand.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+josh
