@@ -1,45 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936130AbXGWVEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936329AbXGWVEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936130AbXGWVEI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763279AbXGWVDw
+	id S936329AbXGWVEz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934149AbXGWVEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:03:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46706 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758168AbXGWVDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:03:51 -0400
-Message-ID: <46A5163D.803@redhat.com>
-Date: Mon, 23 Jul 2007 15:57:33 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: ext4 development <linux-ext4@vger.kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix inode_table test in ext234_check_descriptors
-References: <46A4E254.3010606@redhat.com>
-In-Reply-To: <46A4E254.3010606@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Jul 2007 17:04:46 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50089 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933207AbXGWVEp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:04:45 -0400
+Date: Mon, 23 Jul 2007 14:04:44 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Matt Mackall <mpm@selenic.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] mm: Remove slab destructors from
+ kmem_cache_create().
+Message-ID: <20070723140444.159343b2@schroedinger.engr.sgi.com>
+In-Reply-To: <20070721234227.GA8303@linux-sh.org>
+References: <20070720012846.GA22487@linux-sh.org>
+	<20070721212851.GH11166@waste.org>
+	<20070721234227.GA8303@linux-sh.org>
+Organization: Silicon Graphics, Inc.
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> ext[234]_check_descriptors sanity checks block group descriptor geometry
-> at mount time, testing whether the block bitmap, inode bitmap, and
-> inode table reside wholly within the blockgroup.  However, the inode
-> table test is off by one so that if the last block in the inode table
-> resides on the last block of the block group, the test incorrectly 
-> fails.  This is because it tests the last block as (start + length)
-> rather than (start + length - 1).
-> 
-> This can be seen by trying to mount a filesystem made such as:
->  mkfs.ext2 -F -b 1024 -m 0 -g 256 -N 3744 fsfile 1024
-> which yields:
->  EXT2-fs error (device loop0): ext2_check_descriptors: Inode table for group 0 not in group (block 101)!
->  EXT2-fs: group descriptors corrupted!
-
-Hm, sorry, after seeing Miklos' last patches... should I be sending
-these as 3 different patches for ext2, 3, and 4...?
-
--Eric (who really doesn't want to make Andrew mad at him)  :)
+Please do not merge this patch. I will reuse the destructor field for
+the kmem_cache_ops in the slab defrag patchset. If you apply this patch
+then I need to readd the parameter later.
