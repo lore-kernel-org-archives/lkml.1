@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935476AbXGWVN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758487AbXGWVQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935476AbXGWVN4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761522AbXGWVNt
+	id S1758487AbXGWVQO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXGWVP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:13:49 -0400
-Received: from aug.linbit.com ([212.69.162.22]:48057 "EHLO mail.linbit.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760559AbXGWVNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:13:48 -0400
-Date: Mon, 23 Jul 2007 23:13:44 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Kyle Moffett <mrlinuxman@mac.com>, Andrew Morton <akpm@osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Message-ID: <20070723211344.GC6477@mail.linbit.com>
-References: <20070721203819.GA10706@mail.linbit.com> <20070722213202.1f5d1cab.mrlinuxman@mac.com> <20070723133202.GB23495@mail.linbit.com> <20070723133704.GN11657@kernel.dk>
-Mime-Version: 1.0
+	Mon, 23 Jul 2007 17:15:57 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:38797 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751211AbXGWVP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:15:56 -0400
+Date: Tue, 24 Jul 2007 06:15:31 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Cc: linux-kernel@vger.kernel.org, adrian@mcmen.demon.co.uk
+Subject: Re: [PATCH] Fix Dreamcast DMA issues
+Message-ID: <20070723211531.GB20049@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian McMenamin <lkmladrian@gmail.com>,
+	linux-kernel@vger.kernel.org, adrian@mcmen.demon.co.uk
+References: <8b67d60707231405l514c1b87t6ad3f8890f5d83ba@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070723133704.GN11657@kernel.dk>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <8b67d60707231405l514c1b87t6ad3f8890f5d83ba@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 03:37:04PM +0200, Jens Axboe wrote:
-> On Mon, Jul 23 2007, Lars Ellenberg wrote:
-> > > +/* THINK maybe we actually want to use the default "event/%s" worker threads
-> > > + * or similar in linux 2.6, which uses per cpu data and threads.
-> > > + *
-> > > + * To be general, this might need a spin_lock member.
-> > > + * For now, please use the mdev->req_lock to protect list_head,
-> > > + * see drbd_queue_work below.
-> > > + */
-> > > +struct drbd_work_queue {
-> > > +       struct list_head q;
-> > > +       struct semaphore s; /* producers up it, worker down()s it */
-> > > +       spinlock_t q_lock;  /* to protect the list. */
-> > > +};
-> > > 
-> > > Umm, how about fixing this to actually use proper workqueues or something
-> > > instead of this open-coded mess?
-> > 
-> > unlikely to happen "right now".
-> > but it is on our todo list...
+On Mon, Jul 23, 2007 at 10:05:46PM +0100, Adrian McMenamin wrote:
+> The current SH DMA API is somewhat broken, not correctly matching
+> virtual channel to the correct SH DMAC. This wasn't noticeable when
+> using g2 DMA for the sound driver - one channel 0 is as good as any
+> other! - but caused the pvr2 driver to fail.
 > 
-> But stuff like that is definitely a merge show stopper, jfyi.
+> This patch fixes the pvr2 problem and consequently fixes the sound
+> driver to ensure it continues to function.
+> 
+> Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 
-I see.
-but it is not that easy to do away with kernel threads
-(the open-coded mess) in favor of "proper workqueues or something".
-
-	Lars
+Looks fine, I'll queue it up, thanks.
