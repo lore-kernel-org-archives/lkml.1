@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933251AbXGWSeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765864AbXGWShz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933251AbXGWSeB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:34:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764287AbXGWSdj
+	id S1765864AbXGWShz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbXGWShr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:33:39 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:2459 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763006AbXGWSdi (ORCPT
+	Mon, 23 Jul 2007 14:37:47 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46589 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754933AbXGWShr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:33:38 -0400
-Date: Mon, 23 Jul 2007 20:33:36 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andreas Messer <andreas.messer@stud-mail.uni-wuerzburg.de>,
-       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Subject: Re: [BUG] firewire: mass-storage i/o-problems
-Message-ID: <20070723183336.GA3736@roarinelk.homelinux.net>
-References: <200707222332.12270.andreas.messer@stud-mail.uni-wuerzburg.de> <46A3E973.6090701@s5r6.in-berlin.de> <20070723063741.GA32240@roarinelk.homelinux.net> <46A45B65.9000704@s5r6.in-berlin.de> <20070723084505.GB349@roarinelk.homelinux.net> <46A49244.9010402@s5r6.in-berlin.de>
+	Mon, 23 Jul 2007 14:37:47 -0400
+Date: Mon, 23 Jul 2007 11:37:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] add __GFP_ZERP to GFP_LEVEL_MASK
+Message-Id: <20070723113712.c0ee29e5.akpm@linux-foundation.org>
+In-Reply-To: <1185185020.8197.11.camel@twins>
+References: <1185185020.8197.11.camel@twins>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A49244.9010402@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 01:34:28PM +0200, Stefan Richter wrote:
-> Manuel Lauss wrote:
-> > I noticed the failures start when there are 2 concurrent disk accesses
-> > (copy something from fw disk on shell 1 and it runs fine; start to
-> > copy something TO the fw disk on shell 2 and a "management write failed"
-> > error appears after 1-2 sec. with the orb timeout after a looong time)
-> 
-> Most of my tests have been with a single process, but I already tested
-> several processes at once in parallel too.  But probably only on the
-> bigger machine where neither the CPU nor the PCI bus (and this might be
-> important) would become a bottleneck.  I have to test this again on the
-> smaller machines.
+On Mon, 23 Jul 2007 12:03:40 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-I think I found a way to reliably reproduce the problem (2.6.22)
+> Daniel recently spotted that __GFP_ZERO is not (and has never been)
+> part of GFP_LEVEL_MASK. I could not find a reason for this in the
+> original patch: 3977971c7f09ce08ed1b8d7a67b2098eb732e4cd in the -bk
+> tree.
 
-NFS-export the fw disk, mount it on another host, put a movie on it,
-play it with mplayer on the other machine. Seek a little in the movie,
-locks up every time here. If it doesnt, copy data to the disk in parallel.
+It doesn't make a lot of sense to be passing __GFP_ZERO into slab
+allocation functions.  It's not really for the caller to be telling slab
+how it should arrange for its new memory to get zeroed.
 
-Thanks,
-	Manuel Lauss
+And the caller of slab functions will need to zero the memory anyway,
+because you don't know whether your new object came direct from the page
+allocator or if it is recycled memory from a partial slab.
 
+I have a feeling that we did support passing __GFP_ZERO into the slab
+allocation functions for a while, but took it out.
