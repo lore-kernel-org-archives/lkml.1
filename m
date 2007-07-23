@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbXGWHnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbXGWHp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759207AbXGWHnm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 03:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbXGWHnf
+	id S1759850AbXGWHp4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 03:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbXGWHpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 03:43:35 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44050 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753549AbXGWHne (ORCPT
+	Mon, 23 Jul 2007 03:45:46 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:60670 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753632AbXGWHpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 03:43:34 -0400
-Date: Mon, 23 Jul 2007 08:43:31 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, jdike@karaya.com
-Subject: Re: Fix compiling UML
-Message-ID: <20070723074331.GE21668@ftp.linux.org.uk>
-References: <46A4420D.8070900@redhat.com>
+	Mon, 23 Jul 2007 03:45:45 -0400
+Subject: Re: net/bluetooth/rfcomm/tty.c: use-after-free
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Ville Tervo <ville.tervo@nokia.com>, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20070723012543.GW26212@stusta.de>
+References: <20070723012543.GW26212@stusta.de>
+Content-Type: multipart/mixed; boundary="=-EtPTDyWlzq4wPVJ9lUcf"
+Date: Mon, 23 Jul 2007 09:47:12 +0200
+Message-Id: <1185176832.7111.32.camel@violet>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A4420D.8070900@redhat.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 10:52:13PM -0700, Ulrich Drepper wrote:
->  				.aio_buf	= (unsigned long) buf,
->  				.aio_nbytes	= len,
->  				.aio_offset	= offset,
-> +				.aio_flags	= 0,
-> +				.aio_resfd	= 0,
->  				.aio_reserved1	= 0,
-> - -				.aio_reserved2	= 0,
-> - -				.aio_reserved3	= 0 });
-> +				.aio_reserved2	= 0 });
 
-Huh?  First of all, you have a corrupted tree.  No lines that would
-start with " -" in that area...  As for the rest, I would argue that
-leaving *any* of these fields in that compound literal is no wise, since
-that's just asking for future trouble of the same kind.
+--=-EtPTDyWlzq4wPVJ9lUcf
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-FWIW, why do we need that iocb at all?  That compound literal already
-gives us a modifiable object of the right type, with exactly the same
-lifetime...
+Hi Adrian,
 
-IOW, how about the following?
+> Commit 8de0a15483b357d0f0b821330ec84d1660cadc4e added the following 
+> use-after-free in net/bluetooth/rfcomm/tty.c:
+> 
+> <--  snip  -->
+> 
+> ...
+> static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
+> {
+> ...
+>         if (IS_ERR(dev->tty_dev)) {
+>                 list_del(&dev->list);
+>                 kfree(dev);
+>                 return PTR_ERR(dev->tty_dev);
+>         }
+> ...
+> 
+> <--  snip  -->
+> 
+> Spotted by the Coverity checker.
 
-static int do_aio(aio_context_t ctx, enum aio_type type, int fd, char *buf,
-		  int len, unsigned long long offset, struct aio_context *aio)
-{
-	struct iocb *p = & (struct iocb) {
-				.aio_data 	= (unsigned long) aio,
-				.aio_fildes	= fd,
-				.aio_buf	= (unsigned long) buf,
-				.aio_nbytes	= len,
-				.aio_offset	= offset
-			};
-	char c;
+really good catch. I fully overlooked that one. The attached patch
+should fix it.
 
-	switch (type) {
-	case AIO_READ:
-		p->aio_lio_opcode = IOCB_CMD_PREAD;
-		break;
-	case AIO_WRITE:
-		p->aio_lio_opcode = IOCB_CMD_PWRITE;
-		break;
-	case AIO_MMAP:
-		p->aio_lio_opcode = IOCB_CMD_PREAD;
-		p->aio_buf = (unsigned long) &c;
-		p->aio_nbytes = sizeof(c);
-		break;
-	default:
-		printk("Bogus op in do_aio - %d\n", type);
-		return -EINVAL;
-	}
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
 
-	return (io_submit(ctx, 1, &p) > 0) ? 0 : -errno;
-}
+Regards
+
+Marcel
+
+
+--=-EtPTDyWlzq4wPVJ9lUcf
+Content-Disposition: attachment; filename=patch
+Content-Type: text/x-patch; name=patch; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+diff --git a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
+index 23ba61a..22a8320 100644
+--- a/net/bluetooth/rfcomm/tty.c
++++ b/net/bluetooth/rfcomm/tty.c
+@@ -267,7 +267,7 @@ static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
+ out:
+ 	write_unlock_bh(&rfcomm_dev_lock);
+ 
+-	if (err) {
++	if (err < 0) {
+ 		kfree(dev);
+ 		return err;
+ 	}
+@@ -275,9 +275,10 @@ out:
+ 	dev->tty_dev = tty_register_device(rfcomm_tty_driver, dev->id, NULL);
+ 
+ 	if (IS_ERR(dev->tty_dev)) {
++		err = PTR_ERR(dev->tty_dev);
+ 		list_del(&dev->list);
+ 		kfree(dev);
+-		return PTR_ERR(dev->tty_dev);
++		return err;
+ 	}
+ 
+ 	return dev->id;
+
+--=-EtPTDyWlzq4wPVJ9lUcf--
+
