@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbXGWOTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbXGWOVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbXGWOTT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 10:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXGWOTM
+	id S1759653AbXGWOVd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 10:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbXGWOV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 10:19:12 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:46573 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752278AbXGWOTL (ORCPT
+	Mon, 23 Jul 2007 10:21:26 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:50236 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752278AbXGWOVZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 10:19:11 -0400
-Date: Mon, 23 Jul 2007 07:02:24 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Bill Irwin <bill.irwin@oracle.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] hugetlbfs read() support
-Message-ID: <20070723140224.GC23148@us.ibm.com>
-References: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com> <20070718221950.35bbdb76.akpm@linux-foundation.org> <1184860309.18188.90.camel@dyn9047017100.beaverton.ibm.com> <20070719095850.6e09b0e8.akpm@linux-foundation.org> <20070719170759.GE2083@us.ibm.com> <46A03E63.2080508@yahoo.com.au>
+	Mon, 23 Jul 2007 10:21:25 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Mon, 23 Jul 2007 16:23:17 +0200
+User-Agent: KMail/1.9.7
+Cc: Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Lang <david@lang.hm>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+References: <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46A03E63.2080508@yahoo.com.au>
-X-Operating-System: Linux 2.6.22-rc6-gaee87db2 (x86_64)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707231623.17958.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20.07.2007 [14:47:31 +1000], Nick Piggin wrote:
-> Nishanth Aravamudan wrote:
-> >On 19.07.2007 [09:58:50 -0700], Andrew Morton wrote:
-> >
-> >>On Thu, 19 Jul 2007 08:51:49 -0700 Badari Pulavarty <pbadari@us.ibm.com> 
-> >>wrote:
-> >>
-> >>
-> >>>>>+		}
-> >>>>>+
-> >>>>>+		offset += ret;
-> >>>>>+		retval += ret;
-> >>>>>+		len -= ret;
-> >>>>>+		index += offset >> HPAGE_SHIFT;
-> >>>>>+		offset &= ~HPAGE_MASK;
-> >>>>>+
-> >>>>>+		page_cache_release(page);
-> >>>>>+		if (ret == nr && len)
-> >>>>>+			continue;
-> >>>>>+		goto out;
-> >>>>>+	}
-> >>>>>+out:
-> >>>>>+	return retval;
-> >>>>>+}
-> >>>>
-> >>>>This code doesn't have all the ghastly tricks which we deploy to
-> >>>>handle concurrent truncate.
-> >>>
-> >>>Do I need to ? Baaahh!!  I don't want to deal with them. 
-> >>
-> >>Nick, can you think of any serious consequences of a read/truncate
-> >>race in there?  I can't..
-> >>
-> >>
-> >>>All I want is a simple read() to get my oprofile working.  Please
-> >>>advise.
-> >>
-> >>Did you consider changing oprofile userspace to read the executable
-> >>with mmap?
-> >
-> >
-> >It's not actually oprofile's code, though, it's libbfd (used by
-> >oprofile). And it works fine (presumably) for other binaries.
+Am Samstag 21 Juli 2007 schrieb Alan Stern:
+> On Fri, 20 Jul 2007, Oliver Neukum wrote:
 > 
-> So... what's the problem with changing it? The fact that it is a
-> library doesn't really make a difference except that you'll also help
-> everyone else who links with it.
+> > > We already have a pre-suspend notification available for drivers that 
+> > > need to allocate large amounts of memory.
+> > 
+> > Is that facility fine grained enough?
+> 
+> It's a notifier chain that gets called at several points during the 
+> suspend transition.  One of those points is right at the start, while 
+> userspace is still running and reasonably large amounts of memory can 
+> be allocated.
+> 
+> Is it fine-grained enough?  I don't know -- hard to tell, since nothing 
+> much is using it yet.
+> 
+> > > You are correct about the need to delay/stop device addition.  I don't
+> > > know how this can be done in general; each code path calling
+> > > device_add() may have to be treated individually.
+> > 
+> > What about the old API?
+> 
+> What old API do you mean?
 
-Well, I'm more concerned about testing that change libbfd is rather core
-code and used in a number of places. Also, libbfd's current code 'just
-works' for every other filesystem concerned, or I'd expect it would have
-been changed to mmap() before. I'm also terrified of binutils code :)
-I'm also not sure who I'm 'helping', exactly by changing it, beyond
-users of libhugetlbfs and OProfile, who are equally helped by this
-kernel patch (which, again, also has the added benefit of making
-hugetlbfs appear to be more like a normal filesystem).
+The find_device() stuff.
 
-> It won't break backwards compatibility, and it will work on older
-> kernels...
+> >  Do we have to block module loading?
+> 
+> No.  Registering new drivers is okay, registering new devices is bad.
 
-Fair enough. I'm looking into it, but I can't make any promises on
-timelines.
+What if it is a driver for virtual devices that don't need probe()
+for actual hardware?
 
-Thanks,
-Nish
+> Of course, some modules do want to register a new device in their init 
+> method.  I don't know what we should do about them.  Force the 
+> registration to fail, I suppose.  How often will people suspend while a 
+> module is loading?
+> 
+> > What happens if a scsi error handler is woken? If it cannot be woken,
+> > how are errors handled?
+> 
+> Why should the error handler wake up?  There isn't supposed to be any 
+> I/O going on, hence no errors to handle.
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+What about shared busses? Firewire, FibreChannel? They can get external
+resets, etc ...
+
+	Regards
+		Oliver
