@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934014AbXGWSG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934098AbXGWSGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934014AbXGWSG3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763278AbXGWSF5
+	id S934098AbXGWSGu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763278AbXGWSGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:05:57 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47049 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760491AbXGWSFz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:05:55 -0400
-Message-ID: <46A4EDDD.7010309@zytor.com>
-Date: Mon, 23 Jul 2007 11:05:17 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Mon, 23 Jul 2007 14:06:36 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:57987 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933251AbXGWSGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 14:06:33 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Mon, 23 Jul 2007 23:37:51 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        David Howells <dhowells@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, jh@suse.cz
-Subject: Re: [PATCH 2/8] i386: bitops: Rectify bogus "Ir" constraints
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <200707231810.08445.ak@suse.de> <Pine.LNX.4.64.0707232145270.22155@cselinux1.cse.iitk.ac.in> <200707231830.40331.ak@suse.de>
-In-Reply-To: <200707231830.40331.ak@suse.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 7/8] i386: bitops: Kill needless usage of __asm__
+ __volatile__
+In-Reply-To: <46A4E7E3.8090105@goop.org>
+Message-ID: <Pine.LNX.4.64.0707232316440.22796@cselinux1.cse.iitk.ac.in>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070723160603.22137.16516.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <46A4D612.9050209@goop.org> <Pine.LNX.4.64.0707232202580.22155@cselinux1.cse.iitk.ac.in>
+ <46A4E7E3.8090105@goop.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Whoa, thanks for explaining that to me -- I didn't know, obviously. I had
->> just written a test program that used "Ir" with an automatic variable
->> defined in the inline function (as is the case with these bitops) and
->> observed that even when I gave > 32 values, it would still work -- hence
->> my conclusion.
->>
->> However, the patch still stands, does it not? [ I will modify the
->> changelog, obviously. ] The thing is that we don't want to limit
->> @nr to <= 31 in the first place, or am I wrong again? :-)
-> 
-> These bit operations only allow 8 bit immediates, so 0..255 would
-> be correct. N might work from the 4.1 docs, but I don't know if it works 
-> in all old supported gccs (3.2+)
-> 
-> However I is definitely not wrong and most bit numbers are small anyways.
-> 
+On Mon, 23 Jul 2007, Jeremy Fitzhardinge wrote:
 
-"I" is correct.  The Intel documentation on this is highly confusing
-(and has bugs in it), but it does unambiguously state:
+> I'm not quite sure what your point is.
 
-"Some assemblers support immediate bit offsets larger than 31 by using
-the immediate bit offset field in combination with the displacement
-field in the memory operand ... The processor will ignore the high-order
-bits if they are not zero."  AMD processors might be different for all I
-know.
+Could be a case of terminology confusion ...
 
-So unless gas is capable of doing this transformation (and it's not as
-of binutils-2.17.50.0.6) "I" is what's needed here.
+> The paragraph you quoted is
+> pretty explicit in saying that volatile doesn't prevent an "asm
+> volatile" from being interspersed with other code, and the example just
+> before that is explicit in talking about how to use dependencies to
+> control the ordering of asm volatiles with respect to surrounding code.
 
-	-hpa
+Yes, that was the (2).
 
+> In fact nothing in that section precludes asm volatiles from being
+> reordered with respect to each other either; you just have to make sure
+> your dependency constraints are all correct.
+
+The (3) as I had originally written / meant was that multiple
+instructions in a volatile asm would not get _individually_
+interspersed with the rest of the code i.e. be emitted out
+_consecutively_. I don't think we need any such guarantees for
+the non-atomic variants of those operations, so it's good to
+let the compiler have a free hand with what it wants to do,
+and optimize/combine multiple bitops as necessary / possible,
+which was the original intention.
+
+Satyam
