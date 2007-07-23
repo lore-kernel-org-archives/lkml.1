@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765303AbXGWQTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764824AbXGWQUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765303AbXGWQTl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 12:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760081AbXGWQTd
+	id S1764824AbXGWQUp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 12:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759402AbXGWQUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 12:19:33 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:14854 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757205AbXGWQTb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 12:19:31 -0400
-Subject: Re: 2.6.22.1-rt4 lockups
-From: Daniel Walker <dwalker@mvista.com>
-To: Rui Nuno Capela <rncbc@rncbc.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>
-In-Reply-To: <46A283A1.6030005@rncbc.org>
-References: <1184325752.12353.312.camel@chaos>  <46A283A1.6030005@rncbc.org>
-Content-Type: text/plain
-Date: Mon, 23 Jul 2007 09:08:25 -0700
-Message-Id: <1185206905.2573.52.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jul 2007 12:20:38 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:58858 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755717AbXGWQUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 12:20:37 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Mon, 23 Jul 2007 21:51:53 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Andi Kleen <ak@suse.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/8] i386: bitops: Rectify bogus "Ir" constraints
+In-Reply-To: <200707231810.08445.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0707232145270.22155@cselinux1.cse.iitk.ac.in>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070723160538.22137.35213.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <200707231810.08445.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-21 at 23:07 +0100, Rui Nuno Capela wrote:
+Hi Andi,
 
-> Call Trace:
->  [<c010622a>] show_trace_log_lvl+0x1a/0x30
->  [<c01062f6>] show_stack_log_lvl+0xb6/0xe0
->  [<c0106521>] show_registers+0x201/0x330
->  [<c0106768>] die+0x118/0x260
->  [<c0304233>] do_page_fault+0x193/0x600
->  [<c030294a>] error_code+0x72/0x78
->  [<c011b4af>] activate_task+0x4f/0xb0
->  [<c011e09d>] try_to_wake_up+0x2bd/0x420
->  [<c011e279>] wake_up_process_mutex+0x19/0x20
->  [<c01425cc>] wakeup_next_waiter+0xec/0x1a0
->  [<c030173c>] rt_spin_lock_slowunlock+0x4c/0x70
->  [<c0301ff6>] rt_spin_unlock+0x26/0x30
->  [<c015b3e4>] put_zone_pcp+0x14/0x20
->  [<c015c265>] get_page_from_freelist+0x145/0x380
->  [<c015c4f4>] __alloc_pages+0x54/0x2d0
->  [<c01652bd>] __handle_mm_fault+0x7dd/0x9a0
->  [<c0304398>] do_page_fault+0x2f8/0x600
->  [<c030294a>] error_code+0x72/0x78
->  =======================
 
-I was able to reproduce a similar looking hang when I combine kernbench
-running with another load (I used ltpstress.sh from LTP) ..
+On Mon, 23 Jul 2007, Andi Kleen wrote:
 
-I'm debugging it now ..
+> On Monday 23 July 2007 18:05:38 Satyam Sharma wrote:
+> > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> > 
+> > [2/8] i386: bitops: Rectify bogus "Ir" constraints
+> > 
+> > The "I" constraint (on the i386 platform) is used to restrict constants to
+> > the 0..31 range, for use with instructions that must deal with bit numbers.
+> 
+> It means I or r, not I modified by r. This means either a immediate constant
+> 0..31 or a register, which is correct.
+> 
+> % cat t18.c 
+> 
+> f()
+> {
+>         asm("xxx %0" :: "rI" (10));
+>         asm("yyy %0" :: "rI" (100));
+> }
+> % gcc -O2 -S t18.c
+> % cat t18.s
+> ...
+> f:
+> .LFB2:
+> #APP
+>         xxx $10
+> #NO_APP
+>         movl    $100, %eax
+> #APP
+>         yyy %eax
+> #NO_APP
+>         ret
+> .LFE2:
+> ...
 
-Daniel
 
+Whoa, thanks for explaining that to me -- I didn't know, obviously. I had
+just written a test program that used "Ir" with an automatic variable
+defined in the inline function (as is the case with these bitops) and
+observed that even when I gave > 32 values, it would still work -- hence
+my conclusion.
+
+However, the patch still stands, does it not? [ I will modify the
+changelog, obviously. ] The thing is that we don't want to limit
+@nr to <= 31 in the first place, or am I wrong again? :-)
+
+Thanks,
+Satyam
