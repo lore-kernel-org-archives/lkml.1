@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763750AbXGWRqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765915AbXGWRqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763750AbXGWRqe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 13:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbXGWRq1
+	id S1765915AbXGWRqv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 13:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbXGWRql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 13:46:27 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:52569 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757864AbXGWRq0 (ORCPT
+	Mon, 23 Jul 2007 13:46:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33601 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764787AbXGWRqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 13:46:26 -0400
-Message-ID: <46A4E94A.3030301@nortel.com>
-Date: Mon, 23 Jul 2007 11:45:46 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 23 Jul 2007 13:46:40 -0400
+Date: Mon, 23 Jul 2007 10:46:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/8] i386: bitops: Rectify bogus "+m" constraints
+In-Reply-To: <20070723160543.22137.9416.sendpatchset@cselinux1.cse.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0707231043540.3607@woody.linux-foundation.org>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070723160543.22137.9416.sendpatchset@cselinux1.cse.iitk.ac.in>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org,
-       linux-net@vger.kernel.org
-Subject: Re: posible latency issues in seq_read
-References: <46A125F4.3030504@nortel.com> <75b66ecd0707201518j45ef8bb7q7e48462ffbbc9c58@mail.gmail.com> <46A1399C.8010405@nortel.com> <46A181A5.5010203@cosmosbay.com>
-In-Reply-To: <46A181A5.5010203@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jul 2007 17:45:55.0729 (UTC) FILETIME=[52210810:01C7CD51]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
 
-> The problem is in established_get_next() and established_get_first() not 
-> allowing softirq processing, while scanning a possibly huge hash table, 
-> even if few sockets are hashed in.
+
+On Mon, 23 Jul 2007, Satyam Sharma wrote:
 > 
-> As cond_resched_softirq() was added in linux-2.6.11, you probably *need* 
-> to check the diffs between linux-2.6.10 & linux-2.6.11
+> [3/8] i386: bitops: Rectify bogus "+m" constraints
+> 
+> From the gcc manual:
+> 
+>   Extended asm supports input-output or read-write operands. Use the
+>   constraint character `+' to indicate such an operand and list it with
+>   the output operands. You should only use read-write operands when the
+>   constraints for the operand (or the operand in which only some of the
+>   bits are to be changed) allow a register.
+> 
+> So, using the "+" constraint modifier for memory, like "+m" is bogus.
+> We must simply specify "=m" which handles the case correctly.
 
-Thanks for the pointers to the likely culprits.
+No. This is wrong.
 
-Chris
+"=m" means that the new value of the memory location is *set*.
+
+Which means that gcc will potentially optimize away any previous stores to 
+that memory location.
+
+And yes, it happens, and yes, we've seen it.
+
+The gcc docs are secondary. They're not updated, they aren't correct, they 
+don't reflect reality, and they don't matter. The only correct thing to 
+use is "+m" for things like this, or alternatively to just use the 
+"memory" specifier at the end and make gcc generate really crappy code.
+
+			Linus
