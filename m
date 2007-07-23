@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765310AbXGWWfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbXGWWmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765310AbXGWWfy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 18:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbXGWWfq
+	id S1759155AbXGWWmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 18:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbXGWWmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 18:35:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39830 "EHLO
+	Mon, 23 Jul 2007 18:42:01 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58189 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750756AbXGWWfp (ORCPT
+	by vger.kernel.org with ESMTP id S1750876AbXGWWmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 18:35:45 -0400
-Date: Mon, 23 Jul 2007 15:34:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       "Greg Ungerer" <gerg@snapgear.com>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       "Paul Mundt" <lethal@linux-sh.org>, "Tim Bird" <tim.bird@am.sony.com>,
-       bryan.wu@analog.com
-Subject: Re: early_printk accessing __log_buf
-Message-Id: <20070723153437.4fc62253.akpm@linux-foundation.org>
-In-Reply-To: <200707231815.38124.rgetz@blackfin.uclinux.org>
-References: <200707181756.44074.rgetz@blackfin.uclinux.org>
-	<200707231419.13182.rgetz@blackfin.uclinux.org>
-	<20070723131553.2943861f.akpm@linux-foundation.org>
-	<200707231815.38124.rgetz@blackfin.uclinux.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jul 2007 18:42:01 -0400
+Date: Mon, 23 Jul 2007 15:41:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] add __GFP_ZERP to GFP_LEVEL_MASK
+In-Reply-To: <20070723151306.86e3e0ce.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0707231539520.3607@woody.linux-foundation.org>
+References: <1185185020.8197.11.camel@twins> <20070723113712.c0ee29e5.akpm@linux-foundation.org>
+ <1185216048.5535.1.camel@lappy> <20070723144323.1ac34b16@schroedinger.engr.sgi.com>
+ <20070723151306.86e3e0ce.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 18:15:37 -0400
-Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-> On Mon 23 Jul 2007 16:15, Andrew Morton pondered:
-> > This code would be
-> > simpler if it did not attempt to read more than one char at a time.  It
-> > will be plenty fast enough.
+
+On Mon, 23 Jul 2007, Andrew Morton wrote:
 > 
-> When systems have NMI kick off due to power failure, and you want to grab the 
-> log buffer to write it to flash before power really dies - every cycle 
-> counts.
+> OK, well that was weird.  So
 > 
-> A single function which does the copy as a loop (existing) is going to be much 
-> faster than the overhead of 1024 function calls to copy the last k.
-
-I'd expect the overhead of the (fully-cached) instructions to be
-insignificant compared to the time to write to flash?
-
-> > The magical interpretation of len isn't very nice. 
+> 	kmalloc(42, GFP_KERNEL|__GFP_ZERO);
 > 
-> There are lots of places in the kernel which have magic in them :)
+> duplicates
+> 
+> 	kzalloc(42, GFP_KERNEL);
+> 
+> Why do it both ways?
 
-Lots of the kernel is pretty crappy.  One of our main tools for fixing that is to
-ensure that new stuff is non-crappy.
+Both ways? The latter *is* the former. That's how kzalloc() is implemented 
+these days.
 
+Andrew - all these patches came through you. You didn't realize?
+
+		Linus
