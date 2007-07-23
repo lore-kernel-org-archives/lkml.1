@@ -1,132 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762658AbXGWVmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764895AbXGWVnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762658AbXGWVmT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbXGWVmH
+	id S1764895AbXGWVnP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbXGWVnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:42:07 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:30049 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755221AbXGWVmF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:42:05 -0400
-Subject: Re: v2.6.22.1-rt5
-From: Daniel Walker <dwalker@mvista.com>
-To: Rui Nuno Capela <rncbc@rncbc.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <46A51D9E.8040104@rncbc.org>
-References: <20070723210236.GA25104@elte.hu>  <46A51D9E.8040104@rncbc.org>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 23 Jul 2007 14:30:26 -0700
-Message-Id: <1185226226.2573.147.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 8bit
+	Mon, 23 Jul 2007 17:43:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51531 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753482AbXGWVm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:42:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+Subject: Re: which signal is sent to freeze process?
+Date: Mon, 23 Jul 2007 23:50:49 +0200
+User-Agent: KMail/1.9.5
+Cc: nigel@suspend2.net, linux-kernel@vger.kernel.org
+References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707210010.05877.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD62858D6A0@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD62858D6A0@scsmsx412.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707232350.50208.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 22:29 +0100, Rui Nuno Capela wrote:
-> Ingo Molnar wrote:
-> > we are pleased to announce the v2.6.22.1-rt5 kernel (collected and 
-> > assembled by Thomas), which can be downloaded from the usual place:
-> >   
-> >   http://redhat.com/~mingo/realtime-preempt/
-> >   
-> > more info about the -rt patchset can be found in the RT wiki:
-> >    
-> >   http://rt.wiki.kernel.org
-> > 
-> > Changes since -rt4:
-> > 
-> >  - MM fix: PCP pages locking (Peter Zijlstra)
-> > 
-> >  - yield() fix: remove stale RCU-unlock (Daniel Walker)
-> > 
-> >  - dont do check_pgt_cache() in idle (found by Daniel Walker)
-> > 
-> >  - moved 8 patches, created 6 new patches out of larger patches to 
-> >    make the -rt queue more bisectable (Daniel Walker)
-> > 
-> >  - cleanup (Daniel Walker)
-> > 
-> >  - fix the latency tracer under paravirt
-> > 
-> > to build a 2.6.22.1-rt5 tree, the following patches should be applied:
-> >   
-> >   http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
-> >   http://redhat.com/~mingo/realtime-preempt/patch-2.6.22.1-rt5
-> >   
-> > 	Ingo
-> > -
-> 
-> Maybe I was too quick, but `make all` on is failing here:
-> 
-> ...
-> In file included from arch/i386/mm/pgtable.c:16:
-> include/linux/quicklist.h: In function ‘quicklist_alloc’:
-> include/linux/quicklist.h:50: warning: unused variable ‘q’
-> include/linux/quicklist.h: In function ‘__quicklist_free’:
-> include/linux/quicklist.h:79: error: ‘per_cpu__quicklist’ undeclared
-> (first use in this function)
-> include/linux/quicklist.h:79: error: (Each undeclared identifier is
-> reported only once
-> include/linux/quicklist.h:79: error: for each function it appears in.)
-> include/linux/quicklist.h:79: warning: type defaults to ‘int’ in
-> declaration of ‘type name’
-> include/linux/quicklist.h:79: error: invalid type argument of ‘unary *’
-> make[1]: *** [arch/i386/mm/pgtable.o] Error 1
-> make: *** [arch/i386/mm] Error 2
+On Monday, 23 July 2007 22:57, Agarwal, Lomesh wrote:
+> Why do you need try_to_freeze in below patch? Shouldn't
+> !freezing(current) checking is enough?
 
-Yeah, the quicklist patch wasn't fully tested .. The delta patch below
-is what I had to change to get it working ..
+The try_to_freeze() is needed so that the process doesn't block the freezing
+of tasks (it is supposed to call refrigerator() as soon as reasonably possible
+when freezing(current) is true).
 
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+Alternatively, we might return 0 from do_sys_poll() if do_poll() has
+returned 0 and both signal_pending(current) and freezing(current) are
+true.  Below is a patch that implements that.  Could you please try it?
 
-diff -u linux-2.6/include/linux/quicklist.h linux-2.6.22.1/include/linux/quicklist.h
---- linux-2.6/include/linux/quicklist.h
-+++ linux-2.6.22.1/include/linux/quicklist.h
-@@ -47,7 +47,6 @@
- 
- static inline void *quicklist_alloc(int nr, gfp_t flags, void (*ctor)(void *))
- {
--	struct quicklist *q;
- 	void **p = NULL;
- 	int cpu;
- 
-@@ -66,6 +65,7 @@
- static inline void __quicklist_free(int nr, void (*dtor)(void *), void *p,
- 	struct page *page)
- {
-+	int cpu;
- 	struct quicklist *q;
- 	int nid = page_to_nid(page);
- 
-@@ -76,11 +76,11 @@
- 		return;
- 	}
- 
--	q = &get_cpu_var(quicklist)[nr];
-+	q = &get_cpu_var_locked(quicklist, &cpu)[nr];
- 	*(void **)p = q->page;
- 	q->page = p;
- 	q->nr_pages++;
--	put_cpu_var(quicklist);
-+	put_cpu_var_locked(quicklist, cpu);
- }
- 
- static inline void quicklist_free(int nr, void (*dtor)(void *), void *pp)
-diff -u linux-2.6/mm/quicklist.c linux-2.6.22.1/mm/quicklist.c
---- linux-2.6/mm/quicklist.c
-+++ linux-2.6.22.1/mm/quicklist.c
-@@ -80,7 +80,7 @@
- 	struct quicklist *ql, *q;
- 
- 	for_each_online_cpu(cpu) {
--		ql = per_cpu(quicklist, cpu);
-+		ql = per_cpu_var_locked(quicklist, cpu);
- 		for (q = ql; q < ql + CONFIG_NR_QUICK; q++)
- 			count += q->nr_pages;
- 	}
+Greetings,
+Rafael
 
 
+---
+ fs/select.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.22-rc6-mm1/fs/select.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/fs/select.c
++++ linux-2.6.22-rc6-mm1/fs/select.c
+@@ -722,7 +722,7 @@ int do_sys_poll(struct pollfd __user *uf
+ 		walk = walk->next;
+   	}
+ 	err = fdcount;
+-	if (!fdcount && signal_pending(current))
++	if (!fdcount && (signal_pending(current) && !freezing(current)))
+ 		err = -EINTR;
+ out_fds:
+ 	walk = head;
