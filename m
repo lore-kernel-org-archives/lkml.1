@@ -1,100 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbXGWFdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbXGWFpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150AbXGWFdt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 01:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXGWFdk
+	id S1758625AbXGWFpP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 01:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbXGWFpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 01:33:40 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46343
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857AbXGWFdj (ORCPT
+	Mon, 23 Jul 2007 01:45:01 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:54031 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178AbXGWFo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 01:33:39 -0400
-Date: Sun, 22 Jul 2007 22:31:56 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-cc: Alan Stern <stern@rowland.harvard.edu>, nigel@suspend2.net,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, miltonm@bga.com,
-       ying.huang@intel.com, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <200707230842.22121.nigel@nigel.suspend2.net>
-Message-ID: <Pine.LNX.4.64.0707222230050.6350@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org>
- <200707230842.22121.nigel@nigel.suspend2.net>
+	Mon, 23 Jul 2007 01:44:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ck9ENoccSyoBrRLZJPaFwfTxiAaBA2yXQr4SxnoFhW8vYJWzv4q3CPUT6a1LwhhBuWaYZPHerCkXhXirnpvLh69eO+DJO5Lu8Xjy5ymssqGRjHJ2DrXvm2hq/TvTnzE/YS/z6vMCeyXUuFC6Jjg69b2HZmxamrodY+q5lkKnoqc=
+Message-ID: <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com>
+Date: Mon, 23 Jul 2007 07:44:58 +0200
+From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
+To: "Jarek Poplawski" <jarkao2@o2.pl>,
+       "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+In-Reply-To: <20070629150759.GC2771@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
+	 <20070629150759.GC2771@ff.dom.local>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007, Nigel Cunningham wrote:
+Ok, I've bisected this problem and found that this patch broke my NIC:
 
-> Hi Alan.
->
-> On Monday 23 July 2007 01:26:23 Alan Stern wrote:
->> On Sun, 22 Jul 2007, Nigel Cunningham wrote:
->>
->>> Hi.
->>>
->>> On Sunday 22 July 2007 02:13:56 Jeremy Maitin-Shepard wrote:
->>>> It seems that you could still potentially get a failure to freeze if one
->>>> FUSE process depends on another, and the one that is frozen second just
->>>> happens to be waiting on the one that is frozen first when it is frozen.
->>>> I admit that this situation is unlikely, and perhaps acceptable.
->>>>
->>>> A larger concern is that it seems that freezing FUSE processes at all
->>>> _will_ generate deadlocks if a non-synchronous or memory-map-supporting
->>>> filesystem is loopback mounted from a FUSE filesystem.  In that case, if
->>>> you attempt to sync or free memory once FUSE is frozen, you are sure to
->>>> get a deadlock.
->>>
->>> Ok. So then (in response to Alan too), how about keeping a tree of mounts,
->>> akin to the device tree, and working from the deepest nodes up? (In
->>> conjunction with what I already suggested)?
->>
->> Face it, Nigel, this is a losing battle.  You can try to come up with
->> ever-more complex schemes to try and force FUSE into the freezer's
->> framework, but it just won't fit.  Or if it does, the next filesystem
->> to come along will require an even more baroque type of special-case
->> handling.
->
-> It does seem to be a losing battle, but I'm wondering whether that's really
-> because it's an intractable problem, or because people have given up on it
-> before its time. We are talking about a computer system, so things should be
-> predictable.
->
->> The general problem is that task A may be in an unfreezable state,
->> waiting for task B to do something, while task B is already frozen.
->> Since there's no reasonable way to determine that A really is waiting
->> for B, you're just stuck.  (To make matters worse, A may not even
->> realize which task it is waiting for; it may know only that it's
->> waiting for somebody to do something!)  A and B could be user tasks,
->> kernel threads, or one of each.
->
-> I guess I want to persist because all of these issues aren't utterly
-> unsolvable. It's just that we don't have the infrastructure yet to figure out
-> the solutions to these issues trivially. Take, for example, the locking
-> issue. If we could call some function to say "What process holds this lock?",
-> then task A could know that it's waiting on task B and put that information
-> somewhere. We could then use the information to freeze task B before task A.
->
+76d2160147f43f982dfe881404cfde9fd0a9da21 is first bad commit
+commit 76d2160147f43f982dfe881404cfde9fd0a9da21
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Feb 16 01:28:24 2007 -0800
 
-this sounds like the standard priority inversion problem taken to 
-extremes. Ingo has been working this issue, but IIRC the problem is that 
-tracking what owns the lock so that you can get that thing to run ends up 
-being enough overhead that it's not acceptable in the general case.
+    [PATCH] genirq: do not mask interrupts by default
 
-David Lang
+    Never mask interrupts immediately upon request.  Disabling interrupts in
+    high-performance codepaths is rare, and on the other hand this change could
+    recover lost edges (or even other types of lost interrupts) by
+conservatively
+    only masking interrupts after they happen.  (NOTE: with this change the
+    highlevel irq-disable code still soft-disables this IRQ line - and
+if such an
+    interrupt happens then the IRQ flow handler keeps the IRQ masked.)
 
->> The only thing to do is what Rafael has been working on: unfreeze
->> things, hope the tasks sort themselves out, and try again.
->
-> That's what I'm questioning. Is there a more reliable way and we've just given
-> up too quickly?
->
-> Regards,
->
-> Nigel
->
+    Mark i8529A controllers as 'never loses an edge'.
+
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Cc: Thomas Gleixner <tglx@linutronix.de>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=76d2160147f43f982dfe881404cfde9fd0a9da21
+
+After reverting it on top of 2.6.21.3 (with
+d7e25f3394ba05a6d64cb2be42c2765fe72ea6b2 - [PATCH] genirq: remove
+IRQ_DISABLED (which ment "remove IRQ_DELAYED_DISABLE")), the problem
+didn't show up :)
+(http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d7e25f3394ba05a6d64cb2be42c2765fe72ea6b2)
+
+So I cooked patch like below and everything is working fine (so far)
+
+Fix default_disable interrupt function (broken by [PATCH] genirq: do
+not mask interrupts by default) - revert removal of codepath which was
+invoked when removed flag (IRQ_DELAYED_DISABLE) wag NOT set
+
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+---
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index 76a9106..0bb23cd 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -230,6 +230,8 @@ static void default_enable(unsigned int irq)
+  */
+ static void default_disable(unsigned int irq)
+ {
++	struct irq_desc *desc = irq_desc + irq;
++	desc->chip->mask(irq);
+ }
+
+ /*
+
+(Sorry for whitespace damage, but I have to send it from webmail :|)
+(I'm a kernel noob, so don't kill me if my patch is wrong ;)
+ps: Here is the beginning of this thread: http://lkml.org/lkml/2007/6/16/182
+
+
+Regards,
+Marcin Slusarz
