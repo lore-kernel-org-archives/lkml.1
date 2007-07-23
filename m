@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762114AbXGWVbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759856AbXGWVcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762114AbXGWVbM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbXGWVa5
+	id S1759856AbXGWVcN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXGWVb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:30:57 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:31414 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756130AbXGWVa4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:30:56 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=PzmIdR2k5kYWGi2pZAz8CysSavG8SEXFJ8FeBpGuLFWr0z+TRosnAZnwP6AMs3ioO
-	zcQzxdK/K+bX6YqnjtMgQ==
-Message-ID: <46A51DEB.6090603@google.com>
-Date: Mon, 23 Jul 2007 14:30:19 -0700
-From: Ethan Solomita <solo@google.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Mon, 23 Jul 2007 17:31:59 -0400
+Received: from mail.suse.de ([195.135.220.2]:35456 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753083AbXGWVb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:31:58 -0400
+From: Andi Kleen <ak@suse.de>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Subject: Re: [PATCH 7/8] i386: bitops: Kill needless usage of __asm__ __volatile__
+Date: Mon, 23 Jul 2007 23:30:41 +0200
+User-Agent: KMail/1.9.1
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <46A4F360.2000905@goop.org> <Pine.LNX.4.58.0707231325050.5535@shell2.speakeasy.net>
+In-Reply-To: <Pine.LNX.4.58.0707231325050.5535@shell2.speakeasy.net>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@google.com>
-Subject: Re: [PATCH 0/6] cpuset aware writeback
-References: <469D3342.3080405@google.com> <20070723131841.02c9b109@schroedinger.engr.sgi.com>
-In-Reply-To: <20070723131841.02c9b109@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707232330.41876.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 17 Jul 2007 14:23:14 -0700
-> Ethan Solomita <solo@google.com> wrote:
-> 
->> These patches are mostly unchanged from Chris Lameter's original
->> changelist posted previously to linux-mm.
-> 
-> Thanks for keeping these patches up to date. Add you signoff if you
-> did modifications to a patch. Also include the description of the tests
-> in the introduction to the patchset.
 
-	So switch from an Ack to a signed-off? OK, and I'll add descriptions of
-testing. Everyone other than you has been silent on these patches. Does
-silence equal consent?
-	-- Ethan
+> gcc also tries to count the number of instructions, to guess how large in
+> bytes the asm block is, as it could make a difference for near vs short
+> jumps, etc.
 
+Are you sure? I doubt it. It would need a full asm parser to do this
+properly and then even it could be wrong 
+(e.g. when the sections are switched like Linux does extensively)  
 
+gcc doesn't have such a parser.
+
+Also on x86 gcc doesn't need to care about long/short anyways because
+the assembler takes care of this and the other instructions who cared
+about this (loop) isn't generated anymore.
+
+You're probably confusing it with some other compiler, who sometimes
+do this. e.g. the Microsoft inline asm syntax requires assembler parsing
+in the compiler.
+
+> I wonder it it also affects the instruction count the inline heuristics
+> use?
+
+AFAIK it counts like one operand.
+
+-Andi
