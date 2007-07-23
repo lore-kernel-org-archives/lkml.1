@@ -1,164 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762191AbXGWQC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbXGWQCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762191AbXGWQC3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 12:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbXGWQCU
+	id S1757971AbXGWQCn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 12:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759026AbXGWQCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 12:02:20 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:33567 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755528AbXGWQCT (ORCPT
+	Mon, 23 Jul 2007 12:02:24 -0400
+Received: from smtp113.plus.mail.re1.yahoo.com ([69.147.102.76]:25803 "HELO
+	smtp113.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758554AbXGWQCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 12:02:19 -0400
-Date: Mon, 23 Jul 2007 18:04:02 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <20070723160402.GA4074@enneenne.com>
-References: <20070717180550.GA24759@enneenne.com> <1185197716.14697.244.camel@pmac.infradead.org>
+	Mon, 23 Jul 2007 12:02:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=nOGeOcfVUH8dJ4cJWoy4IxuQ7ekWbRtl6XKzZATI3Mu30MP7LHiQQ1TrU/NqU+8ntsAlgGVygGnRiah+15doCXHBu+vmhWYxO4p5VOUJcRgkgqMr1/SxxVVn0DaJy4FPi9trC/Ug1YqNEibgYDTlI3sfPSUd9Zrk58eQxGXu9/A=  ;
+X-YMail-OSG: 1gYNYrcVM1lxoRu4Z0jpRnPH7cCYwGEIQC6wjsGSiLLQKkYCLLT0wqhyh6MD_ZaEOgWqR648lw--
+Date: Mon, 23 Jul 2007 18:01:46 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH] usb/atm: fix Kconfig garbage
+Message-ID: <20070723160145.GB8525@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070723065604.GA8525@gollum.tnic> <20070723115329.GH26212@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1185197716.14697.244.camel@pmac.infradead.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070723115329.GH26212@stusta.de>
 User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] LinuxPPS - definitive version
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 02:35:16PM +0100, David Woodhouse wrote:
+On Mon, Jul 23, 2007 at 01:53:30PM +0200, Adrian Bunk wrote:
+> On Mon, Jul 23, 2007 at 08:56:04AM +0200, Borislav Petkov wrote:
+> > Hi there,
+> > 
+> > I don't know whether this is the proper Kconfig-way to fix this but it works ok here.
+> > 
+> > ----
+> > When entered, the menu point "USB DSL modem support" in menuconfig, path [Device Drivers->USB
+> > Support] shows no entries but "^@" instead. The following fixes it.
+> > 
+> > Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> > 
+> > --
+> > --- linux-2.6.23-rc1/drivers/usb/atm/Kconfig.orig	2007-07-23 08:27:29.000000000 +0200
+> > +++ linux-2.6.23-rc1/drivers/usb/atm/Kconfig	2007-07-23 08:50:55.000000000 +0200
+> > @@ -7,7 +7,8 @@ menu "USB DSL modem support"
+> >  
+> >  config USB_ATM
+> >  	tristate "USB DSL modem support"
+> > -	depends on USB && ATM
+> > +	depends on USB
+> > +	select ATM
+> >  	select CRC32
+> >  	default n
+> >  	help
 > 
-> s/Documentaion/Documentation/ in the last line of Documentation/pps/pps.txt
+> This would break the compilation with CONFIG_NET=n.
 
-Fixed.
-
-> Please feed it to scripts/checkpatch.pl -- you can ignore all the
-> warnings about lines greater than 80 characters, and the complete crap
-> about "declaring multiple variables together should be avoided", but
-> some of what it points out is valid. Including the one about 'volatile'
-
-Ok, I'll do it.
-
-> -- your explanation lacked credibility. If you really need 'volatile'
-> then put it at the places you actually need it; not the declaration of
-> the structure.
-
-About this debate, please, take a look at the pps_event() function:
-
-void pps_event(int source, int event, void *data)
-{
-        struct timespec __ts;
-        struct pps_ktime ts;
-
-        /* First of all we get the time stamp... */
-        getnstimeofday(&__ts);
-
-        /* ... and translate it to PPS time data struct */
-        ts.sec = __ts.tv_sec;
-        ts.nsec = __ts.tv_nsec;
-
-        if ((event & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR)) == 0 ) {
-                pps_err("unknow event (%x) for source %d", event, source);
-                return;
-        }
-
-        /* We wish not using locks at all into this function... a possible
-         * solution is to check the "info" field against the pointer to
-         * "dummy_info".
-         * If "info" points to "dummy_info" we can return doing nothing since,
-         * even if a new PPS source is registered by another CPU we can
-         * safely not register current event.
-         * If "info" points to a valid PPS source's info data we can continue
-         * without problem since, even if current PPS source is deregistered
-         * by another CPU, we still continue writing data into a valid area
-         * (dummy_info).
-         */
-        if (pps_source[source].info == &dummy_info)
-                return;
-
-        /* Must call the echo function? */
-        if ((pps_source[source].params.mode & (PPS_ECHOASSERT | PPS_ECHOCLEAR)))
-                pps_source[source].info->echo(source, event, data);
-
-        /* Check the event */
-        pps_source[source].current_mode = pps_source[source].params.mode;
-        if (event & PPS_CAPTUREASSERT) {
-                /* We have to add an offset? */
-                if (pps_source[source].params.mode & PPS_OFFSETASSERT)
-                        pps_add_offset(&ts,
-                                &pps_source[source].params.assert_off_tu);
-
-                /* Save the time stamp */
-                pps_source[source].assert_tu = ts;
-                pps_source[source].assert_sequence++;
-                pps_dbg("capture assert seq #%u for source %d",
-                        pps_source[source].assert_sequence, source);
-        }
-        if (event & PPS_CAPTURECLEAR) {
-                /* We have to add an offset? */
-                if (pps_source[source].params.mode & PPS_OFFSETCLEAR)
-                        pps_add_offset(&ts,
-                                &pps_source[source].params.clear_off_tu);
-
-                /* Save the time stamp */
-                pps_source[source].clear_tu = ts;
-                pps_source[source].clear_sequence++;
-                pps_dbg("capture clear seq #%u for source %d",
-                        pps_source[source].clear_sequence, source);
-        }
-
-        pps_source[source].go = ~0;
-        wake_up_interruptible(&pps_source[source].queue);
-}
-
-The problems should arise at:
-
-	if (pps_source[source].info == &dummy_info)
-		return;
-
-but as explained into the comment there should be no problems at
-all...
-
-About "where" to put the "volatile" attribute I don't understand what
-you mean... such attribute is needed (IMHO) for "assert_sequence"&C,
-where should I put it? :-o
- 
-> You've also reverted to structures which vary between 32-bit and 64-bit
-> userspace, because they use 'long' and 'struct timespec', but you
-> haven't provided the compat_* routines which are then necessary.
-
-As already suggested I used fixed size variables. See the new struct
-"struct pps_ktime".
-
-> +typedef int pps_handle_t;              /* represents a PPS source */
-> +typedef unsigned long pps_seq_t;       /* sequence number */
-> +typedef struct ntp_fp ntp_fp_t;                /* NTP-compatible time stamp */
-> +typedef union pps_timeu pps_timeu_t;   /* generic data type to represent time s
-> tamps */
-> +typedef struct pps_info pps_info_t;    
-> +typedef struct pps_params pps_params_t;
-> 
-> Don't do this for the structures. It's dubious enough for the integer
-> types.
-
-Such code is for userland since RFC2783 requires such types... I moved
-all userland code into Documentation/pps/timepps.h which can be used
-by userland programs whose require RFC compatibility.
-
-I'll post a new patch ASAP.
-
-Ciao,
-
-Rodolfo
+Aha, so the logic behind it is that this submenu should be displayed in kconfig only if ATM 
+is selected. Ok, I get it, thanks.
 
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Regards/Gruﬂ,
+    Boris.
