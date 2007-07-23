@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763676AbXGWXg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765906AbXGWXk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763676AbXGWXg2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 19:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbXGWXgT
+	id S1765906AbXGWXk1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 19:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbXGWXkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 19:36:19 -0400
-Received: from mga01.intel.com ([192.55.52.88]:5976 "EHLO mga01.intel.com"
+	Mon, 23 Jul 2007 19:40:15 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11018 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751132AbXGWXgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 19:36:18 -0400
+	id S1753301AbXGWXkN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 19:40:13 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,572,1175497200"; 
-   d="scan'208";a="271786381"
-Message-ID: <46A53B70.1010903@intel.com>
-Date: Mon, 23 Jul 2007 16:36:16 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+   d="scan'208";a="109113522"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky>
-In-Reply-To: <740c90243aaa6f6d4640d71230c4fa27@pinky>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jul 2007 23:36:17.0623 (UTC) FILETIME=[44277E70:01C7CD82]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: __unsafe() usage
+Date: Mon, 23 Jul 2007 16:40:10 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02BBDE39@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <1185232601.1803.41.camel@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: __unsafe() usage
+Thread-Index: AcfNf5ltZ/kIh2ZTQmyfgfFUAAlMygAAhDWg
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>, "Adrian Bunk" <bunk@stusta.de>
+Cc: "Gabriel C" <nix.or.die@googlemail.com>,
+       "lkml" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <lksctp-developers@lists.sourceforge.net>,
+       "Williams, Dan J" <dan.j.williams@intel.com>
+X-OriginalArrivalTime: 23 Jul 2007 23:40:11.0061 (UTC) FILETIME=[CF4B4E50:01C7CD82]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> This version brings a number of new checks, and a number of bug
-> fixes.  Of note:
+Rusty Russell [mailto:rusty@rustcorp.com.au] 
+>> If this is true, and since the MOD_INC_USE_COUNT compat code is long 
+>> gone, shouldn't we be able to completely remove __unsafe() and the 
+>> struct member "unsafe"?
+>
+>Yes, indeed, something like this:
+>==
+>Remove "unsafe" from module struct
+>
+>Adrian Bunk points out that "unsafe" was used to mark modules 
+>touched by
+>the deprecated MOD_INC_USE_COUNT interface, which has long gone.  It's
+>time to remove the member from the module structure, as well.
+>
+>If you want a module which can't unload, don't register an exit
+>function.
+>
+>Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>
+>diff -r d7af727512fd drivers/dma/ioatdma.c
+>--- a/drivers/dma/ioatdma.c	Tue Jul 24 08:30:05 2007 +1000
+>+++ b/drivers/dma/ioatdma.c	Tue Jul 24 09:11:11 2007 +1000
+>@@ -811,18 +811,17 @@ MODULE_AUTHOR("Intel Corporation");
 > 
->   - warnings for multiple assignments per line
->   - warnings for multiple declarations per line
->   - checks for single statement blocks with braces
+> static int __init ioat_init_module(void)
+> {
+>-	/* it's currently unsafe to unload this module */
+>-	/* if forced, worst case is that rmmod hangs */
+>-	__unsafe(THIS_MODULE);
+>-
+> 	return pci_register_driver(&ioat_pci_driver);
+> }
 > 
-> This patch includes an update for feature-removal-schedule.txt to
-> better target checks.
+> module_init(ioat_init_module);
 > 
-> Andy Whitcroft (12):
->       Version: 0.08
->       check for spaces between function name and open parenthesis
+>+/* it's currently unsafe to unload this module */
+>+#if 0
+> static void __exit ioat_exit_module(void)
+> {
+> 	pci_unregister_driver(&ioat_pci_driver);
+> }
 > 
-
-> +# check for spaces between functions and their parentheses.
-> +		if ($line =~ /($Ident)\s+\(/ &&
-> +		    $1 !~ /^(?:if|for|while|switch|return|volatile)$/ &&
-> +		    $line !~ /$Type\s+\(/ && $line !~ /^.\#\s*define\b/) {
-> +			ERROR("no space between function name and open parenthesis '('\n" . $herecurr);
-> +		}
+> module_exit(ioat_exit_module);
+>+#endif
 
 
-this somehow seems to match something completely non-related (a function pointer 
-declaration case):
-
-ERROR: no space between function name and open parenthesis '('
-#7278: FILE: drivers/net/e1000e/hw.h:434:
-+       bool (*check_mng_mode)(struct e1000_hw *);
-
-even if I put a space between ")(", it still complains.
-
-
-Auke
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
