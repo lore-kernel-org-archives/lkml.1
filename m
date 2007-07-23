@@ -1,83 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbXGWNPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbXGWNSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbXGWNPh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 09:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbXGWNP0
+	id S1759434AbXGWNSS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 09:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbXGWNSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 09:15:26 -0400
-Received: from lug-owl.de ([195.71.106.12]:46464 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753877AbXGWNPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 09:15:25 -0400
-Date: Mon, 23 Jul 2007 15:15:23 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
-       Al Boldi <a1426z@gawab.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFH] Partition table recovery
-Message-ID: <20070723131523.GR22998@lug-owl.de>
-Mail-Followup-To: Rene Herman <rene.herman@gmail.com>,
-	Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
-	Al Boldi <a1426z@gawab.com>, linux-raid@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <200707200813.03553.a1426z@gawab.com> <46A24846.7050803@gmail.com> <20070722011141.GJ26752@thunk.org> <200707220710.31402.a1426z@gawab.com> <20070722162802.GA20174@thunk.org> <46A46399.5090406@gmail.com> <20070723084146.GP22998@lug-owl.de> <46A488EB.2050305@gmail.com> <46A4A16F.7070100@gmail.com>
+	Mon, 23 Jul 2007 09:18:06 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:57676 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756058AbXGWNSE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 09:18:04 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] [PATCH 4/5] Dynamically allocated pageflags - PageSlab conversion.
+Date: Mon, 23 Jul 2007 23:16:44 +1000
+User-Agent: KMail/1.9.6
+References: <200707232305.12364.nigel@nigel.suspend2.net>
+In-Reply-To: <200707232305.12364.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="nccO0ldXW0cuDU6a"
 Content-Disposition: inline
-In-Reply-To: <46A4A16F.7070100@gmail.com>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707232316.44370.nigel@nigel.suspend2.net>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Convert PageSlab to use dynamically allocated page flags.
 
---nccO0ldXW0cuDU6a
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm not sure that we'll actually want to apply this, but it does work
+(I'm using it as I type this).
 
-On Mon, 2007-07-23 14:39:11 +0200, Rene Herman <rene.herman@gmail.com> wrot=
-e:
-> On 07/23/2007 12:54 PM, Rene Herman wrote:
->=20
-> > static inline uint32_t le_32(uint32_t n)
-> > {
-> > #ifdef __LITTLE_ENDIAN
-> >	return n;
-> > #else
-> > 	return bswap_32(n);
-> > #endif
-> > }
->=20
-> #if __BYTE_ORDER =3D=3D __LITTLE_ENDIAN, that is. sigh.
+Signed-off-by: Nigel Cunningham <nigel@nigel.suspend2.net>
 
-Don't forget PDP11 byteorder :-)
 
-MfG, JBG
-
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-  Signature of:                           Wenn ich wach bin, tr=C3=A4ume ic=
-h.
-  the second  :
-
---nccO0ldXW0cuDU6a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGpKnrHb1edYOZ4bsRAhiyAJ9yABd8QmWsaVNdRgjNRZ9eXyAW7ACfRKly
-e9sG4KCUrlE0DwThVrMxZZ0=
-=FWJq
------END PGP SIGNATURE-----
-
---nccO0ldXW0cuDU6a--
+ include/linux/page-flags.h |    8 ++++----
+ mm/dyn_pageflags.c         |    4 ++++
+ mm/page_alloc.c            |    6 +++---
+ mm/slub.c                  |    2 +-
+ 4 files changed, 12 insertions(+), 8 deletions(-)
+diff -ruNp 922-page-slab-pageflag.patch-old/include/linux/page-flags.h 922-page-slab-pageflag.patch-new/include/linux/page-flags.h
+--- 922-page-slab-pageflag.patch-old/include/linux/page-flags.h	2007-07-23 22:13:30.000000000 +1000
++++ 922-page-slab-pageflag.patch-new/include/linux/page-flags.h	2007-07-23 22:13:33.000000000 +1000
+@@ -76,7 +76,6 @@
+ #define PG_dirty	 	 4
+ #define PG_lru			 5
+ #define PG_active		 6
+-#define PG_slab			 7	/* slab debug (Suparna wants this) */
+ 
+ #define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
+ #define PG_arch_1		 9
+@@ -156,9 +155,10 @@ static inline void SetPageUptodate(struc
+ #define ClearPageActive(page)	clear_bit(PG_active, &(page)->flags)
+ #define __ClearPageActive(page)	__clear_bit(PG_active, &(page)->flags)
+ 
+-#define PageSlab(page)		test_bit(PG_slab, &(page)->flags)
+-#define __SetPageSlab(page)	__set_bit(PG_slab, &(page)->flags)
+-#define __ClearPageSlab(page)	__clear_bit(PG_slab, &(page)->flags)
++extern struct dyn_pageflags dyn_Slab_map;
++#define PageSlab(page)	test_dynpageflag(&dyn_Slab_map, page)
++#define __SetPageSlab(page)	set_dynpageflag(&dyn_Slab_map, page)
++#define __ClearPageSlab(page)	clear_dynpageflag(&dyn_Slab_map, page)
+ 
+ #ifdef CONFIG_HIGHMEM
+ #define PageHighMem(page)	is_highmem(page_zone(page))
+diff -ruNp 922-page-slab-pageflag.patch-old/mm/dyn_pageflags.c 922-page-slab-pageflag.patch-new/mm/dyn_pageflags.c
+--- 922-page-slab-pageflag.patch-old/mm/dyn_pageflags.c	2007-07-23 22:13:30.000000000 +1000
++++ 922-page-slab-pageflag.patch-new/mm/dyn_pageflags.c	2007-07-23 22:13:33.000000000 +1000
+@@ -114,6 +114,7 @@ static int dyn_pageflags_debug = 0;
+ 		for (zone_nr = 0; zone_nr < MAX_NR_ZONES; zone_nr++)
+ 
+ DECLARE_DYN_PAGEFLAGS(dyn_MappedToDisk_map);
++DECLARE_DYN_PAGEFLAGS(dyn_Slab_map);
+ #ifdef CONFIG_SWAP
+ DECLARE_DYN_PAGEFLAGS(dyn_SwapCache_map);
+ #endif
+@@ -242,6 +243,9 @@ static void *normal_allocator(unsigned l
+ void __init dyn_pageflags_init(void)
+ {
+ 	dyn_allocator = boot_time_allocator;
++
++	/* Allocate the slab map early and not sparse. */
++	BUG_ON(allocate_dyn_pageflags(&dyn_Slab_map, 0));
+ }
+ 
+ /**
+diff -ruNp 922-page-slab-pageflag.patch-old/mm/page_alloc.c 922-page-slab-pageflag.patch-new/mm/page_alloc.c
+--- 922-page-slab-pageflag.patch-old/mm/page_alloc.c	2007-07-23 22:13:30.000000000 +1000
++++ 922-page-slab-pageflag.patch-new/mm/page_alloc.c	2007-07-23 22:13:33.000000000 +1000
+@@ -203,10 +203,10 @@ static void bad_page(struct page *page)
+ 			1 << PG_active	|
+ 			1 << PG_dirty	|
+ 			1 << PG_reclaim |
+-			1 << PG_slab    |
+ 			1 << PG_swapcache |
+ 			1 << PG_writeback |
+ 			1 << PG_buddy );
++	__ClearPageSlab(page);
+ 	set_page_count(page, 0);
+ 	reset_page_mapcount(page);
+ 	page->mapping = NULL;
+@@ -433,12 +433,12 @@ static inline int free_pages_check(struc
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+ 		(page_count(page) != 0)  |
++		(PageSlab(page))	 |
+ 		(page->flags & (
+ 			1 << PG_lru	|
+ 			1 << PG_private |
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+-			1 << PG_slab	|
+ 			1 << PG_swapcache |
+ 			1 << PG_writeback |
+ 			1 << PG_reserved |
+@@ -587,6 +587,7 @@ static int prep_new_page(struct page *pa
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+ 		(page_count(page) != 0)  |
++		(PageSlab(page))	 |
+ 		(page->flags & (
+ 			1 << PG_lru	|
+ 			1 << PG_private	|
+@@ -594,7 +595,6 @@ static int prep_new_page(struct page *pa
+ 			1 << PG_active	|
+ 			1 << PG_dirty	|
+ 			1 << PG_reclaim	|
+-			1 << PG_slab    |
+ 			1 << PG_swapcache |
+ 			1 << PG_writeback |
+ 			1 << PG_reserved |
+diff -ruNp 922-page-slab-pageflag.patch-old/mm/slub.c 922-page-slab-pageflag.patch-new/mm/slub.c
+--- 922-page-slab-pageflag.patch-old/mm/slub.c	2007-07-11 22:19:42.000000000 +1000
++++ 922-page-slab-pageflag.patch-new/mm/slub.c	2007-07-23 19:48:40.000000000 +1000
+@@ -1032,7 +1032,7 @@ static struct page *new_slab(struct kmem
+ 		atomic_long_inc(&n->nr_slabs);
+ 	page->offset = s->offset / sizeof(void *);
+ 	page->slab = s;
+-	page->flags |= 1 << PG_slab;
++	__SetPageSlab(page);
+ 	if (s->flags & (SLAB_DEBUG_FREE | SLAB_RED_ZONE | SLAB_POISON |
+ 			SLAB_STORE_USER | SLAB_TRACE))
+ 		SetSlabDebug(page);
