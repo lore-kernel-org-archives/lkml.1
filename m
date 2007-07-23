@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934410AbXGWTxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934917AbXGWTyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934410AbXGWTxe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 15:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763113AbXGWTx0
+	id S934917AbXGWTyO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 15:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765527AbXGWTx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 15:53:26 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45805 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761974AbXGWTxZ (ORCPT
+	Mon, 23 Jul 2007 15:53:57 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:64294 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763113AbXGWTx4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 15:53:25 -0400
-Date: Mon, 23 Jul 2007 12:53:23 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de
-Subject: Re: Oops while modprobing phy fixed module
-Message-ID: <20070723125323.27a864f7@schroedinger.engr.sgi.com>
-In-Reply-To: <469DAA52.1010803@gmail.com>
-References: <4698BF14.10807@googlemail.com>
-	<a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>
-	<469A5C94.7030201@googlemail.com>
-	<a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>
-	<469A9D5D.10509@googlemail.com>
-	<469B61C8.8010902@googlemail.com>
-	<a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>
-	<469BB7B8.3060002@gmail.com>
-	<469BB9CA.6090500@googlemail.com>
-	<469BC2D6.5090008@googlemail.com>
-	<469BC34C.4080107@googlemail.com>
-	<469DAA52.1010803@gmail.com>
-Organization: Silicon Graphics, Inc.
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Jul 2007 15:53:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pbL6APw6sy37JKYCp6d0HrWWIjYTvqBZx6KH3t5sUt43VTvgXBKRtswt/8wXFzvOdgIXGlGdQhNKZ6DemthF2nrt0OZGRiHXwuvodJCRilyFhNNylELE+QDhgymmxswg0Lgr15paiG6wcQQ9QfadUiQjBtv8doZvOBWsW3iVRoE=
+Message-ID: <9a8748490707231253q13ea1e21q757ee8f7cfaef0d1@mail.gmail.com>
+Date: Mon, 23 Jul 2007 21:53:55 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [PATCH][36/37] Clean up duplicate includes in sound/ppc/
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       cbe-oss-dev@ozlabs.org, "Geoff Levand" <geoffrey.levand@am.sony.com>
+In-Reply-To: <s5hlkd7yy9k.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707211704.07263.jesper.juhl@gmail.com>
+	 <s5hlkd7yy9k.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jul 2007 14:51:14 +0900
-Tejun Heo <htejun@gmail.com> wrote:
+On 23/07/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Sat, 21 Jul 2007 17:04:07 +0200,
+> Jesper Juhl wrote:
+> >
+> > Hi,
+> >
+> > This patch cleans up duplicate includes in
+> >       XXXX/
+>
+> sound/ppc?  :)
+>
 
-> Okay, successfully reproduced here.  Will hunt down.
+Hehe, yup. Seems I forgot to edit my mail template for that one :)
 
-Next time simply boot with "slub_debug". It will save a lot of time.
+> >
+> >
+> > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+>
+> Now applied to ALSA tree.  Thanks.
+>
 
+Thanks a lot.
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
