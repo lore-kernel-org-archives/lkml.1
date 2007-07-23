@@ -1,75 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbXGWNC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbXGWNK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758105AbXGWNC5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 09:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbXGWNCr
+	id S1757086AbXGWNK0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 09:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbXGWNKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 09:02:47 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:38862 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754280AbXGWNCr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 09:02:47 -0400
-Date: Mon, 23 Jul 2007 16:02:39 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Cc: vgoyal@in.ibm.com, Don Zickus <dzickus@redhat.com>,
-       Neil Horman <nhorman@redhat.com>, Bernhard Walle <bwalle@suse.de>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: Determine version of kernel that produced vmcore
-Message-ID: <20070723130239.GA311@localdomain>
-References: <20070723050147.GA5691@in.ibm.com> <20070723204723oomichi@mail.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070723204723oomichi@mail.jp.nec.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 23 Jul 2007 09:10:16 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:36705 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953AbXGWNKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 09:10:15 -0400
+Date: Mon, 23 Jul 2007 15:10:09 +0200 (MEST)
+Message-Id: <200707231310.l6NDA9Dn004031@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] 2.6.23-rc1 broke APM
+Cc: hpa@zytor.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 08:47:23PM +0900, Ken'ichi Ohmichi wrote:
-> 
-> Hi,
-> 
-> 2007/07/23 10:31:47 +0530, Vivek Goyal <vgoyal@in.ibm.com> wrote:
-[..]
-> >
-> >I am also in favour of a complete kernel based solution. Export required
-> >info from kernel and let kexec-tools parse that info, pass it to second
-> >kernel and it will be appended to vmcore.
-> >
-> >This will put some restrictions on that we can't keep on changing the
-> >format of the info very frequently and some new features might not work
-> >with older kernels. But I guess, kexec-tools can provide an override option
-> >where dump filtering info can be passed on kexec-tools command line (as
-> >suggested by ken'chi). If user passes this info on command line then
-> >kexec-tools will not read the info exported from kernel. This way new
-> >features can be made to work on older kernels. 
-> 
-> That sounds good.
+On this machine (Gigabyte mobo with i815EP chipset and a PIII),
+APM worked fine up to 2.6.22. With 2.6.23-rc1 however the APM
+driver fails to locate the APM bios:
 
-Note that currently kexec doesn't actually pass the ELF notes themselves
-to the kernel, but only their physical addresses as extracted from /sys. 
-If we want to be able to pass the notes themselves from userspace, a 
-little more trickery will be needed here.
+--- dmesg-2.6.22	2007-07-23 14:07:46.000000000 +0200
++++ dmesg-2.6.23-rc1	2007-07-23 14:48:24.000000000 +0200
+@@ -102,7 +105,7 @@
+ Unpacking initramfs... done
+ Freeing initrd memory: 976k freed
+ Machine check exception polling timer started.
+-apm: BIOS version 1.2 Flags 0x07 (Driver version 1.16ac)
++apm: BIOS not found.
+ io scheduler noop registered
+ io scheduler anticipatory registered (default)
+ io scheduler deadline registered
 
-> Dan Aloni, I'd like to cooperate with you for implementing this feature.
-> If you have some patches other than 2007/07/10 patches, could you send
-> me them ?  I will update them.
+The only change in 2.6.23-rc1 to arch/i386/kernel/apm.c is a
+trivial nofreeze flag removal, so I suspect the boot code changes,
+perhaps the new arch/i386/boot/apm.c:query_apm_bios().
 
-Sure, though I haven't made new patches (was busy with other things). 
-Feel free to post new versions of these patches, I'll take a look and 
-cooperate with you on this.
-
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+/Mikael
