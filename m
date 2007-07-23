@@ -1,58 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbXGWPTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbXGWPUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807AbXGWPTj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 11:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbXGWPTc
+	id S1759140AbXGWPUK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 11:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbXGWPTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 11:19:32 -0400
-Received: from outbound-mail-43.bluehost.com ([69.89.18.12]:45984 "HELO
-	outbound-mail-43.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750727AbXGWPTb (ORCPT
+	Mon, 23 Jul 2007 11:19:55 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49814 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750965AbXGWPTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 11:19:31 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: MTRR Patch still applies to 2.6.22-rc7.
-Date: Mon, 23 Jul 2007 08:19:29 -0700
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0707030659380.21706@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0707030659380.21706@p34.internal.lan>
+	Mon, 23 Jul 2007 11:19:54 -0400
+Date: Mon, 23 Jul 2007 11:19:50 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: david@lang.hm
+cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, Milton Miller <miltonm@bga.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ying Huang <ying.huang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <Pine.LNX.4.64.0707221426290.6350@asgard.lang.hm>
+Message-ID: <Pine.LNX.4.44L0.0707231035150.3545-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707230819.29246.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, July 3, 2007 4:00:07 am Justin Piszcz wrote:
-> Incase anyone is interested:
->
-> p34:/usr/src/linux-2.6.22-rc7# patch -p1 < ../mtrr-v3.patch
-> patching file Documentation/kernel-parameters.txt
-> Hunk #1 succeeded at 548 (offset -5 lines).
-> patching file arch/i386/kernel/cpu/mtrr/generic.c
-> Hunk #2 succeeded at 85 (offset 1 line).
-> patching file arch/i386/kernel/cpu/mtrr/if.c
-> patching file arch/i386/kernel/cpu/mtrr/main.c
-> patching file arch/i386/kernel/cpu/mtrr/mtrr.h
-> patching file arch/x86_64/kernel/bugs.c
-> patching file arch/x86_64/kernel/setup.c
-> patching file include/asm-x86_64/mtrr.h
-> p34:/usr/src/linux-2.6.22-rc7#
+On Sun, 22 Jul 2007 david@lang.hm wrote:
 
-Just a quick update on this Justin (thanks again for testing).  This patch 
-*was* scheduled for 2.6.23 and it almost snuck upstream via Andi's tree, but 
-his testing uncovered a problem at the last minute on certain AMD machines, 
-so I'll have to track down that bug before we can push it.
+> > You are confusing "userspace" with "user tasks".  And not only that,
+> > you often use the term "userspace" when you should say "user mode".
+> >
+> > If you want I can explain the differences.
+> 
+> please do, I have been treating all three as the same catagory.
 
-Thanks,
-Jesse
+Very briefly then: "User mode" and "kernel mode" refer to the CPU's
+hardware privilege level.  A process makes the transition from user
+mode to kernel mode by executing a system call.  Interrupt and
+exception handlers also run in kernel mode, but they generally are not
+considered to be part of any process.  The reverse transition occurs
+when a process returns from a system call, or when an interrupt which
+occurred while the CPU was in user mode completes.  (It's interesting
+to note that system calls are somewhat similar to interrupts; in fact
+sometimes they are implemented by a "software interrupt".)
+
+"Kernel threads" are processes that run entirely in kernel mode.  They
+usually don't have a memory mapping for any user-owned memory and they
+never go into user mode.  All other processes are "user threads".
+
+"Userspace" is a rather general term referring to things not in the
+kernel.  It comprises both user tasks (while running in user mode) and
+user memory.
+
+> Ok, I did misunderstand you. it sound slike all you need to do to make 
+> sure that locks are not held is to allow system calls to return before 
+> trying to do the suspend/kexec/etc. that sounds like not only a trivial 
+> thing to do, but something that would probably be done anyway.
+
+If you could actually do it, it would work.  But you can't do it.  If 
+it were feasible, the freezer would have used that approach in the 
+first place.
+
+For one thing, checking for a suspend-in-progress at the beginning of
+each and every system call would add overhead to a hot path in the
+kernel, one which is already very heavily optimized.  People wouldn't
+stand for it.
+
+> although syscalls that then call out to userspace tasks before they can 
+> complete cause potential deadlocks (without that issue you can just wait 
+> until all syscalls have returned, and not allow anything to issue new 
+> syscalls) is this the issue that's killing FUSE+suspend?
+
+You get similar problems from system calls that wait in kernel mode 
+until something has happened.  For example, a read() call for the 
+console device will wait until somebody types on the keyboard.  At any 
+point in time, many (or even most) user threads are blocked in a system 
+call.
+
+> > Here's what you are missing:
+> >
+> > The new kexec approach eliminates the freezer and relies instead on the
+> > fact that none of the tasks in the original kernel can execute while
+> > the new kexec'd kernel is running.  This means the new kernel can write
+> > out a memory image with no fear of interference or corruption.
+> 
+> correct
+> 
+> > But it also means that tasks which otherwise would have been frozen are
+> > actually free to run before the kexec call is made (and after the call
+> > returns, if the kexec'd kernel returns back to the original kernel).
+> > Any driver which was written with the assumption that tasks would be
+> > frozen at those times will need to be changed.
+> 
+> here is where you loose me.
+> 
+> why should jumping back to the original kernel immedialty start running 
+> these processes?
+
+Let's let kernel K1 be the original kernel, the one which is going into
+hibernation.  Kernel K2 is the one started by kexec to write out the
+memory image.
+
+Your question becomes: Why should K2 jumping back to K1 cause K1
+immediately to start running user tasks?  Answer: Because K1 has been
+running user tasks all along (except while K2 was active) and nothing
+has told it to stop.  In fact, about the only things which _can_ cause
+K1 to stop running user threads are the freezer (which you want to
+eliminate) and disabling interrupts (not possible since some drivers
+require interrupts to be enabled when putting devices in low-power 
+mode).
+
+>  the process of doing a kexec requires things to happen in 
+> the drivers before normal activity can happen, so there is a phase in 
+> there where the kernel being jumped to has drivers initializing, but still 
+> does not allow anything else to run.
+
+So when K2 starts up, it will have a phase in which user threads don't 
+run.  That doesn't affect K1.  When K2 returns to K1, K1 does not go 
+through this sort of phase.  It simply picks up from where it left off.
+
+> why can't this phase be extended to 
+> allow for the possibility of transitioning these drivers to a sleep mode 
+> instead of to full operation?
+
+Indeed, Rafael has suggested that K2 be responsible for putting devices
+in low-power mode.  This has the disadvantage of requiring K2 to 
+include drivers for every device used by K1, but otherwise it would 
+work.
+
+However there still remains the problem of user tasks running after 
+devices are supposed to be quiescent and before K1 starts.  There's 
+currently nothing to stop such tasks from making I/O requests and 
+thereby causing a quiescent device to become active again.
+
+> > The situation as regards locking is harder to discuss since I don't
+> > know of any code examples to use as a guide.  The fact remains that if
+> > user tasks aren't frozen then they can make system calls, and while
+> > running in kernel mode they can acquire locks, which might cause
+> > problems -- even though I can't identify any definite examples.
+> 
+> yes, if userspace is running jobs and submitting I/O and system calls 
+> while drivers are trying to initalize there is a big problem, but I am 
+> missing the reason this must be the case.
+
+We aren't talking about drivers initializing devices.  We are talking
+about what happens during the time when drivers are trying to quiesce
+devices (i.e., before K1 has started up K2) or power them down (after
+K2 has returned to K1).
+
+> the part of the freezer that everyone is trying to eliminate is the 
+> exceptions (freeze everything except X,Y,Z becouse we will need to use 
+> those later for A)
+
+Wrong.  People are trying to eliminate the freezer entirely.  Go back 
+and reread some of the postings at the beginning of this long thread, 
+especially those from Paul Mackerras and Ben Herrenschmidt.
+
+Alan Stern
+
