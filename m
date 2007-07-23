@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933777AbXGWArb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933496AbXGWAzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933777AbXGWArb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 20:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762931AbXGWArU
+	id S933496AbXGWAzi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 20:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbXGWAz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 20:47:20 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:55986 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762809AbXGWArT (ORCPT
+	Sun, 22 Jul 2007 20:55:29 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:41520 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757657AbXGWAz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 20:47:19 -0400
-X-Sasl-enc: D+kzSRaM9TcBmWKHxZP3LP4yswCIus/ZAROxYbhNff6b 1185151637
-Message-ID: <46A3FBB7.9000608@imap.cc>
-Date: Mon, 23 Jul 2007 02:52:07 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Sun, 22 Jul 2007 20:55:28 -0400
+Date: Mon, 23 Jul 2007 02:54:53 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: =?utf-8?Q?Hans-J=C3=BCrgen?= Koch <hjk@linutronix.de>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: drivers/hwmon/lm93.c: array overruns
+Message-ID: <20070723005453.GS26212@stusta.de>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: g3vbv@blueyonder.co.uk, nix.or.die@googlemail.com
-Subject: Re: 2.6.22-git17 boot failure
-References: <46A3EC92.3050504@imap.cc>
-In-Reply-To: <46A3EC92.3050504@imap.cc>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig33389999E1204C81671130EE"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig33389999E1204C81671130EE
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+The Coverity checker spotted the following array overruns
+in drivers/hwmon/lm93.c:
 
-on Mon, 23 Jul 2007 01:47:30 +0200, /me wrote:
-> On my test machine with a Pentium D 940 processor, Intel DQ965GF
-> mainboard and SATA disks, kernel 2.6.22-git17 (32 bit build) fails
-> to come up because it cannot find the disk drives. Same issue
-> with a clone of the 'linus' git tree. Anything known?
+<--  snip  -->
 
-Ok, scrap this. Turns out it wasn't a good idea to answer 'Y' to
-the new XEN config option during "make oldconfig". After changing
-it to CONFIG_XEN=3Dn, all's well again. Sorry for the noise.
+...
+struct lm93_data {
+...
+        struct {
+                u8 min;
+                u8 max;
+        } temp_lim[3];
+...
+};
+...
+static void lm93_update_client_common(struct lm93_data *data,
+                                      struct i2c_client *client)
+{
+...
+        for (i = 0; i < 4; i++) {
+                data->temp_lim[i].min =
+                        lm93_read_byte(client, LM93_REG_TEMP_MIN(i));
+                data->temp_lim[i].max =
+                        lm93_read_byte(client, LM93_REG_TEMP_MAX(i));
+        }
+...
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+<--  snip  -->
 
+cu
+Adrian
 
---------------enig33389999E1204C81671130EE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+-- 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-iD8DBQFGo/u3MdB4Whm86/kRAgjAAJ0eVDrJd3TFwA1ggJJLqg0zTyyXzwCfWzKc
-SKZr/wPD+06OdOs1iR/AWFw=
-=TMl9
------END PGP SIGNATURE-----
-
---------------enig33389999E1204C81671130EE--
