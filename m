@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXGWLRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXGWLVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933602AbXGWLRS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 07:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760525AbXGWLRI
+	id S933602AbXGWLVx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 07:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761670AbXGWLVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 07:17:08 -0400
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:35640 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756578AbXGWLRH (ORCPT
+	Mon, 23 Jul 2007 07:21:46 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:59687 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761654AbXGWLVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 07:17:07 -0400
-Date: Mon, 23 Jul 2007 04:17:05 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, acpi4asus-u@pimp.vs19.net,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Corentin Chary <corentincj@iksaif.net>
-Subject: Re: [1/2] 2.6.23-rc1: known regressions
-In-Reply-To: <46A47932.8000709@googlemail.com>
-Message-ID: <Pine.LNX.4.58.0707230404290.5535@shell2.speakeasy.net>
-References: <46A47932.8000709@googlemail.com>
+	Mon, 23 Jul 2007 07:21:46 -0400
+Date: Mon, 23 Jul 2007 12:21:43 +0100
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] add __GFP_ZERP to GFP_LEVEL_MASK
+Message-ID: <20070723112143.GB19437@skynet.ie>
+References: <1185185020.8197.11.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1185185020.8197.11.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007, Michal Piotrowski wrote:
-> ACPI
->
-> Subject         : drivers/misc/asus-laptop.c:*: error: 'struct led_classdev' has no member named 'class_dev'
-> References      : http://lkml.org/lkml/2007/7/22/299
-> Last known good : ?
-> Submitter       : Gabriel C <nix.or.die@googlemail.com>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : unknown
+On (23/07/07 12:03), Peter Zijlstra didst pronounce:
+> 
+> Daniel recently spotted that __GFP_ZERO is not (and has never been)
+> part of GFP_LEVEL_MASK. I could not find a reason for this in the
+> original patch: 3977971c7f09ce08ed1b8d7a67b2098eb732e4cd in the -bk
+> tree.
+> 
+> This of course is in stark contradiction with the comment accompanying
+> GFP_LEVEL_MASK.
 
-Here's a trivial patch for this one.
-------------------------------------------------------------------------
-asus-laptop: Sync with changes to led class
+This probably never showed up as a problem because slab is not using
+__GFP_ZERO. If a flag is used with slab that is not in the level mask,
+it goes *bang* as described in the comment.
 
-Driver was broken by commit f8a7c6fe14f556ca8eeddce258cb21392d0c3a2f
-	leds: Convert from struct class_device to struct device
+Does this patch compile though?
 
-	Convert the LEDs class from struct class_device to struct device
-	since class_device is scheduled for removal.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Use (struct led_classdev).dev instead of (struct led_classdev).class_dev
+> ---
+>  include/linux/gfp.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6-2/include/linux/gfp.h
+> ===================================================================
+> --- linux-2.6-2.orig/include/linux/gfp.h
+> +++ linux-2.6-2/include/linux/gfp.h
+> @@ -56,7 +56,7 @@ struct vm_area_struct;
+>  /* if you forget to add the bitmask here kernel will crash, period */
+>  #define GFP_LEVEL_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS| \
+>  			__GFP_COLD|__GFP_NOWARN|__GFP_REPEAT| \
+> -			__GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP| \
+> +			__GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP|__GFP_ZERO \
 
-diff -r 3f21143ca44c drivers/misc/asus-laptop.c
---- a/drivers/misc/asus-laptop.c	Sun Jul 22 21:30:24 2007 +0000
-+++ b/drivers/misc/asus-laptop.c	Mon Jul 23 03:47:55 2007 -0700
-@@ -1067,8 +1067,8 @@ static void asus_backlight_exit(void)
- }
+Should there be a | at the end there?
 
- #define  ASUS_LED_UNREGISTER(object)				\
--	if(object##_led.class_dev				\
--	   && !IS_ERR(object##_led.class_dev))			\
-+	if(object##_led.dev					\
-+	   && !IS_ERR(object##_led.dev))			\
- 		led_classdev_unregister(&object##_led)
+>  			__GFP_NOMEMALLOC|__GFP_HARDWALL|__GFP_THISNODE| \
+>  			__GFP_MOVABLE)
+>  
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
- static void asus_led_exit(void)
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
