@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761998AbXGWOpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762532AbXGWOp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761998AbXGWOpk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 10:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbXGWOpb
+	id S1762532AbXGWOp4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 10:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbXGWOpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 10:45:31 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54708 "EHLO mx2.suse.de"
+	Mon, 23 Jul 2007 10:45:46 -0400
+Received: from ns2.suse.de ([195.135.220.15]:54720 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942AbXGWOpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 10:45:30 -0400
-Date: Mon, 23 Jul 2007 16:45:27 +0200
-Message-ID: <s5hlkd7yy9k.wl%tiwai@suse.de>
+	id S1762111AbXGWOpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 10:45:45 -0400
+Date: Mon, 23 Jul 2007 16:45:42 +0200
+Message-ID: <s5hk5sryy95.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Jesper Juhl <jesper.juhl@gmail.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       cbe-oss-dev@ozlabs.org, Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH][36/37] Clean up duplicate includes in sound/ppc/
-In-Reply-To: <200707211704.07263.jesper.juhl@gmail.com>
-References: <200707211704.07263.jesper.juhl@gmail.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jaroslav Kysela <perex@suse.cz>
+Subject: Re: [PATCH][35/37] Clean up duplicate includes in sound/core/
+In-Reply-To: <200707211704.04089.jesper.juhl@gmail.com>
+References: <200707211704.04089.jesper.juhl@gmail.com>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta27)
  (fiddleheads) (+CVS-20060704) (i386-suse-linux)
@@ -27,39 +27,36 @@ Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 21 Jul 2007 17:04:07 +0200,
+At Sat, 21 Jul 2007 17:04:03 +0200,
 Jesper Juhl wrote:
 > 
 > Hi,
 > 
 > This patch cleans up duplicate includes in
-> 	XXXX/
-
-sound/ppc?  :)
-
+> 	sound/core/
 > 
 > 
 > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-Now applied to ALSA tree.  Thanks.
+Applied to ALSA tree.  Thanks.
 
 
 Takashi
 
 > ---
 > 
-> diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-> index 1aa0b46..27b6189 100644
-> --- a/sound/ppc/snd_ps3.c
-> +++ b/sound/ppc/snd_ps3.c
-> @@ -33,7 +33,6 @@
->  #include <linux/dmapool.h>
->  #include <linux/dma-mapping.h>
->  #include <asm/firmware.h>
-> -#include <linux/io.h>
->  #include <asm/dma.h>
->  #include <asm/lv1call.h>
->  #include <asm/ps3.h>
+> diff --git a/sound/core/rawmidi.c b/sound/core/rawmidi.c
+> index e470c3c..8a91cf8 100644
+> --- a/sound/core/rawmidi.c
+> +++ b/sound/core/rawmidi.c
+> @@ -30,7 +30,6 @@
+>  #include <linux/mutex.h>
+>  #include <linux/moduleparam.h>
+>  #include <linux/delay.h>
+> -#include <linux/wait.h>
+>  #include <sound/rawmidi.h>
+>  #include <sound/info.h>
+>  #include <sound/control.h>
 > -
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
