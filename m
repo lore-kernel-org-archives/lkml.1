@@ -1,368 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764287AbXGWScq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbXGWSdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764287AbXGWScq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbXGWSce
+	id S932440AbXGWSdD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:33:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765264AbXGWScr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:32:34 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42405 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758562AbXGWScd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:32:33 -0400
-Date: Mon, 23 Jul 2007 20:31:57 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove Documentation/networking/net-modules.txt
-Message-ID: <20070723183157.GN26212@stusta.de>
+	Mon, 23 Jul 2007 14:32:47 -0400
+Received: from mx1.suse.de ([195.135.220.2]:51621 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764277AbXGWScq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 14:32:46 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Subject: Re: [PATCH 2/8] i386: bitops: Rectify bogus "Ir" constraints
+Date: Mon, 23 Jul 2007 20:32:28 +0200
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <alpine.LFD.0.999.0707231056260.3607@woody.linux-foundation.org> <Pine.LNX.4.64.0707232338260.22796@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <Pine.LNX.4.64.0707232338260.22796@cselinux1.cse.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200707232032.28815.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kAccording to git, the only one who touched this file during the last
-5 years was me when removing drivers...
+On Monday 23 July 2007 20:14:52 Satyam Sharma wrote:
+> On Mon, 23 Jul 2007, Linus Torvalds wrote:
+> 
+> > On Mon, 23 Jul 2007, Satyam Sharma wrote:
+> > >
+> > > * The "I" constraint modifier is applicable only to immediate-value operands,
+> > >   and combining it with "r" is bogus.
+> > 
+> > This is wrong too.
+> > 
+> > The whole point of a "Ir" modifier is to say that the instruction takes 
+> > *either* an "I" or an "r".
+> 
+> Yup, sorry about this one, Andi pointed this out earlier. But the "I"
+> must still go I think, for the third reason in that changelog -- it
+> unnecessarily limits the bit offset to 0..31, but (at least from the
+> comment up front in that file) we do allow arbitrarily large @nr (upto
+> 255, of course, these instructions won't take anything greater than that).
 
-modinfo offers a less ancient version of this information.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+As HPA pointed out that would risk not being correctly assembled by at 
+least some binutils versions
 
----
+ 
+> > Andrew - the ones I've looked at were all wrong. Please don't take this 
+> > series.
+> 
+> I think I'll rescind the series anyway, a lot of patches turned out to
+> be wrong -- some due to mis-reading / incorrect gcc docs, others due to
+> other reasons ... this was just something I did thinking of as a cleanup
+> anyway, so I don't intend to push or correct this or anything.
 
- Documentation/networking/00-INDEX        |    2 
- Documentation/networking/net-modules.txt |  315 -----------------------
- 2 files changed, 317 deletions(-)
+cpumask_t/nodemask_t bitmap optimizations would be useful.
 
---- linux-2.6.22-rc6-mm1/Documentation/networking/00-INDEX.old	2007-07-23 20:28:51.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/Documentation/networking/00-INDEX	2007-07-23 20:28:59.000000000 +0200
-@@ -80,8 +80,6 @@
- 	- Behaviour of cards under Multicast
- ncsa-telnet
- 	- notes on how NCSA telnet (DOS) breaks with MTU discovery enabled.
--net-modules.txt
--	- info and "insmod" parameters for all network driver modules.
- netdevices.txt
- 	- info on network device driver functions exported to the kernel.
- olympic.txt
---- linux-2.6.22-rc6-mm1/Documentation/networking/net-modules.txt	2007-07-12 20:43:37.000000000 +0200
-+++ /dev/null	2006-09-19 00:45:31.000000000 +0200
-@@ -1,315 +0,0 @@
--Wed 2-Aug-95  <matti.aarnio@utu.fi>
--
--		Linux network driver modules
--
--	Do not mistake this for "README.modules" at the top-level
--	directory!  That document tells about modules in general, while
--	this one tells only about network device driver modules.
--
--	This is a potpourri of INSMOD-time(*) configuration options
--	(if such exists) and their default values of various modules
--	in the Linux network drivers collection.
--
--	Some modules have also hidden (= non-documented) tunable values.
--	The choice of not documenting them is based on general belief, that
--	the less the user needs to know, the better.  (There are things that
--	driver developers can use, others should not confuse themselves.)
--
--	In many cases it is highly preferred that insmod:ing is done
--	ONLY with defining an explicit address for the card, AND BY
--	NOT USING AUTO-PROBING!
--
--	Now most cards have some explicitly defined base address that they
--	are compiled with (to avoid auto-probing, among other things).
--	If that compiled value does not match your actual configuration,
--	do use the "io=0xXXX" -parameter for the insmod, and give there
--	a value matching your environment.
--
--	If you are adventurous, you can ask the driver to autoprobe
--	by using the "io=0" parameter, however it is a potentially dangerous
--	thing to do in a live system.  (If you don't know where the
--	card is located, you can try autoprobing, and after possible
--	crash recovery, insmod with proper IO-address..)
--
--	--------------------------
--	(*)	"INSMOD-time" means when you load module with
--		/sbin/insmod  you can feed it optional parameters.
--		See "man insmod".
--	--------------------------
--
--
--	8390 based Network Modules		(Paul Gortmaker, Nov 12, 1995)
--	--------------------------
--
--(Includes: smc-ultra, ne, wd, 3c503, hp, hp-plus, e2100 and ac3200)
--
--The 8390 series of network drivers now support multiple card systems without 
--reloading the same module multiple times (memory efficient!) This is done by 
--specifying multiple comma separated values, such as:
--
--	insmod 3c503.o io=0x280,0x300,0x330,0x350  xcvr=0,1,0,1
--
--The above would have the one module controlling four 3c503 cards, with card 2
--and 4 using external transceivers. The "insmod" manual describes the usage
--of comma separated value lists.
--
--It is *STRONGLY RECOMMENDED* that you supply "io=" instead of autoprobing.
--If an "io=" argument is not supplied, then the ISA drivers will complain
--about autoprobing being not recommended, and begrudgingly autoprobe for
--a *SINGLE CARD ONLY* -- if you want to use multiple cards you *have* to 
--supply an "io=0xNNN,0xQQQ,..." argument.
--
--The ne module is an exception to the above. A NE2000 is essentially an
--8390 chip, some bus glue and some RAM. Because of this, the ne probe is
--more invasive than the rest, and so at boot we make sure the ne probe is 
--done last of all the 8390 cards (so that it won't trip over other 8390 based
--cards) With modules we can't ensure that all other non-ne 8390 cards have
--already been found. Because of this, the ne module REQUIRES an "io=0xNNN" 
--argument passed in via insmod. It will refuse to autoprobe.
--
--It is also worth noting that auto-IRQ probably isn't as reliable during 
--the flurry of interrupt activity on a running machine. Cards such as the 
--ne2000 that can't get the IRQ setting from an EEPROM or configuration
--register are probably best supplied with an "irq=M" argument as well.
--
--
------------------------------------------------------------------------
--Card/Module List - Configurable Parameters and Default Values
------------------------------------------------------------------------
--
--3c501.c:
--	io  = 0x280	IO base address
--	irq = 5		IRQ
--	(Probes ports:	0x280, 0x300)
--
--3c503.c:
--	io = 0		(It will complain if you don't supply an "io=0xNNN")
--	irq = 0		(IRQ software selected by driver using autoIRQ)
--	xcvr = 0	(Use xcvr=1 to select external transceiver.)
--	(Probes ports: 0x300, 0x310, 0x330, 0x350, 0x250, 0x280, 0x2A0, 0x2E0)
--
--3c505.c:
--	io = 0
--	irq = 0
--	dma = 6         (not autoprobed)
--	(Probes ports: 0x300, 0x280, 0x310)
--
--3c507.c:
--	io = 0x300
--	irq = 0
--	(Probes ports: 0x300, 0x320, 0x340, 0x280)
--
--3c509.c:
--	io = 0
--	irq = 0
--	( Module load-time probing Works reliably only on EISA, ISA ID-PROBE
--	  IS NOT RELIABLE!  Compile this driver statically into kernel for
--	  now, if you need it auto-probing on an ISA-bus machine. )
--
--8390.c:
--	(No public options, several other modules need this one)
--
--a2065.c:
--	Since this is a Zorro board, it supports full autoprobing, even for
--	multiple boards. (m68k/Amiga)
--
--ac3200.c:
--	io = 0		(Checks 0x1000 to 0x8fff in 0x1000 intervals)
--	irq = 0		(Read from config register)
--	(EISA probing..)
--
--apricot.c:
--	io = 0x300  (Can't be altered!)
--	irq = 10
--
--arcnet.c:
--	io = 0
--	irqnum = 0
--	shmem = 0
--	num = 0
--	DO SET THESE MANUALLY AT INSMOD!
--	(When probing, looks at the following possible addresses:
--	 Suggested ones:
--		0x300, 0x2E0, 0x2F0, 0x2D0
--	 Other ones:
--		0x200, 0x210, 0x220, 0x230, 0x240, 0x250, 0x260, 0x270,
--		0x280, 0x290, 0x2A0, 0x2B0, 0x2C0,
--		       0x310, 0x320, 0x330, 0x340, 0x350, 0x360, 0x370,
--		0x380, 0x390, 0x3A0,			  0x3E0, 0x3F0  )
--
--ariadne.c:
--	Since this is a Zorro board, it supports full autoprobing, even for
--	multiple boards. (m68k/Amiga)
--
--at1700.c:
--	io = 0x260
--	irq = 0
--	(Probes ports: 0x260, 0x280, 0x2A0, 0x240, 0x340, 0x320, 0x380, 0x300)
--
--atarilance.c:
--	Supports full autoprobing. (m68k/Atari)
--
--atp.c: *Not modularized*
--	(Probes ports: 0x378, 0x278, 0x3BC;
--	 fixed IRQs: 5 and 7			)
--
--cops.c:
--	io = 0x240
--	irq = 5
--	nodeid = 0	(AutoSelect = 0, NodeID 1-254 is hand selected.)
--	(Probes ports: 0x240, 0x340, 0x200, 0x210, 0x220, 0x230, 0x260,
--		       0x2A0, 0x300, 0x310, 0x320, 0x330, 0x350, 0x360)	
--
--de4x5.c:
--	io = 0x000b
--	irq = 10
--	is_not_dec = 0  -- For non-DEC card using DEC 21040/21041/21140 chip, set this to 1
--	(EISA, and PCI probing)
--
--de600.c:
--	de600_debug = 0
--	(On port 0x378, irq 7 -- lpt1;  compile time configurable)
--
--de620.c:
--	bnc = 0, utp = 0  <-- Force media by setting either.
--	io = 0x378	(also compile-time configurable)
--	irq = 7
--
--depca.c:
--	io = 0x200
--	irq = 7
--	(Probes ports:	ISA:  0x300, 0x200;
--			EISA: 0x0c00		)
--
--dummy.c:
--	No options
--
--e2100.c:
--	io = 0		(It will complain if you don't supply an "io=0xNNN")
--	irq = 0		(IRQ software selected by driver)
--	mem = 0		(Override default shared memory start of 0xd0000)
--	xcvr = 0	(Use xcvr=1 to select external transceiver.)
--	(Probes ports: 0x300, 0x280, 0x380, 0x220)
--
--eepro.c:
--	io = 0x200
--	irq = 0
--	(Probes ports: 0x200, 0x240, 0x280, 0x2C0, 0x300, 0x320, 0x340, 0x360)
--
--eexpress.c:
--	io = 0x300
--	irq = 0		(IRQ value read from EEPROM)
--	(Probes ports: 0x300, 0x270, 0x320, 0x340)
--
--eql.c:
--	(No parameters)
--
--ewrk3.c:
--	io = 0x300
--	irq = 5
--	(With module no autoprobing!
--	 On EISA-bus does EISA probing.
--	 Static linkage probes ports on ISA bus:
--		0x100, 0x120, 0x140, 0x160, 0x180, 0x1A0, 0x1C0,
--		0x200, 0x220, 0x240, 0x260, 0x280, 0x2A0, 0x2C0, 0x2E0,
--		0x300,        0x340, 0x360, 0x380, 0x3A0, 0x3C0)
--
--hp-plus.c:
--	io = 0		(It will complain if you don't supply an "io=0xNNN")
--	irq = 0		(IRQ read from configuration register)
--	(Probes ports: 0x200, 0x240, 0x280, 0x2C0, 0x300, 0x320, 0x340)
--
--hp.c:
--	io = 0		(It will complain if you don't supply an "io=0xNNN")
--	irq = 0		(IRQ software selected by driver using autoIRQ)
--	(Probes ports: 0x300, 0x320, 0x340, 0x280, 0x2C0, 0x200, 0x240)
--
--hp100.c:
--	hp100_port = 0 (IO-base address)
--	(Does EISA-probing, if on EISA-slot;
--	 On ISA-bus probes all ports from 0x100 thru to 0x3E0
--	 in increments of 0x020)
--
--hydra.c:
--	Since this is a Zorro board, it supports full autoprobing, even for
--	multiple boards. (m68k/Amiga)
--
--ibmtr.c:
--	io = 0xa20, 0xa24 (autoprobed by default)
--	irq = 0 (driver cannot select irq - read from hardware)
--	mem = 0 (shared memory base set at 0xd0000 and not yet 
--	         able to override thru mem= parameter.)
--
--lance.c: *Not modularized*
--	(PCI, and ISA probing; "CONFIG_PCI" needed for PCI support)
--	(Probes ISA ports: 0x300, 0x320, 0x340, 0x360)
--
--loopback.c: *Static kernel component*
--
--ne.c:
--	io = 0		(Explicitly *requires* an "io=0xNNN" value)
--	irq = 0		(Tries to determine configured IRQ via autoIRQ)
--	(Probes ports: 0x300, 0x280, 0x320, 0x340, 0x360)
--
--net_init.c: *Static kernel component*
--
--ni52.c: *Not modularized*
--	(Probes ports:	0x300, 0x280, 0x360, 0x320, 0x340
--		mems:	0xD0000, 0xD2000, 0xC8000, 0xCA000,
--			0xD4000, 0xD6000, 0xD8000 )
--
--ni65.c: *Not modularized*  **16MB MEMORY BARRIER BUG**
--	(Probes ports:	0x300, 0x320, 0x340, 0x360)
--
--pi2.c:	*Not modularized* (well, NON-STANDARD modularization!)
--	Only one card supported at this time.
--	(Probes ports: 0x380, 0x300, 0x320, 0x340, 0x360, 0x3A0)
--
--plip.c:
--	io = 0
--	irq = 0		(by default, uses IRQ 5 for port at 0x3bc, IRQ 7
--			for port at 0x378, and IRQ 2 for port at 0x278)
--	(Probes ports: 0x278, 0x378, 0x3bc)
--
--ppp.c:
--	No options (ppp-2.2+ has some, this is based on non-dynamic
--	version from ppp-2.1.2d)
--
--seeq8005.c: *Not modularized*
--	(Probes ports: 0x300, 0x320, 0x340, 0x360)
--
--skeleton.c: *Skeleton*
--
--slhc.c:
--	No configuration parameters
--
--slip.c:
--	slip_maxdev = 256 (default value from SL_NRUNIT on slip.h)
--
--
--smc-ultra.c:
--	io = 0		(It will complain if you don't supply an "io=0xNNN")
--	irq = 0		(IRQ val. read from EEPROM)
--	(Probes ports:	0x200, 0x220, 0x240, 0x280, 0x300, 0x340, 0x380)
--
--tulip.c: *Partial modularization*
--	(init-time memory allocation makes problems..)
--
--tunnel.c:
--	No insmod parameters
--
--wavelan.c:
--	io = 0x390	(Settable, but change not recommended)
--	irq = 0		(Not honoured, if changed..)
--
--wd.c:
--	io = 0		(It will complain if you don't supply an "io=0xNNN")
--	irq = 0		(IRQ val. read from EEPROM, ancient cards use autoIRQ)
--	mem = 0		(Force shared-memory on address 0xC8000, or whatever..)
--	mem_end = 0	(Force non-std. mem. size via supplying mem_end val.)
--			(eg. for 32k WD8003EBT, use mem=0xd0000 mem_end=0xd8000)
--	(Probes ports:	0x300, 0x280, 0x380, 0x240)
--
--znet.c: *Not modularized*
--	(Only one device on  Zenith Z-Note (notebook?) systems,
--	 configuration information from (EE)PROM)
+-Andi
 
