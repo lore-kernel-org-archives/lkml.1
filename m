@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763031AbXGWGoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbXGWGrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763031AbXGWGoc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 02:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbXGWGoZ
+	id S1762206AbXGWGrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 02:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758752AbXGWGrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 02:44:25 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:3969 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753872AbXGWGoY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 02:44:24 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jul 2007 02:44:24 EDT
-Date: Mon, 23 Jul 2007 08:37:41 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andreas Messer <andreas.messer@stud-mail.uni-wuerzburg.de>,
-       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Subject: Re: [BUG] firewire: mass-storage i/o-problems
-Message-ID: <20070723063741.GA32240@roarinelk.homelinux.net>
-References: <200707222332.12270.andreas.messer@stud-mail.uni-wuerzburg.de> <46A3E973.6090701@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A3E973.6090701@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.11
+	Mon, 23 Jul 2007 02:47:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:41559 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755652AbXGWGrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 02:47:06 -0400
+Message-ID: <46A44EB4.3070501@goop.org>
+Date: Sun, 22 Jul 2007 23:46:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>, Jeff Garzik <jeff@garzik.org>,
+       xen-devel@lists.xensource.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/net/xen-netfront.c: bogus code
+References: <20070722232618.GO26212@stusta.de>
+In-Reply-To: <20070722232618.GO26212@stusta.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Adrian Bunk wrote:
+> The Coverity checker spotted the following bogus code
+> in drivers/net/xen-netfront.c:
+>
+> <--  snip  -->
+>
+> ...
+> static void xennet_alloc_rx_buffers(struct net_device *dev)
+> {
+> ...
+>         for (nr_flips = i = 0; ; i++) {
+>                 skb = __skb_dequeue(&np->rx_batch);
+>                 if (skb == NULL)
+>                         break;
+>
+>                 skb->dev = dev;
+>
+>                 id = xennet_rxidx(req_prod + i);
+>
+>                 BUG_ON(np->rx_skbs[id]);
+>                 np->rx_skbs[id] = skb;
+>
+>                 ref = gnttab_claim_grant_reference(&np->gref_rx_head);
+>                 BUG_ON((signed short)ref < 0);
+>                 np->grant_rx_ref[id] = ref;
+>
+>                 pfn = page_to_pfn(skb_shinfo(skb)->frags[0].page);
+>                 vaddr = page_address(skb_shinfo(skb)->frags[0].page);
+>
+>                 req = RING_GET_REQUEST(&np->rx, req_prod + i);
+>                 gnttab_grant_foreign_access_ref(ref,
+>                                                 np->xbdev->otherend_id,
+>                                                 pfn_to_mfn(pfn),
+>                                                 0);
+>
+>                 req->id = id;
+>                 req->gref = ref;
+>         }
+>
+>         if (nr_flips != 0) {
+> ...
+>
+> <--  snip  -->
+>
+> Note that "nr_flips" is always 0 in the last line.
+>   
 
-On Mon, Jul 23, 2007 at 01:34:11AM +0200, Stefan Richter wrote:
+Thanks.  That's probably a residual from me removing the page-flipping
+code.  I'll give it another pass.
 
-<massive bugreport snipped>
-
-> > Software:
-> > Kernel Vanilla 2.6.22, gcc 4.1.2. 
-> > 
-> > On another PC same problem, but replugging one or two times get the thing 
-> > working. 
-> 
-> Which controller does this other PC have?
-
-I too experience these bugs with the new fw stack; this time with a TI
-OHCI-1394a combo chip in 2 different laptops and a Via 1394 pci addon card.
-The target is a an external hd enclosure with an Oxford Semi chip.
-
-Thanks,
-	Manuel Lauss
+    J
