@@ -1,40 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbXGWV0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbXGWV27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbXGWV0B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbXGWVZ0
+	id S1760353AbXGWV27 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXGWV2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:25:26 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:36484 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755924AbXGWVZY (ORCPT
+	Mon, 23 Jul 2007 17:28:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41298 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752268AbXGWV2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:25:24 -0400
-Message-ID: <46A51CB8.1090400@nortel.com>
-Date: Mon, 23 Jul 2007 15:25:12 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 23 Jul 2007 17:28:47 -0400
+Date: Mon, 23 Jul 2007 14:28:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+In-Reply-To: <20070723141137.171e4ac1.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+ <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru>
+ <20070723132431.42afbae8.akpm@linux-foundation.org>
+ <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru>
+ <20070723141137.171e4ac1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Li, Tong N" <tong.n.li@intel.com>
-CC: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> <p73ir8aubzx.fsf@bingen.suse.de> <1185225015.3593.15.camel@tongli.jf.intel.com>
-In-Reply-To: <1185225015.3593.15.camel@tongli.jf.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jul 2007 21:25:20.0963 (UTC) FILETIME=[F9385130:01C7CD6F]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li, Tong N wrote:
-> On the other hand, if locking does
-> become a problem for certain systems/workloads, increasing
-> sysctl_base_round_slice can reduce the locking frequency and alleviate
-> the problem, at the cost of being relatively less fair across the CPUs. 
 
-If locking does become a problem, it may make sense to switch instead to 
-a lockless algorithm of some sort...
 
-Chris
+On Mon, 23 Jul 2007, Andrew Morton wrote:
+> 
+> It'd be nice to get a clean trace.  Are you able to obtain the full
+> trace with CONFIG_FRAME_POINTER=y?
+
+If you are talking about
+
+	http://userweb.kernel.org/~akpm/dsc03659.jpg
+
+then I think that _is_ a full trace. It's certainly not very messy, and it 
+seems accurate. It's just that inlining makes it much harder to see the 
+call-graphs, but that's what inlining does..
+
+For example, missing from the call graph is
+
+	get_page_from_freelist ->
+	  buffered_rmqueue ->		[ missing - inlined ]
+	    prep_new_page ->		[ missing - inlined ]
+	      prep_zero_page ->		[ missing - inlined ]
+		clear_highpage ->	[ missing - inlined ]
+		  kmap_atomic ->	[ missing - tailcall ]
+		    kmap_atomic_prot
+
+but I'm pretty sure the call trace is good (and I'm also pretty sure gcc 
+is overly aggressive at inlining, and that it causes us pain for 
+debugging, but whatever)
+
+The earlier part of the trace looks fine too.
+
+The only odd part I see is the existence of "dput()" there, so maybe it's 
+not *quite* clean and enabling frame pointers might get rid of a few bogus 
+entries, but it looks pretty close to clean.
+
+			Linus
