@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbXGWGmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763031AbXGWGoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762834AbXGWGmn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 02:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbXGWGmg
+	id S1763031AbXGWGoc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 02:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbXGWGoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 02:42:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33591 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753872AbXGWGmf (ORCPT
+	Mon, 23 Jul 2007 02:44:25 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:3969 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753872AbXGWGoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 02:42:35 -0400
-Date: Sun, 22 Jul 2007 23:42:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael Kerrisk <mtk-manpages@gmx.net>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Linux Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, drepper@redhat.com,
-       stable@kernel.org
-Subject: Re: Problems with timerfd()
-Message-Id: <20070722234204.10d0f9a9.akpm@linux-foundation.org>
-In-Reply-To: <20070722233826.20efa6e5.akpm@linux-foundation.org>
-References: <46A44B7D.3030700@gmx.net>
-	<20070722233826.20efa6e5.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 23 Jul 2007 02:44:24 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jul 2007 02:44:24 EDT
+Date: Mon, 23 Jul 2007 08:37:41 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Andreas Messer <andreas.messer@stud-mail.uni-wuerzburg.de>,
+       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Subject: Re: [BUG] firewire: mass-storage i/o-problems
+Message-ID: <20070723063741.GA32240@roarinelk.homelinux.net>
+References: <200707222332.12270.andreas.messer@stud-mail.uni-wuerzburg.de> <46A3E973.6090701@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A3E973.6090701@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jul 2007 23:38:26 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+Hello,
 
-> > Davide has already submitted a patch to you to make read() from a timerfd
-> > file descriptor return an 8 byte integer, and I understand it to have been
-> > accepted into -mm.
-> 
-> argh.  Nobody told me it was an ABI change!  We'll need to consider merging
-> make-timerfd-return-a-u64-and-fix-the-__put_user.patch into 2.6.22.x as
-> well.
-> 
+On Mon, Jul 23, 2007 at 01:34:11AM +0200, Stefan Richter wrote:
 
-So I'm trying to write a halfway respectable description of that patch and
-I'm stuck when it comes to describing what will happen if someone tries
-to run a future timerfd-enabled glibc on 2.2.22 base.   In what manner
-will it misbehave?  What are the consequences of this decision?
+<massive bugreport snipped>
+
+> > Software:
+> > Kernel Vanilla 2.6.22, gcc 4.1.2. 
+> > 
+> > On another PC same problem, but replugging one or two times get the thing 
+> > working. 
+> 
+> Which controller does this other PC have?
+
+I too experience these bugs with the new fw stack; this time with a TI
+OHCI-1394a combo chip in 2 different laptops and a Via 1394 pci addon card.
+The target is a an external hd enclosure with an Oxford Semi chip.
+
+Thanks,
+	Manuel Lauss
