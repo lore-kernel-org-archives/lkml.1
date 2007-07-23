@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932553AbXGWAPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933038AbXGWAQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932553AbXGWAPP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 20:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761148AbXGWAPA
+	id S933038AbXGWAQm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 20:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761148AbXGWAQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 20:15:00 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:48670 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760057AbXGWAO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 20:14:59 -0400
-Date: Mon, 23 Jul 2007 09:14:34 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg Ungerer <gerg@snapgear.com>, Russell King <rmk@arm.linux.org.uk>,
-       Tim Bird <tim.bird@am.sony.com>, bryan.wu@analog.com
-Subject: Re: early_printk accessing __log_buf
-Message-ID: <20070723001434.GB16374@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Robin Getz <rgetz@blackfin.uclinux.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Greg Ungerer <gerg@snapgear.com>,
-	Russell King <rmk@arm.linux.org.uk>,
-	Tim Bird <tim.bird@am.sony.com>, bryan.wu@analog.com
-References: <200707181756.44074.rgetz@blackfin.uclinux.org> <200707181939.46910.rgetz@blackfin.uclinux.org> <20070718172603.231351ea.akpm@linux-foundation.org> <200707182358.24984.rgetz@blackfin.uclinux.org> <8bd0f97a0707221650r3bab822fq2d457d19eba1c8eb@mail.gmail.com>
+	Sun, 22 Jul 2007 20:16:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:7006 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759535AbXGWAQe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 20:16:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nGjx5IAXJ70a77wl4knaiERmROClYk680EdUCUiMBOqVjFv8tBdEsevHpjaLQ+F6/lSU3SGJJCSlFUwiE/z7KAT1qcMQldrcLcZobnHYLIm/fTK64BSy3LGnPylKxpgAaBdsKiwUsA15xH/+grQ6or//j3jDGtp1MKyVuNP8w9w=
+Message-ID: <6bffcb0e0707221716k67815a2ai7f35606b1effa6a3@mail.gmail.com>
+Date: Mon, 23 Jul 2007 02:16:33 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Ni@m" <niam.niam@gmail.com>
+Subject: Re: sound is interrupting with new kernels
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <a9e22dff0707211510o3b5e108dk354f5f15ad3ba498@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0707221650r3bab822fq2d457d19eba1c8eb@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <a9e22dff0707211510o3b5e108dk354f5f15ad3ba498@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 07:50:47PM -0400, Mike Frysinger wrote:
-> On 7/18/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> >On Wed 18 Jul 2007 20:26, Andrew Morton pondered:
-> >> Robin Getz wrote:
-> >> > [need to access _log_buf from external for early debugging code]
-> >> >
-> >> > Something simple like - early_copy_log_buff(void *dest, size_t n)
-> >> >
-> >> > copies n bytes from log_buf to memory area dest. Returns number of
-> >> > bytes that could not be copied. Can find out how many bytes are in
-> >> > the log_buff by calling with zero size.
-> >>
-> >> When I was at $EARLIER_EMPLOYER, we had code in there to copy the last
-> >> kilobyte-odd of the log buffer into flash when the box oopsed.
-> >>
-> >
-> >Hmm - I think that if you call with NULL dest, and have it advance the
-> >pointer, you could do the same thing with something like:
-> >
-> > /* see how many bytes are in the buff */
-> > length = early_copy_log_buff(NULL, NULL);
-> > /* advance the pointer, so we only copy the last 1k */
-> > if (length >= 1024 )
-> >    left = early_copy_log_buff(NULL, length - 1024);
-> > /* copy to temp buffer, to save to flash */
-> > early_copy_log_buff(buff, 1024);
-> > save_buff_to_flash(buff);
-> >
-> >That way - you can put this in the standard places for failure, and still 
-> >have
-> >only one function polluting printk.c (Although if you want to use it for
-> >failure trapping - it's up for "normal" run time use, and doesn't go into
-> >__init.
-> >
-> >> Probably there are others, but they'll mainly be in the consumer/embedded
-> >>  area, and those sorts of engineers don't read this mailing list much.
-> >
-> >Adding a few more 'embedded' folks - who might have some thoughts/opinions.
-> 
-> i think the attached two functions account for what Robin and Andrew
-> were thinking ...
+Hi,
 
-I don't have any strong opinions on this one way or the other. We've been
-playing more with kexec for a recovery mode, that coupled with the crash
-dumps gives us most of the state we need. We would probably make use of
-this printk log access functionality if it were added, though, depending
-on customer environments.
+On 22/07/07, Ni@m <niam.niam@gmail.com> wrote:
+> Hi to all!
+> I have a problem with recent 2.6.22 kernel with cfs-19 patch.
+> While I'm watching the video using mplayer or listening to the music
+> using audacious the sound is interrupting rather often.
+>
+> During I'm watching the video I don't really doing something heavy
+> with my computer. Besides ... when I try to renice mplayer to make it
+> priority higher[I mean lower with renice syntax 8) - renice -20 `pidof
+> mplayer`] - it helps for _some_time_.
+>
+> my uname -a:
+> "Linux niam 2.6.22-cfs-v19 #3 Sat Jul 14 14:15:57 EEST 2007 i686
+> Intel(R) Celeron(R) M processor 1.50GHz GenuineIntel GNU/Linux"
+>
+> I've attached .config of my kernel and output of `ps aux`. With this
+> tasks state my audio player interrupting ...
+>
+> Thank you for your time and your help!
+
+Please run this script while using mplayer or audacious
+http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+and send results
+
+Ingo, this might be a regression.
+
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
