@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763885AbXGWQaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbXGWQbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763885AbXGWQaw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 12:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbXGWQap
+	id S1765675AbXGWQbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 12:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbXGWQbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 12:30:45 -0400
-Received: from ns.suse.de ([195.135.220.2]:42765 "EHLO mx1.suse.de"
+	Mon, 23 Jul 2007 12:31:14 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:45381 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759488AbXGWQap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 12:30:45 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Subject: Re: [PATCH 2/8] i386: bitops: Rectify bogus "Ir" constraints
-Date: Mon, 23 Jul 2007 18:30:40 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	id S1759769AbXGWQbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 12:31:13 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Mon, 23 Jul 2007 22:02:31 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Andi Kleen <ak@suse.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        David Howells <dhowells@redhat.com>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, jh@suse.cz
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <200707231810.08445.ak@suse.de> <Pine.LNX.4.64.0707232145270.22155@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <Pine.LNX.4.64.0707232145270.22155@cselinux1.cse.iitk.ac.in>
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 7/8] i386: bitops: Kill needless usage of __asm__
+ __volatile__
+In-Reply-To: <200707231818.00547.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0707232157090.22155@cselinux1.cse.iitk.ac.in>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070723160603.22137.16516.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <200707231818.00547.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707231830.40331.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-> Whoa, thanks for explaining that to me -- I didn't know, obviously. I had
-> just written a test program that used "Ir" with an automatic variable
-> defined in the inline function (as is the case with these bitops) and
-> observed that even when I gave > 32 values, it would still work -- hence
-> my conclusion.
+On Mon, 23 Jul 2007, Andi Kleen wrote:
+
+> On Monday 23 July 2007 18:06:03 Satyam Sharma wrote:
+> > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> > 
+> > [7/8] i386: bitops: Kill needless usage of __asm__ __volatile__
+> > 
+> > Another oddity I noticed in this file. The semantics of __volatile__
+> > when used to qualify inline __asm__ are that the compiler will not
+> > (1) elid, or, (2) reorder, or, (3) intersperse, our inline asm with
+> > the rest of the generated code.
+> > 
+> > However, we do not want these guarantees in the unlocked variants of the
+> > bitops functions. 
 > 
-> However, the patch still stands, does it not? [ I will modify the
-> changelog, obviously. ] The thing is that we don't want to limit
-> @nr to <= 31 in the first place, or am I wrong again? :-)
+> I thought so too and did a similar transformation while moving
+> some string functions out of line. After that recent misadventure
+> I would be very very careful with this.
 
-These bit operations only allow 8 bit immediates, so 0..255 would
-be correct. N might work from the 4.1 docs, but I don't know if it works 
-in all old supported gccs (3.2+)
+Ah, ok, so this must be the case we'd stumbled upon recently on the
+other thread. I hadn't got your fix for this, so didn't know.
 
-However I is definitely not wrong and most bit numbers are small anyways.
+> Overall I'm sorry to say, but the risk:gain ratio of this
+> patch is imho totally out of whack.
 
--Andi
+The patch does look correct to me, we're only killing the use of
+__volatile__ from places that don't require it (the guarantee-less
+variants). Without losing it, I really don't see how the compiler
+can ever combine multiple bitops, which does sound beneficial when
+the caller has already implemented higher-level locking around
+the usage of these operations.
+
+Satyam
