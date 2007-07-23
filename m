@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932321AbXGWBSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbXGWBVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932321AbXGWBSL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 21:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbXGWBRy
+	id S932966AbXGWBVB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 21:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbXGWBUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 21:17:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:10185 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755191AbXGWBRx (ORCPT
+	Sun, 22 Jul 2007 21:20:51 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:41543 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751401AbXGWBUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 21:17:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=FI5oDv4p/DaW6jWclpPbD2ymgKwq0dr3y3kot3bBcu8D/HhyruoNMj1yRxCQJpaeU8gGGO450n72Ad7sxvAiayHlXAC0YQtohc9FJmbtLTUI6XY+BKEjIeNxrxxsN7gZ6AqyYvxDC4J6kV6k5IbmuFGYPqtDQYQqBp4LJCggxr8=
-Message-ID: <46A40130.30001@googlemail.com>
-Date: Mon, 23 Jul 2007 03:15:28 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Sun, 22 Jul 2007 21:20:50 -0400
+Date: Mon, 23 Jul 2007 03:20:14 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Latchesar Ionkov <lucho@ionkov.net>,
+       Eric Van Hensbergen <ericvh@gmail.com>
+Cc: v9fs-developer@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: net/9p/mux.c: use-after-free
+Message-ID: <20070723012014.GV26212@stusta.de>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: shannon.nelson@intel.com
-Subject: Re: drivers/dma/ioatdma.c - address of '__this_module' will always
- evaluate as 'true' , warning
-References: <46A3FE3E.20300@googlemail.com>
-In-Reply-To: <46A3FE3E.20300@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Hi,
-> 
-> I got this warning on current git using gcc 4.2.1 :
-> 
-> ...
-> 
-> drivers/dma/ioatdma.c: In function 'ioat_init_module':
-> drivers/dma/ioatdma.c:816: warning: the address of '__this_module' will always evaluate as 'true'
-> 
-> ...
-> 
-> 
-> Regards,
-> 
-> Gabriel C
-> 
+The Coverity checker spotted the following use-after-free
+in net/9p/mux.c:
 
-[ uhh send it to the wrong list sorry , added LKML now ] 
+<--  snip  -->
+
+...
+struct p9_conn *p9_conn_create(struct p9_transport *trans, int msize,
+                                    unsigned char *extended)
+{
+...
+        if (!m->tagpool) {
+                kfree(m);
+                return ERR_PTR(PTR_ERR(m->tagpool));
+        }
+...
+
+<--  snip  -->
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
