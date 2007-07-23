@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935572AbXGWUXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935536AbXGWUYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935572AbXGWUXp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935181AbXGWUVk
+	id S935536AbXGWUYL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935410AbXGWUWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:21:40 -0400
-Received: from mail.tmr.com ([64.65.253.246]:46280 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935342AbXGWUVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:21:37 -0400
-Message-ID: <46A50E05.3080905@tmr.com>
-Date: Mon, 23 Jul 2007 16:22:29 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Mon, 23 Jul 2007 16:22:33 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56493 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935315AbXGWUWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 16:22:31 -0400
+Date: Mon, 23 Jul 2007 16:22:30 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: david@lang.hm
+cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, Milton Miller <miltonm@bga.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ying Huang <ying.huang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+In-Reply-To: <Pine.LNX.4.64.0707231121220.3828@asgard.lang.hm>
+Message-ID: <Pine.LNX.4.44L0.0707231605410.2556-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: Jan-Benedict Glaw <jbglaw@lug-owl.de>, Theodore Tso <tytso@mit.edu>,
-       linux-fsdevel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFH] Partition table recovery
-References: <200707200813.03553.a1426z@gawab.com> <46A24846.7050803@gmail.com> <20070722011141.GJ26752@thunk.org> <200707220710.31402.a1426z@gawab.com> <20070722162802.GA20174@thunk.org> <46A46399.5090406@gmail.com> <20070723084146.GP22998@lug-owl.de> <46A488EB.2050305@gmail.com>
-In-Reply-To: <46A488EB.2050305@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 07/23/2007 10:41 AM, Jan-Benedict Glaw wrote:
->
->> As multibyte on-disk variables, these will need LE/BE conversion.
->
-> Indeed, thanks -- has been updated in the version that is attached.
->
-> Also fixes a bug that snuck in (failed to add offset to entry->start).
->
->>> struct entry {
->>>     uint8_t flags;
->>>     uint8_t type;
->>>     uint16_t __1;
->>>     uint64_t start;
->>>     uint32_t size;
->>
->> Dito.
->
-> This can stay for now. The partition table backup would indeed need 
-> some defined byte-order but it might be "whatever order the filesystem 
-> it's backed up onto uses". Since it's not directly written to any 
-> filesystem for now, host order will do currently.
->
->> Looks like a useful program, but you'd definively fix the LE/BE issues.
->> If you do that, it'll be able to even run on BE machines, too.
->
-> I might disagree with the usefulness. I believe that preferably a 
-> backup should be made with help from the kernel (if only by walking 
-> sysfs) to avoid things getting out of sync between kernel and backup 
-> program.
->
-> (this program largely does the same as the kernel does but even now 
-> there's already a difference in so far that I didn't bother to 
-> de-garbage the 3rd and 4th entries in the second level extendeds).
->
-How can I politely say this code really needs comments?
-To quote the late R. W. Benway, "If it was hard to write it should be 
-hard to understand."
-(regarding code in FORTRAN II on punched cards, ca 1965)
-> Rene.
+On Mon, 23 Jul 2007 david@lang.hm wrote:
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+> > For one thing, checking for a suspend-in-progress at the beginning of
+> > each and every system call would add overhead to a hot path in the
+> > kernel, one which is already very heavily optimized.  People wouldn't
+> > stand for it.
+> 
+> I thought that the suspend stuff did this easily,
+
+It does not do it at all.  Do you know how the freezer works?
+
+>  but the freezer really 
+> starts running into trouble when it wants to freeze some things, but not 
+> other things. this seems to be the biggest area of churn and problems.
+
+No.  The freezer starts running into trouble when it wants to freeze a
+thread but can't, because that thread is waiting for some event to
+occur and the only thread which can cause the event is already frozen.  
+Or is itself waiting for a third thread which is already frozen...
+
+> > You get similar problems from system calls that wait in kernel mode
+> > until something has happened.  For example, a read() call for the
+> > console device will wait until somebody types on the keyboard.  At any
+> > point in time, many (or even most) user threads are blocked in a system
+> > call.
+> 
+> but are locks held while they are blocked like this?
+
+Sometimes they are, sometimes they aren't.
+
+> > Let's let kernel K1 be the original kernel, the one which is going into
+> > hibernation.  Kernel K2 is the one started by kexec to write out the
+> > memory image.
+> >
+> > Your question becomes: Why should K2 jumping back to K1 cause K1
+> > immediately to start running user tasks?  Answer: Because K1 has been
+> > running user tasks all along (except while K2 was active) and nothing
+> > has told it to stop.  In fact, about the only things which _can_ cause
+> > K1 to stop running user threads are the freezer (which you want to
+> > eliminate) and disabling interrupts (not possible since some drivers
+> > require interrupts to be enabled when putting devices in low-power
+> > mode).
+> 
+> when you jump to a body of code you jump to a specific point in the code, 
+> not to some nebulous 'everything running' state.
+
+How is that relevant?  When K2 jumps back to K1, it jumps to some 
+designated location in K1.  It might just after the place where K1 
+called K2; I'm not familiar with the details of kexec.  In any event, 
+K1 will still be in the same state as it was when it called K2.
+
+> > So when K2 starts up, it will have a phase in which user threads don't
+> > run.  That doesn't affect K1.  When K2 returns to K1, K1 does not go
+> > through this sort of phase.  It simply picks up from where it left off.
+> 
+> then how can it restart drivers before the user threads need them?
+
+It can't.  Indeed, in the absence of a freezer, user threads will need 
+devices (more accurately, will submit I/O requests for devices) that 
+have to be kept quiescent or low-power.  Drivers will need to delay 
+those requests until the devices are returned to full operation.
+
+That's exactly what I've been saying all along: Drivers will need to 
+be changed to delay I/O requests, if there is no freezer.
+
+> > However there still remains the problem of user tasks running after
+> > devices are supposed to be quiescent and before K1 starts.  There's
+> > currently nothing to stop such tasks from making I/O requests and
+> > thereby causing a quiescent device to become active again.
+> 
+> but if the devices are in low power mode then K1 needs to get them out of 
+> low power mode before user tasks try to access them.
+
+No -- which is good because it can't.  If a user task is running
+there's no way to stop it from submitting I/O requests.  K1 needs to
+delay these requests until after the device has returned to full 
+operation.
+
+> > We aren't talking about drivers initializing devices.  We are talking
+> > about what happens during the time when drivers are trying to quiesce
+> > devices (i.e., before K1 has started up K2) or power them down (after
+> > K2 has returned to K1).
+> 
+> or if you are doing a resume instead of a suspend to ram the drivers need 
+> to initialize or otherwise move to full power on K1 before user tasks hit 
+> them.
+
+Correct.  User tasks are allowed to submit requests, but the requests 
+can't be carried out until the device returns to full operation.
+
+Alan Stern
 
