@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbXGWBwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbXGWCCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933559AbXGWBwT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 21:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbXGWBwG
+	id S933231AbXGWCCj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 22:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbXGWCCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 21:52:06 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:41573 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752746AbXGWBwD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 21:52:03 -0400
-Date: Mon, 23 Jul 2007 03:51:28 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Oliver Neukum <oneukum@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: usb_serial_suspend(): buggy(?) code
-Message-ID: <20070723015128.GY26212@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 22 Jul 2007 22:02:30 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53656 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755933AbXGWCC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 22:02:29 -0400
+Date: Mon, 23 Jul 2007 12:02:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fault_inject: silence a warning
+Message-Id: <20070723120246.af0d4df0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit ec22559e0b7a05283a3413bda5d177e42c950e23 added the following 
-function to drivers/usb/serial/usb-serial.c:
+lib/fault-inject.c:168: warning: 'debugfs_create_ul_MAX_STACK_TRACE_DEPTH' defined but not used
 
-<--  snip  -->
-
-...
-int usb_serial_suspend(struct usb_interface *intf, pm_message_t message)
-{
-        struct usb_serial *serial = usb_get_intfdata(intf);
-        struct usb_serial_port *port;
-        int i, r = 0;
-
-        if (serial) {
-                for (i = 0; i < serial->num_ports; ++i) {
-                        port = serial->port[i];
-                        if (port)
-                                kill_traffic(port);
-                }
-        }
-
-        if (serial->type->suspend)
-                serial->type->suspend(serial, message);
-
-        return r;
-}
-...
-
-<--  snip  -->
-
-The Coverity checker spotted the inconsequent NULL checking for "serial".
-
-Looking at the code it also doesn't seem to have been intended to always 
-return 0.
-
-cu
-Adrian
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ lib/fault-inject.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
 -- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+diff --git a/lib/fault-inject.c b/lib/fault-inject.c
+index b18fc2f..23985a2 100644
+--- a/lib/fault-inject.c
++++ b/lib/fault-inject.c
+@@ -139,12 +139,14 @@ static void debugfs_ul_set(void *data, u64 val)
+ 	*(unsigned long *)data = val;
+ }
+ 
++#ifdef CONFIG_FAULT_INJECTION_STACKTRACE_FILTER
+ static void debugfs_ul_set_MAX_STACK_TRACE_DEPTH(void *data, u64 val)
+ {
+ 	*(unsigned long *)data =
+ 		val < MAX_STACK_TRACE_DEPTH ?
+ 		val : MAX_STACK_TRACE_DEPTH;
+ }
++#endif /* CONFIG_FAULT_INJECTION_STACKTRACE_FILTER */
+ 
+ static u64 debugfs_ul_get(void *data)
+ {
+@@ -159,6 +161,7 @@ static struct dentry *debugfs_create_ul(const char *name, mode_t mode,
+ 	return debugfs_create_file(name, mode, parent, value, &fops_ul);
+ }
+ 
++#ifdef CONFIG_FAULT_INJECTION_STACKTRACE_FILTER
+ DEFINE_SIMPLE_ATTRIBUTE(fops_ul_MAX_STACK_TRACE_DEPTH, debugfs_ul_get,
+ 			debugfs_ul_set_MAX_STACK_TRACE_DEPTH, "%llu\n");
+ 
+@@ -169,6 +172,7 @@ static struct dentry *debugfs_create_ul_MAX_STACK_TRACE_DEPTH(
+ 	return debugfs_create_file(name, mode, parent, value,
+ 				   &fops_ul_MAX_STACK_TRACE_DEPTH);
+ }
++#endif /* CONFIG_FAULT_INJECTION_STACKTRACE_FILTER */
+ 
+ static void debugfs_atomic_t_set(void *data, u64 val)
+ {
+-- 
+1.5.2.3
 
