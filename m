@@ -1,108 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbXGWDL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXGWDOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933679AbXGWDL4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 23:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761235AbXGWDLq
+	id S933602AbXGWDOQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 23:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760281AbXGWDOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 23:11:46 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:34747 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761092AbXGWDLq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 23:11:46 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@suspend2.net
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Mon, 23 Jul 2007 13:11:53 +1000
-User-Agent: KMail/1.9.6
-Cc: Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
-       Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net,
-       linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com,
-       linux-pm@lists.linux-foundation.org,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org> <200707230842.22121.nigel@nigel.suspend2.net> <18083.61595.217126.824924@cargo.ozlabs.ibm.com>
-In-Reply-To: <18083.61595.217126.824924@cargo.ozlabs.ibm.com>
+	Sun, 22 Jul 2007 23:14:04 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:43020 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750853AbXGWDOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 23:14:01 -0400
+Date: Sun, 22 Jul 2007 20:13:59 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH -rt] drop spurious rcu unlock
+Message-ID: <20070723031359.GA25590@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1185124958.2573.13.camel@imap.mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3061019.5FOuh07jjx";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707231311.56398.nigel@nigel.suspend2.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185124958.2573.13.camel@imap.mvista.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3061019.5FOuh07jjx
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sun, Jul 22, 2007 at 10:22:37AM -0700, Daniel Walker wrote:
+> 
+> Strange rcu_read_unlock() which causes a imbalance, and boot hang.. I
+> didn't notice a reason for it, and removing it allows my system to make
+> progress.
+> 
+> This should go into the preempt-realtime-sched.patch
 
-Hi.
+Strange.  I have been getting boots, kernbench runs, and rcutorture
+tests despite its being present.  Though perhaps it was the cause
+of the (non-fatal) "scheduling while atomic" I got during a kernbench
+run -- I was assuming it was my fault somehow.  Non-reproducible.  :-/
 
-On Monday 23 July 2007 10:04:43 Paul Mackerras wrote:
-> Nigel Cunningham writes:
->=20
-> > I guess I want to persist because all of these issues aren't utterly
-> > unsolvable. It's just that we don't have the infrastructure yet to
-> > figure out the solutions to these issues trivially. Take, for example,
->=20
-> Ever heard of the halting problem? :)  It's not just a matter of
-> infrastructure.  You very quickly get into questions that are
-> mathematically undecideable.
+						Thanx, Paul
 
-Is this the halting problem, though?
+BUG: sleeping function called from invalid context cc1(29651) at kernel/rtmutex.c:636
+in_atomic():1 [00000001], irqs_disabled():0
+ [<c0119f50>] __might_sleep+0xf3/0xf9
+ [<c031600e>] __rt_spin_lock+0x21/0x3c
+ [<c014102c>] get_zone_pcp+0x20/0x29
+ [<c0141a40>] free_hot_cold_page+0xdc/0x167
+ [<c013a3f4>] add_preempt_count+0x12/0xcc
+ [<c0110d92>] pgd_dtor+0x0/0x1
+ [<c015d865>] quicklist_trim+0xb7/0xe3
+ [<c0111025>] check_pgt_cache+0x19/0x1c
+ [<c0148df5>] free_pgtables+0x54/0x12c
+ [<c013a3f4>] add_preempt_count+0x12/0xcc
+ [<c014e5be>] unmap_region+0xeb/0x13b
+BUG: scheduling while atomic: cc1/0x00000002/29745, CPU#0
+ [<c03146c8>] __sched_text_start+0xb0/0x4fe
+ [<c0116432>] try_to_wake_up+0x31b/0x326
+ [<c013a3f4>] add_preempt_count+0x12/0xcc
+ [<c013a3f4>] add_preempt_count+0x12/0xcc
+ [<c0314bfc>] schedule+0xe6/0x100
+ [<c03158db>] rt_spin_lock_slowlock+0xc5/0x145
+ [<c0316027>] __rt_spin_lock+0x3a/0x3c
+ [<c014102c>] get_zone_pcp+0x20/0x29
+ [<c0141a40>] free_hot_cold_page+0xdc/0x167
+ [<c013a3f4>] add_preempt_count+0x12/0xcc
+ [<c0110d92>] pgd_dtor+0x0/0x1
+ [<c015d865>] quicklist_trim+0xb7/0xe3
+ [<c0111025>] check_pgt_cache+0x19/0x1c
+ [<c0148df5>] free_pgtables+0x54/0x12c
+ [<c013a3f4>] add_preempt_count+0x12/0xcc
+ [<c014e5be>] unmap_region+0xeb/0x13b
+ [<c014e861>] do_munmap+0xea/0xff
+ [<c014e8a7>] sys_munmap+0x31/0x40
+ [<c010276a>] syscall_call+0x7/0xb
+ [<c0310000>] _shift_data_right_pages+0xb9/0xd1
+ =======================
+---------------------------
+| preempt count: 00000002 ]
+| 2-level deep critical section nesting:
+----------------------------------------
+.. [<c015d7c8>] .... quicklist_trim+0x1a/0xe3
+.....[<00000000>] ..   ( <= _stext+0x3fefff50/0x14)
+.. [<c031462b>] .... __sched_text_start+0x13/0x4fe
+.....[<00000000>] ..   ( <= _stext+0x3fefff50/0x14)
 
-> > the locking issue. If we could call some function to say "What process
-> > holds this lock?", then task A could know that it's waiting on task B
-> > and put that information somewhere. We could then use the information
-> > to freeze task B before task A.
->=20
-> But how would that help?  If task B holds the lock, then we can't
-> freeze it until it's released the lock.  Then the question is, what
-> does task B need in order to get to the point where it releases the
-> lock?  And so on.  It rapidly gets not just extremely messy, but
-> actually impossible to compute in general.
-
-Take a step back for a second.
-
-The problem we're facing now is that we're getting some userspace threads,=
-=20
-used in processing I/O, that are functioning as exceptions to the "freeze=20
-userspace, then freezeable kernel threads" rule. They are only exceptions=20
-because of that role in processing I/O - because they're de facto kernel=20
-threads. So, if we orient our thinking more in terms of I/O processing and=
-=20
-less in terms of the userspace/kernelspace distinction, we'll have a=20
-solution:
-
-1) Freeze processes that aren't fs related (ie stop them generating I/O).
-2) Flush pending I/O.
-3) Freeze filesystems in reverse order of dependency, the primary purpose=20
-being to stop them generating further I/O on their metadata.
-
-Locks that are being held are only being held because work is being done. I=
-f=20
-we progressively focus on threads in terms of their create/process work=20
-dependencies, we'll see that the problem isn't at all intractable.
-
-Regards,
-
-Nigel
-=2D-=20
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
-
---nextPart3061019.5FOuh07jjx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGpBx8N0y+n1M3mo0RAhybAKCZ6JG1LcsYF5DaSS90GYKo5Q8mmwCgneh8
-YI3yYVHZsrsq66TLZOMVc/o=
-=9J29
------END PGP SIGNATURE-----
-
---nextPart3061019.5FOuh07jjx--
+> Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+> 
+> Index: linux-2.6.22.1/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.22.1.orig/kernel/sched.c	2007-07-22 16:47:37.000000000 +0000
+> +++ linux-2.6.22.1/kernel/sched.c	2007-07-22 16:16:48.000000000 +0000
+> @@ -4900,7 +4900,6 @@ asmlinkage long sys_sched_yield(void)
+>  	 * no need to preempt or enable interrupts:
+>  	 */
+>  	spin_unlock_no_resched(&rq->lock);
+> -	rcu_read_unlock();
+> 
+>  	__schedule();
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
