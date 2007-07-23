@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763333AbXGWJPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbXGWJSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763333AbXGWJPf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 05:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXGWJP2
+	id S1763526AbXGWJSf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 05:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbXGWJS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 05:15:28 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:53661 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbXGWJP0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 05:15:26 -0400
-Subject: Re: [PATCH] virtual sched_clock() for s390
-From: Jan Glauber <jang@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, vatsa@linux.vnet.ibm.com,
-       mschwid2@linux.vnet.ibm.com, efault@gmx.de, dmitry.adamushko@gmail.com,
-       anton@samba.org
-In-Reply-To: <20070720072245.GA4020@elte.hu>
-References: <1184842661.6546.14.camel@localhost.localdomain>
-	 <469F8342.7060000@goop.org> <20070719160025.GA31815@elte.hu>
-	 <18080.2390.42425.852087@cargo.ozlabs.ibm.com>
-	 <20070720072245.GA4020@elte.hu>
-Content-Type: text/plain
-Date: Mon, 23 Jul 2007 09:15:49 +0000
-Message-Id: <1185182149.5783.11.camel@localhost.localdomain>
+	Mon, 23 Jul 2007 05:18:28 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:46729 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756627AbXGWJS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 05:18:27 -0400
+Date: Mon, 23 Jul 2007 11:19:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Christoph Hellwig <hch@infradead.org>, Kyle Moffett <mrlinuxman@mac.com>,
+       Lars Ellenberg <lars@linbit.com>, Jens Axboe <axboe@kernel.dk>,
+       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>,
+       drbd-user@linbit.com
+Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
+Message-ID: <20070723091940.GC4996@uranus.ravnborg.org>
+References: <20070721203819.GA10706@mail.linbit.com> <20070722213202.1f5d1cab.mrlinuxman@mac.com> <20070723084903.GA29443@infradead.org> <20070723090038.GA4996@uranus.ravnborg.org> <20070723090101.GA30305@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070723090101.GA30305@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-20 at 09:22 +0200, Ingo Molnar wrote:
-> * Paul Mackerras <paulus@samba.org> wrote:
-> > As with s390, 64-bit PowerPC also uses CONFIG_VIRT_CPU_ACCOUNTING. 
-> > That affects how tsk->utime and tsk->stime are accumulated (we call 
-> > account_user_time and account_system_time directly rather than calling 
-> > update_process_times) as well as the system hardirq/softirq time, idle 
-> > time, and stolen time.
+On Mon, Jul 23, 2007 at 10:01:01AM +0100, Christoph Hellwig wrote:
+> On Mon, Jul 23, 2007 at 11:00:38AM +0200, Sam Ravnborg wrote:
+> > On Mon, Jul 23, 2007 at 09:49:03AM +0100, Christoph Hellwig wrote:
+> > > On Sun, Jul 22, 2007 at 09:32:02PM -0400, Kyle Moffett wrote:
+> > > > First of all, if you could break this up into chunks (even if they
+> > > > aren't useful individually) just to make it easier to review.
+> > > 
+> > > No, please don't do that I have no idea why people say that except for
+> > > drinking too much "small patches" koolaid.
+> > 
+> > It is much more preferred to have code available in the mailer than
+> > being forced to copy it from some big patch somewhere when you
+> > want to point out something.
 > 
-> tsk->utime and tsk->stime is only used for a single purpose: to 
-> determine the 'split' factor of how to split up the precise total time 
-> between user and system time.
-> 
-> > When you say "precise task statistics for /proc", where are they 
-> > accumulated?  I don't see any changes to the way that tsk->utime and 
-> > ctime are computed.
-> 
-> we now use p->se.sum_exec_runtime that measures (in nanoseconds) the 
-> precise amount of time spent executing (sum of system and user time) - 
-> and ->stime and ->utime is used to determine the 'split'. [this allows 
-> us to gather ->stime and ->utime via low-resolution sampling, while 
-> keeping the 'total' precise. Accounting at every system entry point 
-> would be quite expensive on most platforms.]
+> While that's a valid point I totally agree on for small patches it just
+> doesn't matter for a complex driver where you need to sit down for an
+> hour or more to actually do a useful review.
 
-Using se.sum_exec_runtime to generate ->utime and ->stime breaks
-the process accounting we have on s390 (and probably on PowerPC too).
-With CONFIG_VIRT_CPU_ACCOUNTING we already have precise values in
-->utime and ->stime. Can we make the calculation of the CFS-based time
-values conditional by CONFIG_VIRT_CPU_ACCOUNTING?
+We do review on different levels.
+I for once will look at the Makefile + Kconfig bits and some trivial
+CodingStyle issues. Here it will help.
+You on the other hand I assume will look at the functionality and overall
+design and then for you the full patch is the best way.
 
-Jan
+Well I could try to do the same as you but that would take me maybe
+10 hours or more just to come up with some limited input on the overall design.
+So therefore instead of backing out I give inputs on the smaller scale
+which I know is less usefull but in the hope that this can be resolved
+so when you or others take your time to review at least the majority
+of the simple CodingStyle things are fixed so you do not get sidetracked
+and can concentrate on the important bits.
 
-> 	Ingo
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+The message is quite clear.
+For a driver like this do something like:
+- Describe the functionality / the problem is solved
+- Describe the overall design (maybe as a file in Documentation/?)
+- Make a single patch available
+- Submit mails in smaller chunks for on-the-list reviews
 
+This will then be useable bot for the "triviality" reviewers like me
+and for the "knowledge able" reviewers like you.
+
+	Sam
