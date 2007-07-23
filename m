@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765539AbXGWRsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbXGWRuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765539AbXGWRsV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 13:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760761AbXGWRsL
+	id S932446AbXGWRuo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 13:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760966AbXGWRuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 13:48:11 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:30068 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760739AbXGWRsK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 13:48:10 -0400
-Date: Mon, 23 Jul 2007 13:48:06 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-Subject: Re: Git tree for old kernels from before the current tree
-In-reply-to: <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org>
-X-X-Sender: nico@xanadu.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Git Mailing List <git@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.0.999.0707231343350.6355@xanadu.home>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com>
- <Pine.LNX.4.64.0707222257540.32367@fbirervta.pbzchgretzou.qr>
- <20070722211314.GA13850@linux-sh.org>
- <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr>
- <46A3D5EA.2050600@zytor.com>
- <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org>
+	Mon, 23 Jul 2007 13:50:37 -0400
+Received: from gw.goop.org ([64.81.55.164]:53038 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755554AbXGWRug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 13:50:36 -0400
+Message-ID: <46A4EA37.7020802@goop.org>
+Date: Mon, 23 Jul 2007 10:49:43 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+CC: Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered unnecessarily
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <200707231813.26859.ak@suse.de> <Pine.LNX.4.64.0707232152250.22155@cselinux1.cse.iitk.ac.in> <200707231833.20678.ak@suse.de> <Pine.LNX.4.64.0707232220130.22796@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <Pine.LNX.4.64.0707232220130.22796@cselinux1.cse.iitk.ac.in>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007, Linus Torvalds wrote:
+Satyam Sharma wrote:
+> Exactly, but the actual _synchronization_ in all users of the bitops API
+> should (should, at least, otherwise the bugs lie in the callers) depend
+> upon the _bit-string_ whose address is passed to us. That could be some
+> flags/lock/etc in some caller, whatever, but all the synchronization in
+> those users would be based upon _that_ -- and we're handling it alright
+> with the full CPU barrier for _that_ address. Also note that in all the
+> atomic/unatomic variants, we always constrain the passed pointer to
+> memory and for the atomic/locked variants at least, I don't really see
+> how compiler optimizations would get us into trouble (again, for the
+> _passed bit-string memory address_).
+>   
 
-> So I've been thinking about trying to re-create some really old history 
-> into git, but it's still a lot of work.. And obviously not very useful, 
-> just interesting from an archeological standpoint.
+The compiler doesn't know how large the object at that address is, so
+there's limits to how much alias analysis it can do.  If it assumes
+you're passing a pointer to a single word then it may fail to order the
+bit operation correctly with respect to another operation on another
+part of the same bitfield (a memset to clear it, for example).
 
-I started this once.
-
-I have (sort of) a GIT tree with all Linux revisions that I could find 
-from v0.01 up to v1.0.9.  But the most interesting information and also 
-what is the most time consuming is the retrieval of announcement 
-messages for those releases in old mailing list or newsgroup archives to 
-serve as commit log data.  It seems to be even arder to find for post 
-v1.0 releases.
-
-
-Nicolas
+    J
