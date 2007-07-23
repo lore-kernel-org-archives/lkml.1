@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933864AbXGWXK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765817AbXGWXNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933864AbXGWXK6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 19:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbXGWXKu
+	id S1765817AbXGWXNV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 19:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbXGWXNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 19:10:50 -0400
-Received: from ozlabs.org ([203.10.76.45]:43397 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755466AbXGWXKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 19:10:49 -0400
-Subject: Re: [kvm-devel] [RFC 0/8]KVM: swap out guest pages
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <46A4829C.9080104@qumranet.com>
-References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com>
-	 <46A4829C.9080104@qumranet.com>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 09:10:18 +1000
-Message-Id: <1185232218.1803.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 23 Jul 2007 19:13:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:16732 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbXGWXNM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 19:13:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oxf1LFKM0N2kuV8QOrLZJiAG7pLAQb94K2YXG5GE1cxI2uYNAZjFjqbf+GtiO0O8cXjI+LAwwW0mZDX+bTPM4mWX4pVNOc0jqMSIJ+UeWYyaXkD1JAbvhAH/T91oBXxBJcZXxyB1LhpOnZZT23CNTPxTAFM7ITUD/mHOyj08/6Q=
+Message-ID: <9a8748490707231613h4a459651x316b111447df94bb@mail.gmail.com>
+Date: Tue, 24 Jul 2007 01:13:11 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+Cc: "Andrew Morton" <akpm@osdl.org>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Joel Schopp" <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <740c90243aaa6f6d4640d71230c4fa27@pinky>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 13:27 +0300, Avi Kivity wrote:
-> Having an address_space (like your patch does) is remarkably simple, and 
-> requires few hooks from the current vm.  However using existing vmas 
-> mapped by the user has many advantages:
-> 
-> - compatible with s390 requirements
-> - allows the user to use hugetlbfs pages, which have a performance 
-> advantage using ept/npt (but which are unswappable)
-> - allows the user to map a file (which can be regarded as way to specify 
-> the swap device)
-> - better ingration with the rest of the vm
+On 15/07/07, Andy Whitcroft <apw@shadowen.org> wrote:
+>
+> This version brings a number of new checks, and a number of bug
+> fixes.  Of note:
+>
+>   - warnings for multiple assignments per line
+>   - warnings for multiple declarations per line
+>   - checks for single statement blocks with braces
+>
+> This patch includes an update for feature-removal-schedule.txt to
+> better target checks.
+>
+> Andy Whitcroft (12):
+>       Version: 0.08
+>       only apply printk checks where there is a string literal
+>       allow suppression of errors for when no patch is found
+>       warn about multiple assignments
+>       warn on declaration of multiple variables
+>       check for kfree() with needless null check
 
-You don't need to expose the vmas.  You just have userspace point out
-the start+len of each region of memory it wants the guest to be able to
-access, and the address it wants it to appear in the guest.
+It's not just kfree(), it's a whole list of functions, like kfree(),
+vfree(), crypto_free_tfm() and a bunch of other freeing functions...
 
-This is a slight superset of what lguest does in two ways:
 
-1) my guest address == user address, but I'm looking at adding an offset
-so I don't have to link the launcher binary specially.
-2) I have only one contiguous region of guest-physical memory, since I
-can place device memory immediately above "normal" mem.
+>       check for single statement braced blocks
 
-But the result is pretty sweet, and doesn't require any new symbols to
-be exported.
+Hmmm, if the single statement is a macro, braces sometimes make a lot
+of sense...
 
-Cheers,
-Rusty.
 
+Suggested further improvement; check that patches don't modify files
+listed in Documentation/dontdiff
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
