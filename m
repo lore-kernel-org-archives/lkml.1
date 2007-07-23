@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbXGWFBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXGWFKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbXGWFBj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 01:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbXGWFBd
+	id S1757113AbXGWFKJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 01:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXGWFJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 01:01:33 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35697 "EHLO e4.ny.us.ibm.com"
+	Mon, 23 Jul 2007 01:09:57 -0400
+Received: from ozlabs.org ([203.10.76.45]:47615 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751912AbXGWFBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 01:01:32 -0400
-Date: Mon, 23 Jul 2007 10:31:47 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Don Zickus <dzickus@redhat.com>
-Cc: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
-       Neil Horman <nhorman@redhat.com>, Bernhard Walle <bwalle@suse.de>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Dan Aloni <da-x@monatomic.org>
-Subject: Re: Determine version of kernel that produced vmcore
-Message-ID: <20070723050147.GA5691@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070716123633.GA10920@in.ibm.com> <20070718230740oomichi@mail.jp.nec.com> <20070719163915.GN9623@redhat.com>
+	id S1753092AbXGWFJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 01:09:56 -0400
+Subject: Re: [PATCH] Move KVM, paravirt, lguest, VMI and Xen under
+	arch-level Virtualization option
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Avi Kivity <avi@qumranet.com>,
+       virtualization <virtualization@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707211748320.21737@fbirervta.pbzchgretzou.qr>
+References: <1184905342.10380.263.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707211748320.21737@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 15:09:31 +1000
+Message-Id: <1185167371.6344.135.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070719163915.GN9623@redhat.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 19, 2007 at 12:39:15PM -0400, Don Zickus wrote:
-[..]
+On Sat, 2007-07-21 at 17:49 +0200, Jan Engelhardt wrote:
+> On Jul 20 2007 14:22, Rusty Russell wrote:
+> >Subject: [PATCH] Move KVM, paravirt, lguest,
+> >    VMI and Xen under arch-level Virtualization option
+> >
+> >Any objections?
 > 
-> I am not a big fan of this approach as it forces distros to require
-> kexec-tools when building a kernel.  Even Joe Hacker who wants a custom
-> kernel (and not interested in kexec) would have to not only download the
-> kernel.src.rpm but kexec-tools just to build a kernel that probably
-> doesn't have kexec enabled.
+> Well btw, would it make sense to also rearrange the directory structure along
+> with it, i.e.
 > 
-> I had to deal with a similar experience when providing a build dependency
-> on the unifdef package when create the kernel-headers rpm for RHEL-5.  A
-> lot of people were confused and upset by this dependency.  Luckily
-> upstream resolved this by just putting similar code in the kernel/scripts
-> directory and thus removing the dependency (well not for RHEL-5).  I would
-> rather not have to deal with this again unless I know there is a more
-> permanent solution that would remove this dependency.
+> drivers/kvm    => drivers/virt/kvm
+> drivers/lguest => drivers/virt/lguest
+> drivers/xen    => drivers/virt/xen
 > 
+> Then the full kconfig (with menuconfig,if,endif) can go to
+> drivers/virt/Kconfig.
 
-That's a good point Don. kernel rpm being dependent on kexec-tools rpm is
-not a good idea.
+It would reduce clutter a little, but it'll never cover cases where the
+arch is always virtualized.  You could move VMI there, but UML, PowerPC,
+S/390 won't be moving.
 
-> After talking to Dave Anderson about this more, I start to understand why
-> Ken'ichi prefers to implement the new features in userspace instead of the
-> kernel (it makes things automatically work with older kernels), but I
-> still am not a big fan of it.  I was hoping for a complete in kernel
-> solution (that way you never need the vmlinux file).  Perhaps makedumpfile
-> can support both vmlinux files (if provided) or interface with the kernel
-> (if the vmlinux is not provided?).
-> 
+I still think people expect virtualization under CPU features, so archs
+should include the virt Kconfig explicitly there (rather than it just
+appearing deep in drivers/).  At which point cut & pasting variations of
+the CONFIG_VIRTUALIZATION option is probably as good as any other
+solution, and far less work.
 
-I am also in favour of a complete kernel based solution. Export required
-info from kernel and let kexec-tools parse that info, pass it to second
-kernel and it will be appended to vmcore.
+Cheers,
+Rusty.
 
-This will put some restrictions on that we can't keep on changing the
-format of the info very frequently and some new features might not work
-with older kernels. But I guess, kexec-tools can provide an override option
-where dump filtering info can be passed on kexec-tools command line (as
-suggested by ken'chi). If user passes this info on command line then
-kexec-tools will not read the info exported from kernel. This way new
-features can be made to work on older kernels. 
-
-Thanks
-Vivek
