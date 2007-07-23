@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765864AbXGWShz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932927AbXGWSip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765864AbXGWShz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbXGWShr
+	id S932927AbXGWSip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbXGWSie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:37:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46589 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754933AbXGWShr (ORCPT
+	Mon, 23 Jul 2007 14:38:34 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:33347 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756375AbXGWSid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:37:47 -0400
-Date: Mon, 23 Jul 2007 11:37:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] add __GFP_ZERP to GFP_LEVEL_MASK
-Message-Id: <20070723113712.c0ee29e5.akpm@linux-foundation.org>
-In-Reply-To: <1185185020.8197.11.camel@twins>
-References: <1185185020.8197.11.camel@twins>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 23 Jul 2007 14:38:33 -0400
+Subject: Re: [PATCH] release quicklist before free_page
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20070723182301.GA27789@elte.hu>
+References: <20070723152129.036573829@mvista.com>
+	 <1185208378.8197.20.camel@twins> <1185207979.2573.55.camel@imap.mvista.com>
+	 <20070723182301.GA27789@elte.hu>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 11:27:12 -0700
+Message-Id: <1185215232.2573.72.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 12:03:40 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Mon, 2007-07-23 at 20:23 +0200, Ingo Molnar wrote:
+> 
+> how about: "if you've got some time then please also add a few comments, 
+> because the code was quite non-obvious to me and I misunderstood it when 
+> I tried to fix it. Thanks."
 
-> Daniel recently spotted that __GFP_ZERO is not (and has never been)
-> part of GFP_LEVEL_MASK. I could not find a reason for this in the
-> original patch: 3977971c7f09ce08ed1b8d7a67b2098eb732e4cd in the -bk
-> tree.
+Not exactly what I was thinking of .. More like,
 
-It doesn't make a lot of sense to be passing __GFP_ZERO into slab
-allocation functions.  It's not really for the caller to be telling slab
-how it should arrange for its new memory to get zeroed.
+"LOCKING NOTE: This code uses the fact that get_cpu_var disables
+preemption to maintain cpu affinity during the call to free_page()
+otherwise it might free pages on another cpu."
 
-And the caller of slab functions will need to zero the memory anyway,
-because you don't know whether your new object came direct from the page
-allocator or if it is recycled memory from a partial slab.
+(btw, your comment above comes off very snide, which I don't appreciate.
+I haven't done anything that remotely warrants that.)
 
-I have a feeling that we did support passing __GFP_ZERO into the slab
-allocation functions for a while, but took it out.
+Daniel
+
