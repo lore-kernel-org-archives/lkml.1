@@ -1,94 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbXGWWFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbXGWWFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbXGWWFD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 18:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbXGWWEw
+	id S1756132AbXGWWFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 18:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbXGWWFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 18:04:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:29378 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbXGWWEv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 18:04:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=j3HavdKKgITOOqxvGBOCP0UPQw0z4aYG1o0+wbElc2EIme1pdtc501Dtur9LfwSgxJitmoEF4dxQ4PozjCaR2AJe1CxYpSQIySdy3U7uQocRh6Ofx3ySFdEjjrnC+XwYG9ySphk5ZlnY5TfKojA6fHAvMiVEMiBhUi4idzP9Ee4=
-Date: Tue, 24 Jul 2007 02:04:46 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070723220446.GA5822@martell.zuzino.mipt.ru>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070723141137.171e4ac1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 23 Jul 2007 18:05:07 -0400
+Received: from www.osadl.org ([213.239.205.134]:56292 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754273AbXGWWFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 18:05:04 -0400
+Subject: Re: v2.6.22.1-rt5
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Rui Nuno Capela <rncbc@rncbc.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <1185226226.2573.147.camel@imap.mvista.com>
+References: <20070723210236.GA25104@elte.hu>  <46A51D9E.8040104@rncbc.org>
+	 <1185226226.2573.147.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Tue, 24 Jul 2007 00:05:02 +0200
+Message-Id: <1185228302.3318.40.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 02:11:37PM -0700, Andrew Morton wrote:
-> On Tue, 24 Jul 2007 01:01:53 +0400
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > On Tue, Jul 24, 2007 at 12:40:45AM +0400, Alexey Dobriyan wrote:
-> > > > I had more complete info: http://article.gmane.org/gmane.linux.network/66966
-> > > > 
-> > > > You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
-> > > > 
-> > > > I haven't worked out where that kmap_atomic() call is coming from yet. 
-> > > > Both traces point up into the page allocator, but I _think_ that's stack
-> > > > gunk.
-> > > 
-> > > Ahh, you suspect networking.
-> > > 
-> > > Here, setup is 2 cheap-ass 100Mb realtek 8139 NICs, one to campus network
-> > > receiving ~20 junk packets per second, one gathering netconsole output
-> > > and ssh to it, no conntracks and fancy stuff.
-> > > 
-> > > [reboots with cables physically unplugged]
-> > 
-> > OK, I run gdb recompile, cat(1) every file in /usr/portage (shitload of
-> > small files) with both cables unplugged. It all went fine for ~5 minutes
-> > after that it crashed exactly same way after 10 secs after plugging one
-> > of them.
-> 
-> It'd be nice to get a clean trace.  Are you able to obtain the full
-> trace with CONFIG_FRAME_POINTER=y?
+On Mon, 2007-07-23 at 14:30 -0700, Daniel Walker wrote:
+> Yeah, the quicklist patch wasn't fully tested .. The delta patch below
+> is what I had to change to get it working ..
 
-Sorry, no camera shot, finding camera requires wakening up M. :)
+My bad. I pushed the wrong queue to Ingo.
 
-It took longer that usual, but here it is
+-ENOTENOUGHSLEEP
 
-	kmap_atomic
-	get_page_from_freelist
-	__alloc_pages
-	cache_alloc_refill
-	__alloc_pages
-	cache_alloc_refill
-	kmem_cache_alloc
-	dst_alloc
-	ip_route_input
-	ip_rcv
-	netif_receive_skb
-	rtl8139_poll
-	net_rx_action
-	__do_softirq
-	do_softirq
-	irq_exit
-	do_IRQ
-	common_interrupt
-	handle_mm_fault
-	do_page_fault
-	error_core
+This is the delta. We'll do a -rt6 tomorrow morning.
 
-much more loaded x86_64 box near also running 2.6.23-rc1 with debugging
-turned on, using atl1 driver doesn't experience any crashes.
+	tglx
 
-And I found 2.6.22-b91cba52e9b7b3f1c0037908a192d93a869ca9e5-x entry on
-top of grub config which means b91cba52e9b7b3f1c0037908a192d93a869ca9e5
-_without_ any debugging was OK.
+Index: linux-2.6.22/arch/i386/kernel/hpet.c
+===================================================================
+--- linux-2.6.22.orig/arch/i386/kernel/hpet.c	2007-07-24 00:02:12.000000000 +0200
++++ linux-2.6.22/arch/i386/kernel/hpet.c	2007-07-24 00:05:05.000000000 +0200
+@@ -9,7 +9,6 @@
+ #include <linux/pm.h>
+ 
+ #include <asm/fixmap.h>
+-#include <asm/i8253.h>
+ #include <asm/hpet.h>
+ #include <asm/i8253.h>
+ #include <asm/io.h>
+Index: linux-2.6.22/arch/i386/kernel/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/i386/kernel/process.c	2007-07-24 00:02:10.000000000 +0200
++++ linux-2.6.22/arch/i386/kernel/process.c	2007-07-24 00:05:08.000000000 +0200
+@@ -189,7 +189,6 @@ void cpu_idle(void)
+ 
+ 			tick_nohz_stop_sched_tick();
+ 
+-			check_pgt_cache();
+ 			rmb();
+ 			idle = pm_idle;
+ 
+Index: linux-2.6.22/include/asm-generic/bug.h
+===================================================================
+--- linux-2.6.22.orig/include/asm-generic/bug.h	2007-07-24 00:02:11.000000000 +0200
++++ linux-2.6.22/include/asm-generic/bug.h	2007-07-24 00:05:07.000000000 +0200
+@@ -92,16 +92,4 @@ struct bug_entry {
+ # define WARN_ON_NONRT(condition)	WARN_ON(condition)
+ #endif
+ 
+-#ifdef CONFIG_PREEMPT_RT
+-# define BUG_ON_RT(c)			BUG_ON(c)
+-# define BUG_ON_NONRT(c)		do { } while (0)
+-# define WARN_ON_RT(condition)		WARN_ON(condition)
+-# define WARN_ON_NONRT(condition)	do { } while (0)
+-#else
+-# define BUG_ON_RT(c)			do { } while (0)
+-# define BUG_ON_NONRT(c)		BUG_ON(c)
+-# define WARN_ON_RT(condition)		do { } while (0)
+-# define WARN_ON_NONRT(condition)	WARN_ON(condition)
+-#endif
+-
+ #endif
+Index: linux-2.6.22/kernel/sched.c
+===================================================================
+--- linux-2.6.22.orig/kernel/sched.c	2007-07-24 00:02:12.000000000 +0200
++++ linux-2.6.22/kernel/sched.c	2007-07-24 00:05:36.000000000 +0200
+@@ -4924,7 +4924,6 @@ asmlinkage long sys_sched_yield(void)
+ 	 * no need to preempt or enable interrupts:
+ 	 */
+ 	spin_unlock_no_resched(&rq->lock);
+-	rcu_read_unlock();
+ 
+ 	__schedule();
+ 
+Index: linux-2.6.22/kernel/softirq.c
+===================================================================
+--- linux-2.6.22.orig/kernel/softirq.c	2007-07-24 00:02:11.000000000 +0200
++++ linux-2.6.22/kernel/softirq.c	2007-07-24 00:05:08.000000000 +0200
+@@ -102,7 +102,6 @@ static void wakeup_softirqd(int softirq)
+ 
+ 	if (unlikely(!tsk))
+ 		return;
+-#if 1
+ #if defined(CONFIG_PREEMPT_SOFTIRQS) && defined(CONFIG_PREEMPT_HARDIRQS)
+ 	/*
+ 	 * Optimization: if we are in a hardirq thread context, and
+@@ -117,7 +116,6 @@ static void wakeup_softirqd(int softirq)
+ 			(tsk->normal_prio == current->normal_prio))
+ 		return;
+ #endif
+-#endif
+ 	/*
+ 	 * Wake up the softirq task:
+ 	 */
+Index: linux-2.6.22/include/linux/quicklist.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/quicklist.h	2007-07-24 00:02:00.000000000 +0200
++++ linux-2.6.22/include/linux/quicklist.h	2007-07-24 00:05:08.000000000 +0200
+@@ -18,7 +18,7 @@ struct quicklist {
+ 	int nr_pages;
+ };
+ 
+-DECLARE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
++DECLARE_PER_CPU_LOCKED(struct quicklist, quicklist)[CONFIG_NR_QUICK];
+ 
+ /*
+  * The two key functions quicklist_alloc and quicklist_free are inline so
+@@ -30,19 +30,30 @@ DECLARE_PER_CPU(struct quicklist, quickl
+  * The fast patch in quicklist_alloc touched only a per cpu cacheline and
+  * the first cacheline of the page itself. There is minmal overhead involved.
+  */
+-static inline void *quicklist_alloc(int nr, gfp_t flags, void (*ctor)(void *))
++static inline void *__quicklist_alloc(int cpu, int nr, gfp_t flags, void (*ctor)(void *))
+ {
+ 	struct quicklist *q;
+ 	void **p = NULL;
+ 
+-	q =&get_cpu_var(quicklist)[nr];
++	q = &__get_cpu_var_locked(quicklist, cpu)[nr];
+ 	p = q->page;
+ 	if (likely(p)) {
+ 		q->page = p[0];
+ 		p[0] = NULL;
+ 		q->nr_pages--;
+ 	}
+-	put_cpu_var(quicklist);
++	return p;
++}
++
++static inline void *quicklist_alloc(int nr, gfp_t flags, void (*ctor)(void *))
++{
++	struct quicklist *q;
++	void **p = NULL;
++	int cpu;
++
++	(void)get_cpu_var_locked(quicklist, &cpu)[nr];
++	p = __quicklist_alloc(cpu, nr, flags, ctor);
++	put_cpu_var_locked(quicklist, cpu);
+ 	if (likely(p))
+ 		return p;
+ 
+Index: linux-2.6.22/mm/quicklist.c
+===================================================================
+--- linux-2.6.22.orig/mm/quicklist.c	2007-07-24 00:02:00.000000000 +0200
++++ linux-2.6.22/mm/quicklist.c	2007-07-24 00:05:08.000000000 +0200
+@@ -19,7 +19,7 @@
+ #include <linux/module.h>
+ #include <linux/quicklist.h>
+ 
+-DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
++DEFINE_PER_CPU_LOCKED(struct quicklist, quicklist)[CONFIG_NR_QUICK];
+ 
+ #define FRACTION_OF_NODE_MEM	16
+ 
+@@ -51,8 +51,9 @@ void quicklist_trim(int nr, void (*dtor)
+ {
+ 	long pages_to_free;
+ 	struct quicklist *q;
++	int cpu;
+ 
+-	q = &get_cpu_var(quicklist)[nr];
++	q = &get_cpu_var_locked(quicklist, &cpu)[nr];
+ 	if (q->nr_pages > min_pages) {
+ 		pages_to_free = min_pages_to_free(q, min_pages, max_free);
+ 
+@@ -61,7 +62,7 @@ void quicklist_trim(int nr, void (*dtor)
+ 			 * We pass a gfp_t of 0 to quicklist_alloc here
+ 			 * because we will never call into the page allocator.
+ 			 */
+-			void *p = quicklist_alloc(nr, 0, NULL);
++			void *p = __quicklist_alloc(cpu, nr, 0, NULL);
+ 
+ 			if (dtor)
+ 				dtor(p);
+@@ -69,7 +70,7 @@ void quicklist_trim(int nr, void (*dtor)
+ 			pages_to_free--;
+ 		}
+ 	}
+-	put_cpu_var(quicklist);
++	put_cpu_var_locked(quicklist, cpu);
+ }
+ 
+ unsigned long quicklist_total_size(void)
+
+
+
 
