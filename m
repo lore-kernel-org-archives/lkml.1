@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbXGWWaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761713AbXGWWfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761326AbXGWWaE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 18:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbXGWW3x
+	id S1761713AbXGWWfB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 18:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbXGWWey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 18:29:53 -0400
-Received: from web50109.mail.re2.yahoo.com ([206.190.38.37]:32032 "HELO
-	web50109.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753854AbXGWW3w (ORCPT
+	Mon, 23 Jul 2007 18:34:54 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43319 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbXGWWex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 18:29:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=GjHLlFCmbz4EP7dtoEnfDXYStrtdqUkl/ILx7ismT6XpqagJIyCucDccfC4ID1fbzYGj/cC1PGXBbZmXywZk4MQjnJxyPn8RvwczLCkKAvmkph6t17OEUBxsu8/xqQf6Iz1sHjZ0fNaxUHhni06CB/Epm1/TOAKwpKC21qNHFvs=  ;
-Message-ID: <20070723222951.33125.qmail@web50109.mail.re2.yahoo.com>
-X-YMail-OSG: 5O5cN.0VM1lFUobzx7Bo5y1at5upsfDiu1TlWHXhVhyDsmKWiAcfti_lE5jtqF5GIymYrl53X0CxkVK2uXlODzP5oqFNZLc.AFI.ifr.FuoRe0Xdpa5yfhj4DTxs3awsjeF2CqwPZ7xs00sL9GaCin2uSA--
-Date: Mon, 23 Jul 2007 15:29:50 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Reply-To: dougthompson@xmission.com
-Subject: Re: drivers/edac: add mips and ppc visibility
-To: Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Douglas Thompson <dougthompson@xmission.com>
-In-Reply-To: <20070720194737.GA30184@redhat.com>
+	Mon, 23 Jul 2007 18:34:53 -0400
+Message-ID: <46A52D05.4050603@zytor.com>
+Date: Mon, 23 Jul 2007 15:34:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-rc1] APM detection logic bug fix
+References: <200707232225.l6NMPxrq009114@harpo.it.uu.se>
+In-Reply-To: <200707232225.l6NMPxrq009114@harpo.it.uu.se>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Dave Jones <davej@redhat.com> wrote:
-
-> On Thu, Jul 19, 2007 at 05:59:16PM +0000, Linux Kernel wrote:
->  > Gitweb:    
->
-http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b113a3f7e85d7f97c8383a88a5bc7c2ea8daeb2f
->  > Commit:     b113a3f7e85d7f97c8383a88a5bc7c2ea8daeb2f
->  > Parent:     052dfb45ccb5ea354a426b52556bcfee75b9d2f5
->  > Author:     Douglas Thompson <dougthompson@xmission.com>
->  > AuthorDate: Thu Jul 19 01:50:15 2007 -0700
->  > Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
->  > CommitDate: Thu Jul 19 10:04:55 2007 -0700
->  > 
->  >     drivers/edac: add mips and ppc visibility
->  >     
->  >     1) Remove an old CVS ID string
->  >     
->  >     2) change EDAC from a tristate option to a simple bool option
->  >     
->  >     3) In addition to the X86 arch, PPC and MIPS also have drivers in the
->  >     submission queue.  This patch turns on the EDAC flag for those archs.  Each
->  >     driver will have its respective 'depends on ARCH' set.
->  >     
->  >     Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
->  >     Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
->  >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->  >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Mikael Pettersson wrote:
+> Starting with kernel 2.6.23-rc1, the i386 APM driver fails
+> on several of my machines with the message:
 > 
-> What was the reasoning behind 2) ?
-> Now everyone's distro kernel has bits of EDAC in it even if they
-> don't use it.  (Admittedly only a small amount, but these things
-> tend to creep in bit by bit).
+> apm: BIOS not found
 > 
-> 	Dave
-
-It might be my failed understanding, but the requested patch for this, was to move the
-ON/OFF of EDAC into the 'drivers' submenu directly (instead of down in the EDAC submenu), 
-to allow for faster disabling/enabling of EDAC in menuconfig.
-
-But all the modules are still tri-state configured.
-
-If I am missing something here, please give me some needed instruction. From what I understand
-your comment, the code is can still be configured in modules.
-
-thanks
-
-doug t
-
-
+> This happens because of a bug in the i386 boot code rewrite
+> from assembler to C. The original assembly code had the
+> following code in its APM BIOS presence test (boot/setup.S):
 > 
-> -- 
-> http://www.codemonkey.org.uk
+> 	andw	$0x02, %cx			# Is 32 bit supported?
+> 	je	done_apm_bios			# No 32-bit, no (good) APM BIOS
+> 
+> That is, the code bails out if bit 2 is zero.
+> 
+> In the new C version, this is coded as (boot/apm.c):
+> 
+> 	if (cx & 0x02)		/* 32 bits supported? */
+> 		return -1;
+> 
+> Here we see that the test has been accidentally inverted.
+> 
+> The fix is to negate the test. I've verified that this
+> allows the APM driver to work again on my affected machines.
+> 
+> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 > 
 
+Thanks, applied.
+
+	-hpa
