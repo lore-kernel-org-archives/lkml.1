@@ -1,91 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762285AbXGWGl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbXGWGmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762285AbXGWGl3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 02:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758065AbXGWGlV
+	id S1762834AbXGWGmn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 02:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbXGWGmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 02:41:21 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59056 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753872AbXGWGlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 02:41:21 -0400
-Date: Mon, 23 Jul 2007 08:42:35 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Move --build-id option
-Message-ID: <20070723064235.GA4129@uranus.ravnborg.org>
-References: <20070723060155.2B3824D0489@magilla.localdomain> <20070723061446.5DAAC4D0489@magilla.localdomain>
+	Mon, 23 Jul 2007 02:42:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33591 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753872AbXGWGmf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 02:42:35 -0400
+Date: Sun, 22 Jul 2007 23:42:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael Kerrisk <mtk-manpages@gmx.net>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linux Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, drepper@redhat.com,
+       stable@kernel.org
+Subject: Re: Problems with timerfd()
+Message-Id: <20070722234204.10d0f9a9.akpm@linux-foundation.org>
+In-Reply-To: <20070722233826.20efa6e5.akpm@linux-foundation.org>
+References: <46A44B7D.3030700@gmx.net>
+	<20070722233826.20efa6e5.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070723061446.5DAAC4D0489@magilla.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 11:14:46PM -0700, Roland McGrath wrote:
-> 
-> My original makefile patch to use ld --build-id wound up using it in too
-> many places.  We want it only for the .ko and vmlinux links (and vmlinux
-> temporary links that determine the vmlinux layout).
-> 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
-> ---
->  Makefile                 |    8 +++-----
->  scripts/Makefile.modpost |    4 ++--
->  2 files changed, 5 insertions(+), 7 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index cd47845..fe6c5dd 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -518,8 +518,6 @@ CFLAGS += $(call cc-option,-Wno-pointer-sign,)
->  # Use --build-id when available.
->  LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
->  			      $(call ld-option, -Wl$(comma)--build-id,))
-> -LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
-As noted below keep this line.
+On Sun, 22 Jul 2007 23:38:26 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> -LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
-This needed to go otherwise you had to rely on all arch makefiles 
-used += for LDFLAGS_vmlinux assignments.
->  
->  # Default kernel image to build when no specific target is given.
->  # KBUILD_IMAGE may be overruled on the command line or
-> @@ -616,9 +614,9 @@ export KBUILD_VMLINUX_OBJS := $(vmlinux-all)
->  # Rule to link vmlinux - also used during CONFIG_KALLSYMS
->  # May be overridden by arch/$(ARCH)/Makefile
->  quiet_cmd_vmlinux__ ?= LD      $@
-> -      cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
-> -      -T $(vmlinux-lds) $(vmlinux-init)                          \
-> -      --start-group $(vmlinux-main) --end-group                  \
-> +      cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_BUILD_ID) $(LDFLAGS_vmlinux) \
-> +      -o $@ -T $(vmlinux-lds) $(vmlinux-init)		\
-> +      --start-group $(vmlinux-main) --end-group		\
->        $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o FORCE ,$^)
-This is OK.
->  
->  # Generate new vmlinux version
-> diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-> index c6fcc59..a86a3b1 100644
-> --- a/scripts/Makefile.modpost
-> +++ b/scripts/Makefile.modpost
-> @@ -97,8 +97,8 @@ targets += $(modules:.ko=.mod.o)
->  
->  # Step 6), final link of the modules
->  quiet_cmd_ld_ko_o = LD [M]  $@
-> -      cmd_ld_ko_o = $(LD) $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
-> -			  $(filter-out FORCE,$^)
-> +      cmd_ld_ko_o = $(LD) $(LDFLAGS) $(LDFLAGS_BUILD_ID) $(LDFLAGS_MODULE) \
-> +      		    	  -o $@ $(filter-out FORCE,$^)
+> > Davide has already submitted a patch to you to make read() from a timerfd
+> > file descriptor return an 8 byte integer, and I understand it to have been
+> > accepted into -mm.
+> 
+> argh.  Nobody told me it was an ABI change!  We'll need to consider merging
+> make-timerfd-return-a-u64-and-fix-the-__put_user.patch into 2.6.22.x as
+> well.
+> 
 
-This will not work as LDFLAGS_BUILD_ID is not exported.
-Please make the change as outlined in earlier mail so we actually start
-using LDFALGS_MODULE as documented.
-
-Thanks,
-	Sam
+So I'm trying to write a halfway respectable description of that patch and
+I'm stuck when it comes to describing what will happen if someone tries
+to run a future timerfd-enabled glibc on 2.2.22 base.   In what manner
+will it misbehave?  What are the consequences of this decision?
