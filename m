@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764490AbXGWRWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXGWRXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764490AbXGWRWb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 13:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758925AbXGWRWV
+	id S932081AbXGWRXv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 13:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbXGWRXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 13:22:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42258 "EHLO mx1.redhat.com"
+	Mon, 23 Jul 2007 13:23:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42951 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758746AbXGWRWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 13:22:19 -0400
-Message-ID: <46A4E254.3010606@redhat.com>
-Date: Mon, 23 Jul 2007 12:16:04 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1758746AbXGWRXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 13:23:43 -0400
+Message-ID: <46A4E3F1.7050602@redhat.com>
+Date: Mon, 23 Jul 2007 10:22:57 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: ext4 development <linux-ext4@vger.kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix inode_table test in ext234_check_descriptors
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: fallocate syscall interface defficiency
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext[234]_check_descriptors sanity checks block group descriptor geometry
-at mount time, testing whether the block bitmap, inode bitmap, and
-inode table reside wholly within the blockgroup.  However, the inode
-table test is off by one so that if the last block in the inode table
-resides on the last block of the block group, the test incorrectly 
-fails.  This is because it tests the last block as (start + length)
-rather than (start + length - 1).
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-This can be seen by trying to mount a filesystem made such as:
- mkfs.ext2 -F -b 1024 -m 0 -g 256 -N 3744 fsfile 1024
-which yields:
- EXT2-fs error (device loop0): ext2_check_descriptors: Inode table for group 0 not in group (block 101)!
- EXT2-fs: group descriptors corrupted!
+The fallocate syscall returns ENOSYS in case the filesystem does not
+support the operation and expects the userlevel code to fill in.  This
+is good in concept.
 
-There is a similar bug in e2fsprogs, patch already sent for that.
+The problem is that the libc code for old kernels should be able to
+distinguish the case where the syscall is not at all available vs not
+functioning for a specific mount point.  As is this is not possible and
+we always have to invoke the syscall even if the kernel doesn't support it.
 
-(I wonder if inside(), outside(), and/or in_range() should someday be
-used in this and other tests throughout the ext filesystems...)
+I suggest the following patch (and yes, Al, you need a mailer which
+automatically removes "- " before leading dashes).  Using EOPNOTSUPP is
+IMO the right thing to do.
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+- --- fs/open.c	2007-07-18 20:25:41.000000000 -0700
++++ fs/open.c-new	2007-07-23 10:17:17.000000000 -0700
+@@ -403,7 +403,7 @@
+ 	if (inode->i_op && inode->i_op->fallocate)
+ 		ret = inode->i_op->fallocate(inode, mode, offset, len);
+ 	else
+- -		ret = -ENOSYS;
++		ret = -EOPNOTSUPP;
 
-Index: linux-2.6.22-rc4/fs/ext2/super.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext2/super.c
-+++ linux-2.6.22-rc4/fs/ext2/super.c
-@@ -579,7 +579,7 @@ static int ext2_check_descriptors (struc
- 			return 0;
- 		}
- 		if (le32_to_cpu(gdp->bg_inode_table) < first_block ||
--		    le32_to_cpu(gdp->bg_inode_table) + sbi->s_itb_per_group >
-+		    le32_to_cpu(gdp->bg_inode_table) + sbi->s_itb_per_group - 1 >
- 		    last_block)
- 		{
- 			ext2_error (sb, "ext2_check_descriptors",
-Index: linux-2.6.22-rc4/fs/ext3/super.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext3/super.c
-+++ linux-2.6.22-rc4/fs/ext3/super.c
-@@ -1211,7 +1211,7 @@ static int ext3_check_descriptors (struc
- 			return 0;
- 		}
- 		if (le32_to_cpu(gdp->bg_inode_table) < first_block ||
--		    le32_to_cpu(gdp->bg_inode_table) + sbi->s_itb_per_group >
-+		    le32_to_cpu(gdp->bg_inode_table) + sbi->s_itb_per_group - 1 >
- 		    last_block)
- 		{
- 			ext3_error (sb, "ext3_check_descriptors",
-Index: linux-2.6.22-rc4/fs/ext4/super.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/super.c
-+++ linux-2.6.22-rc4/fs/ext4/super.c
-@@ -1269,7 +1269,7 @@ static int ext4_check_descriptors (struc
- 		}
- 		inode_table = ext4_inode_table(sb, gdp);
- 		if (inode_table < first_block ||
--		    inode_table + sbi->s_itb_per_group > last_block)
-+		    inode_table + sbi->s_itb_per_group - 1 > last_block)
- 		{
- 			ext4_error (sb, "ext4_check_descriptors",
- 				    "Inode table for group %d"
+ out_fput:
+ 	fput(file);
 
 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFGpOPx2ijCOnn/RHQRAl4aAKC0TtQ65aBGhORbnniQg9lJwoWiQgCfT2B7
+BGgDLLcTgGsd1I9HMRo/+z4=
+=G5y6
+-----END PGP SIGNATURE-----
