@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbXGWPOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbXGWPTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbXGWPOd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 11:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXGWPOZ
+	id S1756807AbXGWPTj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 11:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbXGWPTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 11:14:25 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42163 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750977AbXGWPOZ (ORCPT
+	Mon, 23 Jul 2007 11:19:32 -0400
+Received: from outbound-mail-43.bluehost.com ([69.89.18.12]:45984 "HELO
+	outbound-mail-43.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750727AbXGWPTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 11:14:25 -0400
-Date: Mon, 23 Jul 2007 16:47:52 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: James.Bottomley@SteelEye.com, jens.axboe@oracle.com,
-       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
-Subject: Re: [patch] drivers/scsi/scsi_sysfs.c:718: warning: unused
-	variable `rq'
-Message-ID: <20070723144752.GJ26212@stusta.de>
-References: <20070723143637.GB23448@slug>
+	Mon, 23 Jul 2007 11:19:31 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: MTRR Patch still applies to 2.6.22-rc7.
+Date: Mon, 23 Jul 2007 08:19:29 -0700
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0707030659380.21706@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0707030659380.21706@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070723143637.GB23448@slug>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200707230819.29246.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 04:36:38PM +0200, Frederik Deweerdt wrote:
-> Hi James,
-> 
-> A compile of the latest git on arm triggers the following warning:
->   CC [M]  drivers/scsi/scsi_sysfs.o
->   drivers/scsi/scsi_sysfs.c: In function `scsi_sysfs_add_sdev':
->   drivers/scsi/scsi_sysfs.c:718: warning: unused variable `rq'
-> 
-> The following patch kills the intermediary variable.
-> 
-> Regards,
-> Frederik
-> 
-> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-> 
-> diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-> index 34cdce6..9e5cc4f 100644
-> --- a/drivers/scsi/scsi_sysfs.c
-> +++ b/drivers/scsi/scsi_sysfs.c
-> @@ -715,7 +715,6 @@ static int attr_add(struct device *dev, struct device_attribute *attr)
->  int scsi_sysfs_add_sdev(struct scsi_device *sdev)
->  {
->  	int error, i;
-> -	struct request_queue *rq = sdev->request_queue;
->  
->  	if ((error = scsi_device_set_state(sdev, SDEV_RUNNING)) != 0)
->  		return error;
-> @@ -736,7 +735,8 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
->  	 * released by the sdev_class .release */
->  	get_device(&sdev->sdev_gendev);
->  
-> -	error = bsg_register_queue(rq, &sdev->sdev_gendev, NULL);
-> +	error = bsg_register_queue(sdev->request_queue,
-> +				   &sdev->sdev_gendev, NULL);
->  
->  	if (error)
->  		sdev_printk(KERN_INFO, sdev,
+On Tuesday, July 3, 2007 4:00:07 am Justin Piszcz wrote:
+> Incase anyone is interested:
+>
+> p34:/usr/src/linux-2.6.22-rc7# patch -p1 < ../mtrr-v3.patch
+> patching file Documentation/kernel-parameters.txt
+> Hunk #1 succeeded at 548 (offset -5 lines).
+> patching file arch/i386/kernel/cpu/mtrr/generic.c
+> Hunk #2 succeeded at 85 (offset 1 line).
+> patching file arch/i386/kernel/cpu/mtrr/if.c
+> patching file arch/i386/kernel/cpu/mtrr/main.c
+> patching file arch/i386/kernel/cpu/mtrr/mtrr.h
+> patching file arch/x86_64/kernel/bugs.c
+> patching file arch/x86_64/kernel/setup.c
+> patching file include/asm-x86_64/mtrr.h
+> p34:/usr/src/linux-2.6.22-rc7#
 
-A better solution would be to make the dummy bsg_{,un}register_queue() 
-for the CONFIG_BLK_DEV_BSG=n case static inline's.
+Just a quick update on this Justin (thanks again for testing).  This patch 
+*was* scheduled for 2.6.23 and it almost snuck upstream via Andi's tree, but 
+his testing uncovered a problem at the last minute on certain AMD machines, 
+so I'll have to track down that bug before we can push it.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Jesse
