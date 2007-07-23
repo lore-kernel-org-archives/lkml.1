@@ -1,63 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934862AbXGWUST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935098AbXGWUS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934862AbXGWUST (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756285AbXGWUSL
+	id S935098AbXGWUS4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763471AbXGWUSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:18:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:37445 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755165AbXGWUSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:18:10 -0400
-Message-ID: <46A50CB5.5020006@goop.org>
-Date: Mon, 23 Jul 2007 13:16:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Kevin Lloyd <linux@sierrawireless.com>
-CC: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: 2.6.22+: BUG: sleeping function called from invalid context at /home/jeremy/hg/xen/paravirt/linux/drivers/usb/core/urb.c:524,in_atomic():1,
- irqs_disabled():0
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
+	Mon, 23 Jul 2007 16:18:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59588 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762365AbXGWUSm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 16:18:42 -0400
+Date: Mon, 23 Jul 2007 13:18:41 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: Ethan Solomita <solo@google.com>
+Cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@google.com>
+Subject: Re: [PATCH 0/6] cpuset aware writeback
+Message-ID: <20070723131841.02c9b109@schroedinger.engr.sgi.com>
+In-Reply-To: <469D3342.3080405@google.com>
+References: <469D3342.3080405@google.com>
+Organization: Silicon Graphics, Inc.
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I get this when suspending.  The kernel is 2.6.22+recent git (just before -rc1).
+On Tue, 17 Jul 2007 14:23:14 -0700
+Ethan Solomita <solo@google.com> wrote:
 
-usb 2-1: USB disconnect, address 3
-BUG: sleeping function called from invalid context at /home/jeremy/hg/xen/paravirt/linux/drivers/usb/core/urb.c:524
-in_atomic():1, irqs_disabled():0
-1 lock held by khubd/207:
- #0:  (&table_lock){--..}, at: [<f89fba38>] usb_serial_put+0x13/0x2c [usbserial]
- [<c0109162>] show_trace_log_lvl+0x1a/0x2f
- [<c0109bf8>] show_trace+0x12/0x14
- [<c0109c10>] dump_stack+0x16/0x18
- [<c01247b7>] __might_sleep+0xea/0xf1
- [<c02cd7a2>] usb_kill_urb+0x1a/0xc7
- [<f89e7203>] sierra_shutdown+0x5d/0x9c [sierra]
- [<f89fbb5a>] destroy_serial+0x45/0x10a [usbserial]
- [<c0219a2f>] kref_put+0x63/0x71
- [<f89fba44>] usb_serial_put+0x1f/0x2c [usbserial]
- [<f89fbf00>] usb_serial_disconnect+0x79/0xa6 [usbserial]
- [<c02d06df>] usb_unbind_interface+0x47/0x98
- [<c02925f2>] __device_release_driver+0x74/0x90
- [<c02929e0>] device_release_driver+0x30/0x47
- [<c0291f81>] bus_remove_device+0x73/0x82
- [<c0290650>] device_del+0x208/0x27e
- [<c02cdf2a>] usb_disable_device+0x5f/0xbc
- [<c02ca497>] usb_disconnect+0x95/0x12f
- [<c02caba8>] hub_thread+0x377/0xa57
- [<c013cb7f>] kthread+0x3b/0x64
- [<c0108d27>] kernel_thread_helper+0x7/0x10
- =======================
-sierra3 ttyUSB0: Sierra USB modem (3 port) converter now disconnected from ttyUSB0
-sierra3 ttyUSB1: Sierra USB modem (3 port) converter now disconnected from ttyUSB1
-sierra3 ttyUSB2: Sierra USB modem (3 port) converter now disconnected from ttyUSB2
-sierra 2-1:1.0: device disconnected
+> These patches are mostly unchanged from Chris Lameter's original
+> changelist posted previously to linux-mm.
 
-	J
-
+Thanks for keeping these patches up to date. Add you signoff if you
+did modifications to a patch. Also include the description of the tests
+in the introduction to the patchset.
