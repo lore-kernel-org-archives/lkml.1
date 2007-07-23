@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbXGWSdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932628AbXGWSdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932440AbXGWSdD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:33:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765264AbXGWScr
+	id S932628AbXGWSdq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbXGWSdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:32:47 -0400
-Received: from mx1.suse.de ([195.135.220.2]:51621 "EHLO mx1.suse.de"
+	Mon, 23 Jul 2007 14:33:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59804 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764277AbXGWScq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:32:46 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Subject: Re: [PATCH 2/8] i386: bitops: Rectify bogus "Ir" constraints
-Date: Mon, 23 Jul 2007 20:32:28 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
+	id S1760720AbXGWSde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 14:33:34 -0400
+Date: Mon, 23 Jul 2007 20:33:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andrew Morton <akpm@linux-foundation.org>
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <alpine.LFD.0.999.0707231056260.3607@woody.linux-foundation.org> <Pine.LNX.4.64.0707232338260.22796@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <Pine.LNX.4.64.0707232338260.22796@cselinux1.cse.iitk.ac.in>
+Subject: Re: [RFC] Thread Migration Preemption
+Message-ID: <20070723183319.GA28505@elte.hu>
+References: <20070705215152.GA4865@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707232032.28815.ak@suse.de>
+In-Reply-To: <20070705215152.GA4865@Krystal>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 July 2007 20:14:52 Satyam Sharma wrote:
-> On Mon, 23 Jul 2007, Linus Torvalds wrote:
+
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> Thread Migration Preemption
 > 
-> > On Mon, 23 Jul 2007, Satyam Sharma wrote:
-> > >
-> > > * The "I" constraint modifier is applicable only to immediate-value operands,
-> > >   and combining it with "r" is bogus.
-> > 
-> > This is wrong too.
-> > 
-> > The whole point of a "Ir" modifier is to say that the instruction takes 
-> > *either* an "I" or an "r".
+> This patch adds the ability to protect critical sections from 
+> migration to another CPU without disabling preemption.
 > 
-> Yup, sorry about this one, Andi pointed this out earlier. But the "I"
-> must still go I think, for the third reason in that changelog -- it
-> unnecessarily limits the bit offset to 0..31, but (at least from the
-> comment up front in that file) we do allow arbitrarily large @nr (upto
-> 255, of course, these instructions won't take anything greater than that).
+> This will be useful to minimize the amount of preemption disabling for 
+> the -rt patch. [...]
 
+unfortunately this abstraction has a number of fundamental 
+disadvantages. (and hence the -rt patch does not make use of this 
+facility)
 
-As HPA pointed out that would risk not being correctly assembled by at 
-least some binutils versions
+firstly, its effects on load-balancing are quite brutal: it disables 
+migration to another CPU, hence disturbing SMP load-balancing. It also 
+adds an unplannable O(N) overhead into the load-balancer.
 
- 
-> > Andrew - the ones I've looked at were all wrong. Please don't take this 
-> > series.
-> 
-> I think I'll rescind the series anyway, a lot of patches turned out to
-> be wrong -- some due to mis-reading / incorrect gcc docs, others due to
-> other reasons ... this was just something I did thinking of as a cleanup
-> anyway, so I don't intend to push or correct this or anything.
+secondly, it has similar problems as preempt_disable(): it's opaque (not 
+attached to a data structure) and thus it does not truly map the per-CPU 
+data structure in any explicit way. It's little more than a per-task BKL 
+for per-CPU data structures.
 
-cpumask_t/nodemask_t bitmap optimizations would be useful.
+so in -rt we resisted the disable-migration approach from the early days 
+on and are using two approaches to 'map' per-cpu data structures to 
+PREEMPT_RT: firstly the use of PER_CPU_LOCKED data structures (which 
+attach a per-cpu sleeping lock to per_cpu() data structures) - these are 
+relatively easy first-approach conversions. As a second approach, if 
+performance matters, the use of true atomic data structures.
 
--Andi
-
+	Ingo
