@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbXGWLyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbXGWMBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbXGWLyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 07:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbXGWLyH
+	id S1756375AbXGWMBR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 08:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXGWMBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 07:54:07 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:41966 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750748AbXGWLyG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 07:54:06 -0400
-Date: Mon, 23 Jul 2007 13:53:30 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [PATCH] usb/atm: fix Kconfig garbage
-Message-ID: <20070723115329.GH26212@stusta.de>
-References: <20070723065604.GA8525@gollum.tnic>
+	Mon, 23 Jul 2007 08:01:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49067 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752062AbXGWMBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 08:01:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Mon, 23 Jul 2007 14:08:30 +0200
+User-Agent: KMail/1.9.5
+Cc: nigel@nigel.suspend2.net, stern@rowland.harvard.edu, nigel@suspend2.net,
+       jbms@cmu.edu, miltonm@bga.com, ying.huang@intel.com,
+       linux-kernel@vger.kernel.org, david@lang.hm,
+       linux-pm@lists.linux-foundation.org
+References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org> <200707230842.22121.nigel@nigel.suspend2.net> <E1ICv5g-0003oN-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1ICv5g-0003oN-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070723065604.GA8525@gollum.tnic>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200707231408.32051.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 08:56:04AM +0200, Borislav Petkov wrote:
-> Hi there,
+On Monday, 23 July 2007 12:24, Miklos Szeredi wrote:
+> > > The only thing to do is what Rafael has been working on: unfreeze
+> > > things, hope the tasks sort themselves out, and try again.
+> > 
+> > That's what I'm questioning. Is there a more reliable way and we've
+> > just given up too quickly?
 > 
-> I don't know whether this is the proper Kconfig-way to fix this but it works ok here.
+> There obviously _are_ more reliable ways.  A trivial one seems to be
+> to just not require user tasks to finish syscalls.
 > 
-> ----
-> When entered, the menu point "USB DSL modem support" in menuconfig, path [Device Drivers->USB
-> Support] shows no entries but "^@" instead. The following fixes it.
-> 
-> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-> 
-> --
-> --- linux-2.6.23-rc1/drivers/usb/atm/Kconfig.orig	2007-07-23 08:27:29.000000000 +0200
-> +++ linux-2.6.23-rc1/drivers/usb/atm/Kconfig	2007-07-23 08:50:55.000000000 +0200
-> @@ -7,7 +7,8 @@ menu "USB DSL modem support"
->  
->  config USB_ATM
->  	tristate "USB DSL modem support"
-> -	depends on USB && ATM
-> +	depends on USB
-> +	select ATM
->  	select CRC32
->  	default n
->  	help
+> Yeah, stopping user processes outside the kernel is convenient, but
+> there's no fundamental reason why it is the only place where those
+> tasks can be stopped.
 
-This would break the compilation with CONFIG_NET=n.
+The reason is that we want them to "park" in safe places, ie. where there
+are no locks held etc.  Thus, these safe places need to be chosen somehow
+and since they are not marked throughout the code, we choose the obvious
+one. :-)
 
-> Regards/Gruß,
->     Boris.
+> And there are very fundamental reasons to _not_ require this.  Not
+> just in the fuse case, but in any case where a syscall requires
+> another user task to run before it can be finished (e.g. NFS over
+> OpenVPN).
 
-cu
-Adrian
+Yeah.  Mark the safe places for us and we'll use them.
+
+Greetings,
+Rafael
+
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+"Premature optimization is the root of all evil." - Donald Knuth
