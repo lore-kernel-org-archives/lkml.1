@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764342AbXGWNhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbXGWNkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764342AbXGWNhF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 09:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756503AbXGWNgv
+	id S1760771AbXGWNkF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 09:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbXGWNjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 09:36:51 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6774 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756790AbXGWNgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 09:36:50 -0400
-Date: Mon, 23 Jul 2007 15:37:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Kyle Moffett <mrlinuxman@mac.com>, Andrew Morton <akpm@osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Message-ID: <20070723133704.GN11657@kernel.dk>
-References: <20070721203819.GA10706@mail.linbit.com> <20070722213202.1f5d1cab.mrlinuxman@mac.com> <20070723133202.GB23495@mail.linbit.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070723133202.GB23495@mail.linbit.com>
+	Mon, 23 Jul 2007 09:39:55 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45697 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753828AbXGWNjz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 09:39:55 -0400
+Date: Mon, 23 Jul 2007 14:46:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "jidong xiao" <jidong.xiao@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: What does irq_canonicalize mean?
+Message-ID: <20070723144647.1c232ff9@the-village.bc.nu>
+In-Reply-To: <4104961b0707230612l7250489dk6064b9cd2170bfaf@mail.gmail.com>
+References: <4104961b0707230612l7250489dk6064b9cd2170bfaf@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23 2007, Lars Ellenberg wrote:
-> > +/* THINK maybe we actually want to use the default "event/%s" worker threads
-> > + * or similar in linux 2.6, which uses per cpu data and threads.
-> > + *
-> > + * To be general, this might need a spin_lock member.
-> > + * For now, please use the mdev->req_lock to protect list_head,
-> > + * see drbd_queue_work below.
-> > + */
-> > +struct drbd_work_queue {
-> > +       struct list_head q;
-> > +       struct semaphore s; /* producers up it, worker down()s it */
-> > +       spinlock_t q_lock;  /* to protect the list. */
-> > +};
-> > 
-> > Umm, how about fixing this to actually use proper workqueues or something
-> > instead of this open-coded mess?
-> 
-> unlikely to happen "right now".
-> but it is on our todo list...
+On Mon, 23 Jul 2007 21:12:22 +0800
+"jidong xiao" <jidong.xiao@gmail.com> wrote:
 
-But stuff like that is definitely a merge show stopper, jfyi.
+> I found this function, inside include/asm-i386/irq.h or
+> include/asm-x86_64/irq.h,
 
--- 
-Jens Axboe
-
+ISA bus interrupt 2 is remapped to 9 on 16bit PC ISA bus platforms. Thus
+the user idea of "IRQ 2" is different to the hardware one
