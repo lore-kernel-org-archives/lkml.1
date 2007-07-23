@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934634AbXGWUQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934862AbXGWUST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934634AbXGWUQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbXGWUQs
+	id S934862AbXGWUST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756285AbXGWUSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:16:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43542 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753769AbXGWUQr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:16:47 -0400
-Date: Mon, 23 Jul 2007 13:15:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       "Greg Ungerer" <gerg@snapgear.com>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       "Paul Mundt" <lethal@linux-sh.org>, "Tim Bird" <tim.bird@am.sony.com>,
-       bryan.wu@analog.com
-Subject: Re: early_printk accessing __log_buf
-Message-Id: <20070723131553.2943861f.akpm@linux-foundation.org>
-In-Reply-To: <200707231419.13182.rgetz@blackfin.uclinux.org>
-References: <200707181756.44074.rgetz@blackfin.uclinux.org>
-	<200707182358.24984.rgetz@blackfin.uclinux.org>
-	<8bd0f97a0707221650r3bab822fq2d457d19eba1c8eb@mail.gmail.com>
-	<200707231419.13182.rgetz@blackfin.uclinux.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Jul 2007 16:18:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:37445 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755165AbXGWUSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 16:18:10 -0400
+Message-ID: <46A50CB5.5020006@goop.org>
+Date: Mon, 23 Jul 2007 13:16:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Kevin Lloyd <linux@sierrawireless.com>
+CC: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: 2.6.22+: BUG: sleeping function called from invalid context at /home/jeremy/hg/xen/paravirt/linux/drivers/usb/core/urb.c:524,in_atomic():1,
+ irqs_disabled():0
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 14:19:12 -0400
-Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+I get this when suspending.  The kernel is 2.6.22+recent git (just before -rc1).
 
-> On Sun 22 Jul 2007 19:50, Mike Frysinger pondered:
-> >
-> > i think the attached two functions account for what Robin and Andrew
-> > were thinking ...
-> 
-> A note about why/when grab_lock would be set to zero (pre-kernel init, or 
-> OOPs) might be nice. 
+usb 2-1: USB disconnect, address 3
+BUG: sleeping function called from invalid context at /home/jeremy/hg/xen/paravirt/linux/drivers/usb/core/urb.c:524
+in_atomic():1, irqs_disabled():0
+1 lock held by khubd/207:
+ #0:  (&table_lock){--..}, at: [<f89fba38>] usb_serial_put+0x13/0x2c [usbserial]
+ [<c0109162>] show_trace_log_lvl+0x1a/0x2f
+ [<c0109bf8>] show_trace+0x12/0x14
+ [<c0109c10>] dump_stack+0x16/0x18
+ [<c01247b7>] __might_sleep+0xea/0xf1
+ [<c02cd7a2>] usb_kill_urb+0x1a/0xc7
+ [<f89e7203>] sierra_shutdown+0x5d/0x9c [sierra]
+ [<f89fbb5a>] destroy_serial+0x45/0x10a [usbserial]
+ [<c0219a2f>] kref_put+0x63/0x71
+ [<f89fba44>] usb_serial_put+0x1f/0x2c [usbserial]
+ [<f89fbf00>] usb_serial_disconnect+0x79/0xa6 [usbserial]
+ [<c02d06df>] usb_unbind_interface+0x47/0x98
+ [<c02925f2>] __device_release_driver+0x74/0x90
+ [<c02929e0>] device_release_driver+0x30/0x47
+ [<c0291f81>] bus_remove_device+0x73/0x82
+ [<c0290650>] device_del+0x208/0x27e
+ [<c02cdf2a>] usb_disable_device+0x5f/0xbc
+ [<c02ca497>] usb_disconnect+0x95/0x12f
+ [<c02caba8>] hub_thread+0x377/0xa57
+ [<c013cb7f>] kthread+0x3b/0x64
+ [<c0108d27>] kernel_thread_helper+0x7/0x10
+ =======================
+sierra3 ttyUSB0: Sierra USB modem (3 port) converter now disconnected from ttyUSB0
+sierra3 ttyUSB1: Sierra USB modem (3 port) converter now disconnected from ttyUSB1
+sierra3 ttyUSB2: Sierra USB modem (3 port) converter now disconnected from ttyUSB2
+sierra 2-1:1.0: device disconnected
 
-Definitely.
-
-The pre-kernel init shouldn't be an issue: logbuf_lock is initialised at
-compile time.
-
-At oops time we could possibly use oops_in_progress to work out whether to
-avoid taking the lock.  That's not terribly nice, but nor is it nice for
-callers to know about printk internals.
-
-> Or - remove it - and tell people they should be using do_syslog interface in 
-> a "normal" kernel environment (where log_end or log_start can be updated).
-
-You can't (or al least, shouldn't) use do_syslog() from within kernel code?
-
-> Either would be fine with me. Andrew?
-
-The interface is pretty bad, IMO:
-
- /*
-+ * Read the log buffer into the supplied buffer.  The len option
-+ * tells whether to copy from the beginning (> 0), the end (< 0), or
-+ * just query the number of existing chars.   The number of bytes
-+ * actually copied is returned.
-+ */
-+int log_buf_read(int len, char *buf, int grab_lock)
-
-The magical interpretation of len isn't very nice.  This code would be
-simpler if it did not attempt to read more than one char at a time.  It
-will be plenty fast enough.
-
-If the caller knows the length of the buffer, why is there any need for the
-index-from-the-end function?
-
-I think a sufficient implementation is
-
-	int log_buf_len(void);
-
-and
-
-	int log_buf_read(int index);
-
-which will return the character at `index', or -1 if `index' is out of
-bounds.
+	J
 
