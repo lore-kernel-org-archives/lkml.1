@@ -1,107 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXGWDOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933248AbXGWD07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933602AbXGWDOQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 23:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760281AbXGWDOE
+	id S933248AbXGWD07 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 23:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbXGWD0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 23:14:04 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43020 "EHLO e4.ny.us.ibm.com"
+	Sun, 22 Jul 2007 23:26:50 -0400
+Received: from smtpout.mac.com ([17.250.248.171]:63547 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853AbXGWDOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 23:14:01 -0400
-Date: Sun, 22 Jul 2007 20:13:59 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH -rt] drop spurious rcu unlock
-Message-ID: <20070723031359.GA25590@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1185124958.2573.13.camel@imap.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185124958.2573.13.camel@imap.mvista.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1750853AbXGWD0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 23:26:49 -0400
+In-Reply-To: <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
+References: <20070718235504.GA9601@havoc.gtf.org> <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org> <469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain> <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <BF1FF315-482E-4ABF-8159-881C3426C28C@mac.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [git patches] two warning fixes
+Date: Sun, 22 Jul 2007 23:26:09 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22, 2007 at 10:22:37AM -0700, Daniel Walker wrote:
-> 
-> Strange rcu_read_unlock() which causes a imbalance, and boot hang.. I
-> didn't notice a reason for it, and removing it allows my system to make
-> progress.
-> 
-> This should go into the preempt-realtime-sched.patch
+On Jul 19, 2007, at 14:04:29, Linus Torvalds wrote:
+> On Thu, 19 Jul 2007, Krzysztof Halasa wrote:
+>> Jeff Garzik <jeff@garzik.org> writes:
+>>> My overall goal is killing useless warnings that continually  
+>>> obscure real ones.
+>>
+>> Precisely, the goal should be to make must_check (and similar  
+>> things) warn only in real cases.
+>
+> .. the problem with that mentality is that it's not how people work.
+>
+> People shut up warnings by adding code.
+>
+> Adding code tends to add bugs.
+>
+> People don't generally think "maybe that warning was bogus".
+>
+> More people *should* generally ask themselves: "was the warning  
+> worth it?" and then, if the answer is "no", they shouldn't add  
+> code, they should remove the thing that causes the warning in the  
+> first place.
+>
+> For example, for compiler options, the correct thign is often to  
+> just say "that option was broken", and not use "-fsign-warning",  
+> for example. We've literally have had bugs *added* because people  
+> "fixed" a sign warning.  More than once, in fact.
+>
+> Every time you see a warning, you should ask yourself: is the  
+> warning interesting, correct and valid? And if it isn't all three,  
+> then the problem is whatever *causes* the warning, not the code  
+> itself.
 
-Strange.  I have been getting boots, kernbench runs, and rcutorture
-tests despite its being present.  Though perhaps it was the cause
-of the (non-fatal) "scheduling while atomic" I got during a kernbench
-run -- I was assuming it was my fault somehow.  Non-reproducible.  :-/
+I agree that there are a fair number of things (like the sysfs calls)  
+that should just WARN() when they hit an error, but I also think that  
+we're currently missing a *lot* of __must_check's that we should  
+have.  For example a friend of mine was having problems with an HDAPS  
+patch where it just kind of hung.  Turns out the problem was that the  
+code blithely called scsi_execute_async() and then put itself to  
+sleep on a completion... except scsi_execute_async() returned failure  
+and the completion would never complete.
 
-						Thanx, Paul
+For instance, I would bet that a fair number of the other int- 
+returning functions in include/scsi/scsi_device.h want __must_check  
+on them.  That said, the person adding the __must_check should be  
+REQUIRED to do at least a superficial audit of the code.
 
-BUG: sleeping function called from invalid context cc1(29651) at kernel/rtmutex.c:636
-in_atomic():1 [00000001], irqs_disabled():0
- [<c0119f50>] __might_sleep+0xf3/0xf9
- [<c031600e>] __rt_spin_lock+0x21/0x3c
- [<c014102c>] get_zone_pcp+0x20/0x29
- [<c0141a40>] free_hot_cold_page+0xdc/0x167
- [<c013a3f4>] add_preempt_count+0x12/0xcc
- [<c0110d92>] pgd_dtor+0x0/0x1
- [<c015d865>] quicklist_trim+0xb7/0xe3
- [<c0111025>] check_pgt_cache+0x19/0x1c
- [<c0148df5>] free_pgtables+0x54/0x12c
- [<c013a3f4>] add_preempt_count+0x12/0xcc
- [<c014e5be>] unmap_region+0xeb/0x13b
-BUG: scheduling while atomic: cc1/0x00000002/29745, CPU#0
- [<c03146c8>] __sched_text_start+0xb0/0x4fe
- [<c0116432>] try_to_wake_up+0x31b/0x326
- [<c013a3f4>] add_preempt_count+0x12/0xcc
- [<c013a3f4>] add_preempt_count+0x12/0xcc
- [<c0314bfc>] schedule+0xe6/0x100
- [<c03158db>] rt_spin_lock_slowlock+0xc5/0x145
- [<c0316027>] __rt_spin_lock+0x3a/0x3c
- [<c014102c>] get_zone_pcp+0x20/0x29
- [<c0141a40>] free_hot_cold_page+0xdc/0x167
- [<c013a3f4>] add_preempt_count+0x12/0xcc
- [<c0110d92>] pgd_dtor+0x0/0x1
- [<c015d865>] quicklist_trim+0xb7/0xe3
- [<c0111025>] check_pgt_cache+0x19/0x1c
- [<c0148df5>] free_pgtables+0x54/0x12c
- [<c013a3f4>] add_preempt_count+0x12/0xcc
- [<c014e5be>] unmap_region+0xeb/0x13b
- [<c014e861>] do_munmap+0xea/0xff
- [<c014e8a7>] sys_munmap+0x31/0x40
- [<c010276a>] syscall_call+0x7/0xb
- [<c0310000>] _shift_data_right_pages+0xb9/0xd1
- =======================
----------------------------
-| preempt count: 00000002 ]
-| 2-level deep critical section nesting:
-----------------------------------------
-.. [<c015d7c8>] .... quicklist_trim+0x1a/0xe3
-.....[<00000000>] ..   ( <= _stext+0x3fefff50/0x14)
-.. [<c031462b>] .... __sched_text_start+0x13/0x4fe
-.....[<00000000>] ..   ( <= _stext+0x3fefff50/0x14)
+I'd propose a few simple rules:
+   (1) If it can return the only pointer to freshly-allocated pointer  
+then it's __must_check
+   (2) If it can return a hard error which the caller must handle  
+specially, then it's __must_check
+   (3) If the only possible error is a kernel bug then make the damn  
+thing return void and give it a big fat WARN() when it fails.
+   (4) For any other case (or if you are unsure), don't flag it.
 
-> Signed-Off-By: Daniel Walker <dwalker@mvista.com>
-> 
-> Index: linux-2.6.22.1/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.22.1.orig/kernel/sched.c	2007-07-22 16:47:37.000000000 +0000
-> +++ linux-2.6.22.1/kernel/sched.c	2007-07-22 16:16:48.000000000 +0000
-> @@ -4900,7 +4900,6 @@ asmlinkage long sys_sched_yield(void)
->  	 * no need to preempt or enable interrupts:
->  	 */
->  	spin_unlock_no_resched(&rq->lock);
-> -	rcu_read_unlock();
-> 
->  	__schedule();
-> 
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+And of course the burden of proof is on the person trying to add the  
+__must_check.
+
+Cheers,
+Kyle Moffett
+
