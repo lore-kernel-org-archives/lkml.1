@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbXGWV5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbXGWWAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932580AbXGWV5g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbXGWV53
+	id S1752374AbXGWWAg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 18:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXGWWA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:57:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51601 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754039AbXGWV51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:57:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFC] [PATCH 0/5] Dynamically allocated pageflags.
-Date: Tue, 24 Jul 2007 00:05:21 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <200707232305.12364.nigel@nigel.suspend2.net>
-In-Reply-To: <200707232305.12364.nigel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="windows-1252"
+	Mon, 23 Jul 2007 18:00:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37617 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750704AbXGWWAZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 18:00:25 -0400
+Date: Mon, 23 Jul 2007 14:59:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: caglar@pardus.org.tr
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] drivers/char/hpet.c: integer constant is too large for
+ "long" type
+Message-Id: <20070723145940.a99b0324.akpm@linux-foundation.org>
+In-Reply-To: <200707211419.47680.caglar@pardus.org.tr>
+References: <200707211419.47680.caglar@pardus.org.tr>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707240005.22163.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 21 Jul 2007 14:19:44 +0300
+"S.__a__lar Onur" <caglar@pardus.org.tr> wrote:
 
-On Monday, 23 July 2007 15:05, Nigel Cunningham wrote:
-> Hi all.
+> Following trivial patch silents
 > 
-> As we all know, pageflags have been a scarce resource for a while now. These 
-> patches seek to help address that issue by adding support for a new type 
-> of 'dynamically allocated' pageflag.
+> drivers/char/hpet.c:76: warning: integer constant is too large for "long" type
 > 
-> The basic idea is that we use per node & zone bitmaps built out of order zero 
-> allocations, to replace bits in page->flags. Bitmaps can be sparse, being 
-> populated when a bit on the page is set, and returning zero for all bits in 
-> sparse pages. Untested hotplug support is included.
+> warning (with gcc-3.4.6)
 > 
-> This method of storing the data does of course come with a performance hit. 
-> I've included some simple timing loops in #ifdef'd code that help quantify 
-> that.
+> Signed-off-by: S.__a__lar Onur <caglar@pardus.org.tr>
+>  
+>  drivers/char/hpet.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Interestingly, the new implementation is actually quicker under some 
-> circumstances. In cases where the usage pattern involves operating on the 
-> flags for a number of pages in succession, the hit involved in getting the 
-> struct pages from main memory appears to be greater than that involved in 
-> calculating which unsigned long and bit to test.
-> 
-> Tested only on UP (x86_64) so far.
+> diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+> index ba0e74a..23fadf5 100644
+> --- a/drivers/char/hpet.c
+> +++ b/drivers/char/hpet.c
+> @@ -73,7 +73,7 @@ static struct clocksource clocksource_hpet = {
+>          .name           = "hpet",
+>          .rating         = 250,
+>          .read           = read_hpet,
+> -        .mask           = 0xffffffffffffffff,
+> +        .mask           = 0xffffffffffffffffLL,
+>          .mult           = 0, /*to be caluclated*/
+>          .shift          = 10,
+>          .flags          = CLOCK_SOURCE_IS_CONTINUOUS,
 
-How does it compare to the memory bitmaps used by swsusp, defined in
-kernel/power/snapshot.c?
+hm, well, this does assume that cycle_t is implemented as long long (or
+unsigned long long, actually).  Which in turn assumes that u64 is
+implemented as [unsigned] long long.
 
-Greetings,
-Rafael
+Not all architectures use unsigned long long for u64: some use unsigned
+long.  They'll probably be OK with this change but I think I'll convert
+that into plain old "-1", which just works everywhere.
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
