@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbXGWGPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbXGWGQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760299AbXGWGPa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 02:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbXGWGPX
+	id S1760700AbXGWGQu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 02:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbXGWGQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 02:15:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56265 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755484AbXGWGPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 02:15:21 -0400
+	Mon, 23 Jul 2007 02:16:41 -0400
+Received: from pcls1.std.com ([192.74.137.141]:46060 "EHLO TheWorld.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753872AbXGWGQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 02:16:41 -0400
+From: Alan Curry <pacman@TheWorld.com>
+Message-Id: <200707230616.l6N6GaPg1212004@shell01.TheWorld.com>
+Subject: keyboard not found in 2.6.22.1
+To: linux-kernel@vger.kernel.org
+Date: Mon, 23 Jul 2007 02:16:36 -0400 (EDT)
+X-Mailer: ELM [version 2.5 PL2]
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Move --build-id option
-In-Reply-To: Roland McGrath's message of  Sunday, 22 July 2007 23:01:55 -0700 <20070723060155.2B3824D0489@magilla.localdomain>
-X-Fcc: ~/Mail/linus
-X-Shopping-List: (1) Envious miscreant warriors
-   (2) Trenchant silent exclusions
-   (3) Hilarious penny flossbags
-   (4) Braille Aspersion expectations
-   (5) Insipid ripping-cats
-Message-Id: <20070723061446.5DAAC4D0489@magilla.localdomain>
-Date: Sun, 22 Jul 2007 23:14:46 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When I boot 2.6.22.1 on my PegasosPPC, the PS/2 keyboard is not detected. It
+works in 2.6.21.5. Both kernels have:
+CONFIG_KEYBOARD_ATKBD=y
+CONFIG_SERIO_I8042=y
 
-My original makefile patch to use ld --build-id wound up using it in too
-many places.  We want it only for the .ko and vmlinux links (and vmlinux
-temporary links that determine the vmlinux layout).
+The 2.6.21.5 kernel logs this stuff during boot:
+  serio: i8042 KBD port at 0x60,0x64 irq 1
+  serio: i8042 AUX port at 0x60,0x64 irq 12
+  input: AT Translated Set 2 keyboard as /class/input/input0
+  atkbd.c: keyboard reset failed on isa0060/serio1
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- Makefile                 |    8 +++-----
- scripts/Makefile.modpost |    4 ++--
- 2 files changed, 5 insertions(+), 7 deletions(-)
+(The "keyboard reset failed" has always been there and the keyboard has
+always worked, it doesn't seem to indicate any actual problem)
 
-diff --git a/Makefile b/Makefile
-index cd47845..fe6c5dd 100644
---- a/Makefile
-+++ b/Makefile
-@@ -518,8 +518,6 @@ CFLAGS += $(call cc-option,-Wno-pointer-sign,)
- # Use --build-id when available.
- LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
- 			      $(call ld-option, -Wl$(comma)--build-id,))
--LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
--LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
- 
- # Default kernel image to build when no specific target is given.
- # KBUILD_IMAGE may be overruled on the command line or
-@@ -616,9 +614,9 @@ export KBUILD_VMLINUX_OBJS := $(vmlinux-all)
- # Rule to link vmlinux - also used during CONFIG_KALLSYMS
- # May be overridden by arch/$(ARCH)/Makefile
- quiet_cmd_vmlinux__ ?= LD      $@
--      cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
--      -T $(vmlinux-lds) $(vmlinux-init)                          \
--      --start-group $(vmlinux-main) --end-group                  \
-+      cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_BUILD_ID) $(LDFLAGS_vmlinux) \
-+      -o $@ -T $(vmlinux-lds) $(vmlinux-init)		\
-+      --start-group $(vmlinux-main) --end-group		\
-       $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o FORCE ,$^)
- 
- # Generate new vmlinux version
-diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index c6fcc59..a86a3b1 100644
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -97,8 +97,8 @@ targets += $(modules:.ko=.mod.o)
- 
- # Step 6), final link of the modules
- quiet_cmd_ld_ko_o = LD [M]  $@
--      cmd_ld_ko_o = $(LD) $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
--			  $(filter-out FORCE,$^)
-+      cmd_ld_ko_o = $(LD) $(LDFLAGS) $(LDFLAGS_BUILD_ID) $(LDFLAGS_MODULE) \
-+      		    	  -o $@ $(filter-out FORCE,$^)
- 
- $(modules): %.ko :%.o %.mod.o FORCE
- 	$(call if_changed,ld_ko_o)
+The 2.6.22.1 doesn't log anything like those 4 lines. The only new thing that
+shows up in 2.6.22.1 is
+  console handover: boot [udbg0] -> real [tty0]
+
+Aside from those lines, there's an exact line-for-line correspondence between
+the boot logs.
+
+I can log in over the network while running the broken kernel, but I'm not
+sure what information I should be gathering once I'm in there.
+
+In my attempt to understand the workings of input/serio/i8042.c, the only
+result so far is that I noticed an unimportant typo in the 2.6.22 patch
+("readinng" in the comment above i8042_toggle_aux).
+
