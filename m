@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbXGWQ5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbXGWRAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762195AbXGWQ5H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 12:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbXGWQ4z
+	id S1760720AbXGWRAR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 13:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbXGWRAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 12:56:55 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:59639 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755672AbXGWQ4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 12:56:54 -0400
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: Linus 2.6.23-rc1
-Date: Mon, 23 Jul 2007 19:57:00 +0300
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 23 Jul 2007 13:00:05 -0400
+Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:38247 "EHLO
+	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753443AbXGWRAE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 13:00:04 -0400
+X-Greylist: delayed 1392 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jul 2007 13:00:04 EDT
+Date: Mon, 23 Jul 2007 18:36:49 +0200
+From: Jan Hubicka <jh@suse.cz>
+To: Andi Kleen <ak@suse.de>
+Cc: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, len.brown@intel.com
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <46A4DACC.3090007@googlemail.com>
-In-Reply-To: <46A4DACC.3090007@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, jh@suse.cz
+Subject: Re: [PATCH 2/8] i386: bitops: Rectify bogus "Ir" constraints
+Message-ID: <20070723163649.GL1758@kam.mff.cuni.cz>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <200707231810.08445.ak@suse.de> <Pine.LNX.4.64.0707232145270.22155@cselinux1.cse.iitk.ac.in> <200707231830.40331.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707231957.00794.ismail@pardus.org.tr>
+In-Reply-To: <200707231830.40331.ak@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 July 2007 19:43:56 Gabriel C wrote:
-> I get some ACPI Exception.
->
-> ...
->
-> [   33.075429] ACPI Exception (processor_throttling-0084): AE_NOT_FOUND,
-> Evaluating _PTC [20070126] [   33.075437] ACPI Exception
-> (processor_throttling-0147): AE_NOT_FOUND, Evaluating _TSS [20070126] [  
-> 33.075490] ACPI Exception (processor_throttling-0084): AE_NOT_FOUND,
-> Evaluating _PTC [20070126] [   33.075497] ACPI Exception
-> (processor_throttling-0147): AE_NOT_FOUND, Evaluating _TSS [20070126] [  
-> 33.075529] ACPI Exception (processor_throttling-0084): AE_NOT_FOUND,
-> Evaluating _PTC [20070126] [   33.075536] ACPI Exception
-> (processor_throttling-0147): AE_NOT_FOUND, Evaluating _TSS [20070126] [  
-> 33.075563] ACPI Exception (processor_throttling-0084): AE_NOT_FOUND,
-> Evaluating _PTC [20070126] [   33.075570] ACPI Exception
-> (processor_throttling-0147): AE_NOT_FOUND, Evaluating _TSS [20070126]
->
+> 
+> > Whoa, thanks for explaining that to me -- I didn't know, obviously. I had
+> > just written a test program that used "Ir" with an automatic variable
+> > defined in the inline function (as is the case with these bitops) and
+> > observed that even when I gave > 32 values, it would still work -- hence
+> > my conclusion.
+> > 
+> > However, the patch still stands, does it not? [ I will modify the
+> > changelog, obviously. ] The thing is that we don't want to limit
+> > @nr to <= 31 in the first place, or am I wrong again? :-)
+> 
+> These bit operations only allow 8 bit immediates, so 0..255 would
+> be correct. N might work from the 4.1 docs, but I don't know if it works 
+> in all old supported gccs (3.2+)
 
-Same here, I was about to blame my holy Vaio, but latest ACPI merge is to 
-blame instead.
+'N' constraint was there pretty much forever, originally intended for
+in/out operands.  It is in 2.95 docs
+http://gcc.gnu.org/onlinedocs/gcc-2.95.3/gcc_16.html#SEC175
 
-Regards,
-ismail
-
--- 
-Perfect is the enemy of good
+Honza
