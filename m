@@ -1,51 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbXGWN5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbXGWN6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbXGWN5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 09:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbXGWN5c
+	id S1758758AbXGWN6t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 09:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXGWN6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 09:57:32 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:5867 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbXGWN5b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 09:57:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XNcQ2zQ6aXWNhgQgCfGosCHnOkqdkfFI+0zMMNR4O3jBHrhlax+awSrVF0a/WLjf/eJFRwKzurmsp2BwscsLgfv8ACRYncHAGwz5bTOz/txvvtxZBB/nWPRHzQwMYN9HlwLKe7wsyJeKTm7SORz7gSpJ3rYCj15QCvld9lcXIgA=
-Message-ID: <625fc13d0707230657r62144bd0i190d9b21a5641429@mail.gmail.com>
-Date: Mon, 23 Jul 2007 08:57:29 -0500
-From: "Josh Boyer" <jwboyer@gmail.com>
-To: "Jan Dittmer" <jdi@l4x.org>
-Subject: Re: alpha, i386,mips,powerpc,ppc,xtensa compile brakage (was Re: Linus 2.6.23-rc1)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <46A45544.8090303@l4x.org>
+	Mon, 23 Jul 2007 09:58:37 -0400
+Received: from thunk.org ([69.25.196.29]:59053 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751345AbXGWN6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 09:58:35 -0400
+Date: Mon, 23 Jul 2007 09:58:32 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: linux-fsdevel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFH] Partition table recovery
+Message-ID: <20070723135832.GD19927@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Rene Herman <rene.herman@gmail.com>, linux-fsdevel@vger.kernel.org,
+	Al Boldi <a1426z@gawab.com>, linux-raid@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <200707200813.03553.a1426z@gawab.com> <46A24846.7050803@gmail.com> <20070722011141.GJ26752@thunk.org> <200707220710.31402.a1426z@gawab.com> <20070722162802.GA20174@thunk.org> <46A46399.5090406@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	 <46A45544.8090303@l4x.org>
+In-Reply-To: <46A46399.5090406@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/23/07, Jan Dittmer <jdi@l4x.org> wrote:
-> # ppc/bamboo_defconfig: broke
->
->    GEN     .version
->    CHK     include/linux/compile.h
->    UPD     include/linux/compile.h
->    CC      init/version.o
->    LD      init/built-in.o
->    LD      .tmp_vmlinux1
-> drivers/built-in.o(.text+0x1ebda): In function `store_uevent':
-> drivers/base/core.c:312: undefined reference to `kobject_actions'
-> drivers/built-in.o(.text+0x1ebe6):drivers/base/core.c:312: undefined reference to `kobject_actions'
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> make: *** [_all] Error 2
+On Mon, Jul 23, 2007 at 10:15:21AM +0200, Rene Herman wrote:
+> On an integrated system like this, do you consider it acceptable to only do 
+> the MS-DOS partitions and not the other types that may be present _inside_ 
+> those partitions? (MINIX subpartitions, BSD slices, ...). I believe those 
+> should really also be done, but this would require keeping more information 
+> again.
 
-This is the HOTPLUG one that GregKH knows about and has a patch for I
-think.  Not PPC specific.
+Well, I'm considering this to be a MBR backup scheme, so Minix and BSD
+slices are legacy systems which are out of scope.  If they are busted
+in the same way as MBR in terms of not having redundant backups of
+critical data, when they have a lot fewer excuses that MBR, and they
+can address that issue in their own way.  The number of Linux users
+that also have Minix and BSD partitions are a vanishingly small number
+in any case.
 
-josh
+> I (very) briefly looked at blkid but unless I'm mistaken blkid needs device 
+> names? The documentation seems to be missing. When scanning the device for 
+> the partition table, we've built a list of partitions with offsets into the 
+> device and it would be nice if we could hand the fd and the offset off to 
+> something directly. If the program has to construct device names itself 
+> there's another truckload of pitfalls right there.
+
+Yeah, good point, I'd have to add that support into blkid.  It's been
+on my todo list, but I just haven't gotten around to it yet.
+
+> It might in fact make sense to just ask the kernel for the partitions on a 
+> device and not bother with scanning anything ourselves. Ie, just walk 
+> sysfs. Would you agree? This siginificantly reduces the risk of things 
+> getting out of sync, both scanning order and implementation.
+
+My concern of sysfs is that #1, it won't work on older kernels since
+you would need to add new fields to backup what we want, and #2, I'm
+still fundamentally distrustful of sysfs because there isn't a bright
+line between what is an exported interface that will never change, and
+something which is considered an "internal implementation detail" that
+can change whenever some kernel hacker feels like it.  (Or when some
+kernel hacker is careless...)  So as far as I'm concerned sysfs is a
+terrible, TERRIBLE way to export a published interface where we
+promise stability to userspace.
+
+So I'd just as soon do this in userspace; after all, the entire
+partition manager (and there are multiple ones; fdisk, sfdisk, gpart,
+etc.) all in userspace, and that needs to be in synch with the kernel
+partition reading code anyway.  So one more userspace implementation
+is in my mind much cleaner than trying to push the needed
+functionality into sysfs, and then hoping against hope that it doesn't
+accidentally change in the future.
+
+						- Ted
