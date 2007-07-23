@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbXGWPlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760024AbXGWPoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760358AbXGWPlk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 11:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbXGWPl3
+	id S1760024AbXGWPoM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 11:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbXGWPn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 11:41:29 -0400
-Received: from sicnat2.emn.fr ([193.54.76.193]:44682 "EHLO ron.emn.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752796AbXGWPl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 11:41:28 -0400
-From: Yoann Padioleau <padator@wanadoo.fr>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Yoann Padioleau <padator@wanadoo.fr>, kernel-janitors@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dev->priv to netdev_priv(dev), drivers/net/tokenring/
-References: <87r6mzmf6q.fsf@wanadoo.fr>
-	<Pine.LNX.4.64.0707231712120.32367@fbirervta.pbzchgretzou.qr>
-Date: Mon, 23 Jul 2007 17:38:39 +0200
-In-Reply-To: <Pine.LNX.4.64.0707231712120.32367@fbirervta.pbzchgretzou.qr>
-	(Jan Engelhardt's message of "Mon, 23 Jul 2007 17:13:07 +0200 (CEST)")
-Message-ID: <87fy3fjfk0.fsf@wanadoo.fr>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 23 Jul 2007 11:43:59 -0400
+Received: from mail.tmr.com ([64.65.253.246]:46149 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752796AbXGWPn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 11:43:58 -0400
+Message-ID: <46A4CCF5.4040402@tmr.com>
+Date: Mon, 23 Jul 2007 11:44:53 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ken Moffat <zarniwhoop@ntlworld.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] what should 'uptime' be on suspend?
+References: <46A0210E.6010207@tmr.com> <20070720171729.GA19935@deepthought> <20070720104215.476f4cc1.randy.dunlap@oracle.com> <20070720175730.GB21550@deepthought> <46A2101D.5020400@tmr.com> <20070721162929.GA13232@deepthought>
+In-Reply-To: <20070721162929.GA13232@deepthought>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@computergmbh.de> writes:
-
-> On Jul 23 2007 15:18, Yoann Padioleau wrote:
+Ken Moffat wrote:
+> On Sat, Jul 21, 2007 at 09:54:37AM -0400, Bill Davidsen wrote:
+>   
+>> So is setting it to a random number considered correct behavior? Any of 
+>> the first three values I mentioned would make sense, but the value I see 
+>> is neither time since resume, time since power-on to do the resume, or 
+>> any of the logical uptime values. That was the whole point of the 
+>> original post, the uptime reported makes no sense at all.
 >>
->>Here is an excerpt of the semantic patch that performs the transformation
->>
->>@@
->>
->>- (T*) dev->priv
->>+ netdev_priv(dev)
+>>     
+>  I assumed you had booted for a short time, suspended, resumed, and
+> then noticed the uptime was longer than time since resume.
 >
-> Note that dev->priv is a void*, and hence does not need casting.
-> So dev->priv may also appear without one.
+>  If you think there is a bug it might help to do a cold boot, at
+> some point note uptime and then immediately suspend, resume some time
+> later, immediately note uptime (including local time), keep it
+> running, and later monitor uptime against local time (i.e. the local
+> time will let you know the change you expect to see in uptime).  You
+> might also want to confirm that the local time is maintained
+> correctly.
+>   
+I resumed this morning, uptime before the suspend was ~4 hours, suspend 
+time was ~30 hours, resume took 76 sec from power-on, uptime was 2m56s. 
+As originally noted, the first time I did this the "uptime" after resume 
+was 6+min. First noted on suspend to ram, this was suspend to disk to 
+see if that changed anything.
 
-Yes you are right. I have shown only an excerpt of the semantic patch.
-Sorry. There is another rule:
+Just an oddity, I guess if I care I can track it myself.
 
-@ rule3 depends on rule1 && !rule1bis @
-struct net_device *dev;
-@@
-
-- dev->priv
-+ netdev_priv(dev)
-
-
-If you look at my patch there is one such case
-
--	struct tok_info *ti = dev->priv;
-+	struct tok_info *ti = netdev_priv(dev);
-
-
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
