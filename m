@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765759AbXGWR6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbXGWR7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765759AbXGWR6h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 13:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758948AbXGWR6a
+	id S933044AbXGWR7m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 13:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761590AbXGWR7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 13:58:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57545 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757968AbXGWR63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 13:58:29 -0400
-Date: Mon, 23 Jul 2007 10:57:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/8] i386: bitops: Rectify bogus "Ir" constraints
-In-Reply-To: <20070723160538.22137.35213.sendpatchset@cselinux1.cse.iitk.ac.in>
-Message-ID: <alpine.LFD.0.999.0707231056260.3607@woody.linux-foundation.org>
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070723160538.22137.35213.sendpatchset@cselinux1.cse.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 23 Jul 2007 13:59:35 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:44075 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757968AbXGWR7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 13:59:34 -0400
+Date: Mon, 23 Jul 2007 20:00:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Alan Modra <amodra@bigpond.net.au>, Roland McGrath <roland@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>,
+       Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org
+Subject: Re: "build-id" changes break sparc64
+Message-ID: <20070723180048.GA8268@uranus.ravnborg.org>
+References: <20070723062759.GB3933@uranus.ravnborg.org> <20070723072613.E3A504D0489@magilla.localdomain> <20070723081435.GA4644@uranus.ravnborg.org> <20070723092559.GA24088@bubble.grove.modra.org> <20070723114936.GH21668@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070723114936.GH21668@ftp.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 23, 2007 at 12:49:36PM +0100, Al Viro wrote:
+> On Mon, Jul 23, 2007 at 06:55:59PM +0930, Alan Modra wrote:
+> > On Mon, Jul 23, 2007 at 10:14:35AM +0200, Sam Ravnborg wrote:
+> > > But I would still like to hear from Alan what the benefits are.
+> > 
+> > See http://sourceware.org/ml/binutils/2004-10/msg00178.html
+> 
+> What does _not_ doing intermediates do to memory footprint of ld(1)
+> and time spent in there?
 
+x86_64 defconfig
 
-On Mon, 23 Jul 2007, Satyam Sharma wrote:
->
-> * The "I" constraint modifier is applicable only to immediate-value operands,
->   and combining it with "r" is bogus.
+rm vmlinux*; time make vmlinux
 
-This is wrong too.
+Vanilla tree: ~7,7 sec
+With single shot ld (Roland's patch): 8,3 secs
 
-The whole point of a "Ir" modifier is to say that the instruction takes 
-*either* an "I" or an "r".
+So as expected slower. As we link twice the cost is ~0,3 sec 
+for a x86_64 defconfig link on my box.
 
-Andrew - the ones I've looked at were all wrong. Please don't take this 
-series.
+So it should be beneficial to do it and Alan's link did not really
+convince me for the kernel usage.
+Al - do you have any input there?
 
-		Linus
+	Sam
