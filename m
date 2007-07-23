@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbXGWN2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbXGWNa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756418AbXGWN2Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 09:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbXGWN2S
+	id S1762817AbXGWNa4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 09:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbXGWNat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 09:28:18 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:46213 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755230AbXGWN2S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 09:28:18 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Sorry!
-Date: Mon, 23 Jul 2007 23:28:16 +1000
-User-Agent: KMail/1.9.6
+	Mon, 23 Jul 2007 09:30:49 -0400
+Received: from smtp2a.orange.fr ([80.12.242.140]:26471 "EHLO smtp2a.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755230AbXGWNas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 09:30:48 -0400
+X-ME-UUID: 20070723125116404.62D3A700008E@mwinf2a28.orange.fr
+From: "werner" <werner@copaya.yi.org>
+Subject: copy:  Problems with kernel 2.6.22-git15, 2.6.23-rc1
+To: linux-kernel@vger.kernel.org
+X-Originating-IP: 81.248.34.63
+X-Mailer: Usermin 1.270
+Message-Id: <1185194432.4530@werner>
+Date: Mon, 23 Jul 2007 09:40:33 -0300 (GFT)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1388338.2pgpcObTEX";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707232328.16870.nigel@nigel.suspend2.net>
+Content-Type: multipart/mixed; boundary="bound1185194433"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1388338.2pgpcObTEX
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This is a multi-part message in MIME format.
 
-Hi all.
+--bound1185194433
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 
-Sorry for all of the copies.
+There are incompatibilities in kmem_cache_create , which makes that a lot of important progs dont compile longer -- such as ndiskwrapper , btrfs (in this file system, me and other people storage important data) and others.   Also obexfs/bluetooth seems to dont work more correctly, however by other incompatibility
 
-I was holding the message in the outbox, and double clicking on it, trying =
-to=20
-get the encoding right in kmail. Needless to say now, it lied to me about=20
-whether it was keeping the previous copy of email in the outbox or not.
+This is since 2.6.22-git15 and on 2.6.23-rc1 , too
 
-Nigel
+The kernel need to stay compatible to old versions of the file system and other fundamental programs.
 
---nextPart1388338.2pgpcObTEX
-Content-Type: application/pgp-signature
+Please correct this   
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGpKzwN0y+n1M3mo0RAsXTAJ0b75QveDS7hghNP6Ix49um7wsXbgCbBYOB
-+SxfmZ/gjkTgHNU2mNi2C0s=
-=hQKE
------END PGP SIGNATURE-----
+Werner Landgraf
 
---nextPart1388338.2pgpcObTEX--
+www.copaya.yi.org
+
+============ Example: ======================
+
+/usr/local/src/btrfs-0.2/inode.c: In function 'btrfs_init_cachep':
+/usr/local/src/btrfs-0.2/inode.c:1941: error: too many arguments to function 'kmem_cache_createmake[1]: Leaving directory `/usr/src/linux-2.6.23-rc1-i486-1mn'
+ts to function 'kmem_cache_create'
+/usr/local/src/btrfs-0.2/inode.c:1955: error: too many arguments to function 'kmem_cache_create'
+/usr/local/src/btrfs-0.2/inode.c:1962: error: too many arguments to function 'kmem_cache_create'
+/usr/local/src/btrfs-0.2/inode.c:1970: error: too many arguments to function 'kmem_cache_create'
+make[2]: *** [/usr/local/src/btrfs-0.2/inode.o] Error 1
+make[1]: *** [_module_/usr/local/src/btrfs-0.2] Error 2
+make: *** [all] Error 2
+
+
+--bound1185194433--
+
+
