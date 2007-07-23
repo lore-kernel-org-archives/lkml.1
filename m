@@ -1,54 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXGWQb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765607AbXGWQdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932067AbXGWQb4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 12:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760912AbXGWQbp
+	id S1765607AbXGWQdX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 12:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760912AbXGWQdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 12:31:45 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:53334 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759769AbXGWQbo (ORCPT
+	Mon, 23 Jul 2007 12:33:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51606 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759769AbXGWQdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 12:31:44 -0400
-Date: Mon, 23 Jul 2007 09:35:20 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Cc: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: where is the code for read system call?
-Message-Id: <20070723093520.16f97256.randy.dunlap@oracle.com>
-In-Reply-To: <200707231801.32334.fzu@wemgehoertderstaat.de>
-References: <A3258B497F1C1441AD36A2E8B45FD62858CFA6@scsmsx412.amr.corp.intel.com>
-	<200707210208.44698.fzu@wemgehoertderstaat.de>
-	<A3258B497F1C1441AD36A2E8B45FD62858D1FD@scsmsx412.amr.corp.intel.com>
-	<200707231801.32334.fzu@wemgehoertderstaat.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 23 Jul 2007 12:33:11 -0400
+Subject: Re: [PATCH] release quicklist before free_page
+From: Peter Zijlstra <peterz@infradead.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: mingo@elte.hu, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <20070723152129.036573829@mvista.com>
+References: <20070723152129.036573829@mvista.com>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 18:32:58 +0200
+Message-Id: <1185208378.8197.20.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 18:01:32 +0200 Karsten Wiese wrote:
-
-> Am Montag, 23. Juli 2007 schrieb Agarwal, Lomesh:
-> > For future how do I trace a system call to a function in a kernel?
+On Mon, 2007-07-23 at 08:21 -0700, Daniel Walker wrote:
+> Resolves,
 > 
-> strace. i.e:
-> 	$ strace ls
+> BUG: sleeping function called from invalid context cc1(29651) at kernel/rtmutex.c:636
+> in_atomic():1 [00000001], irqs_disabled():0
+>  [<c0119f50>] __might_sleep+0xf3/0xf9
+>  [<c031600e>] __rt_spin_lock+0x21/0x3c
+>  [<c014102c>] get_zone_pcp+0x20/0x29
+>  [<c0141a40>] free_hot_cold_page+0xdc/0x167
+>  [<c013a3f4>] add_preempt_count+0x12/0xcc
+>  [<c0110d92>] pgd_dtor+0x0/0x1
+>  [<c015d865>] quicklist_trim+0xb7/0xe3
+>  [<c0111025>] check_pgt_cache+0x19/0x1c
+>  [<c0148df5>] free_pgtables+0x54/0x12c
+>  [<c013a3f4>] add_preempt_count+0x12/0xcc
+>  [<c014e5be>] unmap_region+0xeb/0x13b
+> 
+> 
+> It looks like the quicklist isn't used after a few variables are evaluated.
+> So no need to keep preemption disabled over the whole function.
 
-I thought (maybe I misunderstood) that Lomesh wanted to know
-which kernel function (by name) is called for specific syscalls...
-and strace will tell the syscall by name, but not the kernel
-function names.
+Not quite, it uses preempt_disable() to avoid migration and stick to a
+cpu. Without that it might end up freeing pages from another quicklist.
 
-If Lomesh wants what I described, then the answer is more like
-"see the syscall tables in each $ARCH".
-
+How about this - compile tested only
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+We cannot call the page allocator with preemption-disabled, use the
+per_cpu_locked construct to allow preemption while guarding the per cpu
+data.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/quicklist.h |   19 +++++++++++++++----
+ mm/quicklist.c            |    9 +++++----
+ 2 files changed, 20 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/include/linux/quicklist.h
+===================================================================
+--- linux-2.6.orig/include/linux/quicklist.h
++++ linux-2.6/include/linux/quicklist.h
+@@ -18,7 +18,7 @@ struct quicklist {
+ 	int nr_pages;
+ };
+ 
+-DECLARE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
++DECLARE_PER_CPU_LOCKED(struct quicklist, quicklist)[CONFIG_NR_QUICK];
+ 
+ /*
+  * The two key functions quicklist_alloc and quicklist_free are inline so
+@@ -30,19 +30,30 @@ DECLARE_PER_CPU(struct quicklist, quickl
+  * The fast patch in quicklist_alloc touched only a per cpu cacheline and
+  * the first cacheline of the page itself. There is minmal overhead involved.
+  */
+-static inline void *quicklist_alloc(int nr, gfp_t flags, void (*ctor)(void *))
++static inline void *__quicklist_alloc(int cpu, int nr, gfp_t flags, void (*ctor)(void *))
+ {
+ 	struct quicklist *q;
+ 	void **p = NULL;
+ 
+-	q =&get_cpu_var(quicklist)[nr];
++	q = &__get_cpu_var_locked(quicklist, cpu)[nr];
+ 	p = q->page;
+ 	if (likely(p)) {
+ 		q->page = p[0];
+ 		p[0] = NULL;
+ 		q->nr_pages--;
+ 	}
+-	put_cpu_var(quicklist);
++	return p;
++}
++
++static inline void *quicklist_alloc(int nr, gfp_t flags, void (*ctor)(void *))
++{
++	struct quicklist *q;
++	void **p = NULL;
++	int cpu;
++
++	(void)get_cpu_var_locked(quicklist, &cpu)[nr];
++	p = __quicklist_alloc(cpu, nr, flags, ctor);
++	put_cpu_var_locked(quicklist, cpu);
+ 	if (likely(p))
+ 		return p;
+ 
+Index: linux-2.6/mm/quicklist.c
+===================================================================
+--- linux-2.6.orig/mm/quicklist.c
++++ linux-2.6/mm/quicklist.c
+@@ -19,7 +19,7 @@
+ #include <linux/module.h>
+ #include <linux/quicklist.h>
+ 
+-DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
++DEFINE_PER_CPU_LOCKED(struct quicklist, quicklist)[CONFIG_NR_QUICK];
+ 
+ #define FRACTION_OF_NODE_MEM	16
+ 
+@@ -51,8 +51,9 @@ void quicklist_trim(int nr, void (*dtor)
+ {
+ 	long pages_to_free;
+ 	struct quicklist *q;
++	int cpu;
+ 
+-	q = &get_cpu_var(quicklist)[nr];
++	q = &get_cpu_var_locked(quicklist, &cpu)[nr];
+ 	if (q->nr_pages > min_pages) {
+ 		pages_to_free = min_pages_to_free(q, min_pages, max_free);
+ 
+@@ -61,7 +62,7 @@ void quicklist_trim(int nr, void (*dtor)
+ 			 * We pass a gfp_t of 0 to quicklist_alloc here
+ 			 * because we will never call into the page allocator.
+ 			 */
+-			void *p = quicklist_alloc(nr, 0, NULL);
++			void *p = __quicklist_alloc(cpu, nr, 0, NULL);
+ 
+ 			if (dtor)
+ 				dtor(p);
+@@ -69,7 +70,7 @@ void quicklist_trim(int nr, void (*dtor)
+ 			pages_to_free--;
+ 		}
+ 	}
+-	put_cpu_var(quicklist);
++	put_cpu_var_locked(quicklist, cpu);
+ }
+ 
+ unsigned long quicklist_total_size(void)
+
+
