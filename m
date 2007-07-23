@@ -1,76 +1,596 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935578AbXGWUe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935849AbXGWUgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935578AbXGWUe2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765890AbXGWUeU
+	id S935849AbXGWUgO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932197AbXGWUf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:34:20 -0400
-Received: from gw.goop.org ([64.81.55.164]:53417 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763353AbXGWUeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:34:19 -0400
-Message-ID: <46A51079.5030006@goop.org>
-Date: Mon, 23 Jul 2007 13:32:57 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 23 Jul 2007 16:35:58 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:58249 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765549AbXGWUf4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 16:35:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LO9O+/8IbSIQ+iAW/PfW6KWKo9vh+9iZHrX2b9L9M4vc2kaMoDDVCYYC7Cw/zC6kVsO86F9zmlMuR6JSWYX2Xp7XMR/medHH427jLwtt5m6OZyJGzhTsc67ogmDitaPl09ilxkubBZMYZWyLrDWVq74ihb4We5cP8usDBZdO3ck=
+Message-ID: <8b67d60707231335m78691ee8jd6e322ac5797b797@mail.gmail.com>
+Date: Mon, 23 Jul 2007 21:35:55 +0100
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Problems with framebuffer in 2.6.22-git17
+Cc: "Adrian McMenamin" <adrianmcmenamin@gmail.com>,
+       linux-kernel@vger.kernel.org, lethal@users.sourceforge.net
+In-Reply-To: <8b67d60707231324k28f3cd45p287418fd77feaf00@mail.gmail.com>
 MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: LKML <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
-       nix.or.die@googlemail.com, Roland McGrath <roland@redhat.com>
-Subject: Re: 2.6.22-git17 boot failure
-References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc>
-In-Reply-To: <46A504A3.3070205@imap.cc>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
+	 <1185146563.6370.8.camel@daplas>
+	 <8b67d60707231324k28f3cd45p287418fd77feaf00@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote:
-> To answer that, I have reproduced the effect with kernel 2.6.23-rc1 with
-> netconsole compiled in. I'm attaching both captures, for CONFIG_XEN=y
-> (unsuccessful) as well CONFIG_XEN=n (successful).
+(Apologies to those getting this a second time: resending as text/plain only)
+
+On 23/07/07, Adrian McMenamin <lkmladrian@gmail.com> wrote:
 >
-> The first noticeable difference is that the nonzero timestamps starting
-> after the line "Detected 3197.059 MHz processor" are much bigger with XEN -
-> but perhaps that's expected.
->   
-
-Not at all.  None of the Xen time machinery should be coming into play.
-
-> More to the point, everything from:
 >
->   SCSI subsystem initialized
 >
-> on is completely missing, including all the [S/P]ATA, SCSI, parport, AGP,
-> USB, Firewire, RTC and of course ext3 messages. Only the "device-mapper"
-> line still appears.
-
-I'm flat out confused.  The only CONFIG_XEN dependencies in the kernel are:
-
-   1. head.S and entry.S, which enable completely no-op pieces of code
-      when not running under Xen
-   2. The vdso code, which shouldn't play a role here
-   3. The whole of arch/i386/xen/, which doesn't get enabled unless you
-      run under Xen
-
-There's flat out no way that your kernel would be booting if any of the
-Xen code were actually being run, since it would fall over very quickly
-without the hypervisor being present.  And anyway, the message "Booting
-paravirtualized kernel on bare hardware" tells us we're not using the
-Xen code.
-
-How much of this is modules?  Is the initrd probing for scsi/sata? 
-Maybe the the vdso change is having an effect.
-
-Ooh, wait.  Do you have an old version of the Xen patches in place,
-perhaps?  Does drivers/block/Makefile have:
-
-obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
-
-(vs := xen-blkfront.o)  Not that it should have any effect on scsi drivers.
-
-Could you do a before and after booting with initcall_debug=1?
-
-Thanks,
-    J
+> On 7/23/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> >  On Sun, 2007-07-22 at 19:41 +0100, Adrian McMenamin wrote:
+> > > I ma having problems with the pvr2 fb on the Dreamcast in 2.6.22-git17
+> > > - when the code is executed it appears to lock the Dreamcast up.
+> > >
+> >  > The problem seems to be:
+> > >
+> > >  fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
+> > >
+> > > In drivers/video/fbmem.c
+> > >
+> > > This hasn't been an issue before, so are there any recent changes that
+> > > might have caused this?
+> >
+> > What's the last kernel that worked for you? Can you also post your
+> > config?
+>
+>
+>
+> One of the recent 2.6.22 gits, not sure which one, I'm afraid.
+>
+>
+> > >
+> > > (fb_notifier_call_chain calls a succession of stubs ending in
+> > > __blocking_notifier_call_chain in kernel/sys.c)
+> > >
+> >
+> > Try reverting commit a66ad56eb2c9644717da4d7f05f971d6786145e3.
+> >
+>
+> OK, that certainly seems to make a difference - the box doesn't crash but it generates a lot of error messages - though as I have patched this with my dma patch that isn't one of them:
+>
+> / # modprobe pvr2fb
+> [   31.642623] Console: switching to colour frame buffer device 80x30
+> [   31.677360] fb0: NEC PowerVR2 (rev 1.1) frame buffer device, using 600k/8192k of video memory
+> [   31.686139] fb0: Mode 640x480-16 pitch = 1280 cable: VGA video output: VGA
+> [   31.693205] fb0: registering with SQ API
+> [   31.762406] sqremap:    NEC PowerVR2  [2048 pages]  va 0xe0000000   pa 0xa5000000
+> [   31.769537] fb0: Mapped video memory to SQ addr 0xe0000000
+> / # [   31.912380 ] BUG: scheduling while atomic: 10-udev.hotplug/0x10000002/775
+> [   31.918676] Stack: (0x8c91de0c to 0x8c91e000)
+> [   31.923145] de00:                            8c15a80c 10000000 8c91c000 8c8c5a10 8c00f782
+> [   31.931582 ] de20: 8c91de3c 8c33d000 8c1ff00c c0003000 0c33d53e 10000000 8c91c000 8c15adf4
+> [   31.940115] de40: 8c91de4c 2958be20 8c1e917c 8c15b6ba 8cc14000 8c00c606 8c91c000 8c03b3fa
+> [   31.948648] de60: 00000001 00000000 00000001 8cceb8f4 8cceb8b4 8c2087a0 8c91c000 00000001
+> [   31.957181] de80: 0000000e 2958b000 8c21a280 00000200 8c915560 2958be20 8c03b958 8c954294
+> [   31.965725] dea0: 00000001 2958be20 8cceb8b4 0000062c 00030002 00000000 8c954294 0000000e
+> [   31.974293] dec0: 00000001 00000000 8c915560 8c2545a0 2958b000 8c915560 8cceb8b4 8c00b890
+> [   31.982781] dee0: 8c91dfa0 8c8c5880 8c915560 8c915594 2958be20 00030002 8cceb8b4 8c8da140
+> [   31.991314] df00: 8c8da140 8c8da0d4 8c8da148 00001000 00000012 00000000 00000001 8cc09e9c
+> [   31.999892] df20: 8c03e09e 0000000e 2958b000 8c9155a0 00001000 00000003 8c2545a0 00000073
+> [   32.008380] df40: 00000073 0000000e 00000001 00000001 8c00528a 2958b000 fffffff7 8c00529a
+> [   32.016913] df60: 2958b000 0000000e 8c2545a0 00000012 8c91c000 000000fc 00000e20 00000001
+> [   32.025494] df80: 8c0070e8 7bb2aa44 2956d000 2956c008 ffffff0f 40008000 2958be20 00000001
+> [   32.033979] dfa0: 2958b000 00000fff 2958be20 00000000 2958b000 2956c008 00000003 00000012
+> [   32.042512] dfc0: 29561054 00000fff 29561000 00000000 2956c008 2956d000 7bb2aa44 7bb2aa44
+> [   32.051091] dfe0: 29559bfe 2955a1ae 00008000 00000000 0000031b 00000168 ffffffff 00000060
+> [   32.059573]
+> [   32.059591] Call trace:
+> [   32.063730] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   32.068621] [<8c15adf4>] cond_resched+0x30/0x48
+> [   32.073286] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   32.077687] [<8c00c606>] copy_user_page+0x86/0x134
+> [   32.082639] [<8c03b3fa>] __do_fault+0x142/0x340
+> [   32.087309] [<8c03b958>] handle_mm_fault+0x2c6/0x556
+> [   32.092428] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   32.097279] [<8c03e09e>] do_mmap_pgoff+0x23e/0x26c
+> [   32.102215] [<8c00528a>] old_mmap+0x66/0xb4
+> [   32.106517] [<8c00529a>] old_mmap+0x76/0xb4
+> [   32.110834] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   32.116014]
+> [   32.217342] BUG: scheduling while atomic: hotplug/0x10000002/792
+> [   32.222868] Stack: (0x8c8c7e20 to 0x8c8c8000)
+> [   32.227357] 7e20: 8c15a80c 10000000 8c8c6000 8cca5cb0 8c00f782 8c8c7e50 8c956000 8c1ff004
+> [   32.235822] 7e40: c0001000 0c95653e 10000000 8c8c6000 8c15adf4 8c8c7e60 7bf85a7c 8c1e9164
+> [   32.244355] 7e60: 8c15b6ba 8c948000 8c00c606 8c8c6000 8c03ac92 8c1f0c30 7bf85a7c 8c93480c
+> [   32.252888] 7e80: 8c214ac0 8c913e14 8c214900 8c8c6000 8c915d80 00000000 00000000 8c03bb62
+> [   32.261421] 7ea0: 8c9167bc 00000001 7bf85a7c 8c93480c 00000e14 00030002 0c94855c 8c9167bc
+> [   32.269954] 7ec0: 8c915dc0 0c94855c 8c915d80 295bc0cc 295bc134 295bc190 295bc1cc 8c00b890
+> [   32.278487] 7ee0: 8c8c7fa0 8cca5b20 8c915d80 8c915db4 7bf85a7c 00030002 8c93480c 295bd51c
+> [   32.287020] 7f00: 295bd550 295bd534 295bd1d8 295bd110 295bd1c8 295bce40 295bce40 295bce40
+> [   32.295553] 7f20: 295bd1d8 295d05f4 295d05fc 295d060c 295d0628 295d0640 295ce5ac 295d0c80
+> [   32.304086] 7f40: 00000000 00000000 295b82a8 00000001 295b8344 ffffffff 00000000 295b9414
+> [   32.312619] 7f60: 295b9424 295b9646 00000001 00002cd2 0000000e 00002cd7 0000000c 00000001
+> [   32.321153] 7f80: 8c0070e8 7bf85a80 00000000 00000000 ffffff0f 40008000 7bf85a7c 00000001
+> [   32.329686] 7fa0: 00000000 00429e50 0048d0fc 00000000 004a7380 0048d2ac 00000000 00000000
+> [   32.338219] 7fc0: 00489418 004a7380 00000000 00000000 00000000 00000000 7bf85a80 7bf85a80
+> [   32.346752] 7fe0: 00429e50 0042f15a 00008001 00000000 0000031b 00000000 ffffffff 000000c0
+> [   32.355280]
+> [    32.355298] Call trace:
+> [   32.359439] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   32.364328] [<8c15adf4>] cond_resched+0x30/0x48
+> [   32.368993] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   32.373395] [<8c00c606>] copy_user_page+0x86/0x134
+> [   32.378334] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   32.383025] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   32.388137] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   32.393007] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   32.398112]
+> [   32.515422] BUG: scheduling while atomic: default.hotplug/0x10000002/804
+> [   32.521686] Stack: (0x8c923e20 to 0x8c924000)
+> [   32.526140] 3e20: 8c15a80c 10000000 8c922000 8c8c5670 8c00f782 8c923e50 8c953000 8c1ff008
+> [   32.534623] 3e40: c0002000 0c95353e 10000000 8c922000 8c15adf4 8c923e60 004a6290 8c1e9170
+> [   32.543156] 3e60: 8c15b6ba 8cca6000 8c00c606 8c922000 8c03ac92 8c1f0c30 004a6290 8cc00b00
+> [   32.551689] 3e80: 8c214a60 8c974298 8c21b4c0 8c922000 8c915a40 00000000 00000000 8c03bb62
+> [   32.560222] 3ea0: 8c931004 00000001 004a6290 8cc00b00 00000298 00030002 0cca655c 8c931004
+> [   32.568756] 3ec0: 8c915a80 0cca655c 8c915a40 8c923ee8 8c8c55d0 00000007 70ef2682 8c00b890
+> [   32.577288] 3ee0: 8c923fa0 8c8c54e0 8c915a40 8c915a74 004a6290 00030002 8cc00b00 8c8c5520
+> [   32.585822] 3f00: 00000007 70ef2682 00000007 8c00e384 8c923f1c 70ef2682 8c00d83a 8c923f20
+> [   32.594355] 3f20: 8c00dd56 8c923f38 00000007 8c923f50 8c2610a0 8c1bb0e0 8c8c54e0 8c915a40
+> [   32.602930] 3f40: 8c1e06c0 0000030e 8c15a8c2 00000000 8c8c566c 8c01448a 8c1c0444 8c8c55d0
+> [   32.611421] 3f60: 8c23fb20 8c1c0464 8c8c54e0 8c049a08 00489964 ffffff0f 00000000 00000001
+> [   32.619954] 3f80: 8c0070e8 7bae488c 00000000 00489964 ffffff0f 40008000 004a6290 00000001
+> [   32.628533] 3fa0: 00000049 00000000 fffffffc 00000001 004a7240 0048d21c 004a6290 00001008
+> [   32.637020] 3fc0: 004a7248 004a6290 00000080 00000000 00489964 00000000 7bae488c 7bae488c
+> [   32.645553] 3fe0: 004587d6 0045879a 00008001 00000000 00000031 000005ef ffffffff 000000c0
+> [   32.654128]
+> [    32.654146] Call trace:
+> [   32.658240] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   32.663129] [<8c15adf4>] cond_resched+0x30/0x48
+> [   32.667810] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   32.672197] [<8c00c606>] copy_user_page+0x86/0x134
+> [   32.677133] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   32.681813] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   32.686938] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   32.691784] [<8c00e384>] dequeue_task+0x20/0x32
+> [   32.696448] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   32.701939] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   32.707232] [<8c1e06c0>] pciauto_bus_scan+0x1f4/0x594
+> [   32.712435] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   32.716852] [<8c01448a>] do_exit+0x682/0x6b8
+> [   32.721243] [<8c049a08>] filp_close+0x30/0x5c
+> [   32.725731] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   32.730864]
+> [   32.766299] BUG: scheduling while atomic:  default.hotplug/0x10000002/806
+> [   32.772566] Stack: (0x8c971e20 to 0x8c972000)
+> [   32.777059] 1e20: 8c15a80c 10000000 8c970000 8c941690 8c00f782 8c971e50 8c967000 8c1ff004
+> [   32.785501] 1e40: c0001000 0c96753e 10000000 8c970000 8c15adf4 8c971e60 0048d0fc 8c1e9164
+> [   32.794034] 1e60: 8c15b6ba 8c25c000 8c00c606 8c970000 8c03ac92 8c1f0c30 0048d0fc 8cceb668
+> [   32.802567] 1e80: 8c214ce0 8c92b234 8c206b80 8c970000 8c9153c0 00000000 00000000 8c03bb62
+> [   32.811100] 1ea0: 8c957004 00000001 0048d0fc 8cceb668 00000234 00030002 0c25c55c 8c957004
+> [   32.819633] 1ec0: 8c915400 0c25c55c 8c9153c0 8c971ee8 8c9415f0 00000007 706cd369 8c00b890
+> [   32.828167] 1ee0: 8c971fa0 8c941500 8c9153c0 8c9153f4 0048d0fc 00030002 8cceb668 00000007
+> [   32.836699] 1f00: 8c941530 8c941570 00000667 8c00e384 8c971f1c 8d859000 00000667 00000400
+> [   32.845232] 1f20: 8c00dd56 8c971f38 8d859000 00000667 8c8c5880 8c1bb0e0 c154b000 00044519
+> [   32.853814] 1f40: 8c00ddac 8c00d83a 8c971f4c 8c00dd56 8c971f64 00000007 79d2ae93 8c1e96bc
+> [   32.862299] 1f60: 8c941530 8c15a8c2 8c971f7c 8c941500 8c8be200 00000007 79d2ae93 00000001
+> [   32.870832] 1f80: 8c0070e8 7b802ac8 00000000 00000000 ffffff0f 40008000 0048d0fc 00000001
+> [   32.879413] 1fa0: 00000000 00000001 0048d0fc 00000000 004a7148 0048d14c 00000000 00000000
+> [   32.887898] 1fc0: 00489418 004a7148 00000000 00000000 00000000 00000000 7b802ac8 7b802ac8
+> [   32.896431] 1fe0: 0042f152 0042f128 00008001 00000000 0000004a 00000000 ffffffff 000000c0
+> [   32.905007]
+> [   32.905025] Call trace:
+> [   32.909116] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   32.914008 ] [<8c15adf4>] cond_resched+0x30/0x48
+> [   32.918733] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   32.923077] [<8c00c606>] copy_user_page+0x86/0x134
+> [   32.928016] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   32.932694] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   32.937817] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   32.942664] [<8c00e384>] dequeue_task+0x20/0x32
+> [   32.947329] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   32.952644] [<8c00ddac>] put_prev_task_fair+0x30/0x68
+> [   32.957835] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   32.963315] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   32.968630] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   32.973020] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   32.978151]
+> [   33.129307] BUG: scheduling while atomic: default.hotplug/0x10000002/823
+> [   33.135570] Stack: (0x8c903e20 to 0x8c904000)
+> [    33.140025] 3e20: 8c15a80c 10000000 8c902000 8c8c5db0 8c00f782 8c903e50 8c974000 8c1ff004
+> [   33.148508] 3e40: c0001000 0c97453e 10000000 8c902000 8c15adf4 8c903e60 00489418 8c1e9164
+> [   33.157041] 3e60: 8c15b6ba 8c978000 8c00c606 8c902000 8c03ac92 8c1f0c30 00489418 8c966f44
+> [   33.165574] 3e80: 8c214e80 8c8ba224 8c214f00 8c902000 8c8be3a0 00000000 00000000 8c03bb62
+> [   33.174107] 3ea0: 8c8d8004 00000001 00489418 8c966f44 00000224 00030002 0c97855c 8c8d8004
+> [   33.182641] 3ec0: 8c8be3e0 0c97855c 8c8be3a0 8c903ee8 8c8c5d10 00000007 88329dcb 8c00b890
+> [   33.191174] 3ee0: 8c903fa0 8c8c5c20 8c8be3a0 8c8be3d4 00489418 00030002 8c966f44 8c8c5c60
+> [   33.199707] 3f00: 00000007 88329dcb 00000007 8c00e384 8c903f1c 88329dcb 8c00d83a 8c903f20
+> [   33.208240] 3f20: 8c00dd56 8c903f38 00000007 8c903f50 8c2610a0 8c1bb0e0 8c8c5c20 8c9153c0
+> [   33.216815] 3f40: 8c1e06c0 00000358 8c15a8c2 00000000 8c8c5dac 8c01448a 8c1c0444 8c8c5d10
+> [   33.225306] 3f60: 8c23fb20 8c1c0464 8c8c5c20 8c049a08 00489964 ffffff0f 00000000 00000001
+> [   33.233839] 3f80: 8c0070e8 7be36884 00000000 00000000 ffffff0f 40008000 00489418 00000001
+> [   33.242418] 3fa0: 00000000 0048d050 004a62c4 004a62c4 00489858 00000010 004a8278 00001008
+> [   33.250905] 3fc0: 004a7110 00489418 00000000 00000000 00000000 00000000 7be36884 7be36884
+> [   33.259438] 3fe0: 00429df8 00429de6 00008001 00000000 00000031 000005ef ffffffff 000000c0
+> [   33.268013]
+> [   33.268031] Call trace:
+> [   33.272125] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   33.277014] [<8c15adf4>] cond_resched+0x30/0x48
+> [   33.281682] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   33.286081] [<8c00c606>] copy_user_page+0x86/0x134
+> [   33.291019] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   33.295698] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   33.300833] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   33.305669] [<8c00e384>] dequeue_task+0x20/0x32
+> [   33.310335] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   33.315811] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   33.321116] [<8c1e06c0>] pciauto_bus_scan+0x1f4/0x594
+> [   33.326319] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   33.330722] [<8c01448a>] do_exit+0x682/0x6b8
+> [   33.335139] [<8c049a08>] filp_close+0x30/0x5c
+> [   33.339615] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   33.344749]
+> [   33.411654] BUG: scheduling while atomic: default.hotplug/0x10000002/830
+> [   33.417929] Stack: (0x8cc97e20 to 0x8cc98000)
+> [   33.422375] 7e20: 8c15a80c 10000000 8cc96000 8cc9f2b0 8c00f782 8cc97e50 8c9ae000 8c1ff004
+> [   33.430856] 7e40: c0001000 0c9ae53e 10000000 8cc96000 8c15adf4 8cc97e60 0048d0fc 8c1e9164
+> [   33.439388] 7e60: 8c15b6ba 8cc9d000 8c00c606 8cc96000 8c03ac92 8c1f0c30 0048d0fc 8cc00c50
+> [   33.447922] 7e80: 8c2155c0 8c9ac234 8c21b3a0 8cc96000 8c915560 00000000 00000000 8c03bb62
+> [   33.456455] 7ea0: 8c954004 00000001 0048d0fc 8cc00c50 00000234 00030002 0cc9d55c 8c954004
+> [   33.464988] 7ec0: 8c9155a0 0cc9d55c 8c915560 8cc97ee8 8cc9f210 00000007 935c6df8 8c00b890
+> [   33.473521] 7ee0: 8cc97fa0 8cc9f120 8c915560 8c915594 0048d0fc 00030002 8cc00c50 8cc9f160
+> [   33.482054] 7f00: 00000007 935c6df8 00000007 8c00e384 8cc97f1c 935c6df8 8c00d83a 8cc97f20
+> [   33.490587] 7f20: 8c00dd56 8cc97f38 00000007 8cc97f50 8c941c40 8c1bb0e0 8cc9f120 8c915080
+> [   33.499162] 7f40: 8c915d80 00000368 8c15a8c2 00000000 8cc9f2ac 8c01448a 8c1c0444 8cc9f210
+> [   33.507653] 7f60: 8c23fb20 8c1c0464 8cc9f120 00000010 8cc9f45c 8cc97f74 8cc97f74 00000001
+> [   33.516186] 7f80: 8c0070e8 7ba2ead8 00000000 00000000 ffffff0f 40008000 0048d0fc 00000001
+> [   33.524766] 7fa0: 00000000 00000001 0048d0fc 00000000 004a7148 0048d16c 00000000 00000000
+> [   33.533252] 7fc0: 00489418 004a7148 00000000 00000000 00000000 00000000 7ba2ead8 7ba2ead8
+> [   33.541786] 7fe0: 0042f152 0042f128 00008001 00000000 0000004a 000008f6 ffffffff 000000c0
+> [   33.550360]
+> [    33.550378] Call trace:
+> [   33.554472] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   33.559361] [<8c15adf4>] cond_resched+0x30/0x48
+> [   33.564027] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   33.568440] [<8c00c606>] copy_user_page+0x86/0x134
+> [   33.573365] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   33.578045] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   33.583169] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   33.588016] [<8c00e384>] dequeue_task+0x20/0x32
+> [   33.592681] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   33.598159] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   33.603465] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   33.607861] [<8c01448a>] do_exit+0x682/0x6b8
+> [   33.612309] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   33.617408]
+> [   34.019635] BUG: scheduling while atomic: default.hotplug/0x10000002/875
+> [   34.025895] Stack: (0x8c95de20 to 0x8c95e000)
+> [    34.030353] de20: 8c15a80c 10000000 8c95c000 8c9412f0 8c00f782 8c95de50 8c9c8000 8c1ff004
+> [   34.038835] de40: c0001000 0c9c853e 10000000 8c95c000 8c15adf4 8c95de60 0048d0fc 8c1e9164
+> [   34.047368] de60: 8c15b6ba 8c936000 8c00c606 8c95c000 8c03ac92 8c1f0c30 0048d0fc 8c934470
+> [   34.055901] de80: 8c215900 8c9a3234 8c2146c0 8c95c000 8c9a4da0 00000000 00000000 8c03bb62
+> [   34.064434] dea0: 8c9a5004 00000001 0048d0fc 8c934470 00000234 00030002 0c93655c 8c9a5004
+> [   34.072967] dec0: 8c9a4de0 0c93655c 8c9a4da0 8c95dee8 8c941250 00000007 b1f00257 8c00b890
+> [   34.081500] dee0: 8c95dfa0 8c941160 8c9a4da0 8c9a4dd4 0048d0fc 00030002 8c934470 8c9411a0
+> [   34.090033] df00: 00000007 b1f00257 00000007 8c00e384 8c95df1c b1f00257 8c00d83a 8c95df20
+> [   34.098566] df20: 8c00dd56 8c95df38 00000007 8c95df50 8cc9fc00 8c1bb0e0 8c941160 8c1e0520
+> [   34.107100] df40: 8c915be0 00000415 8c15a8c2 00000000 8c9412ec 8c01448a 8c1c0444 8c941250
+> [   34.115633] df60: 8c23fb20 8c1c0464 8c941160 00000010 8c94149c 8c95df74 8c95df74 00000001
+> [   34.124166] df80: 8c0070e8 7ba55680 00000001 00000000 ffffff0f 40008000 0048d0fc 00000001
+> [   34.132747] dfa0: 00000000 00000001 0048d0fc 00000000 004a7148 004a855c 00000002 00000000
+> [   34.141232] dfc0: 00489418 004a7148 00000000 00000002 00000000 00000001 7ba55680 7ba55680
+> [   34.149765] dfe0: 0042f152 0042f128 00008001 00000000 0000042a 00000666 ffffffff 000000c0
+> [   34.158340]
+> [   34.158357] Call trace:
+> [   34.162450] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   34.167340] [<8c15adf4>] cond_resched+0x30/0x48
+> [   34.172008] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   34.176407] [<8c00c606>] copy_user_page+0x86/0x134
+> [   34.181346] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   34.186036] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   34.191149] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   34.195995] [<8c00e384>] dequeue_task+0x20/0x32
+> [   34.200661] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   34.206139] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   34.211441] [<8c1e0520>] pciauto_bus_scan+0x54/0x594
+> [   34.216558] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   34.220960] [<8c01448a>] do_exit+0x682/0x6b8
+> [   34.225368] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   34.230494]
+> [   34.426923] BUG: scheduling while atomic: logger/0x10000001/892
+> [   34.432356] Stack: (0x8c903e58 to 0x8c904000)
+> [   34.436861] 3e40:                                                       8c15a80c 10000000
+> [   34.445313] 3e60: 8c902000 8c8c5db0 8c00f782 8c903e88 8c9af000 8c1ff004 c0001000 0c9af53e
+> [   34.453846] 3e80: 10000000 8c902000 8c15adf4 8c903e98 004a5f64 8c1e9164 8c15b6ba 8c1e9158
+> [   34.462424] 3ea0: 8c00c4d8 8c902000 8c03b7d0 8c9a5004 00000001 004a5f64 8c8da17c 8c949294
+> [   34.470912] 3ec0: 8c2155e0 8c902000 8c9a4da0 8c9513e0 8c083452 00000000 00000001 8c00b890
+> [   34.479445] 3ee0: 8c903fa0 8c8c5c20 8c9a4da0 8c9a4dd4 004a5f64 00030002 8c8da17c 00000000
+> [   34.488023] 3f00: 8c049648 8c8c5c20 8c021cda 8c903f0c 8c903f0c 00000004 00000000 8c9513e0
+> [   34.496511] 3f20: 00000000 8c049698 00000000 8c1d6bb4 00000040 8c1f77f8 8c25b2e0 8c25b2e0
+> [   34.505045] 3f40: 00000101 8c0832b2 8c0bd436 8c2322a0 8c33359c 8c9513e0 8c0834d4 8c082026
+> [   34.513623] 3f60: 8c04ac04 8c04ac94 8c9513e0 8c049a18 00489964 ffffff0f 8c049a18 00000001
+> [   34.522110] 3f80: 8c0070e8 7bc681b4 fffedf50 00489964 ffffff0f 40008000 004a5f64 00000001
+> [   34.530644] 3fa0: 00000000 00000001 00000000 004a5f64 004a5f64 00000000 00000001 00000030
+> [   34.539177] 3fc0: 004a5f64 7bc681ef 00000000 fffffff5 00489964 fffedf50 7bc681b4 7bc681b4
+> [   34.547710] 3fe0: 00454864 0044f890 00008000 00000000 0000042a 00000000 ffffffff 00000060
+> [   34.556238]
+> [   34.556256] Call trace:
+> [   34.560397] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   34.565286] [<8c15adf4>] cond_resched+0x30/0x48
+> [   34.569965] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   34.574351] [<8c00c4d8>] clear_user_page+0x84/0x12c
+> [   34.579379] [<8c03b7d0>] handle_mm_fault+0x13e/0x556
+> [   34.584509] [<8c083452>] nfs_open+0x112/0x164
+> [   34.588993] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   34.593848] [<8c049648>] nameidata_to_filp+0x20/0x3c
+> [   34.598961] [<8c021cda>] autoremove_wake_function+0x0/0x2a
+> [   34.604641] [<8c049698>] do_filp_open+0x34/0x44
+> [   34.609291] [<8c1d6bb4>] mount_block_root+0x80/0x1b8
+> [   34.614415] [<8c0832b2>] nfs_free_open_context+0x56/0x7c
+> [   34.619902] [<8c0bd436>] kref_put+0x40/0x52
+> [   34.624205] [<8c0834d4>] nfs_release+0x30/0x3c
+> [   34.628782] [<8c082026>] nfs_file_release+0x4a/0x58
+> [   34.633812] [<8c04ac04>] __fput+0x44/0x13c
+> [   34.638033] [<8c04ac94>] __fput+0xd4/0x13c
+> [   34.642256] [<8c049a18>] filp_close+0x40/0x5c
+> [   34.646748] [<8c049a18>] filp_close+0x40/0x5c
+> [   34.651237] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   34.656379]
+> [   34.730914] BUG: scheduling while atomic: default.hotplug/0x10000002/907
+> [   34.737197] Stack: (0x8c92fe20 to 0x8c930000)
+> [    34.741637] fe20: 8c15a80c 10000000 8c92e000 8c8c52d0 8c00f782 8c92fe50 8c9bd000 8c1ff008
+> [   34.750115] fe40: c0002000 0c9bd53e 10000000 8c92e000 8c15adf4 8c92fe60 7be36688 8c1e9170
+> [   34.758648] fe60: 8c15b6ba 8c992000 8c00c606 8c92e000 8c03ac92 8c1f0c30 7be36688 8c934128
+> [   34.767181] fe80: 8c2157a0 8c9b98d8 8c215240 8c92e000 8c915560 00000000 00000000 8c03bb62
+> [   34.775714] fea0: 8c9547bc 00000001 7be36688 8c934128 000008d8 00030002 0c99255c 8c9547bc
+> [   34.784247] fec0: 8c9155a0 0c99255c 8c915560 8c92fee8 8c8c5230 00000007 ceefc57b 8c00b890
+> [   34.792780] fee0: 8c92ffa0 8c8c5140 8c915560 8c915594 7be36688 00030002 8c934128 8c8c5180
+> [   34.801313] ff00: 00000007 ceefc57b 00000007 8c00e384 8c92ff1c ceefc57b 8c00d83a 8c92ff20
+> [   34.809846] ff20: 8c00dd56 8c92ff38 00000007 8c92ff50 8cc9fc00 8c1bb0e0 8c8c5140 8c8bea20
+> [   34.818379] ff40: 8c915be0 00000489 8c15a8c2 00000000 8c8c52cc 8c01448a 8c1c0444 8c8c5230
+> [   34.826913] ff60: 8c23fb20 8c1c0464 8c8c5140 00000010 8c8c547c 8c92ff74 8c92ff74 00000001
+> [   34.835446] ff80: 8c0070e8 7be3668c 00000001 00000000 ffffff0f 40008000 7be36688 00000001
+> [   34.844024] ffa0: 00000000 00429e50 0048d0fc 00000000 004a7178 004a858c 00000002 00000000
+> [   34.852512] ffc0: 00489418 004a7178 00000000 00000002 00000000 00000001 7be3668c 7be3668c
+> [   34.861045] ffe0: 00429e50 0042f15a 00008001 00000000 0000042a 00000666 ffffffff 000000c0
+> [   34.869619]
+> [   34.869637] Call trace:
+> [   34.873733] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   34.878620] [<8c15adf4>] cond_resched+0x30/0x48
+> [   34.883286] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   34.887688] [<8c00c606>] copy_user_page+0x86/0x134
+> [   34.892624] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   34.897303] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   34.902438] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   34.907273] [<8c00e384>] dequeue_task+0x20/0x32
+> [   34.911938] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   34.917418] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   34.922724] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   34.927119] [<8c01448a>] do_exit+0x682/0x6b8
+> [   34.931567] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   34.936666]
+> [   34.953261] BUG: scheduling while atomic: default.hotplug/0x10000002/908
+>  [   34.959508] Stack: (0x8c95de20 to 0x8c95e000)
+> [   34.964051] de20: 8c15a80c 10000000 8c95c000 8c9412f0 8c00f782 8c95de50 8c9d2000 8c1ff00c
+> [   34.972462] de40: c0003000 0c9d253e 10000000 8c95c000 8c15adf4 8c95de60 004a715c 8c1e917c
+> [   34.980996] de60: 8c15b6ba 8c8cd000 8c00c606 8c95c000 8c03ac92 8c1f0c30 004a715c 8c934da0
+> [   34.989529] de80: 8c215a40 8c99929c 8c2139a0 8c95c000 8c9153c0 00000000 00000000 8c03bb62
+> [   34.998062] dea0: 8c957004 00000001 004a715c 8c934da0 0000029c 00030002 0c8cd55c 8c957004
+> [   35.006595] dec0: 8c915400 0c8cd55c 8c9153c0 8c95dee8 8c941250 00000007 cf239ad7 8c00b890
+> [   35.015128] dee0: 8c95dfa0 8c941160 8c9153c0 8c9153f4 004a715c 00030002 8c934da0 8c9411a0
+> [   35.023661] df00: 00000007 cf239ad7 00000007 8c00e384 8c95df1c cf239ad7 8c00d83a 8c95df20
+> [   35.032194] df20: 8c00dd56 8c95df38 00000007 8c95df50 8c8b4100 8c1bb0e0 8c941160 8c915560
+> [   35.040773] df40: 8c915220 0000048b 8c15a8c2 00000000 8c9412ec 8c01448a 8c1c0444 8c941250
+> [   35.049260] df60: 8c23fb20 8c1c0464 8c941160 8c049a08 00489964 ffffff0f 00000000 00000001
+> [   35.057793] df80: 8c0070e8 7ba2e7c4 0048d430 00000000 ffffff0f 40008000 004a715c 00000001
+> [   35.066374] dfa0: 00000000 00000000 f7ffffff 00000000 004a7148 004a8514 00000000 00000000
+> [   35.074860] dfc0: ffffffff 004a7148 004a7148 00000000 00000000 0048d430 7ba2e7c4 7ba2e7c4
+> [   35.083393] dfe0: 00429f98 0042f268 00008001 00000000 0000042a 00000000 ffffffff 000000c0
+> [   35.091967]
+> [   35.091983] Call trace:
+> [   35.096077] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   35.100967 ] [<8c15adf4>] cond_resched+0x30/0x48
+> [   35.105637] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   35.110036] [<8c00c606>] copy_user_page+0x86/0x134
+> [   35.114975] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   35.119669] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   35.124775] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   35.129623] [<8c00e384>] dequeue_task+0x20/0x32
+> [   35.134287] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   35.139767] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   35.145071] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   35.149468] [<8c01448a>] do_exit+0x682/0x6b8
+> [   35.153921] [<8c049a08>] filp_close+0x30/0x5c
+> [   35.158361] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   35.163495]
+> [   35.234617] BUG: scheduling while atomic: default.hotplug/0x10000002/919
+> [   35.240900] Stack: (0x8c92fe20 to 0x8c930000)
+> [    35.245338] fe20: 8c15a80c 10000000 8c92e000 8c8c52d0 8c00f782 8c92fe50 8c936000 8c1ff004
+> [   35.253818] fe40: c0001000 0c93653e 10000000 8c92e000 8c15adf4 8c92fe60 7ba55a7c 8c1e9164
+> [   35.262351] fe60: 8c15b6ba 8c9a0000 8c00c606 8c92e000 8c03ac92 8c1f0c30 7ba55a7c 8c93480c
+> [   35.270884] fe80: 8c2146c0 8c9cc954 8c215400 8c92e000 8c915a40 00000000 00000000 8c03bb62
+> [   35.279417] fea0: 8c9317b8 00000001 7ba55a7c 8c93480c 00000954 00030002 0c9a055c 8c9317b8
+> [   35.287950] fec0: 8c915a80 0c9a055c 8c915a40 8c92fee8 8c8c5230 00000007 e0f95d69 8c00b890
+> [   35.296484] fee0: 8c92ffa0 8c8c5140 8c915a40 8c915a74 7ba55a7c 00030002 8c93480c 8c8c5180
+> [   35.305017] ff00: 00000007 e0f95d69 00000007 8c00e384 8c92ff1c e0f95d69 8c00d83a 8c92ff20
+> [   35.313550] ff20: 8c00dd56 8c92ff38 00000007 8c92ff50 8c8b4100 8c1bb0e0 8c8c5140 8c1e0520
+> [   35.322083] ff40: 8c915220 000004a6 8c15a8c2 00000000 8c8c52cc 8c01448a 8c1c0444 8c8c5230
+> [   35.330616] ff60: 8c23fb20 8c1c0464 8c8c5140 00000010 8c8c547c 8c92ff74 8c92ff74 00000001
+> [   35.339149] ff80: 8c0070e8 7ba55a80 00000000 00000000 ffffff0f 40008000 7ba55a7c 00000001
+> [   35.347728] ffa0: 00000000 00429e50 0048d0fc 00000000 004a7148 0048d21c 00000000 00000000
+> [   35.356215] ffc0: 00489418 004a7148 00000000 00000000 00000000 00000000 7ba55a80 7ba55a80
+> [   35.364748] ffe0: 00429e50 0042f15a 00008001 00000000 00000031 000005ef ffffffff 000000c0
+> [   35.373323]
+> [   35.373340] Call trace:
+> [   35.377435] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   35.382324] [<8c15adf4>] cond_resched+0x30/0x48
+> [   35.387003] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   35.391391] [<8c00c606>] copy_user_page+0x86/0x134
+> [   35.396329] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   35.401008] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   35.406133] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   35.410978] [<8c00e384>] dequeue_task+0x20/0x32
+> [   35.415645] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   35.421134] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   35.426424] [<8c1e0520>] pciauto_bus_scan+0x54/0x594
+> [   35.431541] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   35.435954] [<8c01448a>] do_exit+0x682/0x6b8
+> [   35.440351] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   35.445477]
+> [   35.666500] BUG: scheduling while atomic:  default.hotplug/0x10000002/929
+> [   35.672800] Stack: (0x8c9c3e20 to 0x8c9c4000)
+> [   35.677279] 3e20: 8c15a80c 10000000 8c9c2000 8cca51d0 8c00f782 8c9c3e50 8cc8f000 8c1ff004
+> [   35.685716] 3e40: c0001000 0cc8f53e 10000000 8c9c2000 8c15adf4 8c9c3e60 0048d0fc 8c1e9164
+> [   35.694249] 3e60: 8c15b6ba 8c927000 8c00c606 8c9c2000 8c03ac92 8c1f0c30 0048d0fc 8c966df4
+> [   35.702782] 3e80: 8c21b1e0 8c8cf234 8c2144e0 8c9c2000 8c1e06c0 00000000 00000000 8c03bb62
+> [   35.711315] 3ea0: 8c8b5004 00000001 0048d0fc 8c966df4 00000234 00030002 0c92755c 8c8b5004
+> [   35.719849] 3ec0: 8c1e0700 0c92755c 8c1e06c0 8c9c3ee8 8cca5130 00000007 f3f67e84 8c00b890
+> [   35.728382] 3ee0: 8c9c3fa0 8cca5040 8c1e06c0 8c1e06f4 0048d0fc 00030002 8c966df4 8cca5080
+> [   35.736915] 3f00: 00000007 f3f67e84 00000007 8c00e384 8c9c3f1c 8c00d818 8c00d83a 8c9c3f20
+> [   35.745448] 3f20: 8c00dd56 8c9c3f38 00000007 8c9c3f50 8cc9f4c0 8c1bb0e0 8cca5040 8c9a4720
+> [   35.754027] 3f40: 8c8bebc0 000004fc 8c15a8c2 00000000 8cca51cc 8c01448a 8c1c0444 8cca5130
+> [   35.762514] 3f60: 8c23fb20 8c23eb64 8cca5040 00000010 8cca537c 8c9c3f74 8c9c3f74 00000001
+> [   35.771047] 3f80: 8c0070e8 7be36ab8 00000000 00000000 ffffff0f 40008000 0048d0fc 00000001
+> [   35.779627] 3fa0: 00000000 00000001 0048d0fc 00000000 004a7178 0048d17c 00000000 00000000
+> [   35.788113] 3fc0: 00489418 004a7178 00000000 00000000 00000000 00000000 7be36ab8 7be36ab8
+> [   35.796646] 3fe0: 0042f152 0042f128 00008001 00000000 00000031 000005ef ffffffff 000000c0
+> [   35.805221]
+> [   35.805239] Call trace:
+> [   35.809333] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   35.814222 ] [<8c15adf4>] cond_resched+0x30/0x48
+> [   35.818889] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   35.823289] [<8c00c606>] copy_user_page+0x86/0x134
+> [   35.828226] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   35.832903] [<8c1e06c0>] pciauto_bus_scan+0x1f4/0x594
+> [   35.838122] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   35.843232] [<8c1e0700>] pciauto_bus_scan+0x234/0x594
+> [   35.848473] [<8c1e06c0>] pciauto_bus_scan+0x1f4/0x594
+> [   35.853661] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   35.858498] [<8c1e06c0>] pciauto_bus_scan+0x1f4/0x594
+> [   35.863707] [<8c1e06f4>] pciauto_bus_scan+0x228/0x594
+> [   35.868923] [<8c00e384>] dequeue_task+0x20/0x32
+> [   35.873589] [<8c00d818>] update_stats_wait_end+0x64/0xb8
+> [   35.879065] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   35.884547] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   35.889854 ] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   35.894248] [<8c01448a>] do_exit+0x682/0x6b8
+> [   35.898658] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   35.903796]
+> [   35.965574] BUG: scheduling while atomic: udev/0x10000001/920
+> [   35.970857] Stack: (0x8c939e58 to 0x8c93a000)
+> [   35.975312] 9e40:                                                       8c15a80c 10000000
+> [   35.983796] 9e60: 8c938000 8cca5570 8c00f782 8c939e88 8ca0f000 8c1ff004 c0001000 0ca0f53e
+> [   35.992329] 9e80: 10000000 8c938000 8c15adf4 8c939e98 004650b4 8c1e9164 8c15b6ba 8c1e9158
+> [   36.000862] 9ea0: 8c00c4d8 8c938000 8c03b7d0 8c8d8004 00000001 004650b4 8c8da710 8c9be194
+> [   36.009395] 9ec0: 8c2161e0 8c938000 8c8be3a0 8c939ed8 00000000 8c0c0506 0041a000 8c00b890
+> [   36.017928] 9ee0: 8c939fa0 8cca53e0 8c8be3a0 8c8be3d4 004650b4 00030002 8c8da710 00464000
+> [   36.026461] 9f00: 00000002 8c934c50 00000464 8c8da710 8c934c50 00000000 00100077 8c03e226
+> [   36.034994] 9f20: 00100077 8c8be3e0 00466000 00002000 00000002 8c8be3a0 00464000 00100077
+> [   36.043527] 9f40: 00000000 00000000 00000464 00000000 8c8da728 8c8da710 8c8da72c 00000464
+> [   36.052103] 9f60: 8c03e3ba 8c03e3ca 8c8be41c 00466000 00467000 8c8be41c 00466000 00000001
+> [   36.060594] 9f80: 8c0070e8 7b95fb78 ffffffff 295e2490 ffffff0f 40008000 004650b4 00000001
+> [   36.069127] 9fa0: 000013b9 004650b0 00000001 295e6eb0 00466000 00000003 295e6b74 00463cf8
+> [   36.077707] 9fc0: 00000f51 295e6eb0 00464000 00000308 295e2490 ffffffff 7b95fb78 7b95fb78
+> [   36.086193] 9fe0: 295c64a0 295c62be 00000001 00000000 0000051e 000001b0 ffffffff 00000060
+> [   36.094721]
+> [   36.094738] Call trace:
+> [   36.098878] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   36.103782] [<8c15adf4>] cond_resched+0x30/0x48
+> [   36.108436] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   36.112837] [<8c00c4d8>] clear_user_page+0x84/0x12c
+> [   36.117866] [<8c03b7d0>] handle_mm_fault+0x13e/0x556
+> [   36.122992] [<8c0c0506>] div64_64+0x8a/0xb8
+> [   36.127295] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   36.132157] [<8c03e226>] do_brk+0x102/0x200
+> [   36.136481] [<8c03e3ba>] sys_brk+0x96/0xdc
+> [   36.140677] [<8c03e3ca>] sys_brk+0xa6/0xdc
+> [   36.144904] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   36.150036]
+> [   36.189936] BUG: scheduling while atomic: default.hotplug/0x10000002/932
+> [   36.196187] Stack: (0x8ccb1e20 to 0x8ccb2000)
+> [   36.200702] 1e20: 8c15a80c 10000000 8ccb0000 8cc9fd90 8c00f782 8ccb1e50 8c1e6000 8c1ff00c
+> [   36.209137] 1e40: c0003000 0c1e653e 10000000 8ccb0000 8c15adf4 8ccb1e60 004a715c 8c1e917c
+> [   36.217671] 1e60: 8c15b6ba 8c9e2000 8c00c606 8ccb0000 8c03ac92 8c1f0c30 004a715c 8cceb518
+> [   36.226249] 1e80: 8c205cc0 8c8c929c 8c215c40 8ccb0000 8c1e06c0 00000000 00000000 8c03bb62
+> [   36.234736] 1ea0: 8c8b5004 00000001 004a715c 8cceb518 0000029c 00030002 0c9e255c 8c8b5004
+> [   36.243269] 1ec0: 8c1e0700 0c9e255c 8c1e06c0 8ccb1ee8 8cc9fcf0 00000007 fe00a0e4 8c00b890
+> [   36.251848] 1ee0: 8ccb1fa0 8cc9fc00 8c1e06c0 8c1e06f4 004a715c 00030002 8cceb518 8cc9fc40
+> [   36.260336] 1f00: 00000007 fe00a0e4 00000007 8c00e384 8ccb1f1c fe00a0e4 8c00d83a 8ccb1f20
+> [   36.268869] 1f20: 8c00dd56 8ccb1f38 00000007 8ccb1f50 8c941c40 8c1bb0e0 8cc9fc00 8c1e0520
+> [   36.277448] 1f40: 8c915d80 00000510 8c15a8c2 00000000 8cc9fd8c 8c01448a 8c1c0444 8cc9fcf0
+> [   36.285935] 1f60: 8c23fb20 8c1c0464 8cc9fc00 8c049a08 00489964 ffffff0f 00000000 00000001
+> [   36.294468] 1f80: 8c0070e8 7b802ab4 0048d430 00000000 ffffff0f 40008000 004a715c 00000001
+> [   36.303047] 1fa0: 00000000 00000000 f7ffffff 00000000 004a7148 0048d17c 00000000 00000000
+> [   36.311534] 1fc0: ffffffff 004a7148 004a7148 00000000 00000000 0048d430 7b802ab4 7b802ab4
+> [   36.320067] 1fe0: 00429f98 0042f268 00008001 00000000 00000031 000005ef ffffffff 000000c0
+> [   36.328643]
+> [    36.328660] Call trace:
+> [   36.332752] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   36.337657] [<8c15adf4>] cond_resched+0x30/0x48
+> [   36.342346] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   36.346709] [<8c00c606>] copy_user_page+0x86/0x134
+> [   36.351649] [<8c03ac92>] do_wp_page+0x33a/0x494
+> [   36.356326] [<8c1e06c0>] pciauto_bus_scan+0x1f4/0x594
+> [   36.361530] [<8c03bb62>] handle_mm_fault+0x4d0/0x556
+> [   36.366657] [<8c1e0700>] pciauto_bus_scan+0x234/0x594
+> [   36.371873] [<8c1e06c0>] pciauto_bus_scan+0x1f4/0x594
+> [   36.377072] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   36.381921] [<8c1e06c0>] pciauto_bus_scan+0x1f4/0x594
+> [   36.387142] [<8c1e06f4>] pciauto_bus_scan+0x228/0x594
+> [   36.392344] [<8c00e384>] dequeue_task+0x20/0x32
+> [   36.397012] [<8c00d83a>] update_stats_wait_end+0x86/0xb8
+> [   36.402489] [<8c00dd56>] pick_next_task_fair+0x32/0x58
+> [   36.407792] [<8c1e0520>] pciauto_bus_scan+0x54/0x594
+> [   36.412909] [<8c15a8c2>] schedule+0xf6/0x3c0
+> [   36.417310] [<8c01448a>] do_exit+0x682/0x6b8
+> [   36.421728] [<8c049a08>] filp_close+0x30/0x5c
+> [   36.426202] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   36.431336]
+> [   36.560776] BUG: scheduling while atomic: [/0x10000001/937
+> [   36.565758] Stack: (0x8c8c7e58 to 0x8c8c8000)
+> [   36.570266] 7e40:                                                       8c15a80c 10000000
+> [   36.578715] 7e60: 8c8c6000 8cca5cb0 8c00f782 8c8c7e88 8c95b000 8c1ff000 c0000000 0c95b53e
+> [   36.587293] 7e80: 10000000 8c8c6000 8c15adf4 8c8c7e98 0048c2ac 8c1e9158 8c15b6ba 8c1e9158
+> [   36.595781] 7ea0: 8c00c4d8 8c8c6000 8c03b7d0 8c8df004 00000001 0048c2ac 8c8daa04 8c8cc230
+> [   36.604314] 7ec0: 8c214b60 8c8c6000 8c8be200 00000000 00489a20 004a6630 00000003 8c00b890
+> [   36.612892] 7ee0: 8c8c7fa0 8cca5b20 8c8be200 8c8be234 0048c2ac 00030002 8c8daa04 8c29b41c
+> [   36.621380] 7f00: 8c8c6000 00000001 00000001 8c04d2ca 00000003 00000f59 00000000 8c29b41c
+> [   36.629914] 7f20: 8c26dcac 004a74a4 8c04e056 004a7504 8c04d1bc 8c8c7fa0 00000000 fffffffe
+> [   36.638493] 7f40: 8c29b3a0 8c1c4dec 8c04e290 8c29b45c 8c04e2ec 00000000 8c29b41c 0000001f
+> [   36.646980] 7f60: 004a74ec 8c05412c 7b836d2c 7ba55ab0 00000000 8c054172 8c01ccb4 00000001
+> [   36.655513] 7f80: 8c0070e8 7b836d88 7b836e74 004a4ed8 ffffff0f 40008000 0048c2ac 00000001
+> [   36.664090] 7fa0: 0040d4dc 7b836e78 00000000 00000000 7b836f3e 004698c6 0000008b 0000000c
+> [   36.672579] 7fc0: 0048c2ac 7b836e74 00000003 00454a28 004a4ed8 7b836e74 7b836d88 7b836d88
+> [   36.681112] 7fe0: 0040ddfa 0040ddfe 00000000 00000000 00000031 00000000 ffffffff 00000060
+> [   36.689685]
+> [   36.689704] Call trace:
+> [   36.693799] [<8c00f782>] __cond_resched+0x1a/0x40
+> [   36.698689 ] [<8c15adf4>] cond_resched+0x30/0x48
+> [   36.703391] [<8c15b6ba>] mutex_lock+0xa/0x50
+> [   36.707784] [<8c00c4d8>] clear_user_page+0x84/0x12c
+> [   36.712784] [<8c03b7d0>] handle_mm_fault+0x13e/0x556
+> [   36.717915] [<8c00b890>] do_page_fault+0xa4/0x2c0
+> [   36.722766] [<8c04d2ca>] copy_strings+0x10e/0x190
+> [   36.727610] [<8c04e056>] search_binary_handler+0x6a/0x1dc
+> [   36.733173] [<8c04d1bc>] copy_strings+0x0/0x190
+> [   36.737860] [<8c04e290>] do_execve+0xc8/0x180
+> [   36.742334] [<8c04e2ec>] do_execve+0x124/0x180
+> [   36.746918] [<8c05412c>] vfs_ioctl+0x25e/0x276
+> [   36.751498] [<8c054172>] sys_ioctl+0x2e/0x5c
+> [   36.755896] [<8c01ccb4>] sys_setuid+0x28/0xc4
+> [   36.760387] [<8c0070e8>] ret_from_exception+0x0/0x14
+> [   36.765529]
+>
+> / #
+>
