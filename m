@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbXGWS5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXGWS6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764145AbXGWS5P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbXGWS47
+	id S932234AbXGWS6M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbXGWS5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:56:59 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53439 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756983AbXGWS47 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:56:59 -0400
-Date: Mon, 23 Jul 2007 19:56:48 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Alan Modra <amodra@bigpond.net.au>, Roland McGrath <roland@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>,
-       Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org
-Subject: Re: "build-id" changes break sparc64
-Message-ID: <20070723185648.GK21668@ftp.linux.org.uk>
-References: <20070723062759.GB3933@uranus.ravnborg.org> <20070723072613.E3A504D0489@magilla.localdomain> <20070723081435.GA4644@uranus.ravnborg.org> <20070723092559.GA24088@bubble.grove.modra.org> <20070723114936.GH21668@ftp.linux.org.uk> <20070723180048.GA8268@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Mon, 23 Jul 2007 14:57:55 -0400
+Received: from thunk.org ([69.25.196.29]:36975 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756983AbXGWS5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 14:57:54 -0400
+Date: Mon, 23 Jul 2007 14:57:32 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Git Mailing List <git@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Git tree for old kernels from before the current tree
+Message-ID: <20070723185732.GB30165@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
+	Git Mailing List <git@vger.kernel.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com> <Pine.LNX.4.64.0707222257540.32367@fbirervta.pbzchgretzou.qr> <20070722211314.GA13850@linux-sh.org> <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr> <46A3D5EA.2050600@zytor.com> <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070723180048.GA8268@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 08:00:48PM +0200, Sam Ravnborg wrote:
-> On Mon, Jul 23, 2007 at 12:49:36PM +0100, Al Viro wrote:
-> > On Mon, Jul 23, 2007 at 06:55:59PM +0930, Alan Modra wrote:
-> > > On Mon, Jul 23, 2007 at 10:14:35AM +0200, Sam Ravnborg wrote:
-> > > > But I would still like to hear from Alan what the benefits are.
-> > > 
-> > > See http://sourceware.org/ml/binutils/2004-10/msg00178.html
-> > 
-> > What does _not_ doing intermediates do to memory footprint of ld(1)
-> > and time spent in there?
+On Mon, Jul 23, 2007 at 09:55:24AM -0700, Linus Torvalds wrote:
 > 
-> x86_64 defconfig
-> 
-> rm vmlinux*; time make vmlinux
-> 
-> Vanilla tree: ~7,7 sec
-> With single shot ld (Roland's patch): 8,3 secs
-> 
-> So as expected slower. As we link twice the cost is ~0,3 sec 
-> for a x86_64 defconfig link on my box.
+> I actually tried to get something like this together back in the BK days 
+> and early in the SCO saga. It was pretty painful to try to find all the 
+> historic trees and patches - they're all in different format, and some of 
+> them are unreliable (ie CVS imports by people like Ted).
 
-defconfig is not too interesting, but anyway - how much memory does it
-take in process?  And, obviously, what kind of box it is?
- 
-> So it should be beneficial to do it and Alan's link did not really
-> convince me for the kernel usage.
-> Al - do you have any input there?
+Um, *I* never had the bad taste to import Linux kernels into CVS.  :-)
 
-Depends.  If more-or-less allmodconfig doesn't kick everything else out
-of cache and doesn't end up creating fsckloads of seeks...
+I'm pretty sure we never had anything like that on tsx-11.mit.edu, either.
 
-Actually, if you want a killer, see what happens when building with debug
-info...
+    	   	   	     	      	   - Ted
