@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764953AbXGWSXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762647AbXGWS3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764953AbXGWSXl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbXGWSXb
+	id S1762647AbXGWS3R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbXGWS3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:23:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48516 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753878AbXGWSX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:23:29 -0400
-Date: Mon, 23 Jul 2007 20:23:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH] release quicklist before free_page
-Message-ID: <20070723182301.GA27789@elte.hu>
-References: <20070723152129.036573829@mvista.com> <1185208378.8197.20.camel@twins> <1185207979.2573.55.camel@imap.mvista.com>
+	Mon, 23 Jul 2007 14:29:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:42900 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755301AbXGWS3H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 14:29:07 -0400
+Message-ID: <46A4F365.50708@zytor.com>
+Date: Mon, 23 Jul 2007 11:28:53 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185207979.2573.55.camel@imap.mvista.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andi Kleen <ak@suse.de>
+CC: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, jh@suse.cz
+Subject: Re: [PATCH 2/8] i386: bitops: Rectify bogus "Ir" constraints
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <200707231810.08445.ak@suse.de> <Pine.LNX.4.64.0707232145270.22155@cselinux1.cse.iitk.ac.in> <200707231830.40331.ak@suse.de> <46A4EDDD.7010309@zytor.com>
+In-Reply-To: <46A4EDDD.7010309@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Daniel Walker <dwalker@mvista.com> wrote:
-
-> > Not quite, it uses preempt_disable() to avoid migration and stick to 
-> > a cpu. Without that it might end up freeing pages from another 
-> > quicklist.
-
-i.e. the patch hides a debug warning and there's possibly silent data 
-corruption - not good.
-
-> > How about this - compile tested only
+H. Peter Anvin wrote:
 > 
-> How about a comment to go with it ?  Which says something like what's 
-> above, notes on how the locking is getting used..
+> "I" is correct.  The Intel documentation on this is highly confusing
+> (and has bugs in it), but it does unambiguously state:
+> 
+> "Some assemblers support immediate bit offsets larger than 31 by using
+> the immediate bit offset field in combination with the displacement
+> field in the memory operand ... The processor will ignore the high-order
+> bits if they are not zero."  AMD processors might be different for all I
+> know.
+> 
+> So unless gas is capable of doing this transformation (and it's not as
+> of binutils-2.17.50.0.6) "I" is what's needed here.
+> 
 
-how about: "if you've got some time then please also add a few comments, 
-because the code was quite non-obvious to me and I misunderstood it when 
-I tried to fix it. Thanks."
+Just tested it on a K8 machine; AMD behaves the same way.  So "I" is
+correct, and changing it to "N" would introduce a bug.
 
-ok?
+The only way to optimize this is by using __builtin_constant_p() and
+adjust the offset appropriately.
 
-	Ingo
+	-hpa
