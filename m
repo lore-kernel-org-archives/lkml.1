@@ -1,126 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933401AbXGWW2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbXGWWaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933401AbXGWW2f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 18:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXGWW2W
+	id S1761326AbXGWWaE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 18:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbXGWW3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 18:28:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42790 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752088AbXGWW2V (ORCPT
+	Mon, 23 Jul 2007 18:29:53 -0400
+Received: from web50109.mail.re2.yahoo.com ([206.190.38.37]:32032 "HELO
+	web50109.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753854AbXGWW3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 18:28:21 -0400
-Date: Mon, 23 Jul 2007 15:27:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-Id: <20070723152712.02ded067.akpm@linux-foundation.org>
-In-Reply-To: <20070723220446.GA5822@martell.zuzino.mipt.ru>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	<20070723183839.GA5874@martell.zuzino.mipt.ru>
-	<20070723190152.GA5755@martell.zuzino.mipt.ru>
-	<20070723132431.42afbae8.akpm@linux-foundation.org>
-	<20070723204045.GD5755@martell.zuzino.mipt.ru>
-	<20070723210153.GA5753@martell.zuzino.mipt.ru>
-	<20070723141137.171e4ac1.akpm@linux-foundation.org>
-	<20070723220446.GA5822@martell.zuzino.mipt.ru>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Mon, 23 Jul 2007 18:29:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=GjHLlFCmbz4EP7dtoEnfDXYStrtdqUkl/ILx7ismT6XpqagJIyCucDccfC4ID1fbzYGj/cC1PGXBbZmXywZk4MQjnJxyPn8RvwczLCkKAvmkph6t17OEUBxsu8/xqQf6Iz1sHjZ0fNaxUHhni06CB/Epm1/TOAKwpKC21qNHFvs=  ;
+Message-ID: <20070723222951.33125.qmail@web50109.mail.re2.yahoo.com>
+X-YMail-OSG: 5O5cN.0VM1lFUobzx7Bo5y1at5upsfDiu1TlWHXhVhyDsmKWiAcfti_lE5jtqF5GIymYrl53X0CxkVK2uXlODzP5oqFNZLc.AFI.ifr.FuoRe0Xdpa5yfhj4DTxs3awsjeF2CqwPZ7xs00sL9GaCin2uSA--
+Date: Mon, 23 Jul 2007 15:29:50 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Reply-To: dougthompson@xmission.com
+Subject: Re: drivers/edac: add mips and ppc visibility
+To: Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Douglas Thompson <dougthompson@xmission.com>
+In-Reply-To: <20070720194737.GA30184@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 02:04:46 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-> On Mon, Jul 23, 2007 at 02:11:37PM -0700, Andrew Morton wrote:
-> > On Tue, 24 Jul 2007 01:01:53 +0400
-> > Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > 
-> > > On Tue, Jul 24, 2007 at 12:40:45AM +0400, Alexey Dobriyan wrote:
-> > > > > I had more complete info: http://article.gmane.org/gmane.linux.network/66966
-> > > > > 
-> > > > > You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
-> > > > > 
-> > > > > I haven't worked out where that kmap_atomic() call is coming from yet. 
-> > > > > Both traces point up into the page allocator, but I _think_ that's stack
-> > > > > gunk.
-> > > > 
-> > > > Ahh, you suspect networking.
-> > > > 
-> > > > Here, setup is 2 cheap-ass 100Mb realtek 8139 NICs, one to campus network
-> > > > receiving ~20 junk packets per second, one gathering netconsole output
-> > > > and ssh to it, no conntracks and fancy stuff.
-> > > > 
-> > > > [reboots with cables physically unplugged]
-> > > 
-> > > OK, I run gdb recompile, cat(1) every file in /usr/portage (shitload of
-> > > small files) with both cables unplugged. It all went fine for ~5 minutes
-> > > after that it crashed exactly same way after 10 secs after plugging one
-> > > of them.
-> > 
-> > It'd be nice to get a clean trace.  Are you able to obtain the full
-> > trace with CONFIG_FRAME_POINTER=y?
+--- Dave Jones <davej@redhat.com> wrote:
+
+> On Thu, Jul 19, 2007 at 05:59:16PM +0000, Linux Kernel wrote:
+>  > Gitweb:    
+>
+http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b113a3f7e85d7f97c8383a88a5bc7c2ea8daeb2f
+>  > Commit:     b113a3f7e85d7f97c8383a88a5bc7c2ea8daeb2f
+>  > Parent:     052dfb45ccb5ea354a426b52556bcfee75b9d2f5
+>  > Author:     Douglas Thompson <dougthompson@xmission.com>
+>  > AuthorDate: Thu Jul 19 01:50:15 2007 -0700
+>  > Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
+>  > CommitDate: Thu Jul 19 10:04:55 2007 -0700
+>  > 
+>  >     drivers/edac: add mips and ppc visibility
+>  >     
+>  >     1) Remove an old CVS ID string
+>  >     
+>  >     2) change EDAC from a tristate option to a simple bool option
+>  >     
+>  >     3) In addition to the X86 arch, PPC and MIPS also have drivers in the
+>  >     submission queue.  This patch turns on the EDAC flag for those archs.  Each
+>  >     driver will have its respective 'depends on ARCH' set.
+>  >     
+>  >     Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
+>  >     Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+>  >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>  >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 > 
-> Sorry, no camera shot, finding camera requires wakening up M. :)
+> What was the reasoning behind 2) ?
+> Now everyone's distro kernel has bits of EDAC in it even if they
+> don't use it.  (Admittedly only a small amount, but these things
+> tend to creep in bit by bit).
 > 
-> It took longer that usual, but here it is
+> 	Dave
+
+It might be my failed understanding, but the requested patch for this, was to move the
+ON/OFF of EDAC into the 'drivers' submenu directly (instead of down in the EDAC submenu), 
+to allow for faster disabling/enabling of EDAC in menuconfig.
+
+But all the modules are still tri-state configured.
+
+If I am missing something here, please give me some needed instruction. From what I understand
+your comment, the code is can still be configured in modules.
+
+thanks
+
+doug t
+
+
 > 
-> 	kmap_atomic
-> 	get_page_from_freelist
-> 	__alloc_pages
-> 	cache_alloc_refill
-> 	__alloc_pages
-> 	cache_alloc_refill
-> 	kmem_cache_alloc
-> 	dst_alloc
-> 	ip_route_input
-> 	ip_rcv
-> 	netif_receive_skb
-> 	rtl8139_poll
-> 	net_rx_action
-> 	__do_softirq
-> 	do_softirq
-> 	irq_exit
-> 	do_IRQ
-> 	common_interrupt
-> 	handle_mm_fault
-> 	do_page_fault
-> 	error_core
+> -- 
+> http://www.codemonkey.org.uk
 > 
-> much more loaded x86_64 box near also running 2.6.23-rc1 with debugging
-> turned on, using atl1 driver doesn't experience any crashes.
-> 
-> And I found 2.6.22-b91cba52e9b7b3f1c0037908a192d93a869ca9e5-x entry on
-> top of grub config which means b91cba52e9b7b3f1c0037908a192d93a869ca9e5
-> _without_ any debugging was OK.
-
-I worked out that the crash I saw was in
-
-        BUG_ON(!pte_none(*(kmap_pte-idx)));
-
-in the read of kmap_pte[idx].  Which would be weird as the caller is using 
-a literal KM_USER0.
-
-So maybe I goofed, and that BUG_ON is triggering (it scrolled off, and I am
-unable to reproduce it now).
-
-If that BUG_ON _is_ triggering then it might indicate that someone is doing
-a __GFP_HIGHMEM|__GFP_ZERO allocation while holding KM_USER0.
-
-If they're holding an atomic kmap then they'll be running in_atomic so it
-is unlikely that they accidentally added __GFP_WAIT because lots of people
-would be getting lots of might_sleep() warnings.
-
-Hence that first VM_BUG_ON in prep_zero_page() _should_ be triggering.
-
-Do you have CONFIG_DEBUG_VM enabled?
-
-
-
-Also, it might be useful to apply -mm's kmap_atomic-debugging.patch.  it
-will detect lots of abuse.
 
