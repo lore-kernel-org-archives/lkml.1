@@ -1,146 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932172AbXGWJu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765598AbXGWJvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932172AbXGWJu4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 05:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760957AbXGWJtz
+	id S1765598AbXGWJvc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 05:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764361AbXGWJub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 05:49:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:13353 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760541AbXGWJtw (ORCPT
+	Mon, 23 Jul 2007 05:50:31 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:47746 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764172AbXGWJu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 05:49:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=moNNh/XGPx+ZXWyzIxTBEyQNgqAt1+Njn8r0EAqAJeZuXEfwwrz/cjA5XnOs5eooBuPWMfGzYOWF2/2tnLXtSRWA1pOw7MVxL4Wt7r94IrxUafkIvjNXlawWHNW02JqHj+Fm0+v3aQGkhW/MVIh4NvLP8wlmr2m55xf6io+3xyE=
-Message-ID: <46A47940.7030801@googlemail.com>
-Date: Mon, 23 Jul 2007 11:47:44 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 23 Jul 2007 05:50:28 -0400
+Date: Mon, 23 Jul 2007 10:50:24 +0100
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       venkatesh.pallipadi@intel.com, davej@redhat.com,
+       jhoblitt@ifa.hawaii.edu, auke-jan.h.kok@intel.com
+Subject: Re: Linus 2.6.23-rc1: ACPI-related oops on x86_64
+Message-ID: <20070723095024.GA19437@skynet.ie>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Satyam Sharma <satyam.sharma@gmail.com>, Tejun Heo <htejun@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@gmail.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>, Takashi Iwai <tiwai@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
-       Doug Chapman <doug.chapman@hp.com>, Vasily Tarasov <vtaras@openvz.org>,
-       Thierry MERLE <thierry.merle@free.fr>, v4l-dvb-maintainer@linuxtv.org,
-       "Dwaine P. Garden" <dwainegarden@rogers.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: 2.6.23-rc1: known regressions with patches
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On (22/07/07 14:04), Linus Torvalds didst pronounce:
+> 
+> Ok, right on time, two weeks afetr 2.6.22, there's a 2.6.23-rc1 out there.
+> 
 
-Here is a list of some known regressions in 2.6.23-rc1
-with patches available.
+This was seen on a machine on test.kernel.org;
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+Unable to handle kernel NULL pointer dereference at 0000000000000000
+RIP: 
+ [<ffffffff8037379b>] acpi_processor_throttling_seq_show+0xa7/0xd6
+PGD 3bd9e067 PUD 3bc6a067 PMD 0 
+Oops: 0000 [1] SMP 
+CPU 3 
+Modules linked in: video output button battery floppy ac lp parport_pc
+parport nvram amd_rng rng_core i2c_amd756 i2c_core
+Pid: 1522, comm: head Not tainted 2.6.23-rc1-autokern1 #1
+RIP: 0010:[<ffffffff8037379b>]  [<ffffffff8037379b>]
+acpi_processor_throttling_seq_show+0xa7/0xd6
+RSP: 0018:ffff81003c4a5e48  EFLAGS: 00010246
+RAX: 0000000000000020 RBX: ffff810037ea1800 RCX: 0000000000000000
+RDX: 000000000000002a RSI: ffffffff80599c02 RDI: ffff810037c6a9c0
+RBP: ffff810037c6a9c0 R08: ffff81003c3e3051 R09: ffff810037c6a9c0
+R10: ffffffffffffffff R11: ffffffff80373e66 R12: 0000000000000000
+R13: 0000000000000000 R14: 0000000000000000 R15: 00007fffd59dcd40
+FS:  00002b7ad50e36f0(0000) GS:ffff81003ee56b40(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000000 CR3: 000000003bd9b000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process head (pid: 1522, threadinfo ffff81003c4a4000, task ffff81003ee81040)
+Stack:  ffff81003eed7180 ffff810037c6a9c0 0000000000000001 0000000000000001
+ 0000000000002000 ffffffff802a77b3 ffff81003c4a5f50 ffff81003e2f8ec0
+ ffff810037c6a9f0 ffff81003de65000 0000000000000000 fffffffffffffffb
+Call Trace:
+ [<ffffffff802a77b3>] seq_read+0x105/0x28e
+ [<ffffffff802a76ae>] seq_read+0x0/0x28e
+ [<ffffffff802c8501>] proc_reg_read+0x80/0x9a
+ [<ffffffff8028eb3d>] vfs_read+0xcb/0x153
+ [<ffffffff8028eed9>] sys_read+0x45/0x6e
+ [<ffffffff8020bc6e>] system_call+0x7e/0x83
+FATAL: Error inserting acpi_cpufreq
+(/lib/modules/2.6.23-rc1-autokern1/kernel/arch/x86_64/kernel/cpufreq/acpi-cpufreq.ko):
+No such device
 
-List of Aces
+Full oops is at http://test.kernel.org/abat/100837/debug/console.log
+Config file at http://test.kernel.org/abat/100837/build/dotconfig
 
-Name                    Regressions fixed since 21-Jun-2007
-Andi Kleen                             4
-Linus Torvalds                         4
-Adrian Bunk                            3
-Andrew Morton                          3
-Jens Axboe                             3
-Al Viro                                2
-David Woodhouse                        2
-Hugh Dickins                           2
-Tejun Heo                              2
+People are added to the CC that git shows were in this general area
+recently in case they have the quick answer.
 
-
-
-Unclassified
-
-Subject         : Regression with sys_time() speedup patch
-References      : http://lkml.org/lkml/2007/7/20/205
-Last known good : ?
-Submitter       : Takashi Iwai <tiwai@suse.de>
-Caused-By       : ?
-Handled-By      : Ingo Molnar <mingo@elte.hu>
-Patch           : http://lkml.org/lkml/2007/7/20/219
-Status          : patch available
-
-Subject         : kobject link failure
-References      : http://lkml.org/lkml/2007/7/19/495
-Last known good : ?
-Submitter       : Jan Engelhardt <jengelh@linux01.gwdg.de>
-Caused-By       : ?
-Handled-By      : Cornelia Huck <cornelia.huck@de.ibm.com>
-                  Greg Kroah-Hartman <gregkh@suse.de>
-Patch           : http://lkml.org/lkml/2007/7/20/143
-Status          : patch available
-
-Subject         : Kconfig prompts without help text
-References      : http://lkml.org/lkml/2007/7/16/326
-Last known good : ?
-Submitter       : Stefan Richter <stefanr@s5r6.in-berlin.de>
-Caused-By       : ?
-Handled-By      : Jan Engelhardt <jengelh@linux01.gwdg.de>
-Patch           : http://lkml.org/lkml/2007/7/18/236
-Status          : patch available
-
-Subject         : Oops while modprobing phy fixed module
-References      : http://lkml.org/lkml/2007/7/14/63
-Last known good : ?
-Submitter       : Gabriel C <nix.or.die@googlemail.com>
-Caused-By       : Tejun Heo <htejun@gmail.com>
-                  commit 3007e997de91ec59af39a3f9c91595b31ae6e08b
-Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
-                  Tejun Heo <htejun@gmail.com>
-                  Vitaly Bordug <vitb@kernel.crashing.org>
-Patch1          : http://lkml.org/lkml/2007/7/18/506
-Status          : patch available
-
-
-
-FS
-
-Subject         : ia64 build failure from recent diskquota patch
-References      : http://lkml.org/lkml/2007/7/18/407
-Last known good : ?
-Submitter       : Doug Chapman <doug.chapman@hp.com>
-Caused-By       : Vasily Tarasov <vtaras@openvz.org>
-                  commit b716395e2b8e450e294537de0c91476ded2f0395
-Handled-By      : Luck, Tony <tony.luck@intel.com>
-Patch1          : http://lkml.org/lkml/2007/7/20/255
-Patch2          : http://lkml.org/lkml/2007/7/20/272
-Status          : patch available
-
-
-
-Media
-
-Subject         : usbvision: don't return an uninitialized value
-References      : http://lkml.org/lkml/2007/7/23/65
-Last known good : ?
-Submitter       : Adrian Bunk <bunk@stusta.de>
-Caused-By       : ?
-Handled-By      : Adrian Bunk <bunk@stusta.de>
-Patch           : http://lkml.org/lkml/2007/7/23/65
-Status          : patch available
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
