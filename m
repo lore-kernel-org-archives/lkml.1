@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbXGWVT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbXGWVYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbXGWVT4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbXGWVTu
+	id S1756931AbXGWVYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbXGWVYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:19:50 -0400
-Received: from aug.linbit.com ([212.69.162.22]:50439 "EHLO mail.linbit.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752007AbXGWVTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:19:49 -0400
-Date: Mon, 23 Jul 2007 23:19:47 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Kyle Moffett <mrlinuxman@mac.com>, Jens Axboe <axboe@kernel.dk>,
-       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Message-ID: <20070723211947.GD6477@mail.linbit.com>
-References: <20070721203819.GA10706@mail.linbit.com> <20070722213202.1f5d1cab.mrlinuxman@mac.com> <20070723133202.GB23495@mail.linbit.com> <a781481a0707230640h17e6d83l5c2359e41f3ec7b7@mail.gmail.com>
-Mime-Version: 1.0
+	Mon, 23 Jul 2007 17:24:40 -0400
+Received: from waste.org ([66.93.16.53]:34864 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbXGWVYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:24:39 -0400
+Date: Mon, 23 Jul 2007 16:24:20 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] mm: Remove slab destructors from kmem_cache_create().
+Message-ID: <20070723212420.GI11115@waste.org>
+References: <20070720012846.GA22487@linux-sh.org> <20070721212851.GH11166@waste.org> <20070721234227.GA8303@linux-sh.org> <20070723140444.159343b2@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a781481a0707230640h17e6d83l5c2359e41f3ec7b7@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070723140444.159343b2@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 07:10:58PM +0530, Satyam Sharma wrote:
-> On 7/23/07, Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
-> >On Sun, Jul 22, 2007 at 09:32:02PM -0400, Kyle Moffett wrote:
-> >[...]
-> >> Don't use signals between kernel threads, use proper primitives like
-> >> notifiers and waitqueues, which means you should also probably switch 
-> >away
-> >> from kernel_thread() to the kthread_*() APIs.  Also you should fix this
-> >> FIXME or remove it if it no longer applies:-D.
-> >
-> >right.
-> >but how to I tell a network thread in tcp_recvmsg to stop early,
-> >without using signals?
-> 
-> 
-> Yup, kthreads API cannot handle (properly stop) kernel threads that want
-> to sleep on possibly-blocking-forever-till-signalled-functions such as
-> tcp_recvmsg or skb_recv_datagram etc etc.
-> 
-> There are two workarounds:
-> 1. Use sk_rcvtimeo and related while-continue logic
-> 2. force_sig(SIGKILL) to your kernel thread just before kthread_stop
->   (note that you don't need to allow / write code to handle / etc signals
->   in your kthread code -- force_sig will work automatically)
+On Mon, Jul 23, 2007 at 02:04:44PM -0700, Christoph Lameter wrote:
+> Please do not merge this patch. I will reuse the destructor field for
+> the kmem_cache_ops in the slab defrag patchset. If you apply this patch
+> then I need to readd the parameter later.
 
-this is not only at stop time.
-for example our "drbd_asender" thread
-does receive as well as send, and the sending
-latency is crucial to performance, while the recv
-will not timeout for the next few seconds.
+The vast majority of slabs won't have any cache ops, right? Wouldn't
+it be cleaner to have a kmem_set_cache_ops() for the few that do?
 
-> >> +/* THINK maybe we actually want to use the default "event/%s" worker 
-> >threads
-> >> + * or similar in linux 2.6, which uses per cpu data and threads.
-> >> + *
-> >> + * To be general, this might need a spin_lock member.
-> >> + * For now, please use the mdev->req_lock to protect list_head,
-> >> + * see drbd_queue_work below.
-> >> + */
-> >> +struct drbd_work_queue {
-> >> +       struct list_head q;
-> >> +       struct semaphore s; /* producers up it, worker down()s it */
-> >> +       spinlock_t q_lock;  /* to protect the list. */
-> >> +};
-> >>
-> >> Umm, how about fixing this to actually use proper workqueues or something
-> >> instead of this open-coded mess?
-> >
-> >unlikely to happen "right now".
-> >but it is on our todo list...
-> 
-> It should be easier to do it now (if you defer it for later, the code will
-> only grow more and more complex). Also, removing this gunk from
-> your driver will clearly make it smaller, and easier for us to review :-)
+While we're on the subject, has anyone reviewed your defrag stuff?
 
-and will poison the generic work queues with stuff that might block
-somewhere deep in the tcp stack. and where we are not able to cancel it.
-not exactly desirable, either.
-but maybe I am missing something?
+I read through it a while back and my initial impression is a) it's
+awfully complex and invasive and b) it probably won't protect all
+workloads.
 
-	Lars
+As this and several other vexing problems stem from the dcache design,
+I'd rather abandon the dcache out in the woods so we can replace it
+with something less troublesome.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
