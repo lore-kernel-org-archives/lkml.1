@@ -1,48 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933990AbXGWDCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbXGWDL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933990AbXGWDCA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 23:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759777AbXGWDBv
+	id S933679AbXGWDL4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 23:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761235AbXGWDLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 23:01:51 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:44446 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756530AbXGWDBu (ORCPT
+	Sun, 22 Jul 2007 23:11:46 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:34747 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761092AbXGWDLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 23:01:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=axbFgZplER9ZchacEOhqIodaSHz/oXIMf1ajT/FhnGx07NA1jqOzt2/r1SDwlRZ8OcbtNngBPgAjP61VLy2Y8mT6GyDLbk4oN8UhzLapTbiDCgPpv3IBO4LEQXMwDSzTXBLUAbRr/49VUuLGn21dpGqWQGNAiZpnIV1xk9f17Mg=
-Message-ID: <a9e22dff0707222001o324e56c1p42f6c63d0778a8c5@mail.gmail.com>
-Date: Mon, 23 Jul 2007 06:01:49 +0300
-From: "Ni@m" <niam.niam@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: sound is interrupting with new kernels
-Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <6bffcb0e0707221716k67815a2ai7f35606b1effa6a3@mail.gmail.com>
+	Sun, 22 Jul 2007 23:11:46 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Mon, 23 Jul 2007 13:11:53 +1000
+User-Agent: KMail/1.9.6
+Cc: Alan Stern <stern@rowland.harvard.edu>, david@lang.hm,
+       Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net,
+       linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com,
+       linux-pm@lists.linux-foundation.org,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org> <200707230842.22121.nigel@nigel.suspend2.net> <18083.61595.217126.824924@cargo.ozlabs.ibm.com>
+In-Reply-To: <18083.61595.217126.824924@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart3061019.5FOuh07jjx";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a9e22dff0707211510o3b5e108dk354f5f15ad3ba498@mail.gmail.com>
-	 <6bffcb0e0707221716k67815a2ai7f35606b1effa6a3@mail.gmail.com>
+Message-Id: <200707231311.56398.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+--nextPart3061019.5FOuh07jjx
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
->Please run this script while using mplayer or audacious
->http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+Hi.
 
-No need. I'm testing now pure 2.6.22:
-my uname is 'Linux niam 2.6.22 #2 Sun Jul 22 13:52:03 EEST 2007 i686
-Intel(R) Celeron(R) M processor 1.50GHz GenuineIntel GNU/Linux' and I
-have described problems with mplayer, but they are not so hard: sound
-is interrupting for much less time! Usually this case occurs after
-pause in watching the movie ... for the first time sound is
-interrupting and then normal flow is restoring.
+On Monday 23 July 2007 10:04:43 Paul Mackerras wrote:
+> Nigel Cunningham writes:
+>=20
+> > I guess I want to persist because all of these issues aren't utterly
+> > unsolvable. It's just that we don't have the infrastructure yet to
+> > figure out the solutions to these issues trivially. Take, for example,
+>=20
+> Ever heard of the halting problem? :)  It's not just a matter of
+> infrastructure.  You very quickly get into questions that are
+> mathematically undecideable.
 
-I'll try 2.6.20 later and I'll send a report!
+Is this the halting problem, though?
 
-Best wishes!
+> > the locking issue. If we could call some function to say "What process
+> > holds this lock?", then task A could know that it's waiting on task B
+> > and put that information somewhere. We could then use the information
+> > to freeze task B before task A.
+>=20
+> But how would that help?  If task B holds the lock, then we can't
+> freeze it until it's released the lock.  Then the question is, what
+> does task B need in order to get to the point where it releases the
+> lock?  And so on.  It rapidly gets not just extremely messy, but
+> actually impossible to compute in general.
+
+Take a step back for a second.
+
+The problem we're facing now is that we're getting some userspace threads,=
+=20
+used in processing I/O, that are functioning as exceptions to the "freeze=20
+userspace, then freezeable kernel threads" rule. They are only exceptions=20
+because of that role in processing I/O - because they're de facto kernel=20
+threads. So, if we orient our thinking more in terms of I/O processing and=
+=20
+less in terms of the userspace/kernelspace distinction, we'll have a=20
+solution:
+
+1) Freeze processes that aren't fs related (ie stop them generating I/O).
+2) Flush pending I/O.
+3) Freeze filesystems in reverse order of dependency, the primary purpose=20
+being to stop them generating further I/O on their metadata.
+
+Locks that are being held are only being held because work is being done. I=
+f=20
+we progressively focus on threads in terms of their create/process work=20
+dependencies, we'll see that the problem isn't at all intractable.
+
+Regards,
+
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
+
+--nextPart3061019.5FOuh07jjx
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGpBx8N0y+n1M3mo0RAhybAKCZ6JG1LcsYF5DaSS90GYKo5Q8mmwCgneh8
+YI3yYVHZsrsq66TLZOMVc/o=
+=9J29
+-----END PGP SIGNATURE-----
+
+--nextPart3061019.5FOuh07jjx--
