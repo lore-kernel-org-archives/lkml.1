@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936614AbXGWVHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936187AbXGWVKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936614AbXGWVHx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936509AbXGWVHU
+	id S936187AbXGWVKg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbXGWVKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:07:20 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:48366 "EHLO smtp.ocgnet.org"
+	Mon, 23 Jul 2007 17:10:25 -0400
+Received: from mga03.intel.com ([143.182.124.21]:21260 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936321AbXGWVHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:07:18 -0400
-Date: Tue, 24 Jul 2007 06:06:49 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <lkmladrian@gmail.com>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
-       Adrian McMenamin <adrianmcmenamin@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Problems with framebuffer in 2.6.22-git17
-Message-ID: <20070723210649.GA20049@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <lkmladrian@gmail.com>,
-	"Antonino A. Daplas" <adaplas@gmail.com>,
-	Adrian McMenamin <adrianmcmenamin@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com> <1185146563.6370.8.camel@daplas> <8b67d60707231324k28f3cd45p287418fd77feaf00@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8b67d60707231324k28f3cd45p287418fd77feaf00@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1757576AbXGWVKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:10:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,572,1175497200"; 
+   d="scan'208";a="253756357"
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <p73ir8aubzx.fsf@bingen.suse.de>
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>
+	 <p73ir8aubzx.fsf@bingen.suse.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 23 Jul 2007 14:10:15 -0700
+Message-Id: <1185225015.3593.15.camel@tongli.jf.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+X-OriginalArrivalTime: 23 Jul 2007 21:10:16.0313 (UTC) FILETIME=[DE01AE90:01C7CD6D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 09:24:27PM +0100, Adrian McMenamin wrote:
-> OK, that certainly seems to make a difference - the box doesn't crash but it
-> generates a lot of error messages - though as I have patched this with my
-> dma patch that isn't one of them:
-> 
-> / # [   31.912380] BUG: scheduling while atomic: 10-udev.hotplug
-[snip]
-> [   32.063730] [<8c00f782>] __cond_resched+0x1a/0x40
-> [   32.068621] [<8c15adf4>] cond_resched+0x30/0x48
-> [   32.073286] [<8c15b6ba>] mutex_lock+0xa/0x50
-> [   32.077687] [<8c00c606>] copy_user_page+0x86/0x134
-> [   32.082639] [<8c03b3fa>] __do_fault+0x142/0x340
-> [   32.087309] [<8c03b958>] handle_mm_fault+0x2c6/0x556
-> [   32.092428] [<8c00b890>] do_page_fault+0xa4/0x2c0
-> [   32.097279] [<8c03e09e>] do_mmap_pgoff+0x23e/0x26c
-> [   32.102215] [<8c00528a>] old_mmap+0x66/0xb4
-> [   32.106517] [<8c00529a>] old_mmap+0x76/0xb4
-> [   32.110834] [<8c0070e8>] ret_from_exception+0x0/0x14
-> [   32.116014]
+I benchmarked an early version of this code (against 2.6.21) with
+SPECjbb, SPEComp, kernbench, etc. on an 8-processor system, and didn't
+see any slowdown compared to the stock scheduler. I'll generate the data
+again with this version of the code. On the other hand, if locking does
+become a problem for certain systems/workloads, increasing
+sysctl_base_round_slice can reduce the locking frequency and alleviate
+the problem, at the cost of being relatively less fair across the CPUs. 
 
-As I already pointed out, none of these are related to the fb. So if
-your pvr2fb problems went away, then the matter is resolved. These faults
-are a completely different (and known) issue.
+  tong
+
+On Mon, 2007-07-23 at 22:00 +0200, Andi Kleen wrote:
+> Tong Li <tong.n.li@intel.com> writes:
+> > +
+> > +        read_lock_irqsave(&dwrr_highest_lock, flags);
+> 
+> That lock looks like it would bounce between CPUs like crazy.
+> Did you try any benchmarks on a larger system? 
+> 
+> -Andi
