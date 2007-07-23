@@ -1,106 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935821AbXGWUlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935999AbXGWUmC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935821AbXGWUlG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932398AbXGWUkw
+	id S935999AbXGWUmC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:42:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934394AbXGWUlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:40:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:65085 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765871AbXGWUku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:40:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=fdTGrc5FuvZOaXpx4b1omrK2v8PxCxg+c1ehJDOEcC9ZqywdTimwxiDCgMeAsCfoSDK0Ngo6AyA8JUzgPlQASzpfMJ9+8sAs9Ap8bBfQpUaOXbrQyLxW3DE07F05PhFbJMYt8SZnyokl14cTQUnVdKJmdel0V1z5FwupCZX5ED0=
-Date: Tue, 24 Jul 2007 00:40:45 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070723204045.GD5755@martell.zuzino.mipt.ru>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org>
+	Mon, 23 Jul 2007 16:41:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:34428 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765029AbXGWUlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 16:41:51 -0400
+Message-ID: <46A51254.8000508@goop.org>
+Date: Mon, 23 Jul 2007 13:40:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070723132431.42afbae8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Trent Piepho <xyzzy@speakeasy.org>
+CC: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 7/8] i386: bitops: Kill needless usage of __asm__ __volatile__
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <20070723160603.22137.16516.sendpatchset@cselinux1.cse.iitk.ac.in> <46A4D612.9050209@goop.org> <Pine.LNX.4.64.0707232202580.22155@cselinux1.cse.iitk.ac.in> <46A4E7E3.8090105@goop.org> <Pi <46A4F360.2000905@goop.org> <Pine.LNX.4.58.0707231325050.5535@shell2.speakeasy.net>
+In-Reply-To: <Pine.LNX.4.58.0707231325050.5535@shell2.speakeasy.net>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 01:24:31PM -0700, Andrew Morton wrote:
-> On Mon, 23 Jul 2007 23:01:52 +0400
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > On Mon, Jul 23, 2007 at 10:38:39PM +0400, Alexey Dobriyan wrote:
-> > > Managed to hit BUG_ON() in kmap_atomic_prot() three times while doing
-> > > nothing unusual for this box (two times it was under X, so I can't
-> > > guarantee, one time while trying to reproduce via ./configure in gdb
-> > > tarball)
-> 
-> Yeah, I hit this several times a few days ago.  Same story: it just
-> randomly went splat in response to no obvious stimulus.  Reported it to
-> netdev, was greeted with stunned silence.
-> 
-> 
-> > > Box has 2.5G of RAM. 2.6.22 was OK.
-> > > 
-> > > [dives into framebuffer console setup for complete oops]
-> > 
-> > kernel BUG at arch/i386/mm/highmem.c:38
-> > PREEMPT DEBUG_PAGEALLOC SLAB
-> > EIP at kmap_atomic_prot+0x32/0x93
-> > 	get_page_from_freelist
-> > 	__alloc_pages
-> > 	cache_alloc_refill
-> > 	cache_alloc_refill
-> > 	kmem_cache_alloc
-> > 	dst_alloc
-> > 	dst_alloc
-> > 	__ip_route_output_key
-> > 	[some junk I don't trust]
-> > 
-> > eax: 0000000c
-> > ebx: 00000003
-> > ecx: c065efe0
-> > edx: 00000003
-> > edi: 00000163
-> > 
-> > 
-> > c010cc9b <kmap_atomic_prot>:
-> > c010cc9b:	57                   	push   %edi
-> > c010cc9c:	56                   	push   %esi
-> > c010cc9d:	53                   	push   %ebx
-> > c010cc9e:	89 c6                	mov    %eax,%esi
-> > c010cca0:	89 d3                	mov    %edx,%ebx
-> > c010cca2:	89 cf                	mov    %ecx,%edi
-> > c010cca4:	b8 01 00 00 00       	mov    $0x1,%eax
-> > c010cca9:	e8 dd 1b 00 00       	call   c010e88b <add_preempt_count>
-> > c010ccae:	e8 b1 ac 0e 00       	call   c01f7964 <debug_smp_processor_id>
-> > c010ccb3:	6b c0 0d             	imul   $0xd,%eax,%eax
-> > c010ccb6:	8d 14 03             	lea    (%ebx,%eax,1),%edx
-> > c010ccb9:	8d 04 95 00 00 00 00 	lea    0x0(,%edx,4),%eax
-> > c010ccc0:	8b 0d 30 a1 3e c0    	mov    0xc03ea130,%ecx
-> > c010ccc6:	29 c1                	sub    %eax,%ecx
-> > c010ccc8:	83 39 00             	cmpl   $0x0,(%ecx)
-> > c010cccb:	74 04                	je     c010ccd1 <kmap_atomic_prot+0x36>
-> > c010cccd:	0f 0b                	ud2a   
-> 
-> I had more complete info: http://article.gmane.org/gmane.linux.network/66966
-> 
-> You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
-> 
-> I haven't worked out where that kmap_atomic() call is coming from yet. 
-> Both traces point up into the page allocator, but I _think_ that's stack
-> gunk.
+Trent Piepho wrote:
+> gcc also tries to count the number of instructions, to guess how large in
+> bytes the asm block is, as it could make a difference for near vs short
+> jumps, etc.
+>   
 
-Ahh, you suspect networking.
+How does it do that?  By looking for \n, ';', etc?
 
-Here, setup is 2 cheap-ass 100Mb realtek 8139 NICs, one to campus network
-receiving ~20 junk packets per second, one gathering netconsole output
-and ssh to it, no conntracks and fancy stuff.
-
-[reboots with cables physically unplugged]
-
+    J
