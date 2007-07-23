@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbXGWHBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbXGWHH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933231AbXGWHBh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 03:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932081AbXGWG5U
+	id S1763463AbXGWHH2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 03:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbXGWHHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 02:57:20 -0400
-Received: from mga01.intel.com ([192.55.52.88]:55412 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763496AbXGWG5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 02:57:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,569,1175497200"; 
-   d="scan'208";a="271462957"
-Subject: [RFC 8/8]KVM: cache pages
-From: Shaohua Li <shaohua.li@intel.com>
-To: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Mon, 23 Jul 2007 14:51:48 +0800
-Message-Id: <1185173508.2645.72.camel@sli10-conroe.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Mon, 23 Jul 2007 03:07:18 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:46473 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750897AbXGWHHR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 03:07:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=M1l6TrFrD8EDOZDUS4DMU8mugmLaxKHUcKDmkt1hGNurgNt5eCpq6GZ9RlFyNdK/ndq3G0DBMBBfp7uCiEu0wY4M9ukEvu7XcAmsciJ60IqjrKGVPorYwGG7J2uXqKXyHrnfD6f1cJT0nnGHTmeVUe/3b/v0/W86IPywNO14460=  ;
+X-YMail-OSG: 6WKjXFcVM1l57bHa.sshARCkOi8iLuzEzwY8TuO4brfK78_s1HDvy9G33x5nxfWb7ztCScFL2A--
+Message-ID: <46A4539D.9060100@yahoo.com.au>
+Date: Mon, 23 Jul 2007 17:07:09 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Fix file locking
+References: <20070717124732.22619.34179.stgit@warthog.cambridge.redhat.com> <20070717175017.8b8a8976.akpm@linux-foundation.org> <469DABA5.9070706@yahoo.com.au> <20070719204102.7b82692d.akpm@linux-foundation.org> <46A04129.1020900@yahoo.com.au> <alpine.LFD.0.999.0707201835070.27249@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707201835070.27249@woody.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KVM use gfn_to_page very frequestly, which makes find_get_page a bottleneck,
-so cache pages found to speed up.
+Linus Torvalds wrote:
+> 
+> On Fri, 20 Jul 2007, Nick Piggin wrote:
+> 
+>>So you did. Then to answer that, yes it could be faster because there are
+>>stupid volatiles sprinkled all over the bitops code so you could easily
+>>end up having to do more loads. Does it make a real difference? Unlikely,
+>>but David loves counting cycles :)
+> 
+> 
+> I thought we long long since removed the volatiles. They are buggy and 
+> horrible, and we really want to let the compiler combine multiple 
+> test-bits, and if they matter that implies locking is buggy or something 
+> worse..
+> 
+> Ie we'd *want*
+> 
+> 	if (test_bit(x, y) || test_bit(z,y))
+> 
+> to be rewritten by the compiler as testing bits x/z at the same time.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
----
- drivers/kvm/kvm.h      |    1 +
- drivers/kvm/kvm_main.c |    9 +++++++++
- 2 files changed, 10 insertions(+)
+Yep. We'd also want __set_bit(x, y); __set_bit(z, y); and such to be
+combined.
+> 
+> But now I'm too scared to look.
 
-Index: linux/drivers/kvm/kvm.h
-===================================================================
---- linux.orig/drivers/kvm/kvm.h	2007-07-20 14:29:46.000000000 +0800
-+++ linux/drivers/kvm/kvm.h	2007-07-20 14:50:11.000000000 +0800
-@@ -431,6 +431,7 @@ struct kvm_mem_alias {
- 
- struct kvm_page_info {
- 	swp_entry_t entry;
-+	struct page *page;
- };
- 
- struct kvm_memory_slot {
-Index: linux/drivers/kvm/kvm_main.c
-===================================================================
---- linux.orig/drivers/kvm/kvm_main.c	2007-07-20 14:45:40.000000000 +0800
-+++ linux/drivers/kvm/kvm_main.c	2007-07-20 14:50:11.000000000 +0800
-@@ -1031,6 +1031,7 @@ repeat:
- 		info->entry.val = 0;
- 		if (add_to_page_cache(page, mapping, gfn, GFP_KERNEL))
- 			return NULL;
-+		info->page = page;
- 		ClearPageDirty(page);
- 	} else {
- 		/* allocate new page */
-@@ -1041,6 +1042,7 @@ repeat:
- 			page_cache_release(page);
- 			return NULL;
- 		}
-+		info->page = page;
- 		SetPageUptodate(page);
- 		set_page_private(page, 0);
- 	}
-@@ -1063,6 +1065,7 @@ static int kvm_move_to_swap(struct page 
- 	if (move_to_swap_cache(page, swap) == 0) {
- 		slot = __gfn_to_memslot(kvm, gfn);
- 		slot->phys_mem[gfn - slot->base_gfn].entry = swap;
-+		slot->phys_mem[gfn - slot->base_gfn].page = NULL;
- 		return 0;
- 	}
- 	swap_free(swap);
-@@ -1082,6 +1085,12 @@ struct page *gfn_to_page(struct kvm *kvm
- 	if (!slot)
- 		return NULL;
- 
-+	page = slot->phys_mem[gfn - slot->base_gfn].page;
-+	if (page) {
-+		mark_page_accessed(page);
-+		return page;
-+	}
-+
- 	page = find_get_page(mapping, gfn);
- 	if (page)
- 		goto out;
+Not a chance :) Even the asm-generic "reference" implementation ratifies
+the volatile crapiness. Would you take a patch?
+
+-- 
+SUSE Labs, Novell Inc.
