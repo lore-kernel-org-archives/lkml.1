@@ -1,90 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933248AbXGWD07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbXGWDxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933248AbXGWD07 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 23:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbXGWD0u
+	id S1757630AbXGWDxA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 23:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbXGWDwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 23:26:50 -0400
-Received: from smtpout.mac.com ([17.250.248.171]:63547 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853AbXGWD0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 23:26:49 -0400
-In-Reply-To: <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
-References: <20070718235504.GA9601@havoc.gtf.org> <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org> <469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain> <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BF1FF315-482E-4ABF-8159-881C3426C28C@mac.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com,
-       linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+	Sun, 22 Jul 2007 23:52:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35007 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753173AbXGWDwu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 23:52:50 -0400
+Subject: Re: [linux-pm] Power Management framework proposal
+From: Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: Igor Stoppa <igor.stoppa@nokia.com>,
+       "ext linux-pm-bounces@lists.linux-foundation.org" 
+	<linux-pm-bounces@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707221914550.6350@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	 <1185091022.19678.28.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
+	 <1185105911.29238.43.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
+	 <1185145766.2714.27.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0707221914550.6350@asgard.lang.hm>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 22 Jul 2007 20:50:47 -0700
+Message-Id: <1185162647.2714.35.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [git patches] two warning fixes
-Date: Sun, 22 Jul 2007 23:26:09 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 19, 2007, at 14:04:29, Linus Torvalds wrote:
-> On Thu, 19 Jul 2007, Krzysztof Halasa wrote:
->> Jeff Garzik <jeff@garzik.org> writes:
->>> My overall goal is killing useless warnings that continually  
->>> obscure real ones.
->>
->> Precisely, the goal should be to make must_check (and similar  
->> things) warn only in real cases.
->
-> .. the problem with that mentality is that it's not how people work.
->
-> People shut up warnings by adding code.
->
-> Adding code tends to add bugs.
->
-> People don't generally think "maybe that warning was bogus".
->
-> More people *should* generally ask themselves: "was the warning  
-> worth it?" and then, if the answer is "no", they shouldn't add  
-> code, they should remove the thing that causes the warning in the  
-> first place.
->
-> For example, for compiler options, the correct thign is often to  
-> just say "that option was broken", and not use "-fsign-warning",  
-> for example. We've literally have had bugs *added* because people  
-> "fixed" a sign warning.  More than once, in fact.
->
-> Every time you see a warning, you should ask yourself: is the  
-> warning interesting, correct and valid? And if it isn't all three,  
-> then the problem is whatever *causes* the warning, not the code  
-> itself.
 
-I agree that there are a fair number of things (like the sysfs calls)  
-that should just WARN() when they hit an error, but I also think that  
-we're currently missing a *lot* of __must_check's that we should  
-have.  For example a friend of mine was having problems with an HDAPS  
-patch where it just kind of hung.  Turns out the problem was that the  
-code blithely called scsi_execute_async() and then put itself to  
-sleep on a completion... except scsi_execute_async() returned failure  
-and the completion would never complete.
+> I disagree with you here. for each frequency setting you can say how much 
+> power the cpu/system is expected to use (especially as a percentage of the 
+> full power mode). creating this value requires you to take two things into 
+> account, the voltage you are running things at (by far the biggest 
+> effect), and the minor difference that the frequency makes at that voltage 
+> (possibly small enough to ignore entirely).
+> 
+> the API I proposed has no problem with there being multiple modes that 
+> have the same %power but with different %capability numbers.
 
-For instance, I would bet that a fair number of the other int- 
-returning functions in include/scsi/scsi_device.h want __must_check  
-on them.  That said, the person adding the __must_check should be  
-REQUIRED to do at least a superficial audit of the code.
+how do you deal with the "power at idle" vs "power at full load".. you
+need both at each level to pick the best one, as well as relative
+performance etc.
 
-I'd propose a few simple rules:
-   (1) If it can return the only pointer to freshly-allocated pointer  
-then it's __must_check
-   (2) If it can return a hard error which the caller must handle  
-specially, then it's __must_check
-   (3) If the only possible error is a kernel bug then make the damn  
-thing return void and give it a big fat WARN() when it fails.
-   (4) For any other case (or if you are unsure), don't flag it.
+> 
+> I'm willing to bet that the current cpufreq software just looks at the 
+> voltage as the value that tells you how much power the thing is going to 
+> use at that setting
 
-And of course the burden of proof is on the person trying to add the  
-__must_check.
+it doesn't. 
+> 
+> the fact that you want to run at the max frequancy for a given voltage is 
 
-Cheers,
-Kyle Moffett
+no I want to run at the max frequency PERIOD. On just about any PC, it's
+more power efficient to go full speed when executing code, and then idle
+for as long as you can. (there are some second order effects that make
+this a bit more complex, but as first order approach it's a sound
+approach). Voltage follows, and that's fine.
+
+
+> a reasonable strategy, but it's a power saving _strategy_, not a 
+> capability of the hardware and the API I'm mentioning should be enough to 
+> let you pick the highest performance setting that has the same power 
+> rating as the minimum performance you need (or for that matter to go one 
+> step futher and go with the most efficiant setting in terms of 
+> performance/power that has a performance number higher then what you need, 
+> which could actually be better)
+
+why would I care about voltage? Most PCs don't expose it, and that's
+fine, they can switch to the voltage needed REALLY quickly (single or
+double digit microseconds). PCs in fact only expose numbered states (P0
+to P7 at most), and some number that you can use to show the user, but
+doesn't mean anything beyond that. Some people interpret it as
+"frequency", and that's nice, but it doesn't really mean that. You
+really don't know anything beyond that....
+
+and that's ok. As I said before, as a general strategy you want "highest
+speed when running code" for race-to-idle, with some 2nd order effects
+for when you execute code really shortly coming out of idle; in which
+case you don't want to do a voltage transition twice (most cpus have the
+idle voltage be the lowest-execute voltage as well).
+
+
+
+> this strategy should work well on the normal unpredictable workload that 
+> most people deal with, but there are some cases where the workload becomes 
+> pretty predictable (media players for example) where there really is less 
+> variation, and a need for a constant availability of the cpu, so it may 
+> actually save a smidge of power to run below the highest freq that the 
+> voltage allows rather then running faster and being idle more cycles.
+
+that actually is the example showcase of race-to-idle where you
+absolutely want to run at the highest frequency..
+
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
