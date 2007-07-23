@@ -1,43 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763412AbXGWOwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763631AbXGWOwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763412AbXGWOwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 10:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762943AbXGWOvv
+	id S1763631AbXGWOwr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 10:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758700AbXGWOwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 10:51:51 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:42143 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762866AbXGWOvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 10:51:50 -0400
-Date: Mon, 23 Jul 2007 16:51:16 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: perex@suse.cz
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] sound/pci/cs46xx/: fix an off-by-one
-Message-ID: <20070723145116.GL26212@stusta.de>
+	Mon, 23 Jul 2007 10:52:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:38481 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758227AbXGWOwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 10:52:37 -0400
+Message-ID: <46A4C081.6070305@goop.org>
+Date: Mon, 23 Jul 2007 07:51:45 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Tilman Schmidt <tilman@imap.cc>
+CC: LKML <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
+       nix.or.die@googlemail.com
+Subject: Re: 2.6.22-git17 boot failure
+References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc>
+In-Reply-To: <46A481FD.2030607@imap.cc>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes an off-by-one in a snd_assert() spotted by the 
-Coverity checker.
+Tilman Schmidt wrote:
+> Attached are .config and dmesg (as captured in SuSE's /var/log/boot.msg)
+> of a CONFIG_XEN=n git-current build. 
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+That's dmesg from a successful boot?  What does it look like when its
+unsuccessful?  Where do they start to differ?
 
----
---- linux-2.6.22-rc6-mm1/sound/pci/cs46xx/dsp_spos_scb_lib.c.old	2007-07-23 15:33:17.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/sound/pci/cs46xx/dsp_spos_scb_lib.c	2007-07-23 15:33:37.000000000 +0200
-@@ -1480,7 +1480,7 @@ void cs46xx_dsp_destroy_pcm_channel (str
- 	if (!pcm_channel->src_scb->ref_count) {
- 		cs46xx_dsp_remove_scb(chip,pcm_channel->src_scb);
- 
--		snd_assert (pcm_channel->src_slot >= 0 && pcm_channel->src_slot <= DSP_MAX_SRC_NR,
-+		snd_assert (pcm_channel->src_slot >= 0 && pcm_channel->src_slot < DSP_MAX_SRC_NR,
- 			    return );
- 
- 		ins->src_scb_slots[pcm_channel->src_slot] = 0;
-
+    J
