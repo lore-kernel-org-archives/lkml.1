@@ -1,84 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXGWWCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbXGWWFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280AbXGWWCb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 18:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750710AbXGWWCY
+	id S1754216AbXGWWFD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 18:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbXGWWEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 18:02:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51616 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750739AbXGWWCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 18:02:23 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Tue, 24 Jul 2007 00:10:34 +0200
-User-Agent: KMail/1.9.5
-Cc: Alan Stern <stern@rowland.harvard.edu>, nigel@suspend2.net,
-       Paul Mackerras <paulus@samba.org>, david@lang.hm,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       miltonm@bga.com, ying.huang@intel.com,
-       linux-pm@lists.linux-foundation.org,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-References: <Pine.LNX.4.44L0.0707231120380.3545-100000@iolanthe.rowland.org> <200707240755.01820.nigel@nigel.suspend2.net>
-In-Reply-To: <200707240755.01820.nigel@nigel.suspend2.net>
+	Mon, 23 Jul 2007 18:04:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:29378 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798AbXGWWEv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 18:04:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=j3HavdKKgITOOqxvGBOCP0UPQw0z4aYG1o0+wbElc2EIme1pdtc501Dtur9LfwSgxJitmoEF4dxQ4PozjCaR2AJe1CxYpSQIySdy3U7uQocRh6Ofx3ySFdEjjrnC+XwYG9ySphk5ZlnY5TfKojA6fHAvMiVEMiBhUi4idzP9Ee4=
+Date: Tue, 24 Jul 2007 02:04:46 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Message-ID: <20070723220446.GA5822@martell.zuzino.mipt.ru>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707240010.35639.rjw@sisk.pl>
+In-Reply-To: <20070723141137.171e4ac1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 23 July 2007 23:55, Nigel Cunningham wrote:
-> Hi.
+On Mon, Jul 23, 2007 at 02:11:37PM -0700, Andrew Morton wrote:
+> On Tue, 24 Jul 2007 01:01:53 +0400
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> On Tuesday 24 July 2007 01:23:15 Alan Stern wrote:
-> > On Mon, 23 Jul 2007, Nigel Cunningham wrote:
-> > 
-> > > Take a step back for a second.
+> > On Tue, Jul 24, 2007 at 12:40:45AM +0400, Alexey Dobriyan wrote:
+> > > > I had more complete info: http://article.gmane.org/gmane.linux.network/66966
+> > > > 
+> > > > You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
+> > > > 
+> > > > I haven't worked out where that kmap_atomic() call is coming from yet. 
+> > > > Both traces point up into the page allocator, but I _think_ that's stack
+> > > > gunk.
 > > > 
-> > > The problem we're facing now is that we're getting some userspace threads, 
-> > > used in processing I/O, that are functioning as exceptions to the "freeze 
-> > > userspace, then freezeable kernel threads" rule. They are only exceptions 
-> > > because of that role in processing I/O - because they're de facto kernel 
-> > > threads. So, if we orient our thinking more in terms of I/O processing and 
-> > > less in terms of the userspace/kernelspace distinction, we'll have a 
-> > > solution:
+> > > Ahh, you suspect networking.
 > > > 
-> > > 1) Freeze processes that aren't fs related (ie stop them generating I/O).
+> > > Here, setup is 2 cheap-ass 100Mb realtek 8139 NICs, one to campus network
+> > > receiving ~20 junk packets per second, one gathering netconsole output
+> > > and ssh to it, no conntracks and fancy stuff.
+> > > 
+> > > [reboots with cables physically unplugged]
 > > 
-> > The problem here is that with things like FUSE, _every_ process is 
-> > potentially fs related.  Nothing prevents a FUSE thread from doing IPC 
-> > with any other thread.
+> > OK, I run gdb recompile, cat(1) every file in /usr/portage (shitload of
+> > small files) with both cables unplugged. It all went fine for ~5 minutes
+> > after that it crashed exactly same way after 10 secs after plugging one
+> > of them.
 > 
-> Yes, but the fuse thread is going to know what other thread it's doing IPC 
-> with, so it can get that thread flagged too.
+> It'd be nice to get a clean trace.  Are you able to obtain the full
+> trace with CONFIG_FRAME_POINTER=y?
 
-Yes, but that thread may do IPC with yet another one and so on.
+Sorry, no camera shot, finding camera requires wakening up M. :)
 
-> > > 2) Flush pending I/O.
-> > > 3) Freeze filesystems in reverse order of dependency, the primary purpose 
-> > > being to stop them generating further I/O on their metadata.
-> > > 
-> > > Locks that are being held are only being held because work is being done. 
-> If 
-> > > we progressively focus on threads in terms of their create/process work 
-> > > dependencies, we'll see that the problem isn't at all intractable.
-> > 
-> > As has been mentioned before, keeping track of all that dependency 
-> > information would be very fragile and time-consuming.
-> 
-> I disagree. It's at least going to be less fragile and time-consuming then 
-> maintaining new/extra code for kexec.
+It took longer that usual, but here it is
 
-Well, I think the issue is real, so we need to find a solution (the simpler,
-the better) and that need not be related to kexec. ;-)
+	kmap_atomic
+	get_page_from_freelist
+	__alloc_pages
+	cache_alloc_refill
+	__alloc_pages
+	cache_alloc_refill
+	kmem_cache_alloc
+	dst_alloc
+	ip_route_input
+	ip_rcv
+	netif_receive_skb
+	rtl8139_poll
+	net_rx_action
+	__do_softirq
+	do_softirq
+	irq_exit
+	do_IRQ
+	common_interrupt
+	handle_mm_fault
+	do_page_fault
+	error_core
 
-Greetings,
-Rafael
+much more loaded x86_64 box near also running 2.6.23-rc1 with debugging
+turned on, using atl1 driver doesn't experience any crashes.
 
+And I found 2.6.22-b91cba52e9b7b3f1c0037908a192d93a869ca9e5-x entry on
+top of grub config which means b91cba52e9b7b3f1c0037908a192d93a869ca9e5
+_without_ any debugging was OK.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
