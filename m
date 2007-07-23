@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760017AbXGWGNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbXGWGPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760017AbXGWGNf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 02:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbXGWGN2
+	id S1760299AbXGWGPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 02:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbXGWGPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 02:13:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:59500 "EHLO ozlabs.org"
+	Mon, 23 Jul 2007 02:15:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56265 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755518AbXGWGN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 02:13:27 -0400
+	id S1755484AbXGWGPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 02:15:21 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18084.18177.369567.679866@cargo.ozlabs.ibm.com>
-Date: Mon, 23 Jul 2007 16:13:21 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: David Miller <davem@davemloft.net>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: "build-id" changes break sparc64
-In-Reply-To: <20070723060155.2B3824D0489@magilla.localdomain>
-References: <20070722.012321.79430375.davem@davemloft.net>
-	<20070723060155.2B3824D0489@magilla.localdomain>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Move --build-id option
+In-Reply-To: Roland McGrath's message of  Sunday, 22 July 2007 23:01:55 -0700 <20070723060155.2B3824D0489@magilla.localdomain>
+X-Fcc: ~/Mail/linus
+X-Shopping-List: (1) Envious miscreant warriors
+   (2) Trenchant silent exclusions
+   (3) Hilarious penny flossbags
+   (4) Braille Aspersion expectations
+   (5) Insipid ripping-cats
+Message-Id: <20070723061446.5DAAC4D0489@magilla.localdomain>
+Date: Sun, 22 Jul 2007 23:14:46 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath writes:
 
-> It turns out the problem here is that some .o files wind up with their own
-> .note.gnu.build-id sections.  I got the makefile magic wrong, thinking that
-> LDFLAGS_MODULE was a variable specifically for .ko links.  It's also used
-> in cmd_link_multi-m.
+My original makefile patch to use ld --build-id wound up using it in too
+many places.  We want it only for the .ko and vmlinux links (and vmlinux
+temporary links that determine the vmlinux layout).
 
-Alan Modra (binutils hacker) has said to me in the past that using
-ld -r to combine the objects in each directory is bad; he would much
-rather that we gave all the individual objects to the final link,
-since that enables ld to do better optimizations on some targets.  We
-could actually do that quite easily by making the built-in.o files be
-linker scripts listing the individual objects rather than creating
-them with ld -r.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ Makefile                 |    8 +++-----
+ scripts/Makefile.modpost |    4 ++--
+ 2 files changed, 5 insertions(+), 7 deletions(-)
 
-Paul.
+diff --git a/Makefile b/Makefile
+index cd47845..fe6c5dd 100644
+--- a/Makefile
++++ b/Makefile
+@@ -518,8 +518,6 @@ CFLAGS += $(call cc-option,-Wno-pointer-sign,)
+ # Use --build-id when available.
+ LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
+ 			      $(call ld-option, -Wl$(comma)--build-id,))
+-LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
+-LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
+ 
+ # Default kernel image to build when no specific target is given.
+ # KBUILD_IMAGE may be overruled on the command line or
+@@ -616,9 +614,9 @@ export KBUILD_VMLINUX_OBJS := $(vmlinux-all)
+ # Rule to link vmlinux - also used during CONFIG_KALLSYMS
+ # May be overridden by arch/$(ARCH)/Makefile
+ quiet_cmd_vmlinux__ ?= LD      $@
+-      cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
+-      -T $(vmlinux-lds) $(vmlinux-init)                          \
+-      --start-group $(vmlinux-main) --end-group                  \
++      cmd_vmlinux__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_BUILD_ID) $(LDFLAGS_vmlinux) \
++      -o $@ -T $(vmlinux-lds) $(vmlinux-init)		\
++      --start-group $(vmlinux-main) --end-group		\
+       $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o FORCE ,$^)
+ 
+ # Generate new vmlinux version
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index c6fcc59..a86a3b1 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -97,8 +97,8 @@ targets += $(modules:.ko=.mod.o)
+ 
+ # Step 6), final link of the modules
+ quiet_cmd_ld_ko_o = LD [M]  $@
+-      cmd_ld_ko_o = $(LD) $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
+-			  $(filter-out FORCE,$^)
++      cmd_ld_ko_o = $(LD) $(LDFLAGS) $(LDFLAGS_BUILD_ID) $(LDFLAGS_MODULE) \
++      		    	  -o $@ $(filter-out FORCE,$^)
+ 
+ $(modules): %.ko :%.o %.mod.o FORCE
+ 	$(call if_changed,ld_ko_o)
