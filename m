@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbXGWASQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932777AbXGWA1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933242AbXGWASQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 20:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762809AbXGWASA
+	id S932777AbXGWA1t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 20:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbXGWA1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 20:18:00 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:9780 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758295AbXGWAR5 (ORCPT
+	Sun, 22 Jul 2007 20:27:40 -0400
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:46384 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759508AbXGWA1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 20:17:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=REi1uq/atOvBqH1EzEbIDkkm1khQ9rkVxg+kNaXP0sKVn4IBM8eEgvxWxjSnOUElzqjdIeTnl0jzRe8dr2E0MzP9BOnAu5TWfHivxYSDE7ZlA6rUWWyKl8KDszbDg06jQD3TlEQk3/Ft2gwmWMSqjEy+dClqtwGXVsf+6fT1RJI=
-Message-ID: <9e4733910707221717u2ce828ccsc7cc5812d129dfc9@mail.gmail.com>
-Date: Sun, 22 Jul 2007 20:17:56 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Michael Tharp" <gxti@partiallystapled.com>
-Subject: Re: Git tree for old kernels from before the current tree
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Git Mailing List" <git@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <46A3E7BA.6030609@partiallystapled.com>
+	Sun, 22 Jul 2007 20:27:39 -0400
+Message-ID: <46A3F5F9.2040501@blueyonder.co.uk>
+Date: Mon, 23 Jul 2007 01:27:37 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: RE: 2.6.22-git17 boot failure
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com>
-	 <Pine.LNX.4.64.0707222257540.32367@fbirervta.pbzchgretzou.qr>
-	 <20070722211314.GA13850@linux-sh.org>
-	 <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr>
-	 <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr>
-	 <46A3D5EA.2050600@zytor.com> <46A3E7BA.6030609@partiallystapled.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/22/07, Michael Tharp <gxti@partiallystapled.com> wrote:
-> H. Peter Anvin wrote:
-> > Wouldn't be hard to make a git tree with all the patches all the way
-> > back to 0.01 even...
->
-> It'd be delightful from a completeness standpoint (and I do love
-> completeness), but considering it already takes a good 20 minutes to
-> clone the 2.6 tree over a respectable cable connection, I'd have to
-> object on the grounds of size. Now, if it was kept off in its own tree
-> for people who don't mind ravaging kernel.org resources to satisfy their
-> own curiosity, that's fine too.
-
-git has an extremely effective diffing mechanism. You may surprised at
-how little it adds.
-For example, git compressed the 2.6GB mozilla cvs tree down to 400MB.
-
-I used to clone trees all the time, but now I'm much better at using
-git and I haven't cloned a complete tree from kernel.org in a year.
-git remote is a cool feature.
+Tilman Schmidt: wrote
+ > On my test machine with a Pentium D 940 processor, Intel DQ965GF
+ > mainboard and SATA disks, kernel 2.6.22-git17 (32 bit build) fails
+ > to come up because it cannot find the disk drives. Same issue
+ > with a clone of the 'linus' git tree. Anything known?
+I don't know if this is any indication.
+I have no SATA drives, but I noticed booting 2.6.22-git16 x86_64 I got 
+error messages with "sata slow in responding" also "EH timeout" and my 
+IDE drive /dev/sda1 giving ext3 errors, ending in a  filesystem not 
+clean prompt. Did fsck.ext3 using openSUSE 10.3Alpha3 DVD, that fixed a 
+string of wrong inode errors. Booted an earlier kernel and turned off 
+loading the sata_nv module, then 2.6.22-git16 and later 2.6.22-git17 
+booted without problems, so I put it down to a motherboard problem with 
+the SATA.
+Regards
+Sid.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
+
+
