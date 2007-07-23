@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933028AbXGWVwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933421AbXGWVxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933028AbXGWVwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbXGWVwG
+	id S933421AbXGWVxb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758314AbXGWVxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:52:06 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:52423 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285AbXGWVwF (ORCPT
+	Mon, 23 Jul 2007 17:53:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37218 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753285AbXGWVxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:52:05 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@suspend2.net
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC] [PATCH 0/5] Dynamically allocated pageflags.
-Date: Tue, 24 Jul 2007 07:52:04 +1000
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <200707232305.12364.nigel@nigel.suspend2.net> <1185200995.2714.58.camel@laptopd505.fenrus.org>
-In-Reply-To: <1185200995.2714.58.camel@laptopd505.fenrus.org>
+	Mon, 23 Jul 2007 17:53:24 -0400
+Date: Mon, 23 Jul 2007 14:53:23 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ethan Solomita <solo@google.com>
+cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@google.com>
+Subject: Re: [PATCH 0/6] cpuset aware writeback
+In-Reply-To: <46A51DEB.6090603@google.com>
+Message-ID: <Pine.LNX.4.64.0707231452290.32152@schroedinger.engr.sgi.com>
+References: <469D3342.3080405@google.com> <20070723131841.02c9b109@schroedinger.engr.sgi.com>
+ <46A51DEB.6090603@google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4162455.S2hmh5UmmA";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707240752.04726.nigel@nigel.suspend2.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4162455.S2hmh5UmmA
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 23 Jul 2007, Ethan Solomita wrote:
 
-Hi.
+> Christoph Lameter wrote:
+> > On Tue, 17 Jul 2007 14:23:14 -0700
+> > Ethan Solomita <solo@google.com> wrote:
+> > 
+> >> These patches are mostly unchanged from Chris Lameter's original
+> >> changelist posted previously to linux-mm.
+> > 
+> > Thanks for keeping these patches up to date. Add you signoff if you
+> > did modifications to a patch. Also include the description of the tests
+> > in the introduction to the patchset.
+> 
+> 	So switch from an Ack to a signed-off? OK, and I'll add descriptions of
 
-On Tuesday 24 July 2007 00:29:55 Arjan van de Ven wrote:
-> On Mon, 2007-07-23 at 23:05 +1000, Nigel Cunningham wrote:
-> > Hi all.
-> >=20
-> > As we all know, pageflags have been a scarce resource for a while now.=
-=20
-These=20
-> > patches seek to help address that issue by adding support for a new typ=
-e=20
-> > of 'dynamically allocated' pageflag.
->=20
->=20
-> but... does this really solve it? I mean.. you can still run out... so
-> then what?
+No. Do a signed-off if you have modified the patch.
 
-Well, the intention is that you can use this implementation instead for fla=
-gs=20
-where the performance hit doesn't matter [so much].
+> testing. Everyone other than you has been silent on these patches. Does
+> silence equal consent?
 
-Regards,
-
-Nigel
-=2D-=20
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
-
---nextPart4162455.S2hmh5UmmA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGpSMEN0y+n1M3mo0RAkxmAKDS96NbrcVcLmvng+Zl5NhwMHbArwCgkuEM
-hDBeDtLZpfUGMNapXYCcrdg=
-=AuAd
------END PGP SIGNATURE-----
-
---nextPart4162455.S2hmh5UmmA--
+Sometimes. Howerver, the audience for NUMA and cpusets is rather limited.
