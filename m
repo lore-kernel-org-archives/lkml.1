@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936372AbXGWVCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936130AbXGWVEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936372AbXGWVCw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbXGWVCl
+	id S936130AbXGWVEI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763279AbXGWVDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:02:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36997 "EHLO mx3.mail.elte.hu"
+	Mon, 23 Jul 2007 17:03:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46706 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761235AbXGWVCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:02:40 -0400
-Date: Mon, 23 Jul 2007 23:02:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: v2.6.22.1-rt5
-Message-ID: <20070723210236.GA25104@elte.hu>
+	id S1758168AbXGWVDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:03:51 -0400
+Message-ID: <46A5163D.803@redhat.com>
+Date: Mon, 23 Jul 2007 15:57:33 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: ext4 development <linux-ext4@vger.kernel.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix inode_table test in ext234_check_descriptors
+References: <46A4E254.3010606@redhat.com>
+In-Reply-To: <46A4E254.3010606@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Sandeen wrote:
+> ext[234]_check_descriptors sanity checks block group descriptor geometry
+> at mount time, testing whether the block bitmap, inode bitmap, and
+> inode table reside wholly within the blockgroup.  However, the inode
+> table test is off by one so that if the last block in the inode table
+> resides on the last block of the block group, the test incorrectly 
+> fails.  This is because it tests the last block as (start + length)
+> rather than (start + length - 1).
+> 
+> This can be seen by trying to mount a filesystem made such as:
+>  mkfs.ext2 -F -b 1024 -m 0 -g 256 -N 3744 fsfile 1024
+> which yields:
+>  EXT2-fs error (device loop0): ext2_check_descriptors: Inode table for group 0 not in group (block 101)!
+>  EXT2-fs: group descriptors corrupted!
 
-we are pleased to announce the v2.6.22.1-rt5 kernel (collected and 
-assembled by Thomas), which can be downloaded from the usual place:
-  
-  http://redhat.com/~mingo/realtime-preempt/
-  
-more info about the -rt patchset can be found in the RT wiki:
-   
-  http://rt.wiki.kernel.org
+Hm, sorry, after seeing Miklos' last patches... should I be sending
+these as 3 different patches for ext2, 3, and 4...?
 
-Changes since -rt4:
-
- - MM fix: PCP pages locking (Peter Zijlstra)
-
- - yield() fix: remove stale RCU-unlock (Daniel Walker)
-
- - dont do check_pgt_cache() in idle (found by Daniel Walker)
-
- - moved 8 patches, created 6 new patches out of larger patches to 
-   make the -rt queue more bisectable (Daniel Walker)
-
- - cleanup (Daniel Walker)
-
- - fix the latency tracer under paravirt
-
-to build a 2.6.22.1-rt5 tree, the following patches should be applied:
-  
-  http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
-  http://redhat.com/~mingo/realtime-preempt/patch-2.6.22.1-rt5
-  
-	Ingo
+-Eric (who really doesn't want to make Andrew mad at him)  :)
