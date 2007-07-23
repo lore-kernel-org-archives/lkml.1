@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763769AbXGWNYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764149AbXGWNZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763769AbXGWNYz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 09:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbXGWNYq
+	id S1764149AbXGWNZt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 09:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbXGWNZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 09:24:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:42046 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756228AbXGWNYp (ORCPT
+	Mon, 23 Jul 2007 09:25:40 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:46205 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756187AbXGWNZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 09:24:45 -0400
-Date: Mon, 23 Jul 2007 15:24:10 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Eric.Moore@lsi.com
-Cc: mpt_linux_developer@lsi.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: drivers/message/fusion/mptscsih.c: inconsequent NULL checking
-Message-ID: <20070723132410.GI26212@stusta.de>
+	Mon, 23 Jul 2007 09:25:39 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 0/5] Dynamically allocated pageflags.
+Date: Mon, 23 Jul 2007 23:25:38 +1000
+User-Agent: KMail/1.9.6
+References: <200707232305.12364.nigel@nigel.suspend2.net>
+In-Reply-To: <200707232305.12364.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: multipart/signed;
+  boundary="nextPart1237057.SyK5z3i2Xr";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707232325.38380.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted the following inconsequent NULL checking in 
-drivers/message/fusion/mptscsih.c:
+--nextPart1237057.SyK5z3i2Xr
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-<--  snip  -->
+Bah.
 
-...
-int
-mptscsih_qcmd(struct scsi_cmnd *SCpnt, void (*done)(struct scsi_cmnd *))
-{
-...
-        if (vdev
-            && (vdev->vtarget->tflags & MPT_TARGET_FLAGS_Q_YES)
-            && (SCpnt->device->tagged_supported)) { 
-                scsictl = scsidir | MPI_SCSIIO_CONTROL_SIMPLEQ;
-        } else {
-                scsictl = scsidir | MPI_SCSIIO_CONTROL_UNTAGGED; 
-        }
- 
-        /* Use the above information to set up the message frame
-         */
-        pScsiReq->TargetID = (u8) vdev->vtarget->id;
-...
+Sorry for sending it twice. Fun with figuring out Kmail encoding.
 
-<--  snip  -->
+Anyway, I forgot to include the stats in the previous message. Here they are.
 
-"vdev" is first checked but later dereferenced unconditionally.
+[   20.667431] Dynpageflags testing...
+[   20.667433] Set page 1...Ok.
+[   20.667440] Test memory hotplugging #1 ...Ok.
+[   20.667442] Test memory hotplugging #2 ...Ok.
+[   21.935293] input: AT Translated Set 2 keyboard as /class/input/input1
+[   22.188954] Dyn: 98 iterations of setting & clearing all 253935 flags took 152 jiffies.
+[   24.584302] Real flags: 98 iterations of setting & clearing all 253935 flags took 240 jiffies.
+[   25.644460] Dyn: 25000000 iterations of setting & clearing all one flag took 106 jiffies.
+[   25.797906] Real pageflag: 25000000 iterations of setting & clearing all one flag took 15 jiffies.
 
-cu
-Adrian
+Nigel
 
--- 
+--nextPart1237057.SyK5z3i2Xr
+Content-Type: application/pgp-signature
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQBGpKxSN0y+n1M3mo0RAlWPAJ4i2285YRCGwiXTLVLSMN0muyK4ZwCeJDqo
+MXfdzvi/mFcI3Gjn/shnOh0=
+=1jUj
+-----END PGP SIGNATURE-----
+
+--nextPart1237057.SyK5z3i2Xr--
