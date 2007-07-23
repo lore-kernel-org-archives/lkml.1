@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbXGWVYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbXGWVZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756931AbXGWVYr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbXGWVYk
+	id S1753444AbXGWVZf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXGWVZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:24:40 -0400
-Received: from waste.org ([66.93.16.53]:34864 "EHLO waste.org"
+	Mon, 23 Jul 2007 17:25:15 -0400
+Received: from main.gmane.org ([80.91.229.2]:42390 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752804AbXGWVYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:24:39 -0400
-Date: Mon, 23 Jul 2007 16:24:20 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] mm: Remove slab destructors from kmem_cache_create().
-Message-ID: <20070723212420.GI11115@waste.org>
-References: <20070720012846.GA22487@linux-sh.org> <20070721212851.GH11166@waste.org> <20070721234227.GA8303@linux-sh.org> <20070723140444.159343b2@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070723140444.159343b2@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752872AbXGWVZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:25:13 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH 1/2] forcedeth: new device ids in pci_ids.h
+Date: Mon, 23 Jul 2007 22:23:20 +0100
+Organization: Linux Foundation
+Message-ID: <20070723222320.33591cda@oldman>
+References: <46A3F9A3.10508@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 87.192.216.40
+In-Reply-To: <46A3F9A3.10508@nvidia.com>
+X-Newsreader: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Cc: netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 02:04:44PM -0700, Christoph Lameter wrote:
-> Please do not merge this patch. I will reuse the destructor field for
-> the kmem_cache_ops in the slab defrag patchset. If you apply this patch
-> then I need to readd the parameter later.
+On Sun, 22 Jul 2007 20:43:15 -0400
+Ayaz Abdulla <aabdulla@nvidia.com> wrote:
 
-The vast majority of slabs won't have any cache ops, right? Wouldn't
-it be cleaner to have a kmem_set_cache_ops() for the few that do?
+> This patch contains new device ids for MCP73 chipset.
+> 
+> Signed-Off-By: Ayaz Abdulla <aabdulla@nvidia.com>
+> 
 
-While we're on the subject, has anyone reviewed your defrag stuff?
+no current practice is to stop cluttering pci_ids.h with specific sub-device id's
+and just have the vendor values.
 
-I read through it a while back and my initial impression is a) it's
-awfully complex and invasive and b) it probably won't protect all
-workloads.
-
-As this and several other vexing problems stem from the dcache design,
-I'd rather abandon the dcache out in the woods so we can replace it
-with something less troublesome.
-
--- 
-Mathematics is the supreme nostalgia of our time.
