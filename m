@@ -1,252 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935873AbXGWVAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936253AbXGWVCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935873AbXGWVAV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964781AbXGWU7a
+	id S936253AbXGWVCR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbXGWVB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:59:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:9377 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964783AbXGWU71 (ORCPT
+	Mon, 23 Jul 2007 17:01:59 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:24792 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761402AbXGWVB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:59:27 -0400
+	Mon, 23 Jul 2007 17:01:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ABwnaZwLnhUDL0Y7qc8enD+Q8o78KN4bTeIylWB9NxcmlttpBM9AgRZ+5XntZPGAIVBRysMtwbYJV/Xh3pyw6VglSXDkOfQHjO2p1BzviTaHb+5xj2rq4mXlwdyrQeFzhZWjEye63SB6LgMuKrhZgD+G+4gbh3ySDEzxK0VHRLw=
-Message-ID: <9a8748490707231359x2e5b4e61p614dcdc9ff3b1a42@mail.gmail.com>
-Date: Mon, 23 Jul 2007 22:59:25 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Jens Axboe" <axboe@kernel.dk>, "Andrew Morton" <akpm@osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>, drbd-user@linbit.com
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-In-Reply-To: <20070721203819.GA10706@mail.linbit.com>
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=aV7lE0ckMNSw26GBPT/b1SQg1Vi1v7pdIZnTBTLU1SAt2Fe35lqbNcKF2bFsBX1Fix9k3TdCTkmewPPADApXmT/k9PZnlN3e5Ni8Fmmxl41taq5kjs98loJrebkniUnnr8M3hhOorNcUbVXvV7OTi/SRHgrms4lU58WxekTk9ZY=
+Date: Tue, 24 Jul 2007 01:01:53 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Message-ID: <20070723210153.GA5753@martell.zuzino.mipt.ru>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070721203819.GA10706@mail.linbit.com>
+In-Reply-To: <20070723204045.GD5755@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21/07/07, Lars Ellenberg <lars@linbit.com> wrote:
->
->         DRBD wants to go mainline.
->         please have a look at the "for-linus" branch of
->         git://git.drbd.org/home/git/linux-drbd.git.
->
-A few more comments.
+On Tue, Jul 24, 2007 at 12:40:45AM +0400, Alexey Dobriyan wrote:
+> > I had more complete info: http://article.gmane.org/gmane.linux.network/66966
+> > 
+> > You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
+> > 
+> > I haven't worked out where that kmap_atomic() call is coming from yet. 
+> > Both traces point up into the page allocator, but I _think_ that's stack
+> > gunk.
+> 
+> Ahh, you suspect networking.
+> 
+> Here, setup is 2 cheap-ass 100Mb realtek 8139 NICs, one to campus network
+> receiving ~20 junk packets per second, one gathering netconsole output
+> and ssh to it, no conntracks and fancy stuff.
+> 
+> [reboots with cables physically unplugged]
 
-In drbd_main.c::after_state_ch() there's this code :
+OK, I run gdb recompile, cat(1) every file in /usr/portage (shitload of
+small files) with both cables unplugged. It all went fine for ~5 minutes
+after that it crashed exactly same way after 10 secs after plugging one
+of them.
 
-...
-                if ( mdev->p_uuid ) {
-                        kfree(mdev->p_uuid);
-                        mdev->p_uuid = NULL;
-                }
-...
-
-Since kfree(NULL) if a noop, that should just become :
-
-...
-                kfree(mdev->p_uuid);
-                mdev->p_uuid = NULL;
-...
-
-
-Same for these bits in drbd_main.c::drbd_cleanup()
-
-...
-                        if(mdev->app_reads_hash) {
-                                kfree(mdev->app_reads_hash);
-                                mdev->app_reads_hash = NULL;
-                        }
-                        if ( mdev->p_uuid ) {
-                                kfree(mdev->p_uuid);
-                                mdev->p_uuid = NULL;
-                        }
-...
-
-They should just become
-
-...
-                        kfree(mdev->app_reads_hash);
-                        mdev->app_reads_hash = NULL;
-                        kfree(mdev->p_uuid);
-                        mdev->p_uuid = NULL;
-...
-
-And then there's drbd_main.c::drbd_new_device() :
-
-...
-                if(mdev->app_reads_hash) kfree(mdev->app_reads_hash);
-...
-
-That should just be
-
-...
-                kfree(mdev->app_reads_hash);
-...
-
-Btw; You shouldn't put multiple statements on the same line. That is
-seen all over the place - like
-
-        mdev = kzalloc(sizeof(drbd_dev),GFP_KERNEL);
-        if(!mdev) goto Enomem;
-
-That should be
-
-        mdev = kzalloc(sizeof(drbd_dev),GFP_KERNEL);
-        if(!mdev)
-                goto Enomem;
-
-There are lots of other examples.
-
-
-Here are a few more pointless NULL checks before kfree() :
-
-drbd_nl.c::drbd_nl_net_conf() :
-...
-        if(new_tl_hash) {
-                if (mdev->tl_hash) kfree(mdev->tl_hash);
-                mdev->tl_hash_s = mdev->net_conf->max_epoch_size/8;
-                mdev->tl_hash = new_tl_hash;
-        }
-
-        if(new_ee_hash) {
-                if (mdev->ee_hash) kfree(mdev->ee_hash);
-                mdev->ee_hash_s = mdev->net_conf->max_buffers/8;
-                mdev->ee_hash = new_ee_hash;
-        }
-
-        if ( mdev->cram_hmac_tfm ) {
-                crypto_free_hash(mdev->cram_hmac_tfm);
-        }
-        mdev->cram_hmac_tfm = tfm;
-...
-
-should become :
-
-...
-        if(new_tl_hash) {
-                kfree(mdev->tl_hash);
-                mdev->tl_hash_s = mdev->net_conf->max_epoch_size/8;
-                mdev->tl_hash = new_tl_hash;
-        }
-
-        if(new_ee_hash) {
-                kfree(mdev->ee_hash);
-                mdev->ee_hash_s = mdev->net_conf->max_buffers/8;
-                mdev->ee_hash = new_ee_hash;
-        }
-
-        crypto_free_hash(mdev->cram_hmac_tfm);
-        mdev->cram_hmac_tfm = tfm;
-...
-
-still in drbd_nl.c::drbd_nl_net_conf() :
-
-...
-  fail:
-        if (tfm) crypto_free_hash(tfm);
-        if (new_tl_hash) kfree(new_tl_hash);
-        if (new_ee_hash) kfree(new_ee_hash);
-        if (new_conf) kfree(new_conf);
-...
-
-should become
-
-...
-  fail:
-        crypto_free_hash(tfm);
-        kfree(new_tl_hash);
-        kfree(new_ee_hash);
-        kfree(new_conf);
-...
-
-drbd_nl.c::ensure_mdev() :
-
-...
-                        if(mdev->app_reads_hash) kfree(mdev->app_reads_hash);
-..
-
-becomes
-
-...
-                        kfree(mdev->app_reads_hash);
-...
-
-
-In drbd_receiver.c::receive_uuids() we find this :
-
-...
-        if ( mdev->p_uuid ) kfree(mdev->p_uuid);
-...
-
-which should be just
-
-...
-        kfree(mdev->p_uuid);
-...
-
-There is also drbd_receiver.c::drbd_disconnect() - where
-
-...
-        if ( mdev->p_uuid ) {
-                kfree(mdev->p_uuid);
-                mdev->p_uuid = NULL;
-        }
-...
-
-needs to become just
-
-...
-        kfree(mdev->p_uuid);
-        mdev->p_uuid = NULL;
-...
-
-
-And in drbd_receiver.c::drbd_do_auth()
-
-...
- fail:
-        if(peers_ch) kfree(peers_ch);
-        if(response) kfree(response);
-        if(right_response) kfree(right_response);
-
-...
-
-needs to be turned into
-
-...
- fail:
-        kfree(peers_ch);
-        kfree(response);
-        kfree(right_response);
-...
-
-
-drbd_req.c::drbd_make_request_common() also needs to get rid of
-
-...
-        if (b) kfree(b); /* if someone else has beaten us to it... */
-...
-  fail_and_free_req:
-        if (b) kfree(b);
-...
-
-
-and just turn it into
-
-...
-        kfree(b); /* if someone else has beaten us to it... */
-...
-  fail_and_free_req:
-        kfree(b);
-...
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
