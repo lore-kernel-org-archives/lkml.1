@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbXGWFOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbXGWFWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757588AbXGWFOo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 01:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbXGWFOh
+	id S1757952AbXGWFWq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 01:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXGWFWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 01:14:37 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:43016 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857AbXGWFOg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 01:14:36 -0400
-Message-ID: <46A43935.6040000@linux.vnet.ibm.com>
-Date: Mon, 23 Jul 2007 10:44:29 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 23 Jul 2007 01:22:37 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:15358 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753405AbXGWFWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 01:22:36 -0400
+Date: Mon, 23 Jul 2007 07:22:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
+       Chris Snook <csnook@redhat.com>
+Subject: Re: [PATCH 3/3] readahead: scale max readahead size depending on
+	memory size
+Message-ID: <20070723052244.GW11657@kernel.dk>
+References: <20070721210005.000228000@chello.nl> <20070721210052.497469000@chello.nl> <20070722082434.GR11657@kernel.dk> <1185093405.20032.205.camel@twins> <20070722085041.GS11657@kernel.dk> <46A3EDD9.2090707@redhat.com>
 MIME-Version: 1.0
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-CC: nagar@watson.ibm.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Optimize struct task_delay_info
-References: <1184138034.3068.51.camel@ymzhang>
-In-Reply-To: <1184138034.3068.51.camel@ymzhang>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A3EDD9.2090707@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhang, Yanmin wrote:
-> struct task_delay_info is used by per process block I/O delay statistics
-> feature which is useful in kernel. This struct is not optimized.
-> 
-> My patch against kernel 2.6.22 shrinks it a half.
-> 
-> 1) Delete blkio_start and blkio_end. As the collection happens in
-> io_schedule and io_schedule_timeout, we use local variables to
-> replace them;
+On Sun, Jul 22 2007, Rik van Riel wrote:
+> Jens Axboe wrote:
+>
+>> I just wish you had a rationale behind them, I don't think it's that
+>> great of a series. I agree with the low point of 128k. Then it'd be sane
+>> to try and determine what the upper limit of ra window size goodness is,
+>> which is probably impossible since it depends on the hardware a lot. But
+>> lets just say the upper value is 2mb, then I think it's pretty silly
+>> _not_ to use 2mb on a 1g machine for instance. So more aggressive
+>> scaling.
+>
+> 1 or 2 MB is a nice number.
+>
+> Seek time (plus rotational latency) on disks still takes
+> on the order of 10 ms, while disks commonly transfer data
+> on the order of 50MB/second.
+>
+> That means one disk seek (10ms) takes as long as it takes
+> to read around 512kB of data.
+>
+> The current 128kB means that if you have lots of streaming
+> IO going on, you spend only 20% of the time transferring
+> data and get roughly 10MB/s.  Seek 10ms, read 2.5ms worth
+> of data.
+>
+> OTOH, if you do 2MB per request for the same heavy streaming
+> workload (say, an ftp or nfs server doing media files), you
+> can get 80% of the disk throughput, or 40MB/s.  This is because
+> you spend 40ms transferring data for every 10ms seek time.
+>
+> Yes, filesystem metadata will reduce this "occasionally",
+> but the general idea holds.
 
-I am not sure if it's a good idea to push items on the stack.
-Remember we are moving to 4K stacks.
+I meant real numbers, the above is just rudimentary math. AS and CFQ
+makes sure that you get a window of more than one request in, so huge
+read-ahead sizes aren't as interesting.
 
-> 2) Delete lock. The change to the protected data has no nested cases.
-> In addition, the result is for performance data collection, so it’s
-> unnecessary to add such lock. 
-
-This is a cause of concern, we cannot afford to have incorrect data
-collected. Incorrect/unreliable data which is worthless.
-
-> 3) Delete flags. It just has one value. Use the most significant bit of
-> blkio_delay (64 bits) to mark it..
-> 
-
-Yes, thats true right now, but I am not sure if we should go optimize
-that so early. We could end up adding other accounting/extending the
-framework, we'll need to add the flags back then.
-
-
-
-> -static inline void delayacct_clear_flag(int flag)
-> +static inline void delayacct_clear_swapin(void)
->  {
->  	if (current->delays)
-> -		current->delays->flags &= ~flag;
-> +		current->delays->blkio_delay |= DELAYACCT_PF_SWAPIN;
-
-BTW, you should be clearing the flag here.
-
-
-Overall, the lock removal is not acceptable. I don't like the bit
-hacking for flags and moving counters to the stack either.
+So - more testing, less hand waving :-)
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Jens Axboe
+
