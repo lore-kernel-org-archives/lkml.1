@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932271AbXGWUDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933075AbXGWUEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932271AbXGWUDo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXGWUDg
+	id S933075AbXGWUEz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXGWUEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:03:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50968 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbXGWUDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:03:36 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Manfred Spraul <manfred@colorfullife.com>
-Subject: Re: which signal is sent to freeze process?
-Date: Mon, 23 Jul 2007 22:11:14 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, "Agarwal, Lomesh" <lomesh.agarwal@intel.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>
-References: <46A506F8.2020206@colorfullife.com>
-In-Reply-To: <46A506F8.2020206@colorfullife.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 23 Jul 2007 16:04:47 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:62474 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751754AbXGWUEq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 16:04:46 -0400
+Subject: Re: [PATCH -rt] temporary WARN_ON removal
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20070723195548.GA10445@elte.hu>
+References: <1185124961.2573.14.camel@imap.mvista.com>
+	 <20070723195548.GA10445@elte.hu>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 12:53:22 -0700
+Message-Id: <1185220402.2573.132.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707232211.15543.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 23 July 2007 21:52, Manfred Spraul wrote:
-> Rafael wrote:
-> > On Monday, 23 July 2007 20:38, Agarwal, Lomesh wrote:
-> > > The other problem I am facing that read from socket returns with ENODATA
-> > > when resuming. any ideas?
-> >
-> > It's of similar kind: the system call checks signal_pending(current) and exit
-> > with an error if that's true.
-> >
-> > Well, I'm afraid we can't place try_to_freeze() in every system call that
-> > does something like that ...
-> >   
-> I don't understand why the poll() system call returns to user space. 
-> poll() uses ERESTARTNOHAND, thus it should not return to user space.
-> Any ideas why ERESTARTNOHAND doesn't work?
+On Mon, 2007-07-23 at 21:55 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > These two WARN_ON calls send my system into a boot hang. They trigger 
+> > over and over , some examples below.
+> 
+> hm, could you try to figure out why they trigger on your box and not on 
+> anyone else's box? By disabling them we might be papering over a 
+> potential problem.
+> 
 
-Well, look at the code in fs/select.c:do_poll() .  If signal_pending(current)
-is true, the main loop breaks and count is returned to do_sys_poll().  If
-zero is returned and signal_pending(current) is still true, do_sys_poll()
-returns -EINTR.
+Try running with !PREEMPT_RT , that's the only time that I see those
+message .. That's also why I thought it was related to timing ..
 
-Greetings,
-Rafael
+Daniel
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
