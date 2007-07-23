@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXGWAdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbXGWAeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933585AbXGWAdB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 20:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763691AbXGWAcv
+	id S933645AbXGWAeQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 20:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764545AbXGWAd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 20:32:51 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:41502 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762882AbXGWAcu (ORCPT
+	Sun, 22 Jul 2007 20:33:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:37698 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763926AbXGWAdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 20:32:50 -0400
-Date: Mon, 23 Jul 2007 02:32:15 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: James Smart <James.Smart@Emulex.Com>,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: 2.6.23 regression: lpfc_sli.c: off-by-10
-Message-ID: <20070723003215.GQ26212@stusta.de>
+	Sun, 22 Jul 2007 20:33:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=WKJFcqFafopK1VwlYsHgf3NRWvf5XNKcTXn5L/vmgIz9O/qKLJk84nkgc6eizH92a+Q9deGZ4em6qKIecKD3nR/XD4rKENYw+6bFbcBHpqbeormxDY29yYNDWlC12v9pmWvxhxJJH+j5i7hQNjw7PLmk53xWauubdbkDYTYRm7E=
+Message-ID: <46A3F6E2.1040606@googlemail.com>
+Date: Mon, 23 Jul 2007 02:31:30 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Tilman Schmidt <tilman@imap.cc>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-git17 boot failure
+References: <46A3EC92.3050504@imap.cc>
+In-Reply-To: <46A3EC92.3050504@imap.cc>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted the following off-by-10
-in drivers/scsi/lpfc/lpfc_sli.c:
+Tilman Schmidt wrote:
+> On my test machine with a Pentium D 940 processor, Intel DQ965GF
+> mainboard and SATA disks, kernel 2.6.22-git17 (32 bit build) fails
+> to come up because it cannot find the disk drives. Same issue
+> with a clone of the 'linus' git tree. Anything known?
+> 
+
+Could you post the config ?
 
 
-<--  snip  -->
+Regards,
 
-...
-static int
-lpfc_sli_process_unsol_iocb(struct lpfc_hba *phba, struct lpfc_sli_ring *pring,
-                            struct lpfc_iocbq *saveq)
-{
-...
-                        saveq->context3 = lpfc_sli_replace_hbqbuff(phba,
-                                                irsp->un.ulpWord[15]);
-...
-
-<--  snip  -->
-
-
-due to the following code in drivers/scsi/lpfc/lpfc_hw.h:
-
-
-<--  snip  -->
-
-...
-#define IOCB_WORD_SZ    8
-...
-typedef struct _IOCB {  /* IOCB structure */
-...
-                uint32_t ulpWord[IOCB_WORD_SZ - 2];     /* generic 6 'words' */
-...
-
-<--  snip  -->
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Gabriel C
