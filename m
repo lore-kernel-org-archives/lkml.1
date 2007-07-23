@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759856AbXGWVcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763645AbXGWVgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759856AbXGWVcN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXGWVb7
+	id S1763645AbXGWVgV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbXGWVgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:31:59 -0400
-Received: from mail.suse.de ([195.135.220.2]:35456 "EHLO mx1.suse.de"
+	Mon, 23 Jul 2007 17:36:06 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:36138 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753083AbXGWVb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:31:58 -0400
-From: Andi Kleen <ak@suse.de>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH 7/8] i386: bitops: Kill needless usage of __asm__ __volatile__
-Date: Mon, 23 Jul 2007 23:30:41 +0200
-User-Agent: KMail/1.9.1
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <46A4F360.2000905@goop.org> <Pine.LNX.4.58.0707231325050.5535@shell2.speakeasy.net>
-In-Reply-To: <Pine.LNX.4.58.0707231325050.5535@shell2.speakeasy.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1754486AbXGWVgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:36:05 -0400
+Date: Mon, 23 Jul 2007 23:37:19 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Message-ID: <20070723213719.GA9565@uranus.ravnborg.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org> <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707232330.41876.ak@suse.de>
+In-Reply-To: <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> 
+> For example, missing from the call graph is
+> 
+> 	get_page_from_freelist ->
+> 	  buffered_rmqueue ->		[ missing - inlined ]
+> 	    prep_new_page ->		[ missing - inlined ]
+> 	      prep_zero_page ->		[ missing - inlined ]
+> 		clear_highpage ->	[ missing - inlined ]
+> 		  kmap_atomic ->	[ missing - tailcall ]
+> 		    kmap_atomic_prot
+> 
+> (and I'm also pretty sure gcc 
+> is overly aggressive at inlining, and that it causes us pain for 
+> debugging, but whatever)
 
-> gcc also tries to count the number of instructions, to guess how large in
-> bytes the asm block is, as it could make a difference for near vs short
-> jumps, etc.
+mm/page_alloc.c:static inline void prep_zero_page(struct page *page, int order, gfp_t gfp_flags)
+include/linux/highmem.h:static inline void clear_highpage(struct page *page)
 
-Are you sure? I doubt it. It would need a full asm parser to do this
-properly and then even it could be wrong 
-(e.g. when the sections are switched like Linux does extensively)  
+So at least two was explicit marked inline.
+Now if that made I change i dunno.
 
-gcc doesn't have such a parser.
-
-Also on x86 gcc doesn't need to care about long/short anyways because
-the assembler takes care of this and the other instructions who cared
-about this (loop) isn't generated anymore.
-
-You're probably confusing it with some other compiler, who sometimes
-do this. e.g. the Microsoft inline asm syntax requires assembler parsing
-in the compiler.
-
-> I wonder it it also affects the instruction count the inline heuristics
-> use?
-
-AFAIK it counts like one operand.
-
--Andi
+	Sam
