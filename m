@@ -1,67 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765874AbXGWLio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934035AbXGWLjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765874AbXGWLio (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 07:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760842AbXGWLig
+	id S934035AbXGWLjQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 07:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933602AbXGWLi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 07:38:36 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:52601 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759278AbXGWLig (ORCPT
+	Mon, 23 Jul 2007 07:38:57 -0400
+Received: from qsrv01ps.mx.bigpond.com ([144.140.82.181]:58251 "EHLO
+	qsrv01ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760842AbXGWLiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 07:38:36 -0400
-Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20070723112143.GB19437@skynet.ie>
-References: <1185185020.8197.11.camel@twins>
-	 <20070723112143.GB19437@skynet.ie>
-Content-Type: text/plain
-Date: Mon, 23 Jul 2007 13:38:31 +0200
-Message-Id: <1185190711.8197.15.camel@twins>
+	Mon, 23 Jul 2007 07:38:55 -0400
+Date: Mon, 23 Jul 2007 18:55:59 +0930
+From: Alan Modra <amodra@bigpond.net.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Roland McGrath <roland@redhat.com>, Paul Mackerras <paulus@samba.org>,
+       David Miller <davem@davemloft.net>, Adrian Bunk <bunk@stusta.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: "build-id" changes break sparc64
+Message-ID: <20070723092559.GA24088@bubble.grove.modra.org>
+References: <20070723062759.GB3933@uranus.ravnborg.org> <20070723072613.E3A504D0489@magilla.localdomain> <20070723081435.GA4644@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070723081435.GA4644@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 12:21 +0100, Mel Gorman wrote:
+On Mon, Jul 23, 2007 at 10:14:35AM +0200, Sam Ravnborg wrote:
+> But I would still like to hear from Alan what the benefits are.
 
-> Does this patch compile though?
+See http://sourceware.org/ml/binutils/2004-10/msg00178.html
 
-Ugh, the fix landed in another patch :-(
-
-updated patch below.
-
----
-Daniel recently spotted that __GFP_ZERO is not (and has never been)
-part of GFP_LEVEL_MASK. I could not find a reason for this in the
-original patch: 3977971c7f09ce08ed1b8d7a67b2098eb732e4cd in the -bk
-tree.
-
-This of course is in stark contradiction with the comment accompanying
-GFP_LEVEL_MASK.
----
- include/linux/gfp.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6-2/include/linux/gfp.h
-===================================================================
---- linux-2.6-2.orig/include/linux/gfp.h
-+++ linux-2.6-2/include/linux/gfp.h
-@@ -56,7 +56,7 @@ struct vm_area_struct;
- /* if you forget to add the bitmask here kernel will crash, period */
- #define GFP_LEVEL_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS| \
- 			__GFP_COLD|__GFP_NOWARN|__GFP_REPEAT| \
--			__GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP| \
-+			__GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP|__GFP_ZERO| \
- 			__GFP_NOMEMALLOC|__GFP_HARDWALL|__GFP_THISNODE| \
- 			__GFP_MOVABLE)
- 
-
-
+-- 
+Alan Modra
+Australia Development Lab, IBM
