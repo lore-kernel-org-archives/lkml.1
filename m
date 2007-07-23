@@ -1,106 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934180AbXGWTRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934259AbXGWTRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934180AbXGWTRW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 15:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762459AbXGWTRP
+	id S934259AbXGWTRm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 15:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764467AbXGWTRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 15:17:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50803 "EHLO ogre.sisk.pl"
+	Mon, 23 Jul 2007 15:17:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:32664 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761572AbXGWTRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 15:17:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Subject: Re: which signal is sent to freeze process?
-Date: Mon, 23 Jul 2007 21:25:08 +0200
-User-Agent: KMail/1.9.5
-Cc: nigel@suspend2.net, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707210010.05877.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD62858D512@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD62858D512@scsmsx412.amr.corp.intel.com>
+	id S1761572AbXGWTRc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 15:17:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,572,1175497200"; 
+   d="scan'208";a="253717029"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707232125.09070.rjw@sisk.pl>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: drivers/dma/ioatdma.c - address of '__this_module' will always evaluate as 'true' , warning
+Date: Mon, 23 Jul 2007 12:17:30 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02BBD9F4@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <46A4D8F1.2000703@googlemail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: drivers/dma/ioatdma.c - address of '__this_module' will always evaluate as 'true' , warning
+Thread-Index: AcfNR/EnCKRznuAlTSyNP28bx4ELsgAE2a1A
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Cc: "lkml" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 23 Jul 2007 19:17:30.0615 (UTC) FILETIME=[1D561870:01C7CD5E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 23 July 2007 20:38, Agarwal, Lomesh wrote:
-> The other problem I am facing that read from socket returns with ENODATA
-> when resuming. any ideas?
+Gabriel C [mailto:nix.or.die@googlemail.com] 
+>Nelson, Shannon wrote:
+>> Gabriel C [mailto:nix.or.die@googlemail.com] 
+>>> Hi,
+>>>
+>>> I got this warning on current git using gcc 4.2.1 :
+>>>
+>>> ...
+>>>
+>>> drivers/dma/ioatdma.c: In function 'ioat_init_module':
+>>> drivers/dma/ioatdma.c:816: warning: the address of 
+>>> '__this_module' will always evaluate as 'true'
+>> 
+>> Can you forward a copy of your .config?
+>
+>Sure , config attached.
 
-It's of similar kind: the system call checks signal_pending(current) and exit
-with an error if that's true.
+Hmmm - never mind.  It looks like the gcc folks are getting picky with
+some expressions.  See many other similar threads.
 
-Well, I'm afraid we can't place try_to_freeze() in every system call that
-does something like that ...
-
-Greetings,
-Rafael
-
-
-> -----Original Message-----
-> From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-> Sent: Friday, July 20, 2007 3:10 PM
-> To: Agarwal, Lomesh
-> Cc: nigel@suspend2.net; linux-kernel@vger.kernel.org
-> Subject: Re: which signal is sent to freeze process?
-> 
-> On Friday, 20 July 2007 20:07, Agarwal, Lomesh wrote:
-> > Can you suggest a way I can debug the issue why I am getting EINTR
-> error
-> > for system calls in resuming? What else can cause the system call
-> > failure with EINTR?
-> 
-> Well, I think I know what the problem is.  do_poll checks
-> signal_pending(current) and breaks when it's set, but that may be caused
-> by the freezer.
-> 
-> You may try the patch below (untested) and see if that helps.
-> 
-> Greetings,
-> Rafael
-> 
-> 
-> ---
->  fs/select.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.22-rc6-mm1/fs/select.c
-> ===================================================================
-> --- linux-2.6.22-rc6-mm1.orig/fs/select.c
-> +++ linux-2.6.22-rc6-mm1/fs/select.c
-> @@ -23,6 +23,7 @@
->  #include <linux/file.h>
->  #include <linux/fs.h>
->  #include <linux/rcupdate.h>
-> +#include <linux/freezer.h>
->  
->  #include <asm/uaccess.h>
->  
-> @@ -593,6 +594,8 @@ static int do_poll(unsigned int nfds,  s
->  		struct poll_list *walk;
->  		long __timeout;
->  
-> +		try_to_freeze();
-> +
->  		set_current_state(TASK_INTERRUPTIBLE);
->  		for (walk = list; walk != NULL; walk = walk->next) {
->  			struct pollfd * pfd, * pfd_end;
-> @@ -618,7 +621,8 @@ static int do_poll(unsigned int nfds,  s
->  		 * a poll_table to them on the next loop iteration.
->  		 */
->  		pt = NULL;
-> -		if (count || !*timeout || signal_pending(current))
-> +		if (count || !*timeout ||
-> +		    (signal_pending(current) && !freezing(current)))
->  			break;
->  		count = wait->error;
->  		if (count)
-> 
-> 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+sln
+--
+======================================================================
+Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
+Shannon.Nelson@intel.com                I don't speak for Intel
+(503) 712-7659                    Parents can't afford to be squeamish.
