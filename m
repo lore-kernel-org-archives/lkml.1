@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763240AbXGWQht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbXGWQiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763240AbXGWQht (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 12:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932070AbXGWQh3
+	id S932943AbXGWQiR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 12:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932565AbXGWQhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 12:37:29 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:30790 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765548AbXGWQh2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 12:37:28 -0400
-Subject: Re: [PATCH] release quicklist before free_page
-From: Daniel Walker <dwalker@mvista.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@elte.hu, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <1185208378.8197.20.camel@twins>
-References: <20070723152129.036573829@mvista.com>
-	 <1185208378.8197.20.camel@twins>
-Content-Type: text/plain
-Date: Mon, 23 Jul 2007 09:26:19 -0700
-Message-Id: <1185207979.2573.55.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Mon, 23 Jul 2007 12:37:35 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43258 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932556AbXGWQhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 12:37:33 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Subject: Re: [PATCH 3/8] i386: bitops: Rectify bogus "+m" constraints
+Date: Mon, 23 Jul 2007 18:37:27 +0200
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, jh@suse.cz
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <20070723160543.22137.9416.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070723160543.22137.9416.sendpatchset@cselinux1.cse.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707231837.27592.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 18:32 +0200, Peter Zijlstra wrote:
-> On Mon, 2007-07-23 at 08:21 -0700, Daniel Walker wrote:
-> > Resolves,
-> > 
-> > BUG: sleeping function called from invalid context cc1(29651) at kernel/rtmutex.c:636
-> > in_atomic():1 [00000001], irqs_disabled():0
-> >  [<c0119f50>] __might_sleep+0xf3/0xf9
-> >  [<c031600e>] __rt_spin_lock+0x21/0x3c
-> >  [<c014102c>] get_zone_pcp+0x20/0x29
-> >  [<c0141a40>] free_hot_cold_page+0xdc/0x167
-> >  [<c013a3f4>] add_preempt_count+0x12/0xcc
-> >  [<c0110d92>] pgd_dtor+0x0/0x1
-> >  [<c015d865>] quicklist_trim+0xb7/0xe3
-> >  [<c0111025>] check_pgt_cache+0x19/0x1c
-> >  [<c0148df5>] free_pgtables+0x54/0x12c
-> >  [<c013a3f4>] add_preempt_count+0x12/0xcc
-> >  [<c014e5be>] unmap_region+0xeb/0x13b
-> > 
-> > 
-> > It looks like the quicklist isn't used after a few variables are evaluated.
-> > So no need to keep preemption disabled over the whole function.
+On Monday 23 July 2007 18:05:43 Satyam Sharma wrote:
+> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 > 
-> Not quite, it uses preempt_disable() to avoid migration and stick to a
-> cpu. Without that it might end up freeing pages from another quicklist.
+> [3/8] i386: bitops: Rectify bogus "+m" constraints
 > 
-> How about this - compile tested only
+> From the gcc manual:
+> 
+>   Extended asm supports input-output or read-write operands. Use the
+>   constraint character `+' to indicate such an operand and list it with
+>   the output operands. You should only use read-write operands when the
+>   constraints for the operand (or the operand in which only some of the
+>   bits are to be changed) allow a register.
+> 
+> So, using the "+" constraint modifier for memory, like "+m" is bogus.
+> We must simply specify "=m" which handles the case correctly.
 
-How about a comment to go with it ?  Which says something like what's
-above, notes on how the locking is getting used..
+I checked with Honza (cc'ed) and he stated that the + are really needed
+at least in newer gcc.
 
-Daniel
-
+-Andi
