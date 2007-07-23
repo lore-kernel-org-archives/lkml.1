@@ -1,43 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935730AbXGWUZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935788AbXGWUZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935730AbXGWUZJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935634AbXGWUYL
+	id S935788AbXGWUZi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935547AbXGWUYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:24:11 -0400
-Received: from [83.222.144.183] ([83.222.144.183]:37056 "EHLO
-	colorfullife.mysite.adiungo.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S935631AbXGWUYK (ORCPT
+	Mon, 23 Jul 2007 16:24:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38875 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935701AbXGWUYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:24:10 -0400
-Message-ID: <46A506F8.2020206@colorfullife.com>
-Date: Mon, 23 Jul 2007 21:52:24 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-kernel@vger.kernel.org, "Agarwal, Lomesh" <lomesh.agarwal@intel.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: RE: which signal is sent to freeze process?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 23 Jul 2007 16:24:39 -0400
+Date: Mon, 23 Jul 2007 13:24:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Message-Id: <20070723132431.42afbae8.akpm@linux-foundation.org>
+In-Reply-To: <20070723190152.GA5755@martell.zuzino.mipt.ru>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	<20070723183839.GA5874@martell.zuzino.mipt.ru>
+	<20070723190152.GA5755@martell.zuzino.mipt.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael wrote:
-> On Monday, 23 July 2007 20:38, Agarwal, Lomesh wrote:
-> > The other problem I am facing that read from socket returns with ENODATA
-> > when resuming. any ideas?
->
-> It's of similar kind: the system call checks signal_pending(current) and exit
-> with an error if that's true.
->
-> Well, I'm afraid we can't place try_to_freeze() in every system call that
-> does something like that ...
->   
-I don't understand why the poll() system call returns to user space. 
-poll() uses ERESTARTNOHAND, thus it should not return to user space.
-Any ideas why ERESTARTNOHAND doesn't work?
+On Mon, 23 Jul 2007 23:01:52 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
---
-    Manfred
+> On Mon, Jul 23, 2007 at 10:38:39PM +0400, Alexey Dobriyan wrote:
+> > Managed to hit BUG_ON() in kmap_atomic_prot() three times while doing
+> > nothing unusual for this box (two times it was under X, so I can't
+> > guarantee, one time while trying to reproduce via ./configure in gdb
+> > tarball)
+
+Yeah, I hit this several times a few days ago.  Same story: it just
+randomly went splat in response to no obvious stimulus.  Reported it to
+netdev, was greeted with stunned silence.
+
+
+> > Box has 2.5G of RAM. 2.6.22 was OK.
+> > 
+> > [dives into framebuffer console setup for complete oops]
+> 
+> kernel BUG at arch/i386/mm/highmem.c:38
+> PREEMPT DEBUG_PAGEALLOC SLAB
+> EIP at kmap_atomic_prot+0x32/0x93
+> 	get_page_from_freelist
+> 	__alloc_pages
+> 	cache_alloc_refill
+> 	cache_alloc_refill
+> 	kmem_cache_alloc
+> 	dst_alloc
+> 	dst_alloc
+> 	__ip_route_output_key
+> 	[some junk I don't trust]
+> 
+> eax: 0000000c
+> ebx: 00000003
+> ecx: c065efe0
+> edx: 00000003
+> edi: 00000163
+> 
+> 
+> c010cc9b <kmap_atomic_prot>:
+> c010cc9b:	57                   	push   %edi
+> c010cc9c:	56                   	push   %esi
+> c010cc9d:	53                   	push   %ebx
+> c010cc9e:	89 c6                	mov    %eax,%esi
+> c010cca0:	89 d3                	mov    %edx,%ebx
+> c010cca2:	89 cf                	mov    %ecx,%edi
+> c010cca4:	b8 01 00 00 00       	mov    $0x1,%eax
+> c010cca9:	e8 dd 1b 00 00       	call   c010e88b <add_preempt_count>
+> c010ccae:	e8 b1 ac 0e 00       	call   c01f7964 <debug_smp_processor_id>
+> c010ccb3:	6b c0 0d             	imul   $0xd,%eax,%eax
+> c010ccb6:	8d 14 03             	lea    (%ebx,%eax,1),%edx
+> c010ccb9:	8d 04 95 00 00 00 00 	lea    0x0(,%edx,4),%eax
+> c010ccc0:	8b 0d 30 a1 3e c0    	mov    0xc03ea130,%ecx
+> c010ccc6:	29 c1                	sub    %eax,%ecx
+> c010ccc8:	83 39 00             	cmpl   $0x0,(%ecx)
+> c010cccb:	74 04                	je     c010ccd1 <kmap_atomic_prot+0x36>
+> c010cccd:	0f 0b                	ud2a   
+
+I had more complete info: http://article.gmane.org/gmane.linux.network/66966
+
+You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
+
+I haven't worked out where that kmap_atomic() call is coming from yet. 
+Both traces point up into the page allocator, but I _think_ that's stack
+gunk.
