@@ -1,61 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763123AbXGWKLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765990AbXGWKNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763123AbXGWKLl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 06:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbXGWKLe
+	id S1765990AbXGWKNQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 06:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759225AbXGWKNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 06:11:34 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:7059 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269AbXGWKLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 06:11:33 -0400
-Date: Mon, 23 Jul 2007 12:11:46 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>, riel <riel@redhat.com>,
+	Mon, 23 Jul 2007 06:13:05 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:39031 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759009AbXGWKNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 06:13:04 -0400
+X-Greylist: delayed 1738 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jul 2007 06:13:04 EDT
+Subject: Re: [PATCH][37/37] Clean up duplicate includes in sound/soc/
+From: Richard Purdie <richard@openedhand.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH 3/3] readahead: scale max readahead size depending on
-	memory size
-Message-ID: <20070723101146.GF11657@kernel.dk>
-References: <20070721210005.000228000@chello.nl> <20070721210052.497469000@chello.nl> <20070722082434.GR11657@kernel.dk> <1185093405.20032.205.camel@twins> <20070722085041.GS11657@kernel.dk> <1185095852.20032.229.camel@twins> <20070722164403.GU11657@kernel.dk> <20070723100438.GA13963@lazybastard.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070723100438.GA13963@lazybastard.org>
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+In-Reply-To: <200707211704.17084.jesper.juhl@gmail.com>
+References: <200707211704.17084.jesper.juhl@gmail.com>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 10:43:47 +0100
+Message-Id: <1185183827.6148.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23 2007, Jörn Engel wrote:
-> On Sun, 22 July 2007 18:44:03 +0200, Jens Axboe wrote:
-> > > 
-> > > >  I agree with the low point of 128k.
-> > > 
-> > > Perhaps that should be enforced then, because currently a system with
-> > > <64M will get less.
-> > 
-> > I think it should remain the low point.
+On Sat, 2007-07-21 at 17:04 +0200, Jesper Juhl wrote:
+> This patch cleans up duplicate includes in
+> 	sound/soc/
 > 
-> I believe this whole thing is fundamentally flawed.  The perfect
-> readahead size depends on the device in question.  If we set a single
-> system-wide value depending on memory size, it may easily be too small
-> and too large at the same time.  Think hard disk and SSD.
 > 
-> It may make sense to have a _maximum_ readahead size which depends on
-> memory size.  But the preferred size (if there is enough RAM) should
-> depend solely on the device, possibly as a function of the
-> bandwidth * read latency product.
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+Acked-by: Richard Purdie <rpurdie@openedhand.com>
 
-The value IS the maximum read-ahead value, not an enforced minimum.
-
-However, there's definitely room for improvement in the queue feedback.
-Even for seekless devices like SSD, read-ahead may be beneficial due to
-zero request -> request latency.
-
--- 
-Jens Axboe
 
