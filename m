@@ -1,120 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761602AbXGWIQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932667AbXGWIR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761602AbXGWIQO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 04:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761456AbXGWIPk
+	id S932667AbXGWIR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 04:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbXGWIRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 04:15:40 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:32826 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754353AbXGWIPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 04:15:37 -0400
-Message-ID: <385178527.20132@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 23 Jul 2007 16:04:05 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/7] radixtree: introduce radix_tree_scan_hole()
-Message-ID: <20070723080405.GA7420@mail.ustc.edu.cn>
-Mail-Followup-To: Nick Piggin <nickpiggin@yahoo.com.au>,
-	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-References: <20070721044300.909424569@mail.ustc.edu.cn> <384993020.08966@ustc.edu.cn> <46A45F8A.5060600@yahoo.com.au>
+	Mon, 23 Jul 2007 04:17:12 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:44477 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754353AbXGWIRI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 04:17:08 -0400
+Message-ID: <46A46399.5090406@gmail.com>
+Date: Mon, 23 Jul 2007 10:15:21 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A45F8A.5060600@yahoo.com.au>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org
+CC: Al Boldi <a1426z@gawab.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFH] Partition table recovery
+References: <200707200813.03553.a1426z@gawab.com> <46A24846.7050803@gmail.com> <20070722011141.GJ26752@thunk.org> <200707220710.31402.a1426z@gawab.com> <20070722162802.GA20174@thunk.org>
+In-Reply-To: <20070722162802.GA20174@thunk.org>
+Content-Type: multipart/mixed;
+ boundary="------------010208010801000201050201"
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 05:58:02PM +1000, Nick Piggin wrote:
-> Fengguang Wu wrote:
-> >Introduce radix_tree_scan_hole(root, index, max_scan) to scan radix tree
-> >for the first hole. It will be used in interleaved readahead.
-> >
-> >The implementation is dumb and obviously correct.
-> >It can help debug(and document) the possible smart one in future.
+This is a multi-part message in MIME format.
+--------------010208010801000201050201
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+
+On 07/22/2007 06:28 PM, Theodore Tso wrote:
+
+[ Al -- don't drop CCs please ]
+
+> Well, let's think about this a bit.  What are the requirements?
 > 
-> Reasonable function to want. Is radix_tree_scan_hole the best name?
-> What about radix_tree_next_hole or _find_next_hole? (Andrew, any
-> suggestions?)
+> 1) The partition manager should be able explicitly request that a new
+> backup of the partition tables be stashed in each filesystem that has
+> room for such a backup.  That way, when the user affirmatively makes a
+> partition table change, it can get backed up in all of the right
+> places automatically.
 
-Thank you!
+D-Bus? ;-)
 
-All comments seems reasonable, so I simply attach the updated patch.
+> 2) The fsck program should *only* stash a backup of the partition
+> table if there currently isn't one in the filesystem.  It may be that
+> the partition table has been corrupted, and so merely doing an fsck
+> should not transfer a current copy of the partition table to the
+> filesystem-secpfic backup area.  It could be that the partition table
+> was only partially recovered, and we don't want to overwrite the
+> previously existing backups except on an explicit request from the
+> system administrator.
+> 
+> 3) The mkfs program should automatically create a backup of the
+> current partition table layout.  That way we get a backup in the newly
+> created filesystem as soon as it is created.
 
-Fengguang
----
-Subject: radixtree: introduce radix_tree_next_hole()
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+On an integrated system like this, do you consider it acceptable to only do 
+the MS-DOS partitions and not the other types that may be present _inside_ 
+those partitions? (MINIX subpartitions, BSD slices, ...). I believe those 
+should really also be done, but this would require keeping more information 
+again.
 
-Introduce radix_tree_next_hole(root, index, max_scan) to scan radix tree
-for the first hole. It will be used in interleaved readahead.
+> 4) The exact location of the backup may vary from filesystem to
+> filesystem.  For ext2/3/4, bytes 512-1023 are always unused, and don't
+> interfere with the boot sector at bytes 0-511, so that's the obvious
+> location.  Other filesystems may have that location in use, and some
+> other location might be a better place to store it.  Ideally it will
+> be a well-known location, that isn't dependent on finding an inode
+> table, or some such, but that may not be possible for all filesystems.
+> 
+> OK, so how about this as a solution that meets the above requirements?
+> 
+> /sbin/partbackup <device> [<fspart>]
+> 
+> 	Will scan <device> (i.e., /dev/hda, /dev/sdb, etc.) and create
+> 	a 512 byte partition backup, using the format I've previously
+> 	described.  If <fspart> is specified on the command line, it
+> 	will use the blkid library to determine the filesystem type of
+> 	<fspart>, and then attempt to execute
+> 	/dev/partbackupfs.<fstype> to write the partition backup to
+> 	<fspart>.  If <fspart> is '-', then it will write the 512 byte
+> 	partition table to stdout.  If <fspart> is not specified on
+> 	the command line, /sbin/partbackup will iterate over all
+> 	partitions in <device>, use the blkid library to attempt to
+> 	determine the correct filesystem type, and then execute 
+> 	/sbin/partbackupfs.<fstype> if such a backup program exists.
 
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
+I've cleaned up what I posted yesterday a bit and made it into the type of 
+standalone-by-design program you suggest here (the version from yesterday 
+required a -DTEST to be so). Not with the blkid bits though. Just dumps the 
+sector to stdout (and a textual version to stderr if compiled with -DDEBUG).
 
- include/linux/radix-tree.h |    2 +
- lib/radix-tree.c           |   36 +++++++++++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+)
+I (very) briefly looked at blkid but unless I'm mistaken blkid needs device 
+names? The documentation seems to be missing. When scanning the device for 
+the partition table, we've built a list of partitions with offsets into the 
+device and it would be nice if we could hand the fd and the offset off to 
+something directly. If the program has to construct device names itself 
+there's another truckload of pitfalls right there.
 
---- linux-2.6.22-rc6-mm1.orig/include/linux/radix-tree.h
-+++ linux-2.6.22-rc6-mm1/include/linux/radix-tree.h
-@@ -155,6 +155,8 @@ void *radix_tree_delete(struct radix_tre
- unsigned int
- radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
- 			unsigned long first_index, unsigned int max_items);
-+unsigned long radix_tree_next_hole(struct radix_tree_root *root,
-+				unsigned long index, unsigned long max_scan);
- int radix_tree_preload(gfp_t gfp_mask);
- void radix_tree_init(void);
- void *radix_tree_tag_set(struct radix_tree_root *root,
---- linux-2.6.22-rc6-mm1.orig/lib/radix-tree.c
-+++ linux-2.6.22-rc6-mm1/lib/radix-tree.c
-@@ -601,6 +601,42 @@ int radix_tree_tag_get(struct radix_tree
- EXPORT_SYMBOL(radix_tree_tag_get);
- #endif
- 
-+/**
-+ *	radix_tree_next_hole    -    find the next hole (not-present entry)
-+ *	@root:		tree root
-+ *	@index:		index key
-+ *	@max_scan:	maximum range to search
-+ *
-+ *	Search the set [index, min(index+max_scan-1, MAX_INDEX)] for the lowest
-+ *	indexed hole.
-+ *
-+ *	Returns: the index of the hole if found, otherwise returns an index
-+ *	outside of the set specified (in which case 'return - index >= max_scan'
-+ *	will be true).
-+ *
-+ *	radix_tree_next_hole may be called under rcu_read_lock. However, like
-+ *	radix_tree_gang_lookup, this will not atomically search a snapshot of the
-+ *	tree at a single point in time. For example, if a hole is created at index
-+ *	5, then subsequently a hole is created at index 10, radix_tree_next_hole
-+ *	covering both indexes may return 10 if called under rcu_read_lock.
-+ */
-+unsigned long radix_tree_next_hole(struct radix_tree_root *root,
-+				unsigned long index, unsigned long max_scan)
-+{
-+	unsigned long i;
-+
-+	for (i = 0; i < max_scan; i++) {
-+		if (!radix_tree_lookup(root, index))
-+			break;
-+		index++;
-+		if (index == 0)
-+			break;
-+	}
-+
-+	return index;
-+}
-+EXPORT_SYMBOL(radix_tree_next_hole);
-+
- static unsigned int
- __lookup(struct radix_tree_node *slot, void **results, unsigned long index,
- 	unsigned int max_items, unsigned long *next_index)
+It wouldn't be hard to log minors as such, but you'd also need to be very 
+sure you'd always do this in the same order as the kernel so that what I 
+consider to be "/dev/sda2" is the same the kernel considers it to be. This 
+is again rather fragile.
 
+It might in fact make sense to just ask the kernel for the partitions on a 
+device and not bother with scanning anything ourselves. Ie, just walk sysfs. 
+Would you agree? This siginificantly reduces the risk of things getting out 
+of sync, both scanning order and implementation.
+
+The kernel doesn't currently store/export everything you'd want to store in 
+a backup (as far as I'm aware, that is) but that could conceivably change. 
+It would make things significantly less fragile.
+
+Rene.
+
+--------------010208010801000201050201
+Content-Type: text/plain;
+ name="partbackup.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="partbackup.c"
+
+/*
+ * Public Domain 2007, Rene Herman
+ */
+
+#define _LARGEFILE64_SOURCE
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+enum {
+	DOS_EXTENDED   = 0x05,
+	WIN98_EXTENDED = 0x0f,
+	LINUX_EXTENDED = 0x85,
+};
+
+struct partition {
+        uint8_t boot_ind;
+	uint8_t head;
+	uint8_t sector;
+	uint8_t cyl;
+        uint8_t sys_ind;
+	uint8_t end_head;
+	uint8_t end_sector;
+	uint8_t end_cyl;
+        uint32_t start;
+        uint32_t size;
+} __attribute__((packed));
+
+struct entry {
+	uint8_t flags;
+	uint8_t type;
+	uint16_t __1;
+	uint64_t start;
+	uint32_t size;
+} __attribute__((packed));
+
+enum {
+	ENTRY_FLAG_PRIMARY  = 0x01,
+	ENTRY_FLAG_BOOTABLE = 0x80,
+};
+
+struct backup {
+	uint8_t signature[8];
+	uint16_t type;
+	uint8_t heads;
+	uint8_t sectors;
+	uint8_t count;
+	uint8_t __1[3];
+	struct entry table[31];
+} __attribute__((packed));
+
+#define BACKUP_SIGNATURE "PARTBAK1"
+
+enum {
+	BACKUP_TYPE_MBR = 1,
+};
+
+struct backup backup = {
+	.signature = BACKUP_SIGNATURE,
+	.type	   = BACKUP_TYPE_MBR,
+};
+
+#define ARRAY_SIZE(arr) (sizeof arr / sizeof arr[0])
+
+int is_extended(struct partition *partition)
+{
+	int ret = 0;
+
+	switch (partition->sys_ind) {
+	case DOS_EXTENDED:
+	case WIN98_EXTENDED:
+	case LINUX_EXTENDED:
+		ret = 1;
+	}
+	return ret;
+}
+
+unsigned char *get_sector(int fd, uint64_t n)
+{
+	unsigned char *sector;
+
+	if (lseek64(fd, n << 9, SEEK_SET) < 0) {
+		perror("lseek64");
+		return NULL;
+	}
+	sector = malloc(512);
+	if (!sector) {
+		fprintf(stderr, "malloc: out of memory\n");
+		return NULL;
+	}
+	if (read(fd, sector, 512) != 512) {
+		perror("read");
+		free(sector);
+		return NULL;
+	}
+	return sector;
+}
+
+void put_sector(unsigned char *sector)
+{
+	free(sector);
+}
+
+#define TABLE_OFFSET (512 - 2 - 4 * sizeof(struct partition))
+
+inline struct partition *table(unsigned char *sector)
+{
+	return (struct partition *)(sector + TABLE_OFFSET);
+}
+
+int do_sector(int fd, uint32_t offset, uint32_t start)
+{
+	unsigned char *sector;
+	struct partition *cur;
+	struct partition *ext = NULL;
+	int ret = 0;
+
+	sector = get_sector(fd, offset + start);
+	if (!sector)
+		return -1;
+
+	if (sector[510] != 0x55 || sector[511] != 0xaa) {
+		ret = -1;
+		goto out;
+	}
+	for (cur = table(sector); cur < table(sector) + 4; cur++) {
+		struct entry *entry;
+
+		if (!cur->size)
+			continue;
+
+		cur->end_head += 1;
+		if (backup.heads < cur->end_head)
+			backup.heads = cur->end_head;
+
+		cur->end_sector &= 0x3f;
+		if (backup.sectors < cur->end_sector) 
+			backup.sectors = cur->end_sector;
+
+		if (is_extended(cur)) {
+			if (!offset) {
+				ret = do_sector(fd, cur->start, 0);
+				if (ret < 0)
+					goto out;
+			} else if (!ext)
+				ext = cur;
+			continue;
+		}
+		if (backup.count == ARRAY_SIZE(backup.table)) {
+			fprintf(stderr, "do_sector: out of space!\n");
+			ret = -1;
+			goto out;
+		}
+		entry = backup.table + backup.count++;
+
+		entry->flags = cur->boot_ind;
+		if (!offset)
+			entry->flags |= ENTRY_FLAG_PRIMARY;
+
+		entry->type  = cur->sys_ind;
+		entry->start = cur->start + start;
+		entry->size  = cur->size;
+	}
+	if (ext)
+		ret = do_sector(fd, offset, ext->start);
+  out:
+	put_sector(sector);
+	return ret;
+}
+
+void show_backup(void)
+{
+#ifdef DEBUG
+
+	int i;
+
+	fprintf(stderr, "signature: ");
+	for (i = 0; i < 8; i++)
+		fprintf(stderr, "%c", backup.signature[i]);
+	fprintf(stderr, "\n");
+
+	fprintf(stderr, "     type: %d\n", backup.type);
+	fprintf(stderr, "    heads: %d\n", backup.heads);
+	fprintf(stderr, "  sectors: %d\n", backup.sectors);
+	fprintf(stderr, "    count: %d\n", backup.count);
+
+	for (i = 0; i < backup.count; i++) {
+		fprintf(stderr, "\n");
+		fprintf(stderr, "%2d: flags: %02x\n", i, backup.table[i].flags);
+		fprintf(stderr, "%2d:  type: %02x\n", i, backup.table[i].type);
+		fprintf(stderr, "%2d: start: %llu\n", i, backup.table[i].start);
+		fprintf(stderr, "%2d:  size: %u\n", i, backup.table[i].size);
+	}
+#endif
+}
+
+int main(int argc, char *argv[])
+{
+	int fd;
+	struct stat buf;
+
+	if (argc != 2) {
+		printf("%s <blkdev>\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+	fd = open(argv[1], O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return EXIT_FAILURE;
+	}
+	if (fstat(fd, &buf) < 0) {
+		perror("stat");
+		return EXIT_FAILURE;
+	}
+	if (!S_ISBLK(buf.st_mode))
+		fprintf(stderr, "warning: not a block device\n");
+	
+	if (do_sector(fd, 0, 0) < 0)
+		return EXIT_FAILURE;
+
+	if (close(fd) < 0) {
+		perror("close");
+		return EXIT_FAILURE;
+	}
+	if (write(STDOUT_FILENO, &backup, sizeof backup) != sizeof backup) {
+		perror("write");
+		return EXIT_FAILURE;
+	}
+
+	show_backup();
+
+	return EXIT_SUCCESS;
+}
+
+--------------010208010801000201050201--
