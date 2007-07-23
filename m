@@ -1,47 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932927AbXGWSip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763310AbXGWSjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932927AbXGWSip (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbXGWSie
+	id S1763310AbXGWSjF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762772AbXGWSih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:38:34 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:33347 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756375AbXGWSid (ORCPT
+	Mon, 23 Jul 2007 14:38:37 -0400
+Received: from mga02.intel.com ([134.134.136.20]:14245 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762258AbXGWSig convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:38:33 -0400
-Subject: Re: [PATCH] release quicklist before free_page
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-In-Reply-To: <20070723182301.GA27789@elte.hu>
-References: <20070723152129.036573829@mvista.com>
-	 <1185208378.8197.20.camel@twins> <1185207979.2573.55.camel@imap.mvista.com>
-	 <20070723182301.GA27789@elte.hu>
-Content-Type: text/plain
-Date: Mon, 23 Jul 2007 11:27:12 -0700
-Message-Id: <1185215232.2573.72.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jul 2007 14:38:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,571,1175497200"; 
+   d="scan'208";a="269554703"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: which signal is sent to freeze process?
+Date: Mon, 23 Jul 2007 11:38:33 -0700
+Message-ID: <A3258B497F1C1441AD36A2E8B45FD62858D512@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <200707210010.05877.rjw@sisk.pl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: which signal is sent to freeze process?
+thread-index: AcfLGaV4xPJHIQ/4TG2WxKjYROv37QCPlU7A
+References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707201324.06290.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD62858CCA1@scsmsx412.amr.corp.intel.com> <200707210010.05877.rjw@sisk.pl>
+From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: <nigel@suspend2.net>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 23 Jul 2007 18:38:34.0728 (UTC) FILETIME=[AD0A0680:01C7CD58]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 20:23 +0200, Ingo Molnar wrote:
-> 
-> how about: "if you've got some time then please also add a few comments, 
-> because the code was quite non-obvious to me and I misunderstood it when 
-> I tried to fix it. Thanks."
+The other problem I am facing that read from socket returns with ENODATA
+when resuming. any ideas?
 
-Not exactly what I was thinking of .. More like,
+-----Original Message-----
+From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+Sent: Friday, July 20, 2007 3:10 PM
+To: Agarwal, Lomesh
+Cc: nigel@suspend2.net; linux-kernel@vger.kernel.org
+Subject: Re: which signal is sent to freeze process?
 
-"LOCKING NOTE: This code uses the fact that get_cpu_var disables
-preemption to maintain cpu affinity during the call to free_page()
-otherwise it might free pages on another cpu."
+On Friday, 20 July 2007 20:07, Agarwal, Lomesh wrote:
+> Can you suggest a way I can debug the issue why I am getting EINTR
+error
+> for system calls in resuming? What else can cause the system call
+> failure with EINTR?
 
-(btw, your comment above comes off very snide, which I don't appreciate.
-I haven't done anything that remotely warrants that.)
+Well, I think I know what the problem is.  do_poll checks
+signal_pending(current) and breaks when it's set, but that may be caused
+by the freezer.
 
-Daniel
+You may try the patch below (untested) and see if that helps.
 
+Greetings,
+Rafael
+
+
+---
+ fs/select.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.22-rc6-mm1/fs/select.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/fs/select.c
++++ linux-2.6.22-rc6-mm1/fs/select.c
+@@ -23,6 +23,7 @@
+ #include <linux/file.h>
+ #include <linux/fs.h>
+ #include <linux/rcupdate.h>
++#include <linux/freezer.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -593,6 +594,8 @@ static int do_poll(unsigned int nfds,  s
+ 		struct poll_list *walk;
+ 		long __timeout;
+ 
++		try_to_freeze();
++
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		for (walk = list; walk != NULL; walk = walk->next) {
+ 			struct pollfd * pfd, * pfd_end;
+@@ -618,7 +621,8 @@ static int do_poll(unsigned int nfds,  s
+ 		 * a poll_table to them on the next loop iteration.
+ 		 */
+ 		pt = NULL;
+-		if (count || !*timeout || signal_pending(current))
++		if (count || !*timeout ||
++		    (signal_pending(current) && !freezing(current)))
+ 			break;
+ 		count = wait->error;
+ 		if (count)
