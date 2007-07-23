@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764507AbXGWRNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760591AbXGWROP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764507AbXGWRNx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 13:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758270AbXGWRNq
+	id S1760591AbXGWROP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 13:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758859AbXGWRNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 13:13:46 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:57937 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756362AbXGWRNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 13:13:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:31716 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757949AbXGWRNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Jul 2007 13:13:45 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Mon, 23 Jul 2007 22:45:04 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Andi Kleen <ak@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, jh@suse.cz
-Subject: Re: [PATCH 3/8] i386: bitops: Rectify bogus "+m" constraints
-In-Reply-To: <200707231837.27592.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0707232242340.22796@cselinux1.cse.iitk.ac.in>
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070723160543.22137.9416.sendpatchset@cselinux1.cse.iitk.ac.in>
- <200707231837.27592.ak@suse.de>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MeTWn6Wyzdy7g3QcqxmCiYGupgjcePXCj578lWwj8229CGNG3HztGwC9JSXdAo05pUcBqGcsmzXXVWzNIvtOS9PGpTpkPO+RCtT0/HoYnF/lFZoVru7nXo1kxl4tqCZBBAQAdHo2bYmyymIfPBugf1MBDVKPaSH/bbzus84+nqA=
+Message-ID: <a4e6962a0707231013v47683cd0xd35c65c25cb40653@mail.gmail.com>
+Date: Mon, 23 Jul 2007 12:13:45 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: lucho@ionkov.net
+Subject: Re: CTL_UNNUMBERED (Re: [PATCH] 9p: Don't use binary sysctl numbers.)
+Cc: "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <m1odi5wfjg.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <m1y7h9wpuo.fsf@ebiederm.dsl.xmission.com>
+	 <20070721205709.GB5772@martell.zuzino.mipt.ru>
+	 <m1odi5wfjg.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007, Andi Kleen wrote:
+On 7/21/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> Alexey Dobriyan <adobriyan@gmail.com> writes:
+>
+> >
+> > That's separate patch but CTL_UNNUMBERED must die, because it's totally
+> > unneeded. If you don't want sysctl(2) interface just SKIP ->ctl_name
+> > initialization and save one line for something useful.
+>
+> As for the 9p code it doesn't seem to need or want a real binary
+> interface.  The 9p debug code picking of a semi-random number and not
+> patching it into sysctl.h like it should for a binary interface is
+> an implementation bug, and a maintenance problem.
+>
 
-> On Monday 23 July 2007 18:05:43 Satyam Sharma wrote:
-> > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> > 
-> > [3/8] i386: bitops: Rectify bogus "+m" constraints
-> > 
-> > From the gcc manual:
-> > 
-> >   Extended asm supports input-output or read-write operands. Use the
-> >   constraint character `+' to indicate such an operand and list it with
-> >   the output operands. You should only use read-write operands when the
-> >   constraints for the operand (or the operand in which only some of the
-> >   bits are to be changed) allow a register.
-> > 
-> > So, using the "+" constraint modifier for memory, like "+m" is bogus.
-> > We must simply specify "=m" which handles the case correctly.
-> 
-> I checked with Honza (cc'ed) and he stated that the + are really needed
-> at least in newer gcc.
+Now that -rc1 is out, lets talk a bit more about this.  Lucho can you
+provide some level of justification of why you went for a sysctl
+interface versus something directly accessible within the file system
+-- that would seem more on-par with the 9p philosophy.
 
+Perhaps its time for a general cleanup of the debug_level stuff -- it
+was always ugly to have it as a global, but there was just no clear
+way to have the session structure available everywhere we use it.
 
-That extract is from the latest (4.2.1) manual, but they could've
-forgotten to update the documentation, of course.
-
-But even then, I'm not sure they could ever make it "really needed",
-that'll be a step that would break all existing code, otherwise! :-)
-
-Satyam
+               -eric
