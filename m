@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936253AbXGWVCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936372AbXGWVCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936253AbXGWVCR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbXGWVB7
+	id S936372AbXGWVCw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbXGWVCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:01:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:24792 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761402AbXGWVB6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:01:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=aV7lE0ckMNSw26GBPT/b1SQg1Vi1v7pdIZnTBTLU1SAt2Fe35lqbNcKF2bFsBX1Fix9k3TdCTkmewPPADApXmT/k9PZnlN3e5Ni8Fmmxl41taq5kjs98loJrebkniUnnr8M3hhOorNcUbVXvV7OTi/SRHgrms4lU58WxekTk9ZY=
-Date: Tue, 24 Jul 2007 01:01:53 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070723210153.GA5753@martell.zuzino.mipt.ru>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru>
+	Mon, 23 Jul 2007 17:02:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36997 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761235AbXGWVCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:02:40 -0400
+Date: Mon, 23 Jul 2007 23:02:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: v2.6.22.1-rt5
+Message-ID: <20070723210236.GA25104@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070723204045.GD5755@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 12:40:45AM +0400, Alexey Dobriyan wrote:
-> > I had more complete info: http://article.gmane.org/gmane.linux.network/66966
-> > 
-> > You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
-> > 
-> > I haven't worked out where that kmap_atomic() call is coming from yet. 
-> > Both traces point up into the page allocator, but I _think_ that's stack
-> > gunk.
-> 
-> Ahh, you suspect networking.
-> 
-> Here, setup is 2 cheap-ass 100Mb realtek 8139 NICs, one to campus network
-> receiving ~20 junk packets per second, one gathering netconsole output
-> and ssh to it, no conntracks and fancy stuff.
-> 
-> [reboots with cables physically unplugged]
 
-OK, I run gdb recompile, cat(1) every file in /usr/portage (shitload of
-small files) with both cables unplugged. It all went fine for ~5 minutes
-after that it crashed exactly same way after 10 secs after plugging one
-of them.
+we are pleased to announce the v2.6.22.1-rt5 kernel (collected and 
+assembled by Thomas), which can be downloaded from the usual place:
+  
+  http://redhat.com/~mingo/realtime-preempt/
+  
+more info about the -rt patchset can be found in the RT wiki:
+   
+  http://rt.wiki.kernel.org
 
+Changes since -rt4:
+
+ - MM fix: PCP pages locking (Peter Zijlstra)
+
+ - yield() fix: remove stale RCU-unlock (Daniel Walker)
+
+ - dont do check_pgt_cache() in idle (found by Daniel Walker)
+
+ - moved 8 patches, created 6 new patches out of larger patches to 
+   make the -rt queue more bisectable (Daniel Walker)
+
+ - cleanup (Daniel Walker)
+
+ - fix the latency tracer under paravirt
+
+to build a 2.6.22.1-rt5 tree, the following patches should be applied:
+  
+  http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
+  http://redhat.com/~mingo/realtime-preempt/patch-2.6.22.1-rt5
+  
+	Ingo
