@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbXGWCCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbXGWCSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933231AbXGWCCj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 22:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbXGWCCa
+	id S932966AbXGWCSW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 22:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbXGWCSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 22:02:30 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53656 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755933AbXGWCC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 22:02:29 -0400
-Date: Mon, 23 Jul 2007 12:02:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fault_inject: silence a warning
-Message-Id: <20070723120246.af0d4df0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Sun, 22 Jul 2007 22:18:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38733
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751401AbXGWCSM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 22:18:12 -0400
+Date: Sun, 22 Jul 2007 19:18:11 -0700 (PDT)
+Message-Id: <20070722.191811.15587624.davem@davemloft.net>
+To: roland@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: "build-id" changes break sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070722085940.7E3DE4D05C1@magilla.localdomain>
+References: <20070722.012321.79430375.davem@davemloft.net>
+	<20070722085940.7E3DE4D05C1@magilla.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lib/fault-inject.c:168: warning: 'debugfs_create_ul_MAX_STACK_TRACE_DEPTH' defined but not used
+From: Roland McGrath <roland@redhat.com>
+Date: Sun, 22 Jul 2007 01:59:40 -0700 (PDT)
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- lib/fault-inject.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+> Maybe:
+> 
+> --- a/arch/sparc64/kernel/vmlinux.lds.S
+> +++ b/arch/sparc64/kernel/vmlinux.lds.S
+> @@ -19,6 +19,7 @@ SECTIONS
+>      SCHED_TEXT
+>      LOCK_TEXT
+>      KPROBES_TEXT
+> +    NOTES
+>      *(.gnu.warning)
+>    } =0
+>    _etext = .;
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+This generates a syntax error.
 
-diff --git a/lib/fault-inject.c b/lib/fault-inject.c
-index b18fc2f..23985a2 100644
---- a/lib/fault-inject.c
-+++ b/lib/fault-inject.c
-@@ -139,12 +139,14 @@ static void debugfs_ul_set(void *data, u64 val)
- 	*(unsigned long *)data = val;
- }
- 
-+#ifdef CONFIG_FAULT_INJECTION_STACKTRACE_FILTER
- static void debugfs_ul_set_MAX_STACK_TRACE_DEPTH(void *data, u64 val)
- {
- 	*(unsigned long *)data =
- 		val < MAX_STACK_TRACE_DEPTH ?
- 		val : MAX_STACK_TRACE_DEPTH;
- }
-+#endif /* CONFIG_FAULT_INJECTION_STACKTRACE_FILTER */
- 
- static u64 debugfs_ul_get(void *data)
- {
-@@ -159,6 +161,7 @@ static struct dentry *debugfs_create_ul(const char *name, mode_t mode,
- 	return debugfs_create_file(name, mode, parent, value, &fops_ul);
- }
- 
-+#ifdef CONFIG_FAULT_INJECTION_STACKTRACE_FILTER
- DEFINE_SIMPLE_ATTRIBUTE(fops_ul_MAX_STACK_TRACE_DEPTH, debugfs_ul_get,
- 			debugfs_ul_set_MAX_STACK_TRACE_DEPTH, "%llu\n");
- 
-@@ -169,6 +172,7 @@ static struct dentry *debugfs_create_ul_MAX_STACK_TRACE_DEPTH(
- 	return debugfs_create_file(name, mode, parent, value,
- 				   &fops_ul_MAX_STACK_TRACE_DEPTH);
- }
-+#endif /* CONFIG_FAULT_INJECTION_STACKTRACE_FILTER */
- 
- static void debugfs_atomic_t_set(void *data, u64 val)
- {
--- 
-1.5.2.3
+The following fix works and is what I'll merge in to fix this
+problem, thanks!
 
+diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
+index 4758388..15109c1 100644
+--- a/arch/sparc/kernel/vmlinux.lds.S
++++ b/arch/sparc/kernel/vmlinux.lds.S
+@@ -35,6 +35,8 @@ SECTIONS
+   __ex_table : { *(__ex_table) }
+   __stop___ex_table = .;
+ 
++  NOTES
++
+   . = ALIGN(4096);
+   __init_begin = .;
+   _sinittext = .;
+diff --git a/arch/sparc64/kernel/vmlinux.lds.S b/arch/sparc64/kernel/vmlinux.lds.S
+index 4818617..b982fa3 100644
+--- a/arch/sparc64/kernel/vmlinux.lds.S
++++ b/arch/sparc64/kernel/vmlinux.lds.S
+@@ -45,6 +45,8 @@ SECTIONS
+   __ex_table : { *(__ex_table) }
+   __stop___ex_table = .;
+ 
++  NOTES
++
+   . = ALIGN(PAGE_SIZE);
+   __init_begin = .;
+   .init.text : { 
