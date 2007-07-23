@@ -1,133 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932990AbXGWITm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbXGWIVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932990AbXGWITm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 04:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbXGWITf
+	id S932091AbXGWIVR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 04:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbXGWIVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 04:19:35 -0400
-Received: from mga05.intel.com ([192.55.52.89]:37478 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751665AbXGWITe (ORCPT
+	Mon, 23 Jul 2007 04:21:07 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:45216 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751665AbXGWIVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 04:19:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,569,1175497200"; 
-   d="scan'208";a="271484835"
-Subject: [PATCH] spinlock in function hugetlb_fault could be deleted
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: agl@us.ibm.com
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 23 Jul 2007 16:18:47 +0800
-Message-Id: <1185178727.4688.63.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jul 2007 04:21:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=ErcH7iXRvsihP8L0j1HoozlwtEqzdsi0q/9ggzvEgOnJdCfCW6tCvzHI/q+WDE7aCrAcelxKQCriqri7//1On3/sqqXgj6fmi+1ZypRvhTgyc+cEyw0SXczqweS07XPkwqAx/lSUJC395aUL5UKdcyJ7NnUJbyMx6vtt3LHOuPs=
+From: Denis Cheng <crquan@gmail.com>
+To: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, Denis Cheng <crquan@gmail.com>
+Subject: [PATCH 1/1] fs: remove the unused mempages parameter
+Date: Mon, 23 Jul 2007 16:21:13 +0800
+Message-Id: <1185178873862-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Function hugetlb_fault needn't hold spinlock mm->page_table_lock,
-because when hugetlb_fault is called:
-1) mm->mmap_sem is held already;
-2) hugetlb_instantiation_mutex is held by hugetlb_fault, which prevents
-other threads/processes from entering this critical area. It's impossible
-for other threads/processes to change the page table now.
+Since the mempages parameter is actually not used, they should be removed.
 
-My patch against kenel 2.6.22 deletes the spinlock statements in the
-related functions.
-
-Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
-
+Signed-off-by: Denis Cheng <crquan@gmail.com>
 ---
+If applied, now there is only files_init use the mempages parameter,
+ 	files_init(mempages);
+but i don't think the adaptation to mempages in files_init is really useful;
+and if files_init also changed to the prototype void (*func)(void),
+the wrapper vfs_caches_init would also not need the mempages parameter.
 
-diff -Nraup linux-2.6.22/mm/hugetlb.c linux-2.6.22_hugetlb/mm/hugetlb.c
---- linux-2.6.22/mm/hugetlb.c	2007-07-09 07:32:17.000000000 +0800
-+++ linux-2.6.22_hugetlb/mm/hugetlb.c	2007-07-23 15:51:49.000000000 +0800
-@@ -434,12 +434,12 @@ void unmap_hugepage_range(struct vm_area
+ fs/dcache.c        |    8 ++++----
+ fs/inode.c         |    2 +-
+ fs/namespace.c     |    2 +-
+ include/linux/fs.h |    4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 678d39d..4895959 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -2108,7 +2108,7 @@ static void __init dcache_init_early(void)
+ 		INIT_HLIST_HEAD(&dentry_hashtable[loop]);
  }
  
- static int hugetlb_cow(struct mm_struct *mm, struct vm_area_struct *vma,
--			unsigned long address, pte_t *ptep, pte_t pte)
-+			unsigned long address, pte_t *ptep)
+-static void __init dcache_init(unsigned long mempages)
++static void __init dcache_init(void)
  {
- 	struct page *old_page, *new_page;
- 	int avoidcopy;
+ 	int loop;
  
--	old_page = pte_page(pte);
-+	old_page = pte_page(*ptep);
+@@ -2170,10 +2170,10 @@ void __init vfs_caches_init(unsigned long mempages)
+ 	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
+ 			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
  
- 	/* If no-one else is actually using this page, avoid the copy
- 	 * and just make the page writable */
-@@ -449,28 +449,16 @@ static int hugetlb_cow(struct mm_struct 
- 		return VM_FAULT_MINOR;
- 	}
- 
--	page_cache_get(old_page);
- 	new_page = alloc_huge_page(vma, address);
--
- 	if (!new_page) {
- 		page_cache_release(old_page);
- 		return VM_FAULT_OOM;
- 	}
- 
--	spin_unlock(&mm->page_table_lock);
- 	copy_huge_page(new_page, old_page, address, vma);
--	spin_lock(&mm->page_table_lock);
--
--	ptep = huge_pte_offset(mm, address & HPAGE_MASK);
--	if (likely(pte_same(*ptep, pte))) {
--		/* Break COW */
--		set_huge_pte_at(mm, address, ptep,
--				make_huge_pte(vma, new_page, 1));
--		/* Make the old page be freed below */
--		new_page = old_page;
--	}
--	page_cache_release(new_page);
-+	set_huge_pte_at (mm, address, ptep, make_huge_pte (vma, new_page, 1));
- 	page_cache_release(old_page);
-+
- 	return VM_FAULT_MINOR;
+-	dcache_init(mempages);
+-	inode_init(mempages);
++	dcache_init();
++	inode_init();
+ 	files_init(mempages);
+-	mnt_init(mempages);
++	mnt_init();
+ 	bdev_cache_init();
+ 	chrdev_init();
+ }
+diff --git a/fs/inode.c b/fs/inode.c
+index 29f5068..d7431e6 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -1378,7 +1378,7 @@ void __init inode_init_early(void)
+ 		INIT_HLIST_HEAD(&inode_hashtable[loop]);
  }
  
-@@ -523,7 +511,6 @@ retry:
- 			lock_page(page);
- 	}
+-void __init inode_init(unsigned long mempages)
++void __init inode_init(void)
+ {
+ 	int loop;
  
--	spin_lock(&mm->page_table_lock);
- 	size = i_size_read(mapping->host) >> HPAGE_SHIFT;
- 	if (idx >= size)
- 		goto backout;
-@@ -538,16 +525,14 @@ retry:
+diff --git a/fs/namespace.c b/fs/namespace.c
+index ddbda13..07daa79 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1791,7 +1791,7 @@ static void __init init_mount_tree(void)
+ 	set_fs_root(current->fs, ns->root, ns->root->mnt_root);
+ }
  
- 	if (write_access && !(vma->vm_flags & VM_SHARED)) {
- 		/* Optimization, do the COW without a second fault */
--		ret = hugetlb_cow(mm, vma, address, ptep, new_pte);
-+		ret = hugetlb_cow(mm, vma, address, ptep);
- 	}
+-void __init mnt_init(unsigned long mempages)
++void __init mnt_init(void)
+ {
+ 	struct list_head *d;
+ 	unsigned int nr_hash;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index d33bead..41b37bc 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -301,9 +301,9 @@ struct kstatfs;
+ struct vm_area_struct;
+ struct vfsmount;
  
--	spin_unlock(&mm->page_table_lock);
- 	unlock_page(page);
- out:
- 	return ret;
+-extern void __init inode_init(unsigned long);
++extern void __init inode_init(void);
+ extern void __init inode_init_early(void);
+-extern void __init mnt_init(unsigned long);
++extern void __init mnt_init(void);
+ extern void __init files_init(unsigned long);
  
- backout:
--	spin_unlock(&mm->page_table_lock);
- 	hugetlb_put_quota(mapping);
- 	unlock_page(page);
- 	put_page(page);
-@@ -580,13 +565,8 @@ int hugetlb_fault(struct mm_struct *mm, 
- 	}
- 
- 	ret = VM_FAULT_MINOR;
--
--	spin_lock(&mm->page_table_lock);
--	/* Check for a racing update before calling hugetlb_cow */
--	if (likely(pte_same(entry, *ptep)))
--		if (write_access && !pte_write(entry))
--			ret = hugetlb_cow(mm, vma, address, ptep, entry);
--	spin_unlock(&mm->page_table_lock);
-+	if (write_access && !pte_write(entry))
-+		ret = hugetlb_cow(mm, vma, address, ptep);
- 	mutex_unlock(&hugetlb_instantiation_mutex);
- 
- 	return ret;
+ struct buffer_head;
+-- 
+1.5.2.2
+
