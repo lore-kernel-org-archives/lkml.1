@@ -1,105 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764172AbXGWJOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763333AbXGWJPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764172AbXGWJOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 05:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbXGWJOE
+	id S1763333AbXGWJPf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 05:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXGWJP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 05:14:04 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:20760 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756026AbXGWJOA (ORCPT
+	Mon, 23 Jul 2007 05:15:28 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:53661 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbXGWJP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 05:14:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ICErPE8EMdQOtK2MUMrmF07ufSOHvFEjZVGYbMxkp+oCUdVThsZd90qGQDOvGit/UPxmkn39Pk3ZzO+gFZZNNNu28Ri/oEi/uv/88Z1HdaKwyOBf3OOn5q9jSkBaYskfbwFW8oncRxqA4QJYEZhJhLuHCrlxNA7AwfYD6Yx0hYo=
-Message-ID: <a781481a0707230213n7672223duf8008926d53012bc@mail.gmail.com>
-Date: Mon, 23 Jul 2007 14:43:58 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] AFS: Fix file locking
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <a781481a0707230150u21ba14bfme7bbff92d4705d20@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 23 Jul 2007 05:15:26 -0400
+Subject: Re: [PATCH] virtual sched_clock() for s390
+From: Jan Glauber <jang@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>, vatsa@linux.vnet.ibm.com,
+       mschwid2@linux.vnet.ibm.com, efault@gmx.de, dmitry.adamushko@gmail.com,
+       anton@samba.org
+In-Reply-To: <20070720072245.GA4020@elte.hu>
+References: <1184842661.6546.14.camel@localhost.localdomain>
+	 <469F8342.7060000@goop.org> <20070719160025.GA31815@elte.hu>
+	 <18080.2390.42425.852087@cargo.ozlabs.ibm.com>
+	 <20070720072245.GA4020@elte.hu>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 09:15:49 +0000
+Message-Id: <1185182149.5783.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070717124732.22619.34179.stgit@warthog.cambridge.redhat.com>
-	 <20070717175017.8b8a8976.akpm@linux-foundation.org>
-	 <469DABA5.9070706@yahoo.com.au>
-	 <20070719204102.7b82692d.akpm@linux-foundation.org>
-	 <46A04129.1020900@yahoo.com.au>
-	 <alpine.LFD.0.999.0707201835070.27249@woody.linux-foundation.org>
-	 <46A4539D.9060100@yahoo.com.au>
-	 <a781481a0707230150u21ba14bfme7bbff92d4705d20@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Restricting discussion to the i386 bitops implementation. ]
+On Fri, 2007-07-20 at 09:22 +0200, Ingo Molnar wrote:
+> * Paul Mackerras <paulus@samba.org> wrote:
+> > As with s390, 64-bit PowerPC also uses CONFIG_VIRT_CPU_ACCOUNTING. 
+> > That affects how tsk->utime and tsk->stime are accumulated (we call 
+> > account_user_time and account_system_time directly rather than calling 
+> > update_process_times) as well as the system hardirq/softirq time, idle 
+> > time, and stolen time.
+> 
+> tsk->utime and tsk->stime is only used for a single purpose: to 
+> determine the 'split' factor of how to split up the precise total time 
+> between user and system time.
+> 
+> > When you say "precise task statistics for /proc", where are they 
+> > accumulated?  I don't see any changes to the way that tsk->utime and 
+> > ctime are computed.
+> 
+> we now use p->se.sum_exec_runtime that measures (in nanoseconds) the 
+> precise amount of time spent executing (sum of system and user time) - 
+> and ->stime and ->utime is used to determine the 'split'. [this allows 
+> us to gather ->stime and ->utime via low-resolution sampling, while 
+> keeping the 'total' precise. Accounting at every system entry point 
+> would be quite expensive on most platforms.]
 
-Hi Nick,
+Using se.sum_exec_runtime to generate ->utime and ->stime breaks
+the process accounting we have on s390 (and probably on PowerPC too).
+With CONFIG_VIRT_CPU_ACCOUNTING we already have precise values in
+->utime and ->stime. Can we make the calculation of the CFS-based time
+values conditional by CONFIG_VIRT_CPU_ACCOUNTING?
 
-On 7/23/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> Hi,
->
-> On 7/23/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > Linus Torvalds wrote:
-> > >
-> > > On Fri, 20 Jul 2007, Nick Piggin wrote:
-> > >
-> > >>So you did. Then to answer that, yes it could be faster because there are
-> > >>stupid volatiles sprinkled all over the bitops code so you could easily
-> > >>end up having to do more loads. Does it make a real difference? Unlikely,
-> > >>but David loves counting cycles :)
-> > >
-> > >
-> > > I thought we long long since removed the volatiles. They are buggy and
-> > > horrible, and we really want to let the compiler combine multiple
-> > > test-bits, and if they matter that implies locking is buggy or something
-> > > worse..
-> > >
-> > > Ie we'd *want*
-> > >
-> > >       if (test_bit(x, y) || test_bit(z,y))
-> > >
-> > > to be rewritten by the compiler as testing bits x/z at the same time.
-> >
-> > Yep. We'd also want __set_bit(x, y); __set_bit(z, y); and such to be
-> > combined.
+Jan
 
-BTW I'm also running some tests writing test code, compiling and verifying
-the code gcc generates ... curiously, volatile-access-casting of the passed
-bit-string address is not the only thing that'll prevent gcc's optimizer from
-combining the operations such as ones you listed above. Then there are
--O2 vs -Os (and constant_test_bit() vs variable_test_bit()) differences I am
-observing ... and sometimes just the inadequacy of gcc's optimizer -- note
-that constant_test_bit() seems to go through extra hoops unnecessarily to
-avoid honouring @nr >= 32, whereas none of the other primitives in that file
-does that. So the i386 kernel's stock constant_test_bit implementation
-ends up differing from David's open-coded versions quite drastically in
-subtle ways, and again makes it difficult to combine the kind of operations
-you guys are discussing here ...
+> 	Ingo
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-It's a given, of course, that the code that gcc generates when combining
-such operations would clearly be more optimal than the simple btl-sbbl pair
-with test-and-conditional-jumps that would otherwise get generated ...
-
-> > > But now I'm too scared to look.
-> >
-> > Not a chance :) Even the asm-generic "reference" implementation ratifies
-> > the volatile crapiness. Would you take a patch?
->
-> Coincidentally, I'm working on a cleanup of the bitops code just now --
-> I stumbled upon a lot of varied bogosity in there :-)
-
-Such as bogus/invalid asm constraints being passed in the inline assembly.
-Probably gcc knows everybody gets its complicated extended asm wrong,
-so doesn't barf when parsing such stuff ... :-)
-
-> Intend to send it
-> out in a couple of hours, probably.
-
-Satyam
