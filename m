@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933828AbXGWXyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764344AbXGWX6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933828AbXGWXyo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 19:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbXGWXye
+	id S1764344AbXGWX6n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 19:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbXGWX6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 19:54:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38324 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757485AbXGWXyd (ORCPT
+	Mon, 23 Jul 2007 19:58:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52568 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752432AbXGWX6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 19:54:33 -0400
-Message-ID: <46A53EA3.1060204@zytor.com>
-Date: Mon, 23 Jul 2007 16:49:55 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Nicolas Pitre <nico@cam.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Git Mailing List <git@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Git tree for old kernels from before the current tree
-References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com> <Pine.LNX.4.64.0707222257540.32367@fbirervta.pbzchgretzou.qr> <20070722211314.GA13850@linux-sh.org> <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr> <46A3D5EA.2050600@zytor.com> <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org> <alpine.LFD.0.999.0707231343350.6355@xanadu.home> <alpine.LFD.0.999.0707231057480.3607@woody.linux-foundation.org> <alpine.LFD.0.999.0707231432560.6355@xanadu.home> <20070723234628.GN21668@ftp.linux.org.uk>
-In-Reply-To: <20070723234628.GN21668@ftp.linux.org.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Jul 2007 19:58:35 -0400
+Date: Mon, 23 Jul 2007 16:58:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] Kconfig:  Remove top level menu "Code maturity level
+ options"
+Message-Id: <20070723165813.20848a85.akpm@linux-foundation.org>
+In-Reply-To: <200707210658.28241.a1426z@gawab.com>
+References: <200707210658.28241.a1426z@gawab.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Mon, Jul 23, 2007 at 03:06:09PM -0400, Nicolas Pitre wrote:
->>  - v0.96 sources
->>
->>  - v0.99.12 announcement
->>
->>  - sources for v0.99.13{abcdefghij} (got k, don't know where the serie 
->>    ends) as well as announcements for all of them
->>
->>  - all announcements for v0.99.14{a-z} except for pl14r
->>
->>  - announcements for pl15c to pl15j, 1.0-pre1, and ALPHA-1.0.
->>
->> Otherwise the archive appears fairly complete with almost 3 years of 
->> Linux development history captured in a 3MB pack file.
+On Sat, 21 Jul 2007 06:58:28 +0300
+Al Boldi <a1426z@gawab.com> wrote:
+
 > 
-> Umm...  IIRC, tar was unhappy with several tarballs on ftp.kernel.org.
-> Do you have replacements (or instructions re combination of tar(1) options
-> to make it eat them)?
+> This patch removes the top level menu "Code maturity level options", and 
+> moves its options into menu "General setup".
+> 
+> This makes Kconfig less cluttered and easier to setup.
+> 
+> 
+> Cc: Andrew Morton <akpm@osdl.org>
+> Signed-off-by: Al Boldi <a1426z@gawab.com>
+> 
+> ---
+> --- a/init/Kconfig	2007-07-09 06:38:47.000000000 +0300
+> +++ b/init/Kconfig	2007-07-21 06:42:06.000000000 +0300
+> @@ -7,7 +7,7 @@ config DEFCONFIG_LIST
+>  	default "/boot/config-$UNAME_RELEASE"
+>  	default "arch/$ARCH/defconfig"
+>  
+> -menu "Code maturity level options"
+> +menu "General setup"
+>  
+>  config EXPERIMENTAL
+>  	bool "Prompt for development and/or incomplete code/drivers"
+> @@ -61,9 +61,6 @@ config INIT_ENV_ARG_LIMIT
+>  	  Maximum of each of the number of arguments and environment
+>  	  variables passed to init from the kernel command line.
+>  
+> -endmenu
+> -
+> -menu "General setup"
+>  
+>  config LOCALVERSION
+>  	string "Local version - append to kernel release"
 
-There is some stuff at http://mirrors.kernel.org/oldlinux/
-
-That's all I have, I'm afraid...
-
-	-hpa
+OK (IMO).  The "Code maturity level options" menu only has a single
+entry, and I doubt if it will grow more entries any time soon.  It
+makes sense to kill it and to move its sole entry into "General setup".
