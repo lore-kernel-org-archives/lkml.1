@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbXGWOVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbXGWO1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759653AbXGWOVd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 10:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbXGWOV0
+	id S1758241AbXGWO1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 10:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbXGWO1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 10:21:26 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:50236 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752278AbXGWOVZ (ORCPT
+	Mon, 23 Jul 2007 10:27:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:26859 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbXGWO1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 10:21:25 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-Date: Mon, 23 Jul 2007 16:23:17 +0200
-User-Agent: KMail/1.9.7
-Cc: Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Lang <david@lang.hm>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-References: <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
+	Mon, 23 Jul 2007 10:27:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Fm7cnZsFfGjT51zr1Z9ZNA96YLIS+IZwiV8LNamcAtaKYsBq+BpFWA2tu73ZpQ9Nu+ej8k6e4ZPS+3RTLqV0p6Zkm2utlfo5yaQ7MJctbKXgPiavLdcF5tN5RIU158vyB7iM5MA80Y7+4JpTMlavzAldpiltTLe2IHZzApLah1Y=
+Message-ID: <a0a62dfc0707230727r3d9b5f18i69156073e6e6d4a5@mail.gmail.com>
+Date: Mon, 23 Jul 2007 09:27:06 -0500
+From: "Adam Litke" <aglitke@gmail.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] spinlock in function hugetlb_fault could be deleted
+Cc: LKML <linux-kernel@vger.kernel.org>, agl@us.ibm.com
+In-Reply-To: <1185178727.4688.63.camel@ymzhang>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707231623.17958.oliver@neukum.org>
+References: <1185178727.4688.63.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag 21 Juli 2007 schrieb Alan Stern:
-> On Fri, 20 Jul 2007, Oliver Neukum wrote:
-> 
-> > > We already have a pre-suspend notification available for drivers that 
-> > > need to allocate large amounts of memory.
-> > 
-> > Is that facility fine grained enough?
-> 
-> It's a notifier chain that gets called at several points during the 
-> suspend transition.  One of those points is right at the start, while 
-> userspace is still running and reasonably large amounts of memory can 
-> be allocated.
-> 
-> Is it fine-grained enough?  I don't know -- hard to tell, since nothing 
-> much is using it yet.
-> 
-> > > You are correct about the need to delay/stop device addition.  I don't
-> > > know how this can be done in general; each code path calling
-> > > device_add() may have to be treated individually.
-> > 
-> > What about the old API?
-> 
-> What old API do you mean?
+Hello.  hugetlb_instantiation_mutex is an extremely heavy-weight lock
+whose days are numbered (hopefully).  It exists primarily to arbitrate
+a race condition where n (n > 1) threads of execution race to satisfy
+the same page fault for a process.  Even though only one hugetlb page
+is needed, if (n) are not available, the application can receive a
+bogus VM_FAULT_OOM.
 
-The find_device() stuff.
+Anyway, the hugetlb_instantiation_mutex approach has few friends
+around here, so rather than making the code rely more heavily upon it,
+perhaps you could focus you efforts on helping us remove it.
 
-> >  Do we have to block module loading?
-> 
-> No.  Registering new drivers is okay, registering new devices is bad.
+On 7/23/07, Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> Function hugetlb_fault needn't hold spinlock mm->page_table_lock,
+> because when hugetlb_fault is called:
+> 1) mm->mmap_sem is held already;
+> 2) hugetlb_instantiation_mutex is held by hugetlb_fault, which prevents
+> other threads/processes from entering this critical area. It's impossible
+> for other threads/processes to change the page table now.
 
-What if it is a driver for virtual devices that don't need probe()
-for actual hardware?
-
-> Of course, some modules do want to register a new device in their init 
-> method.  I don't know what we should do about them.  Force the 
-> registration to fail, I suppose.  How often will people suspend while a 
-> module is loading?
-> 
-> > What happens if a scsi error handler is woken? If it cannot be woken,
-> > how are errors handled?
-> 
-> Why should the error handler wake up?  There isn't supposed to be any 
-> I/O going on, hence no errors to handle.
-
-What about shared busses? Firewire, FibreChannel? They can get external
-resets, etc ...
-
-	Regards
-		Oliver
+--
+Adam Litke ( agl at us.ibm.com )
+IBM Linux Technology Center
