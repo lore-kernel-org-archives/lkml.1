@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763056AbXGWRVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764490AbXGWRWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763056AbXGWRVY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 13:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbXGWRVQ
+	id S1764490AbXGWRWb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 13:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758925AbXGWRWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 13:21:16 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:45438 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756503AbXGWRVQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 13:21:16 -0400
-X-IronPort-AV: i="4.16,571,1175486400"; 
-   d="scan'208"; a="35493273:sNHT24592911"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
-Subject: Re: blackfin - cmpxchg not atomic ?
-Date: Mon, 23 Jul 2007 13:24:52 -0400
-User-Agent: KMail/1.9.5
-Cc: tonyko@lineo.ca, linux-kernel@vger.kernel.org
-References: <20070720202807.GA15009@Krystal>
-In-Reply-To: <20070720202807.GA15009@Krystal>
+	Mon, 23 Jul 2007 13:22:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42258 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758746AbXGWRWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 13:22:19 -0400
+Message-ID: <46A4E254.3010606@redhat.com>
+Date: Mon, 23 Jul 2007 12:16:04 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: ext4 development <linux-ext4@vger.kernel.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix inode_table test in ext234_check_descriptors
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707231324.53105.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 23 Jul 2007 17:21:13.0172 (UTC) FILETIME=[DE74C940:01C7CD4D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 20 Jul 2007 16:28, Mathieu Desnoyers pondered:
->
-> I also don't like the comment in asm-blackfin/atomic.h :
-> 
->  * Generally we do not concern about SMP BFIN systems, so we don't have
->  * to deal with that.
-> 
-> I have seen on the blackfin website that you actually sell a board with
-> SMP. Why aren't you caring about it ?
+ext[234]_check_descriptors sanity checks block group descriptor geometry
+at mount time, testing whether the block bitmap, inode bitmap, and
+inode table reside wholly within the blockgroup.  However, the inode
+table test is off by one so that if the last block in the inode table
+resides on the last block of the block group, the test incorrectly 
+fails.  This is because it tests the last block as (start + length)
+rather than (start + length - 1).
 
-Just because something is dual core - doesn't mean it is capable of true SMP.
+This can be seen by trying to mount a filesystem made such as:
+ mkfs.ext2 -F -b 1024 -m 0 -g 256 -N 3744 fsfile 1024
+which yields:
+ EXT2-fs error (device loop0): ext2_check_descriptors: Inode table for group 0 not in group (block 101)!
+ EXT2-fs: group descriptors corrupted!
 
-The 2 blackfin cores on the BF561 have their own L1 cache, but the caches are 
-not coherent to the internal L2 (which is not cache, but just memory), or 
-external L3.
+There is a similar bug in e2fsprogs, patch already sent for that.
 
-This precludes SMP where common memory must be addressed by both cores.
+(I wonder if inside(), outside(), and/or in_range() should someday be
+used in this and other tests throughout the ext filesystems...)
 
--Robin
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+
+Index: linux-2.6.22-rc4/fs/ext2/super.c
+===================================================================
+--- linux-2.6.22-rc4.orig/fs/ext2/super.c
++++ linux-2.6.22-rc4/fs/ext2/super.c
+@@ -579,7 +579,7 @@ static int ext2_check_descriptors (struc
+ 			return 0;
+ 		}
+ 		if (le32_to_cpu(gdp->bg_inode_table) < first_block ||
+-		    le32_to_cpu(gdp->bg_inode_table) + sbi->s_itb_per_group >
++		    le32_to_cpu(gdp->bg_inode_table) + sbi->s_itb_per_group - 1 >
+ 		    last_block)
+ 		{
+ 			ext2_error (sb, "ext2_check_descriptors",
+Index: linux-2.6.22-rc4/fs/ext3/super.c
+===================================================================
+--- linux-2.6.22-rc4.orig/fs/ext3/super.c
++++ linux-2.6.22-rc4/fs/ext3/super.c
+@@ -1211,7 +1211,7 @@ static int ext3_check_descriptors (struc
+ 			return 0;
+ 		}
+ 		if (le32_to_cpu(gdp->bg_inode_table) < first_block ||
+-		    le32_to_cpu(gdp->bg_inode_table) + sbi->s_itb_per_group >
++		    le32_to_cpu(gdp->bg_inode_table) + sbi->s_itb_per_group - 1 >
+ 		    last_block)
+ 		{
+ 			ext3_error (sb, "ext3_check_descriptors",
+Index: linux-2.6.22-rc4/fs/ext4/super.c
+===================================================================
+--- linux-2.6.22-rc4.orig/fs/ext4/super.c
++++ linux-2.6.22-rc4/fs/ext4/super.c
+@@ -1269,7 +1269,7 @@ static int ext4_check_descriptors (struc
+ 		}
+ 		inode_table = ext4_inode_table(sb, gdp);
+ 		if (inode_table < first_block ||
+-		    inode_table + sbi->s_itb_per_group > last_block)
++		    inode_table + sbi->s_itb_per_group - 1 > last_block)
+ 		{
+ 			ext4_error (sb, "ext4_check_descriptors",
+ 				    "Inode table for group %d"
+
+
