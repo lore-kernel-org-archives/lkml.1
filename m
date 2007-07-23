@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933518AbXGWTLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934128AbXGWTM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933518AbXGWTLx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 15:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762099AbXGWTLq
+	id S934128AbXGWTM2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 15:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758857AbXGWTMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 15:11:46 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43018
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760401AbXGWTLp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 15:11:45 -0400
-Date: Mon, 23 Jul 2007 12:08:08 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Oliver Neukum <oliver@neukum.org>
-cc: Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, nigel@nigel.suspend2.net,
-       stern@rowland.harvard.edu, nigel@suspend2.net, jbms@cmu.edu,
-       miltonm@bga.com, ying.huang@intel.com, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <200707231431.30372.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.64.0707231205500.3828@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org>
- <200707231408.32051.rjw@sisk.pl> <E1ICwoE-0004q8-00@dorka.pomaz.szeredi.hu>
- <200707231431.30372.oliver@neukum.org>
+	Mon, 23 Jul 2007 15:12:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60509 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762099AbXGWTMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 15:12:18 -0400
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="680960-1671903907-1185217688=:3828"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+X-Fcc: ~/Mail/linus
+Cc: Al Viro <viro@ftp.linux.org.uk>, Alan Modra <amodra@bigpond.net.au>,
+       Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>,
+       Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org
+Subject: Re: "build-id" changes break sparc64
+In-Reply-To: Sam Ravnborg's message of  Monday, 23 July 2007 20:00:48 +0200 <20070723180048.GA8268@uranus.ravnborg.org>
+X-Zippy-Says: I'll clean your ROOM!!  I know some GOOD stories, too!!  All about
+    ROAD Island's, HUSH Puppies, and how LUKE finds GOLD on his LAND!!
+Message-Id: <20070723191215.2F9484D058D@magilla.localdomain>
+Date: Mon, 23 Jul 2007 12:12:15 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+> rm vmlinux*; time make vmlinux
+> 
+> Vanilla tree: ~7,7 sec
+> With single shot ld (Roland's patch): 8,3 secs
 
---680960-1671903907-1185217688=:3828
-Content-Type: TEXT/PLAIN; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Shouldn't you compare:
+	rm vmlinux*; find . -name built-in.o -print | xargs rm
+	time make vmlinux
+or something like that?
 
-On Mon, 23 Jul 2007, Oliver Neukum wrote:
 
-> Am Montag 23 Juli 2007 schrieb Miklos Szeredi:
->>> The reason is that we want them to "park" in safe places, ie. where there
->>> are no locks held etc.  Thus, these safe places need to be chosen somehow
->>> and since they are not marked throughout the code, we choose the obvious
->>> one. :-)
->>
->> Why shouldn't locks be held?
->>
->> No locks which are required for suspend must be held, sure.  But
->> otherwise holding locks doesn't matter at all.
->
-> If you can provide a way to tell them apart, this would work.
-
-can you just tell the driver to try and suspend and if it reports back 
-that it fails back out of the suspend? or will the driver deadlock instead 
-of reporting a failure if a lock is held.
-
-David Lang
---680960-1671903907-1185217688=:3828--
+Thanks,
+Roland
