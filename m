@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbXGWWAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXGWWCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752374AbXGWWAg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 18:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXGWWA0
+	id S1753280AbXGWWCb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 18:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750710AbXGWWCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 18:00:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37617 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750704AbXGWWAZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 18:00:25 -0400
-Date: Mon, 23 Jul 2007 14:59:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: caglar@pardus.org.tr
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] drivers/char/hpet.c: integer constant is too large for
- "long" type
-Message-Id: <20070723145940.a99b0324.akpm@linux-foundation.org>
-In-Reply-To: <200707211419.47680.caglar@pardus.org.tr>
-References: <200707211419.47680.caglar@pardus.org.tr>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Jul 2007 18:02:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51616 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739AbXGWWCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 18:02:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [linux-pm] Re: Hibernation considerations
+Date: Tue, 24 Jul 2007 00:10:34 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>, nigel@suspend2.net,
+       Paul Mackerras <paulus@samba.org>, david@lang.hm,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       miltonm@bga.com, ying.huang@intel.com,
+       linux-pm@lists.linux-foundation.org,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+References: <Pine.LNX.4.44L0.0707231120380.3545-100000@iolanthe.rowland.org> <200707240755.01820.nigel@nigel.suspend2.net>
+In-Reply-To: <200707240755.01820.nigel@nigel.suspend2.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707240010.35639.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007 14:19:44 +0300
-"S.__a__lar Onur" <caglar@pardus.org.tr> wrote:
-
-> Following trivial patch silents
+On Monday, 23 July 2007 23:55, Nigel Cunningham wrote:
+> Hi.
 > 
-> drivers/char/hpet.c:76: warning: integer constant is too large for "long" type
+> On Tuesday 24 July 2007 01:23:15 Alan Stern wrote:
+> > On Mon, 23 Jul 2007, Nigel Cunningham wrote:
+> > 
+> > > Take a step back for a second.
+> > > 
+> > > The problem we're facing now is that we're getting some userspace threads, 
+> > > used in processing I/O, that are functioning as exceptions to the "freeze 
+> > > userspace, then freezeable kernel threads" rule. They are only exceptions 
+> > > because of that role in processing I/O - because they're de facto kernel 
+> > > threads. So, if we orient our thinking more in terms of I/O processing and 
+> > > less in terms of the userspace/kernelspace distinction, we'll have a 
+> > > solution:
+> > > 
+> > > 1) Freeze processes that aren't fs related (ie stop them generating I/O).
+> > 
+> > The problem here is that with things like FUSE, _every_ process is 
+> > potentially fs related.  Nothing prevents a FUSE thread from doing IPC 
+> > with any other thread.
 > 
-> warning (with gcc-3.4.6)
+> Yes, but the fuse thread is going to know what other thread it's doing IPC 
+> with, so it can get that thread flagged too.
+
+Yes, but that thread may do IPC with yet another one and so on.
+
+> > > 2) Flush pending I/O.
+> > > 3) Freeze filesystems in reverse order of dependency, the primary purpose 
+> > > being to stop them generating further I/O on their metadata.
+> > > 
+> > > Locks that are being held are only being held because work is being done. 
+> If 
+> > > we progressively focus on threads in terms of their create/process work 
+> > > dependencies, we'll see that the problem isn't at all intractable.
+> > 
+> > As has been mentioned before, keeping track of all that dependency 
+> > information would be very fragile and time-consuming.
 > 
-> Signed-off-by: S.__a__lar Onur <caglar@pardus.org.tr>
->  
->  drivers/char/hpet.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-> index ba0e74a..23fadf5 100644
-> --- a/drivers/char/hpet.c
-> +++ b/drivers/char/hpet.c
-> @@ -73,7 +73,7 @@ static struct clocksource clocksource_hpet = {
->          .name           = "hpet",
->          .rating         = 250,
->          .read           = read_hpet,
-> -        .mask           = 0xffffffffffffffff,
-> +        .mask           = 0xffffffffffffffffLL,
->          .mult           = 0, /*to be caluclated*/
->          .shift          = 10,
->          .flags          = CLOCK_SOURCE_IS_CONTINUOUS,
+> I disagree. It's at least going to be less fragile and time-consuming then 
+> maintaining new/extra code for kexec.
 
-hm, well, this does assume that cycle_t is implemented as long long (or
-unsigned long long, actually).  Which in turn assumes that u64 is
-implemented as [unsigned] long long.
+Well, I think the issue is real, so we need to find a solution (the simpler,
+the better) and that need not be related to kexec. ;-)
 
-Not all architectures use unsigned long long for u64: some use unsigned
-long.  They'll probably be OK with this change but I think I'll convert
-that into plain old "-1", which just works everywhere.
+Greetings,
+Rafael
 
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
