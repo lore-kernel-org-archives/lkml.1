@@ -1,60 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764112AbXGWHK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbXGWHOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764112AbXGWHK2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 03:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756050AbXGWHKP
+	id S1756357AbXGWHOd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 03:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXGWHO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 03:10:15 -0400
-Received: from mx2.suse.de ([195.135.220.15]:55808 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754402AbXGWHKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 03:10:13 -0400
-From: Neil Brown <neilb@suse.de>
-To: Dan Williams <dan.j.williams@intel.com>
-Date: Mon, 23 Jul 2007 17:10:02 +1000
+	Mon, 23 Jul 2007 03:14:26 -0400
+Received: from rzcomm12.rz.tu-bs.de ([134.169.9.59]:56533 "EHLO
+	rzcomm12.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbXGWHOZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 03:14:25 -0400
+Message-ID: <46A45544.8090303@l4x.org>
+Date: Mon, 23 Jul 2007 09:14:12 +0200
+From: Jan Dittmer <jdi@l4x.org>
+User-Agent: Thunderbird 2.0.0.5pre (Windows/20070717)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: alpha, i386,mips,powerpc,ppc,xtensa compile brakage (was Re: Linus
+ 2.6.23-rc1)
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18084.21578.171810.48265@notabene.brown>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: [GIT PATCH 0/2] stripe-queue for 2.6.23 consideration
-In-Reply-To: message from Dan Williams on Sunday July 22
-References: <20070722094115.18906.64495.stgit@dwillia2-linux.ch.intel.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday July 22, dan.j.williams@intel.com wrote:
-> Andrew, Neil,
-> 
-> The stripe-queue patches are showing solid performance improvement.
-> 
-> 	git://lost.foo-projects.org/~dwillia2/git/iop md-for-linus
-> 
->  drivers/md/raid5.c         | 1484 ++++++++++++++++++++++++++++++++------------
->  include/linux/raid/raid5.h |   87 +++-
->  2 files changed, 1164 insertions(+), 407 deletions(-)
-> 
-> Dan Williams (2):
->       raid5: add the stripe_queue object for tracking raid io requests (take2)
->       raid5: use stripe_queues to prioritize the "most deserving" requests (take4)
-> 
-> I initially considered them 2.6.24 material but after fixing the sync+io
-> data corruption regression, fixing the large 'stripe_cache_size' values
-> performance regression, and seeing how well it performed on my IA
-> platform I would like them to be considered for 2.6.23.  That being said
-> I have not yet tested expand operations or raid6.
- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Linus Torvalds wrote:
+> Ok, right on time, two weeks afetr 2.6.22, there's a 2.6.23-rc1 out there.
 
-I think we really shouldn't aim for 2.6.23 at this stage.  The merge
-window is shut, and this is a little more that a bug fix.  It's sounds
-great though.  I'd really like to hear more success reports, and will
-do my own review a testing either this week or next.
+Compared to 2.6.22>
 
-Certainly good for -mm.
+# alpha/defconfig: broke
 
-NeilBrown
+   LD      .tmp_vmlinux1
+arch/alpha/kernel/built-in.o(.text+0xcdf8): In function `module_frob_arch_sections':
+include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
+arch/alpha/kernel/built-in.o(.text+0xcdfc):include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
+arch/alpha/kernel/built-in.o(.text+0x190d8): In function `srmcons_get_private_struct':
+include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
+arch/alpha/kernel/built-in.o(.text+0x190dc):include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
+arch/alpha/kernel/built-in.o(.init.text+0x948): In function `register_cpus':
+include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
+arch/alpha/kernel/built-in.o(.init.text+0x94c):include/linux/slub_def.h:154: more undefined references to `__kmalloc_size_too_large' follow
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [_all] Error 2
+
+# i386/allmodconfig: broke
+
+   CC [M]  drivers/misc/asus-laptop.o
+drivers/misc/asus-laptop.c: In function `asus_led_exit':
+drivers/misc/asus-laptop.c:1076: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1076: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1077: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1077: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1078: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1078: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1079: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1079: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1080: error: structure has no member named `class_dev'
+drivers/misc/asus-laptop.c:1080: error: structure has no member named `class_dev'
+make[3]: *** [drivers/misc/asus-laptop.o] Error 1
+make[2]: *** [drivers/misc] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [_all] Error 2
+
+# mips/defconfig: broke
+
+   GEN     .version
+   CHK     include/linux/compile.h
+   UPD     include/linux/compile.h
+   CC      init/version.o
+   LD      init/built-in.o
+   LD      .tmp_vmlinux1
+drivers/built-in.o(.text+0x1ce30): In function `store_uevent':
+drivers/base/core.c: undefined reference to `kobject_actions'
+drivers/built-in.o(.text+0x1ce34):drivers/base/core.c: undefined reference to `kobject_actions'
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [_all] Error 2
+
+# powerpc/iseries_defconfig: broke
+
+   CC [M]  drivers/scsi/scsi_transport_sas.o
+   CC [M]  drivers/scsi/scsi_wait_scan.o
+   LD      drivers/scsi/ibmvscsi/built-in.o
+   CC [M]  drivers/scsi/ibmvscsi/ibmvscsi.o
+drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'ibmvscsi_reset_host':
+drivers/scsi/ibmvscsi/ibmvscsi.c:517: error: implicit declaration of function 'vio_enable_interrupts'
+make[4]: *** [drivers/scsi/ibmvscsi/ibmvscsi.o] Error 1
+make[3]: *** [drivers/scsi/ibmvscsi] Error 2
+make[2]: *** [drivers/scsi] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [_all] Error 2
+
+# ppc/bamboo_defconfig: broke
+
+   GEN     .version
+   CHK     include/linux/compile.h
+   UPD     include/linux/compile.h
+   CC      init/version.o
+   LD      init/built-in.o
+   LD      .tmp_vmlinux1
+drivers/built-in.o(.text+0x1ebda): In function `store_uevent':
+drivers/base/core.c:312: undefined reference to `kobject_actions'
+drivers/built-in.o(.text+0x1ebe6):drivers/base/core.c:312: undefined reference to `kobject_actions'
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [_all] Error 2
+
+# xtensa/defconfig: broke
+   CC      kernel/time/clocksource.o
+In file included from include/linux/clocksource.h:18,
+                  from kernel/time/clocksource.c:27:
+include2/asm/io.h: In function `virt_to_phys':
+include2/asm/io.h:46: error: implicit declaration of function `__pa'
+include2/asm/io.h: In function `phys_to_virt':
+include2/asm/io.h:51: error: implicit declaration of function `__va'
+include2/asm/io.h:51: warning: return makes pointer from integer without a cast
+make[3]: *** [kernel/time/clocksource.o] Error 1
+make[2]: *** [kernel/time] Error 2
+make[1]: *** [kernel] Error 2
+make: *** [_all] Error 2
+
+Jan
