@@ -1,297 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762977AbXGWSj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933850AbXGWSlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762977AbXGWSj4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 14:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932988AbXGWSiq
+	id S933850AbXGWSlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 14:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbXGWSlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 14:38:46 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:47202 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932943AbXGWSip (ORCPT
+	Mon, 23 Jul 2007 14:41:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57706 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755301AbXGWSlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 14:38:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=XD2LPXceI8h2MEUZ/CCk9/PDOOy7u6ky6bbyHwNDaMG6dnmA2rW4n1aQ7VTbORCpwlMS1ZTNq0/J73t9kPLV5RZSzrJ05k6kxDPS77mAOuASfve5KwepNEmjpT5F/J5o854lODTMa0SBIBAZ4MTRiBe6t7yM01ogSOrzOx36j5g=
-Date: Mon, 23 Jul 2007 22:38:39 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070723183839.GA5874@martell.zuzino.mipt.ru>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 23 Jul 2007 14:41:06 -0400
+Subject: Re: [PATCH] add __GFP_ZERP to GFP_LEVEL_MASK
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20070723113712.c0ee29e5.akpm@linux-foundation.org>
+References: <1185185020.8197.11.camel@twins>
+	 <20070723113712.c0ee29e5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 23 Jul 2007 20:40:48 +0200
+Message-Id: <1185216048.5535.1.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Managed to hit BUG_ON() in kmap_atomic_prot() three times while doing
-nothing unusual for this box (two times it was under X, so I can't
-guarantee, one time while trying to reproduce via ./configure in gdb
-tarball)
+On Mon, 2007-07-23 at 11:37 -0700, Andrew Morton wrote:
+> On Mon, 23 Jul 2007 12:03:40 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > Daniel recently spotted that __GFP_ZERO is not (and has never been)
+> > part of GFP_LEVEL_MASK. I could not find a reason for this in the
+> > original patch: 3977971c7f09ce08ed1b8d7a67b2098eb732e4cd in the -bk
+> > tree.
+> 
+> It doesn't make a lot of sense to be passing __GFP_ZERO into slab
+> allocation functions.  It's not really for the caller to be telling slab
+> how it should arrange for its new memory to get zeroed.
+> 
+> And the caller of slab functions will need to zero the memory anyway,
+> because you don't know whether your new object came direct from the page
+> allocator or if it is recycled memory from a partial slab.
+> 
+> I have a feeling that we did support passing __GFP_ZERO into the slab
+> allocation functions for a while, but took it out.
 
-Box has 2.5G of RAM. 2.6.22 was OK.
+Didn't we just reinstate doing that?
 
-[dives into framebuffer console setup for complete oops]
+/me goes look at .23-rc1
+
+# grep __GFP_ZERO mm/sl[uoa]b.c
+mm/slab.c:      BUG_ON(flags & ~(GFP_DMA | __GFP_ZERO | GFP_LEVEL_MASK));
+mm/slab.c:      if (unlikely((flags & __GFP_ZERO) && ptr))
+mm/slab.c:      if (unlikely((flags & __GFP_ZERO) && objp))
+mm/slob.c:      if (unlikely((gfp & __GFP_ZERO) && b))
+mm/slub.c:      BUG_ON(flags & ~(GFP_DMA | __GFP_ZERO | GFP_LEVEL_MASK));
+mm/slub.c:      if (unlikely((gfpflags & __GFP_ZERO) && object))
 
 
-CONFIG_X86_32=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_X86=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_QUICKLIST=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_IKCONFIG=y
-CONFIG_IKCONFIG_PROC=y
-CONFIG_LOG_BUF_SHIFT=15
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_SHMEM=y
-CONFIG_SLAB=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_BLOCK=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_X86_PC=y
-CONFIG_MPENTIUM4=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=7
-CONFIG_X86_XADD=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=4
-CONFIG_PREEMPT=y
-CONFIG_PREEMPT_BKL=y
-CONFIG_X86_MCE=y
-CONFIG_VM86=y
-CONFIG_HIGHMEM4G=y
-CONFIG_VMSPLIT_3G=y
-CONFIG_PAGE_OFFSET=0xC0000000
-CONFIG_HIGHMEM=y
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_NR_QUICK=1
-CONFIG_VIRT_TO_BUS=y
-CONFIG_MTRR=y
-CONFIG_HZ_250=y
-CONFIG_HZ=250
-CONFIG_PHYSICAL_START=0x100000
-CONFIG_PHYSICAL_ALIGN=0x100000
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-CONFIG_PCI=y
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_ISA_DMA_API=y
-CONFIG_BINFMT_ELF=y
-CONFIG_NET=y
-CONFIG_UNIX=y
-CONFIG_INET=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_MISC_DEVICES=y
-CONFIG_IDE=y
-CONFIG_IDE_MAX_HWIFS=4
-CONFIG_BLK_DEV_IDE=y
-CONFIG_BLK_DEV_IDEDISK=y
-CONFIG_IDEDISK_MULTI_MODE=y
-CONFIG_BLK_DEV_IDECD=y
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-CONFIG_IDEPCI_PCIBUS_ORDER=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_BLK_DEV_PIIX=y
-CONFIG_BLK_DEV_IDEDMA=y
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-CONFIG_BLK_DEV_SD=y
-CONFIG_SCSI_LOWLEVEL=y
-CONFIG_ATA=y
-CONFIG_ATA_PIIX=y
-CONFIG_NETDEVICES=y
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-CONFIG_NET_PCI=y
-CONFIG_8139TOO=y
-CONFIG_8139TOO_PIO=y
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_FIX_EARLYCON_MEM=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_RTC=y
-CONFIG_AGP=y
-CONFIG_AGP_INTEL=y
-CONFIG_DRM=y
-CONFIG_DRM_RADEON=y
-CONFIG_DEVPORT=y
-CONFIG_I2C=y
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_ALGOBIT=y
-CONFIG_FB=y
-CONFIG_FB_DDC=y
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-CONFIG_FB_DEFERRED_IO=y
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_RADEON=y
-CONFIG_FB_RADEON_I2C=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_SOUND=y
-CONFIG_SND=y
-CONFIG_SND_TIMER=y
-CONFIG_SND_PCM=y
-CONFIG_SND_OSSEMUL=y
-CONFIG_SND_MIXER_OSS=y
-CONFIG_SND_PCM_OSS=y
-CONFIG_SND_AC97_CODEC=y
-CONFIG_SND_INTEL8X0=y
-CONFIG_AC97_BUS=y
-CONFIG_HID_SUPPORT=y
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=y
-CONFIG_USB_DEVICEFS=y
-CONFIG_USB_EHCI_HCD=y
-CONFIG_USB_UHCI_HCD=y
-CONFIG_USB_PRINTER=y
-CONFIG_USB_STORAGE=y
-CONFIG_EXT2_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_JBD=y
-CONFIG_REISERFS_FS=y
-CONFIG_ISO9660_FS=y
-CONFIG_JOLIET=y
-CONFIG_FAT_FS=y
-CONFIG_VFAT_FS=y
-CONFIG_FAT_DEFAULT_CODEPAGE=866
-CONFIG_FAT_DEFAULT_IOCHARSET="koi8-r"
-CONFIG_PROC_FS=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_RAMFS=y
-CONFIG_UFS_FS=y
-CONFIG_UFS_FS_WRITE=y
-CONFIG_CIFS=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="utf8"
-CONFIG_NLS_CODEPAGE_866=y
-CONFIG_NLS_KOI8_R=y
-CONFIG_NLS_UTF8=y
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DEBUG_SHIRQ=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_DEBUG_SLAB=y
-CONFIG_DEBUG_SLAB_LEAK=y
-CONFIG_DEBUG_PREEMPT=y
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_STACKTRACE=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_VM=y
-CONFIG_DEBUG_LIST=y
-CONFIG_DEBUG_STACKOVERFLOW=y
-CONFIG_DEBUG_STACK_USAGE=y
-CONFIG_DEBUG_PAGEALLOC=y
-CONFIG_DEBUG_RODATA=y
-CONFIG_4KSTACKS=y
-CONFIG_DOUBLEFAULT=y
-CONFIG_BITREVERSE=y
-CONFIG_CRC32=y
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_KTIME_SCALAR=y
+seems to suggest we do.
 
