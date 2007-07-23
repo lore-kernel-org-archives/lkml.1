@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbXGWVRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbXGWVT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbXGWVRY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 17:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbXGWVRO
+	id S1755830AbXGWVT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 17:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbXGWVTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 17:17:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47042 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750756AbXGWVRM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 17:17:12 -0400
-Date: Mon, 23 Jul 2007 14:16:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: will_schmidt@vnet.ibm.com
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH respin, was PATCH for review] During VM oom condition,
- kill all threads in process group
-Message-Id: <20070723141641.5759a287.akpm@linux-foundation.org>
-In-Reply-To: <1185214185.22237.30.camel@farscape.rchland.ibm.com>
-References: <20070719348.540885000@suse.de>
-	<20070719134840.47B5114E6E@wotan.suse.de>
-	<20070719140411.GD16279@infradead.org>
-	<Pine.LNX.4.64.0707191614180.7377@anakin>
-	<1185214185.22237.30.camel@farscape.rchland.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 23 Jul 2007 17:19:50 -0400
+Received: from aug.linbit.com ([212.69.162.22]:50439 "EHLO mail.linbit.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752007AbXGWVTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 17:19:49 -0400
+Date: Mon, 23 Jul 2007 23:19:47 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Kyle Moffett <mrlinuxman@mac.com>, Jens Axboe <axboe@kernel.dk>,
+       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
+Message-ID: <20070723211947.GD6477@mail.linbit.com>
+References: <20070721203819.GA10706@mail.linbit.com> <20070722213202.1f5d1cab.mrlinuxman@mac.com> <20070723133202.GB23495@mail.linbit.com> <a781481a0707230640h17e6d83l5c2359e41f3ec7b7@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a781481a0707230640h17e6d83l5c2359e41f3ec7b7@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 13:09:45 -0500
-Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
-
-> During VM oom condition, kill all threads in process group.
+On Mon, Jul 23, 2007 at 07:10:58PM +0530, Satyam Sharma wrote:
+> On 7/23/07, Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
+> >On Sun, Jul 22, 2007 at 09:32:02PM -0400, Kyle Moffett wrote:
+> >[...]
+> >> Don't use signals between kernel threads, use proper primitives like
+> >> notifiers and waitqueues, which means you should also probably switch 
+> >away
+> >> from kernel_thread() to the kthread_*() APIs.  Also you should fix this
+> >> FIXME or remove it if it no longer applies:-D.
+> >
+> >right.
+> >but how to I tell a network thread in tcp_recvmsg to stop early,
+> >without using signals?
 > 
-> We have had complaints where a threaded application is left in a bad
-> state after one of it's threads is killed when we hit a VM: out_of_memory
-> condition.
-> Killing just one of the process threads can leave the application in a
-> bad state, whereas killing the entire process group would allow for
-> the application to restart, or be otherwise handled, and makes it very
-> obvious that something has gone wrong.
 > 
-> This change allows the entire process group to be taken down, rather
-> than just the one thread.
+> Yup, kthreads API cannot handle (properly stop) kernel threads that want
+> to sleep on possibly-blocking-forever-till-signalled-functions such as
+> tcp_recvmsg or skb_recv_datagram etc etc.
+> 
+> There are two workarounds:
+> 1. Use sk_rcvtimeo and related while-continue logic
+> 2. force_sig(SIGKILL) to your kernel thread just before kthread_stop
+>   (note that you don't need to allow / write code to handle / etc signals
+>   in your kthread code -- force_sig will work automatically)
 
-Just checking...
+this is not only at stop time.
+for example our "drbd_asender" thread
+does receive as well as send, and the sending
+latency is crucial to performance, while the recv
+will not timeout for the next few seconds.
 
-blackfin
-h8300
-m68knommu
-uml
-v850
+> >> +/* THINK maybe we actually want to use the default "event/%s" worker 
+> >threads
+> >> + * or similar in linux 2.6, which uses per cpu data and threads.
+> >> + *
+> >> + * To be general, this might need a spin_lock member.
+> >> + * For now, please use the mdev->req_lock to protect list_head,
+> >> + * see drbd_queue_work below.
+> >> + */
+> >> +struct drbd_work_queue {
+> >> +       struct list_head q;
+> >> +       struct semaphore s; /* producers up it, worker down()s it */
+> >> +       spinlock_t q_lock;  /* to protect the list. */
+> >> +};
+> >>
+> >> Umm, how about fixing this to actually use proper workqueues or something
+> >> instead of this open-coded mess?
+> >
+> >unlikely to happen "right now".
+> >but it is on our todo list...
+> 
+> It should be easier to do it now (if you defer it for later, the code will
+> only grow more and more complex). Also, removing this gunk from
+> your driver will clearly make it smaller, and easier for us to review :-)
 
-were not changed.  Intentional?
+and will poison the generic work queues with stuff that might block
+somewhere deep in the tcp stack. and where we are not able to cancel it.
+not exactly desirable, either.
+but maybe I am missing something?
+
+	Lars
