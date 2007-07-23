@@ -1,39 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933955AbXGWXJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933864AbXGWXK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933955AbXGWXJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 19:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbXGWXI6
+	id S933864AbXGWXK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 19:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbXGWXKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 19:08:58 -0400
-Received: from [192.102.209.1] ([192.102.209.1]:16485 "EHLO
-	laptopd505.fenrus.org" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933752AbXGWXI4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 19:08:56 -0400
-Subject: Re: named pipe handling
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD62858D850@scsmsx412.amr.corp.intel.com>
-References: <A3258B497F1C1441AD36A2E8B45FD62858D850@scsmsx412.amr.corp.intel.com>
+	Mon, 23 Jul 2007 19:10:50 -0400
+Received: from ozlabs.org ([203.10.76.45]:43397 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755466AbXGWXKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 19:10:49 -0400
+Subject: Re: [kvm-devel] [RFC 0/8]KVM: swap out guest pages
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Shaohua Li <shaohua.li@intel.com>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <46A4829C.9080104@qumranet.com>
+References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com>
+	 <46A4829C.9080104@qumranet.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 23 Jul 2007 16:01:59 -0700
-Message-Id: <1185231719.2723.2.camel@laptop.fenrus.org>
+Date: Tue, 24 Jul 2007 09:10:18 +1000
+Message-Id: <1185232218.1803.36.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 15:59 -0700, Agarwal, Lomesh wrote:
-> Can someone point me to named pipe read/write functions (when I issue
-> read system call on a file handle obtained from mkfifo call which
-> function ultimately handles it)?
+On Mon, 2007-07-23 at 13:27 +0300, Avi Kivity wrote:
+> Having an address_space (like your patch does) is remarkably simple, and 
+> requires few hooks from the current vm.  However using existing vmas 
+> mapped by the user has many advantages:
+> 
+> - compatible with s390 requirements
+> - allows the user to use hugetlbfs pages, which have a performance 
+> advantage using ept/npt (but which are unswappable)
+> - allows the user to map a file (which can be regarded as way to specify 
+> the swap device)
+> - better ingration with the rest of the vm
 
-lxr is your friend....
+You don't need to expose the vmas.  You just have userspace point out
+the start+len of each region of memory it wants the guest to be able to
+access, and the address it wants it to appear in the guest.
 
-and how about grep ;)
+This is a slight superset of what lguest does in two ways:
 
-fs/pipe.c would like be a good place to start
+1) my guest address == user address, but I'm looking at adding an offset
+so I don't have to link the launcher binary specially.
+2) I have only one contiguous region of guest-physical memory, since I
+can place device memory immediately above "normal" mem.
 
+But the result is pretty sweet, and doesn't require any new symbols to
+be exported.
+
+Cheers,
+Rusty.
 
