@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbXGWQbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXGWQb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765675AbXGWQbX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 12:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbXGWQbO
+	id S932067AbXGWQb4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 12:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760912AbXGWQbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 12:31:14 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:45381 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759769AbXGWQbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 12:31:13 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Mon, 23 Jul 2007 22:02:31 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Andi Kleen <ak@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 7/8] i386: bitops: Kill needless usage of __asm__
- __volatile__
-In-Reply-To: <200707231818.00547.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0707232157090.22155@cselinux1.cse.iitk.ac.in>
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070723160603.22137.16516.sendpatchset@cselinux1.cse.iitk.ac.in>
- <200707231818.00547.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Jul 2007 12:31:45 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:53334 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759769AbXGWQbo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 12:31:44 -0400
+Date: Mon, 23 Jul 2007 09:35:20 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Karsten Wiese <fzu@wemgehoertderstaat.de>
+Cc: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: where is the code for read system call?
+Message-Id: <20070723093520.16f97256.randy.dunlap@oracle.com>
+In-Reply-To: <200707231801.32334.fzu@wemgehoertderstaat.de>
+References: <A3258B497F1C1441AD36A2E8B45FD62858CFA6@scsmsx412.amr.corp.intel.com>
+	<200707210208.44698.fzu@wemgehoertderstaat.de>
+	<A3258B497F1C1441AD36A2E8B45FD62858D1FD@scsmsx412.amr.corp.intel.com>
+	<200707231801.32334.fzu@wemgehoertderstaat.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 23 Jul 2007 18:01:32 +0200 Karsten Wiese wrote:
 
-On Mon, 23 Jul 2007, Andi Kleen wrote:
-
-> On Monday 23 July 2007 18:06:03 Satyam Sharma wrote:
-> > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> > 
-> > [7/8] i386: bitops: Kill needless usage of __asm__ __volatile__
-> > 
-> > Another oddity I noticed in this file. The semantics of __volatile__
-> > when used to qualify inline __asm__ are that the compiler will not
-> > (1) elid, or, (2) reorder, or, (3) intersperse, our inline asm with
-> > the rest of the generated code.
-> > 
-> > However, we do not want these guarantees in the unlocked variants of the
-> > bitops functions. 
+> Am Montag, 23. Juli 2007 schrieb Agarwal, Lomesh:
+> > For future how do I trace a system call to a function in a kernel?
 > 
-> I thought so too and did a similar transformation while moving
-> some string functions out of line. After that recent misadventure
-> I would be very very careful with this.
+> strace. i.e:
+> 	$ strace ls
 
-Ah, ok, so this must be the case we'd stumbled upon recently on the
-other thread. I hadn't got your fix for this, so didn't know.
+I thought (maybe I misunderstood) that Lomesh wanted to know
+which kernel function (by name) is called for specific syscalls...
+and strace will tell the syscall by name, but not the kernel
+function names.
 
-> Overall I'm sorry to say, but the risk:gain ratio of this
-> patch is imho totally out of whack.
+If Lomesh wants what I described, then the answer is more like
+"see the syscall tables in each $ARCH".
 
-The patch does look correct to me, we're only killing the use of
-__volatile__ from places that don't require it (the guarantee-less
-variants). Without losing it, I really don't see how the compiler
-can ever combine multiple bitops, which does sound beneficial when
-the caller has already implemented higher-level locking around
-the usage of these operations.
-
-Satyam
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
