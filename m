@@ -1,57 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbXGWQJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759769AbXGWQKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761308AbXGWQJm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 12:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764456AbXGWQII
+	id S1759769AbXGWQKF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 12:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764900AbXGWQIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 12:08:08 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55620 "EHLO amd.ucw.cz"
+	Mon, 23 Jul 2007 12:08:17 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55619 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764405AbXGWQIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 12:08:06 -0400
-Date: Mon, 23 Jul 2007 09:54:34 +0200
+	id S1765014AbXGWQIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 12:08:13 -0400
+Date: Mon, 23 Jul 2007 09:44:51 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: ericvh@gmail.com, rminnich@lanl.gov, lucho@ionkov.net,
-       v9fs-developer@lists.sourceforge.net
-Subject: Plan 9 Resource Sharing Support - what is it?
-Message-ID: <20070723075434.GA9162@elf.ucw.cz>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: David Fries <david@fries.net>, NetDev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6 patch] eepro100 resume patch
+Message-ID: <20070723074451.GA9169@elf.ucw.cz>
+References: <20070714000151.GA31482@spacedout.fries.net> <46984CF0.8080700@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <46984CF0.8080700@intel.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri 2007-07-13 21:11:28, Kok, Auke wrote:
+> [adding netdev]
+> 
+> David Fries wrote:
+> >When I did a software suspend to disk then resumed the Intel network
+> >card using eepro100 driver would be unable to transmit packets.  I
+> >tracked this down and found a register write after the print message
+> >"DP83840 specific setup" which wasn't being executed when the system
+> >was restored.  This fix moves that write and another write which
+> >forces the link speed and duplex.
+> >
+> >After doing this work and preparing the patch I checked out the
+> >mailing list only to find a patch that removes the eepro100.  I then
+> >updated Kconfig, though I wonder why it didn't have a similar message
+> >in it long time ago.
+> >
+> >I too had tried the e100 driver some time ago and it didn't work,
+> 
+> That argument is pretty useless right now. Please *test* e100 and *report 
+> issues*. I recently did some very intensive suspend/resume testing (and 
+> fixes) on e100 and I have yet to hear of any problems with it since... that 
+> was 2.6.18 or so even.
+> 
+> >eepro100 did and I've been using it so long that I've almost forgotten
+> >about that.  I just gave the e100 driver a try and I've been running
+> >for about an hour now without any problems and it does resume after a
+> >suspend to disk operation.
+> >
+> >Signed-off-by: David Fries <David@Fries.net>
+> 
+> I don't think I need to NAK this. I doubt that Jeff Garzik will apply this 
+> in the first place. eepro100 is on it's way out, so let's focus on what 
+> matters.
 
-  Plan 9 Resource Sharing Support (9P2000) (Experimental) (NET_9P)
-[N/m/y/?] (NEW) ?
+Well, I believe we should either remove eepro100 _now_ or fix issues
+with it. "Keep it in the tree, and broken at the same time" is unnice.
 
-If you say Y here, you will get experimental support for
-Plan 9 resource sharing via the 9P2000 protocol.
 
-See <http://v9fs.sf.net> for more information.
+> >@@ -743,20 +746,22 @@
+> > 				   phys[(eeprom[7]>>8)&7]);
+> > 		if (((eeprom[6]>>8) & 0x3f) == DP83840
+> > 			||  ((eeprom[6]>>8) & 0x3f) == DP83840A) {
+> >-			int mdi_reg23 = mdio_read(dev, eeprom[6] & 0x1f, 23) 
+> >| 0x0422;
+> >+			int mdi_reg23_orig = mdio_read(dev, eeprom[6] & 
+> >0x1f, 23);
+> >+			int mdi_reg23 = mdi_reg23_orig | 0x0422;
+> > 			if (congenb)
+> > 			  mdi_reg23 |= 0x0100;
+> >-			printk(KERN_INFO"  DP83840 specific setup, setting 
+> >register 23 to %4.4x.\n",
+> >-				   mdi_reg23);
+> >-			mdio_write(dev, eeprom[6] & 0x1f, 23, mdi_reg23);
+> >+			/* Print the message here, write in speedo_resume, 
+> >which
+> >+			 * is called both on module load and from
+> >+			 * eepro100_resume.
+> >+			 */
+> >+			printk(KERN_INFO"  DP83840 specific setup, setting 
+> >register 23 to %4.4x, was %4.4x.\n",
+> >+				   mdi_reg23, mdi_reg23_orig);
+> > 		}
+> > 		if ((option >= 0) && (option & 0x70)) {
+> >+			/* Print here, write in speedo_resume. */
+> > 			printk(KERN_INFO "  Forcing %dMbs %s-duplex 
+> > 			operation.\n",
+> > 				   (option & 0x20 ? 100 : 10),
+> > 				   (option & 0x10 ? "full" : "half"));
+> >-			mdio_write(dev, eeprom[6] & 0x1f, MII_BMCR,
+> >-					   ((option & 0x20) ? 0x2000 : 0) |  
+> >/* 100mbps? */
+> >-					   ((option & 0x10) ? 0x0100 : 0)); 
+> >/* Full duplex? */
+> > 		}
+> > 
+> > 		/* Perform a system self-test. */
+> >@@ -1050,6 +1055,24 @@
+> > 	struct speedo_private *sp = netdev_priv(dev);
+> > 	void __iomem *ioaddr = sp->regs;
+> > 
+> >+	/* DP83840 specific setup, moved here from from speedo_found1 because
+> >+	 * it needs to called after resume, ie suspend to disk.
+> >+	 * 07-11-2007 David Fries <david@fries.net>
+> >+	 */
+> >+	if (((sp->phy[0]>>8) & 0x3f) == DP83840
+> >+		||  ((sp->phy[0]>>8) & 0x3f) == DP83840A) {
+> >+		int mdi_reg23 = mdio_read(dev, sp->phy[0] & 0x1f, 23) | 
+> >0x0422;
+> >+		if (congenb)
+> >+			mdi_reg23 |= 0x0100;
+> >+		mdio_write(dev, sp->phy[0] & 0x1f, 23, mdi_reg23);
+> >+	}
+> >+	if ((sp->option >= 0) && (sp->option & 0x70)) {
+> >+		mdio_write(dev, sp->phy[0] & 0x1f, MII_BMCR,
+> >+			((sp->option & 0x20) ? 0x2000 : 0) | 	/* 100mbps? 
+> >*/
+> >+			((sp->option & 0x10) ? 0x0100 : 0)); /* Full duplex? 
+> >*/
+> >+	}
+> >+
+> >+
+> > 	/* Start with a Tx threshold of 256 (0x..20.... 8 byte units). */
+> > 	sp->tx_threshold = 0x01208000;
+> > 
+> >
+> >
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-If unsure, say N.
-
-What is "plan 9 resource sharing"? Some kind of mosix-like process
-migration? Could you explain it in two lines in Kconfig?
-
-http://v9fs.sf.net
-
-is redirect to 
-
-http://v9fs.sourceforge.net/
-
-which tells me 
-
-Moved to SWiK
-
-after clicking on that, I get to page with content, but no
-explanation (could Kconfig/MAINTAINERS be updated?).
- 								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
