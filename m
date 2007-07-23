@@ -1,110 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933513AbXGWAjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933257AbXGWAoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933513AbXGWAjb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 20:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764222AbXGWAjX
+	id S933257AbXGWAoq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 20:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764536AbXGWAoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 20:39:23 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:57429 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763408AbXGWAjW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 20:39:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AEWqETCR2AftXJ7P30zXKoYZIAutakbrPt1CY39Oo+rnD+loEv7cMiYAcoTwwIMPohPbdRaoS1CtwcCztdJhS7AlqEaer6YMTMrnII6zgM8+shVWL3+QZLg5Wn5bVv1GADLGr0baJGai5PKYlinjdM96j2yuDxj2ECtCOC+OCxM=
-Message-ID: <f56c1ba00707221739r58a219c2tcbb465b314e14f99@mail.gmail.com>
-Date: Sun, 22 Jul 2007 20:39:20 -0400
-From: "=?ISO-8859-1?Q?C=E9dric_Augonnet?=" <cedric.augonnet@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: voyager_{thread,cat}.c compile warnings
-Cc: "Gabriel C" <nix.or.die@googlemail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       J.E.J.Bottomley@hansenpartnership.com
-In-Reply-To: <1185147550.3431.19.camel@localhost.localdomain>
+	Sun, 22 Jul 2007 20:44:37 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:60448 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764012AbXGWAog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jul 2007 20:44:36 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch] use __asm__ and __volatile__ in asm-x86_64/msr.h
+Date: Sun, 22 Jul 2007 20:45:14 -0400
+User-Agent: KMail/1.9.7
+Cc: Andi Kleen <ak@suse.de>, Christoph Hellwig <hch@infradead.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200706180209.36762.vapier@gentoo.org> <200706182053.04116.ak@suse.de> <46794BE2.5020108@zytor.com>
+In-Reply-To: <46794BE2.5020108@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <46A282B2.8070501@googlemail.com>
-	 <f56c1ba00707220833m267491afg277a028e6c103e31@mail.gmail.com>
-	 <f56c1ba00707221549k768d7df9ke983160e634f4fe3@mail.gmail.com>
-	 <1185147550.3431.19.camel@localhost.localdomain>
+Content-Type: multipart/signed;
+  boundary="nextPart3663358.dbr6gXfI3x";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707222045.15935.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/7/22, James Bottomley <James.Bottomley@hansenpartnership.com>:
-> On Sun, 2007-07-22 at 18:49 -0400, Cédric Augonnet wrote:
-> > iff -urN a/arch/i386/mach-voyager/voyager_cat.c
-> > b/arch/i386/mach-voyager/voyager_cat.c
-> > --- /home/gonnet/tmp/linux-2.6.22/arch/i386/mach-voyager/voyager_cat.c  2007-07-20 11:50:17.000000000 -0400
-> > +++ linux-2.6.22/arch/i386/mach-voyager/voyager_cat.c   2007-07-22
-> > 11:24:34.000000000 -0400
-> > @@ -682,7 +682,7 @@
-> >                         outb(VOYAGER_CAT_END, CAT_CMD);
-> >                         continue;
-> >                 }
-> > -               if(eprom_size > sizeof(eprom_buf)) {
-> > +               if((unsigned)eprom_size > sizeof(eprom_buf)) {
->
-> Actually, no.  If gcc can deduce that the comparison is always false
-> then I want it not to build the body of the if.  The only thing I don't
-> know how to do is to shut up the warning in this case.  What you've done
-> is make gcc pretend it doesn't know the if is always false.
->
-> >                         printk("**WARNING**: Voyager insufficient size
-> > to read EPROM data, module 0x%x.  Need %d\n", i, eprom_size);
-> >                         outb(VOYAGER_CAT_END, CAT_CMD);
-> >                         continue;
-> > @@ -752,7 +752,7 @@
-> >                         outb(VOYAGER_CAT_END, CAT_CMD);
-> >                         continue;
-> >                 }
-> > -               if(eprom_size > sizeof(eprom_buf)) {
-> > +               if((unsigned)eprom_size > sizeof(eprom_buf)) {
-> >                         printk("**WARNING**: Voyager insufficient size
-> > to read EPROM data, module 0x%x.  Need %d\n", i, eprom_size);
-> >                         outb(VOYAGER_CAT_END, CAT_CMD);
-> >                         continue;
-> > diff -urN a/arch/i386/mach-voyager/voyager_thread.c
-> > b/arch/i386/mach-voyager/voyager_thread.c
-> > --- /home/gonnet/tmp/linux-2.6.22/arch/i386/mach-voyager/voyager_thread.c       2007-07-20 11:50:17.000000000 -0400
-> > +++
-> > linux-2.6.22/arch/i386/mach-voyager/voyager_thread.c        2007-07-22
-> > 11:27:13.000000000 -0400
-> > @@ -92,7 +92,7 @@
-> >         }
-> >  }
+--nextPart3663358.dbr6gXfI3x
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+On Wednesday 20 June 2007, H. Peter Anvin wrote:
+> Andi Kleen wrote:
+> >> asm-i386/msr.h should not be exported to userspace at all, it contains
+> >> nothing but kernel-internal helpers.
 > >
-> > -static int
-> > +static void
-> >  thread(void *unused)
-> >  {
-> >         printk(KERN_NOTICE "Voyager starting monitor thread\n");
+> > Actually rdtsc and rdtscll and potentially rdpmc which is in there can =
+be
+> > very useful in user space if you know what you're doing. Unfortunately a
+> > lot of its users don't, but not having the include probably won't stop
+> > them either.
 >
-> You didn't actually compile this, did you?  Apparently the signature of
-> the kthread_run function changed from returning void to returning int.
-> Unfortunately the person who fixed this up forgot to add a return 0 at
-> the end of the voyager thread() function .. which is the correct fix.
-
-Arg i was caught by that one.
-
-> James
+> More likely, people will just re-implement them incorrectly.
 >
+> However, the rdtsc() definition in the kernel is weird (and removable, I
+> think there are no more users -- I have it removed in my MSR driver
+> rewrite tree which I need to get off my arse and push.)  Most users
+> would expect the rdtscll() functionality with the rdtsc() name.
 
-Ouch indeed this quick'n'dirty patch was, let's call it a full mistake
-:) sorry for that, it could indeed not be tested as i don't have the
-hardware.
+does that mean you'll also take care of cleaning up msr.h ?  or do i need t=
+o=20
+post another patch ?
+=2Dmike
 
-Still, is it safe to compare two variable with different types anyway ?
+--nextPart3663358.dbr6gXfI3x
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-In http://lists.infradead.org/pipermail/linux-pcmcia/2004-March/000586.html
-they also have the same issue, they just do
-s/ foo > 0xffff / foo & ~0xffff /
-should not it solve the problem as well ?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
 
-Sorry again for the first patch, next time i'll just shut up.
+iQIVAwUARqP6G0FjO5/oN/WBAQIxEw/+NSz8FFeIY/S5cGAZ/Y5B+V92lsNhC25H
+iosSYUXPo+9Gos+lHv1LzfFzg5LT3BFxb2qheS3yeANWTx0bmyGQlqLsVRU5nGs9
+AB4J8pwq6rC+C3m+4etLue2KepBenASrrUozwY3CzOEFVNyFeoIaJQVeoFJ55osA
+hyYlrguJLpLVTPkbYua9wVpyYWtsxNqIjOuQrCtsREIvpUlNtfMzp+2q/9S88ezd
+514s6tfqo5Z0LD1FO/jHEaw3y+GybTnAapt/LoJXccQRdW8wp7MeF0Sr6oGzRCvh
+FWF1OgM9EaDZonlCC42LpnrKVtPHWehqKacSn6Q+ezhkA3qaSRN/ybGSi36Va1hT
+sdLAXEDin+i7q4Z5Oe97PQZ28t0sJxomsg6pqqDvj0XnYexgGQyGJPQnHtvWTWY9
+9e9Id4PjAg79DVG6DNSJ0lzg9HKiHRGQCn/gXZpe1tvhc2kGA601sVvqmKx4FDpa
+AD6U3BItO3CzCMSuy2ZKeTIBlfyTUq/nAcLbwFDs9fF86sNj95QRVeU21Kbu90x9
+zQtsmnLXe1pfkNXg5ha5/AavpgRnsnZXhyFfpF4nE2Tw5PJLEe8xoOK1lYC6BvY8
+MW482fMfQ5G73IhW8HZa6iQiJDpxgGyHVF1iVW7jVx2jjFZIfDASpaRTi8F/l4fE
+NpM5e6DNVnE=
+=2eO3
+-----END PGP SIGNATURE-----
 
-Regards,
-Cédric
+--nextPart3663358.dbr6gXfI3x--
