@@ -1,98 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935044AbXGWU5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935550AbXGWU65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935044AbXGWU5r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXGWU5i
+	id S935550AbXGWU65 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXGWU6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:57:38 -0400
-Received: from mga03.intel.com ([143.182.124.21]:49463 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753314AbXGWU5h convert rfc822-to-8bit (ORCPT
+	Mon, 23 Jul 2007 16:58:46 -0400
+Received: from hqemgate01.nvidia.com ([216.228.112.170]:7757 "EHLO
+	HQEMGATE01.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753314AbXGWU6p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:57:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,572,1175497200"; 
-   d="scan'208";a="253751857"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 23 Jul 2007 16:58:45 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jul 2007 16:58:44 EDT
+Message-ID: <46A3F9AE.9030605@nvidia.com>
+Date: Sun, 22 Jul 2007 20:43:26 -0400
+From: Ayaz Abdulla <aabdulla@nvidia.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: which signal is sent to freeze process?
-Date: Mon, 23 Jul 2007 13:57:35 -0700
-Message-ID: <A3258B497F1C1441AD36A2E8B45FD62858D6A0@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <200707210010.05877.rjw@sisk.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: which signal is sent to freeze process?
-thread-index: AcfLGaV4xPJHIQ/4TG2WxKjYROv37QCUlVtw
-References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707201324.06290.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD62858CCA1@scsmsx412.amr.corp.intel.com> <200707210010.05877.rjw@sisk.pl>
-From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: <nigel@suspend2.net>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 23 Jul 2007 20:57:36.0747 (UTC) FILETIME=[19451BB0:01C7CD6C]
+To: Jeff Garzik <jgarzik@pobox.com>, Manfred Spraul <manfred@colorfullife.com>,
+       Andrew Morton <akpm@osdl.org>, nedev <netdev@vger.kernel.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] forcedeth: mcp73 device addition
+X-NVConfidentiality: public
+Content-Type: multipart/mixed;
+ boundary="------------000003030009040605050004"
+X-OriginalArrivalTime: 23 Jul 2007 20:53:38.0602 (UTC) FILETIME=[8B5310A0:01C7CD6B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Why do you need try_to_freeze in below patch? Shouldn't
-!freezing(current) checking is enough?
+This is a multi-part message in MIME format.
+--------------000003030009040605050004
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
------Original Message-----
-From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-Sent: Friday, July 20, 2007 3:10 PM
-To: Agarwal, Lomesh
-Cc: nigel@suspend2.net; linux-kernel@vger.kernel.org
-Subject: Re: which signal is sent to freeze process?
+This patch contains new device settings for MCP73 chipset.
 
-On Friday, 20 July 2007 20:07, Agarwal, Lomesh wrote:
-> Can you suggest a way I can debug the issue why I am getting EINTR
-error
-> for system calls in resuming? What else can cause the system call
-> failure with EINTR?
-
-Well, I think I know what the problem is.  do_poll checks
-signal_pending(current) and breaks when it's set, but that may be caused
-by the freezer.
-
-You may try the patch below (untested) and see if that helps.
-
-Greetings,
-Rafael
+Signed-Off-By: Ayaz Abdulla <aabdulla@nvidia.com>
 
 
----
- fs/select.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+--------------000003030009040605050004
+Content-Type: text/plain;
+ name="patch-forcedeth-mcp73"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch-forcedeth-mcp73"
 
-Index: linux-2.6.22-rc6-mm1/fs/select.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/fs/select.c
-+++ linux-2.6.22-rc6-mm1/fs/select.c
-@@ -23,6 +23,7 @@
- #include <linux/file.h>
- #include <linux/fs.h>
- #include <linux/rcupdate.h>
-+#include <linux/freezer.h>
+--- old/drivers/net/forcedeth.c	2007-07-22 19:02:41.000000000 -0400
++++ new/drivers/net/forcedeth.c	2007-07-22 19:31:56.000000000 -0400
+@@ -5550,6 +5550,22 @@
+ 		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_27),
+ 		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_HIGH_DMA|DEV_HAS_POWER_CNTRL|DEV_HAS_MSI|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
+ 	},
++	{	/* MCP73 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_28),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_HIGH_DMA|DEV_HAS_POWER_CNTRL|DEV_HAS_MSI|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP73 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_29),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_HIGH_DMA|DEV_HAS_POWER_CNTRL|DEV_HAS_MSI|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP73 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_30),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_HIGH_DMA|DEV_HAS_POWER_CNTRL|DEV_HAS_MSI|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP73 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_31),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_HIGH_DMA|DEV_HAS_POWER_CNTRL|DEV_HAS_MSI|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
+ 	{0,},
+ };
  
- #include <asm/uaccess.h>
- 
-@@ -593,6 +594,8 @@ static int do_poll(unsigned int nfds,  s
- 		struct poll_list *walk;
- 		long __timeout;
- 
-+		try_to_freeze();
-+
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		for (walk = list; walk != NULL; walk = walk->next) {
- 			struct pollfd * pfd, * pfd_end;
-@@ -618,7 +621,8 @@ static int do_poll(unsigned int nfds,  s
- 		 * a poll_table to them on the next loop iteration.
- 		 */
- 		pt = NULL;
--		if (count || !*timeout || signal_pending(current))
-+		if (count || !*timeout ||
-+		    (signal_pending(current) && !freezing(current)))
- 			break;
- 		count = wait->error;
- 		if (count)
+
+--------------000003030009040605050004--
