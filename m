@@ -1,122 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbXGWOOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbXGWOTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760036AbXGWOOe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 10:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbXGWOOZ
+	id S1757841AbXGWOTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 10:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXGWOTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 10:14:25 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58005 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbXGWOOX (ORCPT
+	Mon, 23 Jul 2007 10:19:12 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:46573 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbXGWOTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 10:14:23 -0400
-Subject: Re: [linux-pm] Power Management framework proposal
-From: Arjan van de Ven <arjan@infradead.org>
-To: david@lang.hm
-Cc: Igor Stoppa <igor.stoppa@nokia.com>,
-       "ext linux-pm-bounces@lists.linux-foundation.org" 
-	<linux-pm-bounces@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707222207210.6350@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
-	 <1185091022.19678.28.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
-	 <1185105911.29238.43.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
-	 <1185145766.2714.27.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0707221914550.6350@asgard.lang.hm>
-	 <1185162647.2714.35.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0707222054060.6350@asgard.lang.hm>
-	 <1185164357.2714.49.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0707222207210.6350@asgard.lang.hm>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 23 Jul 2007 07:12:09 -0700
-Message-Id: <1185199929.2714.54.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 23 Jul 2007 10:19:11 -0400
+Date: Mon, 23 Jul 2007 07:02:24 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Bill Irwin <bill.irwin@oracle.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] hugetlbfs read() support
+Message-ID: <20070723140224.GC23148@us.ibm.com>
+References: <1184376214.15968.9.camel@dyn9047017100.beaverton.ibm.com> <20070718221950.35bbdb76.akpm@linux-foundation.org> <1184860309.18188.90.camel@dyn9047017100.beaverton.ibm.com> <20070719095850.6e09b0e8.akpm@linux-foundation.org> <20070719170759.GE2083@us.ibm.com> <46A03E63.2080508@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A03E63.2080508@yahoo.com.au>
+X-Operating-System: Linux 2.6.22-rc6-gaee87db2 (x86_64)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-22 at 22:25 -0700, david@lang.hm wrote:
+On 20.07.2007 [14:47:31 +1000], Nick Piggin wrote:
+> Nishanth Aravamudan wrote:
+> >On 19.07.2007 [09:58:50 -0700], Andrew Morton wrote:
+> >
+> >>On Thu, 19 Jul 2007 08:51:49 -0700 Badari Pulavarty <pbadari@us.ibm.com> 
+> >>wrote:
 > >>
-> >> only if the transitions don't cost anything significant,
+> >>
+> >>>>>+		}
+> >>>>>+
+> >>>>>+		offset += ret;
+> >>>>>+		retval += ret;
+> >>>>>+		len -= ret;
+> >>>>>+		index += offset >> HPAGE_SHIFT;
+> >>>>>+		offset &= ~HPAGE_MASK;
+> >>>>>+
+> >>>>>+		page_cache_release(page);
+> >>>>>+		if (ret == nr && len)
+> >>>>>+			continue;
+> >>>>>+		goto out;
+> >>>>>+	}
+> >>>>>+out:
+> >>>>>+	return retval;
+> >>>>>+}
+> >>>>
+> >>>>This code doesn't have all the ghastly tricks which we deploy to
+> >>>>handle concurrent truncate.
+> >>>
+> >>>Do I need to ? Baaahh!!  I don't want to deal with them. 
+> >>
+> >>Nick, can you think of any serious consequences of a read/truncate
+> >>race in there?  I can't..
+> >>
+> >>
+> >>>All I want is a simple read() to get my oprofile working.  Please
+> >>>advise.
+> >>
+> >>Did you consider changing oprofile userspace to read the executable
+> >>with mmap?
 > >
-> > these are second order effects though. On a pc, the transition costs are
-> > quite low (as I said, single or low double digit microseconds).
-> 
-> including pausing all drivers before the transition and unpausing them 
-> aftrwords?
-
-on a PC you don't need to do that.
-
-> 
-> >> and the
-> >> computation capacity per watt of power is the same at all frequencies. the
-> >> chip performance numbers I've been seeing (which I admit are mostly
-> >> embedded datasheets) indicate that neither of these hold true.
 > >
-> > let me give you a real world example then, and the numbers I'm using are
-> > ballpark the same as you'll find in a (mobile) core 2 duo datasheet, I
-> > just rounded them a little so that the math works out nice.
-> >
-> > power at full speed: 34W
-> > power at half speed: 24W
-> > power at idle: 1W
+> >It's not actually oprofile's code, though, it's libbfd (used by
+> >oprofile). And it works fine (presumably) for other binaries.
 > 
-> are these numbers for the CPU itself or for the a larger chunk?
+> So... what's the problem with changing it? The fact that it is a
+> library doesn't really make a difference except that you'll also help
+> everyone else who links with it.
 
-the cpu at full load.
+Well, I'm more concerned about testing that change libbfd is rather core
+code and used in a number of places. Also, libbfd's current code 'just
+works' for every other filesystem concerned, or I'd expect it would have
+been changed to mmap() before. I'm also terrified of binutils code :)
+I'm also not sure who I'm 'helping', exactly by changing it, beyond
+users of libhugetlbfs and OProfile, who are equally helped by this
+kernel patch (which, again, also has the added benefit of making
+hugetlbfs appear to be more like a normal filesystem).
 
-> > this works for all systems where the idle power is more lower than the
-> > power you save by dropping speed... and that is almost all of them in
-> > the PC world.
-> 
-> if you can idle the system as a whole I agree with you fully. most PC 
-> hardware (including the mobile stuff) doesn't change it's power 
-> consumption much with load.
+> It won't break backwards compatibility, and it will work on older
+> kernels...
 
-even if the rest of the PC is unchanging (which it's not), it is just an
-offset to both sides of the equation, and the same on both sides at
-that.
+Fair enough. I'm looking into it, but I can't make any promises on
+timelines.
 
->  at Usenix there was a presentiation (I don't 
-> remember if it was by Amazon or Google) about this subject, showing that 
-> current PC hardware only goes down to 50% power when idle (short of 
-> switching power modes) and that they and other big companies were pushing 
-> vendors to improve their hardware, aiming to get the idle power down to 
-> 10% (again without suspending anything). so there's some chance that this 
-> will change before too long.
-
-on servers and such, there is a huge offset, sure, but still the effect
-is there. And it really isn't 50%.
-
-> 
-> > now you can argue that 0.5 seconds is a really really long time, and
-> > you'd be right. so for really really short stints (say a timer
-> > interrupt) you don't want to change the voltage at all (nor would
-> you
-> > want to change the plls to change frequency for that matter). But
-> once
-> > you start chaning those, you might as well go full speed.
-> 
-> this assumes that you can cache 1 second of video, if you have more 
-> real-time requirements you have a much harder time (say video
-> confrancing 
-> where you don't get the frame until just before you need to display
-> it)
-
-the same basic math holds for just 1 frame at a fixed rate. At some
-point transition costs will get you (and that's where things like
-ondemand delayed speedup will save us); but to get back to your
-interface, the interface doesnt nearly give the info needed to make
-these decisions...
+Thanks,
+Nish
 
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
