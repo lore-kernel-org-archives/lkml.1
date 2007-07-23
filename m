@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXGWRXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761934AbXGWRct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932081AbXGWRXv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 13:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbXGWRXo
+	id S1761934AbXGWRct (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 13:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbXGWRck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 13:23:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42951 "EHLO mx1.redhat.com"
+	Mon, 23 Jul 2007 13:32:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47085 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758746AbXGWRXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 13:23:43 -0400
-Message-ID: <46A4E3F1.7050602@redhat.com>
-Date: Mon, 23 Jul 2007 10:22:57 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1751783AbXGWRcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 13:32:39 -0400
+Message-ID: <46A4E635.5010006@redhat.com>
+Date: Mon, 23 Jul 2007 13:32:37 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: fallocate syscall interface defficiency
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Dave Airlie <airlied@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [patch] AGP: document boot options
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Add documentation for AGP boot options.
 
-The fallocate syscall returns ENOSYS in case the filesystem does not
-support the operation and expects the userlevel code to fill in.  This
-is good in concept.
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 
-The problem is that the libc code for old kernels should be able to
-distinguish the case where the syscall is not at all available vs not
-functioning for a specific mount point.  As is this is not possible and
-we always have to invoke the syscall even if the kernel doesn't support it.
+---
+ Documentation/kernel-parameters.txt |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-I suggest the following patch (and yes, Al, you need a mailer which
-automatically removes "- " before leading dashes).  Using EOPNOTSUPP is
-IMO the right thing to do.
-
-- --- fs/open.c	2007-07-18 20:25:41.000000000 -0700
-+++ fs/open.c-new	2007-07-23 10:17:17.000000000 -0700
-@@ -403,7 +403,7 @@
- 	if (inode->i_op && inode->i_op->fallocate)
- 		ret = inode->i_op->fallocate(inode, mode, offset, len);
- 	else
-- -		ret = -ENOSYS;
-+		ret = -EOPNOTSUPP;
-
- out_fput:
- 	fput(file);
-
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGpOPx2ijCOnn/RHQRAl4aAKC0TtQ65aBGhORbnniQg9lJwoWiQgCfT2B7
-BGgDLLcTgGsd1I9HMRo/+z4=
-=G5y6
------END PGP SIGNATURE-----
+--- 2.6.22-git11-d390.orig/Documentation/kernel-parameters.txt
++++ 2.6.22-git11-d390/Documentation/kernel-parameters.txt
+@@ -30,6 +30,7 @@ the beginning of each description states
+ parameter is applicable:
+ 
+ 	ACPI	ACPI support is enabled.
++	AGP	AGP (Accelerated Graphics Port) is enabled.
+ 	ALSA	ALSA sound support is enabled.
+ 	APIC	APIC support is enabled.
+ 	APM	Advanced Power Management support is enabled.
+@@ -227,6 +228,12 @@ and is between 256 and 4096 characters. 
+ 			to assume that this machine's pmtimer latches its value
+ 			and always returns good values.
+ 
++	agp=		[AGP]
++			{ off | try_unsupported }
++			off: disable AGP support
++			try_unsupported: try to drive unsupported chipsets
++				(may crash computer or cause data corruption)
++
+ 	enable_timer_pin_1 [i386,x86-64]
+ 			Enable PIN 1 of APIC timer
+ 			Can be useful to work around chipset bugs
