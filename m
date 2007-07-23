@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbXGWUHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbXGWUIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbXGWUHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 16:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757673AbXGWUHd
+	id S933537AbXGWUIE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 16:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934400AbXGWUHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 16:07:33 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:37178 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755579AbXGWUHc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 16:07:32 -0400
-Date: Mon, 23 Jul 2007 16:06:59 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC 0/8]KVM: swap out guest pages
-Message-ID: <20070723200659.GA13508@c2.user-mode-linux.org>
-References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com> <46A4829C.9080104@qumranet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A4829C.9080104@qumranet.com>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 23 Jul 2007 16:07:45 -0400
+Received: from mail.tmr.com ([64.65.253.246]:46268 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934330AbXGWUHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 16:07:43 -0400
+Message-ID: <46A50AD6.6050806@tmr.com>
+Date: Mon, 23 Jul 2007 16:08:54 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Al Boldi <a1426z@gawab.com>
+CC: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFH] Partion table recovery
+References: <200707200813.03553.a1426z@gawab.com>
+In-Reply-To: <200707200813.03553.a1426z@gawab.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 01:27:40PM +0300, Avi Kivity wrote:
-> Having an address_space (like your patch does) is remarkably simple, and 
-> requires few hooks from the current vm.  However using existing vmas 
-> mapped by the user has many advantages:
-
-It's also needed for a SKAS-like UML client, where the host side will
-need to make system calls on behalf of the guest.
-
-				Jeff
+Al Boldi wrote:
+> As always, a good friend of mine managed to scratch my partion table by 
+> cat'ing /dev/full into /dev/sda.  I was able to push him out of the way, but 
+> at least the first 100MB are gone.  I can probably live without the first 
+> partion, but there are many partitions after that, which I hope should 
+> easily be recoverable.
+>
+> I tried parted, but it's not working out for me.  Does anybody know of a 
+> simple partition recovery tool, that would just scan the disk for lost 
+> partions?
+>   
+You have gotten a bunch of thoughts on this, I will just say that plain 
+old "fdisk -l" saved somewhere safe is probably all you need, in human 
+readable format. Doesn't do you any good now, but all the complicated 
+schemes discussed don't thrill me, I want to be able to see this, and 
+recovery by partition table manual rebuild is so rare I would rather do 
+it by hand than trust some software I rarely use.
 
 -- 
-Work email - jdike at linux dot intel dot com
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
+
