@@ -1,73 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbXGWFWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbXGWF1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbXGWFWq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 01:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXGWFWh
+	id S1757916AbXGWF1R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 01:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbXGWF1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 01:22:37 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:15358 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753405AbXGWFWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 01:22:36 -0400
-Date: Mon, 23 Jul 2007 07:22:45 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tim Pepper <lnxninja@us.ibm.com>,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH 3/3] readahead: scale max readahead size depending on
-	memory size
-Message-ID: <20070723052244.GW11657@kernel.dk>
-References: <20070721210005.000228000@chello.nl> <20070721210052.497469000@chello.nl> <20070722082434.GR11657@kernel.dk> <1185093405.20032.205.camel@twins> <20070722085041.GS11657@kernel.dk> <46A3EDD9.2090707@redhat.com>
+	Mon, 23 Jul 2007 01:27:07 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:59627
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753177AbXGWF1G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 01:27:06 -0400
+Date: Sun, 22 Jul 2007 22:25:57 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Igor Stoppa <igor.stoppa@nokia.com>,
+       "ext linux-pm-bounces@lists.linux-foundation.org" 
+	<linux-pm-bounces@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Power Management framework proposal
+In-Reply-To: <1185164357.2714.49.camel@laptopd505.fenrus.org>
+Message-ID: <Pine.LNX.4.64.0707222207210.6350@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm> 
+ <1185091022.19678.28.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm> 
+ <1185105911.29238.43.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm> 
+ <1185145766.2714.27.camel@laptopd505.fenrus.org> 
+ <Pine.LNX.4.64.0707221914550.6350@asgard.lang.hm> 
+ <1185162647.2714.35.camel@laptopd505.fenrus.org> 
+ <Pine.LNX.4.64.0707222054060.6350@asgard.lang.hm> <1185164357.2714.49.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A3EDD9.2090707@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 22 2007, Rik van Riel wrote:
-> Jens Axboe wrote:
->
->> I just wish you had a rationale behind them, I don't think it's that
->> great of a series. I agree with the low point of 128k. Then it'd be sane
->> to try and determine what the upper limit of ra window size goodness is,
->> which is probably impossible since it depends on the hardware a lot. But
->> lets just say the upper value is 2mb, then I think it's pretty silly
->> _not_ to use 2mb on a 1g machine for instance. So more aggressive
->> scaling.
->
-> 1 or 2 MB is a nice number.
->
-> Seek time (plus rotational latency) on disks still takes
-> on the order of 10 ms, while disks commonly transfer data
-> on the order of 50MB/second.
->
-> That means one disk seek (10ms) takes as long as it takes
-> to read around 512kB of data.
->
-> The current 128kB means that if you have lots of streaming
-> IO going on, you spend only 20% of the time transferring
-> data and get roughly 10MB/s.  Seek 10ms, read 2.5ms worth
-> of data.
->
-> OTOH, if you do 2MB per request for the same heavy streaming
-> workload (say, an ftp or nfs server doing media files), you
-> can get 80% of the disk throughput, or 40MB/s.  This is because
-> you spend 40ms transferring data for every 10ms seek time.
->
-> Yes, filesystem metadata will reduce this "occasionally",
-> but the general idea holds.
+On Sun, 22 Jul 2007, Arjan van de Ven wrote:
 
-I meant real numbers, the above is just rudimentary math. AS and CFQ
-makes sure that you get a window of more than one request in, so huge
-read-ahead sizes aren't as interesting.
+> On Sun, 2007-07-22 at 21:04 -0700, david@lang.hm wrote:
+>
+>>>> this strategy should work well on the normal unpredictable workload that
+>>>> most people deal with, but there are some cases where the workload becomes
+>>>> pretty predictable (media players for example) where there really is less
+>>>> variation, and a need for a constant availability of the cpu, so it may
+>>>> actually save a smidge of power to run below the highest freq that the
+>>>> voltage allows rather then running faster and being idle more cycles.
+>>>
+>>> that actually is the example showcase of race-to-idle where you
+>>> absolutely want to run at the highest frequency..
+>>
+>> only if the transitions don't cost anything significant,
+>
+> these are second order effects though. On a pc, the transition costs are
+> quite low (as I said, single or low double digit microseconds).
 
-So - more testing, less hand waving :-)
+including pausing all drivers before the transition and unpausing them 
+aftrwords?
 
--- 
-Jens Axboe
+>> and the
+>> computation capacity per watt of power is the same at all frequencies. the
+>> chip performance numbers I've been seeing (which I admit are mostly
+>> embedded datasheets) indicate that neither of these hold true.
+>
+> let me give you a real world example then, and the numbers I'm using are
+> ballpark the same as you'll find in a (mobile) core 2 duo datasheet, I
+> just rounded them a little so that the math works out nice.
+>
+> power at full speed: 34W
+> power at half speed: 24W
+> power at idle: 1W
+
+are these numbers for the CPU itself or for the a larger chunk? I could 
+easily see these numbers for motherboard (including CPU and RAM), but it 
+would surprise me if these numbers are for the CPU itself. I'm used to 
+seeing datasheets that have a much more linear voltage/freq (and therefor 
+a quadratic voltage/power) curve. in some cases the voltage requirements 
+drop faster then the frequency.
+
+> assume media playback, and a dumb one, that takes half a second to
+> decode a second of media. (again to make the math simple)
+>
+> at half speed: Energy for a second is 0.5 * 24 + 0.5 * 1 = 12.5 J
+> at full speed: Energy for a second is 0.25 * 34 + 0.75 * 1 = 9.25 J
+>
+> this works for all systems where the idle power is more lower than the
+> power you save by dropping speed... and that is almost all of them in
+> the PC world.
+
+if you can idle the system as a whole I agree with you fully. most PC 
+hardware (including the mobile stuff) doesn't change it's power 
+consumption much with load. at Usenix there was a presentiation (I don't 
+remember if it was by Amazon or Google) about this subject, showing that 
+current PC hardware only goes down to 50% power when idle (short of 
+switching power modes) and that they and other big companies were pushing 
+vendors to improve their hardware, aiming to get the idle power down to 
+10% (again without suspending anything). so there's some chance that this 
+will change before too long.
+
+> now you can argue that 0.5 seconds is a really really long time, and
+> you'd be right. so for really really short stints (say a timer
+> interrupt) you don't want to change the voltage at all (nor would you
+> want to change the plls to change frequency for that matter). But once
+> you start chaning those, you might as well go full speed.
+
+this assumes that you can cache 1 second of video, if you have more 
+real-time requirements you have a much harder time (say video confrancing 
+where you don't get the frame until just before you need to display it)
+
+David Lang
 
