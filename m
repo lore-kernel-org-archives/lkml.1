@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbXGWHp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbXGWH4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759850AbXGWHp4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 03:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbXGWHpq
+	id S1753393AbXGWH4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 03:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbXGWHzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 03:45:46 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:60670 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753632AbXGWHpp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 03:45:45 -0400
-Subject: Re: net/bluetooth/rfcomm/tty.c: use-after-free
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Ville Tervo <ville.tervo@nokia.com>, maxk@qualcomm.com,
-       bluez-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20070723012543.GW26212@stusta.de>
-References: <20070723012543.GW26212@stusta.de>
-Content-Type: multipart/mixed; boundary="=-EtPTDyWlzq4wPVJ9lUcf"
-Date: Mon, 23 Jul 2007 09:47:12 +0200
-Message-Id: <1185176832.7111.32.camel@violet>
+	Mon, 23 Jul 2007 03:55:55 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54677 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754504AbXGWHzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 03:55:54 -0400
+Date: Mon, 23 Jul 2007 17:56:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jan Dittmer <jdi@l4x.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: alpha, i386,mips,powerpc,ppc,xtensa compile brakage (was Re:
+ Linus 2.6.23-rc1)
+Message-Id: <20070723175602.ae2a1a32.sfr@canb.auug.org.au>
+In-Reply-To: <46A45544.8090303@l4x.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	<46A45544.8090303@l4x.org>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__23_Jul_2007_17_56_02_+1000_eR4AUNcl9Xa4O_Zo"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__23_Jul_2007_17_56_02_+1000_eR4AUNcl9Xa4O_Zo
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---=-EtPTDyWlzq4wPVJ9lUcf
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+On Mon, 23 Jul 2007 09:14:12 +0200 Jan Dittmer <jdi@l4x.org> wrote:
+>
+> # powerpc/iseries_defconfig: broke
+>=20
+>    CC [M]  drivers/scsi/scsi_transport_sas.o
+>    CC [M]  drivers/scsi/scsi_wait_scan.o
+>    LD      drivers/scsi/ibmvscsi/built-in.o
+>    CC [M]  drivers/scsi/ibmvscsi/ibmvscsi.o
+> drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'ibmvscsi_reset_host':
+> drivers/scsi/ibmvscsi/ibmvscsi.c:517: error: implicit declaration of func=
+tion 'vio_enable_interrupts'
 
-Hi Adrian,
+Patch sent to Paulus today.
 
-> Commit 8de0a15483b357d0f0b821330ec84d1660cadc4e added the following 
-> use-after-free in net/bluetooth/rfcomm/tty.c:
-> 
-> <--  snip  -->
-> 
-> ...
-> static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
-> {
-> ...
->         if (IS_ERR(dev->tty_dev)) {
->                 list_del(&dev->list);
->                 kfree(dev);
->                 return PTR_ERR(dev->tty_dev);
->         }
-> ...
-> 
-> <--  snip  -->
-> 
-> Spotted by the Coverity checker.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-really good catch. I fully overlooked that one. The attached patch
-should fix it.
+--Signature=_Mon__23_Jul_2007_17_56_02_+1000_eR4AUNcl9Xa4O_Zo
+Content-Type: application/pgp-signature
 
-Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Regards
+iD8DBQFGpF8bTgG2atn1QN8RAiLVAJ9ZCYe6bLFt/3Exr7KEtZfWeduopgCdGEpV
+dFQEVH6/WrNpe5993Mr0ijU=
+=0lQC
+-----END PGP SIGNATURE-----
 
-Marcel
-
-
---=-EtPTDyWlzq4wPVJ9lUcf
-Content-Disposition: attachment; filename=patch
-Content-Type: text/x-patch; name=patch; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-diff --git a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
-index 23ba61a..22a8320 100644
---- a/net/bluetooth/rfcomm/tty.c
-+++ b/net/bluetooth/rfcomm/tty.c
-@@ -267,7 +267,7 @@ static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
- out:
- 	write_unlock_bh(&rfcomm_dev_lock);
- 
--	if (err) {
-+	if (err < 0) {
- 		kfree(dev);
- 		return err;
- 	}
-@@ -275,9 +275,10 @@ out:
- 	dev->tty_dev = tty_register_device(rfcomm_tty_driver, dev->id, NULL);
- 
- 	if (IS_ERR(dev->tty_dev)) {
-+		err = PTR_ERR(dev->tty_dev);
- 		list_del(&dev->list);
- 		kfree(dev);
--		return PTR_ERR(dev->tty_dev);
-+		return err;
- 	}
- 
- 	return dev->id;
-
---=-EtPTDyWlzq4wPVJ9lUcf--
-
+--Signature=_Mon__23_Jul_2007_17_56_02_+1000_eR4AUNcl9Xa4O_Zo--
