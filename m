@@ -1,221 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbXGXEBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbXGXECX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbXGXEBv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 00:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbXGXEBo
+	id S1753867AbXGXECX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 00:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXGXECJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 00:01:44 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:22463 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbXGXEBn (ORCPT
+	Tue, 24 Jul 2007 00:02:09 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:28664 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750984AbXGXECH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 00:01:43 -0400
-Date: Mon, 23 Jul 2007 21:05:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: gregkh <greg@kroah.com>
-Subject: [PATCH] Doc/sysfs-rules typos
-Message-Id: <20070723210502.df1d64bc.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 00:02:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=k1DRXyigPTQzdwf+bfQ5EMRq0i1lWs1Q6EaplQIVubrwayunWBL47dUTpncWOStZNrW3kClQd8f761vnurMikgmV0+UwDuJFWCO6yAvB+sG2ZrHArCoGR4SYhxHHh9r40AXk8S1siS05EqpLv5ylxfhAtTM2KWweV3zhAvh5KQ0=  ;
+X-YMail-OSG: TFdiIQgVM1n8l574569x0dB_kr958aZ01qgJa6_F_Iy3Oe6n17LIG696JwQcM.LxFr0D4QTMHZ0tSQgoqlXSFJdj_K3HxJBOebU6oO1oLdD4qjLoNM8-
+Message-ID: <46A57068.3070701@yahoo.com.au>
+Date: Tue, 24 Jul 2007 13:22:16 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org> <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+In-Reply-To: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Jesper Juhl wrote:
+> On 10/07/07, Con Kolivas <kernel@kolivas.org> wrote:
+> 
+>> On Tuesday 10 July 2007 18:31, Andrew Morton wrote:
+>> > When replying, please rewrite the subject suitably and try to Cc: the
+>> > appropriate developer(s).
+>>
+>> ~swap prefetch
+>>
+>> Nick's only remaining issue which I could remotely identify was to 
+>> make it
+>> cpuset aware:
+>> http://marc.info/?l=linux-mm&m=117875557014098&w=2
+>> as discussed with Paul Jackson it was cpuset aware:
+>> http://marc.info/?l=linux-mm&m=117895463120843&w=2
+>>
+>> I fixed all bugs I could find and improved it as much as I could last 
+>> kernel
+>> cycle.
+>>
+>> Put me and the users out of our misery and merge it now or delete it 
+>> forever
+>> please. And if the meaningless handwaving that I 100% expect as a 
+>> response
+>> begins again, then that's fine. I'll take that as a no and you can 
+>> dump it.
+>>
+> For what it's worth; put me down as supporting the merger of swap
+> prefetch. I've found it useful in the past, Con has maintained it
+> nicely and cleaned up everything that people have pointed out - it's
+> mature, does no harm - let's just get it merged.  It's too late for
+> 2.6.23-rc1 now, but let's try and get this in by -rc2 - it's long
+> overdue...
 
-Fix typos only (spelling, grammar, duplicate words, etc.).
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/sysfs-rules.txt |   72 ++++++++++++++++++++----------------------
- 1 file changed, 35 insertions(+), 37 deletions(-)
+Not talking about swap prefetch itself, but everytime I have asked
+anyone to instrument or produce some workload where swap prefetch
+helps, they never do.
 
---- linux-2.6.23-rc1.orig/Documentation/sysfs-rules.txt
-+++ linux-2.6.23-rc1/Documentation/sysfs-rules.txt
-@@ -1,19 +1,18 @@
- Rules on how to access information in the Linux kernel sysfs
- 
--The kernel exported sysfs exports internal kernel implementation-details
-+The kernel-exported sysfs exports internal kernel implementation details
- and depends on internal kernel structures and layout. It is agreed upon
- by the kernel developers that the Linux kernel does not provide a stable
- internal API. As sysfs is a direct export of kernel internal
--structures, the sysfs interface can not provide a stable interface eighter,
-+structures, the sysfs interface cannot provide a stable interface either;
- it may always change along with internal kernel changes.
- 
- To minimize the risk of breaking users of sysfs, which are in most cases
- low-level userspace applications, with a new kernel release, the users
--of sysfs must follow some rules to use an as abstract-as-possible way to
-+of sysfs must follow some rules to use an as-abstract-as-possible way to
- access this filesystem. The current udev and HAL programs already
- implement this and users are encouraged to plug, if possible, into the
--abstractions these programs provide instead of accessing sysfs
--directly.
-+abstractions these programs provide instead of accessing sysfs directly.
- 
- But if you really do want or need to access sysfs directly, please follow
- the following rules and then your programs should work with future
-@@ -25,22 +24,22 @@ versions of the sysfs interface.
-   implementation details in its own API. Therefore it is not better than
-   reading directories and opening the files yourself.
-   Also, it is not actively maintained, in the sense of reflecting the
--  current kernel-development. The goal of providing a stable interface
--  to sysfs has failed, it causes more problems, than it solves. It
-+  current kernel development. The goal of providing a stable interface
-+  to sysfs has failed; it causes more problems than it solves. It
-   violates many of the rules in this document.
- 
- - sysfs is always at /sys
-   Parsing /proc/mounts is a waste of time. Other mount points are a
-   system configuration bug you should not try to solve. For test cases,
-   possibly support a SYSFS_PATH environment variable to overwrite the
--  applications behavior, but never try to search for sysfs. Never try
-+  application's behavior, but never try to search for sysfs. Never try
-   to mount it, if you are not an early boot script.
- 
- - devices are only "devices"
-   There is no such thing like class-, bus-, physical devices,
-   interfaces, and such that you can rely on in userspace. Everything is
-   just simply a "device". Class-, bus-, physical, ... types are just
--  kernel implementation details, which should not be expected by
-+  kernel implementation details which should not be expected by
-   applications that look for devices in sysfs.
- 
-   The properties of a device are:
-@@ -48,11 +47,11 @@ versions of the sysfs interface.
-       - identical to the DEVPATH value in the event sent from the kernel
-         at device creation and removal
-       - the unique key to the device at that point in time
--      - the kernels path to the device-directory without the leading
-+      - the kernel's path to the device directory without the leading
-         /sys, and always starting with with a slash
-       - all elements of a devpath must be real directories. Symlinks
-         pointing to /sys/devices must always be resolved to their real
--        target, and the target path must be used to access the device.
-+        target and the target path must be used to access the device.
-         That way the devpath to the device matches the devpath of the
-         kernel used at event time.
-       - using or exposing symlink values as elements in a devpath string
-@@ -73,17 +72,17 @@ versions of the sysfs interface.
-         link
-       - it is retrieved by reading the "driver"-link and using only the
-         last element of the target path
--      - devices which do not have "driver"-link, just do not have a
--        driver; copying the driver value in a child device context, is a
-+      - devices which do not have "driver"-link just do not have a
-+        driver; copying the driver value in a child device context is a
-         bug in the application
- 
-     o attributes
--      - the files in the device directory or files below a subdirectories
-+      - the files in the device directory or files below subdirectories
-         of the same device directory
-       - accessing attributes reached by a symlink pointing to another device,
-         like the "device"-link, is a bug in the application
- 
--  Everything else is just a kernel driver-core implementation detail,
-+  Everything else is just a kernel driver-core implementation detail
-   that should not be assumed to be stable across kernel releases.
- 
- - Properties of parent devices never belong into a child device.
-@@ -91,25 +90,25 @@ versions of the sysfs interface.
-   context properties. If the device 'eth0' or 'sda' does not have a
-   "driver"-link, then this device does not have a driver. Its value is empty.
-   Never copy any property of the parent-device into a child-device. Parent
--  device-properties may change dynamically without any notice to the
-+  device properties may change dynamically without any notice to the
-   child device.
- 
--- Hierarchy in a single device-tree
-+- Hierarchy in a single device tree
-   There is only one valid place in sysfs where hierarchy can be examined
-   and this is below: /sys/devices.
--  It is planned, that all device directories will end up in the tree
-+  It is planned that all device directories will end up in the tree
-   below this directory.
- 
- - Classification by subsystem
-   There are currently three places for classification of devices:
-   /sys/block, /sys/class and /sys/bus. It is planned that these will
--  not contain any device-directories themselves, but only flat lists of
-+  not contain any device directories themselves, but only flat lists of
-   symlinks pointing to the unified /sys/devices tree.
-   All three places have completely different rules on how to access
-   device information. It is planned to merge all three
--  classification-directories into one place at /sys/subsystem,
--  following the layout of the bus-directories. All buses and
--  classes, including the converted block-subsystem, will show up
-+  classification directories into one place at /sys/subsystem,
-+  following the layout of the bus directories. All buses and
-+  classes, including the converted block subsystem, will show up
-   there.
-   The devices belonging to a subsystem will create a symlink in the
-   "devices" directory at /sys/subsystem/<name>/devices.
-@@ -121,38 +120,38 @@ versions of the sysfs interface.
-   subsystem name.
- 
-   Assuming /sys/class/<subsystem> and /sys/bus/<subsystem>, or
--  /sys/block and /sys/class/block are not interchangeable, is a bug in
-+  /sys/block and /sys/class/block are not interchangeable is a bug in
-   the application.
- 
- - Block
--  The converted block-subsystem at /sys/class/block, or
-+  The converted block subsystem at /sys/class/block or
-   /sys/subsystem/block will contain the links for disks and partitions
--  at the same level, never in a hierarchy. Assuming the block-subsytem to
--  contain only disks and not partition-devices in the same flat list is
-+  at the same level, never in a hierarchy. Assuming the block subsytem to
-+  contain only disks and not partition devices in the same flat list is
-   a bug in the application.
- 
- - "device"-link and <subsystem>:<kernel name>-links
-   Never depend on the "device"-link. The "device"-link is a workaround
--  for the old layout, where class-devices are not created in
--  /sys/devices/ like the bus-devices. If the link-resolving of a
--  device-directory does not end in /sys/devices/, you can use the
-+  for the old layout, where class devices are not created in
-+  /sys/devices/ like the bus devices. If the link-resolving of a
-+  device directory does not end in /sys/devices/, you can use the
-   "device"-link to find the parent devices in /sys/devices/. That is the
--  single valid use of the "device"-link, it must never appear in any
-+  single valid use of the "device"-link; it must never appear in any
-   path as an element. Assuming the existence of the "device"-link for
-   a device in /sys/devices/ is a bug in the application.
-   Accessing /sys/class/net/eth0/device is a bug in the application.
- 
-   Never depend on the class-specific links back to the /sys/class
-   directory.  These links are also a workaround for the design mistake
--  that class-devices are not created in /sys/devices. If a device
-+  that class devices are not created in /sys/devices. If a device
-   directory does not contain directories for child devices, these links
-   may be used to find the child devices in /sys/class. That is the single
--  valid use of these links, they must never appear in any path as an
-+  valid use of these links; they must never appear in any path as an
-   element. Assuming the existence of these links for devices which are
--  real child device directories in the /sys/devices tree, is a bug in
-+  real child device directories in the /sys/devices tree is a bug in
-   the application.
- 
--  It is planned to remove all these links when when all class-device
-+  It is planned to remove all these links when all class device
-   directories live in /sys/devices.
- 
- - Position of devices along device chain can change.
-@@ -161,6 +160,5 @@ versions of the sysfs interface.
-   the chain. You must always request the parent device you are looking for
-   by its subsystem value. You need to walk up the chain until you find
-   the device that matches the expected subsystem. Depending on a specific
--  position of a parent device, or exposing relative paths, using "../" to
--  access the chain of parents, is a bug in the application.
--
-+  position of a parent device or exposing relative paths using "../" to
-+  access the chain of parents is a bug in the application.
+Fair enough if swap prefetch helps them, but I also want to look at
+why that is the case and try to improve page reclaim in some of
+these situations (for example standard overnight cron jobs shouldn't
+need swap prefetch on a 1 or 2GB system, I would hope).
+
+Anyway, back to swap prefetch, I don't know why I've been singled out
+as the bad guy here. I'm one of the only people who has had a look at
+the damn thing and tried to point out areas where it could be improved
+to the point of being included, and outlining things that are needed
+for it to be merged (ie. numbers). If anyone thinks that makes me the
+bad guy then they have an utterly inverted understanding of what peer
+review is for.
+
+Finally, everyone who has ever hacked on these heuristicy parts of the
+VM has heaps of patches that help some workload or some silly test
+case or (real or percieved) shortfall but have not been merged. It
+really isn't anything personal.
+
+If something really works, then it should be possible to get real
+numbers in real situations where it helps (OK, swap prefetching won't
+be as easy as a straight line performance improvement, but still much
+easier than trying to measure something like scheduler interactivity).
+
+Numbers are the best way to add weight to the pro-merge argument, so
+for all the people who a whining about merging this and don't want
+to actually work on the code -- post some numbers for where it helps
+you!!
+
+-- 
+SUSE Labs, Novell Inc.
