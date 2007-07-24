@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934818AbXGXJKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935504AbXGXJKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934818AbXGXJKa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759334AbXGXJKV
+	id S935504AbXGXJKs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934575AbXGXJKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:10:21 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43293 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757822AbXGXJKV (ORCPT
+	Tue, 24 Jul 2007 05:10:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46394 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934266AbXGXJK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:10:21 -0400
-Date: Tue, 24 Jul 2007 11:10:18 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>,
-       andi@firstfloor.org, nix.or.die@googlemail.com, olh@suse.de
-Subject: Re: 2.6.22-git17 boot failure
-Message-ID: <20070724091018.GA26724@one.firstfloor.org>
-References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc> <46A5444D.4080304@goop.org>
+	Tue, 24 Jul 2007 05:10:29 -0400
+Date: Tue, 24 Jul 2007 02:09:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, wwoods@redhat.com
+Subject: Re: [PATCH]: allow individual core dump methods to be unlimited
+ when sending to a pipe
+Message-Id: <20070724020939.7644f18c.akpm@linux-foundation.org>
+In-Reply-To: <20070722153947.GA11941@hmsreliant.homelinux.net>
+References: <20070722153947.GA11941@hmsreliant.homelinux.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A5444D.4080304@goop.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 22 Jul 2007 11:39:47 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
 
-On Mon, Jul 23, 2007 at 05:14:05PM -0700, Jeremy Fitzhardinge wrote:
-> Well, it looks to me like it all falls over once it hits usermode;
-> everything up till then is identical (except for the Xen-related
-> initcalls which naturally don't exist in the non-Xen case).
-> 
-> I'm at a loss.  I don't know if there's some way to debug the initrd in
-> more detail.  I suspect that its failing all PCI probing, rather being a
-> specific SCSI/AHCI problem (since none of the other messages appear either).
-> 
-> Does the Xen case just hang, or reboot, or what?  The kernel messages
-> just appear to stop.  I'd expect it to at least complain about not
-> mounting the root filesystem or something.
-> 
-> Andi, any thoughts about how to debug the suse boot sequence?
+> 	This is a follow on to the patch entitled:
+> update-coredump-path-in-kernel-to-not-check-coredump-rlim-if-core_pattern-is-a-pipe.patch
+> It allows individual core dump methods to have the core dump size limit passed
+> into them.  Its more efficient than each method having to retrieve it on their
+> own, and it allows for do_coredump to specify a infinite limit in the event that
+> a pipe is configured in /proc/sys/kernel/core_pattern, in which case ulimit -c
+> should not apply.
 
-Hmm, you could add a set -x into the startup script /sbin/mkinitrd
-generates. But some work also happens with udev in the background.
+Needed this warning fix:
 
-Or let's ask Olaf, he's the expert on that
+fs/exec.c: In function 'do_coredump':
+fs/exec.c:1761: warning: large integer implicitly truncated to unsigned type
 
--Andi
+diff -puN fs/exec.c~allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix fs/exec.c
+--- a/fs/exec.c~allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix
++++ a/fs/exec.c
+@@ -1703,7 +1703,7 @@ int do_coredump(long signr, int exit_cod
+ 	int fsuid = current->fsuid;
+ 	int flag = 0;
+ 	int ispipe = 0;
+-	u32 core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
++	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
+ 
+ 	audit_core_dumps(signr);
+ 
+_
+
+which makes me worry about how much care was taken here on 32/64 issues,
+and crsos-arch issues (the underlying type for compat_ulong_t, for one).
+
+Could you please go over it with a toothcomb, see if there are any other
+slipups there?
+
+
+Thanks.
