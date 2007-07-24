@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbXGXEau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbXGXEiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbXGXEau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 00:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbXGXEam
+	id S1755756AbXGXEiV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 00:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbXGXEiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 00:30:42 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:36168 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751923AbXGXEak (ORCPT
+	Tue, 24 Jul 2007 00:38:11 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:17864 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbXGXEiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 00:30:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=Mc7m4ivJ+wul2LuOyCb5LaedUHkaQgdht/HlbLLbIEp2FiItlJeen/ZrdJSYKk+w2gChM89pgyJeprzckJquLWhxXFaKXIK0NX8+3tU6/LBaGfEps/br00LaozN6S3JiMotY78qZlv9MH067rLBMvD/DYS8c7cTbDbW61zo8oKY=  ;
-X-YMail-OSG: RUxbtqwVM1msqip.TqtAk38liQ73VUGoU.iWeaPMHTR7VDapuwRh_.D2OYCu8LwHcCHYphj3Zw--
-Message-ID: <46A58067.8070207@yahoo.com.au>
-Date: Tue, 24 Jul 2007 14:30:31 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Fengguang Wu <fengguang.wu@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Dave Jones <davej@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
-       Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
-       Mingming Cao <cmm@us.ibm.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Chris Ahna <christopher.j.ahna@intel.com>,
-       David Mosberger-Tang <davidm@hpl.hp.com>,
-       Kyle McMartin <kyle@parisc-linux.org>
-Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
-References: <20070721210005.000228000@chello.nl> <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com> <20070722081010.GA6317@mail.ustc.edu.cn> <1185093236.6344.87.camel@localhost.localdomain> <46A46E4B.7050007@yahoo.com.au> <385201377.00678@ustc.edu.cn> <20070723124009.5fcf4fef.akpm@linux-foundation.org> <385238729.01475@ustc.edu.cn>
-In-Reply-To: <385238729.01475@ustc.edu.cn>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 24 Jul 2007 00:38:09 -0400
+Date: Mon, 23 Jul 2007 21:42:11 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: gregkh <greg@kroah.com>
+Subject: [PATCH] kernel-doc fixes for PCI and drivers/base/
+Message-Id: <20070723214211.9beda07f.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fengguang Wu wrote:
-> On Mon, Jul 23, 2007 at 12:40:09PM -0700, Andrew Morton wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
->>This is all fun stuff, but how do we find out that changes like this are
->>good ones, apart from shipping it and seeing who gets hurt 12 months later?
-> 
-> 
-> One thing I can imagine now is that the first pages may get more life
-> because of the conservative initial readahead size.
+Fix undocumented function parameters in PCI and drivers/base.
 
-Yeah I don't think it is really worth the complexity and corner cases
-it would introduce at this stage.
+Warning(linux-2.6.23-rc1//drivers/pci/pci.c:1526): No description found for parameter 'rq'
+Warning(linux-2.6.23-rc1//drivers/base/firmware_class.c:245): No description found for parameter 'bin_attr'
 
-People are still complaining about their nightly cron job *swapping*
-stuff out of their 1-2GB desktop systems. There must still be some low
-hanging fruit or obvious problems with page reclaim so I'd like to try
-working out exactly what is going wrong and fix it in page reclaim
-rather than adding more complexity in the hope that it might help.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/base/firmware_class.c |    1 +
+ drivers/pci/pci.c             |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
--- 
-SUSE Labs, Novell Inc.
+--- linux-2.6.23-rc1.orig/drivers/base/firmware_class.c
++++ linux-2.6.23-rc1/drivers/base/firmware_class.c
+@@ -232,6 +232,7 @@ fw_realloc_buffer(struct firmware_priv *
+ /**
+  * firmware_data_write - write method for firmware
+  * @kobj: kobject for the device
++ * @bin_attr: bin_attr structure
+  * @buffer: buffer being written
+  * @offset: buffer offset for write in total data store area
+  * @count: buffer size
+--- linux-2.6.23-rc1.orig/drivers/pci/pci.c
++++ linux-2.6.23-rc1/drivers/pci/pci.c
+@@ -1517,7 +1517,7 @@ EXPORT_SYMBOL(pcie_get_readrq);
+ /**
+  * pcie_set_readrq - set PCI Express maximum memory read request
+  * @dev: PCI device to query
+- * @count: maximum memory read count in bytes
++ * @rq: maximum memory read count in bytes
+  *    valid values are 128, 256, 512, 1024, 2048, 4096
+  *
+  * If possible sets maximum read byte count
