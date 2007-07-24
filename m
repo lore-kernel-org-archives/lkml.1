@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763220AbXGXUGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932204AbXGXUGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763220AbXGXUGA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117AbXGXUE6
+	id S932204AbXGXUGb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764043AbXGXUFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:04:58 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:39295 "EHLO atlrel8.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932113AbXGXUEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:04:54 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Date: Tue, 24 Jul 2007 13:53:57 -0600
-User-Agent: KMail/1.9.6
-Cc: Jeff Garzik <jeff@garzik.org>,
-       =?iso-8859-1?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <46A63BC3.3050208@garzik.org> <Pine.LNX.4.64N.0707241914060.17807@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0707241914060.17807@blysk.ds.pg.gda.pl>
+	Tue, 24 Jul 2007 16:05:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:25537 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932133AbXGXUFg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:05:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=WdNn5rD3G8pfEZMCD9nQahPaKco3lJQSYcosAOPvNd2FdjkXcD5IgCU+ZIKNRrC9QUyFyNRKFp7QWgDUKqVhELABJ2d9vHfR+0dfM02jJLyCTIbKDaQJpWH2UTG5GwEcUJgdpqCA5xMTt9ni43KN3mn/78D2yLHjA/oLpyuITs0=
+Date: Wed, 25 Jul 2007 00:05:28 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Message-ID: <20070724200528.GA5814@martell.zuzino.mipt.ru>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <1185271269.6479.7.camel@Homer.simpson.net> <20070724092839.f0556948.akpm@linux-foundation.org> <alpine.LFD.0.999.0707241124220.3607@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707241353.57458.bjorn.helgaas@hp.com>
+In-Reply-To: <alpine.LFD.0.999.0707241124220.3607@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 July 2007 12:17:36 pm Maciej W. Rozycki wrote:
-> On Tue, 24 Jul 2007, Jeff Garzik wrote:
-> 
-> > It seems clear from this report that we cannot, should not, trust BIOS for
-> > something (a) so simple and (b) that has been working for over a decade.
-> 
->  And (c) something BIOS writers have never ever in their most unlikely 
-> imagination expected to be trusted for.
+On Tue, Jul 24, 2007 at 11:25:22AM -0700, Linus Torvalds wrote:
+> On Tue, 24 Jul 2007, Andrew Morton wrote:
+> > I guess this was the bug:
+>
+> Looks very likely to me. Mike, Alexey, does this fix things for you?
 
-I don't think it's quite so clear-cut.  It is true that "poke at 0x3e8,
-and if it responds, assume it's a 16550 with IRQ 4" is simple.  But it
-doesn't always work.  Google for "irda setserial" and you'll find many
-cases where the serial driver's blind probe erroneously claims an IRDA
-device.  The SIR mode of IRDA devices is basically 16550-compatible,
-so this wouldn't be a big problem, except that the blind probe often
-assumes the wrong IRQ.  So users have to use setserial to fix up the
-incorrect assumptions made by the blind probe.
+Yeah, box is running for more than hour, survived LTP, gdb testsuite,
+portage sync and so on.
 
-We haven't debugged the problem on Sebastien's machine yet.  I suspect
-we'll find that his serial port *is* described by ACPI, but that there's
-some little difference in the way Linux discovers those devices compared
-to how Windows does it.  If we figure out how to use ACPI more like
-Windows does, I think we'll fix several little issues, including the one
-on Sebastien's machine.
+What new to me is that someone decided TSC is unstable but that's
+probably OK on full debug kernel:
 
-We have a whole laundry list of minor issues because we either don't
-listen to the BIOS at all, or we use it differently than Windows does.
-Here are a few off the top of my head:
-
-  - IRDA drivers have platform-specific code to "preconfigure" (discover
-    and reprogram) bridges on the way to the IR device
-  - Hardware sensor drivers conflict with ACPI embedded controller
-    drivers, so every once in a while, they return bogus readings
-  - PCMCIA devices grab resources already in use by a PNP device,
-    causing the PNP device to stop working
-  - Linux enumerates CPUs with the MADT; I think Windows uses the ACPI
-    namespace.  Sometimes there are multiple MADTs, and sometimes Linux
-    uses the wrong one.
-
-If we keep papering over these problems by ignoring what ACPI is trying
-to tell us, we're going to be adding machine-specific hacks forever.
-Of course, there are ACPI bugs.  But Windows does rely on ACPI, and
-Microsoft doesn't want to add those per-platform hacks any more than
-we do.  So we might as well try to take advantage of the ACPI testing
-they do.
-
-Bjorn
+	Clocksource tsc unstable (delta = 91724418 ns)
+	Time: pit clocksource has been installed.
 
