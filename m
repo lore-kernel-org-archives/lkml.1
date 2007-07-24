@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbXGXVOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXGXVQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbXGXVOR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbXGXVOI
+	id S1757060AbXGXVQI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 17:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbXGXVPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:14:08 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:21006 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbXGXVOG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:14:06 -0400
-Date: Tue, 24 Jul 2007 14:17:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: ak@suse.de, jdmason@us.ibm.com, muli@il.ibm.com
-Subject: [PATCH] x86_64 tce section mismatch
-Message-Id: <20070724141702.a9f63ae4.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 17:15:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:56709 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751856AbXGXVPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 17:15:54 -0400
+Message-ID: <46A66BD1.9020802@goop.org>
+Date: Tue, 24 Jul 2007 14:14:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
+References: <20070724153916.GS21668@ftp.linux.org.uk> <46A62F35.2000501@goop.org> <20070724171455.GT21668@ftp.linux.org.uk> <46A64F4F.80107@goop.org> <20070724200401.GU21668@ftp.linux.org.uk>
+In-Reply-To: <20070724200401.GU21668@ftp.linux.org.uk>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Al Viro wrote:
+> On Tue, Jul 24, 2007 at 12:13:19PM -0700, Jeremy Fitzhardinge wrote:
+>   
+>> Al Viro wrote:
+>>     
+>>> Works here...
+>>>   
+>>>       
+>> Hm, doesn't here:
+>>
+>>   CC      arch/i386/kernel/irq.o
+>> /home/jeremy/hg/xen/paravirt/linux/arch/i386/kernel/irq.c: In function '__BUG':
+>> include2/asm/bug.h:29: warning: 'noreturn' function does return
+>>
+>> This is with current FC7 distro gcc: gcc version 4.1.2 20070502 (Red Hat
+>> 4.1.2-12)
+>>     
+>
+> Interesting...  Looks like it's both version- and flags-dependent.
+> Oh, well...
+>
+> BTW, alpha, frv, m68k and s390 have BUG() that is not recognized as
+> noreturn by gcc.
+>   
 
-Fix section mismatch warnings:
-these functions are called only from __init functions.
+Yes, it was something I added because I thought it would be useful. 
+Traditionally, BUG has not affected gcc's control flow analysis.
 
-WARNING: vmlinux.o(.text+0x1861c): Section mismatch: reference to .init.text:free_bootmem (between 'free_tce_table' and 'build_tce_table')
-WARNING: vmlinux.o(.text+0x187e5): Section mismatch: reference to .init.text:__alloc_bootmem_low (between 'alloc_tce_table' and 'kretprobe_trampoline_holder')
+The other option is trying to use __builtin_trap, which happens to
+generate ud2a on i386.  But I don't think its necessarily guaranteed to
+always do that, and I don't know if it does anything useful for other
+architectures.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86_64/kernel/tce.c |    6 +++---
- include/asm-x86_64/tce.h |    6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
-
---- linux-2.6.23-rc1.orig/arch/x86_64/kernel/tce.c
-+++ linux-2.6.23-rc1/arch/x86_64/kernel/tce.c
-@@ -131,7 +131,7 @@ done:
- 	return ret;
- }
- 
--int build_tce_table(struct pci_dev *dev, void __iomem *bbar)
-+int __init build_tce_table(struct pci_dev *dev, void __iomem *bbar)
- {
- 	struct iommu_table *tbl;
- 	int ret;
-@@ -165,7 +165,7 @@ done:
- 	return ret;
- }
- 
--void* alloc_tce_table(void)
-+void* __init alloc_tce_table(void)
- {
- 	unsigned int size;
- 
-@@ -175,7 +175,7 @@ void* alloc_tce_table(void)
- 	return __alloc_bootmem_low(size, size, 0);
- }
- 
--void free_tce_table(void *tbl)
-+void __init free_tce_table(void *tbl)
- {
- 	unsigned int size;
- 
---- linux-2.6.23-rc1.orig/include/asm-x86_64/tce.h
-+++ linux-2.6.23-rc1/include/asm-x86_64/tce.h
-@@ -41,8 +41,8 @@ struct iommu_table;
- extern void tce_build(struct iommu_table *tbl, unsigned long index,
-         unsigned int npages, unsigned long uaddr, int direction);
- extern void tce_free(struct iommu_table *tbl, long index, unsigned int npages);
--extern void* alloc_tce_table(void);
--extern void free_tce_table(void *tbl);
--extern int build_tce_table(struct pci_dev *dev, void __iomem *bbar);
-+extern void* __init alloc_tce_table(void);
-+extern void __init free_tce_table(void *tbl);
-+extern int __init build_tce_table(struct pci_dev *dev, void __iomem *bbar);
- 
- #endif /* _ASM_X86_64_TCE_H */
+    J
