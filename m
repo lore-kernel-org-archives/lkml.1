@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765433AbXGXMkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbXGXMqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765433AbXGXMkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 08:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbXGXMkL
+	id S1761993AbXGXMqS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 08:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbXGXMqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 08:40:11 -0400
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:60259 "EHLO
-	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758310AbXGXMkK (ORCPT
+	Tue, 24 Jul 2007 08:46:03 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43035 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751767AbXGXMqC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 08:40:10 -0400
-Date: Tue, 24 Jul 2007 13:40:04 +0100
-From: Ben Dooks <ben@fluff.org>
-To: rtc-linux@googlegroups.com, a.zummo@towertech.it,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] s3c2410: fixup after arch moves
-Message-ID: <20070724124004.GA2499@fluff.org.uk>
+	Tue, 24 Jul 2007 08:46:02 -0400
+Date: Tue, 24 Jul 2007 14:45:24 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: drivers/ide/pci/cs5535.c: array overrun
+Message-ID: <20070724124524.GA6019@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixup the changes from moving around the arch
-support for s3c24xx based systems.
+The Coverity checker spotted the following array overrun in 
+drivers/ide/pci/cs5535.c:
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+<--  snip  -->
 
-diff -urpN -X linux-2.6.22-git16-moves1/Documentation/dontdiff linux-2.6.22-git16-moves1/drivers/rtc/rtc-s3c.c linux-2.6.22-git16-moves1-fixups-split-moves2-fixup/drivers/rtc/rtc-s3c.c
---- linux-2.6.22-git16-moves1/drivers/rtc/rtc-s3c.c	2007-07-09 23:36:20.000000000 +0100
-+++ linux-2.6.22-git16-moves1-fixups-split-moves2-fixup/drivers/rtc/rtc-s3c.c	2007-07-22 13:49:00.000000000 +0100
-@@ -29,7 +29,7 @@
- 
- #include <asm/mach/time.h>
- 
--#include <asm/arch/regs-rtc.h>
-+#include <asm/plat-s3c/regs-rtc.h>
- 
- /* I have yet to find an S3C implementation with more than one
-  * of these rtc blocks in */
+...
+static unsigned int cs5535_udma_timings[5] =
+{ 0x7F7436A1, 0x7F733481, 0x7F723261, 0x7F713161, 0x7F703061 };
+...
+static void cs5535_set_speed(ide_drive_t *drive, u8 speed)
+{
+...
+                if (speed >= XFER_UDMA_0 && speed <= XFER_UDMA_7)
+                        reg |= cs5535_udma_timings[speed - XFER_UDMA_0];
+...
+
+<--  snip  -->
+
+XFER_UDMA_7 - XFER_UDMA_0 = 7  >  (5 - 1)
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
