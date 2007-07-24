@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935541AbXGXJAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935458AbXGXJAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935541AbXGXJAA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934735AbXGXI7m
+	id S935458AbXGXJAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbXGXJAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:59:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55036 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935505AbXGXI7k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:59:40 -0400
-Date: Tue, 24 Jul 2007 01:58:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-Message-Id: <20070724015846.b30d723c.akpm@linux-foundation.org>
-In-Reply-To: <20070724085358.GA13845@kroah.com>
-References: <Line.LNX.4.64.0707141233490.26711@d.namei>
-	<20070724010224.bbfb82bc.akpm@linux-foundation.org>
-	<20070724085358.GA13845@kroah.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 05:00:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:52160 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762660AbXGXJAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 05:00:37 -0400
+Message-ID: <46A5BF81.9040303@goop.org>
+Date: Tue, 24 Jul 2007 01:59:45 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Tilman Schmidt <tilman@imap.cc>
+CC: LKML <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
+       nix.or.die@googlemail.com
+Subject: Re: 2.6.22-git17 boot failure
+References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc> <46A5444D.4080304@goop.org> <46A5BD97.10601@imap.cc>
+In-Reply-To: <46A5BD97.10601@imap.cc>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 01:53:58 -0700 Greg KH <greg@kroah.com> wrote:
+Tilman Schmidt wrote:
+> Jeremy Fitzhardinge schrieb:
+>   
+>> Well, it looks to me like it all falls over once it hits usermode;
+>> everything up till then is identical (except for the Xen-related
+>> initcalls which naturally don't exist in the non-Xen case).
+>>     
+>
+> Just a wild thought: could the actual problem be with accessing the
+> initrd? After all, everything that's failing is based on modules
+> which are stuffed there. But I know far too less about initrd to
+> pursue this thought further.
+>   
 
-> On Tue, Jul 24, 2007 at 01:02:24AM -0700, Andrew Morton wrote:
-> > On Sat, 14 Jul 2007 12:37:01 -0400 (EDT) James Morris <jmorris@namei.org> wrote:
-> > 
-> > > Convert LSM into a static interface
-> > 
-> > allmodconfig broke
-> > 
-> > security/built-in.o: In function `rootplug_bprm_check_security':
-> > security/root_plug.c:64: undefined reference to `usb_find_device'
-> > security/root_plug.c:70: undefined reference to `usb_put_dev'
-> 
-> That's wierd, who would have disabled the exports of those functions or
-> removed the "#include <linux/usb.h>" from this file?
-> 
+Well, the kernel is managing to mount the initrd as a filesystem, and
+the "waiting for root to appear" message looks like its coming from
+usermode as well.  So I suspect its something to do with module loading,
+but I can't imagine what at the moment.
 
-root_plug is linked into vmlinux and usb is modular.  I did this:
+Statically compiling the scsi/ahci/etc drivers will help make some
+progress in debugging this.
 
---- a/security/Kconfig~security-convert-lsm-into-a-static-interface-fix-2
-+++ a/security/Kconfig
-@@ -82,7 +82,7 @@ config SECURITY_CAPABILITIES
- 
- config SECURITY_ROOTPLUG
- 	bool "Root Plug Support"
--	depends on USB && SECURITY
-+	depends on USB=y && SECURITY
- 	help
- 	  This is a sample LSM module that should only be used as such.
- 	  It prevents any programs running with egid == 0 if a specific
-_
+I really can't see how its directly Xen related.  It looks like either:
+
+   1. some bug which only appears with particular kernel memory layouts,
+      and enabling Xen happens to make it bad
+   2. or some kind of linker bug, possibly triggered by Xen's ELF notes
+      (but I'd really expect this to break in a more basic way)
+   3. ...?
 
 
-I suppose we could do SECURITY_ROOTPLUG=m if USB=m, but I thought the
-whole point was to disallow modular LSM clients?
+>> I'm at a loss.  I don't know if there's some way to debug the initrd in
+>> more detail.  I suspect that its failing all PCI probing, rather being a
+>> specific SCSI/AHCI problem (since none of the other messages appear either).
+>>
+>> Does the Xen case just hang, or reboot, or what?  The kernel messages
+>> just appear to stop.  I'd expect it to at least complain about not
+>> mounting the root filesystem or something.
+>>     
+>
+> Yes, of course. Sorry, I thought I'd mentioned that. It shows the
+> standard behaviour of a Suse that cannot mount its root filesystem:
+> first a message: "waiting for /dev/system/root to appear" followed
+> by a series of dots, and then fallback into a standalone /bin/sh.
+>   
+
+Oh, you get a shell?  What does /proc/pci have in it?  What happens if
+you manually try to modprobe something?  That gives us much more to work
+with.
+
+    J
