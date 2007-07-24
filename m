@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbXGXP6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761904AbXGXP66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761125AbXGXP6p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 11:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbXGXP6h
+	id S1761904AbXGXP66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 11:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761195AbXGXP6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 11:58:37 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:52694 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750900AbXGXP6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 11:58:37 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: =?iso-8859-15?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Date: Tue, 24 Jul 2007 09:48:45 -0600
-User-Agent: KMail/1.9.6
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
-In-Reply-To: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
+	Tue, 24 Jul 2007 11:58:46 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4100 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761102AbXGXP6p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 11:58:45 -0400
+Message-ID: <46A621B3.6060902@shadowen.org>
+Date: Tue, 24 Jul 2007 16:58:43 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200707240948.45916.bjorn.helgaas@hp.com>
+To: Mel Gorman <mel@skynet.ie>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Do not trigger OOM-killer for high-order allocation failures
+References: <20070724153531.GA30585@skynet.ie>
+In-Reply-To: <20070724153531.GA30585@skynet.ie>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 July 2007 08:28:05 am Sébastien Dugué wrote:
->  your commit 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26 broke the serial console
-> on my box. Adding 'legacy_serial.force=1' to my boot param as a workaround
-> solves the issue, but this may be hiding bugs in Linux PnP support or
-> in my firmware.
-
-Thanks for your report.  We need to figure out why the 8250_pnp driver
-didn't find your serial console device.  Can you confirm that you also
-have CONFIG_ACPI and CONFIG_PNPACPI in your .config?
-
-If you have those, and it still doesn't work, can you collect the DSDT
-dump, the output of "grep . /sys/bus/pnp/devices/*/*", and the dmesg
-from your "legacy_serial.force=1" boot?  Then we can tell which port
-the blind probe finds and whether it's described somewhere by ACPI.
-
-Thanks,
-  Bjorn
-
->   The box is a dual HT Xeon running a vanilla 2.6.22 x86_64 kernel
+Mel Gorman wrote:
+> out_of_memory() may be called when an allocation is failing and the direct
+> reclaim is not making any progress. This does not take into account the
+> requested order of the allocation. If the request if for an order larger
+> than PAGE_ALLOC_COSTLY_ORDER, it is reasonable to fail the allocation
+> because the kernel makes no guarantees about those allocations succeeding.
 > 
->   here is my .config:
+> This false OOM situation can occur if a user is trying to grow the hugepage
+> pool in a script like;
 > 
-> CONFIG_PNP=y
-> CONFIG_SERIAL_8250=y
-> CONFIG_SERIAL_8250_CONSOLE=y
-> CONFIG_SERIAL_8250_PCI=y
-> CONFIG_SERIAL_8250_PNP=y
-> CONFIG_SERIAL_8250_NR_UARTS=4
-> CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-> CONFIG_SERIAL_8250_EXTENDED=y
-> CONFIG_SERIAL_8250_SHARE_IRQ=y
-> CONFIG_SERIAL_8250_DETECT_IRQ=y
+> #!/bin/bash
+> REQUIRED=$1
+> echo 1 > /proc/sys/vm/hugepages_treat_as_movable
+> echo $REQUIRED > /proc/sys/vm/nr_hugepages
+> ACTUAL=`cat /proc/sys/vm/nr_hugepages`
+> while [ $REQUIRED -ne $ACTUAL ]; do
+> 	echo Huge page pool at $ACTUAL growing to $REQUIRED
+> 	echo $REQUIRED > /proc/sys/vm/nr_hugepages
+> 	ACTUAL=`cat /proc/sys/vm/nr_hugepages`
+> 	sleep 1
+> done
 > 
->   lspci output attached.
+> This is a reasonable scenario when ZONE_MOVABLE is in use but triggers OOM
+> easily on 2.6.23-rc1. This patch will fail an allocation for an order above
+> PAGE_ALLOC_COSTLY_ORDER instead of killing processes and retrying.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+
+We have had this problem for a long time.  When allocating large pages
+we could find ourselves unable to allocate such a page nor reclaim one
+for ourselves.  At this point we will OOM with little hope of that
+actually changing the situation for the better.
+
+As you say PAGE_ALLOC_COSTLY_ORDER pretty much defines the orders at
+which any sort of guarantee of success is provided.  It seems preferable
+to fail a allocations above this order/ than killing things to try and
+make it available.  As higher order users already have to handle failure
+to allocate they should be best equipped to continue.
+
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+> ---
+>  page_alloc.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 40954fb..da57173 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1350,6 +1350,10 @@ nofail_alloc:
+>  		if (page)
+>  			goto got_pg;
 >  
->   Any ideas to help me debug this?
-> 
->   If you need more info (like DSDT dump), just ask.
-> 
->   Thanks,
-> 
->   Sébastien.
-> 
-> 
-> 
+> +		/* The OOM killer will not help higher order allocs so fail */
+> +		if (order > PAGE_ALLOC_COSTLY_ORDER)
+> +			goto nopage;
+> +
+>  		out_of_memory(zonelist, gfp_mask, order);
+>  		goto restart;
+>  	}
 
-
+-apw
