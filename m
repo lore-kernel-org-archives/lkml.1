@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932686AbXGXD5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751154AbXGXEAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932686AbXGXD5e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 23:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbXGXD51
+	id S1751154AbXGXEAF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 00:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXGXD7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 23:57:27 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:44323 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751021AbXGXD50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 23:57:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=hxTf6A8t1c6RhSjnkvZHizncwuo29cLdsHIfdUMR+ZJk526t54SW5dNKeGurrS3/yGBuj7lXiub4BKGKiNb2B9JDWqj3o0wRuhOcHY4hA+iET0UmxLzeo78z3kcASmtIOg1uEJcj+k1btiKB5qgmzeqnyy7JqvfneUAxwzagmuY=  ;
-X-YMail-OSG: YLag1OoVM1k4q3XJuZXrzf6Q9WAJrX2PgJTR6Zwfh6sGbXlqX_wGHeRMt9IrJkZsFCekjDH1MA--
-Message-ID: <46A578A1.5010504@yahoo.com.au>
-Date: Tue, 24 Jul 2007 13:57:21 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 23 Jul 2007 23:59:55 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:60079 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1755282AbXGXD7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 23:59:55 -0400
+Message-ID: <385249561.11284@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Tue, 24 Jul 2007 11:48:01 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 03/10] readahead: combine file_ra_state.prev_index/prev_offset into prev_pos
+Message-ID: <20070724034801.GA7310@mail.ustc.edu.cn>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+References: <20070724020009.677809022@mail.ustc.edu.cn> <385243122.57859@ustc.edu.cn> <20070723205241.c50624ed.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered unnecessarily
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070723205241.c50624ed.akpm@linux-foundation.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+On Mon, Jul 23, 2007 at 08:52:41PM -0700, Andrew Morton wrote:
+> On Tue, 24 Jul 2007 10:00:12 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 > 
-> [6/8] i386: bitops: Don't mark memory as clobbered unnecessarily
+> > -	ra->prev_index = page->index;
+> > +	ra->prev_pos = page->index << PAGE_CACHE_SHIFT;
 > 
-> The goal is to let gcc generate good, beautiful, optimized code.
+> bug!  The rhs will get truncated befire it gets assigned to
+> the lhs.  Need to cast page->index to loff_t.
 > 
-> But test_and_set_bit, test_and_clear_bit, __test_and_change_bit,
-> and test_and_change_bit unnecessarily mark all of memory as clobbered,
-> thereby preventing gcc from doing perfectly valid optimizations.
-> 
-> The case of __test_and_change_bit() is particularly surprising, given
-> that it's a variant where we don't make any guarantees at all.
+> I'll fix this one up.  Please review the other patches for this?
 
-__test_and_change_bit is one that you could remove the memory clobber
-from.
+Thank you. Be sure to update *all* the lines:
+        ra->prev_pos = page->index << PAGE_CACHE_SHIFT
 
-> ---
-> 
->  include/asm-i386/bitops.h |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/include/asm-i386/bitops.h b/include/asm-i386/bitops.h
-> index 0f5634b..f37b8a2 100644
-> --- a/include/asm-i386/bitops.h
-> +++ b/include/asm-i386/bitops.h
-> @@ -254,7 +254,7 @@ static inline int __test_and_change_bit(int nr, unsigned long *addr)
->  	__asm__ __volatile__(
->  		"btcl %2,%1\n\tsbbl %0,%0"
->  		:"=r" (oldbit),"=m" (*addr)
-> -		:"r" (nr) : "memory");
-> +		:"r" (nr));
->  	return oldbit;
->  }
->  
+Other places should have been taken care of.
 
-
--- 
-SUSE Labs, Novell Inc.
