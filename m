@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbXGXWTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbXGXW1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761254AbXGXWTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 18:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbXGXWTE
+	id S1759568AbXGXW1Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 18:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbXGXW1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 18:19:04 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52410 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756890AbXGXWTA (ORCPT
+	Tue, 24 Jul 2007 18:27:11 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:48364 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756333AbXGXW1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 18:19:00 -0400
-X-Sasl-enc: jZmyGlKiGrOlO/5XoJ8ncFRM2Zyf9rxCQujC3o8d6i1C 1185315539
-Message-ID: <46A67AD1.3010202@imap.cc>
-Date: Wed, 25 Jul 2007 00:18:57 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Tue, 24 Jul 2007 18:27:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FnBOKePCcYaGmV8ES/F0pQ8wVuD2UaHYTn04+Oz3Fj0Uyp/jcp/7c+JEPQFBAvBsI1T4WT2+T+Hq9ylUDQP+iHDk6Ojirh5BfOVg74ujrbU9JVXh3sxi1fIRGM1993ymaB9/DJe2TZWnYlao6NCfUQVzX3c7FNiZ3UDpj9JgVgA=
+Message-ID: <e9c3a7c20707241527o55f3b2dbh4d218c96c6bb612b@mail.gmail.com>
+Date: Tue, 24 Jul 2007 15:27:05 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: linux-kernel@vger.kernel.org,
+       "device-mapper development" <dm-devel@redhat.com>
+Subject: Re: [PATCH 2/8] dm: Fix workqueue leak for raid5
+In-Reply-To: <20070724085642.GB16507@dnb.sw.ru>
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [2/2] 2.6.23-rc1: known regressions
-References: <46A477AF.4000309@googlemail.com> <46A47936.1090606@googlemail.com>
-In-Reply-To: <46A47936.1090606@googlemail.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig854EE402FA482FB36BAA2D93"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070724085106.GD20538@dnb.sw.ru>
+	 <20070724085642.GB16507@dnb.sw.ru>
+X-Google-Sender-Auth: 66fac2675c06b5fc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig854EE402FA482FB36BAA2D93
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: quoted-printable
+On 7/24/07, Dmitry Monakhov <dmonakhov@openvz.org> wrote:
+> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+> ---
+>  drivers/md/raid5.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+> index 0f30826..79dd2c7 100644
+> --- a/drivers/md/raid5.c
+> +++ b/drivers/md/raid5.c
+> @@ -4985,6 +4985,8 @@ static int run(mddev_t *mddev)
+>  abort:
+>         if (conf) {
+>                 print_raid5_conf(conf);
+> +               if (conf->workqueue)
+> +                       destroy_workqueue(conf->workqueue);
+>                 safe_put_page(conf->spare_page);
+>                 kfree(conf->disks);
+>                 kfree(conf->stripe_hashtbl);
+> --
+I assume this patch is against -mm.  I will fold it into:
 
-Am 23.07.2007 11:47 schrieb Michal Piotrowski:
-
-> Virtualization
->=20
-> Subject         : 2.6.22-git17 boot failure (XEN)
-> References      : http://lkml.org/lkml/2007/7/22/266
-> Last known good : ?
-> Submitter       : Tilman Schmidt <tilman@imap.cc>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : unknown
-
-"Not a regression."
-
-With the help of Jeremy Fitzhardinge, Andi Kleen and Olaf Hering,
-I was able to isolate the cause. It lies outside the kernel, in
-the distribution's init script. So the entry can be dropped.
+git://lost.foo-projects.org/~dwillia2/git/iop md-for-linus
 
 Thanks,
-Tilman
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig854EE402FA482FB36BAA2D93
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGpnrRMdB4Whm86/kRAvZVAJ9GT/31HfIh2A5MjZSZyndpv5ghEQCfeD9d
-S5EL30pzLAvs1hg4Va3vvKM=
-=gXLs
------END PGP SIGNATURE-----
-
---------------enig854EE402FA482FB36BAA2D93--
+Dan
