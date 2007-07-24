@@ -1,42 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765823AbXHFN2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765985AbXHFN2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765823AbXHFN2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765615AbXHFNSz
+	id S1765985AbXHFN2j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765644AbXHFNTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:18:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49692 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 09:19:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49648 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765329AbXHFNS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:18:28 -0400
-Message-Id: <200708061318.l76DIPxG001771@dantu.rdu.redhat.com>
+	id S1765306AbXHFNSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:18:20 -0400
+Message-Id: <200708061318.l76DIImf001756@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Date: Tue, 24 Jul 2007 13:17:49 -0400
-Subject: [PATCH 20/25] smbfs: call attr_kill_to_mode from smb_notify_change
+Date: Tue, 24 Jul 2007 13:11:17 -0400
+Subject: [PATCH 17/25] procfs: add attr_kill_to_mode to setattr functions
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-..seems unlikely that the sb mode would include a setuid bit, but I suppose
-it's possible.
+Not sure if this is really needed, but I don't think it will hurt anything
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/smbfs/inode.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ fs/proc/base.c        |    3 +++
+ fs/proc/generic.c     |    3 +++
+ fs/proc/proc_sysctl.c |    3 +++
+ 3 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/fs/smbfs/inode.c b/fs/smbfs/inode.c
-index 73d1450..f42d191 100644
---- a/fs/smbfs/inode.c
-+++ b/fs/smbfs/inode.c
-@@ -675,6 +675,8 @@ smb_notify_change(struct dentry *dentry, struct iattr *attr)
- 	if (error)
- 		goto out;
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 3c77d5a..d2e56ba 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -348,6 +348,9 @@ static int proc_setattr(struct dentry *dentry, struct iattr *attr)
+ 	int error;
+ 	struct inode *inode = dentry->d_inode;
  
++	/* FIXME: is this necessary? */
 +	attr_kill_to_mode(inode, attr);
 +
- 	if ((error = inode_change_ok(inode, attr)) < 0)
+ 	if (attr->ia_valid & ATTR_MODE)
+ 		return -EPERM;
+ 
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index b5e7155..88d736c 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -239,6 +239,9 @@ static int proc_notify_change(struct dentry *dentry, struct iattr *iattr)
+ 	struct proc_dir_entry *de = PDE(inode);
+ 	int error;
+ 
++	/* FIXME: is this necessary? */
++	attr_kill_to_mode(inode, iattr);
++
+ 	error = inode_change_ok(inode, iattr);
+ 	if (error)
  		goto out;
+diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
+index 680c429..37c0cca 100644
+--- a/fs/proc/proc_sysctl.c
++++ b/fs/proc/proc_sysctl.c
+@@ -425,6 +425,9 @@ static int proc_sys_setattr(struct dentry *dentry, struct iattr *attr)
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 
++	/* FIXME: is this necessary */
++	attr_kill_to_mode(inode, attr);
++
+ 	if (attr->ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID))
+ 		return -EPERM;
  
 -- 
 1.5.2.2
