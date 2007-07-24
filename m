@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbXGXVXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbXGXV0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbXGXVXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbXGXVXh
+	id S1758378AbXGXV0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 17:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbXGXV0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:23:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55204 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753360AbXGXVXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:23:36 -0400
-Message-ID: <46A66DA7.2020700@redhat.com>
-Date: Tue, 24 Jul 2007 17:22:47 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-CC: Chris Friesen <cfriesen@nortel.com>, Tong Li <tong.n.li@intel.com>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> <46A53C88.6060006@redhat.com> <Pine.LNX.4.64.0707240954560.8026@tongli.jf.intel.com> <46A64002.8080103@redhat.com> <46A6576A.9020506@nortel.com> <46A66393.5000705@redhat.com> <20070724210607.GB32582@gnuppy.monkey.org>
-In-Reply-To: <20070724210607.GB32582@gnuppy.monkey.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Jul 2007 17:26:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56268 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540AbXGXV0D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 17:26:03 -0400
+Subject: Re: [PATCH RFC] extent mapped page cache
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Chris Mason <chris.mason@oracle.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <1185307985.6586.50.camel@localhost>
+References: <20070710210326.GA29963@think.oraclecorp.com>
+	 <20070724160032.7a7097db@think.oraclecorp.com>
+	 <1185307985.6586.50.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 24 Jul 2007 23:25:43 +0200
+Message-Id: <1185312343.5535.5.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Huey (hui) wrote:
-> On Tue, Jul 24, 2007 at 04:39:47PM -0400, Chris Snook wrote:
->> Chris Friesen wrote:
->>> We currently use CKRM on an SMP machine, but the only way we can get away 
->>> with it is because our main app is affined to one cpu and just about 
->>> everything else is affined to the other.
->> If you're not explicitly allocating resources, you're just low-latency, not 
->> truly realtime.  Realtime requires guaranteed resources, so messing with 
->> affinities is a necessary evil.
+On Tue, 2007-07-24 at 16:13 -0400, Trond Myklebust wrote:
+> On Tue, 2007-07-24 at 16:00 -0400, Chris Mason wrote:
+> > On Tue, 10 Jul 2007 17:03:26 -0400
+> > Chris Mason <chris.mason@oracle.com> wrote:
+> > 
+> > > This patch aims to demonstrate one way to replace buffer heads with a
+> > > few extent trees.  Buffer heads provide a few different features:
+> > > 
+> > > 1) Mapping of logical file offset to blocks on disk
+> > > 2) Recording state (dirty, locked etc)
+> > > 3) Providing a mechanism to access sub-page sized blocks.
+> > > 
+> > > This patch covers #1 and #2, I'll start on #3 a little later next
+> > > week.
+> > > 
+> > Well, almost.  I decided to try out an rbtree instead of the radix,
+> > which turned out to be much faster.  Even though individual operations
+> > are slower, the rbtree was able to do many fewer ops to accomplish the
+> > same thing, especially for merging extents together.  It also uses much
+> > less ram.
 > 
-> You've mentioned this twice in this thread. If you're going to talk about this
-> you should characterize this more specifically because resource allocation is
-> a rather incomplete area in the Linux.
+> The problem with an rbtree is that you can't use it together with RCU to
+> do lockless lookups. You can probably modify it to allocate nodes
+> dynamically (like the radix tree does) and thus make it RCU-compatible,
+> but then you risk losing the two main benefits that you list above.
 
-Well, you need enough CPU time to meet your deadlines.  You need pre-allocated 
-memory, or to be able to guarantee that you can allocate memory fast enough to 
-meet your deadlines.  This principle extends to any other shared resource, such 
-as disk or network.  I'm being vague because it's open-ended.  If a medical 
-device fails to meet realtime guarantees because the battery fails, the 
-patient's family isn't going to care how correct the software is.  Realtime 
-engineering is hard.
+I thought on this, and I came to the conclusion that the tree rotations
+used to balance binary trees are incompatible with RCU. The rotation can
+hide one branch. Hence I started writing a B+tree that is RCU compatible
+much like the Radix tree.
 
-> Rebalancing is still an open research
-> problem the last time I looked.
+Current code here:
+  http://programming.kicks-ass.net/kernel-patches/vma_lookup/btree.patch
 
-Actually, it's worse than merely an open problem.  A clairvoyant fair scheduler 
-with perfect future knowledge can underperform a heuristic fair scheduler, 
-because the heuristic scheduler can guess the future incorrectly resulting in 
-unfair but higher-throughput behavior.  This is a perfect example of why we only 
-try to be as fair as is beneficial.
+Still needs some work, but is usable.
 
-> Tong's previous trio patch is an attempt at resolving this using a generic
-> grouping mechanism and some constructive discussion should come of it.
-
-Sure, but it seems to me to be largely orthogonal to this patch.
-
-	-- Chris
