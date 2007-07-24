@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933454AbXGXHRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933749AbXGXHSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933454AbXGXHRs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 03:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759319AbXGXHRk
+	id S933749AbXGXHSh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 03:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXGXHS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 03:17:40 -0400
-Received: from ozlabs.org ([203.10.76.45]:58797 "EHLO ozlabs.org"
+	Tue, 24 Jul 2007 03:18:29 -0400
+Received: from main.gmane.org ([80.91.229.2]:60669 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759553AbXGXHRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 03:17:39 -0400
-Subject: Re: [kvm-devel] [RFC 0/8]KVM: swap out guest pages
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <46A5A36E.8000409@qumranet.com>
-References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com>
-	 <46A4829C.9080104@qumranet.com>
-	 <1185232218.1803.36.camel@localhost.localdomain>
-	 <46A58E8B.8050507@qumranet.com>
-	 <1185257474.1803.216.camel@localhost.localdomain>
-	 <46A59A75.8050501@qumranet.com>
-	 <1185259509.1803.237.camel@localhost.localdomain>
-	 <46A5A36E.8000409@qumranet.com>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 17:17:16 +1000
-Message-Id: <1185261436.1803.254.camel@localhost.localdomain>
+	id S1752970AbXGXHS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 03:18:29 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: Linux TCP modifications
+Date: Tue, 24 Jul 2007 08:18:18 +0100
+Organization: Linux Foundation
+Message-ID: <20070724081818.57d5b0d1@oldman>
+References: <20070724160139.M84420@universe.cdotb.ernet.in>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 87.192.216.40
+In-Reply-To: <20070724160139.M84420@universe.cdotb.ernet.in>
+X-Newsreader: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 09:59 +0300, Avi Kivity wrote:
-> However, you can probably work around that by not setting an rmap for
-> the kernel mappings, and instead have the guest teach the host where the
-> kernel page tables live.  You'd only be left with shared libraries,
-> until the kernel can share page tables for them too.
+On Tue, 24 Jul 2007 12:11:39 -0400
+"Pallab Dutta" <pallab@cdotb.ernet.in> wrote:
 
-Well, I already treat kernel mappings specially (effectively I know the
-guest's PAGE_OFFSET): they're kept identical in all the 4 shadows, and
-need explicit guest flushing.
+> Hi,
+> 
+> I want to change the TCP ( for a given specific application with lots of
+> modifications to the basic TCP) implementation in Linux and integrate it with
+> the linux kernal. Since TCP comes as apart of Linux kernal and also TCP and IP
+> implementations in Linux are tightly coupled, please suggest how to go about
+> integrating TCP (which is developed for a specific application with lots of
+> modifications) into Linux kernal. Kindly give as much details as possible.  
+> 
+> regards,
+> Pallab.
 
-Whether the guest shares (non-kernel) page tables or not, I will shadow
-them dumb as separate page table pages the way things stand.  So, yes,
-shared libs will be my main issue.  Address space randomization means I
-can't even use a heuristic such as looking for the page at the same
-address in other shadows.  I'll come up with something.
+Post the source code for your modifications so others can review
+on the proper list: netdev@vger.kernel.org
 
-Anyway, virtio what I'm *supposed* to be doing today...
-
-Thanks,
-Rusty.
-
+The modifications may be useful for other applications.
 
