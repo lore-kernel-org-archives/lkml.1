@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932895AbXGXU5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932603AbXGXU6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932895AbXGXU5v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760312AbXGXU5j
+	id S932603AbXGXU6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932605AbXGXU5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:57:39 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:55631 "EHLO atlrel9.hp.com"
+	Tue, 24 Jul 2007 16:57:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45333 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758746AbXGXU5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:57:38 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Date: Tue, 24 Jul 2007 14:56:35 -0600
-User-Agent: KMail/1.9.6
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       =?iso-8859-1?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707241434.32374.bjorn.helgaas@hp.com> <46A663CA.3050000@garzik.org>
-In-Reply-To: <46A663CA.3050000@garzik.org>
+	id S932422AbXGXU5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:57:41 -0400
+Message-ID: <46A667BD.5080106@redhat.com>
+Date: Tue, 24 Jul 2007 16:57:33 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ulrich Kunitz <kune@deine-taler.de>,
+       linux-kernel@vger.kernel.org, honza@jikos.cz, jkosina@suse.cz
+Subject: Re: Is PIE randomization breaking klibc binaries?
+References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com> <46A6624E.60003@redhat.com>
+In-Reply-To: <46A6624E.60003@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707241456.35769.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 July 2007 02:40:42 pm Jeff Garzik wrote:
-> Please go back and fix the original issue!
+On 07/24/2007 04:34 PM, Chuck Ebbert wrote:
+> On 07/20/2007 06:05 PM, H. Peter Anvin wrote:
+>>> It looks like that the PIE randomization patch breaks klibc
+>>> binaries on x86-64.
+>>>
+>> Interesting.
+>>
+>> klibc binaries are indeed statically linked, but composed of two
+>> different ELF images: the application itself and the shared libary
+>> (which is referenced from the application header as the "interpreter").
+>>  Neither of these is an ET_DYN file; they are both ET_EXEC, so it
+>> *should* be unaffected by the PIE randomization patch.  Obviously, that
+>> seems to not be the case.
+>>
+>> My guess is that this patch mishandles interpreter images which are
+>> ET_EXEC.  Jan, any insight?
 > 
-> If you are having problems caused by double-probing, the fix is NOT to 
-> remove one the probes.  The fix is to ensure use of proper resource 
-> reservation, and in some cases, add co-driver-awareness.
+> Well, they don't run on Fedora 6 either (which has the same code, it's
+> part of exec-shield):
+> 
+> $ strace ./cat
+> execve("./cat", ["./cat"], [/* 55 vars */]) = -1 ENOENT (No such file or directory)
+> ...
+> $ file cat
+> cat: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked (uses shared libs), stripped
+> 
+> Funny nobody noticed that before...
+> 
 
-Keith Owens did report an issue with the double probe, but I confess
-I don't fully understand it.
+After installing klibc.so and klibc-<ID>.so into /lib everything works:
 
-The real problem was that the serial driver claimed a non-serial
-device.  On many laptops, there's an IR device at 0x3e8, IRQ 3.
-The serial driver claimed this as ttyS2, using IRQ 4.  So if you
-wanted to use the IR device, you had to either:
+Program Headers:
+  Type           Offset   VirtAddr   PhysAddr   FileSiz  MemSiz   Flg Align
+  PHDR           0x000034 0x08048034 0x08048034 0x0000a0 0x0000a0 R E 0x4
+  INTERP         0x0000d4 0x080480d4 0x080480d4 0x00002a 0x00002a R   0x1
+        [Requesting program interpreter: /lib/klibc-58kBUyV_qhVvkMnaxy8A7N8rLak.so]
 
-  - use setserial to make the serial driver forget about ttyS2
-    so an IR driver could claim it, or
-
-  - use setserial to change the IRQ to 3 and just use the device
-    in SIR mode, which is 16550-compatible so you can use the
-    serial driver
-
-I didn't express that very clearly in the changelog.
-
+Ulrich, did your initrd contain the correct .so? Did you try rebuilding klibc after
+building the new kernel?
