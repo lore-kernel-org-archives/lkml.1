@@ -1,44 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762160AbXGXTEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760511AbXGXTHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762160AbXGXTEy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbXGXTEo
+	id S1760511AbXGXTHZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbXGXTHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:04:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53733 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752994AbXGXTEn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:04:43 -0400
-Message-ID: <46A64C7F.5040508@zytor.com>
-Date: Tue, 24 Jul 2007 12:01:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 24 Jul 2007 15:07:13 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58068 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752994AbXGXTHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 15:07:12 -0400
+Message-ID: <46A64DD8.6000607@garzik.org>
+Date: Tue, 24 Jul 2007 15:07:04 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
-References: <20070724153916.GS21668@ftp.linux.org.uk> <46A62F35.2000501@goop.org> <20070724171455.GT21668@ftp.linux.org.uk> <46A636BB.7020706@zytor.com> <46A64BDD.4080309@goop.org>
-In-Reply-To: <46A64BDD.4080309@goop.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       =?ISO-8859-1?Q?S=E9bastien_Du?= =?ISO-8859-1?Q?gu=E9?= 
+	<sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
+ platform devices - broke my serial console
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>	<200707240948.45916.bjorn.helgaas@hp.com>	<46A63BC3.3050208@garzik.org> <20070724110946.8678d202.akpm@linux-foundation.org>
+In-Reply-To: <20070724110946.8678d202.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> Could it be a gcc version difference?
->>   
+Andrew Morton wrote:
+> Well I queued up a tentative revert patch but then I re-read the changlog:
 > 
-> Likely.  Well, we can always try it and see how much crap turns up.  If
-> gcc keeps quiet about it, its certainly an improvement over the dummy loop.
+>     x86, serial: convert legacy COM ports to platform devices
+>     
+>     Make x86 COM ports into platform devices and don't probe for them
+>     if we have PNP.
+>     
+>     This prevents double discovery, where a device was found both by
+>     the legacy probe and by 8250_pnp, e.g.,
+>     
+>         serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+>         00:02: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+
+If this actually causes a problem, then the drivers are buggy.  We have 
+standard APIs for checking this stuff...
+
+Turning off legacy serial probing is just a bandaid, the resource bug is 
+still there [by definition, if double-probing problems exist].
+
+
+>     This also means IRDA devices without a UART PNP ID will no longer be
+>     claimed by the serial driver, which might require changes in IRDA
+>     drivers and administration.
+
+This was completely unaddressed, I presume?
+
+
+>     In addition to this patch, you may need to configure a setserial init
+>     script, e.g., /etc/init.d/setserial, so it doesn't poke legacy UART
+>     stuff back in.  On Debian, "dpkg-reconfigure setserial" with the "kernel"
+>     option does this.
+
+So this patch breaks some userspace too?
+
+
+>     To force the old legacy probe behavior even when we have PNPBIOS or
+>     ACPI, load the new legacy_serial module (or build 8250 static) with
+>     the "legacy_serial.force" option.
 > 
->     J
+> So 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26 fixed a bunch of longstanding
+> nasties while breaking Sebastien's machine (at least).
+> 
+> We of course want the best of both worlds here, so I'll keep the revert
+> patch in -mm for a while, see what happens.  Although I can't immediately
+> see any way in which this can be fixed...
 
-You could do both, actually.  If gcc sees the end without it, the loop
-will simply get dead-code eliminated.
+I see VERY few positives, a whole lot of trouble, and a couple band-aids.
 
-	-hpa
+	Jeff
+
+
