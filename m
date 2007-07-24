@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761291AbXGXAYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762816AbXGXA2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761291AbXGXAYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 20:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXGXAYI
+	id S1762816AbXGXA2u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 20:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXGXA2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 20:24:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59110 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750710AbXGXAYF (ORCPT
+	Mon, 23 Jul 2007 20:28:43 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:37953 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbXGXA2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 20:24:05 -0400
-Date: Mon, 23 Jul 2007 17:23:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Sebastian Siewior <sebastian@breakpoint.cc>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] compat_ioctl requires CONFIG_BLOCK
-Message-Id: <20070723172337.de0bce58.akpm@linux-foundation.org>
-In-Reply-To: <200707210108.58478.arnd@arndb.de>
-References: <20070720225817.050195257@ayoka.breakpoint.cc>
-	<200707210108.58478.arnd@arndb.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jul 2007 20:28:42 -0400
+From: Christian Lamparter <chunkeey@web.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] usbhid: add ASUS LCM to the blacklist
+Date: Tue, 24 Jul 2007 02:28:39 +0200
+User-Agent: KMail/1.9.7
+Cc: chunkeey@web.de, linux-usb-devel@lists.sourceforge.net,
+       linux-input@atrey.karlin.mff.cuni.cz
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_3eUpGAAHgsIAcPs"
+Message-Id: <200707240228.39421.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX1+DAyQHlQL5C8heS6w+9q9cZ/lfXRoq6uV45s9f
+	Chemt9zaYi783MvCHQXp1GzVvnTeP+Pqc4dTVIlfQ6AGhgruBb
+	Rz55S4gA4=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007 01:08:57 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+--Boundary-00=_3eUpGAAHgsIAcPs
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Saturday 21 July 2007, Sebastian Siewior wrote:
-> > 
-> > Got with randconfig
-> > include/linux/loop.h:66: error: expected specifier-qualifier-list before
-> > 'request_queue_t'
-> > make[1]: *** [fs/compat_ioctl.o] Error 1
-> > 
-> > parts of compat ioctl require CONFIG_BLOCK to be set.
-> > 
-> > Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
-> > Index: b/fs/compat_ioctl.c
-> > ===================================================================
-> > --- a/fs/compat_ioctl.c
-> > +++ b/fs/compat_ioctl.c
-> > @@ -63,7 +63,9 @@
-> > __#include <linux/wireless.h>
-> > __#include <linux/atalk.h>
-> > __#include <linux/blktrace_api.h>
-> > +#ifdef CONFIG_BLOCK
-> > __#include <linux/loop.h>
-> > +#endif
-> 
-> Adding #ifdef around an #include is considered bad style. Better just
-> make loop.h compile without any conditionals. Does the below
-> patch work for you?
 
-This is the classic why-typedefs-are-bad.  AFAIK there is no way of fixing
-this build error apart from adding otherwise-unneeded nested inclusions
-(very bad), or:
+Some of ASUS' notebooks (e.g G Series) include a tiny oled display, which is 
+attached to an internal USB bus. Unfortunatly the device reports a wrong
+DeviceDescriptor and is therefore identified as a HID device...
 
-> 	Arnd <><
-> 
-> --- a/include/linux/loop.h
-> +++ b/include/linux/loop.h
-> @@ -63,7 +63,7 @@ struct loop_device {
->  	struct task_struct	*lo_thread;
->  	wait_queue_head_t	lo_event;
->  
-> -	request_queue_t		*lo_queue;
-> +	struct request_queue	*lo_queue;
->  	struct gendisk		*lo_disk;
->  	struct list_head	lo_list;
->  };
+Signed-off-by: Christian Lamparter <chunkeey@web.de>
+CC: linux-input@atrey.karlin.mff.cuni.cz
+CC: linux-usb-devel@lists.sourceforge.net
 
-Good start.  Now can we do the rest of the kernel?  ;)
+---
+(keep the cc!)
+for those who are interested in the userspace display driver:
+https://launchpad.net/asusoled  
+
+
+--Boundary-00=_3eUpGAAHgsIAcPs
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="asus-lcm-hid-blacklist.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="asus-lcm-hid-blacklist.diff"
+
+diff -up drivers/hid/usbhid/hid-quirks.c.orig drivers/hid/usbhid/hid-quirks.c
+--- a/drivers/hid/usbhid/hid-quirks.c.orig	2007-07-24 02:23:36.000000000 +0200
++++ b/drivers/hid/usbhid/hid-quirks.c	2007-07-24 02:25:26.000000000 +0200
+@@ -63,6 +63,9 @@
+ #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
+ #define USB_DEVICE_ID_APPLE_IR		0x8240
+ 
++#define USB_VENDOR_ID_ASUS		0x0b05
++#define USB_DEVICE_ID_ASUS_LCM		0x1726
++
+ #define USB_VENDOR_ID_ATEN		0x0557
+ #define USB_DEVICE_ID_ATEN_UC100KM	0x2004
+ #define USB_DEVICE_ID_ATEN_CS124U	0x2202
+@@ -452,6 +455,8 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_CYPRESS, USB_DEVICE_ID_CYPRESS_BARCODE_1, HID_QUIRK_SWAPPED_MIN_MAX },
+ 	{ USB_VENDOR_ID_CYPRESS, USB_DEVICE_ID_CYPRESS_BARCODE_2, HID_QUIRK_SWAPPED_MIN_MAX },
+ 
++	{ USB_VENDOR_ID_ASUS, USB_DEVICE_ID_ASUS_LCM, HID_QUIRK_IGNORE},
++
+ 	{ 0, 0 }
+ };
+ 
+
+--Boundary-00=_3eUpGAAHgsIAcPs--
