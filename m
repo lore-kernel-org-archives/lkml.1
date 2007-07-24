@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbXGXUBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762390AbXGXUCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761433AbXGXUBT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbXGXUBH
+	id S1762390AbXGXUCw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbXGXUCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:01:07 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:40693 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756986AbXGXUBF (ORCPT
+	Tue, 24 Jul 2007 16:02:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44825 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757070AbXGXUCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:01:05 -0400
-Date: Tue, 24 Jul 2007 16:00:32 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: [PATCH RFC] extent mapped page cache
-Message-ID: <20070724160032.7a7097db@think.oraclecorp.com>
-In-Reply-To: <20070710210326.GA29963@think.oraclecorp.com>
-References: <20070710210326.GA29963@think.oraclecorp.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 24 Jul 2007 16:02:43 -0400
+Date: Tue, 24 Jul 2007 11:25:45 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Message-ID: <20070724182545.GB24070@kroah.com>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070724010224.bbfb82bc.akpm@linux-foundation.org> <20070724085358.GA13845@kroah.com> <20070724015846.b30d723c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070724015846.b30d723c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jul 2007 17:03:26 -0400
-Chris Mason <chris.mason@oracle.com> wrote:
-
-> This patch aims to demonstrate one way to replace buffer heads with a
-> few extent trees.  Buffer heads provide a few different features:
+On Tue, Jul 24, 2007 at 01:58:46AM -0700, Andrew Morton wrote:
+> On Tue, 24 Jul 2007 01:53:58 -0700 Greg KH <greg@kroah.com> wrote:
 > 
-> 1) Mapping of logical file offset to blocks on disk
-> 2) Recording state (dirty, locked etc)
-> 3) Providing a mechanism to access sub-page sized blocks.
+> > On Tue, Jul 24, 2007 at 01:02:24AM -0700, Andrew Morton wrote:
+> > > On Sat, 14 Jul 2007 12:37:01 -0400 (EDT) James Morris <jmorris@namei.org> wrote:
+> > > 
+> > > > Convert LSM into a static interface
+> > > 
+> > > allmodconfig broke
+> > > 
+> > > security/built-in.o: In function `rootplug_bprm_check_security':
+> > > security/root_plug.c:64: undefined reference to `usb_find_device'
+> > > security/root_plug.c:70: undefined reference to `usb_put_dev'
+> > 
+> > That's wierd, who would have disabled the exports of those functions or
+> > removed the "#include <linux/usb.h>" from this file?
+> > 
 > 
-> This patch covers #1 and #2, I'll start on #3 a little later next
-> week.
+> root_plug is linked into vmlinux and usb is modular.  I did this:
 > 
-Well, almost.  I decided to try out an rbtree instead of the radix,
-which turned out to be much faster.  Even though individual operations
-are slower, the rbtree was able to do many fewer ops to accomplish the
-same thing, especially for merging extents together.  It also uses much
-less ram.
+> --- a/security/Kconfig~security-convert-lsm-into-a-static-interface-fix-2
+> +++ a/security/Kconfig
+> @@ -82,7 +82,7 @@ config SECURITY_CAPABILITIES
+>  
+>  config SECURITY_ROOTPLUG
+>  	bool "Root Plug Support"
+> -	depends on USB && SECURITY
+> +	depends on USB=y && SECURITY
+>  	help
+>  	  This is a sample LSM module that should only be used as such.
+>  	  It prevents any programs running with egid == 0 if a specific
 
-This code still has lots of room for optimization, but it comes in at
-around 2-5% more cpu time for ext2 streaming reads and writes.  I
-haven't done readpages or writepages yet, so this is more or less a
-worst case setup.  I'm comparing against ext2 with readpages and
-writepages disabled.
+That looks correct to me.
 
-The new code has the added benefit of passing fsx-linux, and not
-triggering MCE's on my poor little test box.
+thanks,
 
-The basic idea is to store state in byte ranges in an rbtree, and to
-mirror that state down into individual pages.  This allows us to store
-arbitrary state outside of the page struct, so we could include the pid
-of the process that dirtied a page range for cfq purposes.  The example
-readpage and writepage code is probably the easiest way to understand
-the basic API.
-
-A separate rbtree stores a mapping of byte offset in the file to byte
-offset on disk.  This allows the filesystem to fill in mapping
-information in bulk, and reduces the number of metadata lookups
-required to do common operations.
-
-Because the state and mapping information are separate from the page,
-pages can come and go and their corresponding metadata can still be
-cached (the current code drops mappings as the last page corresponding
-to that mapping disappears).
-
-Two patches follow, the core extent_map implementation and a sample
-user (ext2).  This is pretty basic, implementing prepare/commit_write,
-read/writepage and a few other funcs to exercise the new code.  Longer
-term, it should fit in with Nick's other extent work instead of
-prepare/commit_write.
-
-My patch sets page->private to 1, really for no good reason.  It is
-just a debugging aid I was using to make sure the page took the right
-path down the line.  If this catches on, we might set it to a magic
-value so you can if (ExtentPage(page)) or just leave it as null.
-
--chris
-
-
+greg k-h
