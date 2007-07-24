@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbXGXMqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbXGXMwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761993AbXGXMqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 08:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbXGXMqD
+	id S1759365AbXGXMwq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 08:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbXGXMwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 08:46:03 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43035 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751767AbXGXMqC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 08:46:02 -0400
-Date: Tue, 24 Jul 2007 14:45:24 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: drivers/ide/pci/cs5535.c: array overrun
-Message-ID: <20070724124524.GA6019@stusta.de>
+	Tue, 24 Jul 2007 08:52:36 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33019 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752554AbXGXMwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 08:52:35 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] ps3: Disk Storage Driver
+References: <20070716161539.075822000@pademelon.sonytel.be>
+	<20070716162206.392129000@pademelon.sonytel.be>
+	<20070718163637.3f0e0164.akpm@linux-foundation.org>
+	<46A5E610.7000508@shadowen.org> <46A5F275.7060905@garzik.org>
+X-Yow: I'm having a MID-WEEK CRISIS!
+Date: Tue, 24 Jul 2007 14:52:32 +0200
+In-Reply-To: <46A5F275.7060905@garzik.org> (Jeff Garzik's message of "Tue\, 24
+	Jul 2007 08\:37\:09 -0400")
+Message-ID: <je3aze6k1b.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted the following array overrun in 
-drivers/ide/pci/cs5535.c:
+Jeff Garzik <jeff@garzik.org> writes:
 
-<--  snip  -->
+> Andy Whitcroft wrote:
+>> Andrew Morton wrote:
+>> 
+>>>> +	start_sector = req->sector*priv->blocking_factor;
+>>>> +	sectors = req->nr_sectors*priv->blocking_factor;
+>>> s/*/ * /.  checkpatch missed this.
+>> 
+>> Ok, this is something we need to decide on.  Currently we only ask for
+>> consistent spacing on all the mathematic operators.  This is mostly as
+>> we do see a large number of non-spaced uses in defines and the like.
+>> 
+>> I am happy to expand these tests so they are always spaced on both sides
+>> style if that is the preference.
+>
+> That is most definitely the preference:  spaces surround operators.
+                                                          ^binary
 
-...
-static unsigned int cs5535_udma_timings[5] =
-{ 0x7F7436A1, 0x7F733481, 0x7F723261, 0x7F713161, 0x7F703061 };
-...
-static void cs5535_set_speed(ide_drive_t *drive, u8 speed)
-{
-...
-                if (speed >= XFER_UDMA_0 && speed <= XFER_UDMA_7)
-                        reg |= cs5535_udma_timings[speed - XFER_UDMA_0];
-...
-
-<--  snip  -->
-
-XFER_UDMA_7 - XFER_UDMA_0 = 7  >  (5 - 1)
-
-cu
-Adrian
+Andreas.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
