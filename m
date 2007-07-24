@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbXGXWlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbXGXWpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbXGXWlX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 18:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXGXWlQ
+	id S1758140AbXGXWpy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 18:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXGXWpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 18:41:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50267 "EHLO mx1.redhat.com"
+	Tue, 24 Jul 2007 18:45:47 -0400
+Received: from 1wt.eu ([62.212.114.60]:3896 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751855AbXGXWlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 18:41:15 -0400
-Message-ID: <46A68003.6060901@redhat.com>
-Date: Tue, 24 Jul 2007 18:41:07 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Ulrich Kunitz <kune@deine-taler.de>
-CC: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       honza@jikos.cz, jkosina@suse.cz
-Subject: Re: Is PIE randomization breaking klibc binaries?
-References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com> <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com> <20070724220053.GA20531@deine-taler.de>
-In-Reply-To: <20070724220053.GA20531@deine-taler.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1752557AbXGXWpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 18:45:46 -0400
+Date: Wed, 25 Jul 2007 00:45:17 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jonathan Campbell <jon@nerdgrounds.com>,
+       linux-kernel@vger.kernel.org, torvalds@transmeta.com
+Subject: Re: Patches for REALLY TINY 386 kernels
+Message-ID: <20070724224515.GI943@1wt.eu>
+References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de> <469E3806.4030804@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <469E3806.4030804@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/24/2007 06:00 PM, Ulrich Kunitz wrote:
-> On 07-07-24 16:57 Chuck Ebbert wrote:
+On Wed, Jul 18, 2007 at 08:55:50AM -0700, H. Peter Anvin wrote:
+> Andi Kleen wrote:
+> > 
+> >> Already with these patches I can compile a zImage kernel that is 450kb
+> >> large (890kb decompressed)
+> > 
+> > The important part is not how big the vmlinux is, but how much
+> > memory is actually used after boot. 
+> > 
+> > I expect concentrating some of the dynamic data structures would
+> > be more fruitful in fact.
+> > 
 > 
->>> $ strace ./cat
->>> execve("./cat", ["./cat"], [/* 55 vars */]) = -1 ENOENT (No such file or directory)
->>> ...
-> 
-> Chuck, my binaries run always into a segmentation violation. So
-> ENOENT is not the issue. (Notify it was on an x86-64.)
-> 
+> Well, how big the vmlinux file is matters if it doesn't fit in memory
+> with enough time to get to the phase where it is dumping the init
+> sections.  *If that is not the issue*, then axing stuff like CPUID is a
+> major lose in terms of code maintainability for zero gain.
 
-Okay, I tested with Fedora on x86_64 and it worked there too.
-(Not that that proves much.)
+Not only that, but the size of the vmlinux matters when you have limited
+flash memory to put it on. Having packaged single floppy-based firewalls
+for a few years, I can assure you that even one kB sometimes matters!
 
-Did you capture any of the error messages, like the address
-of the segfault?
+> 	-hpa
+
+Regards,
+Willy
 
