@@ -1,89 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762902AbXGXIEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762976AbXGXIFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762902AbXGXIEh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbXGXIEF
+	id S1762976AbXGXIFR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757988AbXGXIEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:04:05 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:24368 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754106AbXGXIDW (ORCPT
+	Tue, 24 Jul 2007 04:04:40 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:60963 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196AbXGXIEL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:03:22 -0400
-Date: Tue, 24 Jul 2007 10:03:14 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sysfs/udev broken in latest git?
-Message-ID: <20070724100314.3c606131@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070724072540.GA835@suse.de>
-References: <46A59EAA.9030105@simon.arlott.org.uk>
-	<20070724072540.GA835@suse.de>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 04:04:11 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] 2.6.22+: BUG: sleeping function called from invalid context at /home/jeremy/hg/xen/paravirt/linux/drivers/usb/core/urb.c:524, in_atomic():1, irqs_disabled():0
+Date: Tue, 24 Jul 2007 10:06:03 +0200
+User-Agent: KMail/1.9.7
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Kevin Lloyd <linux@sierrawireless.com>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+References: <Pine.LNX.4.44L0.0707231649200.2702-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707231649200.2702-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707241006.04381.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 00:25:40 -0700,
-Greg KH <gregkh@suse.de> wrote:
 
-> On Tue, Jul 24, 2007 at 07:39:38AM +0100, Simon Arlott wrote:
-> > The following commit appears to break some of my udev rules (I don't 
-> > have the time to finish the bisect right now, but there's only four 
-> > changes showing in "git bisect visualize" - this one is tagged 
-> > bisect/bad, and the other three are docs/docs/unrelated).
-> > 
-> > Neither of these symlinks get created by udev on kernels marked bad 
-> > (see bisect log below):
-> > 
-> > ACTION=="add", \
-> >         KERNEL=="event*", \
-> >         SUBSYSTEM=="input", \
-> >         SYSFS{description}=="i8042 KBD port", \
-> >         NAME="input/%k", \
-> >         SYMLINK="input/i8042-kbd", \
-> >         MODE="0640", \
-> >         GROUP="event"
-> > 
-> > ACTION=="add", \
-> >         KERNEL=="event*", \
-> >         SUBSYSTEM=="input", \
-> >         SYSFS{manufacturer}=="Logitech", \
-> >         SYSFS{product}=="USB-PS/2 Optical Mouse", \
-> >         NAME="input/%k", \
-> >         SYMLINK="input/logitech-mouse", \
-> >         MODE="0640", \
-> >         GROUP="event"
+> Clearly there's a bug in 
+> drivers/usb/serial/usb-serial.c:usb_serial_put().  It shouldn't call 
+> kref_put() while holding a spinlock.
 
-> Ugh, I thought this was all fixed up properly :(
+Yes, these functions need to sleep.
+Does this work?
 
-I thought this as well :(
+	Regards
+		Oliver
+---
 
-But I'm a bit confused: The patch in git has
-
-+       /* only bus-device parents get a "device"-link */
-+       if (dev->parent && dev->parent->bus) {
-+               error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
-+                                         "device");
-
-and
-
--               if (parent) {
--                       sysfs_create_link(&dev->kobj, &dev->parent->kobj,
--                                                       "device");
-
-which really look like two different things. (My original patch didn't
-have the check for the parent's bus.) Don't know what happened here :(
-
-(Simon: Do the links reappear if you change
-	if (dev->parent && dev->parent->bus)
-to
-	if (dev->parent)
-in device_add_class_symlinks()?)
+--- a/drivers/usb/serial/usb-serial.c	2007-07-23 08:47:35.000000000 +0200
++++ b/drivers/usb/serial/usb-serial.c	2007-07-24 09:33:15.000000000 +0200
+@@ -60,19 +60,19 @@ static struct usb_driver usb_serial_driv
+ 
+ static int debug;
+ static struct usb_serial *serial_table[SERIAL_TTY_MINORS];	/* initially all NULL */
+-static spinlock_t table_lock;
++DEFINE_MUTEX(table_lock);
+ static LIST_HEAD(usb_serial_driver_list);
+ 
+ struct usb_serial *usb_serial_get_by_index(unsigned index)
+ {
+ 	struct usb_serial *serial;
+ 
+-	spin_lock(&table_lock);
++	mutex_lock(&table_lock);
+ 	serial = serial_table[index];
+ 
+ 	if (serial)
+ 		kref_get(&serial->kref);
+-	spin_unlock(&table_lock);
++	mutex_unlock(&table_lock);
+ 	return serial;
+ }
+ 
+@@ -84,7 +84,7 @@ static struct usb_serial *get_free_seria
+ 	dbg("%s %d", __FUNCTION__, num_ports);
+ 
+ 	*minor = 0;
+-	spin_lock(&table_lock);
++	mutex_lock(&table_lock);
+ 	for (i = 0; i < SERIAL_TTY_MINORS; ++i) {
+ 		if (serial_table[i])
+ 			continue;
+@@ -106,10 +106,10 @@ static struct usb_serial *get_free_seria
+ 			serial_table[i] = serial;
+ 			serial->port[j++]->number = i;
+ 		}
+-		spin_unlock(&table_lock);
++		mutex_unlock(&table_lock);
+ 		return serial;
+ 	}
+-	spin_unlock(&table_lock);
++	mutex_unlock(&table_lock);
+ 	return NULL;
+ }
+ 
+@@ -172,9 +172,9 @@ static void destroy_serial(struct kref *
+ 
+ void usb_serial_put(struct usb_serial *serial)
+ {
+-	spin_lock(&table_lock);
++	mutex_lock(&table_lock);
+ 	kref_put(&serial->kref, destroy_serial);
+-	spin_unlock(&table_lock);
++	mutex_unlock(&table_lock);
+ }
+ 
+ /*****************************************************************************
+@@ -1128,7 +1128,6 @@ static int __init usb_serial_init(void)
+ 		return -ENOMEM;
+ 
+ 	/* Initialize our global data */
+-	spin_lock_init(&table_lock);
+ 	for (i = 0; i < SERIAL_TTY_MINORS; ++i) {
+ 		serial_table[i] = NULL;
+ 	}
