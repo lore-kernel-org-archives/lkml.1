@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932420AbXGVXK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932711AbXGVXLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932420AbXGVXK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jul 2007 19:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761984AbXGVXKS
+	id S932711AbXGVXLS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jul 2007 19:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765416AbXGVXK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jul 2007 19:10:18 -0400
-Received: from qb-out-0506.google.com ([72.14.204.232]:40144 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755635AbXGVXKQ (ORCPT
+	Sun, 22 Jul 2007 19:10:58 -0400
+Received: from mail11.syd.optusnet.com.au ([211.29.132.192]:34842 "EHLO
+	mail11.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765463AbXGVXK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jul 2007 19:10:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dA4DVWfrO250tmnyznpAursvNDPCfrzAvGTPipDElWSJtTjY+FFvRgjb0xBsx1X4MgcMV5cB0GmM8u0vES7N4ridC0ADK4zLG1TrCM655nfhBRYxZlLhuTTlBZfGbvV1mSMSOdEqNUo0HBD9HcrS3prRysUVp4OynGSGkH6KJXI=
-Message-ID: <86802c440707221610i112c3527p40f188f4afcad31c@mail.gmail.com>
-Date: Sun, 22 Jul 2007 16:10:14 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: NFS mount gives ENETDOWN in -git15
-Cc: netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+	Sun, 22 Jul 2007 19:10:57 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: -mm merge plans for 2.6.23
+Date: Tue, 24 Jul 2007 10:08:19 +1000
+User-Agent: KMail/1.9.5
+Cc: ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <200707211531.17750.ak@suse.de>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <200707102015.44004.kernel@kolivas.org>
+In-Reply-To: <200707102015.44004.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200707211531.17750.ak@suse.de>
+X-Length: 2374
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707241008.20512.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/21/07, Andi Kleen <ak@suse.de> wrote:
+On Tuesday 10 July 2007 20:15, Con Kolivas wrote:
+> On Tuesday 10 July 2007 18:31, Andrew Morton wrote:
+> > When replying, please rewrite the subject suitably and try to Cc: the
+> > appropriate developer(s).
 >
-> I tried to mount another nfs mount on a system running with nfsroot.
-> But I get
+> ~swap prefetch
 >
-> # mount basil:/home /basil/home/
-> mount: Network is down
+> Nick's only remaining issue which I could remotely identify was to make it
+> cpuset aware:
+> http://marc.info/?l=linux-mm&m=117875557014098&w=2
+> as discussed with Paul Jackson it was cpuset aware:
+> http://marc.info/?l=linux-mm&m=117895463120843&w=2
 >
-> The network is not down of course, the system is happily running with nfs root from that
-> server. Userland is older SUSE 10.0
+> I fixed all bugs I could find and improved it as much as I could last
+> kernel cycle.
 >
-> Excerpt from strace mount:
->
-> -Andi
->
+> Put me and the users out of our misery and merge it now or delete it
+> forever please. And if the meaningless handwaving that I 100% expect as a
+> response begins again, then that's fine. I'll take that as a no and you can
+> dump it.
 
-What is your CONFIG_NETDEVICES_MULTIQUEUE in .config?
+The window for 2.6.23 has now closed and your position on this is clear. I've 
+been supporting this code in -mm for 21 months since 16-Oct-2005 without any 
+obvious decision for this code forwards or backwards.
 
-YH
+I am no longer part of your operating system's kernel's world; thus I cannot 
+support this code any longer. Unless someone takes over the code base for 
+swap prefetch you have to assume it is now unmaintained and should delete it.
+
+Please respect my request to not be contacted further regarding this or any 
+other kernel code.
+
+-- 
+-ck
