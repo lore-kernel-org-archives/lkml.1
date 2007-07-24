@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762837AbXGXR1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762620AbXGXRcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762837AbXGXR1d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 13:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbXGXR11
+	id S1762620AbXGXRcB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 13:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757476AbXGXRbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 13:27:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:57666 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbXGXR10 (ORCPT
+	Tue, 24 Jul 2007 13:31:48 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54843 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756434AbXGXRbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 13:27:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ec3Q/SOVIeujn7plLMwLGMADnyxG0SMUQ2HGtVCN6qcB2zw+RzBM0w2CL7z6ai1LLTIOrX1nu6akh8B9uQmZl1m/lSu9dxDcK98svgNDnh6dlXMnTS30DoXJWhgBpu3jClk2DvRYQ/NeXcFe4RlV3bINHUY+dWnqeGk/nxG9em8=
-Message-ID: <dda83e780707241027k369c2f01j6d16b21266df3a05@mail.gmail.com>
-Date: Tue, 24 Jul 2007 10:27:22 -0700
-From: "Bret Towe" <magnade@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear mappings
+	Tue, 24 Jul 2007 13:31:47 -0400
+Message-ID: <46A636BB.7020706@zytor.com>
+Date: Tue, 24 Jul 2007 10:28:27 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
+References: <20070724153916.GS21668@ftp.linux.org.uk> <46A62F35.2000501@goop.org> <20070724171455.GT21668@ftp.linux.org.uk>
+In-Reply-To: <20070724171455.GT21668@ftp.linux.org.uk>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for a while in -git I've had an issue that on boot when gdm loads the
-screen stays black
-using ctrl-f1 doesn't return to a console and killing X doesn't help any
-ssh'ing into the box does work top only shows 100% io-wait
-dmesg shows nothing odd
+Al Viro wrote:
+> On Tue, Jul 24, 2007 at 09:56:21AM -0700, Jeremy Fitzhardinge wrote:
+>> Al Viro wrote:
+>>> 	AFAICS, the patch below should do it for i386; instead of
+>>> using a dummy loop to tell gcc that this sucker never returns,
+>>> we do
+>>> static void __always_inline __noreturn __BUG(const char *file, int line);
+>>> containing the actual asm we want to insert and define BUG() as
+>>> __BUG(__FILE__, __LINE__).  It looks safe, but I don't claim enough
+>>> experience with gcc __asm__ potential nastiness, so...
+>>>
+>>> Comments, objections?
+>>>   
+>> Does it work?  When I wrote the BUG code I tried this, but gcc kept
+>> warning about "noreturn function returns".  I couldn't work out a way to
+>> convince gcc that the asm is the end of the line.
+> 
+> Works here...
 
-the work around I have is at the moment is to just move the radeon drm module
-out of the way so it doesn't load on boot and X works just fine like that
-I did some bisecting which took a few days and tracked it down to
-commit d00806b183152af6d24f46f0c33f14162ca1262a
+Could it be a gcc version difference?
 
-its way to complex for me to revert it on top of -rc1 to verify that's
-the issue tho
-I keep forgetting to get a trace of what its waiting on when I'm in that kernel
-I assume that would be of use and Ill get that later
-
-the box this is happening on is a g4 mac mini the built in card is a radeon 9200
-I'm not seeing any issues on an amd64 box with radeon card it's also a 9600 tho
+	-hpa
