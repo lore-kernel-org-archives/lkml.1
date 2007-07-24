@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761016AbXGXTqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763955AbXGXTq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761016AbXGXTqD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbXGXTpy
+	id S1763955AbXGXTq1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763551AbXGXTqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:45:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58884
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752665AbXGXTpx (ORCPT
+	Tue, 24 Jul 2007 15:46:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60838 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761588AbXGXTqE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:45:53 -0400
-Date: Tue, 24 Jul 2007 12:45:52 -0700 (PDT)
-Message-Id: <20070724.124552.72716820.davem@davemloft.net>
-To: atporter@primate.net
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: miserable performance of 2.6.21 under network load
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070724184908.GD24543@primate.net>
-References: <20070724172513.GB24543@primate.net>
-	<p73vec9sknz.fsf@bingen.suse.de>
-	<20070724184908.GD24543@primate.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 15:46:04 -0400
+Date: Tue, 24 Jul 2007 12:45:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+In-Reply-To: <p73r6mxsg2o.fsf@bingen.suse.de>
+Message-ID: <alpine.LFD.0.999.0707241244140.3607@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+ <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru>
+ <20070723132431.42afbae8.akpm@linux-foundation.org>
+ <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru>
+ <20070723141137.171e4ac1.akpm@linux-foundation.org>
+ <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
+ <20070724175951.GC6019@stusta.de> <alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org>
+ <20070724112843.0cc104c2.akpm@linux-foundation.org>
+ <alpine.LFD.0.999.0707241207290.3607@woody.linux-foundation.org>
+ <p73r6mxsg2o.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aaron Porter <atporter@primate.net>
-Date: Tue, 24 Jul 2007 11:49:09 -0700
 
-> samples  %        app name                 symbol name
-> 914379   48.8404  vmlinux-2.6.21.5         check_poison_obj
-> 341920   18.2632  vmlinux-2.6.21.5         poison_obj
-> 37355     1.9953  nf_conntrack             (no symbols)
 
-You have SLAB debugging enabled, turn it off if you want
-decent performance.
+On Tue, 24 Jul 2007, Andi Kleen wrote:
+> 
+> There's probably a --param where it can be tweaked exactly. The
+> problem is that --params tend to be very gcc version specific
+> and might do something completely different on a newer or 
+> older version. So it's better not to use them.
+
+I agree wholeheartedly with that sentiment. We've tried at times (because 
+some gcc snapshots made some *truly* insane choices for a while), and 
+maybe we still have some around. Not worth the pain.
+
+		Linus
