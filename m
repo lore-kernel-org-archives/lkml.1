@@ -1,91 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbXGXNHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbXGXNIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759412AbXGXNHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 09:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXGXNHX
+	id S1760391AbXGXNIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 09:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbXGXNIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 09:07:23 -0400
-Received: from emerald.lightlink.com ([205.232.34.14]:18726 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721AbXGXNHX (ORCPT
+	Tue, 24 Jul 2007 09:08:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:8009 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754928AbXGXNIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 09:07:23 -0400
-Date: Tue, 24 Jul 2007 09:00:17 -0400
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
-Cc: Adrian Bunk <bunk@stusta.de>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: drivers/hwmon/lm93.c: array overruns
-Message-ID: <20070724130017.GA5101@jupiter.solarsys.private>
-References: <20070723005453.GS26212@stusta.de> <200707230936.58135.hjk@linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 24 Jul 2007 09:08:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OMHaSFI1GgWWVD/dsiOXrJ6DZnvG8lx2HxRhRhm7ASRFrkhtQOk8i511bvyCVWk8D3HkWiof2oYbT7ehzU99G69ILNztVdOKMkrXK9HGkfZj1zuXh8WN8h1qEj7/PSAndMgzjdqmL5O9fwscktF5JVtJsHFBCsEvUaI/8cF8zo4=
+Message-ID: <d120d5000707240608l25e07de1we6f0b4d92ab6a4a3@mail.gmail.com>
+Date: Tue, 24 Jul 2007 09:08:36 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Joel Schopp" <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <46A5E034.2030205@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200707230936.58135.hjk@linutronix.de>
-User-Agent: Mutt/1.4.2.3i
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky>
+	 <46A534EA.6030008@intel.com> <46A5C12B.3080904@shadowen.org>
+	 <20070724021526.3d92286b.akpm@linux-foundation.org>
+	 <46A5E034.2030205@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Hans-Jürgen Koch <hjk@linutronix.de> [2007-07-23 09:36:57 +0200]:
-> Am Montag 23 Juli 2007 02:54 schrieb Adrian Bunk:
-> > The Coverity checker spotted the following array overruns
-> > in drivers/hwmon/lm93.c:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> > struct lm93_data {
-> > ...
-> >         struct {
-> >                 u8 min;
-> >                 u8 max;
-> >         } temp_lim[3];
-> > ...
-> > };
-> > ...
-> > static void lm93_update_client_common(struct lm93_data *data,
-> >                                       struct i2c_client *client)
-> > {
-> > ...
-> >         for (i = 0; i < 4; i++) {
-> >                 data->temp_lim[i].min =
-> >                         lm93_read_byte(client, LM93_REG_TEMP_MIN(i));
-> >                 data->temp_lim[i].max =
-> >                         lm93_read_byte(client, LM93_REG_TEMP_MAX(i));
-> >         }
-> > ...
-> > 
-> > <--  snip  -->
-> 
-> This patch should fix it. Thanks a lot, Adrian!
-> 
-> ----
-> This fixes an array overflow bug. We have 4 pairs of min/max temperature 
-> limits, not 3.
-> 
-> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-> 
-> --
-> Index: linux-2.6.23-rc/drivers/hwmon/lm93.c
-> ===================================================================
-> --- linux-2.6.23-rc.orig/drivers/hwmon/lm93.c	2007-07-23 09:22:56.000000000 +0200
-> +++ linux-2.6.23-rc/drivers/hwmon/lm93.c	2007-07-23 09:29:37.000000000 +0200
-> @@ -234,7 +234,7 @@
->  	struct {
->  		u8 min;
->  		u8 max;
-> -	} temp_lim[3];
-> +	} temp_lim[4];
->  
->  	/* vin1 - vin16: low and high limits */
->  	struct {
-> 
-> 
+On 7/24/07, Andy Whitcroft <apw@shadowen.org> wrote:
+> Andrew Morton wrote:
+> > On Tue, 24 Jul 2007 10:06:51 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+> >
+> >>> This is a royal pain, since it now throws an ERROR for the obviously
+> >>> preferable piece of code below:
+> >>>
+> >>> if (err) {
+> >>>     do_something();
+> >>>     return -ERR;
+> >>> } else {
+> >>>     do_somthing_else();
+> >>> }
+> >> Hmmm, is that obviouly nicer than the below?  Its fully a line longer
+> >> for no benefit.  But ignoring that, this seems to have snuck in to
+> >> CodingStyle hmmm ... will see what I can do if anything to stop these
+> >> being picked up I guess.
+> >>
+> >>      if (err) {
+> >>              do_something();
+> >>              return -ERR;
+> >>      } else
+> >>              do_something_else();
+> >
+> > The kool kids on linux-usb-devel largely ended up deciding that the second
+> > version looks dorky.
+> >
+> > Especially if there's a comment over do_something_else(), and if there's
+> > not a comment, perhaps there should be?
+> >
+> >> Andrew, as you merged the change to CodingStyle I'll take that as your
+> >> being ok with these being accepted.
+> >
+> > It's very marginal and is sure to get people hot and bothered.  I'd suggest
+> > that checkpatch be neutral on that.
+>
+> Ok, now if either the preceeding block or following block has {}'s then
+> we don't report this block for being one line long.  We will miss some
+> this way, but hey.
+>
 
-Applied to testing, thanks.
+It also complains on the following:
+
++       if (retval && !--handle->open) {
++               /*
++                * Make sure we are not delivering any more events
++                * through this handle
++                */
++               synchronize_sched();
++       }
+
+There is no way I'll drop braces there. You should probably not
+exclude comments from line count when making decision if braces are
+needed.
 
 -- 
-Mark M. Hoffman
-mhoffman@lightlink.com
-
+Dmitry
