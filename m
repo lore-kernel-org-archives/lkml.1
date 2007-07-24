@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbXGXS3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbXGXSac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757382AbXGXS3s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 14:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXGXS3e
+	id S1758406AbXGXSac (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 14:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXGXSaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 14:29:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52042 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751055AbXGXS3c (ORCPT
+	Tue, 24 Jul 2007 14:30:19 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4312 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752729AbXGXSaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 14:29:32 -0400
-Date: Tue, 24 Jul 2007 11:28:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-Id: <20070724112843.0cc104c2.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	<20070723183839.GA5874@martell.zuzino.mipt.ru>
-	<20070723190152.GA5755@martell.zuzino.mipt.ru>
-	<20070723132431.42afbae8.akpm@linux-foundation.org>
-	<20070723204045.GD5755@martell.zuzino.mipt.ru>
-	<20070723210153.GA5753@martell.zuzino.mipt.ru>
-	<20070723141137.171e4ac1.akpm@linux-foundation.org>
-	<alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
-	<20070724175951.GC6019@stusta.de>
-	<alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 14:30:17 -0400
+Message-ID: <46A64534.1040207@shadowen.org>
+Date: Tue, 24 Jul 2007 19:30:12 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky>	<46A534EA.6030008@intel.com>	<46A5C12B.3080904@shadowen.org>	<20070724021526.3d92286b.akpm@linux-foundation.org>	<46A5E034.2030205@shadowen.org>	<Pine.LNX.4.64.0707241849340.18990@fbirervta.pbzchgretzou.qr>	<20070724102035.6447565c.randy.dunlap@oracle.com> <20070724110339.9fd0853e.randy.dunlap@oracle.com>
+In-Reply-To: <20070724110339.9fd0853e.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 11:14:21 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Randy Dunlap wrote:
+> On Tue, 24 Jul 2007 10:20:35 -0700 Randy Dunlap wrote:
+> 
+>> On Tue, 24 Jul 2007 18:51:39 +0200 (CEST) Jan Engelhardt wrote:
+>>
+>>> On Jul 24 2007 12:19, Andy Whitcroft wrote:
+>>>>>>> if (err) {
+>>>>>>>     do_something();
+>>>>>>>     return -ERR;
+>>>>>>> } else {
+>>>>>>>     do_somthing_else();
+>>>>>>> }
+>>>>>> 	if (err) {
+>>>>>> 		do_something();
+>>>>>> 		return -ERR;
+>>>>>> 	} else
+>>>>>> 		do_something_else();
+>>>>> The kool kids on linux-usb-devel largely ended up deciding that the second
+>>>>> version looks dorky.
+>>>> Ok, now if either the preceeding block or following block has {}'s then
+>>>> we don't report this block for being one line long.  We will miss some
+>>>> this way, but hey.
+>>> As per Ingo Molnar [ http://lkml.org/lkml/2006/9/5/68 ],
+>>> all blocks in an if-else 'tree' should be {} if there is at least one
+>>> with more than two statements. (And I do not disagree.)
+>> You are actually referring to this commit:
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e659ba4a0d2d471c0d73590f78e1a1b5a1eede48
+>>
+>> which did not appear on lkml for review... :(
+> 
+> Oops, I stand corrected (my previous search was based on the patch filename):
+> 
+> http://lkml.org/lkml/2007/5/4/50
+> or
+> http://marc.info/?l=linux-kernel&m=117826369817272&w=2
 
-> 
-> 
-> On Tue, 24 Jul 2007, Adrian Bunk wrote:
-> > 
-> > buffered_rmqueue() and prep_new_page() are static functions with only 
-> > one caller each, and for the normal non-debug case it's a really nice 
-> > optimization to have them inlined automatically.
-> 
-> I'm not at all sure I agree.
-> 
-> Inlining big functions doesn't actually tend to generally generate any 
-> better code, so if gcc's logic is "single callsite - always inline", then 
-> that logic is likely not right.
-> 
+Well the summary of the discussion there was one vote for the new
+standard, two votes against and a "lets leave it open".  So it seems odd
+it was ever added to the CodingStyle.
 
-fwiw, -fno-inline-functions-called-once (who knew?) takes i386 allnoconfig
-vmlinux .text from 928360 up to 955362 bytes (27k larger).
+The "leave it undefined" makes the current behaviour of checkpatch
+wrong.  So its good I've loosened it for the next release.
 
-A surprisingly large increase - I wonder if it did something dumb.  It
-appears to still correctly inline those things which we've manually marked
-inline.  hm.
-
-It would be nice to defeat the autoinlining for debug purposes though.
+-apw
