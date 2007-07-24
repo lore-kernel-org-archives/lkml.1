@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbXGXUej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764290AbXGXUfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762235AbXGXUej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbXGXUeb
+	id S1764290AbXGXUfF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:35:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbXGXUex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:34:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36562 "EHLO mx1.redhat.com"
+	Tue, 24 Jul 2007 16:34:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49397 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754535AbXGXUeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:34:31 -0400
-Message-ID: <46A6624E.60003@redhat.com>
-Date: Tue, 24 Jul 2007 16:34:22 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1754535AbXGXUew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:34:52 -0400
+Date: Tue, 24 Jul 2007 22:34:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+Cc: Rui Nuno Capela <rncbc@rncbc.org>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.22.1-rt5
+Message-ID: <20070724203417.GA29343@elte.hu>
+References: <20070723210236.GA25104@elte.hu> <46A51D9E.8040104@rncbc.org> <20070724073932.GA18740@elte.hu> <1185305679.16400.17.camel@cmn3.stanford.edu> <1185305725.16400.19.camel@cmn3.stanford.edu> <20070724200546.GA24964@elte.hu> <1185308623.16400.28.camel@cmn3.stanford.edu>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ulrich Kunitz <kune@deine-taler.de>, linux-kernel@vger.kernel.org,
-       honza@jikos.cz, jkosina@suse.cz
-Subject: Re: Is PIE randomization breaking klibc binaries?
-References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com>
-In-Reply-To: <46A131BF.4080404@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185308623.16400.28.camel@cmn3.stanford.edu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/20/2007 06:05 PM, H. Peter Anvin wrote:
->> It looks like that the PIE randomization patch breaks klibc
->> binaries on x86-64.
->>
-> 
-> Interesting.
-> 
-> klibc binaries are indeed statically linked, but composed of two
-> different ELF images: the application itself and the shared libary
-> (which is referenced from the application header as the "interpreter").
->  Neither of these is an ET_DYN file; they are both ET_EXEC, so it
-> *should* be unaffected by the PIE randomization patch.  Obviously, that
-> seems to not be the case.
-> 
-> My guess is that this patch mishandles interpreter images which are
-> ET_EXEC.  Jan, any insight?
 
-Well, they don't run on Fedora 6 either (which has the same code, it's
-part of exec-shield):
+* Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
 
-$ strace ./cat
-execve("./cat", ["./cat"], [/* 55 vars */]) = -1 ENOENT (No such file or directory)
-...
-$ file cat
-cat: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked (uses shared libs), stripped
+> > apparently you caught that 3 seconds window where the .23-rc1-rt1 
+> > release script moved old patches into the older/ directory :-)
+> 
+> Yup, good timing... :-) Hard to do again...
+> (BTW, will you keep 2.6.22.x patches going for a while?)
 
-Funny nobody noticed that before...
+yeah, that's the plan: to keep .22-rt updated until .23 is released. 
+(Thomas agrees with that approach too)
+
+	Ingo
