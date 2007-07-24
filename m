@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764213AbXGXOlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764941AbXGXOmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764213AbXGXOlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbXGXOlK
+	id S1764941AbXGXOmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbXGXOmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:41:10 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33790 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750704AbXGXOlJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:41:09 -0400
-Date: Tue, 24 Jul 2007 15:48:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Boring limeriks (was: [PATCH 1/7] lguest: documentation pt I:
- Preparation)
-Message-ID: <20070724154806.484d5149@the-village.bc.nu>
-In-Reply-To: <46A60B91.8000405@garzik.org>
-References: <200707241720.30271.a1426z@gawab.com>
-	<46A60B91.8000405@garzik.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 24 Jul 2007 10:42:24 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50716 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbXGXOmY (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 10:42:24 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: [ANNOUNCE][GIT PATCH] Kconfig.cpu cosmetics
+In-Reply-To: Your message of "Sun, 22 Jul 2007 22:16:14 +0200."
+             <6101e8c40707221316t744c7c15pc7ed8f179e0bab25@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <6101e8c40707221311l19a7e39r36b99bcb2dcaaae1@mail.gmail.com>
+            <6101e8c40707221316t744c7c15pc7ed8f179e0bab25@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1185238590_3463P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 23 Jul 2007 20:56:30 -0400
+Message-ID: <5263.1185238590@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 10:24:17 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+--==_Exmh_1185238590_3463P
+Content-Type: text/plain; charset=us-ascii
 
-> I thought limericks were supposed to be dirty... :)
+On Sun, 22 Jul 2007 22:16:14 +0200, Oliver Pinter said:
 
-If I post limericks that are dirty
-Someone is bound to get shirty
-They'll rant and they'll rage
-for page after page
-Instead of coding new drivers to help me
+> Here is one patch, Kconfig.cpu, this patch add the Pentium D processor
+> for help, because number of person has the question: I have Pentium D,
+> and which CPU chose  I.
 
+Would it make sense to extend the help sections in arch/i386/Kconfig.cpu to
+list the family/model numbers reported by /proc/cpuinfo?  There's a few cookie
+crumbs in there about new/old Xeons, and that Via Nehemiah chips are 'model 9'.
+Should that be extended to be more complete?
 
+--==_Exmh_1185238590_3463P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGpU4+cC3lWbTT17ARArqIAJ9DONdb4+B+mhs0HtAno5FJQ6yflACgvRo/
+E/PtUITST7ZIiCGavX3f1Yg=
+=glxL
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1185238590_3463P--
