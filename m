@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXGXTKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762514AbXGXTMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761489AbXGXTKo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbXGXTKh
+	id S1762514AbXGXTMA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbXGXTLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:10:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51211 "EHLO mx2.mail.elte.hu"
+	Tue, 24 Jul 2007 15:11:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45576 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbXGXTKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:10:35 -0400
-Date: Tue, 24 Jul 2007 21:10:27 +0200
+	id S1751287AbXGXTLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 15:11:51 -0400
+Date: Tue, 24 Jul 2007 21:11:45 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: v2.6.22.1-rt5
-Message-ID: <20070724191027.GA13268@elte.hu>
-References: <20070724120436.GA14466@elte.hu> <200707241156.03149.gene.heskett@gmail.com>
+To: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [RT-PATCH] v2.6.23-rc1-rt0 Add missing header in sch_generic.c
+Message-ID: <20070724191145.GB13268@elte.hu>
+References: <200707242103.41880.hjk@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200707241156.03149.gene.heskett@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200707242103.41880.hjk@linutronix.de>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -34,19 +35,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gene Heskett <gene.heskett@gmail.com> wrote:
+* Hans-Jürgen Koch <hjk@linutronix.de> wrote:
 
-> The above stanza still needs some tlc.  I built a 2.6.22.1-rt6 (rt5 
-> wouldn't build) using the same old config that a make oldconfig didn't 
-> fuss about, but the reboot never completed, see the attached, heavily 
-> smunched camera shot of the panic.
+> v2.6.23-rc1-rt0 adds an msleep(1) in net/sched/sch_generic.c without 
+> including the neceessary header. This patches fixes it.
 > 
-> Kinda looks like hda/sda confusion, with rt3 (this boot), its hda*, 
-> what is it now?  fstab or kernel config error?
+> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
-yeah, as long as your filesystems are created with a proper label, all 
-that you need to do is to change all 'hda' to 'sda' in the new kernel's 
-/etc/grub.conf entry. (or enable the old IDE code in the .config, under 
-CONFIG_IDE)
+thanks, applied.
 
 	Ingo
