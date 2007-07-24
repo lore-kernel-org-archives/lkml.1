@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbXGXEsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbXGXExs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758603AbXGXEsq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 00:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbXGXEsj
+	id S1758871AbXGXExs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 00:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbXGXExl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 00:48:39 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:33645 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752190AbXGXEsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 00:48:38 -0400
-Message-ID: <385252508.22609@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Tue, 24 Jul 2007 12:37:08 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 03/10] readahead: combine file_ra_state.prev_index/prev_offset into prev_pos
-Message-ID: <20070724043708.GA6627@mail.ustc.edu.cn>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-References: <20070724020009.677809022@mail.ustc.edu.cn> <385243122.57859@ustc.edu.cn> <20070723205535.d08338fc.akpm@linux-foundation.org> <20070724043215.GA6317@mail.ustc.edu.cn>
+	Tue, 24 Jul 2007 00:53:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:50295 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752065AbXGXExj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 00:53:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=YEZz9iLWfZrThWe/bYtTpuOb86amDvHFhIn2avhU6H6yeiN7WP9HtmG5Und42gTW/DZUYJAnZAGuRJOvnfLIX4mDBqMHq9puD2Vo9XeP1BpmwRbeikr1YD1M2AzFl4wqnt38yUvZ/SXTSTh7vzvgs0shlRWph9J7rK8xXzUXN8w=
+Message-ID: <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+Date: Mon, 23 Jul 2007 21:53:38 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: -mm merge plans for 2.6.23
+Cc: "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "ck list" <ck@vds.kolivas.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Paul Jackson" <pj@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46A57068.3070701@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070724043215.GA6317@mail.ustc.edu.cn>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <200707102015.44004.kernel@kolivas.org>
+	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	 <46A57068.3070701@yahoo.com.au>
+X-Google-Sender-Auth: c0a28c279aacd9ba
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 12:32:15PM +0800, Fengguang Wu wrote:
-> On Mon, Jul 23, 2007 at 08:55:35PM -0700, Andrew Morton wrote:
-> > On Tue, 24 Jul 2007 10:00:12 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> > 
-> > > @@ -342,11 +342,9 @@ ondemand_readahead(struct address_space 
-> > >  		   bool hit_readahead_marker, pgoff_t offset,
-> > >  		   unsigned long req_size)
-> > >  {
-> > > -	int max;	/* max readahead pages */
-> > > -	int sequential;
-> > > -
-> > > -	max = ra->ra_pages;
-> > > -	sequential = (offset - ra->prev_index <= 1UL) || (req_size > max);
-> > > +	int	max = ra->ra_pages;	/* max readahead pages */
-> > > +	pgoff_t prev_offset;
-> > > +	int	sequential;
-> > >  
-> > >  	/*
-> > >  	 * It's the expected callback offset, assume sequential access.
-> > > @@ -360,6 +358,9 @@ ondemand_readahead(struct address_space 
-> > >  		goto readit;
-> > >  	}
-> > >  
-> > > +	prev_offset = ra->prev_pos >> PAGE_CACHE_SHIFT;
-> > > +	sequential = offset - prev_offset <= 1UL || req_size > max;
-> > 
-> > It's a bit pointless using an opaque type for prev_offset here, and then
-> > encoding the knowledge that it is implemented as "unsigned long".
-> > 
-> > It's a minor thing, but perhaps just "<= 1" would make more sense here.
-> 
-> Yeah, "<= 1" is OK.  But the expression still requires pgoff_t to be
-> 'unsigned' to work correctly.
-> 
-> So what about "<= 1U"?
+On 7/23/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> Not talking about swap prefetch itself, but everytime I have asked
+> anyone to instrument or produce some workload where swap prefetch
+> helps, they never do.
+[...]
+> so for all the people who a whining about merging this and don't want
+> to actually work on the code -- post some numbers for where it helps
+> you!!
 
-I wrote a test case and find that if pgoff_t is 'signed long',
-"<= 1U" still yields the wrong result. Only "<= 1UL" does the trick :(
+<Raised eyebrow> You sound frustrated. Perhaps we could be
+communicating better. I'll start.
 
+Unlike others on the cc: line, I don't get paid to hack on the kernel,
+not even indirectly. So if you find that my lack of providing numbers
+is giving you heartache, I can only apologize and point at my paying
+work that requires my attention.
+
+That said, I'm willing to run my day to day life through both a swap
+prefetch kernel and a normal one. *However*, before I go through all
+the work of instrumenting the damn thing, I'd really like Andrew (or
+Linus) to lay out his acceptance criteria on the feature. Exactly what
+*should* I be paying attention to? I've suggested keeping track of
+process swapin delay total time, and comparing with and without. Is
+that reasonable? Is it incomplete?
+
+Without Andrew's criteria, we're back to where we've been for a long
+time: lots of work, no forward motion. Perhaps it's a character flaw
+of mine, but I'd really like to know what would constitute proof here
+before I invest the effort. Especially given that Con has already
+written a test case that shows that swap prefetch works, and that I've
+given you a clear argument for why better (or even perfect) page
+reclaim can't provide full coverage to all the situations that swap
+prefetch helps. (Also, it's not like I've got tons free time, y'know?
+Just like all the rest of you all, I have to pick and choose my
+battles if I'm going to be effective.)
+
+Since this merge period has appeared particularly frazzling for
+Andrew, I've been keeping silent and waiting for him to get to a point
+where there's a breather. I didn't feel it would be polite to request
+yet more work out of him while he had a mess on his hands.
+
+But, given this has come to a head, I'm asking now.
+
+Andrew? You've always given the impression that you want this run more
+as an engineering effort than an artistic endeavour, so help us out
+here. What are your concerns with swap prefetch? What sort of
+comparative data would you like to see to justify its inclusion, or to
+prove that it's not needed?
+
+Or are we reading too much into the fact that it isn't merged? In
+short, communicate please, it will help.
