@@ -1,98 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934977AbXGXKgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935365AbXGXKh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934977AbXGXKgd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 06:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756476AbXGXKgZ
+	id S935365AbXGXKh3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 06:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbXGXKhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 06:36:25 -0400
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:2160 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753840AbXGXKgZ (ORCPT
+	Tue, 24 Jul 2007 06:37:20 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:35926 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756476AbXGXKhS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 06:36:25 -0400
-Message-ID: <46A5D619.5030600@imap.cc>
-Date: Tue, 24 Jul 2007 12:36:09 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Tue, 24 Jul 2007 06:37:18 -0400
+Date: Tue, 24 Jul 2007 11:37:16 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Len Brown <lenb@kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       venkatesh.pallipadi@intel.com, davej@redhat.com,
+       jhoblitt@ifa.hawaii.edu, auke-jan.h.kok@intel.com,
+       linux-acpi@vger.kernel.org
+Subject: Re: Linus 2.6.23-rc1: ACPI-related oops on x86_64
+In-Reply-To: <200707231315.28838.lenb@kernel.org>
+Message-ID: <Pine.LNX.4.64.0707241135080.17909@skynet.skynet.ie>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+ <20070723095024.GA19437@skynet.ie> <200707231315.28838.lenb@kernel.org>
 MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-       nix.or.die@googlemail.com, andi@firstfloor.org
-Subject: Re: 2.6.22-git17 boot failure
-References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc> <46A5444D.4080304@goop.org> <20070724091018.GA26724@one.firstfloor.org> <20070724095614.GB625@suse.de>
-In-Reply-To: <20070724095614.GB625@suse.de>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig1C31030E5B5D0B91419EACBE"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig1C31030E5B5D0B91419EACBE
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, 23 Jul 2007, Len Brown wrote:
 
-Olaf Hering schrieb:
-> On Tue, Jul 24, Andi Kleen wrote:
->=20
->> > Andi, any thoughts about how to debug the suse boot sequence?
->=20
-> The SuSE boot sequence is rather long. Which part (and which version) a=
-re we talking about?
+> On Monday 23 July 2007 05:50, Mel Gorman wrote:
+>
+>> This was seen on a machine on test.kernel.org;
+>>
+>> Unable to handle kernel NULL pointer dereference at 0000000000000000
+>> RIP:
+>>  [<ffffffff8037379b>] acpi_processor_throttling_seq_show+0xa7/0xd6
+>> PGD 3bd9e067 PUD 3bc6a067 PMD 0
+>> Oops: 0000 [1] SMP
+>> CPU 3
+>> Modules linked in: video output button battery floppy ac lp parport_pc
+>> parport nvram amd_rng rng_core i2c_amd756 i2c_core
+>> Pid: 1522, comm: head Not tainted 2.6.23-rc1-autokern1 #1
+>> RIP: 0010:[<ffffffff8037379b>]  [<ffffffff8037379b>]
+>> acpi_processor_throttling_seq_show+0xa7/0xd6
+>> RSP: 0018:ffff81003c4a5e48  EFLAGS: 00010246
+>> RAX: 0000000000000020 RBX: ffff810037ea1800 RCX: 0000000000000000
+>> RDX: 000000000000002a RSI: ffffffff80599c02 RDI: ffff810037c6a9c0
+>> RBP: ffff810037c6a9c0 R08: ffff81003c3e3051 R09: ffff810037c6a9c0
+>> R10: ffffffffffffffff R11: ffffffff80373e66 R12: 0000000000000000
+>> R13: 0000000000000000 R14: 0000000000000000 R15: 00007fffd59dcd40
+>> FS:  00002b7ad50e36f0(0000) GS:ffff81003ee56b40(0000) knlGS:0000000000000000
+>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+>> CR2: 0000000000000000 CR3: 000000003bd9b000 CR4: 00000000000006e0
+>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>> Process head (pid: 1522, threadinfo ffff81003c4a4000, task ffff81003ee81040)
+>> Stack:  ffff81003eed7180 ffff810037c6a9c0 0000000000000001 0000000000000001
+>>  0000000000002000 ffffffff802a77b3 ffff81003c4a5f50 ffff81003e2f8ec0
+>>  ffff810037c6a9f0 ffff81003de65000 0000000000000000 fffffffffffffffb
+>> Call Trace:
+>>  [<ffffffff802a77b3>] seq_read+0x105/0x28e
+>>  [<ffffffff802a76ae>] seq_read+0x0/0x28e
+>>  [<ffffffff802c8501>] proc_reg_read+0x80/0x9a
+>>  [<ffffffff8028eb3d>] vfs_read+0xcb/0x153
+>>  [<ffffffff8028eed9>] sys_read+0x45/0x6e
+>>  [<ffffffff8020bc6e>] system_call+0x7e/0x83
+>> FATAL: Error inserting acpi_cpufreq
+>> (/lib/modules/2.6.23-rc1-autokern1/kernel/arch/x86_64/kernel/cpufreq/acpi-cpufreq.ko):
+>> No such device
+>>
+>> Full oops is at http://test.kernel.org/abat/100837/debug/console.log
+>> Config file at http://test.kernel.org/abat/100837/build/dotconfig
+>
+> try this,
+> thanks,
+> -Len
+>
+> Subject: fix oops due to typo in new throttling code
+> From: Luming Yu <luming.yu@gmail.com>
+>
 
-Quick summary of the problem:
+This works. When applied, the output to console is
 
-Opensuse 10.2 32-bit install on a Pentium D 940
-Kernel 2.6.22-git17 or later (last reproduced with 2.6.23-rc1)
-A kernel built with CONFIG_XEN=3Dy fails to detect the SATA disks during
-boot, so the root filesystem cannot be mounted and I'm thrown into
-the emergency /bin/sh. With CONFIG_XEN=3Dn everything works fine.
+FATAL: Error inserting acpi_cpufreq 
+(/lib/modules/2.6.23-rc1-autokern1/kernel/arch/x86_64/kernel/cpufreq/acpi-cpufreq.ko): No such device
 
-Netconsole logs with initcall_debug=3D1 of a successful and a
-failing startup and corresponding .config-s are available at
-http://www.phnxsoft.com/~ts/linux/
+Thanks Len
 
-> As Andi said, putting a 'set -x' into /init script generated by /sbin/m=
-kinitrd
-> is one thing.
+>
+> Signed-off-by: Luming Yu <luming.yu@gmail.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+>
 
-I'll try. I guess I'll have to unpack/repack the finished initrd
-image (gzipped cpio archive, AFAICS) for that - or is there a way
-to have mkinitrd inject that statement for me?
+Tested-by: Mel Gorman <mel@csn.ul.ie>
 
-> You can also boot with 'linuxrc=3Dtrace' to generate a huge
-> amount of udev and /init debug.
+> ---
+>
+> drivers/acpi/processor_throttling.c |    6 ++++--
+> 1 files changed, 4 insertions(+), 2 deletions(-)
+>
+> Index: linus/drivers/acpi/processor_throttling.c
+> ===================================================================
+> --- linus.orig/drivers/acpi/processor_throttling.c
+> +++ linus/drivers/acpi/processor_throttling.c
+> @@ -658,18 +658,20 @@ static int acpi_processor_throttling_seq
+> 		   pr->throttling.state_count - 1);
+>
+> 	seq_puts(seq, "states:\n");
+> -	if (acpi_processor_get_throttling == acpi_processor_get_throttling_fadt)
+> +	if (pr->throttling.acpi_processor_get_throttling ==
+> +			acpi_processor_get_throttling_fadt) {
+> 		for (i = 0; i < pr->throttling.state_count; i++)
+> 			seq_printf(seq, "   %cT%d:                  %02d%%\n",
+> 				   (i == pr->throttling.state ? '*' : ' '), i,
+> 				   (pr->throttling.states[i].performance ? pr->
+> 				    throttling.states[i].performance / 10 : 0));
+> -	else
+> +	} else {
+> 		for (i = 0; i < pr->throttling.state_count; i++)
+> 			seq_printf(seq, "   %cT%d:                  %02d%%\n",
+> 				   (i == pr->throttling.state ? '*' : ' '), i,
+> 				   (int)pr->throttling.states_tss[i].
+> 				   freqpercentage);
+> +	}
+>
+>       end:
+> 	return 0;
+>
 
-That looks simple enough, so I'll try that first, although it looks
-to me like the trouble happens before udev comes into play.
-
-> Booting with 'confirm' will allow you to step each runlevel script, see=
-
-> /etc/init.d/boot, look for DO_CONFIRM=3D.
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
-
-
---------------enig1C31030E5B5D0B91419EACBE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGpdYZMdB4Whm86/kRAizLAJ4ye0gQqdA8z2gIYH/AvMR0tfjvagCfU8BD
-sxp8LAaGoEC5fHc7US8AhLw=
-=/LnZ
------END PGP SIGNATURE-----
-
---------------enig1C31030E5B5D0B91419EACBE--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
