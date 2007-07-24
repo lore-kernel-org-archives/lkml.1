@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760654AbXGXWfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbXGXWlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760654AbXGXWfo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 18:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbXGXWfg
+	id S1757448AbXGXWlX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 18:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXGXWlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 18:35:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:40659 "EHLO ozlabs.org"
+	Tue, 24 Jul 2007 18:41:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50267 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbXGXWff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 18:35:35 -0400
-Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Rob Landley <rob@landley.net>, "Randy.Dunlap" <rdunlap@xenotime.net>
-In-Reply-To: <20070724130423.1356c753@the-village.bc.nu>
-References: <1184980678.6344.1.camel@localhost.localdomain>
-	 <20070723171238.1a832b31.akpm@linux-foundation.org>
-	 <1185238908.1803.63.camel@localhost.localdomain>
-	 <alpine.LFD.0.999.0707231808560.3607@woody.linux-foundation.org>
-	 <1185241879.1803.92.camel@localhost.localdomain>
-	 <20070724105208.206a7be5@the-village.bc.nu>
-	 <1185272894.1803.288.camel@localhost.localdomain>
-	 <20070724130423.1356c753@the-village.bc.nu>
-Content-Type: text/plain
-Date: Wed, 25 Jul 2007 08:35:11 +1000
-Message-Id: <1185316511.1803.357.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1751855AbXGXWlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 18:41:15 -0400
+Message-ID: <46A68003.6060901@redhat.com>
+Date: Tue, 24 Jul 2007 18:41:07 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Ulrich Kunitz <kune@deine-taler.de>
+CC: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       honza@jikos.cz, jkosina@suse.cz
+Subject: Re: Is PIE randomization breaking klibc binaries?
+References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com> <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com> <20070724220053.GA20531@deine-taler.de>
+In-Reply-To: <20070724220053.GA20531@deine-taler.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 13:04 +0100, Alan Cox wrote:
-> Dear Rusty I think that we know
-> Your code has good things to show
-> But an unreliable guide
-> To the poetic aside
-> Would probably steal the show
+On 07/24/2007 06:00 PM, Ulrich Kunitz wrote:
+> On 07-07-24 16:57 Chuck Ebbert wrote:
+> 
+>>> $ strace ./cat
+>>> execve("./cat", ["./cat"], [/* 55 vars */]) = -1 ENOENT (No such file or directory)
+>>> ...
+> 
+> Chuck, my binaries run always into a segmentation violation. So
+> ENOENT is not the issue. (Notify it was on an x86-64.)
+> 
 
-That and your (slightly dated?) mm documentation were awesome.  But can
-we stop now?
+Okay, I tested with Fedora on x86_64 and it worked there too.
+(Not that that proves much.)
 
-Please?
-Rusty.
+Did you capture any of the error messages, like the address
+of the segfault?
 
