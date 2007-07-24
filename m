@@ -1,143 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763515AbXGXIf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765524AbXGXIi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763515AbXGXIf4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXGXIfr
+	id S1765524AbXGXIi5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXGXIiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:35:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51196 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752480AbXGXIfp (ORCPT
+	Tue, 24 Jul 2007 04:38:50 -0400
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:54165 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbXGXIit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:35:45 -0400
-Date: Tue, 24 Jul 2007 01:34:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       mark.fasheh@oracle.com, dan.j.williams@intel.com,
-       "Nelson, Shannon" <shannon.nelson@intel.com>
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-Id: <20070724013455.691e6752.akpm@linux-foundation.org>
-In-Reply-To: <20070724082207.GN3287@kernel.dk>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	<20070723183839.GA5874@martell.zuzino.mipt.ru>
-	<20070723190152.GA5755@martell.zuzino.mipt.ru>
-	<20070723132431.42afbae8.akpm@linux-foundation.org>
-	<20070723204045.GD5755@martell.zuzino.mipt.ru>
-	<20070723210153.GA5753@martell.zuzino.mipt.ru>
-	<20070723141137.171e4ac1.akpm@linux-foundation.org>
-	<20070723220446.GA5822@martell.zuzino.mipt.ru>
-	<20070723152712.02ded067.akpm@linux-foundation.org>
-	<20070724081750.GM3287@kernel.dk>
-	<20070724082207.GN3287@kernel.dk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 04:38:49 -0400
+Date: Tue, 24 Jul 2007 01:38:48 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered
+ unnecessarily
+In-Reply-To: <46A5A929.4020706@yahoo.com.au>
+Message-ID: <Pine.LNX.4.58.0707240058370.30561@shell4.speakeasy.net>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <46A578A1.5010504@yahoo.com.au> <Pine.LNX.4.64.0707241154060.1433@cselinux1.cse.iitk.ac.in>
+ <46A5A929.4020706@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 10:22:07 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tue, 24 Jul 2007, Nick Piggin wrote:
+> Satyam Sharma wrote:
+> > But for the non-atomic variants, it does make sense to remove the
+> > memory clobber (and the unneeded __asm__ __volatile__ that another
+> > patch did -- for the non-atomic variants, again).
+>
+> No. It has nothing to do with atomicity and all to do with ordering.
+> For example test_bit, clear_bit, set_bit, etc are all atomic but none
+> place any restrictions on ordering.
+>
+> __test_and_change_bit has no restriction on ordering, so as long as
+> the correct operands are clobbered, a "memory" clobber to enforce a
+> compiler barrier is not needed.
 
-> On Tue, Jul 24 2007, Jens Axboe wrote:
-> > On Mon, Jul 23 2007, Andrew Morton wrote:
-> > > I worked out that the crash I saw was in
-> > > 
-> > >         BUG_ON(!pte_none(*(kmap_pte-idx)));
-> > > 
-> > > in the read of kmap_pte[idx].  Which would be weird as the caller is using 
-> > > a literal KM_USER0.
-> > > 
-> > > So maybe I goofed, and that BUG_ON is triggering (it scrolled off, and I am
-> > > unable to reproduce it now).
-> > > 
-> > > If that BUG_ON _is_ triggering then it might indicate that someone is doing
-> > > a __GFP_HIGHMEM|__GFP_ZERO allocation while holding KM_USER0.
-> > 
-> > Or doing double kunmaps, or doing a kunmap_atomic() on the page, not the
-> > address. I've seen both of those end up triggering that BUG_ON() in a
-> > later kmap.
-> > 
-> > Looking over the 2.6.22..2.6.23-rc1 diff, I found one such error in
-> > ocfs2 at least. But you are probably not using that, so I'll keep
-> > looking...
-> 
-> What about the new async crypto stuff? I've been looking, but is it
-> guarenteed that async_memcpy() runs in process context with interrupts
-> enabled always? If not, there's a km type bug there.
+Speaking of that, why are all the asm functions in arch/i386/lib/string.c
+defined as having a memory clobber, even those which don't modify memory
+like strcmp, strchr, strlen and so on?
 
-I think Shannon maintains that now.
+Why are they all volatile too?  Even those with no side effects.
 
-> In general, I think the highmem stuff could do with more safety checks:
-> 
-> - People ALWAYS get the atomic unmaps wrong, passing in the page instead
->   of the address. I've seen tons of these. And since kunmap_atomic()
->   takes a void pointer, nobody notices until it goes boom.
+It seems like any asm which writes to or _reads from_ memory that isn't one
+of the operands must have a memory clobber.  And any asm with side effects
+other than it's operands (and asm("mov $0, (%0)" :  :  "r"(some_pointer))
+has side effects) must be volatile.
 
-yeah, it's a real trap.  For a while I had a patch which converted
-kmap_atomic() to return a char*, and kunmap_atomic() to take a char*, so
-misuse got compile warnings.  But it was a pig to maintain so I tossed it. 
-It'd be somewhat easier to do now we've converted a lot of callers to
-clear_user_highpage() and similar.
-
-> - People easily get the km type wrong - they use KM_USERx in interrupt
->   context, or one of the irq variants without disabling interrupts.
-> 
-> If we could just catch these two types of bugs, we've got a lot of these
-> problems covered.
-
-Here's the -mm debug patch:
-
-
-diff -puN arch/i386/mm/highmem.c~kmap_atomic-debugging arch/i386/mm/highmem.c
---- a/arch/i386/mm/highmem.c~kmap_atomic-debugging
-+++ a/arch/i386/mm/highmem.c
-@@ -30,7 +30,44 @@ void *kmap_atomic(struct page *page, enu
- {
- 	enum fixed_addresses idx;
- 	unsigned long vaddr;
-+	static unsigned warn_count = 10;
- 
-+	if (unlikely(warn_count == 0))
-+		goto skip;
-+
-+	if (unlikely(in_interrupt())) {
-+		if (in_irq()) {
-+			if (type != KM_IRQ0 && type != KM_IRQ1 &&
-+			    type != KM_BIO_SRC_IRQ && type != KM_BIO_DST_IRQ &&
-+			    type != KM_BOUNCE_READ) {
-+				WARN_ON(1);
-+				warn_count--;
-+			}
-+		} else if (!irqs_disabled()) {	/* softirq */
-+			if (type != KM_IRQ0 && type != KM_IRQ1 &&
-+			    type != KM_SOFTIRQ0 && type != KM_SOFTIRQ1 &&
-+			    type != KM_SKB_SUNRPC_DATA &&
-+			    type != KM_SKB_DATA_SOFTIRQ &&
-+			    type != KM_BOUNCE_READ) {
-+				WARN_ON(1);
-+				warn_count--;
-+			}
-+		}
-+	}
-+
-+	if (type == KM_IRQ0 || type == KM_IRQ1 || type == KM_BOUNCE_READ ||
-+			type == KM_BIO_SRC_IRQ || type == KM_BIO_DST_IRQ) {
-+		if (!irqs_disabled()) {
-+			WARN_ON(1);
-+			warn_count--;
-+		}
-+	} else if (type == KM_SOFTIRQ0 || type == KM_SOFTIRQ1) {
-+		if (irq_count() == 0 && !irqs_disabled()) {
-+			WARN_ON(1);
-+			warn_count--;
-+		}
-+	}
-+skip:
- 	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
- 	pagefault_disable();
- 
-_
-
+So something like strlen() needs to have a memory clobber, otherwise a
+store to the string could be moved to the other side of the strlen(), but
+doesn't need to be volatile, since it has no side effects.
