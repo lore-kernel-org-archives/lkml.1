@@ -1,90 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbYLLBaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbYLLBvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757834AbYLLBaT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 20:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYLLBaF
+	id S1757949AbYLLBvj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 20:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbYLLBv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 20:30:05 -0500
-Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:44614 "HELO
-	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751838AbYLLBaE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 20:30:04 -0500
+	Thu, 11 Dec 2008 20:51:27 -0500
+Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:35880 "HELO
+	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755450AbYLLBvZ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 20:51:25 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=2fRmW4fVwt5BJZHqGf9F8/mq/v/ozAfByJTEOQ8L/fkKdZUr1SuSXeujM5r6yT1n4H1s7//NykMXk5bpRAlwUmvuq1dAm9jdT5k7Me2e3QgeAef4x+l4E+WMHjyuBbF5hGIPAVNdSNoV50dYfTM1UcArTDjlzd6fxb6fAhJNN1E=  ;
-X-YMail-OSG: qbdxVwIVM1lpp5ToM1El6V.qCh6BqL0WnOar8zhFG1IIKeUC_Zl0KzAQ_8tt1T8BG6ytrao_3hOCHoxQJl4n4SJmSVN4NS.t_ehHU1nNPil4wnJv_wqnDIPfYOqF_5hhJq_sRQPjJx1XoyE7Gl7ksL1uPdZ0TL_P2UmBiscK
+  b=uKXGhKXL0ErthbXHyJ+1qMe2dV3Qrfatv50ke6GsAerQeVayiNRKMPp8AlRR2v9mefqPigNYB63fTDfS4CRFYx7hiobYGzjWKfWLiaJAx3e1bsMwuK9DsnC1++Gp8TFBdwyimtJgdL1QIkzV3O9SHxgGtUnntvSubxvNzVZgc2s=  ;
+X-YMail-OSG: cGlF7M8VM1kJKt3JHNdmxZT0ZR2ZInKibk2S68f9txWG.eWzgqKPigTCxOQA5MNaY5DAlCaj7jHioDW6SEY7nXuBMtJrxG7b27U5fwmS7CHE7pH6AtEXnP.W8ygXZGCHF3uVl05_k75.b_ff5Ibe.2irU3Btx_FPL6mHh6JS.Zm9p4T8R9Iv7p7JKISp
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
-Date: Tue, 24 Jul 2007 10:52:13 +1000
+To: Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH v3 6/7] fs: struct file move from call_rcu() to SLAB_DESTROY_BY_RCU
+Date: Tue, 24 Jul 2007 11:13:45 +1000
 User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-References: <49416494.6040009@goop.org>
-In-Reply-To: <49416494.6040009@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org,
+       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
+	<kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <493100B0.6090104@cosmosbay.com> <494196DD.5070600@cosmosbay.com>
+In-Reply-To: <494196DD.5070600@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-Message-Id: <200707241052.13825.nickpiggin@yahoo.com.au>
+Message-Id: <200707241113.46834.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Friday 12 December 2008 06:05, Jeremy Fitzhardinge wrote:
-> Hi Nick,
+On Friday 12 December 2008 09:40, Eric Dumazet wrote:
+> From: Christoph Lameter <cl@linux-foundation.org>
 >
-> In Xen when we're killing the lazy vmalloc aliases, we're only concerned
-> about the pagetable references to the mapped pages, not the TLB entries.
-
-Hm? Why is that? Why wouldn't it matter if some page table page gets
-written to via a stale TLB?
-
-
-> For the most part eliminating the TLB flushes would be a performance
-> optimisation, but there's at least one case where we need to shoot down
-> aliases in an interrupt-disabled section, so the TLB shootdown IPIs
-> would potentially deadlock.
-
-So... 2.6.28 is deadlocky for you?
-
-
-> I'm wondering what your thoughts are about this approach?
-
-Doesn't work, because that's allowing virtual addresses to be reused
-before they have TLBs flushed.
-
-You could have a xen specific function which goes through the lazy maps
-and unmaps their page tables, but leaves them in the virtual address
-allocator (so a subsequent lazy flush will still do the TLB flush before
-allowing the addresses to be reused).
-
-
-> I'm not super-happy with the changes to __purge_vmap_area_lazy(), but
-> given that we need a tri-state policy selection there, adding an enum is
-> clearer than adding another boolean argument.
+> [PATCH] fs: struct file move from call_rcu() to SLAB_DESTROY_BY_RCU
 >
-> It also raises the question of how many callers of vm_unmap_aliases()
-> really care about flushing the tlbs. Presumably if we're shooting down
-> some stray vmalloc mappings then nobody is actually using them at the
-> time, and any corresponding TLB entries are residual. Or does leaving
-> them around leave open the possibility of unwanted speculative
-> references which could violate memory type rules?  Perhaps callers who
-> care about that could arrange their own tlb flush?
+> Currently we schedule RCU frees for each file we free separately. That has
+> several drawbacks against the earlier file handling (in 2.6.5 f.e.), which
+> did not require RCU callbacks:
+>
+> 1. Excessive number of RCU callbacks can be generated causing long RCU
+>   queues that in turn cause long latencies. We hit SLUB page allocation
+>   more often than necessary.
+>
+> 2. The cache hot object is not preserved between free and realloc. A close
+>   followed by another open is very fast with the RCUless approach because
+>   the last freed object is returned by the slab allocator that is
+>   still cache hot. RCU free means that the object is not immediately
+>   available again. The new object is cache cold and therefore open/close
+>   performance tests show a significant degradation with the RCU
+>   implementation.
+>
+> One solution to this problem is to move the RCU freeing into the Slab
+> allocator by specifying SLAB_DESTROY_BY_RCU as an option at slab creation
+> time. The slab allocator will do RCU frees only when it is necessary
+> to dispose of slabs of objects (rare). So with that approach we can cut
+> out the RCU overhead significantly.
+>
+> However, the slab allocator may return the object for another use even
+> before the RCU period has expired under SLAB_DESTROY_BY_RCU. This means
+> there is the (unlikely) possibility that the object is going to be
+> switched under us in sections protected by rcu_read_lock() and
+> rcu_read_unlock(). So we need to verify that we have acquired the correct
+> object after establishing a stable object reference (incrementing the
+> refcounter does that).
+>
+>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+>  Documentation/filesystems/files.txt |   21 ++++++++++++++--
+>  fs/file_table.c                     |   33 ++++++++++++++++++--------
+>  include/linux/fs.h                  |    5 ---
+>  3 files changed, 42 insertions(+), 17 deletions(-)
+>
+> diff --git a/Documentation/filesystems/files.txt
+> b/Documentation/filesystems/files.txt index ac2facc..6916baa 100644
+> --- a/Documentation/filesystems/files.txt
+> +++ b/Documentation/filesystems/files.txt
+> @@ -78,13 +78,28 @@ the fdtable structure -
+>     that look-up may race with the last put() operation on the
+>     file structure. This is avoided using atomic_long_inc_not_zero()
+>     on ->f_count :
+> +   As file structures are allocated with SLAB_DESTROY_BY_RCU,
+> +   they can also be freed before a RCU grace period, and reused,
+> +   but still as a struct file.
+> +   It is necessary to check again after getting
+> +   a stable reference (ie after atomic_long_inc_not_zero()),
+> +   that fcheck_files(files, fd) points to the same file.
+>
+>  	rcu_read_lock();
+>  	file = fcheck_files(files, fd);
+>  	if (file) {
+> -		if (atomic_long_inc_not_zero(&file->f_count))
+> +		if (atomic_long_inc_not_zero(&file->f_count)) {
+>  			*fput_needed = 1;
+> -		else
+> +			/*
+> +			 * Now we have a stable reference to an object.
+> +			 * Check if other threads freed file and reallocated it.
+> +			 */
+> +			if (file != fcheck_files(files, fd)) {
+> +				*fput_needed = 0;
+> +				put_filp(file);
+> +				file = NULL;
+> +			}
+> +		} else
+>  		/* Didn't get the reference, someone's freed */
+>  			file = NULL;
+>  	}
+> @@ -95,6 +110,8 @@ the fdtable structure -
+>     atomic_long_inc_not_zero() detects if refcounts is already zero or
+>     goes to zero during increment. If it does, we fail
+>     fget()/fget_light().
+> +   The second call to fcheck_files(files, fd) checks that this filp
+> +   was not freed, then reused by an other thread.
+>
+>  6. Since both fdtable and file structures can be looked up
+>     lock-free, they must be installed using rcu_assign_pointer()
+> diff --git a/fs/file_table.c b/fs/file_table.c
+> index a46e880..3e9259d 100644
+> --- a/fs/file_table.c
+> +++ b/fs/file_table.c
+> @@ -37,17 +37,11 @@ static struct kmem_cache *filp_cachep __read_mostly;
+>
+>  static struct percpu_counter nr_files __cacheline_aligned_in_smp;
+>
+> -static inline void file_free_rcu(struct rcu_head *head)
+> -{
+> -	struct file *f =  container_of(head, struct file, f_u.fu_rcuhead);
+> -	kmem_cache_free(filp_cachep, f);
+> -}
+> -
+>  static inline void file_free(struct file *f)
+>  {
+>  	percpu_counter_dec(&nr_files);
+>  	file_check_state(f);
+> -	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
+> +	kmem_cache_free(filp_cachep, f);
+>  }
+>
+>  /*
+> @@ -306,6 +300,14 @@ struct file *fget(unsigned int fd)
+>  			rcu_read_unlock();
+>  			return NULL;
+>  		}
+> +		/*
+> +		 * Now we have a stable reference to an object.
+> +		 * Check if other threads freed file and re-allocated it.
+> +		 */
+> +		if (unlikely(file != fcheck_files(files, fd))) {
+> +			put_filp(file);
+> +			file = NULL;
+> +		}
 
-The whole lazy flush requires the TLB flush because the core vmalloc
-code needs to flush before reallocating. So it can't really go into
-the caller.
+This is a non-trivial change, because that put_filp may drop the last
+reference to the file. So now we have the case where we free the file
+from a context in which it had never been allocated.
 
-PAT needs the TLBs flushed, definitely.
+>From a quick glance though the callchains, I can't seen an obvious
+problem. But it needs to have documentation in put_filp, or at least
+a mention in the changelog, and also cc'ed to the security lists.
 
-I'm surprised that Xen doesn't... but let's hear it :)
+Also, it adds code and cost to the get/put path in return for
+improvement in the free path. get/put is the more common path, but
+it is a small loss for a big improvement. So it might be worth it. But
+it is not justified by your microbenchmark. Do we have a more useful
+case that it helps?
