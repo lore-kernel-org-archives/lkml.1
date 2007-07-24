@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbXGXTIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXGXTKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761485AbXGXTIG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbXGXTHz
+	id S1761489AbXGXTKo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbXGXTKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:07:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35862 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752994AbXGXTHx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:07:53 -0400
-Date: Tue, 24 Jul 2007 12:07:51 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mel Gorman <mel@skynet.ie>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
-Message-ID: <20070724120751.401bcbcb@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com>
-References: <1185185020.8197.11.camel@twins>
-	<20070723112143.GB19437@skynet.ie>
-	<1185190711.8197.15.camel@twins>
-	<Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com>
-	<1185256869.8197.27.camel@twins>
-	<Pine.LNX.4.64.0707240007100.3128@schroedinger.engr.sgi.com>
-	<1185261894.8197.33.camel@twins>
-	<Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com>
-Organization: Silicon Graphics, Inc.
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 15:10:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51211 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750787AbXGXTKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 15:10:35 -0400
+Date: Tue, 24 Jul 2007 21:10:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.22.1-rt5
+Message-ID: <20070724191027.GA13268@elte.hu>
+References: <20070724120436.GA14466@elte.hu> <200707241156.03149.gene.heskett@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707241156.03149.gene.heskett@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GFP_LEVEL_MASK is used to allow the pass through of page allocator
-flags. Currently these are
 
-#define GFP_LEVEL_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS| \
-                        __GFP_COLD|__GFP_NOWARN|__GFP_REPEAT| \
-                        __GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP| \
-                        __GFP_NOMEMALLOC|__GFP_HARDWALL|__GFP_THISNODE|
-			__GFP_MOVABLE)
+* Gene Heskett <gene.heskett@gmail.com> wrote:
 
-Some of these flags control page allocator reclaim and fallback
-behavior. If they are specified for a slab alloc operation then they
-are effective if a new slab has to be allocated. These are
+> The above stanza still needs some tlc.  I built a 2.6.22.1-rt6 (rt5 
+> wouldn't build) using the same old config that a make oldconfig didn't 
+> fuss about, but the reboot never completed, see the attached, heavily 
+> smunched camera shot of the panic.
+> 
+> Kinda looks like hda/sda confusion, with rt3 (this boot), its hda*, 
+> what is it now?  fstab or kernel config error?
 
-1. Reclaim control
+yeah, as long as your filesystems are created with a proper label, all 
+that you need to do is to change all 'hda' to 'sda' in the new kernel's 
+/etc/grub.conf entry. (or enable the old IDE code in the .config, under 
+CONFIG_IDE)
 
-__GFP_WAIT
-__GFP_IO
-__GFP_FS
-__GFP_NOWARN
-__GFP_REPEAT
-__GFP_NOFAIL
-__GFP_NORETRY
-
-2. Reserve control
-
-__GFP_HIGH
-__GFP_NOMEMALLOC
-
-2. Fallback control
-
-__GFP_HARDWALL	(cpuset contraints)
-__GFP_THISNODE (handled by SLAB on its own, SLUB/SLOB pass through)
-
-AFAIK these make sense.
-
-Then there are some other flags. I am wondering why they are in
-GFP_LEVEL_MASK?
-
-__GFP_COLD	Does not make sense for slab allocators since we have
-		to touch the page immediately.
-
-__GFP_COMP	No effect. Added by the page allocator on their own
-		if a higher order allocs are used for a slab.
-
-__GFP_MOVABLE	The movability of a slab is determined by the
-		options specified at kmem_cache_create time. If this is
-		specified at kmalloc time then we will have some random
-		slabs movable and others not. 
-
+	Ingo
