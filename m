@@ -1,48 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935646AbXGXLoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934661AbXGXLrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935646AbXGXLoq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 07:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXGXLog
+	id S934661AbXGXLrj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 07:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXGXLrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 07:44:36 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3799 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058AbXGXLof (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 07:44:35 -0400
-Message-ID: <46A5E610.7000508@shadowen.org>
-Date: Tue, 24 Jul 2007 12:44:16 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 24 Jul 2007 07:47:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40070 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752908AbXGXLrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 07:47:31 -0400
+Date: Tue, 24 Jul 2007 13:47:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+Message-ID: <20070724114713.GA9817@elte.hu>
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A53F3A.7060509@intel.com> <46A5E39D.7030009@shadowen.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Paul Mackerras <paulus@samba.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-References: <20070716161539.075822000@pademelon.sonytel.be>	<20070716162206.392129000@pademelon.sonytel.be> <20070718163637.3f0e0164.akpm@linux-foundation.org>
-In-Reply-To: <20070718163637.3f0e0164.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A5E39D.7030009@shadowen.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
 
->> +	start_sector = req->sector*priv->blocking_factor;
->> +	sectors = req->nr_sectors*priv->blocking_factor;
+* Andy Whitcroft <apw@shadowen.org> wrote:
+
+> > within the last 3 weeks, this script went from *really usable* to *a 
+> > big noise maker*.
+
+seconded ...
+
+v0.06 was "almost there". I fixed kernel/sched.c to be completely clean, 
+except for 3 false positives. That was a real improvement, and i started 
+to like checkpatch.pl.
+
+v0.08 is a clear step backwards: it emits 61 warnings now, 90% of which 
+are totally bogus. The only 'fix' for many of those warnings is to make 
+the code _worse_. That is unacceptable.
+
+> > Warning on multiple declarations on a line is nice, but IMO really 
+> > too verbose (why is "int i, j;" bad? Did C somehow change syntax 
+> > today?).
 > 
-> s/*/ * /.  checkpatch missed this.
+> No the normal response is two fold:
+> 
+> 1) "what the heck are i and j those are meaningless names"
+> 2) "please can we have some comments for those variables"
 
-Ok, this is something we need to decide on.  Currently we only ask for
-consistent spacing on all the mathematic operators.  This is mostly as
-we do see a large number of non-spaced uses in defines and the like.
+you really should not even be arguing about this. LOOK AT the many false 
+positives in sched.c. This is perfectly readable code:
 
-I am happy to expand these tests so they are always spaced on both sides
-style if that is the preference.
+ void __init sched_init(void)
+ {
+         u64 now = sched_clock();
+         int highest_cpu = 0;
+         int i, j;
 
--apw
+         for_each_possible_cpu(i) {
+                 struct rt_prio_array *array;
+                 struct rq *rq;
+
+                 rq = cpu_rq(i);
+
+this warning for "i, j" is clearly bogus. So are many of the other 
+warnings. checkpatch.pl went from a useful tool that improved the 
+quality of the kernel to a rigid, unflexible policeman. It needs to be 
+fixed or needs to be gotten rid of.
+
+> which normally leads to the suggestion that it be the following form:
+> 
+> 	int source;		/* source clock hand */
+> 	int destination;	/* destination clock hand */
+
+what the hell are you thinking? Not every trivial line of code needs to 
+be commented. Comments are needed for the _nontrivial_ lines of code, 
+and there's no way a tool can decide that. The longer "destination" 
+variable suggested by you can _easily_ make a previously readable piece 
+of code unreadable.
+
+	Ingo
