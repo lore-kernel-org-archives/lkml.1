@@ -1,78 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbXGXORt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763613AbXGXOTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761782AbXGXORt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757070AbXGXORl
+	id S1763613AbXGXOTv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXGXOTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:17:41 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:21439 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756712AbXGXORk (ORCPT
+	Tue, 24 Jul 2007 10:19:44 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:39364 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756712AbXGXOTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:17:40 -0400
-Subject: Re: [linux-pm] Power Management framework proposal
-From: Igor Stoppa <igor.stoppa@nokia.com>
-To: ext Jerome Glisse <j.glisse@gmail.com>
-Cc: "david@lang.hm" <david@lang.hm>,
-       "ext linux-pm-bounces@lists.linux-foundation.org" 
-	<linux-pm-bounces@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
-	 <1185091022.19678.28.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
-	 <1185105911.29238.43.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
-	 <1185187720.26628.23.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0707231033430.3828@asgard.lang.hm>
-	 <4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: OSSO
-Date: Tue, 24 Jul 2007 17:18:16 +0300
-Message-Id: <1185286696.12325.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 24 Jul 2007 14:16:45.0214 (UTC) FILETIME=[43DA2BE0:01C7CDFD]
-X-Nokia-AV: Clean
+	Tue, 24 Jul 2007 10:19:44 -0400
+Date: Tue, 24 Jul 2007 16:20:50 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070724142050.GD4074@enneenne.com>
+References: <20070717180550.GA24759@enneenne.com> <1185197716.14697.244.camel@pmac.infradead.org> <20070724080013.GA22171@gundam.enneenne.com> <1185284942.14697.319.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185284942.14697.319.camel@pmac.infradead.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS - definitive version
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 10:43 +0200, ext Jerome Glisse wrote:
+On Tue, Jul 24, 2007 at 02:49:02PM +0100, David Woodhouse wrote:
 
-> I believe a central place where user can set/change hw state to save
-> power or to increase computational power is definitely a goal to pursue.
-> But i truly think that the OHM approach is the best one ie using plugins
-> so that one can make a plugin specific for each device. The point is that
-> i believe there is no way to do an abstract interface for this and trying to
-> do so will endup doing ugly code and any interface would fail to encompass
-> all possible tweak that might exist for all devices.
+> Also 's/unknow /unknown /' (2 instances)
+
+?? I didn't find them:
+
+   $ grep 'unknow ' Documentation/pps/pps.txt
+
+> Am I right in thinking that the only place it matters is within
+> pps_event()? In that case, at the very least you should probably remove
+> the 'volatile' from the definition of the structure, and _cast_ to
+> volatile where you want it treated that way.
+
+Ok, I see.
+
+> But I don't see why you can't protect it with a spinlock. As long as you
+> acquire that spinlock _after_ your call to getnstimeofday() what's the
+> problem?
+
+The problem is that we can have several PPS sources into a system and
+all these sources will arise their IRQ line (quasi)simultaneously and
+I don't wish a CPU may delay one of these IRQ handler due a spinlock
+into the pps_event().
+
+That's why I'm trying to avoid any lock into pps_event().
+
+> I think you still haven't quite got the 32-bit vs. 64-bit compatibility
+> right. Remember that on i386, the alignment of a uint64_t is only 4
+> bytes, while on most other architectures it's 8 bytes. On i386, there
+> will be no padding between the two consecutive 'struct pps_ktime'
+> members of struct pps_kinfo and struct pps_kparams. But on most
+> platforms there will be padding to ensure correct alignment.
 > 
-> For instance on graphics card you could do the following (maybe more):
-> -change GPU clock
-> -change memory clock
-> -disable part of engine
-> -disable unit
-> i truly don't think you can make a common interface for all this, more
-> over there might be constraint on how you can change things (GPU &
-> memory clock might need to follow a given ratio). So you definitely
-> need knowledge in the user space program to handle this.
+> The simple fix is probably to make the 'nsec' member a 64-bit integer
+> too. Then it'll be the same for i386 and x86_64 and you won't need a
+> compatibility syscall routine.
 
-Even simpler case: LCD backlight can come in many flavors, both in terms
-of brightness levels and fixed amount of current required to keep it ON.
+Ok. I'll add your comment too.
 
-Trying to abstract such details from the decision-making makes little
-sense.
-Isolating that into a separate module, instead, brings the best of both
-worlds:
--containment of the HW-specific code
--leveraging every possible, no matter how exotic, power saving mode
-available.
+> In order for your handling of 'pps_source[source].info' to be safe with
+> respect to pps_unregister_source(), you have to guarantee that
+> pps_event() has finished -- and can't be in progress on another CPU --
+> by the time your client's call to pps_unregister_source() completes. At
+> first glance I think your existing clients have that right (you have
+> del_timer_sync() before pps_unregister_source() in ktimer.c, for
+> example). But you should make sure it's clearly documented for new
+> clients.
 
+This can be done only with locks, but it's not necessary since even if
+a pps_unregister_source() runs while pps_event() executes on another
+CPU the latter will write always on a valid area (even if it could be
+a dummy one) and the data are not corrupted (note also that the data
+will be, in any case, discarted since we are executing a
+pps_unregister_source()).
+
+> Shouldn't your PPS_CLIENT_LP and PPS_CLIENT_UART options depend on
+> PARPORT and SERIAL_CORE respectively?
+
+No. These options can be enabled but if no serial/parallel driver is
+loaded no PPS source is registered.
+
+Thanks,
+
+Rodolfo
 
 -- 
-Cheers, Igor
 
-Igor Stoppa <igor.stoppa@nokia.com>
-(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
