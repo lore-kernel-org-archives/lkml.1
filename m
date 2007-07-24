@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760667AbXGXN6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761658AbXGXOAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760667AbXGXN6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 09:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXGXN6c
+	id S1761658AbXGXOAZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXGXOAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 09:58:32 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50291 "EHLO e2.ny.us.ibm.com"
+	Tue, 24 Jul 2007 10:00:12 -0400
+Received: from mga09.intel.com ([134.134.136.24]:31340 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754258AbXGXN6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 09:58:32 -0400
-Message-ID: <46A60581.90800@austin.ibm.com>
-Date: Tue, 24 Jul 2007 08:58:25 -0500
-From: jschopp <jschopp@austin.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	id S1754504AbXGXOAK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 10:00:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,574,1175497200"; 
+   d="scan'208";a="109331229"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@osdl.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A53F3A.7060509@intel.com>
-In-Reply-To: <46A53F3A.7060509@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Date: Tue, 24 Jul 2007 22:00:04 +0800
+Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC236CF66@pdsmsx415.ccr.corp.intel.com>
+In-Reply-To: <200707151249.26148.rjw@sisk.pl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+Thread-Index: AcfGzL1SyZBkItdgQLaxf3fOlZwe7QHLOEpQ
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Pavel Machek" <pavel@ucw.cz>, <nigel@nigel.suspend2.net>,
+       "Jeremy Maitin-Shepard" <jbms@cmu.edu>, <linux-kernel@vger.kernel.org>,
+       <linux-pm@lists.linux-foundation.org>,
+       "Kexec Mailing List" <kexec@lists.infradead.org>
+X-OriginalArrivalTime: 24 Jul 2007 14:00:06.0690 (UTC) FILETIME=[F0AF8020:01C7CDFA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> within the last 3 weeks, this script went from *really usable* to *a big 
-> noise maker*.
+>From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
+>This is not the point.  There are memory regions that you should not
+_restore_,
+>because that will cause harm.
+>
+>> On x86_64, there is another usage of nosave during processing E820
+>> memory map. But I don't know why the memory region other than
+E820_RAM
+>> are marked as nosave. I think only the memory region of type E820_RAM
+>> will be thought of normal memory, others will be thought as reserved.
+Is
+>> it sufficient just to check whether the page is reserved?
+>
+>No, it's not.
 
-As we (mostly Andy of late) add more checks (good) there is bound to be some code we just 
-didn't forsee that generates false positives (bad).  You can see a consistent history of 
-cleaning these up as quickly as people send them in.  Hopefully in the interim there 
-aren't too many false positives and the script is still useful.  We do try to put the new 
-tests through their paces before adding them in, but our imaginations are limited.
+The "/proc/iomem" records information of all memory regions including
+"normal RAM" and all kinds of reserved regions, which is backed by
+iomem_resource. On x86_64, it is initialized in the exact same way as
+nosave region initialization.
 
-The goal has always been to err on the side of missing badness in code to avoid false 
-positives. This way, when there is output it has a very high chance of not wasting your 
-time.  Wait a couple weeks and it'll be there again.
+I think maybe we can replace the "nosave region" concepts with
+"iomem_resource" (maybe need some enhancement).
 
-> Bottom line: I really wish that I could have the script run in the old 
-> behaviour before. While this level of verbosity is great for single-line 
-> patches, it really completely wastes my time when I'm trying to get a 
-> grasp for a 200k hunk piece of code.
-
-I think it would be a great idea to have the script default to very conservative behavior 
-and have a flag say --verbose to turn on checks that have a higher false positive rate 
-(such as the multiple variable declarations per line).  This might also be a staging area 
-for newer checks to get a chance to work out some kinks before being added to the default.
+Best Regards,
+Huang Ying
