@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbXGXPIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbXGXPNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbXGXPIr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 11:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbXGXPIk
+	id S1755484AbXGXPNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 11:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXGXPNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 11:08:40 -0400
-Received: from [212.12.190.215] ([212.12.190.215]:33018 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751460AbXGXPIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 11:08:40 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Boring limeriks (was: [PATCH 1/7] lguest: documentation pt I: Preparation)
-Date: Tue, 24 Jul 2007 18:08:56 +0300
-User-Agent: KMail/1.5
-References: <200707241720.30271.a1426z@gawab.com> <p73zm1lstw4.fsf@bingen.suse.de>
-In-Reply-To: <p73zm1lstw4.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707241808.56781.a1426z@gawab.com>
+	Tue, 24 Jul 2007 11:13:16 -0400
+Received: from vena.lwn.net ([206.168.112.25]:53577 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751260AbXGXPNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 11:13:15 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Rob Landley <rob@landley.net>, "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Mon, 23 Jul 2007 17:12:38 PDT."
+             <20070723171238.1a832b31.akpm@linux-foundation.org> 
+Date: Tue, 24 Jul 2007 09:13:14 -0600
+Message-ID: <5659.1185289994@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Al Boldi <a1426z@gawab.com> writes:
-> > There once was a list called lkml
-> > Which had subscribers that were rather bored
-> > They lost out to the bore
-> > And as time passed by
-> > They saw the competition fly by.
->
-> Well I guess limericks are better than random user space only issues
-> (like your recent partition user help thread)
+> Items for consideration would be:
+> 
+> - if this stuff is good, shouldn't other code be using it?  If so, is
+>   this new infrastructure in the correct place?
+> 
+> - if, otoh, this infrastructure is _not_ suitable for other code, well,
+>   what was wrong with it?
+> 
+> - if the requirement is good, perhaps alternative implementations should
+>   be explored (dunno what).
 
-No kidding!  I must have been infected.
+Well, we could just rewrite the whole kernel in Web and judge all future
+patches on how literate they are...
 
+Seriously, though, even if the (small) infrastructure is not going to
+take over the driver tree anytime soon, it's hard to imagine why we
+would not want to incorporate this sort of documentation.  It's good
+stuff, something which can really help people get a sense for how this
+whole virtualization thing works.  And it makes the code fun to read.
 
-Thanks for the wakeup!
+jon
 
---
-Al
-
+P.S. I am currently considering a no-limericks policy for the LWN quote
+of the week.
