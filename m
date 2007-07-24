@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935600AbXGXKiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935616AbXGXKkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935600AbXGXKiH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 06:38:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933935AbXGXKhu
+	id S935616AbXGXKkA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 06:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbXGXKjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 06:37:50 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46673 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933124AbXGXKht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 06:37:49 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/W9XIh1iDWnRKX17/qw+ejvQLFn05YJRVbbOpPoQ
-	hR0mO/JJpTkhbA
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-From: Mike Galbraith <efault@gmx.de>
+	Tue, 24 Jul 2007 06:39:52 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3212 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753840AbXGXKjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 06:39:51 -0400
+Date: Tue, 24 Jul 2007 06:38:48 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <1185271269.6479.7.camel@Homer.simpson.net>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	 <20070723183839.GA5874@martell.zuzino.mipt.ru>
-	 <20070723190152.GA5755@martell.zuzino.mipt.ru>
-	 <20070723132431.42afbae8.akpm@linux-foundation.org>
-	 <1185271269.6479.7.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 12:37:48 +0200
-Message-Id: <1185273468.6467.5.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Cc: linux-kernel@vger.kernel.org, wwoods@redhat.com
+Subject: Re: [PATCH]: allow individual core dump methods to be unlimited when sending to a pipe
+Message-ID: <20070724103847.GA23976@hmsreliant.homelinux.net>
+References: <20070722153947.GA11941@hmsreliant.homelinux.net> <20070724020939.7644f18c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070724020939.7644f18c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 12:01 +0200, Mike Galbraith wrote:
-> On Mon, 2007-07-23 at 13:24 -0700, Andrew Morton wrote:
+On Tue, Jul 24, 2007 at 02:09:39AM -0700, Andrew Morton wrote:
+> On Sun, 22 Jul 2007 11:39:47 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
 > 
-> > You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
+> > 	This is a follow on to the patch entitled:
+> > update-coredump-path-in-kernel-to-not-check-coredump-rlim-if-core_pattern-is-a-pipe.patch
+> > It allows individual core dump methods to have the core dump size limit passed
+> > into them.  Its more efficient than each method having to retrieve it on their
+> > own, and it allows for do_coredump to specify a infinite limit in the event that
+> > a pipe is configured in /proc/sys/kernel/core_pattern, in which case ulimit -c
+> > should not apply.
 > 
-> My box bugged during boot the first time I booted 23-rc1, but nothing
-> made it to the console, and I didn't have a serial console running.  I
-> didn't have DEBUG_PAGEALLOC or friends set.
+> Needed this warning fix:
 > 
-> > I haven't worked out where that kmap_atomic() call is coming from yet. 
-> > Both traces point up into the page allocator, but I _think_ that's stack
-> > gunk.
+> fs/exec.c: In function 'do_coredump':
+> fs/exec.c:1761: warning: large integer implicitly truncated to unsigned type
 > 
-> I just enabled all debug options, and was just rewarded with the below.
+> diff -puN fs/exec.c~allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix fs/exec.c
+> --- a/fs/exec.c~allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix
+> +++ a/fs/exec.c
+> @@ -1703,7 +1703,7 @@ int do_coredump(long signr, int exit_cod
+>  	int fsuid = current->fsuid;
+>  	int flag = 0;
+>  	int ispipe = 0;
+> -	u32 core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
+> +	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
+>  
+>  	audit_core_dumps(signr);
+>  
+> _
+> 
+> which makes me worry about how much care was taken here on 32/64 issues,
+> and crsos-arch issues (the underlying type for compat_ulong_t, for one).
+> 
+> Could you please go over it with a toothcomb, see if there are any other
+> slipups there?
+> 
+Yes, I had noticed this yesterday aternoon as well, Andrew. Sorry about that.
+Upon looking at it using unsigned long should be the superset of all the
+definitions, so I'm working on a patch to align that, and am testing it on all
+the arches I have available here (x86, x86_64, ia64, and perhaps ppc64 if I can
+get hold of it).  I also have a few more bugs that need fixing in the
+core_pattern/pipe code as well as one more feature enhancement (the ability to
+pass an argv array).  I'll fix up the bugs first, and you can expect these
+patches in the next day or two.
 
-Hm.  I just also experienced filesystem corruption when I tried to send
-from that kernel, and it bugged in the process.  My mount table ended up
-in /etc/resolv.conf along with some binary goop, making nscd rather
-unhappy after reboot.  fsck time.
+Thanks & Regards
+Neil
+> 
+> Thanks.
 
-	.Mike
-
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
