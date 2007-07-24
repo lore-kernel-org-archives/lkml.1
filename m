@@ -1,125 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765995AbXGXHP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbXGXHQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765995AbXGXHP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 03:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbXGXHPP
+	id S932525AbXGXHQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 03:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbXGXHQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 03:15:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:2543 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbXGXHPN (ORCPT
+	Tue, 24 Jul 2007 03:16:06 -0400
+Received: from kuber.nabble.com ([216.139.236.158]:36209 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757407AbXGXHQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 03:15:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=QxHsTZKTZIO/+1o0eQ2/9CzuN6zJYLU4txElFHLk0T9mgyPvnJLbIp2WDaUnQTizoksOZ//kXSOTjnHVeeLUwfspZdFZjHYPtbOS7cV2cBarV8OnSe+2j1rkEw/stfcNq9SZz0Cn8CGZ1ybkRVQUZumfT6e+g7Wftnlj95LD4Ws=
-Message-ID: <309a667c0707240015q4a9f32d0h88f0b25f2714d1dc@mail.gmail.com>
-Date: Tue, 24 Jul 2007 12:45:11 +0530
-From: "Devesh Sharma" <devesh28@gmail.com>
-To: linux-kernel@vger.kernel.org, kernelnewbies@nl.linux.org
-Subject: Need Help on compat_ioctl implementation
+	Tue, 24 Jul 2007 03:16:05 -0400
+Message-ID: <11758042.post@talk.nabble.com>
+Date: Tue, 24 Jul 2007 00:16:03 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: workqueue is not working?
+In-Reply-To: <11706967.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Nabble-From: misbah_khan@engineer.com
+References: <4ae3c140511171505j33dc4c2ere731f1b3c55f9741@mail.gmail.com> <11706967.post@talk.nabble.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
-I am facing some difficulty to implement compat_ioctl entry point in
-my driver code, please help me out to sort out the things.
-The ioctl is READ WRITE type,
-It takes one header structure as argument the structure is as follows,
-typedef struct
-    {
-        unsigned int Header;
-        void  *          Data;
-        unsigned int  Size;
-    } IOCTL_HEADER;
 
-corresponding compat strucutre is
-typedef struct ioctl_header32
-{
- compat_uint_t  Header ;
- compat_uptr_t Data ;
- compat_uint_t Size ;
-}IOCTL_HEADER32 ;
+hi ..
+There is a reply to you please find it and revert me back 
 
-the IOCTL is expected to fill following structure and return.
-typedef struct
-{
-    unsigned int msgsize;
-    char           msg[512];
-} MSG ;
+-misbah
 
- compat_ioctl entry point is as follows.
+Misbah khan wrote:
+> 
+> I didnt got very clearly what you actually did. But i guess you did faced
+> some problem to work with work queue ( Bottom half of the handler ) I
+> suggest you with an example code so that you could try with it and hope
+> your doubt would get cleared.
+> 
+> /* work queue register and initialize */
+> static DECLARE_WORK(queue_name,(void *)func_name,func_arq_ptr);
+> 
+> eg :-
+> 
+> static DECLARE_WORK(my_queue,(void *)my_func,NULL);
+> 
+> /* In the Interrupt handler you need to call the bottom half of the
+> function */
+> 
+> schedule_work(&my_queue);
+> 
+> /* The function defination is like this */
+> void my_func(void)
+> {
+>        printk(" Hello from kernal land \n");
+> }
+> 
+> I hope this example will make your code to work for you , for any
+> clarification please let me know 
+> 
+> thanks 
+> 
+> 
+> 
+> 
+> Xin Zhao wrote:
+>> 
+>> I tried to schedule some work in an softirq handler. The way I did is
+>> as follows:
+>> 
+>> I use create_workqueue to initialize a workqueue "vrpciod_workqueue",
+>> 
+>> in the softirq, I do INIT_WORK(work, func, data), and then
+>> queue_work(vrpciod_workqueue, work);
+>> 
+>> I think func() should be called a bit later. However, I noticed that
+>> func() is never called by the workqueue. I don't know why.
+>> 
+>> Can soneone give me some suggestions? Many thanks!
+>> 
+>> Xin
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+>> in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>> 
+>> 
+> 
+> 
 
-long func_ioctl32(
+-- 
+View this message in context: http://www.nabble.com/workqueue-is-not-working--tf573889.html#a11758042
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
-            struct file *filp,
-
-            unsigned int cmd,
-
-            unsigned long arg)
-{
-    long ret = 0 ;
-    IOCTL_HEADER hdr64 ;
-    IOCTL_HEADER32 __user *hdr32 ;
-    unsigned long tmp ;
-    u64 data ;
-    unsigned long size ;
-
-    hdr32 = (IOCTL_HEADER32 __user *)compat_ptr(arg) ;
-    __get_user(tmp, &(hdr32->Header)) ;
-    __get_user(data, &(hdr32->Data)) ;
-    __get_user(size, &(hdr32->Size)) ;
-
-    if(!access_ok(
-                  VERIEY_READ|VERIFY_WRITE,
-                  compat_ptr(data),
-                  sizeof(unsigned long)))
-    {
-        printk("No access to this address\n") ;
-        return -EFAULT ;
-    }
-
-    hdr64.Header = tmp ;
-    hdr64.Data    = data ;
-    hdr64.Size   = size ;
-    handle_ioctls(filp, cmd, (void *)&hdr64) ; /*This func is specific
-to compat ioctl.*/
-
-   return ret;
-}
-
-In handle_ioctl I am doing following steps.
-{
-ioctl_hdr = (IOCTL_HEADER *)cmd_buff ;
-
-    switch(cmd)
-    {
-        case IOCTL_MSG_GET :
-             {
-                 MSG32 *msg32 ; /* Compat msg struct is defined.*/
-                  MSG msg ;
-                 unsigned int i ;
-
-                 msg32 = (MSG32 __user *)ioctl_hdr->Data ;
-                 msg.msgsize = 128 ;
-                 strcpy(msg.msg, MSG_STR) ; /*MSG_STR is a macro string*/
-                 put_user(msg.msgsize, &(msg32->msgsize)) ; /* This
-works fine.*/
-                 put_user(msg.msg[0], (char *) compat_ptr(msg32->msg))
-; /* This is giving SEG FAULT */
-             }
-     }
-}
-
-Question :
-What is the correct way to perform string copy? Or is this method
-correct? if not what is the correct way?
-Any links or pointers are most welcome
-
-Thanks in advance
-Devesh
