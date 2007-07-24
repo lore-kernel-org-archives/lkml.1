@@ -1,100 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbXGXNtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbXGXNzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762387AbXGXNtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 09:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbXGXNtH
+	id S1759583AbXGXNzt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 09:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXGXNzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 09:49:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35980 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752976AbXGXNtG (ORCPT
+	Tue, 24 Jul 2007 09:55:38 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:26954 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754353AbXGXNzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 09:49:06 -0400
-Subject: Re: [PATCH] LinuxPPS - definitive version
-From: David Woodhouse <dwmw2@infradead.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070724080013.GA22171@gundam.enneenne.com>
-References: <20070717180550.GA24759@enneenne.com>
-	 <1185197716.14697.244.camel@pmac.infradead.org>
-	 <20070724080013.GA22171@gundam.enneenne.com>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 14:49:02 +0100
-Message-Id: <1185284942.14697.319.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+	Tue, 24 Jul 2007 09:55:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=nBwYZbIET3dSLGMzGaTcVYPqaz1bOTHxhYkpnFBXy+T56Fj+pLqIoJo27PIoZVJLihZ4Xu84oQo4xXsOcmulcvgoL9CJf27sMCCjkF+kG89TvlLyWHc34Or+QdzigZ+hnKx2SpItaV4gnGJdNhPy0d6pkpdwS/AC4/B9j5GtGyY=
+Message-ID: <e9c3a7c20707240655j533f0882xe067903e5f0ac9b7@mail.gmail.com>
+Date: Tue, 24 Jul 2007 06:55:36 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       mark.fasheh@oracle.com
+In-Reply-To: <20070724082207.GN3287@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <20070723190152.GA5755@martell.zuzino.mipt.ru>
+	 <20070723132431.42afbae8.akpm@linux-foundation.org>
+	 <20070723204045.GD5755@martell.zuzino.mipt.ru>
+	 <20070723210153.GA5753@martell.zuzino.mipt.ru>
+	 <20070723141137.171e4ac1.akpm@linux-foundation.org>
+	 <20070723220446.GA5822@martell.zuzino.mipt.ru>
+	 <20070723152712.02ded067.akpm@linux-foundation.org>
+	 <20070724081750.GM3287@kernel.dk> <20070724082207.GN3287@kernel.dk>
+X-Google-Sender-Auth: 6222ff27cbe786ff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 10:00 +0200, Rodolfo Giometti wrote:
-> On Mon, Jul 23, 2007 at 02:35:16PM +0100, David Woodhouse wrote:
-> >
-> > s/Documentaion/Documentation/ in the last line of Documentation/pps/pps.txt
-> 
-> Fixed.
+On 7/24/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> What about the new async crypto stuff? I've been looking, but is it
+> guarenteed that async_memcpy() runs in process context with interrupts
+> enabled always? If not, there's a km type bug there.
+>
 
-Also 's/unknow /unknown /' (2 instances)
+Currently the only user is the MD raid456 driver, and yes, it only
+performs copies from the handle_stripe routine which is always run in
+process context with interrupts enabled.  However this is not
+documented.  Would it be advisable to add a WARN_ON for this
+condition?
 
-> > Please feed it to scripts/checkpatch.pl -- you can ignore all the
-> > warnings about lines greater than 80 characters, and the complete crap
-> > about "declaring multiple variables together should be avoided", but
-> 
-> Done. Most fixed.
-
-Looks better.
-
-> > some of what it points out is valid. Including the one about 'volatile'
-> > -- your explanation lacked credibility. If you really need 'volatile'
-> > then put it at the places you actually need it; not the declaration of
-> > the structure. 
-> 
-> Can you please explain better where should I put the 'volatile'
-> attribute? :-o
-
-Am I right in thinking that the only place it matters is within
-pps_event()? In that case, at the very least you should probably remove
-the 'volatile' from the definition of the structure, and _cast_ to
-volatile where you want it treated that way.
-
-But I don't see why you can't protect it with a spinlock. As long as you
-acquire that spinlock _after_ your call to getnstimeofday() what's the
-problem?
-
-> > ...
-> This should be not needed due new 'struct pps_ktime'.
-> > ...
-> These typedefs are into timepps.h which is an userland file (located
-> into Documentation/pps/) and are requested by the RFC.
-
-Sorry, yes. I shouldn't have been looking at that as if it was kernel
-code.
-
-I think you still haven't quite got the 32-bit vs. 64-bit compatibility
-right. Remember that on i386, the alignment of a uint64_t is only 4
-bytes, while on most other architectures it's 8 bytes. On i386, there
-will be no padding between the two consecutive 'struct pps_ktime'
-members of struct pps_kinfo and struct pps_kparams. But on most
-platforms there will be padding to ensure correct alignment.
-
-The simple fix is probably to make the 'nsec' member a 64-bit integer
-too. Then it'll be the same for i386 and x86_64 and you won't need a
-compatibility syscall routine.
-
-In order for your handling of 'pps_source[source].info' to be safe with
-respect to pps_unregister_source(), you have to guarantee that
-pps_event() has finished -- and can't be in progress on another CPU --
-by the time your client's call to pps_unregister_source() completes. At
-first glance I think your existing clients have that right (you have
-del_timer_sync() before pps_unregister_source() in ktimer.c, for
-example). But you should make sure it's clearly documented for new
-clients.
-
-Shouldn't your PPS_CLIENT_LP and PPS_CLIENT_UART options depend on
-PARPORT and SERIAL_CORE respectively?
-
--- 
-dwmw2
-
+> In general, I think the highmem stuff could do with more safety checks:
+>
+> - People ALWAYS get the atomic unmaps wrong, passing in the page instead
+>   of the address. I've seen tons of these. And since kunmap_atomic()
+>   takes a void pointer, nobody notices until it goes boom.
+> - People easily get the km type wrong - they use KM_USERx in interrupt
+>   context, or one of the irq variants without disabling interrupts.
+>
+> If we could just catch these two types of bugs, we've got a lot of these
+> problems covered.
+>
+>
+> --
+> Jens Axboe
+>
+--
+Dan
