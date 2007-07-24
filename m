@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765523AbXGXOe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762007AbXGXOkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765523AbXGXOe2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbXGXOeS
+	id S1762007AbXGXOkH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbXGXOjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:34:18 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43090 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751447AbXGXOeS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:34:18 -0400
-Date: Tue, 24 Jul 2007 16:33:42 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: jschopp <jschopp@austin.ibm.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-Message-ID: <20070724143342.GB6019@stusta.de>
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A53F3A.7060509@intel.com> <46A60581.90800@austin.ibm.com>
+	Tue, 24 Jul 2007 10:39:55 -0400
+Received: from cust198-202.dsl.versadsl.be ([62.166.198.202]:60847 "HELO
+	idefix.wisa.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750853AbXGXOjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 10:39:55 -0400
+Date: Tue, 24 Jul 2007 16:39:52 +0200 (CEST)
+From: =?ISO-8859-1?Q?Dani=EBl_Mantione?= <daniel.mantione@freepascal.org>
+X-X-Sender: daniel@idefix.wisa.be
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Keyboard programming needs root
+In-Reply-To: <46A6072D.7020807@aitel.hist.no>
+Message-ID: <Pine.LNX.4.61.0707241633020.939@idefix.wisa.be>
+References: <f79qnt$rn3$1@sea.gmane.org> <d120d5000707190817t62013ddcg966bd4e8c0ec116f@mail.gmail.com>
+ <Pine.LNX.4.61.0707191748340.10291@idefix.wisa.be> <46A6072D.7020807@aitel.hist.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46A60581.90800@austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="657924-1677778228-1185287992=:939"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 08:58:25AM -0500, jschopp wrote:
->> within the last 3 weeks, this script went from *really usable* to *a big 
->> noise maker*.
->
-> As we (mostly Andy of late) add more checks (good) there is bound to be 
-> some code we just didn't forsee that generates false positives (bad).  You 
-> can see a consistent history of cleaning these up as quickly as people send 
-> them in.  Hopefully in the interim there aren't too many false positives 
-> and the script is still useful.  We do try to put the new tests through 
-> their paces before adding them in, but our imaginations are limited.
->
-> The goal has always been to err on the side of missing badness in code to 
-> avoid false positives. This way, when there is output it has a very high 
-> chance of not wasting your time.  Wait a couple weeks and it'll be there 
-> again.
->...
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-And it will be known as "noise maker" for years, even if that'll be 
-fixed in a few weeks...
+--657924-1677778228-1185287992=:939
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Running it on the latest -rc or -mm should usually give good hints 
-whether the output has become better or worse.
 
-cu
-Adrian
 
--- 
+Op Tue, 24 Jul 2007, schreef Helge Hafting:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> The normal way is to set permissions on the device in
+> question - give either root only or the logged-in user
+> write access as needed.
+>=20
+> It seems to me that "loadkeys" uses /dev/tty / /dev/tty0
+> So set permissions on that as needed.
 
+This won't work. Under the old behaviour, if you were owner of the tty,=20
+you were boss of its keymap. Code was added that checks for explicit root=
+=20
+permissions (actually CAP_SYS_TTY_CONFIG, but this is root in practise),=20
+so, currently, nothing regarding permissions works.
+
+I agree, that setting a permission would be ideal, this way the sysadmin=20
+can enforce his prefered policy, rather than having it hardwired into the=
+=20
+kernel.
+
+Dani=EBl
+--657924-1677778228-1185287992=:939--
