@@ -1,124 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbXGXQPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbXGXQ2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbXGXQPS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 12:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbXGXQPG
+	id S1755810AbXGXQ2n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 12:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbXGXQ2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 12:15:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:59481 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbXGXQPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 12:15:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=W0Iw5FMlD44nJAO8nGEFbfHQOXkrH1i3IX4m1RUOoJ0oA0vQtmLEdTsh54LeTvikB2YD9rBZ+ly2TPP4KfZIOdyqc+yw6yk9nj+l9R7fsu7He8JcaSS+eLjEJMjKKjLO3YeGsQV0oHqJynOApryT14cfPd91ahbtcNPYPKi6sFo=
-Message-ID: <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-Date: Tue, 24 Jul 2007 09:15:01 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: -mm merge plans for 2.6.23
-Cc: "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "ck list" <ck@vds.kolivas.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Paul Jackson" <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46A58B49.3050508@yahoo.com.au>
+	Tue, 24 Jul 2007 12:28:34 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:49792 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750925AbXGXQ2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 12:28:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
+	b=NpVvfAnHxrasyWZvIAPdl2O5tfFPXGo+KfeADrfD3FeTjJ7qZBGn1SGfwmwZCX/lap546tfvKh7Jllhj7mdkhOe0lKM/KX/dTqfNmKLbsjSc+XevovpLxGd0IMV0+roU;
+Message-ID: <46A628AC.3060900@simon.arlott.org.uk>
+Date: Tue, 24 Jul 2007 17:28:28 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: sysfs/udev broken in 2.6.23-rc1 [input, i2c, ...] (Was: sysfs/udev
+ broken in latest git?)
+References: <46A59EAA.9030105@simon.arlott.org.uk>	<20070724072540.GA835@suse.de>	<20070724100314.3c606131@gondolin.boeblingen.de.ibm.com>	<20070724084654.GB13152@suse.de>	<3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com> <20070724145433.4848ada1@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070724145433.4848ada1@gondolin.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <200707102015.44004.kernel@kolivas.org>
-	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <46A57068.3070701@yahoo.com.au>
-	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	 <46A58B49.3050508@yahoo.com.au>
-X-Google-Sender-Auth: 6634ba99caa902ce
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/23/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> Ray Lee wrote:
-> > That said, I'm willing to run my day to day life through both a swap
-> > prefetch kernel and a normal one. *However*, before I go through all
-> > the work of instrumenting the damn thing, I'd really like Andrew (or
-> > Linus) to lay out his acceptance criteria on the feature. Exactly what
-> > *should* I be paying attention to? I've suggested keeping track of
-> > process swapin delay total time, and comparing with and without. Is
-> > that reasonable? Is it incomplete?
->
-> I don't feel it is so useful without more context. For example, in
-> most situations where pages get pushed to swap, there will *also* be
-> useful file backed pages being thrown out. Swap prefetch might
-> improve the total swapin delay time very significantly but that may
-> be just a tiny portion of the real problem.
+On 24/07/07 13:54, Cornelia Huck wrote:
+> On Tue, 24 Jul 2007 11:20:02 +0200,
+> "Kay Sievers" <kay.sievers@vrfy.org> wrote:
+> 
+>> It looks fine to me. "device" links must never point to anything else
+>> than a bus device.
+> 
+> Hm, but then
+> 1. The patch sneaks this check in (the old code only checked for
+>    dev->parent)
+> 2. The code is rather inconsistent now, since none of the other code
+>    paths check for dev->parent->bus...
 
-Agreed, it's important to make sure we're not being penny-wise and
-pound-foolish here.
+Removing the dev->parent->bus check fixes it:
 
-> Also a random day at the desktop, it is quite a broad scope and
-> pretty well impossible to analyse.
+[   40.043981] serio: i8042 KBD port at 0x60,0x64 irq 1
+[   40.044653] mice: PS/2 mouse device common for all mice
+[   40.044792] dev->parent && !dev->parent->bus:
+[   40.044794]  dev->kobj->k_name=event0
+[   40.044796]  dev->kobj->name=event0
+[   40.044798]  dev->parent->kobj->k_name=input0
+[   40.044800]  dev->parent->kobj->name=input0
 
-It is pretty broad, but that's also what swap prefetch is targetting.
-As for hard to analyze, I'm not sure I agree. One can black-box test
-this stuff with only a few controls. e.g., if I use the same apps each
-day (mercurial, firefox, xorg, gcc), and the total I/O wait time
-consistently goes down on a swap prefetch kernel (normalized by some
-control statistic, such as application CPU time or total I/O, or
-something), then that's a useful measurement.
+[   40.044948] dev->parent && !dev->parent->bus:
+[   40.044951]  dev->kobj->k_name=event1
+[   40.044952]  dev->kobj->name=event1
+[   40.044954]  dev->parent->kobj->k_name=input1
+[   40.044956]  dev->parent->kobj->name=input1
 
-> If we can first try looking at
-> some specific problems that are easily identified.
+[   40.045075] dev->parent && !dev->parent->bus:
+[   40.045077]  dev->kobj->k_name=event2
+[   40.045079]  dev->kobj->name=event2
+[   40.045080]  dev->parent->kobj->k_name=input2
+[   40.045082]  dev->parent->kobj->name=input2
 
-Always easier, true. Let's start with "My mouse jerks around under
-memory load." A Google Summer of Code student working on X.Org claims
-that mlocking the mouse handling routines gives a smooth cursor under
-load ([1]). It's surprising that the kernel would swap that out in the
-first place.
+[   40.067204] input: AT Translated Set 2 keyboard as /class/input/input3
+[   40.067368] dev->parent && !dev->parent->bus:
+[   40.067370]  dev->kobj->k_name=event3
+[   40.067372]  dev->kobj->name=event3
+[   40.067373]  dev->parent->kobj->k_name=input3
+[   40.067375]  dev->parent->kobj->name=input3
 
-[1] http://vignatti.wordpress.com/2007/07/06/xorg-input-thread-summary-or-something/
+[   40.067713] i2c /dev entries driver
+[   40.068190] dev->parent && !dev->parent->bus:
+[   40.068193]  dev->kobj->k_name=i2c-0
+[   40.068195]  dev->kobj->name=i2c-0
+[   40.068196]  dev->parent->kobj->k_name=i2c-0
+[   40.068198]  dev->parent->kobj->name=i2c-0
 
-> Looking at your past email, you have a 1GB desktop system and your
-> overnight updatedb run is causing stuff to get swapped out such that
-> swap prefetch makes it significantly better. This is really
-> intriguing to me, and I would hope we can start by making this
-> particular workload "not suck" without swap prefetch (and hopefully
-> make it even better than it currently is with swap prefetch because
-> we'll try not to evict useful file backed pages as well).
+[   40.068386] dev->parent && !dev->parent->bus:
+[   40.068389]  dev->kobj->k_name=i2c-9191
+[   40.068391]  dev->kobj->name=i2c-9191
+[   40.068392]  dev->parent->kobj->k_name=platform
+[   40.068394]  dev->parent->kobj->name=platform
 
-updatedb is an annoying case, because one would hope that there would
-be a better way to deal with that highly specific workload. It's also
-pretty stat dominant, which puts it roughly in the same category as a
-git diff. (They differ in that updatedb does a lot of open()s and
-getdents on directories, git merely does a ton of lstat()s instead.)
+[   40.068892] dev->parent && !dev->parent->bus:
+[   40.068895]  dev->kobj->k_name=i2c-1
+[   40.068896]  dev->kobj->name=i2c-1
+[   40.068898]  dev->parent->kobj->k_name=i2c-1
+[   40.068899]  dev->parent->kobj->name=i2c-1
 
-Anyway, my point is that I worry that tuning for an unusual and
-infrequent workload (which updatedb certainly is), is the wrong way to
-go.
+[   40.085201] input: Logitech USB-PS/2 Optical Mouse as /class/input/input4
+[   40.085362] dev->parent && !dev->parent->bus:
+[   40.085365]  dev->kobj->k_name=mouse0
+[   40.085367]  dev->kobj->name=mouse0
+[   40.085368]  dev->parent->kobj->k_name=input4
+[   40.085370]  dev->parent->kobj->name=input4
 
-> After that we can look at other problems that swap prefetch helps
-> with, or think of some ways to measure your "whole day" scenario.
->
-> So when/if you have time, I can cook up a list of things to monitor
-> and possibly a patch to add some instrumentation over this updatedb
-> run.
+[   40.085528] dev->parent && !dev->parent->bus:
+[   40.085530]  dev->kobj->k_name=event4
+[   40.085532]  dev->kobj->name=event4
+[   40.085534]  dev->parent->kobj->k_name=input4
+[   40.085535]  dev->parent->kobj->name=input4
 
-That would be appreciated. Don't spend huge amounts of time on it,
-okay? Point me the right direction, and we'll see how far I can run
-with it.
-
-> Anyway, I realise swap prefetching has some situations where it will
-> fundamentally outperform even the page replacement oracle. This is
-> why I haven't asked for it to be dropped: it isn't a bad idea at all.
-
-<nod>
-
-> However, if we can improve basic page reclaim where it is obviously
-> lacking, that is always preferable. eg: being a highly speculative
-> operation, swap prefetch is not great for power efficiency -- but we
-> still want laptop users to have a good experience as well, right?
-
-Absolutely. Disk I/O is the enemy, and the best I/O is one you never
-had to do in the first place.
+-- 
+Simon Arlott
