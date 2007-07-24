@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbXGXOaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbXGXOa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbXGXOaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbXGXO3w
+	id S1758840AbXGXOa2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbXGXOaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:29:52 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44686 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750704AbXGXO3v (ORCPT
+	Tue, 24 Jul 2007 10:30:06 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:35745 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755288AbXGXOaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:29:51 -0400
-Date: Tue, 24 Jul 2007 10:29:50 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-Subject: Re: Towards eliminating the freezer
-In-Reply-To: <200707241133.40287.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0707241027280.3568-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Jul 2007 10:30:01 -0400
+Subject: Re: [PATCH respin, was PATCH for review] During VM oom condition,
+	kill all threads in process group
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Reply-To: will_schmidt@vnet.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <20070723141641.5759a287.akpm@linux-foundation.org>
+References: <20070719348.540885000@suse.de>
+	 <20070719134840.47B5114E6E@wotan.suse.de>
+	 <20070719140411.GD16279@infradead.org>
+	 <Pine.LNX.4.64.0707191614180.7377@anakin>
+	 <1185214185.22237.30.camel@farscape.rchland.ibm.com>
+	 <20070723141641.5759a287.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 24 Jul 2007 09:28:44 -0500
+Message-Id: <1185287324.22237.39.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007, Rafael J. Wysocki wrote:
-
-> > Now here's an idea which might work.  Can we require every caller of
-> > device_add() to hold some existing device's semaphore?  Normally it
-> > would be the semaphore of the new device's parent, but it could be a
-> > higher ancestor.  There even could be a single "root" semaphore for
-> > drivers registering a top-level device with no parent.
-> > 
-> > (Some testing shows that during startup things like ACPI and IDE don't 
-> > fulfill this requirement, so maybe we should require it only after 
-> > userspace has begun running.  After all, the system can't suspend 
-> > until then.)
-> > 
-> > It seems like a reasonable sort of thing to do.  Hotplugged devices
-> > tend to be registered as they are discovered by their parent's driver,
-> > so it shouldn't be too much to ask that the parent's semaphore be held
-> > when the new device is registered.  Static devices generally aren't
-> > quite so nice; the serial and floppy drivers in particular would need a
-> > little work (and probably some other drivers too).
-> > 
-> > If we do this, then once the PM core has acquired the semaphore for 
-> > every device it will be guaranteed that no new devices can be added.  
-> > It would be a simple solution to a rather nasty problem.
+On Mon, 2007-07-23 at 14:16 -0700, Andrew Morton wrote:
+> On Mon, 23 Jul 2007 13:09:45 -0500
+> Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
 > 
-> Hmm, in device_pm_add() and device_pm_remove() we acquire dpm_list_mtx which
-> also is acquired by device_suspend() and device_resume().  Thus, every attempt
-> to register a new device or unregister an existing one will be blocked while
-> either device_suspend() or device_resume() is running.
+> > During VM oom condition, kill all threads in process group.
+> > 
+> > We have had complaints where a threaded application is left in a bad
+> > state after one of it's threads is killed when we hit a VM: out_of_memory
+> > condition.
+> > Killing just one of the process threads can leave the application in a
+> > bad state, whereas killing the entire process group would allow for
+> > the application to restart, or be otherwise handled, and makes it very
+> > obvious that something has gone wrong.
+> > 
+> > This change allows the entire process group to be taken down, rather
+> > than just the one thread.
 > 
-> If we arrange things so that dpm_list_mtx is acquired, but not released, by
-> device_suspend() and released, but not acquired, by device_resume(), then it
-> won't be possible to register/unregister a device during a suspend-resume
-> cycle.
+> Just checking...
+> 
+> blackfin
+> h8300
+> m68knommu
+> uml
+> v850
+> 
+> were not changed.  Intentional?
 
-As with Oliver's suggestion, this would create a locking order 
-violation.  Drivers registering children (and thus acquiring 
-dpm_list_mtx) will often already hold the parent's sem.  But 
-device_suspend() needs to acquire device sems while holding 
-dpm_list_mtx.
+Yes.  Those arch's don't have the VM oom code that I could see.   There
+is an occasional do_exit() reference elsewhere in the fault handler
+code, for reasons other than VM oom, so I deliberately didn't touch
+those either.    
 
-Alan Stern
+
 
