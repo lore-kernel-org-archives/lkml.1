@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936145AbXGXJqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936107AbXGXJtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936145AbXGXJqk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935765AbXGXJqQ
+	id S936107AbXGXJtf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764818AbXGXJtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:46:16 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:62887 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933952AbXGXJqO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:46:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bc/2dte5fAY+8ZlsbuHM/AnRtBDQQM1NjCBCfjAEuslGKbGhsOEijzqDXxfwofKxTvNZ7XG8sIiYfp9BEybt/WmlSCkAYy+EBmByFkKOebZaqRPsVk6cDZTSO2binBHEnn1KC72rw38eeuj76wiigOsPuhxlTKTZNuFmH/Qwa5k=
-Message-ID: <84144f020707240246v4ebe2c57r8cccf6f09e02a1e9@mail.gmail.com>
-Date: Tue, 24 Jul 2007 12:46:12 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Akinobu Mita" <akinobu.mita@gmail.com>
-Subject: Re: [patch 2/9] slab: fix memory leak in cpu hotplug error path
-Cc: linux-kernel@vger.kernel.org, "Christoph Lameter" <clameter@sgi.com>,
-       "Gautham R Shenoy" <ego@in.ibm.com>
-In-Reply-To: <20070722153342.726607571@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Jul 2007 05:49:25 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58354 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762447AbXGXJtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 05:49:24 -0400
+Subject: Re: [PATCH 4/8] i386: bitops: Kill volatile-casting of memory
+	addresses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707231046140.3607@woody.linux-foundation.org>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+	 <20070723160548.22137.66072.sendpatchset@cselinux1.cse.iitk.ac.in>
+	 <alpine.LFD.0.999.0707231046140.3607@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 24 Jul 2007 19:49:03 +1000
+Message-Id: <1185270544.5439.252.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070722153312.083951746@gmail.com>
-	 <20070722153342.726607571@gmail.com>
-X-Google-Sender-Auth: 7c9587f91a8fc4cf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/22/07, Akinobu Mita <akinobu.mita@gmail.com> wrote:
-> This patch fixes memory leak in error path.
->
-> In reality, we don't need to call cpuup_canceled(cpu) for now.
-> But upcoming cpu hotplug error handling change needs this.
 
-This and the previous patch look good to me.
+> The "const volatile" is so that you can pass an arbitrary pointer. The 
+> only kind of abritraty pointer is "const volatile".
+> 
+> In other words, the "volatile" has nothing at all to do with whether the 
+> memory is volatile or not (the same way "const" has nothing to do with it: 
+> it's purely a C type *safety* issue, exactly the same way "const" is a 
+> type safety issue.
+> 
+> A "const" on a pointer doesn't mean that the thing it points to cannot 
+> change. When you pass a source pointer to "strlen()", it doesn't have to 
+> be constant. But "strlen()" takes a "const" pointer, because it work son 
+> constant pointers *too*.
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+However... What about that:
+
+ - This "volatile" will allow to pass pointers to volatile data to the
+bitops.
+
+ - Most users of "volatile" in the kenrel (except maybe jiffies) are
+bogus
+
+ - Thus let's remove it -as a type safety thing- to catch more of those
+stupid volatile that shouldn't be ? :-)
+
+Besides, as Nick pointed out, it prevents some valid optimizations.
+
+Cheers,
+Ben.
+
