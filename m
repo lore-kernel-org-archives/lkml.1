@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761100AbXGXXd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbXGXXtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761100AbXGXXd5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 19:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbXGXXdu
+	id S1759820AbXGXXtD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 19:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbXGXXsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 19:33:50 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:54983 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755490AbXGXXdt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 19:33:49 -0400
-Message-ID: <46A68C37.30808@nortel.com>
-Date: Tue, 24 Jul 2007 17:33:11 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Chris Snook <csnook@redhat.com>
-CC: "Li, Tong N" <tong.n.li@intel.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> <46A53C88.6060006@redhat.com> <Pine.LNX.4.64.0707240954560.8026@tongli.jf.intel.com> <46A64002.8080103@redhat.com> <46A6576A.9020506@nortel.com> <46A66393.5000705@redhat.com> <1185310691.7737.40.camel@tongli.jf.intel.com> <46A66A88.8070307@redhat.com> <46A66DB8.4030608@nortel.com> <46A672F8.2040305@redhat.com>
-In-Reply-To: <46A672F8.2040305@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Jul 2007 19:48:53 -0400
+Received: from gate.crashing.org ([63.228.1.57]:32824 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756227AbXGXXsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 19:48:52 -0400
+Subject: Re: Power Management framework proposal
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: david@lang.hm
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707241556140.6590@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	 <1185125189.2714.13.camel@laptopd505.fenrus.org>
+	 <1185229405.5439.148.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707241313580.6590@asgard.lang.hm>
+	 <1185313138.5439.285.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707241556140.6590@asgard.lang.hm>
+Content-Type: text/plain
+Date: Wed, 25 Jul 2007 09:47:57 +1000
+Message-Id: <1185320877.5439.300.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jul 2007 23:33:19.0953 (UTC) FILETIME=[04AAF410:01C7CE4B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
+On Tue, 2007-07-24 at 16:02 -0700, david@lang.hm wrote:
+> 
+> what requirements are needed? (I'm sure that there are others, but 
+> hopefully it's possible to avoid requirements like 'the clock speed
+> for 
+> device A must be >X to allow device B to operate in mode Y') 
 
-> A fraction of *each* CPU, or a fraction of *total* CPU?  Per-cpu 
-> granularity doesn't make anything more fair.
+I had an idea a while ago, might still be in the pm list archives, of
+exposing constraints as opaque bitmaps. The bits have defined meaning
+for a given bus, but are opaque to the core.
 
-Well, our current solution uses per-cpu weights, because our vendor 
-couldn't get the load balancer working accurately enough.  Having 
-per-cpu weights and cpu affinity gives acceptable results for the case 
-where we're currently using it.
+The devices however, provide tables indicating to the core their list of
+power states (with names) and their requirements in term of parent
+states (using such bitmasks).
 
-If the load balancer is good enough, per-system weights would be fine. 
-It would have to play nicely with affinity though, in the case where it 
-makes sense to lock tasks to particular cpus.
+Thus, the core can resolve the dependency requirements without having to
+know about the actual meaning of the states of the various busses.
 
-> If I have two threads with the same priority, and two CPUs, the 
-> scheduler will put one on each CPU, and they'll run happily without any 
-> migration or balancing.
+Ben.
 
-Sure.  Now add a third thread.  How often do you migrate?  Put another 
-way, over what time quantum do we ensure fairness?
 
-Chris
