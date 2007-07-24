@@ -1,40 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbXGXDCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbXGXDVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762950AbXGXDCp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 23:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbXGXDCh
+	id S1761642AbXGXDVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 23:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbXGXDVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 23:02:37 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49050 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750798AbXGXDCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 23:02:36 -0400
-Date: Mon, 23 Jul 2007 20:02:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Mundt <lethal@linux-sh.org>
-cc: werner <werner@copaya.yi.org>, linux-kernel@vger.kernel.org
-Subject: Re: Incompatibilities of kmem_cache_create
-In-Reply-To: <20070721062032.GA1814@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.0707232001090.1864@schroedinger.engr.sgi.com>
-References: <1184997001.28478@werner> <20070721062032.GA1814@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Jul 2007 23:21:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41474 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753314AbXGXDVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 23:21:08 -0400
+Date: Mon, 23 Jul 2007 23:21:04 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200707240321.l6O3L4Kk015702@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] tiny signalfd cleanup
+Cc: akpm@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007, Paul Mundt wrote:
+This is probably a leftover from a time when the return wasn't there yet.
+Now the extra assignment is just irritating.
 
-> On Sat, Jul 21, 2007 at 02:50:01AM -0300, werner wrote:
-> > Of the kernel 2.6.22-git15 of this night,  kmem_cache_create is not
-> > compatible and causes compiling errors of some fundamental programs.
-> > Before, this error didnt occur.
-> > 
-> Slab destructors haven't been supported in the kernel for ages, anything
-> that's relying on them to work out-of-tree is fundamentally broken.
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-Slab destructors were supported and used in Linux kernels up to 
-version 2.6.20. They were removed late in the 2.6.21 merge cycle.
-
-
+--- fs/signalfd.c	2007-06-29 10:24:04.000000000 -0700
++++ fs/signalfd.c-new	2007-07-23 20:17:34.000000000 -0700
+@@ -320,7 +320,7 @@
+ 
+ 	if (sizemask != sizeof(sigset_t) ||
+ 	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
+-		return error = -EINVAL;
++		return -EINVAL;
+ 	sigdelsetmask(&sigmask, sigmask(SIGKILL) | sigmask(SIGSTOP));
+ 	signotset(&sigmask);
+ 
