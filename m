@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765609AbXHFNSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932402AbXHFNTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765609AbXHFNSv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764290AbXHFNR4
+	id S932402AbXHFNTf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764502AbXHFNR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:17:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49386 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 09:17:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49405 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764089AbXHFNRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:17:53 -0400
-Message-Id: <200708061317.l76DHo4f001677@dantu.rdu.redhat.com>
+	id S1764255AbXHFNRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:17:55 -0400
+Message-Id: <200708061317.l76DHrsj001682@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Date: Tue, 24 Jul 2007 10:11:18 -0400
-Subject: [PATCH 04/25] AFS: call attr_kill_to_mode from afs_setattr
+Date: Tue, 24 Jul 2007 08:31:51 -0400
+Subject: [PATCH 05/25] CIFS: call attr_kill_to_mode in cifs_setattr
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: dhowells@redhat.com
+Cc: linux-cifs-client@lists.samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not sure if this is necessary or desirable for AFS, but adding it for
-consistency.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/afs/inode.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ fs/cifs/inode.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/afs/inode.c b/fs/afs/inode.c
-index d196840..d0ad5e6 100644
---- a/fs/afs/inode.c
-+++ b/fs/afs/inode.c
-@@ -370,6 +370,9 @@ int afs_setattr(struct dentry *dentry, struct iattr *attr)
- 	       vnode->fid.vid, vnode->fid.vnode, dentry->d_name.name,
- 	       attr->ia_valid);
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index dd41677..6fee1fa 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -1429,6 +1429,8 @@ int cifs_setattr(struct dentry *direntry, struct iattr *attrs)
+ 	cifs_sb = CIFS_SB(direntry->d_inode->i_sb);
+ 	pTcon = cifs_sb->tcon;
  
-+	/* FIXME: is this necessary? */
-+	attr_kill_to_mode(dentry->d_inode, attr);
++	attr_kill_to_mode(direntry->d_inode, attrs);
 +
- 	if (!(attr->ia_valid & (ATTR_SIZE | ATTR_MODE | ATTR_UID | ATTR_GID |
- 				ATTR_MTIME))) {
- 		_leave(" = 0 [unsupported]");
+ 	if ((cifs_sb->mnt_cifs_flags & CIFS_MOUNT_NO_PERM) == 0) {
+ 		/* check if we have permission to change attrs */
+ 		rc = inode_change_ok(direntry->d_inode, attrs);
 -- 
 1.5.2.2
 
