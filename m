@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbXGXVVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbXGXVW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758031AbXGXVVr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbXGXVVh
+	id S1757807AbXGXVW4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 17:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbXGXVWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:21:37 -0400
-Received: from mail.windriver.com ([147.11.1.11]:45005 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753862AbXGXVVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:21:36 -0400
-Date: Tue, 24 Jul 2007 14:19:57 -0700 (PDT)
-From: Jeremy Katz <jeremy.katz@windriver.com>
-X-X-Sender: jkatz@localhost.localdomain
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [PATCH] posix-timer: fix deletion race
-In-Reply-To: <20070724204327.GA103@tv-sign.ru>
-Message-ID: <Pine.LNX.4.63.0707241418400.31240@localhost.localdomain>
-References: <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
- <1184703427.12353.476.camel@chaos> <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
- <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
- <20070718161156.GA761@tv-sign.ru> <Pine.LNX.4.63.0707181203110.3157@localhost.localdomain>
- <20070720141529.GA218@tv-sign.ru> <Pine.LNX.4.63.0707231858420.9759@localhost.localdomain>
- <20070724145142.GA199@tv-sign.ru> <Pine.LNX.4.63.0707240827320.25961@localhost.localdomain>
- <20070724204327.GA103@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-OriginalArrivalTime: 24 Jul 2007 21:19:58.0837 (UTC) FILETIME=[63A18A50:01C7CE38]
+	Tue, 24 Jul 2007 17:22:49 -0400
+Received: from mailrelay001.isp.belgacom.be ([195.238.6.51]:22892 "EHLO
+	mailrelay001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752243AbXGXVWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 17:22:48 -0400
+Date: Tue, 24 Jul 2007 23:26:08 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Ben Dooks <ben@fluff.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] s3c2410_wdt: fixup after arch include moves
+Message-ID: <20070724212608.GE14326@infomag.infomag.iguana.be>
+References: <20070724122801.GA25243@fluff.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070724122801.GA25243@fluff.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007, Oleg Nesterov wrote:
+Hi Ben,
 
-> On 07/24, Jeremy Katz wrote:
->>
->> Sorry.  That should have been "without apparent effect".
->
-> Sorry. I confused completely.
->
-> So. You mean that even with that patch you _still_ see the 
-> BUG_ON(!SIGQUEUE_PREALLOC) in sigqueue_free() ?
+> Fixup the s3c2410 watchdog driver after moving some
+> of the arch specific includes it has been relying on.
+> 
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Yes.  I did not notice any difference in the system's behavior after 
-applying the patch.
+Patch added to the linux-2.6-watchdog trees.
 
-Jeremy
+Greetings,
+Wim.
