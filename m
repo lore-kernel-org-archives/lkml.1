@@ -1,118 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933812AbXGXJHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934818AbXGXJKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933812AbXGXJHg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933942AbXGXJHF
+	id S934818AbXGXJKa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759334AbXGXJKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:07:05 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3572 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933100AbXGXJHD (ORCPT
+	Tue, 24 Jul 2007 05:10:21 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43293 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757822AbXGXJKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:07:03 -0400
-Message-ID: <46A5C12B.3080904@shadowen.org>
-Date: Tue, 24 Jul 2007 10:06:51 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A534EA.6030008@intel.com>
-In-Reply-To: <46A534EA.6030008@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 05:10:21 -0400
+Date: Tue, 24 Jul 2007 11:10:18 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>,
+       andi@firstfloor.org, nix.or.die@googlemail.com, olh@suse.de
+Subject: Re: 2.6.22-git17 boot failure
+Message-ID: <20070724091018.GA26724@one.firstfloor.org>
+References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc> <46A5444D.4080304@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A5444D.4080304@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Andy Whitcroft wrote:
->> This version brings a number of new checks, and a number of bug
->> fixes.  Of note:
->>
->>   - warnings for multiple assignments per line
-> 
-> 
-> This is bugged. e.g. the following line will hit this exception check:
-> 
->     int i = some_function(a, b, c);
 
-Yep that is plainly wrong.  Will sort that one out.
-
->>   - warnings for multiple declarations per line
->>   - checks for single statement blocks with braces
->>
->> This patch includes an update for feature-removal-schedule.txt to
->> better target checks.
->>
->> Andy Whitcroft (12):
->>       check for single statement braced blocks
->>
->> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
->> ---
->>
->> +# check for redundant bracing round if etc
->> +        if ($line =~ /\b(if|while|for|else)\b/) {
->> +            # Locate the end of the opening statement.
->> +            my @control = ctx_statement($linenr, $realcnt, 0);
->> +            my $nr = $linenr + (scalar(@control) - 1);
->> +            my $cnt = $realcnt - (scalar(@control) - 1);
->> +
->> +            my $off = $realcnt - $cnt;
->> +            #print "$off: line<$line>end<" . $lines[$nr - 1] . ">\n";
->> +
->> +            # If this is is a braced statement group check it
->> +            if ($lines[$nr - 1] =~ /{\s*$/) {
->> +                my ($lvl, @block) = ctx_block_level($nr, $cnt);
->> +
->> +                my $stmt = join(' ', @block);
->> +                $stmt =~ s/^[^{]*{//;
->> +                $stmt =~ s/}[^}]*$//;
->> +
->> +                #print "block<" . join(' ', @block) . "><" .
->> scalar(@block) . ">\n";
->> +                #print "stmt<$stmt>\n\n";
->> +
->> +                # Count the ;'s if there is fewer than two
->> +                # then there can only be one statement,
->> +                # if there is a brace inside we cannot
->> +                # trivially detect if its one statement.
->> +                # Also nested if's often require braces to
->> +                # disambiguate the else binding so shhh there.
->> +                my @semi = ($stmt =~ /;/g);
->> +                ##print "semi<" . scalar(@semi) . ">\n";
->> +                if ($lvl == 0 && scalar(@semi) < 2 &&
->> +                    $stmt !~ /{/ && $stmt !~ /\bif\b/) {
->> +                        my $herectx = "$here\n" . join("\n",
->> @control, @block[1 .. $#block]) . "\n";
->> +                        shift(@block);
->> +                    ERROR("braces {} are not necessary for single
->> statement blocks\n" . $herectx);
+On Mon, Jul 23, 2007 at 05:14:05PM -0700, Jeremy Fitzhardinge wrote:
+> Well, it looks to me like it all falls over once it hits usermode;
+> everything up till then is identical (except for the Xen-related
+> initcalls which naturally don't exist in the non-Xen case).
 > 
+> I'm at a loss.  I don't know if there's some way to debug the initrd in
+> more detail.  I suspect that its failing all PCI probing, rather being a
+> specific SCSI/AHCI problem (since none of the other messages appear either).
 > 
-> This is a royal pain, since it now throws an ERROR for the obviously
-> preferable piece of code below:
+> Does the Xen case just hang, or reboot, or what?  The kernel messages
+> just appear to stop.  I'd expect it to at least complain about not
+> mounting the root filesystem or something.
 > 
-> if (err) {
->     do_something();
->     return -ERR;
-> } else {
->     do_somthing_else();
-> }
+> Andi, any thoughts about how to debug the suse boot sequence?
 
-Hmmm, is that obviouly nicer than the below?  Its fully a line longer
-for no benefit.  But ignoring that, this seems to have snuck in to
-CodingStyle hmmm ... will see what I can do if anything to stop these
-being picked up I guess.
+Hmm, you could add a set -x into the startup script /sbin/mkinitrd
+generates. But some work also happens with udev in the background.
 
-	if (err) {
-		do_something();
-		return -ERR;
-	} else
-		do_something_else();
+Or let's ask Olaf, he's the expert on that
 
-Andrew, as you merged the change to CodingStyle I'll take that as your
-being ok with these being accepted.
-
--apw
+-Andi
