@@ -1,104 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935928AbXGXJm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935948AbXGXJne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935928AbXGXJm5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933441AbXGXJmk
+	id S935948AbXGXJne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759321AbXGXJnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:42:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42032 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763434AbXGXJmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:42:38 -0400
-Date: Tue, 24 Jul 2007 11:42:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Marcin ??lusarz <marcin.slusarz@gmail.com>
-Cc: Jarek Poplawski <jarkao2@o2.pl>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070724094202.GA11610@elte.hu>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu>
-MIME-Version: 1.0
+	Tue, 24 Jul 2007 05:43:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50384 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760241AbXGXJnT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 05:43:19 -0400
+Date: Tue, 24 Jul 2007 11:43:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: "Li, Tong N" <tong.n.li@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+Message-ID: <20070724094313.GB26724@one.firstfloor.org>
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> <p73ir8aubzx.fsf@bingen.suse.de> <1185225015.3593.15.camel@tongli.jf.intel.com> <46A51CB8.1090400@nortel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070724080534.GC18740@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <46A51CB8.1090400@nortel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 23, 2007 at 03:25:12PM -0600, Chris Friesen wrote:
+> Li, Tong N wrote:
+> >On the other hand, if locking does
+> >become a problem for certain systems/workloads, increasing
+> >sysctl_base_round_slice can reduce the locking frequency and alleviate
+> >the problem, at the cost of being relatively less fair across the CPUs. 
+> 
+> If locking does become a problem, it may make sense to switch instead to 
+> a lockless algorithm of some sort...
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+That usually has the same issue with cache lines. It would be better
+to analyze first if such global synchronization is really needed.
+I hope not.
 
-> thanks for tracking it down! Could you try the patch below (ontop an 
-> otherwise unmodified kernel)? This tests the theory whether the 
-> problem is related to the disable_irq_nosync() call in the ne2k 
-> driver's xmit path. Does this solve the hangs too?
-
-please try the patch below instead.
-
-	Ingo
-
-Index: linux/kernel/irq/chip.c
-===================================================================
---- linux.orig/kernel/irq/chip.c
-+++ linux/kernel/irq/chip.c
-@@ -231,7 +231,7 @@ static void default_enable(unsigned int 
- /*
-  * default disable function
-  */
--static void default_disable(unsigned int irq)
-+void default_disable(unsigned int irq)
- {
- }
- 
-Index: linux/kernel/irq/internals.h
-===================================================================
---- linux.orig/kernel/irq/internals.h
-+++ linux/kernel/irq/internals.h
-@@ -10,6 +10,8 @@ extern void irq_chip_set_defaults(struct
- /* Set default handler: */
- extern void compat_irq_chip_set_default_handler(struct irq_desc *desc);
- 
-+extern void default_disable(unsigned int irq);
-+
- #ifdef CONFIG_PROC_FS
- extern void register_irq_proc(unsigned int irq);
- extern void register_handler_proc(unsigned int irq, struct irqaction *action);
-Index: linux/kernel/irq/manage.c
-===================================================================
---- linux.orig/kernel/irq/manage.c
-+++ linux/kernel/irq/manage.c
-@@ -102,7 +102,19 @@ void disable_irq_nosync(unsigned int irq
- 	spin_lock_irqsave(&desc->lock, flags);
- 	if (!desc->depth++) {
- 		desc->status |= IRQ_DISABLED;
--		desc->chip->disable(irq);
-+		/*
-+		 * the _nosync variant of irq-disable suggests that the
-+		 * caller is not worried about concurrency but about the
-+		 * ordering of the irq flow itself. (such as hardware
-+		 * getting confused about certain, normally valid irq
-+		 * handling sequences.) So if the default disable handler
-+		 * is in place then try the more conservative masking
-+		 * instead:
-+		 */
-+		if (desc->chip->disable == default_disable && desc->chip->mask)
-+			desc->chip->mask(irq);
-+		else
-+			desc->chip->disable(irq);
- 	}
- 	spin_unlock_irqrestore(&desc->lock, flags);
- }
+-Andi
