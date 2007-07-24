@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935605AbXGXJXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935655AbXGXJ0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935605AbXGXJXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932088AbXGXJXI
+	id S935655AbXGXJ0B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762560AbXGXJZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:23:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45598 "EHLO mx1.redhat.com"
+	Tue, 24 Jul 2007 05:25:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53830 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763550AbXGXJXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:23:07 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.0.999.0707231043540.3607@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0707231043540.3607@woody.linux-foundation.org> <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <20070723160543.22137.9416.sendpatchset@cselinux1.cse.iitk.ac.in>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/8] i386: bitops: Rectify bogus "+m" constraints
-X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
-Date: Tue, 24 Jul 2007 10:22:44 +0100
-Message-ID: <18925.1185268964@redhat.com>
+	id S1762374AbXGXJZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 05:25:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Towards eliminating the freezer
+Date: Tue, 24 Jul 2007 11:33:39 +0200
+User-Agent: KMail/1.9.5
+Cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0707231124590.3545-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707231124590.3545-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707241133.40287.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > So, using the "+" constraint modifier for memory, like "+m" is bogus.
-> > We must simply specify "=m" which handles the case correctly.
+On Monday, 23 July 2007 22:05, Alan Stern wrote:
+> [Note changed $SUBJECT]
+[--snip--]
+> =============================
 > 
-> No. This is wrong.
-
-Agreed.
-
-> "=m" means that the new value of the memory location is *set*.
 > 
-> Which means that gcc will potentially optimize away any previous stores to 
-> that memory location.
+> Now here's an idea which might work.  Can we require every caller of
+> device_add() to hold some existing device's semaphore?  Normally it
+> would be the semaphore of the new device's parent, but it could be a
+> higher ancestor.  There even could be a single "root" semaphore for
+> drivers registering a top-level device with no parent.
 > 
-> And yes, it happens, and yes, we've seen it.
+> (Some testing shows that during startup things like ACPI and IDE don't 
+> fulfill this requirement, so maybe we should require it only after 
+> userspace has begun running.  After all, the system can't suspend 
+> until then.)
+> 
+> It seems like a reasonable sort of thing to do.  Hotplugged devices
+> tend to be registered as they are discovered by their parent's driver,
+> so it shouldn't be too much to ask that the parent's semaphore be held
+> when the new device is registered.  Static devices generally aren't
+> quite so nice; the serial and floppy drivers in particular would need a
+> little work (and probably some other drivers too).
+> 
+> If we do this, then once the PM core has acquired the semaphore for 
+> every device it will be guaranteed that no new devices can be added.  
+> It would be a simple solution to a rather nasty problem.
 
-I had a lot of "fun" with this when mucking around with the asm-optimised R/W
-semaphores.
+Hmm, in device_pm_add() and device_pm_remove() we acquire dpm_list_mtx which
+also is acquired by device_suspend() and device_resume().  Thus, every attempt
+to register a new device or unregister an existing one will be blocked while
+either device_suspend() or device_resume() is running.
 
-David
+If we arrange things so that dpm_list_mtx is acquired, but not released, by
+device_suspend() and released, but not acquired, by device_resume(), then it
+won't be possible to register/unregister a device during a suspend-resume
+cycle.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
