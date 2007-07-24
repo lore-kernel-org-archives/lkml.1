@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935773AbXGXJqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936145AbXGXJqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935773AbXGXJqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760038AbXGXJp4
+	id S936145AbXGXJqk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935765AbXGXJqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:45:56 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58428 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758013AbXGXJpz (ORCPT
+	Tue, 24 Jul 2007 05:46:16 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:62887 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933952AbXGXJqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:45:55 -0400
-Date: Tue, 24 Jul 2007 10:52:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Rob Landley <rob@landley.net>, "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
-Message-ID: <20070724105208.206a7be5@the-village.bc.nu>
-In-Reply-To: <1185241879.1803.92.camel@localhost.localdomain>
-References: <1184980678.6344.1.camel@localhost.localdomain>
-	<20070723171238.1a832b31.akpm@linux-foundation.org>
-	<1185238908.1803.63.camel@localhost.localdomain>
-	<alpine.LFD.0.999.0707231808560.3607@woody.linux-foundation.org>
-	<1185241879.1803.92.camel@localhost.localdomain>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 05:46:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=bc/2dte5fAY+8ZlsbuHM/AnRtBDQQM1NjCBCfjAEuslGKbGhsOEijzqDXxfwofKxTvNZ7XG8sIiYfp9BEybt/WmlSCkAYy+EBmByFkKOebZaqRPsVk6cDZTSO2binBHEnn1KC72rw38eeuj76wiigOsPuhxlTKTZNuFmH/Qwa5k=
+Message-ID: <84144f020707240246v4ebe2c57r8cccf6f09e02a1e9@mail.gmail.com>
+Date: Tue, 24 Jul 2007 12:46:12 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Akinobu Mita" <akinobu.mita@gmail.com>
+Subject: Re: [patch 2/9] slab: fix memory leak in cpu hotplug error path
+Cc: linux-kernel@vger.kernel.org, "Christoph Lameter" <clameter@sgi.com>,
+       "Gautham R Shenoy" <ego@in.ibm.com>
+In-Reply-To: <20070722153342.726607571@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070722153312.083951746@gmail.com>
+	 <20070722153342.726607571@gmail.com>
+X-Google-Sender-Auth: 7c9587f91a8fc4cf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There once was a virtualization coder,
-> Whose patches kept getting older,
->   Each time upstream would drop,
->   His documentation would slightly rot,
-> SO APPLY MY FUCKING PATCHES OR I'LL KEEP WRITING LIMERICKS.
+On 7/22/07, Akinobu Mita <akinobu.mita@gmail.com> wrote:
+> This patch fixes memory leak in error path.
+>
+> In reality, we don't need to call cpuup_canceled(cpu) for now.
+> But upcoming cpu hotplug error handling change needs this.
 
-There once was a man they called rusty
-Who patches were terribly crusty
-Though his patches were right
-And Linus was bright
-They sat on the list getting dusty.
+This and the previous patch look good to me.
+
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
