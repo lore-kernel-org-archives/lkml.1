@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935321AbXGXI7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935479AbXGXI7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935321AbXGXI7O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934947AbXGXI6v
+	id S935479AbXGXI7f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935351AbXGXI7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:58:51 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:5038 "EHLO relay.sw.ru"
+	Tue, 24 Jul 2007 04:59:18 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:11828 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935201AbXGXI6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:58:50 -0400
-Date: Tue, 24 Jul 2007 12:59:21 +0400
+	id S935339AbXGXI7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 04:59:16 -0400
+Date: Tue, 24 Jul 2007 12:59:47 +0400
 From: Dmitry Monakhov <dmonakhov@openvz.org>
 To: linux-kernel@vger.kernel.org
 Cc: device-mapper development <dm-devel@redhat.com>
-Subject: [PATCH 7/8] dm: dm-path-selector.c Convert  kmalloc + memset  to
-	kzalloc
-Message-ID: <20070724085921.GG16507@dnb.sw.ru>
+Subject: [PATCH 8/8] dm: dm-target.c Convert  kmalloc + memset  to kzalloc
+Message-ID: <20070724085947.GH16507@dnb.sw.ru>
 Mail-Followup-To: linux-kernel@vger.kernel.org,
 	device-mapper development <dm-devel@redhat.com>
 MIME-Version: 1.0
@@ -29,27 +28,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 ---
- drivers/md/dm-path-selector.c |    6 ++----
+ drivers/md/dm-target.c |    6 ++----
  1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/md/dm-path-selector.c b/drivers/md/dm-path-selector.c
-index f10a0c8..ca1bb63 100644
---- a/drivers/md/dm-path-selector.c
-+++ b/drivers/md/dm-path-selector.c
-@@ -94,12 +94,10 @@ out:
+diff --git a/drivers/md/dm-target.c b/drivers/md/dm-target.c
+index 477a041..835cf95 100644
+--- a/drivers/md/dm-target.c
++++ b/drivers/md/dm-target.c
+@@ -88,12 +88,10 @@ void dm_put_target_type(struct target_type *t)
  
- static struct ps_internal *_alloc_path_selector(struct path_selector_type *pst)
+ static struct tt_internal *alloc_target(struct target_type *t)
  {
--	struct ps_internal *psi = kmalloc(sizeof(*psi), GFP_KERNEL);
-+	struct ps_internal *psi = kzalloc(sizeof(*psi), GFP_KERNEL);
+-	struct tt_internal *ti = kmalloc(sizeof(*ti), GFP_KERNEL);
++	struct tt_internal *ti = kzalloc(sizeof(*ti), GFP_KERNEL);
  
--	if (psi) {
--		memset(psi, 0, sizeof(*psi));
-+	if (psi)
- 		psi->pst = *pst;
+-	if (ti) {
+-		memset(ti, 0, sizeof(*ti));
++	if (ti)
+ 		ti->tt = *t;
 -	}
  
- 	return psi;
+ 	return ti;
  }
 -- 
 1.5.2.2
