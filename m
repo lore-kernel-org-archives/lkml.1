@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbXGXDrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763379AbXGXDxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764999AbXGXDrk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 23:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbXGXDr3
+	id S1763379AbXGXDxU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 23:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbXGXDxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 23:47:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:49981 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756464AbXGXDr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 23:47:28 -0400
-Message-ID: <46A5761C.1040308@goop.org>
-Date: Mon, 23 Jul 2007 20:46:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: LKML <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
-       nix.or.die@googlemail.com, Roland McGrath <roland@redhat.com>
-Subject: Re: 2.6.22-git17 boot failure
-References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc>
-In-Reply-To: <46A53396.2060902@imap.cc>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-15
+	Mon, 23 Jul 2007 23:53:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43822 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751021AbXGXDxM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 23:53:12 -0400
+Date: Mon, 23 Jul 2007 20:52:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 03/10] readahead: combine
+ file_ra_state.prev_index/prev_offset into prev_pos
+Message-Id: <20070723205241.c50624ed.akpm@linux-foundation.org>
+In-Reply-To: <385243122.57859@ustc.edu.cn>
+References: <20070724020009.677809022@mail.ustc.edu.cn>
+	<385243122.57859@ustc.edu.cn>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote:
-> So yes, all of ahci, pata_marvell, aic7xxx, jbd, dm_mod, ext3 are in
-> fact modules in initrd. Would it help to try a kernel with some or all
-> of these built in?
->   
+On Tue, 24 Jul 2007 10:00:12 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-Yes, that would be useful.  It would help tell whether its a module
-loading problem or a basic pci probing problem.
+> -	ra->prev_index = page->index;
+> +	ra->prev_pos = page->index << PAGE_CACHE_SHIFT;
 
-    J
+bug!  The rhs will get truncated befire it gets assigned to
+the lhs.  Need to cast page->index to loff_t.
+
+I'll fix this one up.  Please review the other patches for this?
+
+
+I decided to merge this ahead of that great pile of Nick's patches
+(pagecache write deadlocks) and gto a number of easy-to-fix rejects as a
+result.  Hopefully it all landed OK.
+
+
