@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765985AbXHFN2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765817AbXHFN3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765985AbXHFN2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765644AbXHFNTK
+	id S1765817AbXHFN3F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765654AbXHFNTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:19:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49648 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 09:19:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49644 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765306AbXHFNSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:18:20 -0400
-Message-Id: <200708061318.l76DIImf001756@dantu.rdu.redhat.com>
+	id S1764318AbXHFNST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:18:19 -0400
+Message-Id: <200708061318.l76DIGNM001751@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Date: Tue, 24 Jul 2007 13:11:17 -0400
-Subject: [PATCH 17/25] procfs: add attr_kill_to_mode to setattr functions
+Date: Tue, 24 Jul 2007 13:05:33 -0400
+Subject: [PATCH 16/25] OCFS2: call attr_kill_to_mode from ocfs2_setattr
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not sure if this is really needed, but I don't think it will hurt anything
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/proc/base.c        |    3 +++
- fs/proc/generic.c     |    3 +++
- fs/proc/proc_sysctl.c |    3 +++
- 3 files changed, 9 insertions(+), 0 deletions(-)
+ fs/ocfs2/file.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 3c77d5a..d2e56ba 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -348,6 +348,9 @@ static int proc_setattr(struct dentry *dentry, struct iattr *attr)
- 	int error;
- 	struct inode *inode = dentry->d_inode;
+diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+index c4034f6..d05d472 100644
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -972,6 +972,8 @@ int ocfs2_setattr(struct dentry *dentry, struct iattr *attr)
+ 	mlog_entry("(0x%p, '%.*s')\n", dentry,
+ 	           dentry->d_name.len, dentry->d_name.name);
  
-+	/* FIXME: is this necessary? */
 +	attr_kill_to_mode(inode, attr);
 +
  	if (attr->ia_valid & ATTR_MODE)
- 		return -EPERM;
- 
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index b5e7155..88d736c 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -239,6 +239,9 @@ static int proc_notify_change(struct dentry *dentry, struct iattr *iattr)
- 	struct proc_dir_entry *de = PDE(inode);
- 	int error;
- 
-+	/* FIXME: is this necessary? */
-+	attr_kill_to_mode(inode, iattr);
-+
- 	error = inode_change_ok(inode, iattr);
- 	if (error)
- 		goto out;
-diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
-index 680c429..37c0cca 100644
---- a/fs/proc/proc_sysctl.c
-+++ b/fs/proc/proc_sysctl.c
-@@ -425,6 +425,9 @@ static int proc_sys_setattr(struct dentry *dentry, struct iattr *attr)
- 	struct inode *inode = dentry->d_inode;
- 	int error;
- 
-+	/* FIXME: is this necessary */
-+	attr_kill_to_mode(inode, attr);
-+
- 	if (attr->ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID))
- 		return -EPERM;
- 
+ 		mlog(0, "mode change: %d\n", attr->ia_mode);
+ 	if (attr->ia_valid & ATTR_UID)
 -- 
 1.5.2.2
 
