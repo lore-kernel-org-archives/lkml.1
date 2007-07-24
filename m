@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbXGXXDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbXGXXE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759677AbXGXXDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 19:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXGXXDe
+	id S1754490AbXGXXE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 19:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXGXXEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 19:03:34 -0400
-Received: from smtp1-g19.free.fr ([212.27.42.27]:44368 "EHLO smtp1-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbXGXXDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 19:03:33 -0400
-From: Duncan Sands <duncan.sands@math.u-psud.fr>
-To: mikie <mikie.pl@gmail.com>
-Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
-Date: Wed, 25 Jul 2007 01:03:53 +0200
-User-Agent: KMail/1.9.7
-Cc: "Indan Zupancic" <indan@nul.nu>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org
-References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com> <ca35ce500707110955t44d9b998r769c02df3e29e00a@mail.gmail.com> <ca35ce500707190324ncc7fbc0r4f05e00c74186dcc@mail.gmail.com>
-In-Reply-To: <ca35ce500707190324ncc7fbc0r4f05e00c74186dcc@mail.gmail.com>
+	Tue, 24 Jul 2007 19:04:21 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:42403
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbXGXXEV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 19:04:21 -0400
+Date: Tue, 24 Jul 2007 16:02:46 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: Power Management framework proposal
+In-Reply-To: <1185313138.5439.285.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0707241556140.6590@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm> 
+ <1185125189.2714.13.camel@laptopd505.fenrus.org> 
+ <1185229405.5439.148.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0707241313580.6590@asgard.lang.hm>
+ <1185313138.5439.285.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707250103.54477.duncan.sands@math.u-psud.fr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mikie,
+On Wed, 25 Jul 2007, Benjamin Herrenschmidt wrote:
 
-> Do you have any news regarding my case of slow transfers via
-> Speedtouch USB modem on linux ?
+> On Tue, 2007-07-24 at 13:14 -0700, david@lang.hm wrote:
+>>> I think we need a set of constraints that trickle down the power
+>> tree
+>>> and limit what a given driver can do locally.
+>>
+>> what sort of contraints are you thinking of?
+>
+> A parent power state defines what states children can be in. For
+> example. A way to express those dependencies would be nice. Or
+> alternatiely, the power state of all the children defines the power
+> state a parent can go in automatically.
 
-I found my old speedtouch modem and tested here.  I got 2.1 Mbaud
-bulk downspeed, and 3 Mbaud isoc downspeed.  This last is half the
-speed my line supports, so something is wrong [*].  Unfortunately
-I'm not very motivated to try to find out what, because I don't
-use this modem myself anymore.  It looks like someone needs to do
-some more reverse engineering work on the windows driver.
+Ok, I see tow things here.
 
-Ciao,
+1. do you really want to try and propogate things like this from one to 
+the other, or would it be good enough to flag the issue and let the 
+software selecting the modes implement this contraint?
 
-Duncan.
+2. how can you standardize the requirements?
 
-[*] I got the same numbers the last time I tested isoc support,
-but at that time 3 Mbaud was slightly less than the maximum speed
-of my line, which explains why I didn't realize that there is a
-problem.
+at the very least you have
+
+for this mode all children must be off
+
+for this mode all children must be in a mode that includes a 'suspended' 
+flag (this could be made implicit by saying that you must suspend children 
+before parents) and then just flagging the 'suspended, but not off' modes)
+
+what requirements are needed? (I'm sure that there are others, but 
+hopefully it's possible to avoid requirements like 'the clock speed for 
+device A must be >X to allow device B to operate in mode Y')
+
+David Lang
