@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbXGXGLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759137AbXGXGVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762127AbXGXGLn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 02:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbXGXGLg
+	id S1759137AbXGXGVg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 02:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbXGXGV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 02:11:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:46568 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbXGXGLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 02:11:35 -0400
-Subject: Re: [kvm-devel] [RFC 0/8]KVM: swap out guest pages
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <46A58E8B.8050507@qumranet.com>
-References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com>
-	 <46A4829C.9080104@qumranet.com>
-	 <1185232218.1803.36.camel@localhost.localdomain>
-	 <46A58E8B.8050507@qumranet.com>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 16:11:14 +1000
-Message-Id: <1185257474.1803.216.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 24 Jul 2007 02:21:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:26070 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753029AbXGXGVY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 02:21:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=J/wT81kHPRAHkO1E2P0Ej3LsoWPFeQ00Q4Qfk+Lcrk49bhBmLv2sPeFBKQff5zbZzzjT5+cUEc8TWP4PdC9mnHTyx0tUxfxGgPnKaavKB7Unqox5CS9njb15pEKJvW/HK4m5jbfLlyYxEY5Vs0FRMjn7S3lZJKiinqSoC7NChVg=
+Message-ID: <46A59A56.6000001@gmail.com>
+Date: Tue, 24 Jul 2007 15:21:10 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@gmail.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>, Takashi Iwai <tiwai@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
+       Doug Chapman <doug.chapman@hp.com>, Vasily Tarasov <vtaras@openvz.org>,
+       Thierry MERLE <thierry.merle@free.fr>, v4l-dvb-maintainer@linuxtv.org,
+       "Dwaine P. Garden" <dwainegarden@rogers.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.23-rc1: known regressions with patches
+References: <46A47940.7030801@googlemail.com>
+In-Reply-To: <46A47940.7030801@googlemail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 08:30 +0300, Avi Kivity wrote:
-> Rusty Russell wrote:
-> > On Mon, 2007-07-23 at 13:27 +0300, Avi Kivity wrote:
-> >   
-> >> Having an address_space (like your patch does) is remarkably simple, and 
-> >> requires few hooks from the current vm.  However using existing vmas 
-> >> mapped by the user has many advantages:
-> >>
-> >> - compatible with s390 requirements
-> >> - allows the user to use hugetlbfs pages, which have a performance 
-> >> advantage using ept/npt (but which are unswappable)
-> >> - allows the user to map a file (which can be regarded as way to specify 
-> >> the swap device)
-> >> - better ingration with the rest of the vm
-> >>     
-> >
-> > You don't need to expose the vmas.  You just have userspace point out
-> > the start+len of each region of memory it wants the guest to be able to
-> > access, and the address it wants it to appear in the guest.
-> >
-> > This is a slight superset of what lguest does in two ways:
-> >
-> > 1) my guest address == user address, but I'm looking at adding an offset
-> > so I don't have to link the launcher binary specially.
-> > 2) I have only one contiguous region of guest-physical memory, since I
-> > can place device memory immediately above "normal" mem.
-> >
-> >   
-> 
-> My intent was to allow userspace to establish assign a virtual address
-> range into a memory slot.
-> 
-> So long as you don't do swapping, all is simple, since you can do a
-> get_user_pages() on initialization or when installing a shadow pte.  But
-> if you want to swap, you need:
-> 
-> - a way to transfer the dirty bit from the shadow ptes to the struct page
+Michal Piotrowski wrote:
+> Subject         : Oops while modprobing phy fixed module
+> References      : http://lkml.org/lkml/2007/7/14/63
+> Last known good : ?
+> Submitter       : Gabriel C <nix.or.die@googlemail.com>
+> Caused-By       : Tejun Heo <htejun@gmail.com>
+>                   commit 3007e997de91ec59af39a3f9c91595b31ae6e08b
+> Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
+>                   Tejun Heo <htejun@gmail.com>
+>                   Vitaly Bordug <vitb@kernel.crashing.org>
+> Patch1          : http://lkml.org/lkml/2007/7/18/506
+> Status          : patch available
 
-Actually, get_user_pages() does that for you.  You have to make R/O any
-writable pte where the guest doesn't set the dirty bit (so you can trap
-it later) but last I put a printk in there, Linux doesn't do that.
+Patch is in mainline.  Commit a1da4dfe35bc36c3bc9716d995c85b7983c38a76.
 
-> - a way to let the vm rmap know that there are shadow ptes that point to
-> the page in addition to Linux ptes.  These shadow ptes may be in a
-> different format than Linux ptes.
-> - a different tlb invalidation method with ASIDs
+Thanks.
 
-Well first I was just going to see how well hooking into the shrinker
-works.  That might be sufficient: just throw out shadow refs to pages
-when there's pressure.
-
-If not, it does get harder.  A callback in the mm struct to say "I want
-to swap your page out" is required if we don't take a reference to the
-page.  Dirty bit handling would be an interesting issue (maybe the
-callback can say "No!" and dirty the page again?).
-
-I fear mm code.
-
-> It's not going to be simple.
-
-Yeah, but it's one thing stopping lguest from being non-root usable, so
-I want it there, too.
-
-Cheers,
-Rusty.
-
-
+-- 
+tejun
