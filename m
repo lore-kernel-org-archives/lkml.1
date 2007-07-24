@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbXGXTtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbXGXTtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbXGXTtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbXGXTtA
+	id S1764097AbXGXTtr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756370AbXGXTtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:49:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60294 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756642AbXGXTs7 (ORCPT
+	Tue, 24 Jul 2007 15:49:36 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:43343 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754172AbXGXTtf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:48:59 -0400
-Date: Tue, 24 Jul 2007 12:48:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-In-Reply-To: <20070724194046.GD6019@stusta.de>
-Message-ID: <alpine.LFD.0.999.0707241246130.3607@woody.linux-foundation.org>
-References: <20070723190152.GA5755@martell.zuzino.mipt.ru>
- <20070723132431.42afbae8.akpm@linux-foundation.org>
- <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru>
- <20070723141137.171e4ac1.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
- <20070724175951.GC6019@stusta.de> <alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org>
- <20070724112843.0cc104c2.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0707241207290.3607@woody.linux-foundation.org>
- <20070724194046.GD6019@stusta.de>
+	Tue, 24 Jul 2007 15:49:35 -0400
+Date: Tue, 24 Jul 2007 21:49:01 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+Message-ID: <20070724194901.GE6019@stusta.de>
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A534EA.6030008@intel.com> <46A5C12B.3080904@shadowen.org> <20070724021526.3d92286b.akpm@linux-foundation.org> <20070724172217.GA10725@linux-sh.org> <Pine.LNX.4.64.0707242000120.18990@fbirervta.pbzchgretzou.qr> <46A64587.2010704@shadowen.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46A64587.2010704@shadowen.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Jul 2007, Adrian Bunk wrote:
+On Tue, Jul 24, 2007 at 07:31:35PM +0100, Andy Whitcroft wrote:
+> Jan Engelhardt wrote:
+> > On Jul 25 2007 02:22, Paul Mundt wrote:
+> >> Perhaps CodingStyle can start being versioned, so people can opt out of
+> >> certain 'improvements' whenever someone has a vision, much like some
+> >> nameless licenses.
+> > 
+> > I'd say Codingstyle is versioned by means of git commit IDs.
+> > 
+> >> Personally I prefer the second style, and if there's a comment block,
+> >> then it makes sense to complete the tree with {}'s (the keyword here is
+> >> prefer, as it's a personal preference). checkpatch has been quite useful
+> >> for catching obviously broken things, and now it seems like it's just
+> >> overreaching. Perhaps this functionality can be split in to a lite
+> >> checkpatch for catching show-stoppers for application and then something
+> >> more akin to a CodingStyle validator for the folks interested in
+> >> arbitrarily defining convention, which they can use freely while the rest
+> >> of us try to get something useful done.
+> > 
+> > /me thinks of ... checkpath --check-me-harder
 > 
-> > But do we 
-> > care so much that it's worth inlining something like buffered_rmqueue()? 
-> >...
-> 
-> Where is the problem with having buffered_rmqueue() inlined?
+> Yep I think the consensus is we need a
+> "--i-don't-agree-just-check-things-which-will-get-me-rejected-out-of-hand"
+> option of some sort which will restrict output to the real errors.
 
-In this case, it was a pain to just even try to find the call chain, or 
-read the asm.
+No, the default should be to show only the real errors.
 
-I would encourage lots of kernel hackers to read the assembler code gcc 
-generates. I suspect people being aware of code generation issues (and 
-writing their code with that in mind) is a *much* bigger performance 
-impact than gcc inlining random functions.
+> -apw
 
-So maybe I'm old-fashioned and crazy, but "readability of the asm result" 
-actually is a worthwhile goal. Not because we care directly, but because 
-I'd like to encourage people to do it, due to the *indirect* benefits.
+cu
+Adrian
 
-		Linus
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
