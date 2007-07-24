@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932603AbXGXU6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933105AbXGXU6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932603AbXGXU6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932605AbXGXU5m
+	id S933105AbXGXU6l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbXGXU6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:57:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45333 "EHLO mx1.redhat.com"
+	Tue, 24 Jul 2007 16:58:16 -0400
+Received: from mga03.intel.com ([143.182.124.21]:29057 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932422AbXGXU5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:57:41 -0400
-Message-ID: <46A667BD.5080106@redhat.com>
-Date: Tue, 24 Jul 2007 16:57:33 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ulrich Kunitz <kune@deine-taler.de>,
-       linux-kernel@vger.kernel.org, honza@jikos.cz, jkosina@suse.cz
-Subject: Re: Is PIE randomization breaking klibc binaries?
-References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com> <46A6624E.60003@redhat.com>
-In-Reply-To: <46A6624E.60003@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S933066AbXGXU6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:58:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,575,1175497200"; 
+   d="scan'208";a="254253590"
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Chris Friesen <cfriesen@nortel.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46A66393.5000705@redhat.com>
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>
+	 <46A53C88.6060006@redhat.com>
+	 <Pine.LNX.4.64.0707240954560.8026@tongli.jf.intel.com>
+	 <46A64002.8080103@redhat.com> <46A6576A.9020506@nortel.com>
+	 <46A66393.5000705@redhat.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 24 Jul 2007 13:58:11 -0700
+Message-Id: <1185310691.7737.40.camel@tongli.jf.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+X-OriginalArrivalTime: 24 Jul 2007 20:58:12.0330 (UTC) FILETIME=[58E464A0:01C7CE35]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/24/2007 04:34 PM, Chuck Ebbert wrote:
-> On 07/20/2007 06:05 PM, H. Peter Anvin wrote:
->>> It looks like that the PIE randomization patch breaks klibc
->>> binaries on x86-64.
->>>
->> Interesting.
->>
->> klibc binaries are indeed statically linked, but composed of two
->> different ELF images: the application itself and the shared libary
->> (which is referenced from the application header as the "interpreter").
->>  Neither of these is an ET_DYN file; they are both ET_EXEC, so it
->> *should* be unaffected by the PIE randomization patch.  Obviously, that
->> seems to not be the case.
->>
->> My guess is that this patch mishandles interpreter images which are
->> ET_EXEC.  Jan, any insight?
-> 
-> Well, they don't run on Fedora 6 either (which has the same code, it's
-> part of exec-shield):
-> 
-> $ strace ./cat
-> execve("./cat", ["./cat"], [/* 55 vars */]) = -1 ENOENT (No such file or directory)
-> ...
-> $ file cat
-> cat: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked (uses shared libs), stripped
-> 
-> Funny nobody noticed that before...
+On Tue, 2007-07-24 at 16:39 -0400, Chris Snook wrote:
+
+> Divining the intentions of the administrator is an AI-complete problem and we're 
+> not going to try to solve that in the kernel.  An intelligent administrator 
+> could also allocate 50% of each CPU to a resource group containing all the 
+> *other* processes.  Then, when the other processes are scheduled out, your 
+> single task will run on whichever CPU is idle.  This will very quickly 
+> equilibrate to the scheduling ping-pong you seem to want.  The scheduler 
+> deliberately avoids this kind of migration by default because it hurts cache and 
+> TLB performance, so if you want to override this very sane default behavior, 
+> you're going to have to explicitly configure it yourself.
 > 
 
-After installing klibc.so and klibc-<ID>.so into /lib everything works:
+Well, the admin wouldn't specifically ask for 50% of each CPU. He would
+just allocate 50% of total CPU time---it's up to the scheduler to
+fulfill that. If a task is entitled to one CPU, then it'll stay there
+and have no migration. Migration occurs only if there's overload, in
+which case I think you agree in your last email that the cache and TLB
+impact is not an issue (at least in SMP).
 
-Program Headers:
-  Type           Offset   VirtAddr   PhysAddr   FileSiz  MemSiz   Flg Align
-  PHDR           0x000034 0x08048034 0x08048034 0x0000a0 0x0000a0 R E 0x4
-  INTERP         0x0000d4 0x080480d4 0x080480d4 0x00002a 0x00002a R   0x1
-        [Requesting program interpreter: /lib/klibc-58kBUyV_qhVvkMnaxy8A7N8rLak.so]
-
-Ulrich, did your initrd contain the correct .so? Did you try rebuilding klibc after
-building the new kernel?
+  tong
