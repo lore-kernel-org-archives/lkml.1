@@ -1,83 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbXGXGBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761086AbXGXGCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbXGXGBx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 02:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbXGXGBo
+	id S1761086AbXGXGCO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 02:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760294AbXGXGBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 02:01:44 -0400
-Received: from hu-out-0506.google.com ([72.14.214.229]:60850 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753304AbXGXGBn (ORCPT
+	Tue, 24 Jul 2007 02:01:54 -0400
+Received: from ws9.cdotb.ernet.in ([202.41.72.121]:52581 "EHLO
+	ws9.cdotb.ernet.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759551AbXGXGBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 02:01:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Xdxpr7HyTt88pJFC4mr1VfW9LhxmX4+Fd5dCks2aG1ec9KNGPib1aFWEeD0SjHogK4/rLpcDbFT0fTeAA3YTiPONEkDBS/EBmWzTTlnd3P5bXvznVXydFE4jnVuu5vAigagDUayOqoWvId1suG/ZwpZ+sIG/xPDTRRQOerMHylE=
-Message-ID: <2c0942db0707232301o5ab428bdrd1bc831cacf806c@mail.gmail.com>
-Date: Mon, 23 Jul 2007 23:01:41 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: -mm merge plans for 2.6.23
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070723221846.d2744f42.akpm@linux-foundation.org>
+	Tue, 24 Jul 2007 02:01:53 -0400
+X-Greylist: delayed 2012 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Jul 2007 02:01:51 EDT
+From: "Pallab Dutta" <pallab@cdotb.ernet.in>
+To: linux-kernel@vger.kernel.org
+Subject: Linux TCP modifications
+Date: Tue, 24 Jul 2007 12:11:39 -0400
+Message-Id: <20070724160139.M84420@universe.cdotb.ernet.in>
+X-Mailer: Open WebMail 2.41 20040926
+X-OriginatingIP: 192.168.37.166 (pallab)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <200707102015.44004.kernel@kolivas.org>
-	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <46A57068.3070701@yahoo.com.au>
-	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	 <20070723221846.d2744f42.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 6f5c47a9774b5cc7
+Content-Type: text/plain;
+	charset=iso-8859-1
+X-imss-version: 2.046
+X-imss-result: Passed
+X-imss-scanInfo: M:P L:E SM:0
+X-imss-tmaseResult: TT:0 TS:0.0000 TC:00 TRN:0 TV:3.6.1039(15002.003)
+X-imss-scores: Clean:1.65400 C:2 M:3 S:5 R:5
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/23/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> Let it just be noted that Con is not the only one who has expended effort
-> on this patch.  It's been in -mm for nearly two years and it has meant
-> ongoing effort for me and, to a lesser extent, other MM developers to keep
-> it alive.
+Hi,
 
-<nods> Yes, keeping patches from crufting up and stepping on other
-patches' toes is hard work; I did it for a bit, and it was one of the
-more thankless tasks I've tried a hand at.
+I want to change the TCP ( for a given specific application with lots of
+modifications to the basic TCP) implementation in Linux and integrate it with
+the linux kernal. Since TCP comes as apart of Linux kernal and also TCP and IP
+implementations in Linux are tightly coupled, please suggest how to go about
+integrating TCP (which is developed for a specific application with lots of
+modifications) into Linux kernal. Kindly give as much details as possible.  
 
-So, thanks.
-
-> Critera are different for each patch, but it usually comes down to a
-> cost/benefit judgement.  Does the benefit of the patch exceed its
-> maintenance cost over the lifetime of the kernel (whatever that is).
-
-Well, I suspect it's 'lifetime of the feature,' in this case as it's
-no more user visible than the page replacement algorithm in the first
-place.
-
-> The other consideration here is, as Nick points out, are the problems which
-> people see this patch solving for them solveable in other, better ways?
-> IOW, is this patch fixing up preexisting deficiencies post-facto?
-
-In some cases, it almost certainly is. It also has the troubling
-aspect of mitigating future regressions without anyone terribly
-noticing, due to it being able to paper over those hypothetical future
-deficiencies when they're introduced.
-
-> To attack the second question we could start out with bug reports: system A
-> with workload B produces result C.  I think result C is wrong for <reasons>
-> and would prefer to see result D.
-
-I spend a lot of time each day watching my computer fault my
-workingset back in when I switch contexts. I'd rather I didn't have to
-do that. Unfortunately, that's a pretty subjective problem report. For
-whatever it's worth, we have pretty subjective solution reports
-pointing to swap prefetch as providing a fix for them.
-
-My concern is that a subjective problem report may not be good enough.
-So, what do I measure to make this an objective problem report? And if
-I do that (and it shows a positive result), will that be good enough
-to argue for inclusion?
+regards,
+Pallab.
