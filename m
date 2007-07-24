@@ -1,123 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXGXUFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763220AbXGXUGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbXGXUFi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932089AbXGXUEu
+	id S1763220AbXGXUGA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117AbXGXUE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:04:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35281 "EHLO mx2.mail.elte.hu"
+	Tue, 24 Jul 2007 16:04:58 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:39295 "EHLO atlrel8.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760164AbXGXUEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:04:46 -0400
-Date: Tue, 24 Jul 2007 22:04:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Marcin ??lusarz <marcin.slusarz@gmail.com>,
-       Jarek Poplawski <jarkao2@o2.pl>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+	id S932113AbXGXUEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:04:54 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
+Date: Tue, 24 Jul 2007 13:53:57 -0600
+User-Agent: KMail/1.9.6
+Cc: Jeff Garzik <jeff@garzik.org>,
+       =?iso-8859-1?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
        linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070724200431.GA22190@elte.hu>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <46A63BC3.3050208@garzik.org> <Pine.LNX.4.64N.0707241914060.17807@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0707241914060.17807@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200707241353.57458.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Tue, 24 Jul 2007, Ingo Molnar wrote:
-> > 
-> > please try the patch below instead.
+On Tuesday 24 July 2007 12:17:36 pm Maciej W. Rozycki wrote:
+> On Tue, 24 Jul 2007, Jeff Garzik wrote:
 > 
-> I'm hoping this is just a "let's see if the behavior changes" patch, 
-> not something that you think should be applied if it fixes something?
+> > It seems clear from this report that we cannot, should not, trust BIOS for
+> > something (a) so simple and (b) that has been working for over a decade.
 > 
-> This patch looks like it is trying to paper over (rather than fix) 
-> some possible bug in the "->disable" logic. Makes sense as a "let's 
-> see if it's that" kind of thing, but not as a "let's fix it".
-> 
-> Or am I missing something?
+>  And (c) something BIOS writers have never ever in their most unlikely 
+> imagination expected to be trusted for.
 
-yeah - it's a totaly bad and unacceptable hack (i realized how bad it 
-was when i wrote up that comment section ...), i just wanted to see 
-which portion of ne2k/lib8390.c is sensitive to the fact whether an irq 
-line is masked or not. The patch has no SOB line either.
+I don't think it's quite so clear-cut.  It is true that "poke at 0x3e8,
+and if it responds, assume it's a 16550 with IRQ 4" is simple.  But it
+doesn't always work.  Google for "irda setserial" and you'll find many
+cases where the serial driver's blind probe erroneously claims an IRDA
+device.  The SIR mode of IRDA devices is basically 16550-compatible,
+so this wouldn't be a big problem, except that the blind probe often
+assumes the wrong IRQ.  So users have to use setserial to fix up the
+incorrect assumptions made by the blind probe.
 
-the current best fix forward is to undo my original change, unless we 
-find a better fix for this problem. (Note that the other patches posted 
-in this thread are broken too: they only mask the irq but dont reliably 
-unmask it.)
+We haven't debugged the problem on Sebastien's machine yet.  I suspect
+we'll find that his serial port *is* described by ACPI, but that there's
+some little difference in the way Linux discovers those devices compared
+to how Windows does it.  If we figure out how to use ACPI more like
+Windows does, I think we'll fix several little issues, including the one
+on Sebastien's machine.
 
-here's the current method of handling irqs for Marcin's card:
+We have a whole laundry list of minor issues because we either don't
+listen to the BIOS at all, or we use it differently than Windows does.
+Here are a few off the top of my head:
 
-17:         12   IO-APIC-fasteoi   eth1, eth0
+  - IRDA drivers have platform-specific code to "preconfigure" (discover
+    and reprogram) bridges on the way to the IR device
+  - Hardware sensor drivers conflict with ACPI embedded controller
+    drivers, so every once in a while, they return bogus readings
+  - PCMCIA devices grab resources already in use by a PNP device,
+    causing the PNP device to stop working
+  - Linux enumerates CPUs with the MADT; I think Windows uses the ACPI
+    namespace.  Sometimes there are multiple MADTs, and sometimes Linux
+    uses the wrong one.
 
-and fasteoi is a really simple sequence: no masking/unmasking by the 
-flow handler itself but a NOP at entry and an APIC-EOI at the end. The 
-disable/enable irq thing should thus have minimal effect if done within 
-an irq handler.
+If we keep papering over these problems by ignoring what ACPI is trying
+to tell us, we're going to be adding machine-specific hacks forever.
+Of course, there are ACPI bugs.  But Windows does rely on ACPI, and
+Microsoft doesn't want to add those per-platform hacks any more than
+we do.  So we might as well try to take advantage of the ACPI testing
+they do.
 
-now ne2k does something uncommon: for xmit (which is normally done 
-outside of irq handlers) it will disable_irq_nosync()/enable_irq() the 
-interrupt. It does it to exclude the handler from _that_ CPU, but due to 
-the _nosync it does not exclude it from any other CPUs. So that's a bit 
-weird already.
+Bjorn
 
-just in case, i've just re-checked all the genirq bits that change 
-IRQ_DISABLED (that bit accidentally clear would be the only way to truly 
-allow an IRQ handler to interrupt the disable_irq_nosync() critical 
-section on that CPU) - but i can see no way for that to happen: we 
-unconditionally detect and report unbalanced and underflowing 
-irq_desc->depth, and the only other place (besides enable_irq()) that 
-clears IRQ_DISABLED is __set_irq_handler(), and on x86 that is only used 
-during bootup.
-
-Marcin, could you try the patch below too? [without having any other 
-patch applied.] It basically turns the critical section into an irqs-off 
-critical section and thus checks whether your problem is related to that 
-particular area of code.
-
-	Ingo
-
-Index: linux/drivers/net/lib8390.c
-===================================================================
---- linux.orig/drivers/net/lib8390.c
-+++ linux/drivers/net/lib8390.c
-@@ -297,9 +297,7 @@ static int ei_start_xmit(struct sk_buff 
- 	 *	Slow phase with lock held.
- 	 */
- 
--	disable_irq_nosync_lockdep_irqsave(dev->irq, &flags);
--
--	spin_lock(&ei_local->page_lock);
-+	spin_lock_irqsave(&ei_local->page_lock, flags);
- 
- 	ei_local->irqlock = 1;
- 
-@@ -376,8 +374,7 @@ static int ei_start_xmit(struct sk_buff 
- 	ei_local->irqlock = 0;
- 	ei_outb_p(ENISR_ALL, e8390_base + EN0_IMR);
- 
--	spin_unlock(&ei_local->page_lock);
--	enable_irq_lockdep_irqrestore(dev->irq, &flags);
-+	spin_unlock_irqrestore(&ei_local->page_lock, flags);
- 
- 	dev_kfree_skb (skb);
- 	ei_local->stat.tx_bytes += send_length;
