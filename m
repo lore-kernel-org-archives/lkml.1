@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764871AbXGXCOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934632AbXGXCOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764871AbXGXCOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 22:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761353AbXGXCMS
+	id S934632AbXGXCOo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 22:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbXGXCMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 22:12:18 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:40619 "HELO ustc.edu.cn"
+	Mon, 23 Jul 2007 22:12:19 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:40699 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1756660AbXGXCMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757664AbXGXCMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Jul 2007 22:12:13 -0400
-Message-ID: <385243122.41636@ustc.edu.cn>
+Message-ID: <385243123.51698@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070724020041.774421091@mail.ustc.edu.cn>
+Message-Id: <20070724020042.882116065@mail.ustc.edu.cn>
 References: <20070724020009.677809022@mail.ustc.edu.cn>
 User-Agent: quilt/0.45-1
-Date: Tue, 24 Jul 2007 10:00:10 +0800
+Date: Tue, 24 Jul 2007 10:00:17 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH 01/10] readahead: compacting file_ra_state
-Content-Disposition: inline; filename=short-rasize.patch
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 08/10] readahead: remove the limit max_sectors_kb imposed on max_readahead_kb
+Content-Disposition: inline; filename=remove-readahead-size-limit.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use 'unsigned int' instead of 'unsigned long' for readahead sizes.
+Remove the size limit max_sectors_kb imposed on max_readahead_kb.
 
-This helps reduce memory consumption on 64bit CPU when
-a lot of files are opened.
+The size restriction is unreasonable. Especially when max_sectors_kb cannot
+grow larger than max_hw_sectors_kb, which can be rather small for some disk
+drives.
 
-CC: Andi Kleen <andi@firstfloor.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- include/linux/fs.h |    8 ++++----
- mm/filemap.c       |    2 +-
- mm/readahead.c     |    2 +-
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ block/ll_rw_blk.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
---- linux-2.6.22-rc6-mm1.orig/include/linux/fs.h
-+++ linux-2.6.22-rc6-mm1/include/linux/fs.h
-@@ -771,12 +771,12 @@ struct fown_struct {
-  * Track a single file's readahead state
-  */
- struct file_ra_state {
--	pgoff_t start;                  /* where readahead started */
--	unsigned long size;             /* # of readahead pages */
--	unsigned long async_size;       /* do asynchronous readahead when
-+	pgoff_t start;			/* where readahead started */
-+	unsigned int size;		/* # of readahead pages */
-+	unsigned int async_size;	/* do asynchronous readahead when
- 					   there are only # of pages ahead */
+--- linux-2.6.22-rc6-mm1.orig/block/ll_rw_blk.c
++++ linux-2.6.22-rc6-mm1/block/ll_rw_blk.c
+@@ -3945,7 +3945,6 @@ queue_max_sectors_store(struct request_q
+ 			max_hw_sectors_kb = q->max_hw_sectors >> 1,
+ 			page_kb = 1 << (PAGE_CACHE_SHIFT - 10);
+ 	ssize_t ret = queue_var_store(&max_sectors_kb, page, count);
+-	int ra_kb;
  
--	unsigned long ra_pages;		/* Maximum readahead window */
-+	unsigned int ra_pages;		/* Maximum readahead window */
- 	unsigned long mmap_hit;		/* Cache hit stat for mmap accesses */
- 	unsigned long mmap_miss;	/* Cache miss stat for mmap accesses */
- 	unsigned long prev_index;	/* Cache last read() position */
---- linux-2.6.22-rc6-mm1.orig/mm/filemap.c
-+++ linux-2.6.22-rc6-mm1/mm/filemap.c
-@@ -840,7 +840,7 @@ static void shrink_readahead_size_eio(st
- 	if (count > 5)
- 		return;
- 	count++;
--	printk(KERN_WARNING "Reducing readahead size to %luK\n",
-+	printk(KERN_WARNING "Reducing readahead size to %dK\n",
- 		ra->ra_pages << (PAGE_CACHE_SHIFT - 10));
- }
+ 	if (max_sectors_kb > max_hw_sectors_kb || max_sectors_kb < page_kb)
+ 		return -EINVAL;
+@@ -3954,14 +3953,6 @@ queue_max_sectors_store(struct request_q
+ 	 * values synchronously:
+ 	 */
+ 	spin_lock_irq(q->queue_lock);
+-	/*
+-	 * Trim readahead window as well, if necessary:
+-	 */
+-	ra_kb = q->backing_dev_info.ra_pages << (PAGE_CACHE_SHIFT - 10);
+-	if (ra_kb > max_sectors_kb)
+-		q->backing_dev_info.ra_pages =
+-				max_sectors_kb >> (PAGE_CACHE_SHIFT - 10);
+-
+ 	q->max_sectors = max_sectors_kb << 1;
+ 	spin_unlock_irq(q->queue_lock);
  
---- linux-2.6.22-rc6-mm1.orig/mm/readahead.c
-+++ linux-2.6.22-rc6-mm1/mm/readahead.c
-@@ -342,7 +342,7 @@ ondemand_readahead(struct address_space 
- 		   bool hit_readahead_marker, pgoff_t offset,
- 		   unsigned long req_size)
- {
--	unsigned long max;	/* max readahead pages */
-+	int max;	/* max readahead pages */
- 	int sequential;
- 
- 	max = ra->ra_pages;
 
 --
