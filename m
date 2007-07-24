@@ -1,224 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933304AbXGXAs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932193AbXGXA7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933304AbXGXAs1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 20:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbXGXAsU
+	id S932193AbXGXA7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 20:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758439AbXGXA7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 20:48:20 -0400
-Received: from smtpout.mac.com ([17.250.248.172]:62052 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbXGXAsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 20:48:19 -0400
-In-Reply-To: <20070723133202.GB23495@mail.linbit.com>
-References: <20070721203819.GA10706@mail.linbit.com> <20070722213202.1f5d1cab.mrlinuxman@mac.com> <20070723133202.GB23495@mail.linbit.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <849A65A2-DE2E-4BA3-A060-520F7CC6CE64@mac.com>
-Cc: Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrlinuxman@mac.com>
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Date: Mon, 23 Jul 2007 20:48:03 -0400
-To: Lars Ellenberg <lars.ellenberg@linbit.com>
-X-Mailer: Apple Mail (2.752.2)
+	Mon, 23 Jul 2007 20:59:04 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:45446 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1757746AbXGXA7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 20:59:00 -0400
+Message-ID: <385238729.01475@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Tue, 24 Jul 2007 08:47:28 +0800
+From: Fengguang Wu <fengguang.wu@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Rusty Russell <rusty@rustcorp.com.au>, Dave Jones <davej@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
+       Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
+       Mingming Cao <cmm@us.ibm.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Chris Ahna <christopher.j.ahna@intel.com>,
+       David Mosberger-Tang <davidm@hpl.hp.com>,
+       Kyle McMartin <kyle@parisc-linux.org>
+Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
+Message-ID: <20070724004728.GA8026@mail.ustc.edu.cn>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Dave Jones <davej@redhat.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
+	Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>,
+	Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
+	Mingming Cao <cmm@us.ibm.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	Chris Ahna <christopher.j.ahna@intel.com>,
+	David Mosberger-Tang <davidm@hpl.hp.com>,
+	Kyle McMartin <kyle@parisc-linux.org>
+References: <20070721210005.000228000@chello.nl> <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com> <20070722081010.GA6317@mail.ustc.edu.cn> <1185093236.6344.87.camel@localhost.localdomain> <46A46E4B.7050007@yahoo.com.au> <385201377.00678@ustc.edu.cn> <20070723124009.5fcf4fef.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070723124009.5fcf4fef.akpm@linux-foundation.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the guys on netdev, would you please look at the tcp_recvmsg- 
-threading and TCP_NAGLE_CORK issues below and give opinions on the  
-best way to proceed?
+On Mon, Jul 23, 2007 at 12:40:09PM -0700, Andrew Morton wrote:
+> On Mon, 23 Jul 2007 22:24:57 +0800
+> Fengguang Wu <fengguang.wu@gmail.com> wrote:
+> 
+> > On Mon, Jul 23, 2007 at 07:00:59PM +1000, Nick Piggin wrote:
+> > > Rusty Russell wrote:
+> > > >On Sun, 2007-07-22 at 16:10 +0800, Fengguang Wu wrote:
+> > > 
+> > > >>So I opt for it being made tunable, safe, and turned off by default.
+> > > 
+> > > I hate tunables :) Unless we have workload A that gets a reasonable
+> > > benefit from something and workload B that gets a significant regression,
+> > > and no clear way to reconcile them...
+> > 
+> > Me too ;)
+> > 
+> > But sometimes we really want to avoid flushing the cache.
+> > Andrew's user space LD_PRELOAD+fadvise based tool fit nicely here.
+> 
+> It's the only way to go in some situations.  Sometimes the kernel just
+> cannot predict the future sufficiently well, and the costs of making a
+> mistake are terribly high.  We need human help.  And it should be
+> administration-time help, not programming-time help.
 
-One thing to remember, you don't necessarily have to merge every  
-feature right away.  As long as the new code is configured "off" by  
-default with an "(EXPERIMENTAL)" warning, you can start getting the  
-core parts and the cleanups upstream before you have to resolve all  
-the issues with low-latency, dynamic-tracing-frameworks, etc.
+Agreed. I feel that drop behind is not a universal applicable.
+Cost based reclaim sounds better, but who knows before field use ;)
 
-On Jul 23, 2007, at 09:32:02, Lars Ellenberg wrote:
-> On Sun, Jul 22, 2007 at 09:32:02PM -0400, Kyle Moffett wrote:
->> +/* I don't remember why XCPU ...
->> + * This is used to wake the asender,
->> + * and to interrupt sending the sending task
->> + * on disconnect.
->> + */
->> +#define DRBD_SIG SIGXCPU
->
->> Don't use signals between kernel threads, use proper primitives  
->> like notifiers and waitqueues, which means you should also  
->> probably switch away from kernel_thread() to the kthread_*()  
->> APIs.  Also you should fix this FIXME or remove it if it no longer  
->> applies:-D.
->
-> right.
-> but how to I tell a network thread in tcp_recvmsg to stop early,  
-> without using signals?
+> > > >I'd like to see it turned on by default in -mm, and try to come up with
+> > > >some server-like workload to measure the effect.  Should be easy to
+> > > >simulate something (eg. apache server, where clients grab some files in
+> > > >preference, and apache server where clients grab different files).
+> > > 
+> > > I don't like this kind of conditional information going from something
+> > > like readahead into page reclaim. Unless it is for readahead _specific_
+> > > data such as "I got these all wrong, so you can reclaim them" (which
+> > > this isn't).
+> > > 
+> > > Possibly it makes sense to realise that the given pages are cheaper
+> > > to read back in as they are apparently being read-ahead very nicely.
+> > 
+> > In fact I have talked to Jens about it in last year's kernel summit.
+> > The patch below explains itself.
+> > ---
+> > Subject: cost based page reclaim
+> > 
+> > Cost based page reclaim - a minimalist implementation.
+> > 
+> > Suppose we cached 32 small files each with 1 page, and one 32-page chunk from a
+> > large file.  Should we first drop the 32-pages which are read in one I/O, or
+> > drop the 32 distinct pages, each costs one I/O? (Given that the files are of
+> > equal hotness.)
+> > 
+> > Page replacement algorithms should be designed to minimize the number of I/Os,
+> > instead of the number of page faults. Dividing the cost of I/O by the number of
+> > pages it bring in, we get the cost of the page. The bigger page cost, the more
+> > 'lives/bloods' the page should have.
+> > 
+> > This patch adds life to costly pages by pretending that they are
+> > referenced more times. Possible downsides:
+> > - burdens the pressure of vmscan
+> > - active pages are no longer that 'active'
+> > 
+> 
+> This is all fun stuff, but how do we find out that changes like this are
+> good ones, apart from shipping it and seeing who gets hurt 12 months later?
 
-I'm not really a kernel-networking guy, so I can't answer this  
-definitively, but I'm pretty sure the problem has been solved in many  
-network filesystems and such, so I've added a netdev CC.  The way I'd  
-do it in userspace is with nonblocking IO and epoll(), that way I  
-don't actually have to "stop" or "signal" the thread, I can just add  
-a socket to epoll fd when I want to pay attention to it, and remove  
-it from my epoll fd when I'm done with it.  I'd assume there's some  
-equivalent way in kernelspace based around the "struct kiocb *iocb"  
-and "int nonblock" parameters to the tcp_recvmsg() kernel function.
+One thing I can imagine now is that the first pages may get more life
+because of the conservative initial readahead size.
 
->> +/* see kernel/printk.c:printk_ratelimit
->> + * macro, so it is easy do have independend rate limits at  
->> different locations
->> + * "initializer element not constant ..." with kernel 2.4 :(
->> + * so I initialize toks to something large
->> + */
->> +#define DRBD_ratelimit(ratelimit_jiffies, ratelimit_burst)     \
->>
->> Any particular reason you can't just use printk_ratelimit for this?
->
-> I want to be able to do a rate-limit per specific message/code  
-> fragment, without affecting other messages or execution paths.
+Generally file servers use sendfile(wholefile), so not a problem.
 
-Ok, so could you change your patch to modify __printk_ratelimit() to  
-also accept a "struct printk_rate" datastructure and make  
-printk_ratelimit() call "__printk_ratelimit(&global_printk_rate);"??
+> > +#define log2(n) fls(n)
+> 
+> <look at include/linux/log2.h>
 
-Typically if $KERNEL_FEATURE is insufficient for your needs you  
-should fix $KERNEL_FEATURE instead of duplicating a replacement in  
-your driver.  This applies to basically all of the things I'm talking  
-about, kernel-threads, workqueues (BTW: I believe you can make your  
-own custom workqueue thread(s) instead of using the default "events/ 
-*" ones), debugging macros, fault-insertion, integer math, lock- 
-checking, dynamic tracing, etc.  If you find some reason that some  
-generic code won't work for you, please try to fix it first so we can  
-all benefit from it.
+Thank you, this comment lead to another patch :)
+---
+Subject: convert ill defined log2() to ilog2()
 
->> Umm, how about fixing this to actually use proper workqueues or  
->> something instead of this open-coded mess?
->
-> unlikely to happen "right now".  but it is on our todo list...
+It's *wrong* to have
+			#define log2(n) ffz(~(n))
+It should be *reversed*:
+			#define log2(n) flz(~(n))
+or
+			#define log2(n) fls(n)
+or just use
+			ilog2(n) defined in linux/log2.h.
 
-Unfortunately problems like these need to be fixed before a mainline  
-merge.  Merging duplicated code is a big no-no, and historically  
-there have been problems with people who merge code and never  
-properly maintain it once it's in tree.  As a result the rule is your  
-code has to be easily maintainable before anybody will even  
-*consider* merging it.
+This patch follows the last solution, recommended by Andrew Morton.
 
->> +/* I want the packet to fit within one page
->> + * THINK maybe use a special bitmap header,
->> + * including offset and compression scheme and whatnot
->> + * Do not use PAGE_SIZE here! Use a architecture agnostic constant!
->> + */
->> +#define BM_PACKET_WORDS ((4096-sizeof(struct Drbd_Header))/sizeof 
->> (long))
->>
->> Yuck.  Definitely use PAGE_SIZE here, so at least if it's broken  
->> on an arch with multiple page sizes, somebody can grep for  
->> PAGE_SIZE to fix it.  It also means that on archs/configs with 8k  
->> or 64k pages you won't waste a bunch of memory.
->
-> No. This is not to allocate anything, but defines the chunk size  
-> with which we transmit the bitmap, when we have to.  We need to be  
-> able to talk from one arch (say i586) to some other (say s390, or  
-> sparc, or whatever).  The receiving side has a one-page buffer,  
-> from which it may or may not to endian-conversion.  The hardcoded  
-> 4096 is the minimal common denominator here.
+//Or are they simply the wrong naming, and is in fact correct in behavior?
 
-Ahhh.  Please replace the constant "4096" with:
-/* This is the maximum amount of bitmap we will send per packet */
-# define MAX_BITMAP_CHUNK_SIZE 4096
-# define BM_PACKET_WORDS \
-	((MAX_BITMAP_CHUNK_SIZE - sizeof(struct Drbd_Header))/sizeof(long))
+Cc: linux-ext4@vger.kernel.org
+Cc: Mingming Cao <cmm@us.ibm.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Chris Ahna <christopher.j.ahna@intel.com>
+Cc: David Mosberger-Tang <davidm@hpl.hp.com>
+Cc: Kyle McMartin <kyle@parisc-linux.org>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ drivers/char/agp/hp-agp.c     |    9 +++------
+ drivers/char/agp/i460-agp.c   |    5 ++---
+ drivers/char/agp/parisc-agp.c |    7 ++-----
+ fs/ext4/super.c               |    6 ++----
+ 4 files changed, 9 insertions(+), 18 deletions(-)
 
-It's more text but dramatically improves the readability by  
-eliminating more magic numbers.  This is a much milder case than I've  
-seen in the past, so it's not that big of a deal.
-
-
->> +/* Dynamic tracing framework */
-> guess we have to explain first what this is for.  it probably is  
-> not exactly what you think it is... but maybe I am just too  
-> ignorant about what you suggest here.
->
-> we'll have to defer discussion about this for when I'm done doing  
-> the trivial fix-ups, and provided an overall design overview.
-
- From just poking at the code it looks vaguely similar to blktrace or  
-something.  We do have a lot of things in the kernel which fall under  
-the name of "Dynamic tracing framework", so if you could look those  
-over and see if you can't reuse them (or just remove the code for now  
-and merge it later), that would be really useful.
-
->> +static inline void drbd_tcp_cork(struct socket *sock)
->> +{
->> +#if 1
->> +       mm_segment_t oldfs = get_fs();
->> +       int val = 1;
->> +
->> +       set_fs(KERNEL_DS);
->> +       tcp_setsockopt(sock->sk, SOL_TCP, TCP_CORK, (char *)&val,  
->> sizeof(val) );
->> +       set_fs(oldfs);
->> +#else
->> +       tcp_sk(sock->sk)->nonagle |= TCP_NAGLE_CORK;
->> +#endif
->> +}
->>
->> Yuck, why'd you do it this way?  Probably because your tcp_sk(sock- 
->> >sk) stuff
->> doesn't have proper locking, I'll bet.  You can avoid all the  
->> extra wrapper
->> crap by just looking in "do_tcp_setsockopt" and taking the  
->> appropriate lock:
->>
->> static inline void drbd_tcp_cork(struct socket *sock)
->> {
->> 	struct sock *sk = sock->sk;
->>
->> 	lock_sock(sk);
->> 	tcp_sk(sk)->nonagle |= TCP_NAGLE_CORK;
->> 	release-sock(sk);
->> }
->
-> it had performance improvements somewhen.  I doubt it has still.   
-> maybe we just remove this.
-
-NOTE: netdev guys, any chance you could comment on whether or not a  
-RAID1-over-IP block device should be using TCP_NAGLE_CORK?  If not,  
-what should they be using instead?
-
->> +#define peer_mask role_mask
->> +#define pdsk_mask disk_mask
->> +#define susp_mask 1
->> +#define user_isp_mask 1
->> +#define aftr_isp_mask 1
->> +#define NS(T, S) \
->> +#define NS2(T1, S1, T2, S2) \
->> +#define NS3(T1, S1, T2, S2, T3, S3) \
->> +#define _NS(D, T, S) \
->> +#define _NS2(D, T1, S1, T2, S2) \
->> +#define _NS3(D, T1, S1, T2, S2, T3, S3) \
->>
->> Grumble.  When I earlier said I thought I was in macro hell, well,  
->> I was
->> wrong.  *THIS* is macro hell.  What the fsck is that supposed to  
->> do?  And it
->> doesn't even include a *SINGLE* comment!!!
->
-> uhm. basically you are right.  Phil will take over to explain why  
-> it is done that way...
-
-Thanks, I'm looking forward to a good bout of hysterical  
-laughter ;-) :-D.
-
-
-> most other points I just snipped off of this mail will be handled  
-> as you suggested asap.
-
-Great!  Thanks.  I'll take another deep dive into your git tree in a  
-week or so when I've got more free time, but it would really help to  
-have some smaller-ish patches which do any necessary preparatory  
-cleanups.  Good luck with your submission!
-
-Cheers,
-Kyle Moffett
+--- linux-2.6.22-rc6-mm1.orig/drivers/char/agp/hp-agp.c
++++ linux-2.6.22-rc6-mm1/drivers/char/agp/hp-agp.c
+@@ -14,15 +14,12 @@
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/agp_backend.h>
++#include <linux/log2.h>
+ 
+ #include <asm/acpi-ext.h>
+ 
+ #include "agp.h"
+ 
+-#ifndef log2
+-#define log2(x)		ffz(~(x))
+-#endif
+-
+ #define HP_ZX1_IOC_OFFSET	0x1000  /* ACPI reports SBA, we want IOC */
+ 
+ /* HP ZX1 IOC registers */
+@@ -256,7 +253,7 @@ hp_zx1_configure (void)
+ 		readl(hp->ioc_regs+HP_ZX1_IMASK);
+ 		writel(hp->iova_base|1, hp->ioc_regs+HP_ZX1_IBASE);
+ 		readl(hp->ioc_regs+HP_ZX1_IBASE);
+-		writel(hp->iova_base|log2(HP_ZX1_IOVA_SIZE), hp->ioc_regs+HP_ZX1_PCOM);
++		writel(hp->iova_base|ilog2(HP_ZX1_IOVA_SIZE), hp->ioc_regs+HP_ZX1_PCOM);
+ 		readl(hp->ioc_regs+HP_ZX1_PCOM);
+ 	}
+ 
+@@ -284,7 +281,7 @@ hp_zx1_tlbflush (struct agp_memory *mem)
+ {
+ 	struct _hp_private *hp = &hp_private;
+ 
+-	writeq(hp->gart_base | log2(hp->gart_size), hp->ioc_regs+HP_ZX1_PCOM);
++	writeq(hp->gart_base | ilog2(hp->gart_size), hp->ioc_regs+HP_ZX1_PCOM);
+ 	readq(hp->ioc_regs+HP_ZX1_PCOM);
+ }
+ 
+--- linux-2.6.22-rc6-mm1.orig/drivers/char/agp/i460-agp.c
++++ linux-2.6.22-rc6-mm1/drivers/char/agp/i460-agp.c
+@@ -13,6 +13,7 @@
+ #include <linux/string.h>
+ #include <linux/slab.h>
+ #include <linux/agp_backend.h>
++#include <linux/log2.h>
+ 
+ #include "agp.h"
+ 
+@@ -59,8 +60,6 @@
+  */
+ #define WR_FLUSH_GATT(index)	RD_GATT(index)
+ 
+-#define log2(x)			ffz(~(x))
+-
+ static struct {
+ 	void *gatt;				/* ioremap'd GATT area */
+ 
+@@ -148,7 +147,7 @@ static int i460_fetch_size (void)
+ 		 * values[i].size.
+ 		 */
+ 		values[i].num_entries = (values[i].size << 8) >> (I460_IO_PAGE_SHIFT - 12);
+-		values[i].page_order = log2((sizeof(u32)*values[i].num_entries) >> PAGE_SHIFT);
++		values[i].page_order = ilog2((sizeof(u32)*values[i].num_entries) >> PAGE_SHIFT);
+ 	}
+ 
+ 	for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++) {
+--- linux-2.6.22-rc6-mm1.orig/drivers/char/agp/parisc-agp.c
++++ linux-2.6.22-rc6-mm1/drivers/char/agp/parisc-agp.c
+@@ -18,6 +18,7 @@
+ #include <linux/init.h>
+ #include <linux/klist.h>
+ #include <linux/agp_backend.h>
++#include <linux/log2.h>
+ 
+ #include <asm-parisc/parisc-device.h>
+ #include <asm-parisc/ropes.h>
+@@ -27,10 +28,6 @@
+ #define DRVNAME	"quicksilver"
+ #define DRVPFX	DRVNAME ": "
+ 
+-#ifndef log2
+-#define log2(x)		ffz(~(x))
+-#endif
+-
+ #define AGP8X_MODE_BIT		3
+ #define AGP8X_MODE		(1 << AGP8X_MODE_BIT)
+ 
+@@ -92,7 +89,7 @@ parisc_agp_tlbflush(struct agp_memory *m
+ {
+ 	struct _parisc_agp_info *info = &parisc_agp_info;
+ 
+-	writeq(info->gart_base | log2(info->gart_size), info->ioc_regs+IOC_PCOM);
++	writeq(info->gart_base | ilog2(info->gart_size), info->ioc_regs+IOC_PCOM);
+ 	readq(info->ioc_regs+IOC_PCOM);	/* flush */
+ }
+ 
+--- linux-2.6.22-rc6-mm1.orig/fs/ext4/super.c
++++ linux-2.6.22-rc6-mm1/fs/ext4/super.c
+@@ -1433,8 +1433,6 @@ static void ext4_orphan_cleanup (struct 
+ 	sb->s_flags = s_flags; /* Restore MS_RDONLY status */
+ }
+ 
+-#define log2(n) ffz(~(n))
+-
+ /*
+  * Maximal file size.  There is a direct, and {,double-,triple-}indirect
+  * block limit, and also a limit of (2^32 - 1) 512-byte sectors in i_blocks.
+@@ -1706,8 +1704,8 @@ static int ext4_fill_super (struct super
+ 	sbi->s_desc_per_block = blocksize / EXT4_DESC_SIZE(sb);
+ 	sbi->s_sbh = bh;
+ 	sbi->s_mount_state = le16_to_cpu(es->s_state);
+-	sbi->s_addr_per_block_bits = log2(EXT4_ADDR_PER_BLOCK(sb));
+-	sbi->s_desc_per_block_bits = log2(EXT4_DESC_PER_BLOCK(sb));
++	sbi->s_addr_per_block_bits = ilog2(EXT4_ADDR_PER_BLOCK(sb));
++	sbi->s_desc_per_block_bits = ilog2(EXT4_DESC_PER_BLOCK(sb));
+ 	for (i=0; i < 4; i++)
+ 		sbi->s_hash_seed[i] = le32_to_cpu(es->s_hash_seed[i]);
+ 	sbi->s_def_hash_version = es->s_def_hash_version;
 
