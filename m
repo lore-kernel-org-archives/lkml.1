@@ -1,143 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbXGXVHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbXGXVJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbXGXVHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbXGXVHG
+	id S1755815AbXGXVJr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 17:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXGXVJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:07:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56735 "EHLO ogre.sisk.pl"
+	Tue, 24 Jul 2007 17:09:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49548 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbXGXVHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:07:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Towards eliminating the freezer
-Date: Tue, 24 Jul 2007 23:14:51 +0200
-User-Agent: KMail/1.9.5
-Cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0707241549280.17124-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707241549280.17124-100000@iolanthe.rowland.org>
+	id S1751278AbXGXVJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 17:09:38 -0400
+Message-ID: <46A66A88.8070307@redhat.com>
+Date: Tue, 24 Jul 2007 17:09:28 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Li, Tong N" <tong.n.li@intel.com>
+CC: Chris Friesen <cfriesen@nortel.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>	 <46A53C88.6060006@redhat.com>	 <Pine.LNX.4.64.0707240954560.8026@tongli.jf.intel.com>	 <46A64002.8080103@redhat.com> <46A6576A.9020506@nortel.com>	 <46A66393.5000705@redhat.com> <1185310691.7737.40.camel@tongli.jf.intel.com>
+In-Reply-To: <1185310691.7737.40.camel@tongli.jf.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707242314.52355.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 24 July 2007 22:24, Alan Stern wrote:
-> On Tue, 24 Jul 2007, Rafael J. Wysocki wrote:
+Li, Tong N wrote:
+> On Tue, 2007-07-24 at 16:39 -0400, Chris Snook wrote:
 > 
-> > Hmm, I still don't understand why we can't lock dpm_list_mutex before the
-> > "For each" loop (we already do something like this in device_suspend() and
-> > device_resume()) and that would simplify things.
-> > 
-> > It seems that we can do something like this:
-> > 
-> > device_suspend:
-> > 	Lock dpm_list_mutex (from now on, new devices cannot be added)
-> > 	For each device on dpm_active, reverse
-> > 		acquire dev->sem (from now on, no new drivers can bind to dev)
-> > 		suspend(dev)
-> > 		move dev to dpm_off
+>> Divining the intentions of the administrator is an AI-complete problem and we're 
+>> not going to try to solve that in the kernel.  An intelligent administrator 
+>> could also allocate 50% of each CPU to a resource group containing all the 
+>> *other* processes.  Then, when the other processes are scheduled out, your 
+>> single task will run on whichever CPU is idle.  This will very quickly 
+>> equilibrate to the scheduling ping-pong you seem to want.  The scheduler 
+>> deliberately avoids this kind of migration by default because it hurts cache and 
+>> TLB performance, so if you want to override this very sane default behavior, 
+>> you're going to have to explicitly configure it yourself.
+>>
 > 
-> You have a minor error there; it's necessary to unlock dpm_list_mutex 
-> while acquiring dev-sem and then lock it again.
+> Well, the admin wouldn't specifically ask for 50% of each CPU. He would
+> just allocate 50% of total CPU time---it's up to the scheduler to
+> fulfill that. If a task is entitled to one CPU, then it'll stay there
+> and have no migration. Migration occurs only if there's overload, in
+> which case I think you agree in your last email that the cache and TLB
+> impact is not an issue (at least in SMP).
 
-Ah, right, now I see that.
+I don't think Chris's scenario has much bearing on your patch.  What he wants is 
+to have a task that will always be running, but can't monopolize either CPU. 
+This is useful for certain realtime workloads, but as I've said before, realtime 
+requires explicit resource allocation.  I don't think this is very relevant to 
+SCHED_FAIR balancing.
 
-> But more importantly, this code acquires the device semaphores in the wrong
-> order.  They have to be acquired going forward (from the top of the device
-> tree down), not backward.
-
-Yes, I've overlooked that too.
-
-> Here's my proposal in a more explicit form.  Before doing
-> device_suspend() we call lock_all_devices():
-> 
-> struct list_head dpm_locked;
-> 
-> static void lock_all_devices()
-> {
-> 	mutex_lock(&dpm_list_mtx);
-> 	while (!list_empty(&dpm_active)) {
-> 		struct list_head *entry = dpm_active.next;
-> 		struct device *dev = to_device(entry);
-> 
-> 		get_device(dev);
-> 		mutex_unlock(&dpm_list_mtx);
-> 		down(&dev->sem);
-> 		mutex_lock(&dpm_list_mtx);
-> 
-> 		if (list_empty(entry))		/* Device was removed */
-> 			up(&dev->sem);
-> 		else			/* Move it to the dpm_locked list */
-> 			list_move_tail(entry, &dpm_locked);
-> 		put_device(dev);
-> 	}
-> }
-> 
-> Then device_suspend() can be simplified:
-> 
-> int device_suspend(pm_message_t state)
-> {
-> 	int error = 0;
-> 
-> 	might_sleep();
-> 	list_for_each_entry_reverse(dev, &dpm_locked, power.entry) {
-> 		error = suspend_device(dev, state);
-> 
-> 		if (error) {
-> 			printk(KERN_ERR "Could not suspend device %s: "
-> 				"error %d%s\n",
-> 				kobject_name(&dev->kobj), error,
-> 				error == -EAGAIN ? " (please convert to suspend_late)" : "");
-> 			break;
-> 		}
-> 		list_move(&dev->power.entry, &dpm_off);
-
-Is that safe with list_for_each_entry_reverse?
-
-> 	}
-> 	if (error)
-> 		dpm_resume();
-> 	return error;
-> }
-> 
-> Appropriate changes are needed in the resume pathway as well, together 
-> with an unlock_all_devices() routine:
-
-Sure.
-
-> static void unlock_all_devices(void)
-> {
-> 	while (!list_empty(&dpm_locked)) {
-> 		struct list_head *entry = dpm_locked.prev;
-> 		struct device *dev = to_device(entry);
-> 
-> 		list_move(entry, &dpm_active);
-> 		up(&dev->sem);
-> 	}
-> 	mutex_unlock(&dpm_list_mtx);
-> }
-
-Yes, that looks fine. 
-
-So, who's writing the patch? ;-)
-
-> Incidentally, what is dpm_mtx for?  It doesn't seem to do anything 
-> useful.  Is it a relic of the former runtime PM support?
-
-I think so.  IMO it can be removed.
-
-I also think it would be nicer to have all of the functions in
-drivers/base/power/{main|suspend|resume}.c moved to one file.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	-- Chris
