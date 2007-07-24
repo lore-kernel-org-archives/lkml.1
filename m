@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbXGXMwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbXGXMye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759365AbXGXMwq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 08:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbXGXMwg
+	id S1760614AbXGXMye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 08:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbXGXMy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 08:52:36 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33019 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752554AbXGXMwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 08:52:35 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.392129000@pademelon.sonytel.be>
-	<20070718163637.3f0e0164.akpm@linux-foundation.org>
-	<46A5E610.7000508@shadowen.org> <46A5F275.7060905@garzik.org>
-X-Yow: I'm having a MID-WEEK CRISIS!
-Date: Tue, 24 Jul 2007 14:52:32 +0200
-In-Reply-To: <46A5F275.7060905@garzik.org> (Jeff Garzik's message of "Tue\, 24
-	Jul 2007 08\:37\:09 -0400")
-Message-ID: <je3aze6k1b.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Tue, 24 Jul 2007 08:54:26 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:42970 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753345AbXGXMyZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 08:54:25 -0400
+Date: Tue, 24 Jul 2007 14:54:33 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Greg KH" <gregkh@suse.de>, "Simon Arlott" <simon@fire.lp0.eu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: sysfs/udev broken in latest git?
+Message-ID: <20070724145433.4848ada1@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com>
+References: <46A59EAA.9030105@simon.arlott.org.uk>
+	<20070724072540.GA835@suse.de>
+	<20070724100314.3c606131@gondolin.boeblingen.de.ibm.com>
+	<20070724084654.GB13152@suse.de>
+	<3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+On Tue, 24 Jul 2007 11:20:02 +0200,
+"Kay Sievers" <kay.sievers@vrfy.org> wrote:
 
-> Andy Whitcroft wrote:
->> Andrew Morton wrote:
->> 
->>>> +	start_sector = req->sector*priv->blocking_factor;
->>>> +	sectors = req->nr_sectors*priv->blocking_factor;
->>> s/*/ * /.  checkpatch missed this.
->> 
->> Ok, this is something we need to decide on.  Currently we only ask for
->> consistent spacing on all the mathematic operators.  This is mostly as
->> we do see a large number of non-spaced uses in defines and the like.
->> 
->> I am happy to expand these tests so they are always spaced on both sides
->> style if that is the preference.
->
-> That is most definitely the preference:  spaces surround operators.
-                                                          ^binary
+> It looks fine to me. "device" links must never point to anything else
+> than a bus device.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Hm, but then
+1. The patch sneaks this check in (the old code only checked for
+   dev->parent)
+2. The code is rather inconsistent now, since none of the other code
+   paths check for dev->parent->bus...
