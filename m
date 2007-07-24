@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932935AbXGXU4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932895AbXGXU5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932935AbXGXU4w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932752AbXGXU4Y
+	id S932895AbXGXU5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760312AbXGXU5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:56:24 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59225 "EHLO mail.dvmed.net"
+	Tue, 24 Jul 2007 16:57:39 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:55631 "EHLO atlrel9.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932742AbXGXU4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:56:23 -0400
-Message-ID: <46A66774.3070702@garzik.org>
-Date: Tue, 24 Jul 2007 16:56:20 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1758746AbXGXU5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:57:38 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
+Date: Tue, 24 Jul 2007 14:56:35 -0600
+User-Agent: KMail/1.9.6
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       =?iso-8859-1?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707241434.32374.bjorn.helgaas@hp.com> <46A663CA.3050000@garzik.org>
+In-Reply-To: <46A663CA.3050000@garzik.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] pata_hpt37x: Fix 2.6.22 clock PLL regression
-References: <20070724151748.7e99f4f0@the-village.bc.nu>
-In-Reply-To: <20070724151748.7e99f4f0@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200707241456.35769.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> 	Just one version of Linux ago
-> 	The PLL code broke - oh no!
-> 	But set the right mode
-> 	And fix up the code
-> 	Makes the PLL timing sync go
+On Tuesday 24 July 2007 02:40:42 pm Jeff Garzik wrote:
+> Please go back and fix the original issue!
 > 
-> Closes-bug: #8791
-> Signed-off-by: Alan Cox <alan@redhat.com>
+> If you are having problems caused by double-probing, the fix is NOT to 
+> remove one the probes.  The fix is to ensure use of proper resource 
+> reservation, and in some cases, add co-driver-awareness.
 
-applied
+Keith Owens did report an issue with the double probe, but I confess
+I don't fully understand it.
 
+The real problem was that the serial driver claimed a non-serial
+device.  On many laptops, there's an IR device at 0x3e8, IRQ 3.
+The serial driver claimed this as ttyS2, using IRQ 4.  So if you
+wanted to use the IR device, you had to either:
+
+  - use setserial to make the serial driver forget about ttyS2
+    so an IR driver could claim it, or
+
+  - use setserial to change the IRQ to 3 and just use the device
+    in SIR mode, which is 16550-compatible so you can use the
+    serial driver
+
+I didn't express that very clearly in the changelog.
 
