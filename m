@@ -1,151 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbXGXSv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbXGXSx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbXGXSv3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 14:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXGXSvX
+	id S1757944AbXGXSx0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 14:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXGXSxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 14:51:23 -0400
-Received: from [83.222.144.183] ([83.222.144.183]:48454 "EHLO
-	colorfullife.mysite.adiungo.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751068AbXGXSvW (ORCPT
+	Tue, 24 Jul 2007 14:53:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:2051 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbXGXSxR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 14:51:22 -0400
-Message-ID: <46A64984.1070808@colorfullife.com>
-Date: Tue, 24 Jul 2007 20:48:36 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 24 Jul 2007 14:53:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=ByntyAK6VEOTOaL/v7oDKQ2o67NNsgWxVEt2LXVy6Tvjf6FN1f+9HpIXHM4239si6yXmOAuzVkc7snow2qnUaO19jwK54eb/uc1J8M3AO6MKeasCf3PUo66a89CBm13itoU+KOqOGNEnKNIVWJk4+qFu6t3tJpU2TupMhVwQnMI=
+Date: Tue, 24 Jul 2007 22:53:07 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
+Subject: [PATCH] UDF: fix UID and GID mount option ignorance
+Message-ID: <20070724185307.GA7397@cvg>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       "Agarwal, Lomesh" <lomesh.agarwal@intel.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: which signal is sent to freeze process?
-References: <46A506F8.2020206@colorfullife.com> <200707232211.15543.rjw@sisk.pl> <46A50AF0.70305@colorfullife.com>
-In-Reply-To: <46A50AF0.70305@colorfullife.com>
-Content-Type: multipart/mixed;
- boundary="------------070705050403000203070102"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070705050403000203070102
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+This patch fix weird behaviour of UDF mounting procedure.
+To get UID changed (for now) we have to type
 
-> Hi!
->
-> Can you generate small testcase that demonstrates the problem?
->
-> > Then what would be the correct way to handle resume process. The other
-> > way of course is to make all the applications check the errno in case of
-> > failure. But that seems more more problematic then system call checking.
-> > What do you say?
->
-> Hmm, does that testcase behave correctly over SIGSTOP/SIGCONT? I'm not
-> saying kernel behaves nicely here, but perhaps fixing the apps to
-> check errno properly is the right thing to do? :-)
-Perhaps the kernel should use ERESTARTNOHAND instead of EINTR?
-The current code is more than odd:
-- select() and sys_ppoll() both use ERESTARTNOHAND (i.e.: 
-the functions do not return to user space with SIGSTOP/SIGCONT or freezer())
+	mount -t udf -o uid=some_user,uid=ignore /dev/device /mnt/moun_point
 
-- sys_poll() uses EINTR (i.e.: SIGSTOP/SIGCONT/freezer() return to user space)
+and specifying two uid at once is strange a bit. So with the patch we are able
+to mount without additional 'uid=ignore' option. The same for GID option is done.
 
-Attached is a patch that switches sys_poll to ERESTARTNOHAND and a poll test app.
-Boot tested with FC6.
+This patch will not break current mount scheme (with two option).
 
-What do you think? With ERESTARTNOHAND, poll would only return to user space if the app has a SIGCONT handler installed.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
---
-	Manfred
+Andrew, Jan comments?
+
+Btw this does fix (I hope) the following
+
+	[BUG 6124] mount of UDF fs ignores UID and GID options
+        http://bugzilla.kernel.org/show_bug.cgi?id=6124
 
 
---------------070705050403000203070102
-Content-Type: text/plain;
- name="patch-poll-ERESTARTNOHAND"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch-poll-ERESTARTNOHAND"
+ fs/udf/inode.c  |   10 ++++++----
+ fs/udf/super.c  |    2 ++
+ fs/udf/udf_sb.h |    2 ++
+ 3 files changed, 10 insertions(+), 4 deletions(-)
 
---- 2.6/fs/select.c	2007-05-20 09:52:32.000000000 +0200
-+++ build-2.6/fs/select.c	2007-07-23 22:10:21.000000000 +0200
-@@ -723,7 +723,7 @@
-   	}
- 	err = fdcount;
- 	if (!fdcount && signal_pending(current))
--		err = -EINTR;
-+		err = -ERESTARTNOHAND;
- out_fds:
- 	walk = head;
- 	while(walk!=NULL) {
-@@ -794,7 +794,7 @@
- 	ret = do_sys_poll(ufds, nfds, &timeout);
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index 0d2c416..1652b2c 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -1127,13 +1127,15 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	}
  
- 	/* We can restart this syscall, usually */
--	if (ret == -EINTR) {
-+	if (ret == -ERESTARTNOHAND) {
- 		/*
- 		 * Don't restore the signal mask yet. Let do_signal() deliver
- 		 * the signal on the way back to userspace, before the signal
-@@ -805,7 +805,6 @@
- 					sizeof(sigsaved));
- 			set_thread_flag(TIF_RESTORE_SIGMASK);
- 		}
--		ret = -ERESTARTNOHAND;
- 	} else if (sigmask)
- 		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
+ 	inode->i_uid = le32_to_cpu(fe->uid);
+-	if (inode->i_uid == -1 || UDF_QUERY_FLAG(inode->i_sb,
+-						 UDF_FLAG_UID_IGNORE))
++	if (inode->i_uid == -1 ||
++	    UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_UID_IGNORE) ||
++	    UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_UID_SET))
+ 		inode->i_uid = UDF_SB(inode->i_sb)->s_uid;
  
-
---------------070705050403000203070102
-Content-Type: text/x-c++src;
- name="sp.cpp"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="sp.cpp"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/poll.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <errno.h>
-
-int main(int argc, char **argv)
-{
-	int delay, ret;
-	struct pollfd pfd;
-	int pipesfd[2];
-
-	printf("sp <delay>\n");
-
-	if (argc != 2)
-		return 1;
-	delay = atoi(argv[1]);
-	printf("delay %d.\n", delay);
-	if (delay < 0 || delay > 1000)
-		return 2;
-
-	if (pipe(pipesfd) != 0) {
-		fprintf(stderr, "pipe failed with errno %d.\n", errno);
-		return 3;
-	}
-	pfd.fd = pipesfd[0];
-	pfd.events = POLLIN;
-
-	if (!fork()) {
-		sleep(delay);
-		write(pipesfd[1], "", 1);;
-		return 0;
-	}
-	sleep(1);
-	ret = poll(&pfd, 1, -1);
-	printf("poll returned %d.\n", ret);
-
-	if (pfd.revents)
-		printf("   events %8xh revents %8xh.\n", pfd.events, pfd.revents);
-
-	return 0;
-}
-
---------------070705050403000203070102--
+ 	inode->i_gid = le32_to_cpu(fe->gid);
+-	if (inode->i_gid == -1 || UDF_QUERY_FLAG(inode->i_sb,
+-						 UDF_FLAG_GID_IGNORE))
++	if (inode->i_gid == -1 ||
++	    UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_GID_IGNORE) ||
++	    UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_GID_SET))
+ 		inode->i_gid = UDF_SB(inode->i_sb)->s_gid;
+ 
+ 	inode->i_nlink = le16_to_cpu(fe->fileLinkCount);
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index 7b30964..382be7b 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -366,11 +366,13 @@ static int udf_parse_options(char *options, struct udf_options *uopt)
+ 			if (match_int(args, &option))
+ 				return 0;
+ 			uopt->gid = option;
++			uopt->flags |= (1 << UDF_FLAG_GID_SET);
+ 			break;
+ 		case Opt_uid:
+ 			if (match_int(args, &option))
+ 				return 0;
+ 			uopt->uid = option;
++			uopt->flags |= (1 << UDF_FLAG_UID_SET);
+ 			break;
+ 		case Opt_umask:
+ 			if (match_octal(args, &option))
+diff --git a/fs/udf/udf_sb.h b/fs/udf/udf_sb.h
+index 3e937d3..3c29820 100644
+--- a/fs/udf/udf_sb.h
++++ b/fs/udf/udf_sb.h
+@@ -24,6 +24,8 @@
+ #define UDF_FLAG_UID_IGNORE     12    /* use sb uid instead of on disk uid */
+ #define UDF_FLAG_GID_FORGET     13
+ #define UDF_FLAG_GID_IGNORE     14
++#define UDF_FLAG_UID_SET	15
++#define UDF_FLAG_GID_SET	16
+ 
+ #define UDF_PART_FLAG_UNALLOC_BITMAP	0x0001
+ #define UDF_PART_FLAG_UNALLOC_TABLE	0x0002
