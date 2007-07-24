@@ -1,133 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934876AbXGXJko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933462AbXGXJlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934876AbXGXJko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764255AbXGXJkc
+	id S933462AbXGXJlM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935685AbXGXJkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:40:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40109 "EHLO gate.crashing.org"
+	Tue, 24 Jul 2007 05:40:46 -0400
+Received: from hydra.gt.owl.de ([195.71.99.218]:53295 "EHLO hydra.gt.owl.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932512AbXGXJkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:40:31 -0400
-Subject: Re: [patch] mm: reduce pagetable-freeing latencies
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <20070724083855.GA858@elte.hu>
-References: <20070724083855.GA858@elte.hu>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 19:40:11 +1000
-Message-Id: <1185270011.5439.247.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S935556AbXGXJko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 05:40:44 -0400
+Date: Tue, 24 Jul 2007 11:40:42 +0200
+From: Florian Lohoff <flo@rfc822.org>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1 sky2 boot crash in sky2_mac_intr
+Message-ID: <20070724094042.GA6414@paradigm.rfc822.org>
+References: <20070724082205.GA19480@paradigm.rfc822.org> <20070724095008.0eb154fe@oldman.hamilton.local>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
+Content-Disposition: inline
+In-Reply-To: <20070724095008.0eb154fe@oldman.hamilton.local>
+Organization: rfc822 - pure communication
+X-SpiderMe: mh-200707241138@listme.rfc822.org
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 10:38 +0200, Ingo Molnar wrote:
-> the patch below has been tested in -rt for a long time - lets get it 
-> upstream please. It fixes some bad latencies on PREEMPT too.
 
-Note that I'm working on the "right way" (reworking mmu gathering)
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Patches hopefully this week.
+On Tue, Jul 24, 2007 at 09:50:08AM +0100, Stephen Hemminger wrote:
+> The problem is related to power management. The PHY has a number of PCI c=
+onfiguration
+> registers for power control, and the function of these changes based on t=
+he version and
+> revision of the chip. The driver does work on older versions of the EC-U,=
+ in
+> Fujitsu laptop's, it is just the new rev that is broken.
+>=20
+> The driver should probably fail smarter (by not loading) if the PHY isn't=
+ powered
+> up correctly, but that doesn't help your problem.
+>=20
+> The vendor has provided me with documentation on many versions
+> of the chip, but I don't have doc's on the lastest revision differences o=
+f the EC Ultra,=20
+> so a proper solution is not easily available.  The best method for resolv=
+ing this would
+> be to first try the vendor driver version of sk98lin and see if that fixe=
+s it. If so,
+> then it is easy to change sky2, to match the phy setup in the vendor driv=
+er.
+> Another possibility is to look for places in sky2 driver where there are =
+places
+> that compare version/revision.
+>=20
+> The most likely bits that need to change are in PCI registers: 0x80, 0x84=
+ and 0x88
+> You could also load the windows driver and dump PCI config space (with ls=
+pci from
+> cygwin), and see what the settings are there.
+>=20
+> I am away from my office for a month, and therefore away from any sky2
+> hardware for testing.=20
 
-Ben.
+I'll try the above and keep you posted. The crash itself seems to be a
+2.6.23-rc1 regression though. I never experienced this with 2.6.22-rc5
+which i was running before.
 
-> 	Ingo
-> 
-> ----------------------->
-> From: Hugh Dickins <hugh@veritas.com>
-> Subject: mm: reduce pagetable-freeing latencies
-> 
-> 2.6.15-rc1 moved the unlinking of a vma from its prio_tree and anon_vma
-> into free_pgtables: so the vma is hidden from rmap and vmtruncate before
-> freeing its page tables, allowing safe descent without page table lock.
-> But free_pgtables is still called with preemption disabled, and Lee
-> Revell has now detected high latency there.
-> 
-> The right fix will be to rework the mmu_gathering, not to need preemption
-> disabled; but for now an ugly CONFIG_PREEMPT block in free_pgtables, to
-> make an initial unlinking pass with preemption enabled - made uglier by
-> CONFIG_IA64 definitions (only ia64 actually uses the start and end given
-> to tlb_finish_mmu, and our floor and ceiling don't quite work for those).
-> These CONFIG choices being to minimize the additional TLB flushing.
-> 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> --
-> 
->  mm/memory.c |   32 ++++++++++++++++++++++++++++++++
->  1 file changed, 32 insertions(+)
-> 
-> Index: linux-rt-rebase.q/mm/memory.c
-> ===================================================================
-> --- linux-rt-rebase.q.orig/mm/memory.c
-> +++ linux-rt-rebase.q/mm/memory.c
-> @@ -264,18 +264,48 @@ void free_pgd_range(struct mmu_gather **
->  		flush_tlb_pgtables((*tlb)->mm, start, end);
->  }
->  
-> +#ifdef CONFIG_IA64
-> +#define tlb_start_addr(tlb)	(tlb)->start_addr
-> +#define tlb_end_addr(tlb)	(tlb)->end_addr
-> +#else
-> +#define tlb_start_addr(tlb)	0UL	/* only ia64 really uses it */
-> +#define tlb_end_addr(tlb)	0UL	/* only ia64 really uses it */
-> +#endif
-> +
->  void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
->  		unsigned long floor, unsigned long ceiling)
->  {
-> +#ifdef CONFIG_PREEMPT
-> +	struct vm_area_struct *unlink = vma;
-> +	int fullmm = (*tlb)->fullmm;
-> +
-> +	if (!vma)	/* Sometimes when exiting after an oops */
-> +		return;
-> +	if (vma->vm_next)
-> +		tlb_finish_mmu(*tlb, tlb_start_addr(*tlb), tlb_end_addr(*tlb));
-> +	/*
-> +	 * Hide vma from rmap and vmtruncate before freeeing pgtables,
-> +	 * with preemption enabled, except when unmapping just one area.
-> +	 */
-> +	while (unlink) {
-> +		anon_vma_unlink(unlink);
-> +		unlink_file_vma(unlink);
-> +		unlink = unlink->vm_next;
-> +	}
-> +	if (vma->vm_next)
-> +		*tlb = tlb_gather_mmu(vma->vm_mm, fullmm);
-> +#endif
->  	while (vma) {
->  		struct vm_area_struct *next = vma->vm_next;
->  		unsigned long addr = vma->vm_start;
->  
-> +#ifndef CONFIG_PREEMPT
->  		/*
->  		 * Hide vma from rmap and vmtruncate before freeing pgtables
->  		 */
->  		anon_vma_unlink(vma);
->  		unlink_file_vma(vma);
-> +#endif
->  
->  		if (is_vm_hugetlb_page(vma)) {
->  			hugetlb_free_pgd_range(tlb, addr, vma->vm_end,
-> @@ -288,8 +318,10 @@ void free_pgtables(struct mmu_gather **t
->  			       && !is_vm_hugetlb_page(next)) {
->  				vma = next;
->  				next = vma->vm_next;
-> +#ifndef CONFIG_PREEMPT
->  				anon_vma_unlink(vma);
->  				unlink_file_vma(vma);
-> +#endif
->  			}
->  			free_pgd_range(tlb, addr, vma->vm_end,
->  				floor, next? next->vm_start: ceiling);
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Flo
+--=20
+Florian Lohoff                  flo@rfc822.org             +49-171-2280134
+	Those who would give up a little freedom to get a little=20
+          security shall soon have neither - Benjamin Franklin
 
+--rwEMma7ioTxnRzrJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGpckaUaz2rXW+gJcRAoNYAKCt3aq5A3B1lqUbvoO57TRfnOQG1wCguTMG
+hCp1yaZ4hRGlLEem1zRgO4Q=
+=G1dI
+-----END PGP SIGNATURE-----
+
+--rwEMma7ioTxnRzrJ--
