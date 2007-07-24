@@ -1,77 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbXGXSac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbXGXSbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbXGXSac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 14:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXGXSaT
+	id S1758595AbXGXSbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 14:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbXGXSb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 14:30:19 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4312 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752729AbXGXSaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 14:30:17 -0400
-Message-ID: <46A64534.1040207@shadowen.org>
-Date: Tue, 24 Jul 2007 19:30:12 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 24 Jul 2007 14:31:28 -0400
+Received: from xyzzy.farnsworth.org ([65.39.95.219]:1368 "HELO farnsworth.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751055AbXGXSb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 14:31:27 -0400
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 24 Jul 2007 11:31:25 -0700
+To: Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org
+Subject: [PATCH 11/11, corrected] mv64x60_wdt: Rework the timeout register manipulation
+Message-ID: <20070724183124.GL27445@xyzzy.farnsworth.org>
+References: <20070724180738.GA27445@xyzzy.farnsworth.org> <20070724182035.GK27445@xyzzy.farnsworth.org>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky>	<46A534EA.6030008@intel.com>	<46A5C12B.3080904@shadowen.org>	<20070724021526.3d92286b.akpm@linux-foundation.org>	<46A5E034.2030205@shadowen.org>	<Pine.LNX.4.64.0707241849340.18990@fbirervta.pbzchgretzou.qr>	<20070724102035.6447565c.randy.dunlap@oracle.com> <20070724110339.9fd0853e.randy.dunlap@oracle.com>
-In-Reply-To: <20070724110339.9fd0853e.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070724182035.GK27445@xyzzy.farnsworth.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Tue, 24 Jul 2007 10:20:35 -0700 Randy Dunlap wrote:
-> 
->> On Tue, 24 Jul 2007 18:51:39 +0200 (CEST) Jan Engelhardt wrote:
->>
->>> On Jul 24 2007 12:19, Andy Whitcroft wrote:
->>>>>>> if (err) {
->>>>>>>     do_something();
->>>>>>>     return -ERR;
->>>>>>> } else {
->>>>>>>     do_somthing_else();
->>>>>>> }
->>>>>> 	if (err) {
->>>>>> 		do_something();
->>>>>> 		return -ERR;
->>>>>> 	} else
->>>>>> 		do_something_else();
->>>>> The kool kids on linux-usb-devel largely ended up deciding that the second
->>>>> version looks dorky.
->>>> Ok, now if either the preceeding block or following block has {}'s then
->>>> we don't report this block for being one line long.  We will miss some
->>>> this way, but hey.
->>> As per Ingo Molnar [ http://lkml.org/lkml/2006/9/5/68 ],
->>> all blocks in an if-else 'tree' should be {} if there is at least one
->>> with more than two statements. (And I do not disagree.)
->> You are actually referring to this commit:
->>
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e659ba4a0d2d471c0d73590f78e1a1b5a1eede48
->>
->> which did not appear on lkml for review... :(
-> 
-> Oops, I stand corrected (my previous search was based on the patch filename):
-> 
-> http://lkml.org/lkml/2007/5/4/50
-> or
-> http://marc.info/?l=linux-kernel&m=117826369817272&w=2
+mv64x60_wdt: Rework the timeout register manipulation
 
-Well the summary of the discussion there was one vote for the new
-standard, two votes against and a "lets leave it open".  So it seems odd
-it was ever added to the CodingStyle.
+Consolidate the timeout config register modification into a single
+function.  Also, use the enabled flag in the config register to
+determine whether the timer is enabled instead of a separately
+maintained flag, MV64x60_WDOG_FLAG_ENABLED.
 
-The "leave it undefined" makes the current behaviour of checkpatch
-wrong.  So its good I've loosened it for the next release.
+Add spinlock protection around enabling/disabling the watchdog timer.
 
--apw
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+---
+Oops!  I mistakenly sent an earlier version of this patch.  Please
+disregard it and replace it with this one.
+
+ drivers/char/watchdog/mv64x60_wdt.c |   90 +++++++++++++++-----------
+ 1 file changed, 54 insertions(+), 36 deletions(-)
+
+Index: linux-2.6-powerpc-wdt/drivers/char/watchdog/mv64x60_wdt.c
+===================================================================
+--- linux-2.6-powerpc-wdt.orig/drivers/char/watchdog/mv64x60_wdt.c	2007-07-20 20:05:04.000000000 +0000
++++ linux-2.6-powerpc-wdt/drivers/char/watchdog/mv64x60_wdt.c	2007-07-24 18:28:58.000000000 +0000
+@@ -29,75 +29,95 @@
+ 
+ #define MV64x60_WDT_WDC_OFFSET	0
+ 
+-/* MV64x60 WDC (config) register access definitions */
+-#define MV64x60_WDC_CTL1_MASK	(3 << 24)
+-#define MV64x60_WDC_CTL1(val)	((val & 3) << 24)
+-#define MV64x60_WDC_CTL2_MASK	(3 << 26)
+-#define MV64x60_WDC_CTL2(val)	((val & 3) << 26)
++/*
++ * The watchdog configuration register contains a pair of 2-bit fields,
++ *   1.  a reload field, bits 27-26, which triggers a reload of
++ *       the countdown register, and
++ *   2.  an enable field, bits 25-24, which toggles between
++ *       enabling and disabling the watchdog timer.
++ * Bit 31 is a read-only field which indicates whether the
++ * watchdog timer is currently enabled.
++ *
++ * The low 24 bits contain the timer reload value.
++ */
++#define MV64x60_WDC_ENABLE_SHIFT	24
++#define MV64x60_WDC_SERVICE_SHIFT	26
++#define MV64x60_WDC_ENABLED_SHIFT	31
++
++#define MV64x60_WDC_ENABLED_TRUE	1
++#define MV64x60_WDC_ENABLED_FALSE	0
+ 
+ /* Flags bits */
+ #define MV64x60_WDOG_FLAG_OPENED	0
+-#define MV64x60_WDOG_FLAG_ENABLED	1
+ 
+ static unsigned long wdt_flags;
+ static int wdt_status;
+ static void __iomem *mv64x60_wdt_regs;
+ static int mv64x60_wdt_timeout;
++static int mv64x60_wdt_count;
+ static unsigned int bus_clk;
+ static char expect_close;
++static DEFINE_SPINLOCK(mv64x60_wdt_spinlock);
+ 
+ static int nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, int, 0);
+ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+ 
+-static void mv64x60_wdt_reg_write(u32 val)
++static int mv64x60_wdt_toggle_wdc(int enabled_predicate, int field_shift)
+ {
+-	/* Allow write only to CTL1 / CTL2 fields, retaining values in
+-	 * other fields.
+-	 */
+-	u32 data = readl(mv64x60_wdt_regs + MV64x60_WDT_WDC_OFFSET);
+-	data &= ~(MV64x60_WDC_CTL1_MASK | MV64x60_WDC_CTL2_MASK);
+-	data |= val;
+-	writel(data, mv64x60_wdt_regs + MV64x60_WDT_WDC_OFFSET);
++	u32 data;
++	u32 enabled;
++	int ret = 0;
++
++	spin_lock(&mv64x60_wdt_spinlock);
++	data = readl(mv64x60_wdt_regs + MV64x60_WDT_WDC_OFFSET);
++	enabled = (data >> MV64x60_WDC_ENABLED_SHIFT) & 1;
++
++	/* only toggle the requested field if enabled state matches predicate */
++	if ((enabled ^ enabled_predicate) == 0) {
++		/* We write a 1, then a 2 -- to the appropriate field */
++		data = (1 << field_shift) | mv64x60_wdt_count;
++		writel(data, mv64x60_wdt_regs + MV64x60_WDT_WDC_OFFSET);
++
++		data = (2 << field_shift) | mv64x60_wdt_count;
++		writel(data, mv64x60_wdt_regs + MV64x60_WDT_WDC_OFFSET);
++		ret = 1;
++	}
++	spin_unlock(&mv64x60_wdt_spinlock);
++
++	return ret;
+ }
+ 
+ static void mv64x60_wdt_service(void)
+ {
+-	/* Write 01 followed by 10 to CTL2 */
+-	mv64x60_wdt_reg_write(MV64x60_WDC_CTL2(0x01));
+-	mv64x60_wdt_reg_write(MV64x60_WDC_CTL2(0x02));
++	mv64x60_wdt_toggle_wdc(MV64x60_WDC_ENABLED_TRUE,
++			       MV64x60_WDC_SERVICE_SHIFT);
+ }
+ 
+-static void mv64x60_wdt_handler_disable(void)
++static void mv64x60_wdt_handler_enable(void)
+ {
+-	if (test_and_clear_bit(MV64x60_WDOG_FLAG_ENABLED, &wdt_flags)) {
+-		/* Write 01 followed by 10 to CTL1 */
+-		mv64x60_wdt_reg_write(MV64x60_WDC_CTL1(0x01));
+-		mv64x60_wdt_reg_write(MV64x60_WDC_CTL1(0x02));
+-		printk(KERN_NOTICE "mv64x60_wdt: watchdog deactivated\n");
++	if (mv64x60_wdt_toggle_wdc(MV64x60_WDC_ENABLED_FALSE,
++				   MV64x60_WDC_ENABLE_SHIFT)) {
++		mv64x60_wdt_service();
++		printk(KERN_NOTICE "mv64x60_wdt: watchdog activated\n");
+ 	}
+ }
+ 
+-static void mv64x60_wdt_handler_enable(void)
++static void mv64x60_wdt_handler_disable(void)
+ {
+-	if (!test_and_set_bit(MV64x60_WDOG_FLAG_ENABLED, &wdt_flags)) {
+-		/* Write 01 followed by 10 to CTL1 */
+-		mv64x60_wdt_reg_write(MV64x60_WDC_CTL1(0x01));
+-		mv64x60_wdt_reg_write(MV64x60_WDC_CTL1(0x02));
+-		printk(KERN_NOTICE "mv64x60_wdt: watchdog activated\n");
+-	}
++	if (mv64x60_wdt_toggle_wdc(MV64x60_WDC_ENABLED_TRUE,
++				   MV64x60_WDC_ENABLE_SHIFT))
++		printk(KERN_NOTICE "mv64x60_wdt: watchdog deactivated\n");
+ }
+ 
+-static void mv64x60_wdt_set_timeout(int timeout)
++static void mv64x60_wdt_set_timeout(unsigned int timeout)
+ {
+ 	/* maximum bus cycle count is 0xFFFFFFFF */
+ 	if (timeout > 0xFFFFFFFF / bus_clk)
+ 		timeout = 0xFFFFFFFF / bus_clk;
+ 
++	mv64x60_wdt_count = timeout * bus_clk >> 8;
+ 	mv64x60_wdt_timeout = timeout;
+-	writel((timeout * bus_clk) >> 8,
+-	       mv64x60_wdt_regs + MV64x60_WDT_WDC_OFFSET);
+-	mv64x60_wdt_service();
+ }
+ 
+ static int mv64x60_wdt_open(struct inode *inode, struct file *file)
+@@ -108,7 +128,6 @@ static int mv64x60_wdt_open(struct inode
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+ 
+-	mv64x60_wdt_service();
+ 	mv64x60_wdt_handler_enable();
+ 
+ 	return nonseekable_open(inode, file);
+@@ -270,7 +289,6 @@ static int __devexit mv64x60_wdt_remove(
+ {
+ 	misc_deregister(&mv64x60_wdt_miscdev);
+ 
+-	mv64x60_wdt_service();
+ 	mv64x60_wdt_handler_disable();
+ 
+ 	iounmap(mv64x60_wdt_regs);
+
