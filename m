@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760080AbXGXPCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764112AbXGXPFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760080AbXGXPCx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 11:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXGXPCo
+	id S1764112AbXGXPFf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 11:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXGXPF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 11:02:44 -0400
-Received: from h155.mvista.com ([63.81.120.155]:13184 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750903AbXGXPCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 11:02:43 -0400
-Message-ID: <46A6150B.2030809@ru.mvista.com>
-Date: Tue, 24 Jul 2007 19:04:43 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 24 Jul 2007 11:05:27 -0400
+Received: from hu-out-0506.google.com ([72.14.214.235]:32979 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753010AbXGXPF0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 11:05:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=AFMsH/RN+o7WwJ6DI+I4U7KcCCnfC0cfBwC0TgkHBTjigRHMmpL3cbJFhkKGUeBSRMP56Jl3ssXEFtwI+ibcT94MGJJqjHZqpOrGs+yX0o6kpme1QqhSslU/jwPR+QCY4kCUiGEx6Mnnh7DrlUrX62b2+N8uHOVHXoeBO89YXA8=
+Date: Tue, 24 Jul 2007 17:02:01 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.23-rc1-rt0
+Message-ID: <20070724150201.GA27113@slug>
+References: <20070724121227.GA18670@elte.hu>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jeff@garzik.org
-Subject: Re: [PATCH] pata_hpt37x: Fix 2.6.22 clock PLL regression
-References: <20070724151748.7e99f4f0@the-village.bc.nu>
-In-Reply-To: <20070724151748.7e99f4f0@the-village.bc.nu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070724121227.GA18670@elte.hu>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Alan Cox wrote:
-
-> 	Just one version of Linux ago
-> 	The PLL code broke - oh no!
-> 	But set the right mode
-> 	And fix up the code
-> 	Makes the PLL timing sync go
-
-/me applauds :-)
-
-> Closes-bug: #8791
-> Signed-off-by: Alan Cox <alan@redhat.com>
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-    However, I found it strange that HPT374 against which was that bug report 
-works with 66 MHz DPLL clock -- while I've recently forbidden that clock in 
-the IDE driver because it was causing DMA timeouts.
-
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc1/drivers/ata/pata_hpt37x.c linux-2.6.23rc1/drivers/ata/pata_hpt37x.c
-> --- linux.vanilla-2.6.23rc1/drivers/ata/pata_hpt37x.c	2007-07-23 12:56:11.000000000 +0100
-> +++ linux-2.6.23rc1/drivers/ata/pata_hpt37x.c	2007-07-23 14:44:39.000000000 +0100
-> @@ -26,7 +26,7 @@
->  #include <linux/libata.h>
+On Tue, Jul 24, 2007 at 02:12:27PM +0200, Ingo Molnar wrote:
+> i've released the v2.6.23-rc1-rt0 kernel, which can be downloaded from 
+> the usual place:
 >  
->  #define DRV_NAME	"pata_hpt37x"
-> -#define DRV_VERSION	"0.6.6"
-> +#define DRV_VERSION	"0.6.7"
->  
->  struct hpt_clock {
->  	u8	xfer_speed;
-> @@ -1103,17 +1103,17 @@
->  
->  		/* Select the DPLL clock. */
->  		pci_write_config_byte(dev, 0x5b, 0x21);
-> -		pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low);
-> +		pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low | 0x100);
+>    http://redhat.com/~mingo/realtime-preempt/
+Hi Ingo,
 
-    Heh, was quite a silly mistake. :-)
+  CC      kernel/latency_hist.o
+  kernel/latency_hist.c: In function 'u64_div':
+  kernel/latency_hist.c:54: error: implicit declaration of function 'do_div'
+  make[1]: *** [kernel/latency_hist.o] Error 1
+  make: *** [kernel] Error 2
 
- >  		for(adjust = 0; adjust < 8; adjust++) {
- >  			if (hpt37x_calibrate_dpll(dev))
- >  				break;
- >  			/* See if it'll settle at a fractionally different clock */
- > -			if ((adjust & 3) == 3) {
- > -				f_low --;
- > -				f_high ++;
- > -			}
- > -			pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low);
- > +			if (adjust & 1)
- > +				f_low -= adjust >> 1;
- > +			else
- > +				f_high += adjust >> 1;
- > +			pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low | 0x100);
+This was needed to compile rt0 with LATENCY_TRACE on i386:
 
-    OK, I'm seeing that the "oldie but goodie" calibration algrithm has 
-finally found its way to the libata driver too. :-)
+Add asm/div64.h header to define do_div()
 
-MBR, Sergei
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+
+--- kernel/latency_hist..ori	2007-07-24 16:04:20.000000000 +0200
++++ kernel/latency_hist.c	2007-07-24 16:04:50.000000000 +0200
+@@ -15,6 +15,7 @@
+ #include <linux/percpu.h>
+ #include <linux/latency_hist.h>
+ #include <asm/atomic.h>
++#include <asm/div64.h>
+ 
+ typedef struct hist_data_struct {
+ 	atomic_t hist_mode; /* 0 log, 1 don't log */
