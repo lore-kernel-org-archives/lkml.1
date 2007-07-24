@@ -1,112 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762707AbXGXUIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764147AbXGXUJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762707AbXGXUIs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbXGXUIk
+	id S1764147AbXGXUJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbXGXUJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:08:40 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34404
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755387AbXGXUIj (ORCPT
+	Tue, 24 Jul 2007 16:09:21 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:15388 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755357AbXGXUJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:08:39 -0400
-Date: Tue, 24 Jul 2007 13:06:21 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Jerome Glisse <j.glisse@gmail.com>
-cc: Igor Stoppa <igor.stoppa@nokia.com>,
-       "ext linux-pm-bounces@lists.linux-foundation.org" 
-	<linux-pm-bounces@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] Power Management framework proposal
-In-Reply-To: <4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707241303010.6590@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm> 
- <1185091022.19678.28.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm> 
- <1185105911.29238.43.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm> 
- <1185187720.26628.23.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0707231033430.3828@asgard.lang.hm>
- <4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
+	Tue, 24 Jul 2007 16:09:20 -0400
+X-IronPort-AV: i="4.16,575,1175486400"; 
+   d="scan'208"; a="35592535:sNHT22962849"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: early_printk accessing __log_buf
+Date: Tue, 24 Jul 2007 16:12:56 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, "Greg Ungerer" <gerg@snapgear.com>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Paul Mundt" <lethal@linux-sh.org>, "Tim Bird" <tim.bird@am.sony.com>,
+       bryan.wu@analog.com
+References: <200707181756.44074.rgetz@blackfin.uclinux.org> <200707241350.45086.rgetz@blackfin.uclinux.org> <20070724111215.8d91dc7c.akpm@linux-foundation.org>
+In-Reply-To: <20070724111215.8d91dc7c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707241612.56509.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 24 Jul 2007 20:09:15.0772 (UTC) FILETIME=[829133C0:01C7CE2E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007, Jerome Glisse wrote:
+On Tue 24 Jul 2007 14:12, Andrew Morton pondered:
+> Oh well, it sounds like we need the super-duper fast version.  Keep it
+> as simple as possible, please.
 
-> On 7/23/07, david@lang.hm <david@lang.hm> wrote:
->>  On Mon, 23 Jul 2007, Igor Stoppa wrote:
->> >  again, HAL / OHM / Mobilin
->>
->>  I was trying to define the lower level interfaces that these tools need.
->>  today they can only know what is possible by reading the source code for
->>  each driver and implementing the driver-specific interfaces nessasary to
->>  set things, I was proposing a common interface that tools like this could
->>  use instead of requiring all the driver-specific knowledge.
->> 
->>
->>  in a nutshell (and I know this is probably not detailed to be acceptable)
->>
->>  1. the software needs to know what the interconnects and dependancies
->>      between devices are (supposedly this is provided via sysfs)
->>
->>  2. the software needs to know what type of device this is (again,
->>      supposedly this is provided via sysfs)
->>
->>  3. the software needs to know what modes exist for a driver/piece of
->>      hardware. to make any decisions this infomation needs to provide some
->>      information about the capability of the mode and the power consumed in
->>      that mode. in addition there will need to be flags to indicate any
->>      special restrictions of a mode
->>
->>  4. the software needs to know the cost of switching from any mode to any
->>      other mode. since some transitions will interact with other devices
->>      there will need to be flags to indicate such requirements for specific
->>      transitions.
->>
->>  5. the software needs to be able to find out what mode a device is in.
->>
->>  6. the software needs to be able to tell the driver to switch to a
->>      different mode (I think it would be a very good thing if going to a
->>      particular mode was always the same command, no matter what mode it is
->>      currently in)
->>
->>  7. the software needs to figure out the desire of the user.
->>
->>  my proposal was addressing items #3-#6. it isn't trying to decide what to
->>  do, simply to allow the software that _is_ trying to decide what to do a
->>  way to find out what it can do.
->>
->>  David Lang
->
-> I believe a central place where user can set/change hw state to save
-> power or to increase computational power is definitely a goal to pursue.
-> But i truly think that the OHM approach is the best one ie using plugins
-> so that one can make a plugin specific for each device. The point is that
-> i believe there is no way to do an abstract interface for this and trying to
-> do so will endup doing ugly code and any interface would fail to encompass
-> all possible tweak that might exist for all devices.
+What about:
 
-will each plugin have it's own interface? or will you have one interface 
-to access the plugins and then the plugins do things behind the scenes?
+int log_buf_copy(void *dest, int idx, size_t n);
 
-I'll bet that the API for the plugins is common, and if so then it could 
-be similar to the API that I suggested.
-
-> For instance on graphics card you could do the following (maybe more):
-> -change GPU clock
-> -change memory clock
-> -disable part of engine
-> -disable unit
-> i truly don't think you can make a common interface for all this, more
-> over there might be constraint on how you can change things (GPU &
-> memory clock might need to follow a given ratio). So you definitely
-> need knowledge in the user space program to handle this.
-
-sure you can, just enumerate all the options the driver writer wants to 
-offer as options. yes this could be a lengthy list, so what?
-
-David Lang
+starting at index idx - copy n bytes to dest, return the number of bytes 
+copied (in case there are not n bytes in the log_buf yet).
