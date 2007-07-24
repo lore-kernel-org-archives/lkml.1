@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762520AbXGXRPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbXGXRUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762520AbXGXRPN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 13:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXGXRO7
+	id S1759749AbXGXRUd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 13:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXGXRUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 13:14:59 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34406 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751233AbXGXRO6 (ORCPT
+	Tue, 24 Jul 2007 13:20:24 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:62085 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbXGXRUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 13:14:58 -0400
-Date: Tue, 24 Jul 2007 18:14:55 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
-Message-ID: <20070724171455.GT21668@ftp.linux.org.uk>
-References: <20070724153916.GS21668@ftp.linux.org.uk> <46A62F35.2000501@goop.org>
+	Tue, 24 Jul 2007 13:20:23 -0400
+Date: Tue, 24 Jul 2007 10:20:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+Message-Id: <20070724102035.6447565c.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0707241849340.18990@fbirervta.pbzchgretzou.qr>
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky>
+	<46A534EA.6030008@intel.com>
+	<46A5C12B.3080904@shadowen.org>
+	<20070724021526.3d92286b.akpm@linux-foundation.org>
+	<46A5E034.2030205@shadowen.org>
+	<Pine.LNX.4.64.0707241849340.18990@fbirervta.pbzchgretzou.qr>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A62F35.2000501@goop.org>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 09:56:21AM -0700, Jeremy Fitzhardinge wrote:
-> Al Viro wrote:
-> > 	AFAICS, the patch below should do it for i386; instead of
-> > using a dummy loop to tell gcc that this sucker never returns,
-> > we do
-> > static void __always_inline __noreturn __BUG(const char *file, int line);
-> > containing the actual asm we want to insert and define BUG() as
-> > __BUG(__FILE__, __LINE__).  It looks safe, but I don't claim enough
-> > experience with gcc __asm__ potential nastiness, so...
-> >
-> > Comments, objections?
-> >   
+On Tue, 24 Jul 2007 18:51:39 +0200 (CEST) Jan Engelhardt wrote:
+
 > 
-> Does it work?  When I wrote the BUG code I tried this, but gcc kept
-> warning about "noreturn function returns".  I couldn't work out a way to
-> convince gcc that the asm is the end of the line.
+> On Jul 24 2007 12:19, Andy Whitcroft wrote:
+> >>>> if (err) {
+> >>>>     do_something();
+> >>>>     return -ERR;
+> >>>> } else {
+> >>>>     do_somthing_else();
+> >>>> }
+> >>>
+> >>> 	if (err) {
+> >>> 		do_something();
+> >>> 		return -ERR;
+> >>> 	} else
+> >>> 		do_something_else();
+> >> 
+> >> The kool kids on linux-usb-devel largely ended up deciding that the second
+> >> version looks dorky.
+> >
+> >Ok, now if either the preceeding block or following block has {}'s then
+> >we don't report this block for being one line long.  We will miss some
+> >this way, but hey.
+> 
+> As per Ingo Molnar [ http://lkml.org/lkml/2006/9/5/68 ],
+> all blocks in an if-else 'tree' should be {} if there is at least one
+> with more than two statements. (And I do not disagree.)
 
-Works here...
- 
-> I'm actually in favour of dropping the loop and the noreturn stuff
-> altogether.  It means that gcc thinks everything is live at the time of
-> the BUG, and the debugging info at the point of the ud2a is more useful.
+You are actually referring to this commit:
 
-It also means that gcc doesn't eliminate a bunch of codepaths.  It means
-even more cretinous warnings about something being used uninitialized,
-etc.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e659ba4a0d2d471c0d73590f78e1a1b5a1eede48
+
+which did not appear on lkml for review... :(
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
