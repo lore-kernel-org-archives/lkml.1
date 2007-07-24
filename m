@@ -1,112 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbXGXGtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763991AbXGXGtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760090AbXGXGtQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 02:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbXGXGtD
+	id S1763991AbXGXGtm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 02:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbXGXGtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 02:49:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34345 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbXGXGtB (ORCPT
+	Tue, 24 Jul 2007 02:49:33 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:50881 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753867AbXGXGtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 02:49:01 -0400
-Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <1185256869.8197.27.camel@twins>
-References: <1185185020.8197.11.camel@twins>
-	 <20070723112143.GB19437@skynet.ie> <1185190711.8197.15.camel@twins>
-	 <Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com>
-	 <1185256869.8197.27.camel@twins>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 08:48:52 +0200
-Message-Id: <1185259732.8197.30.camel@twins>
+	Tue, 24 Jul 2007 02:49:32 -0400
+To: Bernhard Walle <bwalle@suse.de>
+Cc: vgoyal@in.ibm.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Dan Aloni <da-x@monatomic.org>, Neil Horman <nhorman@redhat.com>
+Subject: Re: Determine version of kernel that produced vmcore
+In-reply-to: <20070718231050.GB25660@suse.de>
+Message-Id: <20070724154928oomichi@mail.jp.nec.com>
+References: <20070718231050.GB25660@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: WeMail32[2.51] ID:5W0000
+From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Date: Tue, 24 Jul 2007 15:49:28 +0900
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 08:01 +0200, Peter Zijlstra wrote:
 
-> Then we can either fixup the slab allocators to mask out __GFP_ZERO, or
-> do something like the below.
-> 
-> Personally I like the consistency of adding __GFP_ZERO here (removes
-> this odd exception) and just masking it in the sl[aou]b thingies.
+Hi Bernhard,
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/gfp.h |    2 +-
- mm/slab.c           |    4 +++-
- mm/slob.c           |    2 ++
- mm/slub.c           |    4 +++-
- 4 files changed, 9 insertions(+), 3 deletions(-)
+2007/07/19 01:10:50 +0200, Bernhard Walle <bwalle@suse.de> wrote:
+>[1] didn't we agree to vmcoreinfo?
 
-Index: linux-2.6-2/include/linux/gfp.h
-===================================================================
---- linux-2.6-2.orig/include/linux/gfp.h
-+++ linux-2.6-2/include/linux/gfp.h
-@@ -56,7 +56,7 @@ struct vm_area_struct;
- /* if you forget to add the bitmask here kernel will crash, period */
- #define GFP_LEVEL_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS| \
- 			__GFP_COLD|__GFP_NOWARN|__GFP_REPEAT| \
--			__GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP| \
-+			__GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP|__GFP_ZERO| \
- 			__GFP_NOMEMALLOC|__GFP_HARDWALL|__GFP_THISNODE| \
- 			__GFP_MOVABLE)
- 
-Index: linux-2.6-2/mm/slab.c
-===================================================================
---- linux-2.6-2.orig/mm/slab.c
-+++ linux-2.6-2/mm/slab.c
-@@ -2739,11 +2739,13 @@ static int cache_grow(struct kmem_cache 
- 	gfp_t local_flags;
- 	struct kmem_list3 *l3;
- 
-+	flags &= ~__GFP_ZERO; /* slab has its own object zeroing */
-+
- 	/*
- 	 * Be lazy and only check for valid flags here,  keeping it out of the
- 	 * critical path in kmem_cache_alloc().
- 	 */
--	BUG_ON(flags & ~(GFP_DMA | __GFP_ZERO | GFP_LEVEL_MASK));
-+	BUG_ON(flags & ~(GFP_DMA | GFP_LEVEL_MASK));
- 
- 	local_flags = (flags & GFP_LEVEL_MASK);
- 	/* Take the l3 list lock to change the colour_next on this node */
-Index: linux-2.6-2/mm/slob.c
-===================================================================
---- linux-2.6-2.orig/mm/slob.c
-+++ linux-2.6-2/mm/slob.c
-@@ -223,6 +223,8 @@ static void *slob_new_page(gfp_t gfp, in
- {
- 	void *page;
- 
-+	gfp &= ~__GFP_ZERO; /* slob has its own object zeroing */
-+
- #ifdef CONFIG_NUMA
- 	if (node != -1)
- 		page = alloc_pages_node(node, gfp, order);
-Index: linux-2.6-2/mm/slub.c
-===================================================================
---- linux-2.6-2.orig/mm/slub.c
-+++ linux-2.6-2/mm/slub.c
-@@ -1078,7 +1078,9 @@ static struct page *new_slab(struct kmem
- 	void *last;
- 	void *p;
- 
--	BUG_ON(flags & ~(GFP_DMA | __GFP_ZERO | GFP_LEVEL_MASK));
-+	flags &= ~__GFP_ZERO; /* slab has its own object zeroing */
-+
-+	BUG_ON(flags & ~(GFP_DMA | GFP_LEVEL_MASK));
- 
- 	if (flags & __GFP_WAIT)
- 		local_irq_enable();
+I agree to vmcoreinfo.
+I'll rename makedumpfile's config file to "vmcoreinfo".
 
 
-
+Thanks
+Ken'ichi Ohmichi
