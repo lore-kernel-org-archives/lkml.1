@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932204AbXGXUGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbXGXUGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932204AbXGXUGb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764043AbXGXUFk
+	id S932235AbXGXUGr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759329AbXGXUGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:05:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:25537 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932133AbXGXUFg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:05:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=WdNn5rD3G8pfEZMCD9nQahPaKco3lJQSYcosAOPvNd2FdjkXcD5IgCU+ZIKNRrC9QUyFyNRKFp7QWgDUKqVhELABJ2d9vHfR+0dfM02jJLyCTIbKDaQJpWH2UTG5GwEcUJgdpqCA5xMTt9ni43KN3mn/78D2yLHjA/oLpyuITs0=
-Date: Wed, 25 Jul 2007 00:05:28 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070724200528.GA5814@martell.zuzino.mipt.ru>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <1185271269.6479.7.camel@Homer.simpson.net> <20070724092839.f0556948.akpm@linux-foundation.org> <alpine.LFD.0.999.0707241124220.3607@woody.linux-foundation.org>
+	Tue, 24 Jul 2007 16:06:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56358 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764086AbXGXUGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:06:19 -0400
+Date: Tue, 24 Jul 2007 22:05:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+Cc: Rui Nuno Capela <rncbc@rncbc.org>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.22.1-rt5
+Message-ID: <20070724200546.GA24964@elte.hu>
+References: <20070723210236.GA25104@elte.hu> <46A51D9E.8040104@rncbc.org> <20070724073932.GA18740@elte.hu> <1185305679.16400.17.camel@cmn3.stanford.edu> <1185305725.16400.19.camel@cmn3.stanford.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707241124220.3607@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1185305725.16400.19.camel@cmn3.stanford.edu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 11:25:22AM -0700, Linus Torvalds wrote:
-> On Tue, 24 Jul 2007, Andrew Morton wrote:
-> > I guess this was the bug:
->
-> Looks very likely to me. Mike, Alexey, does this fix things for you?
 
-Yeah, box is running for more than hour, survived LTP, gdb testsuite,
-portage sync and so on.
+* Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
 
-What new to me is that someone decided TSC is unstable but that's
-probably OK on full debug kernel:
+> On Tue, 2007-07-24 at 12:34 -0700, Fernando Lopez-Lezcano wrote:
+> > On Tue, 2007-07-24 at 09:39 +0200, Ingo Molnar wrote:
+> > > * Rui Nuno Capela <rncbc@rncbc.org> wrote:
+> > > 
+> > > > Maybe I was too quick, but `make all` on is failing here:
+> > > 
+> > > does -rt6 work better?
+> > 
+> > Hmmm, -rt6 seems to be gone... was about to download it and it
+> > dissapeared. 
+> 
+> Never mind, I see it migrated back to the main page. 
 
-	Clocksource tsc unstable (delta = 91724418 ns)
-	Time: pit clocksource has been installed.
+apparently you caught that 3 seconds window where the .23-rc1-rt1 
+release script moved old patches into the older/ directory :-)
 
+	Ingo
