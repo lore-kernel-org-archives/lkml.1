@@ -1,81 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935757AbXGXJjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934876AbXGXJko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935757AbXGXJjy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934938AbXGXJja
+	id S934876AbXGXJko (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764255AbXGXJkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:39:30 -0400
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:1471 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935327AbXGXJj3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:39:29 -0400
-Message-ID: <46A5C8B0.5060401@imap.cc>
-Date: Tue, 24 Jul 2007 11:38:56 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org>	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	 <46A57068.3070701@yahoo.com.au>	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>	 <20070723221846.d2744f42.akpm@linux-foundation.org> <2c0942db0707232301o5ab428bdrd1bc831cacf806c@mail.gmail.com>
-In-Reply-To: <2c0942db0707232301o5ab428bdrd1bc831cacf806c@mail.gmail.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig7D20BFFEDF91EB3B221A9A96"
+	Tue, 24 Jul 2007 05:40:32 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40109 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932512AbXGXJkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 05:40:31 -0400
+Subject: Re: [patch] mm: reduce pagetable-freeing latencies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <20070724083855.GA858@elte.hu>
+References: <20070724083855.GA858@elte.hu>
+Content-Type: text/plain
+Date: Tue, 24 Jul 2007 19:40:11 +1000
+Message-Id: <1185270011.5439.247.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig7D20BFFEDF91EB3B221A9A96
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2007-07-24 at 10:38 +0200, Ingo Molnar wrote:
+> the patch below has been tested in -rt for a long time - lets get it 
+> upstream please. It fixes some bad latencies on PREEMPT too.
 
-Ray Lee schrieb:
-> I spend a lot of time each day watching my computer fault my
-> workingset back in when I switch contexts. I'd rather I didn't have to
-> do that. Unfortunately, that's a pretty subjective problem report. For
-> whatever it's worth, we have pretty subjective solution reports
-> pointing to swap prefetch as providing a fix for them.
+Note that I'm working on the "right way" (reworking mmu gathering)
 
-Add me.
+Patches hopefully this week.
 
-> My concern is that a subjective problem report may not be good enough.
+Ben.
 
-That's my impression too, seeing the insistence on numbers.
+> 	Ingo
+> 
+> ----------------------->
+> From: Hugh Dickins <hugh@veritas.com>
+> Subject: mm: reduce pagetable-freeing latencies
+> 
+> 2.6.15-rc1 moved the unlinking of a vma from its prio_tree and anon_vma
+> into free_pgtables: so the vma is hidden from rmap and vmtruncate before
+> freeing its page tables, allowing safe descent without page table lock.
+> But free_pgtables is still called with preemption disabled, and Lee
+> Revell has now detected high latency there.
+> 
+> The right fix will be to rework the mmu_gathering, not to need preemption
+> disabled; but for now an ugly CONFIG_PREEMPT block in free_pgtables, to
+> make an initial unlinking pass with preemption enabled - made uglier by
+> CONFIG_IA64 definitions (only ia64 actually uses the start and end given
+> to tlb_finish_mmu, and our floor and ceiling don't quite work for those).
+> These CONFIG choices being to minimize the additional TLB flushing.
+> 
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> --
+> 
+>  mm/memory.c |   32 ++++++++++++++++++++++++++++++++
+>  1 file changed, 32 insertions(+)
+> 
+> Index: linux-rt-rebase.q/mm/memory.c
+> ===================================================================
+> --- linux-rt-rebase.q.orig/mm/memory.c
+> +++ linux-rt-rebase.q/mm/memory.c
+> @@ -264,18 +264,48 @@ void free_pgd_range(struct mmu_gather **
+>  		flush_tlb_pgtables((*tlb)->mm, start, end);
+>  }
+>  
+> +#ifdef CONFIG_IA64
+> +#define tlb_start_addr(tlb)	(tlb)->start_addr
+> +#define tlb_end_addr(tlb)	(tlb)->end_addr
+> +#else
+> +#define tlb_start_addr(tlb)	0UL	/* only ia64 really uses it */
+> +#define tlb_end_addr(tlb)	0UL	/* only ia64 really uses it */
+> +#endif
+> +
+>  void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
+>  		unsigned long floor, unsigned long ceiling)
+>  {
+> +#ifdef CONFIG_PREEMPT
+> +	struct vm_area_struct *unlink = vma;
+> +	int fullmm = (*tlb)->fullmm;
+> +
+> +	if (!vma)	/* Sometimes when exiting after an oops */
+> +		return;
+> +	if (vma->vm_next)
+> +		tlb_finish_mmu(*tlb, tlb_start_addr(*tlb), tlb_end_addr(*tlb));
+> +	/*
+> +	 * Hide vma from rmap and vmtruncate before freeeing pgtables,
+> +	 * with preemption enabled, except when unmapping just one area.
+> +	 */
+> +	while (unlink) {
+> +		anon_vma_unlink(unlink);
+> +		unlink_file_vma(unlink);
+> +		unlink = unlink->vm_next;
+> +	}
+> +	if (vma->vm_next)
+> +		*tlb = tlb_gather_mmu(vma->vm_mm, fullmm);
+> +#endif
+>  	while (vma) {
+>  		struct vm_area_struct *next = vma->vm_next;
+>  		unsigned long addr = vma->vm_start;
+>  
+> +#ifndef CONFIG_PREEMPT
+>  		/*
+>  		 * Hide vma from rmap and vmtruncate before freeing pgtables
+>  		 */
+>  		anon_vma_unlink(vma);
+>  		unlink_file_vma(vma);
+> +#endif
+>  
+>  		if (is_vm_hugetlb_page(vma)) {
+>  			hugetlb_free_pgd_range(tlb, addr, vma->vm_end,
+> @@ -288,8 +318,10 @@ void free_pgtables(struct mmu_gather **t
+>  			       && !is_vm_hugetlb_page(next)) {
+>  				vma = next;
+>  				next = vma->vm_next;
+> +#ifndef CONFIG_PREEMPT
+>  				anon_vma_unlink(vma);
+>  				unlink_file_vma(vma);
+> +#endif
+>  			}
+>  			free_pgd_range(tlb, addr, vma->vm_end,
+>  				floor, next? next->vm_start: ceiling);
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> So, what do I measure to make this an objective problem report?
-
-That seems to be the crux of the matter: how to measure subjective
-usability issues (aka user experience) when simple reports along the
-lines of "A is much better than B for everyday work" are not enough.
-The same problem already impaired the "fair scheduler" discussion.
-It would really help to have a clear direction there.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
-
-
---------------enig7D20BFFEDF91EB3B221A9A96
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGpciwMdB4Whm86/kRApXjAJ9DH12VDcvttfRPtDCRrEDs0emn+wCfZgl1
-pEWhTqYquIM2Hb/O7HE1gnY=
-=yI2D
------END PGP SIGNATURE-----
-
---------------enig7D20BFFEDF91EB3B221A9A96--
