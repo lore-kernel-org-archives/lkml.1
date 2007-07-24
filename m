@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbXGXHd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761681AbXGXHfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760289AbXGXHd6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 03:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbXGXHdv
+	id S1761681AbXGXHfg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 03:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbXGXHf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 03:33:51 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:46687 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754227AbXGXHdu (ORCPT
+	Tue, 24 Jul 2007 03:35:29 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46116 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754243AbXGXHf2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 03:33:50 -0400
-Date: Tue, 24 Jul 2007 08:33:31 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Bill Gatliff <bgat@billgatliff.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: pxa timer code broken for non-CONFIG_GENERIC_CLOCKEVENTS
-Message-ID: <20070724073330.GA14217@flint.arm.linux.org.uk>
-References: <20070724042947.GM1678@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070724042947.GM1678@pengutronix.de>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 24 Jul 2007 03:35:28 -0400
+Date: Tue, 24 Jul 2007 00:35:26 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
+In-Reply-To: <1185261894.8197.33.camel@twins>
+Message-ID: <Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com>
+References: <1185185020.8197.11.camel@twins>  <20070723112143.GB19437@skynet.ie>
+ <1185190711.8197.15.camel@twins>  <Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com>
+  <1185256869.8197.27.camel@twins>  <Pine.LNX.4.64.0707240007100.3128@schroedinger.engr.sgi.com>
+ <1185261894.8197.33.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 06:29:47AM +0200, Robert Schwebel wrote:
-> Bill,
-> 
-> 7bbb18c9f4783b6fb3bf27af71625b590cf4f00b aka 4507/1 intensively uses
-> stuff from include/linux/clockchips.h which are defined under
-> 
-> #ifdef CONFIG_GENERIC_CLOCKEVENTS
-> 
-> Unless I'm missing something, all PXA platforms which have
-> CONFIG_GENERIC_CLOCKEVENTS not set are currently broken and don't
-> compile any more.
+On Tue, 24 Jul 2007, Peter Zijlstra wrote:
 
-I'm not sure what the point of this message is.  You'll find a fix for
-this on linux-arm-kernel since yesterday morning.
+> > There is another exception for __GFP_DMA.
+> 
+> non of the zone specifiers are
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+__GFP_DMA is handled in a similar way to __GFP_ZERO though. Its explicitly 
+listed in BUG_ON() because it can be specified in the gfpflags to kmalloc 
+but also set by having created a slab with SLAB_DMA. It is also cleared 
+by the & GFP_LEVEL_MASK.
+ 
+> > > Anybody else got a preference?
+> > 
+> > >  #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
+> > >  
+> > > -/* if you forget to add the bitmask here kernel will crash, period */
+> > > +/*
+> > > + * If you forget to add the bitmask here kernel will crash, period!
+> > > + *
+> > > + * GFP_LEVEL_MASK is used to filter out the flags that are to be passed to the
+> > > + * page allocator.
+> > > + *
+> > 
+> > GFP_LEVEL_MASK is also used in mm/vmalloc.c. We need a definition that 
+> > goes beyond slab allocators.
+> 
+> Right, bugger.
+
+Lets get rid of the cryptic sentence there and explain it in a better way. 
+GFP_LEVEL_MASK contains the flags that are passed to the page allocator
+by derived allocators (such as slab allocators and vmalloc, maybe the 
+uncached allocator may use it in the future?).
+
+__get_vm_area_node also relies on GFP_LEVEL_MASK to clear the __GFP_ZERO 
+flag. Otherwise the kmalloc_node there would needlessly return zeroed 
+memory (or have failed in the past).
