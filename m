@@ -1,127 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760420AbXGXFV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759948AbXGXFXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760420AbXGXFV3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 01:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759464AbXGXFUk
+	id S1759948AbXGXFXS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 01:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbXGXFXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 01:20:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:11322 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759363AbXGXFUg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 01:20:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=AuY8vlB+ufMS85zJek42B7lUDWtuusOsbQ7kkOAiqdY4aKm+Pvy3uNDHOyXH+okqK9nbRnJk4CesLmwQIUfyHvsSjHyNNzFJFxPf3SE17UKC8wsAvcK7BpC12UO7JkXNnDxh/CcRJ/1YmCazrNp5iu5gV/n3GgsXRWIiT6gAcIs=
-Date: Tue, 24 Jul 2007 09:20:31 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070724052031.GA5811@martell.zuzino.mipt.ru>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org> <20070723220446.GA5822@martell.zuzino.mipt.ru> <20070723152712.02ded067.akpm@linux-foundation.org>
+	Tue, 24 Jul 2007 01:23:08 -0400
+Received: from il.qumranet.com ([82.166.9.18]:43531 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbXGXFXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 01:23:07 -0400
+Message-ID: <46A58CAD.7070807@qumranet.com>
+Date: Tue, 24 Jul 2007 08:22:53 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070723152712.02ded067.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeff Dike <jdike@addtoit.com>
+CC: Shaohua Li <shaohua.li@intel.com>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC 0/8]KVM: swap out guest pages
+References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com> <46A4829C.9080104@qumranet.com> <20070723200659.GA13508@c2.user-mode-linux.org>
+In-Reply-To: <20070723200659.GA13508@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 24 Jul 2007 08:22:53 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 03:27:12PM -0700, Andrew Morton wrote:
-> On Tue, 24 Jul 2007 02:04:46 +0400
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > On Mon, Jul 23, 2007 at 02:11:37PM -0700, Andrew Morton wrote:
-> > > On Tue, 24 Jul 2007 01:01:53 +0400
-> > > Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > > 
-> > > > On Tue, Jul 24, 2007 at 12:40:45AM +0400, Alexey Dobriyan wrote:
-> > > > > > I had more complete info: http://article.gmane.org/gmane.linux.network/66966
-> > > > > > 
-> > > > > > You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
-> > > > > > 
-> > > > > > I haven't worked out where that kmap_atomic() call is coming from yet. 
-> > > > > > Both traces point up into the page allocator, but I _think_ that's stack
-> > > > > > gunk.
-> > > > > 
-> > > > > Ahh, you suspect networking.
-> > > > > 
-> > > > > Here, setup is 2 cheap-ass 100Mb realtek 8139 NICs, one to campus network
-> > > > > receiving ~20 junk packets per second, one gathering netconsole output
-> > > > > and ssh to it, no conntracks and fancy stuff.
-> > > > > 
-> > > > > [reboots with cables physically unplugged]
-> > > > 
-> > > > OK, I run gdb recompile, cat(1) every file in /usr/portage (shitload of
-> > > > small files) with both cables unplugged. It all went fine for ~5 minutes
-> > > > after that it crashed exactly same way after 10 secs after plugging one
-> > > > of them.
-> > > 
-> > > It'd be nice to get a clean trace.  Are you able to obtain the full
-> > > trace with CONFIG_FRAME_POINTER=y?
-> > 
-> > Sorry, no camera shot, finding camera requires wakening up M. :)
-> > 
-> > It took longer that usual, but here it is
-> > 
-> > 	kmap_atomic
-> > 	get_page_from_freelist
-> > 	__alloc_pages
-> > 	cache_alloc_refill
-> > 	__alloc_pages
-> > 	cache_alloc_refill
-> > 	kmem_cache_alloc
-> > 	dst_alloc
-> > 	ip_route_input
-> > 	ip_rcv
-> > 	netif_receive_skb
-> > 	rtl8139_poll
-> > 	net_rx_action
-> > 	__do_softirq
-> > 	do_softirq
-> > 	irq_exit
-> > 	do_IRQ
-> > 	common_interrupt
-> > 	handle_mm_fault
-> > 	do_page_fault
-> > 	error_core
-> > 
-> > much more loaded x86_64 box near also running 2.6.23-rc1 with debugging
-> > turned on, using atl1 driver doesn't experience any crashes.
-> > 
-> > And I found 2.6.22-b91cba52e9b7b3f1c0037908a192d93a869ca9e5-x entry on
-> > top of grub config which means b91cba52e9b7b3f1c0037908a192d93a869ca9e5
-> > _without_ any debugging was OK.
-> 
-> I worked out that the crash I saw was in
-> 
->         BUG_ON(!pte_none(*(kmap_pte-idx)));
-> 
-> in the read of kmap_pte[idx].  Which would be weird as the caller is using 
-> a literal KM_USER0.
-> 
-> So maybe I goofed, and that BUG_ON is triggering (it scrolled off, and I am
-> unable to reproduce it now).
-> 
-> If that BUG_ON _is_ triggering then it might indicate that someone is doing
-> a __GFP_HIGHMEM|__GFP_ZERO allocation while holding KM_USER0.
-> 
-> If they're holding an atomic kmap then they'll be running in_atomic so it
-> is unlikely that they accidentally added __GFP_WAIT because lots of people
-> would be getting lots of might_sleep() warnings.
-> 
-> Hence that first VM_BUG_ON in prep_zero_page() _should_ be triggering.
-> 
-> Do you have CONFIG_DEBUG_VM enabled?
+Jeff Dike wrote:
+> On Mon, Jul 23, 2007 at 01:27:40PM +0300, Avi Kivity wrote:
+>   
+>> Having an address_space (like your patch does) is remarkably simple, and 
+>> requires few hooks from the current vm.  However using existing vmas 
+>> mapped by the user has many advantages:
+>>     
+>
+> It's also needed for a SKAS-like UML client, where the host side will
+> need to make system calls on behalf of the guest.
+>
+>   
 
-Yes.
+Even in the current model, guest physical memory is mmap()ed into host
+userspace.  The kernel cannot enforce this, however.
 
-> Also, it might be useful to apply -mm's kmap_atomic-debugging.patch.  it
-> will detect lots of abuse.
-
-I hit it only once with this patch applied, but there were no additional
-warnings.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
