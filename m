@@ -1,38 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbXGXVW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbXGXVX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757807AbXGXVW4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbXGXVWt
+	id S1754635AbXGXVX0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 17:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbXGXVXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:22:49 -0400
-Received: from mailrelay001.isp.belgacom.be ([195.238.6.51]:22892 "EHLO
-	mailrelay001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752243AbXGXVWs (ORCPT
+	Tue, 24 Jul 2007 17:23:17 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:50800 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753360AbXGXVXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:22:48 -0400
-Date: Tue, 24 Jul 2007 23:26:08 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Ben Dooks <ben@fluff.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] s3c2410_wdt: fixup after arch include moves
-Message-ID: <20070724212608.GE14326@infomag.infomag.iguana.be>
-References: <20070724122801.GA25243@fluff.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070724122801.GA25243@fluff.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 24 Jul 2007 17:23:16 -0400
+Message-ID: <46A66DB8.4030608@nortel.com>
+Date: Tue, 24 Jul 2007 15:23:04 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Chris Snook <csnook@redhat.com>
+CC: "Li, Tong N" <tong.n.li@intel.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> <46A53C88.6060006@redhat.com> <Pine.LNX.4.64.0707240954560.8026@tongli.jf.intel.com> <46A64002.8080103@redhat.com> <46A6576A.9020506@nortel.com> <46A66393.5000705@redhat.com> <1185310691.7737.40.camel@tongli.jf.intel.com> <46A66A88.8070307@redhat.com>
+In-Reply-To: <46A66A88.8070307@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jul 2007 21:23:12.0833 (UTC) FILETIME=[D742FB10:01C7CE38]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+Chris Snook wrote:
 
-> Fixup the s3c2410 watchdog driver after moving some
-> of the arch specific includes it has been relying on.
-> 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> I don't think Chris's scenario has much bearing on your patch.  What he 
+> wants is to have a task that will always be running, but can't 
+> monopolize either CPU. This is useful for certain realtime workloads, 
+> but as I've said before, realtime requires explicit resource 
+> allocation.  I don't think this is very relevant to SCHED_FAIR balancing.
 
-Patch added to the linux-2.6-watchdog trees.
+I'm not actually using the scenario I described, its just sort of a 
+worst-case load-balancing thought experiment.
 
-Greetings,
-Wim.
+What we want to be able to do is to specify a fraction of each cpu for 
+each task group.  We don't want to have to affine tasks to particular cpus.
+
+This means that the load balancer must be group-aware, and must trigger 
+a re-balance (possibly just for a particular group) as soon as the cpu 
+allocation for that group is used up on a particular cpu.
+
+I haven't tried the latest CFS group scheduler patches, so they may 
+provide the sort of accuracy we're looking for.  I'll have to try and 
+find some time to test them out.
+
+Chris
