@@ -1,1117 +1,1145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbXGXFTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbXGXFTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757558AbXGXFTB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 01:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbXGXFSg
+	id S1758279AbXGXFTZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 01:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXGXFSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 01:18:36 -0400
+	Tue, 24 Jul 2007 01:18:38 -0400
 Received: from gateway.insightbb.com ([74.128.0.19]:27133 "EHLO
 	asav05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbXGXFSd (ORCPT
+	with ESMTP id S1752097AbXGXFSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 01:18:33 -0400
+	Tue, 24 Jul 2007 01:18:34 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswMAGQopUZKhRO4Rmdsb2JhbACPUQEBASMGDAE
-Message-Id: <20070724044858.650944087.dtor@insightbb.com>
+X-IronPort-Anti-Spam-Result: AusRAGQopUZKhRO4Rmdsb2JhbACHNIgdAQEBIwYMAQ
+Message-Id: <20070724044858.192608314.dtor@insightbb.com>
 References: <20070724044520.913891976.dtor@insightbb.com>
-Date: Tue, 24 Jul 2007 00:45:24 -0400
+Date: Tue, 24 Jul 2007 00:45:21 -0400
 From: Dmitry Torokhov <dtor@insightbb.com>
 To: linux-input@atrey.karlin.mff.cuni.cz
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC/RFT 4/5] Input: mousedev - implement proper locking
-Content-Disposition: inline; filename=mousedev-locking.patch
+Subject: [RFC/RFT 1/5] Input: implement proper locking in input core
+Content-Disposition: inline; filename=input-locking.patch
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Input: mousedev - implement proper locking
+Input: implement proper locking in input core
+
+Also add some kerneldoc documentation to input.h
 
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 ---
 
- drivers/input/mousedev.c |  736 +++++++++++++++++++++++++++++------------------
- 1 files changed, 464 insertions(+), 272 deletions(-)
+ drivers/input/input.c |  656 ++++++++++++++++++++++++++++++++++++--------------
+ include/linux/input.h |  112 +++++++-
+ 2 files changed, 585 insertions(+), 183 deletions(-)
 
-Index: work/drivers/input/mousedev.c
+Index: work/drivers/input/input.c
 ===================================================================
---- work.orig/drivers/input/mousedev.c
-+++ work/drivers/input/mousedev.c
-@@ -61,9 +61,11 @@ struct mousedev {
- 	int open;
- 	int minor;
- 	char name[16];
-+	struct input_handle handle;
- 	wait_queue_head_t wait;
- 	struct list_head client_list;
--	struct input_handle handle;
-+	spinlock_t client_lock; /* protects client_list */
-+	struct mutex mutex;
- 	struct device dev;
+--- work.orig/drivers/input/input.c
++++ work/drivers/input/input.c
+@@ -17,10 +17,10 @@
+ #include <linux/major.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+-#include <linux/interrupt.h>
+ #include <linux/poll.h>
+ #include <linux/device.h>
+ #include <linux/mutex.h>
++#include <linux/rcupdate.h>
  
- 	struct list_head mixdev_node;
-@@ -113,108 +115,137 @@ static unsigned char mousedev_imex_seq[]
- static struct input_handler mousedev_handler;
+ MODULE_AUTHOR("Vojtech Pavlik <vojtech@suse.cz>");
+ MODULE_DESCRIPTION("Input core");
+@@ -31,167 +31,242 @@ MODULE_LICENSE("GPL");
+ static LIST_HEAD(input_dev_list);
+ static LIST_HEAD(input_handler_list);
  
- static struct mousedev *mousedev_table[MOUSEDEV_MINORS];
-+static DEFINE_MUTEX(mousedev_table_mutex);
- static struct mousedev *mousedev_mix;
- static LIST_HEAD(mousedev_mix_list);
- 
-+static void mixdev_open_devices(void);
-+static void mixdev_close_devices(void);
++/*
++ * input_mutex protects access to both input_dev_list and input_handler_list.
++ * This also causes input_[un]register_device and input_[un]register_handler
++ * be mutually exclusive which simplifies locking in drivers implementing
++ * input handlers.
++ */
++static DEFINE_MUTEX(input_mutex);
 +
- #define fx(i)  (mousedev->old_x[(mousedev->pkt_count - (i)) & 03])
- #define fy(i)  (mousedev->old_y[(mousedev->pkt_count - (i)) & 03])
+ static struct input_handler *input_table[8];
  
--static void mousedev_touchpad_event(struct input_dev *dev, struct mousedev *mousedev, unsigned int code, int value)
-+static void mousedev_touchpad_event(struct input_dev *dev,
-+				    struct mousedev *mousedev,
-+				    unsigned int code, int value)
+-/**
+- * input_event() - report new input event
+- * @dev: device that generated the event
+- * @type: type of the event
+- * @code: event code
+- * @value: value of the event
+- *
+- * This function should be used by drivers implementing various input devices
+- * See also input_inject_event()
+- */
+-void input_event(struct input_dev *dev, unsigned int type, unsigned int code, int value)
++static inline int is_event_supported(unsigned int code,
++				     unsigned long *bm, unsigned int max)
  {
- 	int size, tmp;
- 	enum { FRACTION_DENOM = 128 };
+-	struct input_handle *handle;
++	return code <= max && test_bit(code, bm);
++}
  
- 	switch (code) {
--		case ABS_X:
--			fx(0) = value;
--			if (mousedev->touch && mousedev->pkt_count >= 2) {
--				size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
--				if (size == 0)
--					size = 256 * 2;
--				tmp = ((value - fx(2)) * (256 * FRACTION_DENOM)) / size;
--				tmp += mousedev->frac_dx;
--				mousedev->packet.dx = tmp / FRACTION_DENOM;
--				mousedev->frac_dx = tmp - mousedev->packet.dx * FRACTION_DENOM;
+-	if (type > EV_MAX || !test_bit(type, dev->evbit))
+-		return;
++static int input_defuzz_abs_event(int value, int old_val, int fuzz)
++{
++	if (fuzz) {
++		if (value > old_val - fuzz / 2 && value < old_val + fuzz / 2)
++			return value;
+ 
+-	add_input_randomness(type, code, value);
++		if (value > old_val - fuzz && value < old_val + fuzz)
++			return (old_val * 3 + value) / 4;
+ 
+-	switch (type) {
++		if (value > old_val - fuzz * 2 && value < old_val + fuzz * 2)
++			return (old_val + value) / 2;
++	}
+ 
+-		case EV_SYN:
+-			switch (code) {
+-				case SYN_CONFIG:
+-					if (dev->event)
+-						dev->event(dev, type, code, value);
+-					break;
+-
+-				case SYN_REPORT:
+-					if (dev->sync)
+-						return;
+-					dev->sync = 1;
+-					break;
 -			}
 -			break;
- 
--		case ABS_Y:
--			fy(0) = value;
--			if (mousedev->touch && mousedev->pkt_count >= 2) {
--				/* use X size to keep the same scale */
--				size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
--				if (size == 0)
--					size = 256 * 2;
--				tmp = -((value - fy(2)) * (256 * FRACTION_DENOM)) / size;
--				tmp += mousedev->frac_dy;
--				mousedev->packet.dy = tmp / FRACTION_DENOM;
--				mousedev->frac_dy = tmp - mousedev->packet.dy * FRACTION_DENOM;
--			}
--			break;
-+	case ABS_X:
-+		fx(0) = value;
-+		if (mousedev->touch && mousedev->pkt_count >= 2) {
-+			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
-+			if (size == 0)
-+				size = 256 * 2;
-+			tmp = ((value - fx(2)) * 256 * FRACTION_DENOM) / size;
-+			tmp += mousedev->frac_dx;
-+			mousedev->packet.dx = tmp / FRACTION_DENOM;
-+			mousedev->frac_dx =
-+				tmp - mousedev->packet.dx * FRACTION_DENOM;
-+		}
-+		break;
-+
-+	case ABS_Y:
-+		fy(0) = value;
-+		if (mousedev->touch && mousedev->pkt_count >= 2) {
-+			/* use X size to keep the same scale */
-+			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
-+			if (size == 0)
-+				size = 256 * 2;
-+			tmp = -((value - fy(2)) * 256 * FRACTION_DENOM) / size;
-+			tmp += mousedev->frac_dy;
-+			mousedev->packet.dy = tmp / FRACTION_DENOM;
-+			mousedev->frac_dy = tmp -
-+				mousedev->packet.dy * FRACTION_DENOM;
-+		}
-+		break;
- 	}
- }
- 
--static void mousedev_abs_event(struct input_dev *dev, struct mousedev *mousedev, unsigned int code, int value)
-+static void mousedev_abs_event(struct input_dev *dev, struct mousedev *mousedev,
-+				unsigned int code, int value)
- {
- 	int size;
- 
- 	switch (code) {
--		case ABS_X:
--			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
--			if (size == 0)
--				size = xres ? : 1;
--			if (value > dev->absmax[ABS_X])
--				value = dev->absmax[ABS_X];
--			if (value < dev->absmin[ABS_X])
--				value = dev->absmin[ABS_X];
--			mousedev->packet.x = ((value - dev->absmin[ABS_X]) * xres) / size;
--			mousedev->packet.abs_event = 1;
--			break;
- 
--		case ABS_Y:
--			size = dev->absmax[ABS_Y] - dev->absmin[ABS_Y];
--			if (size == 0)
--				size = yres ? : 1;
--			if (value > dev->absmax[ABS_Y])
--				value = dev->absmax[ABS_Y];
--			if (value < dev->absmin[ABS_Y])
--				value = dev->absmin[ABS_Y];
--			mousedev->packet.y = yres - ((value - dev->absmin[ABS_Y]) * yres) / size;
--			mousedev->packet.abs_event = 1;
--			break;
-+	case ABS_X:
-+		size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
-+		if (size == 0)
-+			size = xres ? : 1;
-+		if (value > dev->absmax[ABS_X])
-+			value = dev->absmax[ABS_X];
-+		if (value < dev->absmin[ABS_X])
-+			value = dev->absmin[ABS_X];
-+		mousedev->packet.x =
-+			((value - dev->absmin[ABS_X]) * xres) / size;
-+		mousedev->packet.abs_event = 1;
-+		break;
-+
-+	case ABS_Y:
-+		size = dev->absmax[ABS_Y] - dev->absmin[ABS_Y];
-+		if (size == 0)
-+			size = yres ? : 1;
-+		if (value > dev->absmax[ABS_Y])
-+			value = dev->absmax[ABS_Y];
-+		if (value < dev->absmin[ABS_Y])
-+			value = dev->absmin[ABS_Y];
-+		mousedev->packet.y = yres -
-+			((value - dev->absmin[ABS_Y]) * yres) / size;
-+		mousedev->packet.abs_event = 1;
-+		break;
- 	}
- }
- 
--static void mousedev_rel_event(struct mousedev *mousedev, unsigned int code, int value)
-+static void mousedev_rel_event(struct mousedev *mousedev,
-+				unsigned int code, int value)
- {
- 	switch (code) {
--		case REL_X:	mousedev->packet.dx += value; break;
--		case REL_Y:	mousedev->packet.dy -= value; break;
--		case REL_WHEEL:	mousedev->packet.dz -= value; break;
-+	case REL_X:
-+		mousedev->packet.dx += value;
-+		break;
-+
-+	case REL_Y:
-+		mousedev->packet.dy -= value;
-+		break;
-+
-+	case REL_WHEEL:
-+		mousedev->packet.dz -= value;
-+		break;
- 	}
- }
- 
--static void mousedev_key_event(struct mousedev *mousedev, unsigned int code, int value)
-+static void mousedev_key_event(struct mousedev *mousedev,
-+				unsigned int code, int value)
- {
- 	int index;
- 
- 	switch (code) {
--		case BTN_TOUCH:
--		case BTN_0:
--		case BTN_LEFT:		index = 0; break;
--		case BTN_STYLUS:
--		case BTN_1:
--		case BTN_RIGHT:		index = 1; break;
--		case BTN_2:
--		case BTN_FORWARD:
--		case BTN_STYLUS2:
--		case BTN_MIDDLE:	index = 2; break;
--		case BTN_3:
--		case BTN_BACK:
--		case BTN_SIDE:		index = 3; break;
--		case BTN_4:
--		case BTN_EXTRA:		index = 4; break;
--		default:		return;
-+
-+	case BTN_TOUCH:
-+	case BTN_0:
-+	case BTN_LEFT:		index = 0; break;
-+
-+	case BTN_STYLUS:
-+	case BTN_1:
-+	case BTN_RIGHT:		index = 1; break;
-+
-+	case BTN_2:
-+	case BTN_FORWARD:
-+	case BTN_STYLUS2:
-+	case BTN_MIDDLE:	index = 2; break;
-+
-+	case BTN_3:
-+	case BTN_BACK:
-+	case BTN_SIDE:		index = 3; break;
-+
-+	case BTN_4:
-+	case BTN_EXTRA:		index = 4; break;
-+
-+	default:		return;
- 	}
- 
- 	if (value) {
-@@ -226,19 +257,22 @@ static void mousedev_key_event(struct mo
- 	}
- }
- 
--static void mousedev_notify_readers(struct mousedev *mousedev, struct mousedev_hw_data *packet)
-+static void mousedev_notify_readers(struct mousedev *mousedev,
-+				    struct mousedev_hw_data *packet)
- {
- 	struct mousedev_client *client;
- 	struct mousedev_motion *p;
--	unsigned long flags;
-+	unsigned int new_head;
- 	int wake_readers = 0;
- 
--	list_for_each_entry(client, &mousedev->client_list, node) {
--		spin_lock_irqsave(&client->packet_lock, flags);
-+	list_for_each_entry_rcu(client, &mousedev->client_list, node) {
-+
-+		/* Just acquire the lock, interrupts already disabled */
-+		spin_lock(&client->packet_lock);
- 
- 		p = &client->packets[client->head];
- 		if (client->ready && p->buttons != mousedev->packet.buttons) {
--			unsigned int new_head = (client->head + 1) % PACKET_QUEUE_LEN;
-+			new_head = (client->head + 1) % PACKET_QUEUE_LEN;
- 			if (new_head != client->tail) {
- 				p = &client->packets[client->head = new_head];
- 				memset(p, 0, sizeof(struct mousedev_motion));
-@@ -253,19 +287,22 @@ static void mousedev_notify_readers(stru
- 		}
- 
- 		client->pos_x += packet->dx;
--		client->pos_x = client->pos_x < 0 ? 0 : (client->pos_x >= xres ? xres : client->pos_x);
-+		client->pos_x = client->pos_x < 0 ?
-+			0 : (client->pos_x >= xres ? xres : client->pos_x);
- 		client->pos_y += packet->dy;
--		client->pos_y = client->pos_y < 0 ? 0 : (client->pos_y >= yres ? yres : client->pos_y);
-+		client->pos_y = client->pos_y < 0 ?
-+			0 : (client->pos_y >= yres ? yres : client->pos_y);
- 
- 		p->dx += packet->dx;
- 		p->dy += packet->dy;
- 		p->dz += packet->dz;
- 		p->buttons = mousedev->packet.buttons;
- 
--		if (p->dx || p->dy || p->dz || p->buttons != client->last_buttons)
-+		if (p->dx || p->dy || p->dz ||
-+		    p->buttons != client->last_buttons)
- 			client->ready = 1;
- 
--		spin_unlock_irqrestore(&client->packet_lock, flags);
-+		spin_unlock(&client->packet_lock);
- 
- 		if (client->ready) {
- 			kill_fasync(&client->fasync, SIGIO, POLL_IN);
-@@ -281,7 +318,8 @@ static void mousedev_touchpad_touch(stru
- {
- 	if (!value) {
- 		if (mousedev->touch &&
--		    time_before(jiffies, mousedev->touch + msecs_to_jiffies(tap_time))) {
-+		    time_before(jiffies,
-+				mousedev->touch + msecs_to_jiffies(tap_time))) {
- 			/*
- 			 * Toggle left button to emulate tap.
- 			 * We rely on the fact that mousedev_mix always has 0
-@@ -290,7 +328,8 @@ static void mousedev_touchpad_touch(stru
- 			set_bit(0, &mousedev->packet.buttons);
- 			set_bit(0, &mousedev_mix->packet.buttons);
- 			mousedev_notify_readers(mousedev, &mousedev_mix->packet);
--			mousedev_notify_readers(mousedev_mix, &mousedev_mix->packet);
-+			mousedev_notify_readers(mousedev_mix,
-+						&mousedev_mix->packet);
- 			clear_bit(0, &mousedev->packet.buttons);
- 			clear_bit(0, &mousedev_mix->packet.buttons);
- 		}
-@@ -302,54 +341,61 @@ static void mousedev_touchpad_touch(stru
- 		mousedev->touch = jiffies;
- }
- 
--static void mousedev_event(struct input_handle *handle, unsigned int type, unsigned int code, int value)
-+static void mousedev_event(struct input_handle *handle,
-+			   unsigned int type, unsigned int code, int value)
- {
- 	struct mousedev *mousedev = handle->private;
- 
- 	switch (type) {
--		case EV_ABS:
--			/* Ignore joysticks */
--			if (test_bit(BTN_TRIGGER, handle->dev->keybit))
--				return;
- 
--			if (test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
--				mousedev_touchpad_event(handle->dev, mousedev, code, value);
-+	case EV_ABS:
-+		/* Ignore joysticks */
-+		if (test_bit(BTN_TRIGGER, handle->dev->keybit))
-+			return;
-+
-+		if (test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
-+			mousedev_touchpad_event(handle->dev,
-+						mousedev, code, value);
-+		else
-+			mousedev_abs_event(handle->dev, mousedev, code, value);
-+
-+		break;
-+
-+	case EV_REL:
-+		mousedev_rel_event(mousedev, code, value);
-+		break;
-+
-+	case EV_KEY:
-+		if (value != 2) {
-+			if (code == BTN_TOUCH &&
-+			    test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
-+				mousedev_touchpad_touch(mousedev, value);
- 			else
--				mousedev_abs_event(handle->dev, mousedev, code, value);
--
--			break;
--
--		case EV_REL:
--			mousedev_rel_event(mousedev, code, value);
--			break;
-+				mousedev_key_event(mousedev, code, value);
-+		}
-+		break;
++	return value;
++}
  
 -		case EV_KEY:
--			if (value != 2) {
--				if (code == BTN_TOUCH && test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
--					mousedev_touchpad_touch(mousedev, value);
--				else
--					mousedev_key_event(mousedev, code, value);
-+	case EV_SYN:
-+		if (code == SYN_REPORT) {
-+			if (mousedev->touch) {
-+				mousedev->pkt_count++;
-+				/*
-+				 * Input system eats duplicate events,
-+				 * but we need all of them to do correct
-+				 * averaging so apply present one forward
-+				 */
-+				fx(0) = fx(1);
-+				fy(0) = fy(1);
- 			}
--			break;
--
--		case EV_SYN:
--			if (code == SYN_REPORT) {
--				if (mousedev->touch) {
--					mousedev->pkt_count++;
--					/* Input system eats duplicate events, but we need all of them
--					 * to do correct averaging so apply present one forward
--					 */
--					fx(0) = fx(1);
--					fy(0) = fy(1);
--				}
++/*
++ * Pass event through all open handles. This function is called with
++ * dev->event_lock held and interrupts disabled. Because of that we
++ * do not need to use rcu_read_lock() here although we are using RCU
++ * to access handle list.
++ */
++static void input_pass_event(struct input_dev *dev,
++			     unsigned int type, unsigned int code, int value)
++{
++	struct input_handle *handle = rcu_dereference(dev->grab);
  
--				mousedev_notify_readers(mousedev, &mousedev->packet);
--				mousedev_notify_readers(mousedev_mix, &mousedev->packet);
-+			mousedev_notify_readers(mousedev, &mousedev->packet);
-+			mousedev_notify_readers(mousedev_mix, &mousedev->packet);
+-			if (code > KEY_MAX || !test_bit(code, dev->keybit) || !!test_bit(code, dev->key) == value)
+-				return;
++	if (handle)
++		handle->handler->event(handle, type, code, value);
++	else
++		list_for_each_entry_rcu(handle, &dev->h_list, d_node)
++			if (handle->open)
++				handle->handler->event(handle,
++							type, code, value);
++}
  
--				mousedev->packet.dx = mousedev->packet.dy = mousedev->packet.dz = 0;
--				mousedev->packet.abs_event = 0;
+-			if (value == 2)
+-				break;
++/*
++ * Generate software autorepeat event. Note that we take
++ * dev->event_lock here to avoid racing with input_event
++ * which may cause keys get "stuck".
++ */
++static void input_repeat_key(unsigned long data)
++{
++	struct input_dev *dev = (void *) data;
+ 
+-			change_bit(code, dev->key);
++	spin_lock_irq(&dev->event_lock);
+ 
+-			if (test_bit(EV_REP, dev->evbit) && dev->rep[REP_PERIOD] && dev->rep[REP_DELAY] && dev->timer.data && value) {
+-				dev->repeat_key = code;
+-				mod_timer(&dev->timer, jiffies + msecs_to_jiffies(dev->rep[REP_DELAY]));
 -			}
++	if (test_bit(dev->repeat_key, dev->key) &&
++	    is_event_supported(dev->repeat_key, dev->keybit, KEY_MAX)) {
+ 
 -			break;
-+			mousedev->packet.dx = mousedev->packet.dy =
-+				mousedev->packet.dz = 0;
-+			mousedev->packet.abs_event = 0;
++		input_pass_event(dev, EV_KEY, dev->repeat_key, 2);
+ 
+-		case EV_SW:
++		if (dev->sync) {
++			/*
++			 * Only send SYN_REPORT if we are not in a middle
++			 * of driver parsing a new hardware packet.
++			 * Otherwise assume that the driver will send
++			 * SYN_REPORT once it's done.
++			 */
++			input_pass_event(dev, EV_SYN, SYN_REPORT, 1);
++		}
+ 
+-			if (code > SW_MAX || !test_bit(code, dev->swbit) || !!test_bit(code, dev->sw) == value)
+-				return;
++		if (dev->rep[REP_PERIOD])
++			mod_timer(&dev->timer, jiffies +
++					msecs_to_jiffies(dev->rep[REP_PERIOD]));
++	}
+ 
+-			change_bit(code, dev->sw);
++	spin_unlock_irq(&dev->event_lock);
++}
+ 
+-			break;
++static void input_start_autorepeat(struct input_dev *dev, int code)
++{
++	if (test_bit(EV_REP, dev->evbit) &&
++	    dev->rep[REP_PERIOD] && dev->rep[REP_DELAY] &&
++	    dev->timer.data) {
++		dev->repeat_key = code;
++		mod_timer(&dev->timer,
++			  jiffies + msecs_to_jiffies(dev->rep[REP_DELAY]));
++	}
++}
+ 
+-		case EV_ABS:
++#define INPUT_IGNORE_EVENT	0
++#define INPUT_PASS_TO_HANDLERS	1
++#define INPUT_PASS_TO_DEVICE	2
++#define INPUT_PASS_TO_ALL	(INPUT_PASS_TO_HANDLERS | INPUT_PASS_TO_DEVICE)
+ 
+-			if (code > ABS_MAX || !test_bit(code, dev->absbit))
+-				return;
++static void input_handle_event(struct input_dev *dev,
++			       unsigned int type, unsigned int code, int value)
++{
++	int disposition = INPUT_IGNORE_EVENT;
+ 
+-			if (dev->absfuzz[code]) {
+-				if ((value > dev->abs[code] - (dev->absfuzz[code] >> 1)) &&
+-				    (value < dev->abs[code] + (dev->absfuzz[code] >> 1)))
+-					return;
+-
+-				if ((value > dev->abs[code] - dev->absfuzz[code]) &&
+-				    (value < dev->abs[code] + dev->absfuzz[code]))
+-					value = (dev->abs[code] * 3 + value) >> 2;
+-
+-				if ((value > dev->abs[code] - (dev->absfuzz[code] << 1)) &&
+-				    (value < dev->abs[code] + (dev->absfuzz[code] << 1)))
+-					value = (dev->abs[code] + value) >> 1;
+-			}
++	switch (type) {
+ 
+-			if (dev->abs[code] == value)
+-				return;
++	case EV_SYN:
++		switch (code) {
++		case SYN_CONFIG:
++			disposition = INPUT_PASS_TO_ALL;
++			break;
+ 
+-			dev->abs[code] = value;
++		case SYN_REPORT:
++			if (!dev->sync) {
++				dev->sync = 1;
++				disposition = INPUT_PASS_TO_HANDLERS;
++			}
+ 			break;
 +		}
 +		break;
+ 
+-		case EV_REL:
++	case EV_KEY:
++		if (is_event_supported(code, dev->keybit, KEY_MAX) &&
++		    !!test_bit(code, dev->key) != value) {
+ 
+-			if (code > REL_MAX || !test_bit(code, dev->relbit) || (value == 0))
+-				return;
++			if (value != 2) {
++				__change_bit(code, dev->key);
++				if (value)
++					input_start_autorepeat(dev, code);
++			}
+ 
+-			break;
++			disposition = INPUT_PASS_TO_HANDLERS;
++		}
++		break;
+ 
+-		case EV_MSC:
++	case EV_SW:
++		if (is_event_supported(code, dev->swbit, SW_MAX) &&
++		    !!test_bit(code, dev->sw) != value) {
+ 
+-			if (code > MSC_MAX || !test_bit(code, dev->mscbit))
+-				return;
++			__change_bit(code, dev->sw);
++			disposition = INPUT_PASS_TO_HANDLERS;
++		}
++		break;
+ 
+-			if (dev->event)
+-				dev->event(dev, type, code, value);
++	case EV_ABS:
++		if (is_event_supported(code, dev->absbit, ABS_MAX)) {
+ 
+-			break;
++			value = input_defuzz_abs_event(value,
++					dev->abs[code], dev->absfuzz[code]);
++
++			if (dev->abs[code] != value) {
++				dev->abs[code] = value;
++				disposition = INPUT_PASS_TO_HANDLERS;
++			}
++		}
++		break;
+ 
+-		case EV_LED:
++	case EV_REL:
++		if (is_event_supported(code, dev->relbit, REL_MAX) && value)
++			disposition = INPUT_PASS_TO_HANDLERS;
+ 
+-			if (code > LED_MAX || !test_bit(code, dev->ledbit) || !!test_bit(code, dev->led) == value)
+-				return;
++		break;
+ 
+-			change_bit(code, dev->led);
++	case EV_MSC:
++		if (is_event_supported(code, dev->mscbit, MSC_MAX))
++			disposition = INPUT_PASS_TO_ALL;
+ 
+-			if (dev->event)
+-				dev->event(dev, type, code, value);
++		break;
+ 
+-			break;
++	case EV_LED:
++		if (is_event_supported(code, dev->ledbit, LED_MAX) &&
++		    !!test_bit(code, dev->led) != value) {
+ 
+-		case EV_SND:
++			__change_bit(code, dev->led);
++			disposition = INPUT_PASS_TO_ALL;
++		}
++		break;
+ 
+-			if (code > SND_MAX || !test_bit(code, dev->sndbit))
+-				return;
++	case EV_SND:
++		if (is_event_supported(code, dev->sndbit, SND_MAX)) {
+ 
+ 			if (!!test_bit(code, dev->snd) != !!value)
+-				change_bit(code, dev->snd);
++				__change_bit(code, dev->snd);
++			disposition = INPUT_PASS_TO_ALL;
++		}
++		break;
+ 
+-			if (dev->event)
+-				dev->event(dev, type, code, value);
++	case EV_REP:
++		if (code <= REP_MAX && value >= 0 && dev->rep[code] != value) {
++			dev->rep[code] = value;
++			disposition = INPUT_PASS_TO_ALL;
++		}
++		break;
+ 
+-			break;
++	case EV_FF:
++		if (value >= 0)
++			disposition = INPUT_PASS_TO_ALL;
++		break;
++	}
+ 
+-		case EV_REP:
++	if (type != EV_SYN)
++		dev->sync = 0;
+ 
+-			if (code > REP_MAX || value < 0 || dev->rep[code] == value)
+-				return;
++	if ((disposition & INPUT_PASS_TO_DEVICE) && dev->event)
++		dev->event(dev, type, code, value);
+ 
+-			dev->rep[code] = value;
+-			if (dev->event)
+-				dev->event(dev, type, code, value);
++	if (disposition & INPUT_PASS_TO_HANDLERS)
++		input_pass_event(dev, type, code, value);
++}
+ 
+-			break;
++/**
++ * input_event() - report new input event
++ * @dev: device that generated the event
++ * @type: type of the event
++ * @code: event code
++ * @value: value of the event
++ *
++ * This function should be used by drivers implementing various input
++ * devices. See also input_inject_event().
++ */
+ 
+-		case EV_FF:
++void input_event(struct input_dev *dev,
++		 unsigned int type, unsigned int code, int value)
++{
++	unsigned long flags;
+ 
+-			if (value < 0)
+-				return;
++	if (is_event_supported(type, dev->evbit, EV_MAX)) {
+ 
+-			if (dev->event)
+-				dev->event(dev, type, code, value);
+-			break;
++		spin_lock_irqsave(&dev->event_lock, flags);
++		add_input_randomness(type, code, value);
++		input_handle_event(dev, type, code, value);
++		spin_unlock_irqrestore(&dev->event_lock, flags);
  	}
- }
- 
-@@ -367,41 +413,45 @@ static void mousedev_free(struct device 
- {
- 	struct mousedev *mousedev = container_of(dev, struct mousedev, dev);
- 
--	mousedev_table[mousedev->minor] = NULL;
- 	kfree(mousedev);
- }
- 
--static int mixdev_add_device(struct mousedev *mousedev)
-+static int mousedev_open_device(struct mousedev *mousedev)
- {
--	int error;
 -
--	if (mousedev_mix->open) {
--		error = input_open_device(&mousedev->handle);
--		if (error)
--			return error;
+-	if (type != EV_SYN)
+-		dev->sync = 0;
+-
+-	if (dev->grab)
+-		dev->grab->handler->event(dev->grab, type, code, value);
+-	else
+-		list_for_each_entry(handle, &dev->h_list, d_node)
+-			if (handle->open)
+-				handle->handler->event(handle, type, code, value);
+ }
+ EXPORT_SYMBOL(input_event);
+ 
+@@ -202,102 +277,222 @@ EXPORT_SYMBOL(input_event);
+  * @code: event code
+  * @value: value of the event
+  *
+- * Similar to input_event() but will ignore event if device is "grabbed" and handle
+- * injecting event is not the one that owns the device.
++ * Similar to input_event() but will ignore event if device is
++ * "grabbed" and handle injecting event is not the one that owns
++ * the device.
+  */
+-void input_inject_event(struct input_handle *handle, unsigned int type, unsigned int code, int value)
+-{
+-	if (!handle->dev->grab || handle->dev->grab == handle)
+-		input_event(handle->dev, type, code, value);
+-}
+-EXPORT_SYMBOL(input_inject_event);
+-
+-static void input_repeat_key(unsigned long data)
++void input_inject_event(struct input_handle *handle,
++			unsigned int type, unsigned int code, int value)
+ {
+-	struct input_dev *dev = (void *) data;
++	struct input_dev *dev = handle->dev;
++	struct input_handle *grab;
+ 
+-	if (!test_bit(dev->repeat_key, dev->key))
+-		return;
++	if (is_event_supported(type, dev->evbit, EV_MAX)) {
++		spin_lock_irq(&dev->event_lock);
+ 
+-	input_event(dev, EV_KEY, dev->repeat_key, 2);
+-	input_sync(dev);
++		grab = rcu_dereference(dev->grab);
++		if (!grab || grab == handle)
++			input_handle_event(dev, type, code, value);
+ 
+-	if (dev->rep[REP_PERIOD])
+-		mod_timer(&dev->timer, jiffies + msecs_to_jiffies(dev->rep[REP_PERIOD]));
++		spin_unlock_irq(&dev->event_lock);
++	}
+ }
++EXPORT_SYMBOL(input_inject_event);
+ 
++/**
++ * input_grab_device - grabs device for exclusive use
++ * @handle: input handle that wants to own the device
++ *
++ * When a device is grabbed by an input handle all events generated by
++ * the device are delivered only to this handle. Also events injected
++ * by other input handles are ignored while device is grabbed.
++ */
+ int input_grab_device(struct input_handle *handle)
+ {
+-	if (handle->dev->grab)
+-		return -EBUSY;
++	struct input_dev *dev = handle->dev;
 +	int retval;
  
--		mousedev->open++;
--		mousedev->mixdev_open = 1;
--	}
-+	retval = mutex_lock_interruptible(&mousedev->mutex);
-+	if (retval)
-+		return retval;
- 
--	get_device(&mousedev->dev);
--	list_add_tail(&mousedev->mixdev_node, &mousedev_mix_list);
-+	if (mousedev->minor == MOUSEDEV_MIX)
-+		mixdev_open_devices();
-+	else if (!mousedev->exist)
-+		retval = -ENODEV;
-+	else if (!mousedev->open++)
-+		retval = input_open_device(&mousedev->handle);
- 
+-	handle->dev->grab = handle;
 -	return 0;
-+	mutex_unlock(&mousedev->mutex);
-+	return retval;
- }
- 
--static void mixdev_remove_device(struct mousedev *mousedev)
-+static void mousedev_close_device(struct mousedev *mousedev)
- {
--	if (mousedev->mixdev_open) {
--		mousedev->mixdev_open = 0;
--		if (!--mousedev->open && mousedev->exist)
--			input_close_device(&mousedev->handle);
--	}
-+	mutex_lock(&mousedev->mutex);
- 
--	list_del_init(&mousedev->mixdev_node);
--	put_device(&mousedev->dev);
-+	if (mousedev->minor == MOUSEDEV_MIX)
-+		mixdev_close_devices();
-+	else if (mousedev->exist && !--mousedev->open)
-+		input_close_device(&mousedev->handle);
-+
-+	mutex_unlock(&mousedev->mutex);
- }
- 
-+/*
-+ * Open all available devices so they can all be multiplexed in one.
-+ * stream. Note that this function is called with mousedev_mix->mutex
-+ * held.
-+ */
- static void mixdev_open_devices(void)
- {
- 	struct mousedev *mousedev;
-@@ -411,16 +461,19 @@ static void mixdev_open_devices(void)
- 
- 	list_for_each_entry(mousedev, &mousedev_mix_list, mixdev_node) {
- 		if (!mousedev->mixdev_open) {
--			if (!mousedev->open && mousedev->exist)
--				if (input_open_device(&mousedev->handle))
--					continue;
-+			if (mousedev_open_device(mousedev));
-+				continue;
- 
--			mousedev->open++;
- 			mousedev->mixdev_open = 1;
- 		}
- 	}
- }
- 
-+/*
-+ * Close all devices that were opened as part of multiplexed
-+ * device. Note that this function is called with mousedev_mix->mutex
-+ * held.
-+ */
- static void mixdev_close_devices(void)
- {
- 	struct mousedev *mousedev;
-@@ -431,33 +484,50 @@ static void mixdev_close_devices(void)
- 	list_for_each_entry(mousedev, &mousedev_mix_list, mixdev_node) {
- 		if (mousedev->mixdev_open) {
- 			mousedev->mixdev_open = 0;
--			if (!--mousedev->open && mousedev->exist)
--				input_close_device(&mousedev->handle);
-+			mousedev_close_device(mousedev);
- 		}
- 	}
- }
- 
-+
-+static void mousedev_attach_client(struct mousedev *mousedev,
-+				   struct mousedev_client *client)
-+{
-+	spin_lock(&mousedev->client_lock);
-+	list_add_tail_rcu(&client->node, &mousedev->client_list);
-+	spin_unlock(&mousedev->client_lock);
-+	/*
-+	 * We don't use synchronize_rcu() here because read-size
-+	 * critical section is protected by a spinlock (dev->event_lock)
-+	 * instead of rcu_read_lock().
-+	 */
-+	synchronize_sched();
-+}
-+
-+static void mousedev_detach_client(struct mousedev *mousedev,
-+				   struct mousedev_client *client)
-+{
-+	spin_lock(&mousedev->client_lock);
-+	list_del_rcu(&client->node);
-+	spin_unlock(&mousedev->client_lock);
-+	synchronize_sched();
-+}
-+
- static int mousedev_release(struct inode *inode, struct file *file)
- {
- 	struct mousedev_client *client = file->private_data;
- 	struct mousedev *mousedev = client->mousedev;
- 
- 	mousedev_fasync(-1, file, 0);
--
--	list_del(&client->node);
-+	mousedev_detach_client(mousedev, client);
- 	kfree(client);
- 
--	if (mousedev->minor == MOUSEDEV_MIX)
--		mixdev_close_devices();
--	else if (!--mousedev->open && mousedev->exist)
--		input_close_device(&mousedev->handle);
--
-+	mousedev_close_device(mousedev);
- 	put_device(&mousedev->dev);
- 
- 	return 0;
- }
- 
--
- static int mousedev_open(struct inode *inode, struct file *file)
- {
- 	struct mousedev_client *client;
-@@ -475,12 +545,17 @@ static int mousedev_open(struct inode *i
- 	if (i >= MOUSEDEV_MINORS)
- 		return -ENODEV;
- 
-+	error = mutex_lock_interruptible(&mousedev_table_mutex);
-+	if (error)
-+		return error;
- 	mousedev = mousedev_table[i];
-+	if (mousedev)
-+		get_device(&mousedev->dev);
-+	mutex_unlock(&mousedev_table_mutex);
-+
- 	if (!mousedev)
- 		return -ENODEV;
- 
--	get_device(&mousedev->dev);
--
- 	client = kzalloc(sizeof(struct mousedev_client), GFP_KERNEL);
- 	if (!client) {
- 		error = -ENOMEM;
-@@ -491,21 +566,17 @@ static int mousedev_open(struct inode *i
- 	client->pos_x = xres / 2;
- 	client->pos_y = yres / 2;
- 	client->mousedev = mousedev;
--	list_add_tail(&client->node, &mousedev->client_list);
-+	mousedev_attach_client(mousedev, client);
- 
--	if (mousedev->minor == MOUSEDEV_MIX)
--		mixdev_open_devices();
--	else if (!mousedev->open++ && mousedev->exist) {
--		error = input_open_device(&mousedev->handle);
--		if (error)
--			goto err_free_client;
--	}
-+	error = mousedev_open_device(mousedev);
-+	if (error)
-+		goto err_free_client;
- 
- 	file->private_data = client;
- 	return 0;
- 
-  err_free_client:
--	list_del(&client->node);
-+	mousedev_detach_client(mousedev, client);
- 	kfree(client);
-  err_put_mousedev:
- 	put_device(&mousedev->dev);
-@@ -517,41 +588,41 @@ static inline int mousedev_limit_delta(i
- 	return delta > limit ? limit : (delta < -limit ? -limit : delta);
- }
- 
--static void mousedev_packet(struct mousedev_client *client, signed char *ps2_data)
-+static void mousedev_packet(struct mousedev_client *client,
-+			    signed char *ps2_data)
- {
--	struct mousedev_motion *p;
--	unsigned long flags;
--
--	spin_lock_irqsave(&client->packet_lock, flags);
--	p = &client->packets[client->tail];
-+	struct mousedev_motion *p = &client->packets[client->tail];
- 
--	ps2_data[0] = 0x08 | ((p->dx < 0) << 4) | ((p->dy < 0) << 5) | (p->buttons & 0x07);
-+	ps2_data[0] = 0x08 |
-+		((p->dx < 0) << 4) | ((p->dy < 0) << 5) | (p->buttons & 0x07);
- 	ps2_data[1] = mousedev_limit_delta(p->dx, 127);
- 	ps2_data[2] = mousedev_limit_delta(p->dy, 127);
- 	p->dx -= ps2_data[1];
- 	p->dy -= ps2_data[2];
- 
- 	switch (client->mode) {
--		case MOUSEDEV_EMUL_EXPS:
--			ps2_data[3] = mousedev_limit_delta(p->dz, 7);
--			p->dz -= ps2_data[3];
--			ps2_data[3] = (ps2_data[3] & 0x0f) | ((p->buttons & 0x18) << 1);
--			client->bufsiz = 4;
--			break;
--
--		case MOUSEDEV_EMUL_IMPS:
--			ps2_data[0] |= ((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
--			ps2_data[3] = mousedev_limit_delta(p->dz, 127);
--			p->dz -= ps2_data[3];
--			client->bufsiz = 4;
--			break;
--
--		case MOUSEDEV_EMUL_PS2:
--		default:
--			ps2_data[0] |= ((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
--			p->dz = 0;
--			client->bufsiz = 3;
--			break;
-+	case MOUSEDEV_EMUL_EXPS:
-+		ps2_data[3] = mousedev_limit_delta(p->dz, 7);
-+		p->dz -= ps2_data[3];
-+		ps2_data[3] = (ps2_data[3] & 0x0f) | ((p->buttons & 0x18) << 1);
-+		client->bufsiz = 4;
-+		break;
-+
-+	case MOUSEDEV_EMUL_IMPS:
-+		ps2_data[0] |=
-+			((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
-+		ps2_data[3] = mousedev_limit_delta(p->dz, 127);
-+		p->dz -= ps2_data[3];
-+		client->bufsiz = 4;
-+		break;
-+
-+	case MOUSEDEV_EMUL_PS2:
-+	default:
-+		ps2_data[0] |=
-+			((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
-+		p->dz = 0;
-+		client->bufsiz = 3;
-+		break;
- 	}
- 
- 	if (!p->dx && !p->dy && !p->dz) {
-@@ -561,12 +632,50 @@ static void mousedev_packet(struct mouse
- 		} else
- 			client->tail = (client->tail + 1) % PACKET_QUEUE_LEN;
- 	}
--
--	spin_unlock_irqrestore(&client->packet_lock, flags);
- }
- 
-+static void mousedev_generate_response(struct mousedev_client *client,
-+					int command)
-+{
-+	client->ps2[0] = 0xfa; /* ACK */
-+
-+	switch (command) {
-+
-+	case 0xeb: /* Poll */
-+		mousedev_packet(client, &client->ps2[1]);
-+		client->bufsiz++; /* account for leading ACK */
-+		break;
-+
-+	case 0xf2: /* Get ID */
-+		switch (client->mode) {
-+			case MOUSEDEV_EMUL_PS2:  client->ps2[1] = 0; break;
-+			case MOUSEDEV_EMUL_IMPS: client->ps2[1] = 3; break;
-+			case MOUSEDEV_EMUL_EXPS: client->ps2[1] = 4; break;
-+		}
-+		client->bufsiz = 2;
-+		break;
-+
-+	case 0xe9: /* Get info */
-+		client->ps2[1] = 0x60; client->ps2[2] = 3; client->ps2[3] = 200;
-+		client->bufsiz = 4;
-+		break;
-+
-+	case 0xff: /* Reset */
-+		client->impsseq = client->imexseq = 0;
-+		client->mode = MOUSEDEV_EMUL_PS2;
-+		client->ps2[1] = 0xaa; client->ps2[2] = 0x00;
-+		client->bufsiz = 3;
-+		break;
-+
-+	default:
-+		client->bufsiz = 1;
-+		break;
-+	}
-+	client->buffer = client->bufsiz;
-+}
- 
--static ssize_t mousedev_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
-+static ssize_t mousedev_write(struct file *file, const char __user *buffer,
-+				size_t count, loff_t *ppos)
- {
- 	struct mousedev_client *client = file->private_data;
- 	unsigned char c;
-@@ -577,6 +686,8 @@ static ssize_t mousedev_write(struct fil
- 		if (get_user(c, buffer + i))
- 			return -EFAULT;
- 
-+		spin_lock_irq(&client->packet_lock);
-+
- 		if (c == mousedev_imex_seq[client->imexseq]) {
- 			if (++client->imexseq == MOUSEDEV_SEQ_LEN) {
- 				client->imexseq = 0;
-@@ -593,68 +704,39 @@ static ssize_t mousedev_write(struct fil
- 		} else
- 			client->impsseq = 0;
- 
--		client->ps2[0] = 0xfa;
--
--		switch (c) {
-+		mousedev_generate_response(client, c);
- 
--			case 0xeb: /* Poll */
--				mousedev_packet(client, &client->ps2[1]);
--				client->bufsiz++; /* account for leading ACK */
--				break;
--
--			case 0xf2: /* Get ID */
--				switch (client->mode) {
--					case MOUSEDEV_EMUL_PS2:  client->ps2[1] = 0; break;
--					case MOUSEDEV_EMUL_IMPS: client->ps2[1] = 3; break;
--					case MOUSEDEV_EMUL_EXPS: client->ps2[1] = 4; break;
--				}
--				client->bufsiz = 2;
--				break;
--
--			case 0xe9: /* Get info */
--				client->ps2[1] = 0x60; client->ps2[2] = 3; client->ps2[3] = 200;
--				client->bufsiz = 4;
--				break;
--
--			case 0xff: /* Reset */
--				client->impsseq = client->imexseq = 0;
--				client->mode = MOUSEDEV_EMUL_PS2;
--				client->ps2[1] = 0xaa; client->ps2[2] = 0x00;
--				client->bufsiz = 3;
--				break;
--
--			default:
--				client->bufsiz = 1;
--				break;
--		}
--
--		client->buffer = client->bufsiz;
-+		spin_unlock_irq(&client->packet_lock);
- 	}
- 
- 	kill_fasync(&client->fasync, SIGIO, POLL_IN);
--
- 	wake_up_interruptible(&client->mousedev->wait);
- 
- 	return count;
- }
- 
--static ssize_t mousedev_read(struct file *file, char __user *buffer, size_t count, loff_t *ppos)
-+static ssize_t mousedev_read(struct file *file, char __user *buffer,
-+			     size_t count, loff_t *ppos)
- {
- 	struct mousedev_client *client = file->private_data;
-+	struct mousedev *mousedev = client->mousedev;
-+	signed char data[sizeof(client->ps2)];
- 	int retval = 0;
- 
--	if (!client->ready && !client->buffer && (file->f_flags & O_NONBLOCK))
-+	if (!client->ready && !client->buffer && mousedev->exist &&
-+	    (file->f_flags & O_NONBLOCK))
- 		return -EAGAIN;
- 
--	retval = wait_event_interruptible(client->mousedev->wait,
--					  !client->mousedev->exist || client->ready || client->buffer);
--
-+	retval = wait_event_interruptible(mousedev->wait,
-+			!mousedev->exist || client->ready || client->buffer);
- 	if (retval)
- 		return retval;
- 
--	if (!client->mousedev->exist)
-+	if (!mousedev->exist)
- 		return -ENODEV;
- 
-+	spin_lock_irq(&client->packet_lock);
-+
- 	if (!client->buffer && client->ready) {
- 		mousedev_packet(client, client->ps2);
- 		client->buffer = client->bufsiz;
-@@ -663,9 +745,12 @@ static ssize_t mousedev_read(struct file
- 	if (count > client->buffer)
- 		count = client->buffer;
- 
-+	memcpy(data, client->ps2 + client->bufsiz - client->buffer, count);
- 	client->buffer -= count;
- 
--	if (copy_to_user(buffer, client->ps2 + client->bufsiz - client->buffer - count, count))
-+	spin_unlock_irq(&client->packet_lock);
-+
-+	if (copy_to_user(buffer, data, count))
- 		return -EFAULT;
- 
- 	return count;
-@@ -692,6 +777,60 @@ static const struct file_operations mous
- 	.fasync =	mousedev_fasync,
- };
- 
-+static int mousedev_install_chrdev(struct mousedev *mousedev)
-+{
-+	mousedev_table[mousedev->minor] = mousedev;
-+	return 0;
-+}
-+
-+static void mousedev_remove_chrdev(struct mousedev *mousedev)
-+{
-+	mutex_lock(&mousedev_table_mutex);
-+	mousedev_table[mousedev->minor] = NULL;
-+	mutex_unlock(&mousedev_table_mutex);
-+}
-+
-+/*
-+ * Mark device non-existent. This disables writes, ioctls and
-+ * prevents new users from opening the device. Already posted
-+ * blocking reads will stay, however new ones will fail.
-+ */
-+static void mousedev_mark_dead(struct mousedev *mousedev)
-+{
-+	mutex_lock(&mousedev->mutex);
-+	mousedev->exist = 0;
-+	mutex_unlock(&mousedev->mutex);
-+}
-+
-+/*
-+ * Wake up users waiting for IO so they can disconnect from
-+ * dead device.
-+ */
-+static void mousedev_hangup(struct mousedev *mousedev)
-+{
-+	struct mousedev_client *client;
-+
-+	spin_lock(&mousedev->client_lock);
-+	list_for_each_entry(client, &mousedev->client_list, node)
-+		kill_fasync(&client->fasync, SIGIO, POLL_HUP);
-+	spin_unlock(&mousedev->client_lock);
-+
-+	wake_up_interruptible(&mousedev->wait);
-+}
-+
-+static void mousedev_cleanup(struct mousedev *mousedev)
-+{
-+	struct input_handle *handle = &mousedev->handle;
-+
-+	mousedev_mark_dead(mousedev);
-+	mousedev_hangup(mousedev);
-+	mousedev_remove_chrdev(mousedev);
-+
-+	/* mousedev is marked dead so no one else accesses mousedev->open */
-+	if (mousedev->open)
-+		input_close_device(handle);
-+}
-+
- static struct mousedev *mousedev_create(struct input_dev *dev,
- 					struct input_handler *handler,
- 					int minor)
-@@ -707,6 +846,10 @@ static struct mousedev *mousedev_create(
- 
- 	INIT_LIST_HEAD(&mousedev->client_list);
- 	INIT_LIST_HEAD(&mousedev->mixdev_node);
-+	spin_lock_init(&mousedev->client_lock);
-+	mutex_init(&mousedev->mutex);
-+	lockdep_set_subclass(&mousedev->mutex,
-+			     minor == MOUSEDEV_MIX ? MOUSEDEV_MIX : 0);
- 	init_waitqueue_head(&mousedev->wait);
- 
- 	if (minor == MOUSEDEV_MIX)
-@@ -731,14 +874,27 @@ static struct mousedev *mousedev_create(
- 	mousedev->dev.release = mousedev_free;
- 	device_initialize(&mousedev->dev);
- 
--	mousedev_table[minor] = mousedev;
-+	if (minor != MOUSEDEV_MIX) {
-+		error = input_register_handle(&mousedev->handle);
-+		if (error)
-+			goto err_free_mousedev;
-+	}
-+
-+	error = mousedev_install_chrdev(mousedev);
-+	if (error)
-+		goto err_unregister_handle;
- 
- 	error = device_add(&mousedev->dev);
- 	if (error)
--		goto err_free_mousedev;
-+		goto err_cleanup_mousedev;
- 
- 	return mousedev;
- 
-+ err_cleanup_mousedev:
-+	mousedev_cleanup(mousedev);
-+ err_unregister_handle:
-+	if (minor != MOUSEDEV_MIX)
-+		input_unregister_handle(&mousedev->handle);
-  err_free_mousedev:
- 	put_device(&mousedev->dev);
-  err_out:
-@@ -747,29 +903,64 @@ static struct mousedev *mousedev_create(
- 
- static void mousedev_destroy(struct mousedev *mousedev)
- {
--	struct mousedev_client *client;
--
- 	device_del(&mousedev->dev);
--	mousedev->exist = 0;
-+	mousedev_cleanup(mousedev);
-+	if (mousedev->minor != MOUSEDEV_MIX)
-+		input_unregister_handle(&mousedev->handle);
-+	put_device(&mousedev->dev);
-+}
- 
--	if (mousedev->open) {
--		input_close_device(&mousedev->handle);
--		list_for_each_entry(client, &mousedev->client_list, node)
--			kill_fasync(&client->fasync, SIGIO, POLL_HUP);
--		wake_up_interruptible(&mousedev->wait);
-+static int mixdev_add_device(struct mousedev *mousedev)
-+{
-+	int retval;
-+
-+	retval = mutex_lock_interruptible(&mousedev_mix->mutex);
++	retval = mutex_lock_interruptible(&dev->mutex);
 +	if (retval)
 +		return retval;
 +
-+	if (mousedev_mix->open) {
-+		retval = mousedev_open_device(mousedev);
-+		if (retval)
-+			goto out;
-+
-+		mousedev->mixdev_open = 1;
++	if (dev->grab) {
++		retval = -EBUSY;
++		goto out;
 +	}
 +
-+	get_device(&mousedev->dev);
-+	list_add_tail(&mousedev->mixdev_node, &mousedev_mix_list);
++	rcu_assign_pointer(dev->grab, handle);
++	synchronize_sched();
 +
 + out:
-+	mutex_unlock(&mousedev_mix->mutex);
++	mutex_unlock(&dev->mutex);
 +	return retval;
-+}
-+
-+static void mixdev_remove_device(struct mousedev *mousedev)
-+{
-+	mutex_lock(&mousedev_mix->mutex);
-+
-+	if (mousedev->mixdev_open) {
-+		mousedev->mixdev_open = 0;
-+		mousedev_close_device(mousedev);
- 	}
- 
-+	list_del_init(&mousedev->mixdev_node);
-+	mutex_unlock(&mousedev_mix->mutex);
-+
- 	put_device(&mousedev->dev);
  }
+ EXPORT_SYMBOL(input_grab_device);
  
--static int mousedev_connect(struct input_handler *handler, struct input_dev *dev,
-+static int mousedev_connect(struct input_handler *handler,
-+			    struct input_dev *dev,
- 			    const struct input_device_id *id)
+-void input_release_device(struct input_handle *handle)
++static void __input_release_device(struct input_handle *handle)
  {
- 	struct mousedev *mousedev;
- 	int minor;
- 	int error;
+ 	struct input_dev *dev = handle->dev;
  
--	for (minor = 0; minor < MOUSEDEV_MINORS && mousedev_table[minor]; minor++);
-+	for (minor = 0; minor < MOUSEDEV_MINORS; minor++)
-+		if (!mousedev_table[minor])
-+			break;
+ 	if (dev->grab == handle) {
+-		dev->grab = NULL;
++		rcu_assign_pointer(dev->grab, NULL);
++		/* Make sure input_pass_event() notices that grab is gone */
++		synchronize_sched();
+ 
+ 		list_for_each_entry(handle, &dev->h_list, d_node)
+-			if (handle->handler->start)
++			if (handle->open && handle->handler->start)
+ 				handle->handler->start(handle);
+ 	}
+ }
 +
- 	if (minor == MOUSEDEV_MINORS) {
- 		printk(KERN_ERR "mousedev: no more free mousedev devices\n");
- 		return -ENFILE;
-@@ -779,21 +970,13 @@ static int mousedev_connect(struct input
- 	if (IS_ERR(mousedev))
- 		return PTR_ERR(mousedev);
++/**
++ * input_release_device - release previously grabbed device
++ * @handle: input handle that owns the device
++ *
++ * Releases previously grabbed device so that other input handles can
++ * start receiving input events. Upon release all handlers attached
++ * to the device have their start() method called so they have a change
++ * to synchronize device state with the rest of the system.
++ */
++void input_release_device(struct input_handle *handle)
++{
++	struct input_dev *dev = handle->dev;
++
++	mutex_lock(&dev->mutex);
++	__input_release_device(handle);
++	mutex_unlock(&dev->mutex);
++}
+ EXPORT_SYMBOL(input_release_device);
  
--	error = input_register_handle(&mousedev->handle);
--	if (error)
--		goto err_delete_mousedev;
--
- 	error = mixdev_add_device(mousedev);
--	if (error)
--		goto err_unregister_handle;
-+	if (error) {
-+		mousedev_destroy(mousedev);
-+		return error;
++/**
++ * input_open_device - open input device
++ * @handle: handle through which device is being accessed
++ *
++ * This function should be called by input handlers when they
++ * want to start receive events from given input device.
++ */
+ int input_open_device(struct input_handle *handle)
+ {
+ 	struct input_dev *dev = handle->dev;
+-	int err;
++	int retval;
+ 
+-	err = mutex_lock_interruptible(&dev->mutex);
+-	if (err)
+-		return err;
++	retval = mutex_lock_interruptible(&dev->mutex);
++	if (retval)
++		return retval;
++
++	if (dev->going_away) {
++		retval = -ENODEV;
++		goto out;
 +	}
  
- 	return 0;
+ 	handle->open++;
+ 
+ 	if (!dev->users++ && dev->open)
+-		err = dev->open(dev);
++		retval = dev->open(dev);
+ 
+-	if (err)
+-		handle->open--;
++	if (retval && !--handle->open) {
++		/*
++		 * Make sure we are not delivering any more events
++		 * through this handle
++		 */
++		synchronize_sched();
++	}
+ 
++ out:
+ 	mutex_unlock(&dev->mutex);
 -
-- err_unregister_handle:
--	input_unregister_handle(&mousedev->handle);
-- err_delete_mousedev:
--	device_unregister(&mousedev->dev);
--	return error;
+-	return err;
++	return retval;
+ }
+ EXPORT_SYMBOL(input_open_device);
+ 
+-int input_flush_device(struct input_handle* handle, struct file* file)
++int input_flush_device(struct input_handle *handle, struct file *file)
+ {
+-	if (handle->dev->flush)
+-		return handle->dev->flush(handle->dev, file);
++	struct input_dev *dev = handle->dev;
++	int retval;
+ 
+-	return 0;
++	retval = mutex_lock_interruptible(&dev->mutex);
++	if (retval)
++		return retval;
++
++	if (dev->flush)
++		retval = dev->flush(dev, file);
++
++	mutex_unlock(&dev->mutex);
++	return retval;
+ }
+ EXPORT_SYMBOL(input_flush_device);
+ 
++/**
++ * input_close_device - close input device
++ * @handle: handle through which device is being accessed
++ *
++ * This function should be called by input handlers when they
++ * want to stop receive events from given input device.
++ */
+ void input_close_device(struct input_handle *handle)
+ {
+ 	struct input_dev *dev = handle->dev;
+ 
+-	input_release_device(handle);
+-
+ 	mutex_lock(&dev->mutex);
+ 
++	__input_release_device(handle);
++
+ 	if (!--dev->users && dev->close)
+ 		dev->close(dev);
+-	handle->open--;
++
++	if (!--handle->open) {
++		/*
++		 * synchronize_sched() makes sure that input_pass_event()
++		 * completed and that no more input events are delivered
++		 * through this handle
++		 */
++		synchronize_sched();
++	}
+ 
+ 	mutex_unlock(&dev->mutex);
+ }
+ EXPORT_SYMBOL(input_close_device);
+ 
++/*
++ * Prepare device for unregistering
++ */
++static void input_disconnect_device(struct input_dev *dev)
++{
++	struct input_handle *handle;
++	int code;
++
++	/*
++	 * Mark device as going away. Note that we take dev->mutex here
++	 * not to protect access to dev->going_away but rather to ensure
++	 * that there are no threads in the middle of input_open_device()
++	 */
++	mutex_lock(&dev->mutex);
++	dev->going_away = 1;
++	mutex_unlock(&dev->mutex);
++
++	spin_lock_irq(&dev->event_lock);
++
++	/*
++	 * Simulate keyup events for all pressed keys so that handlers
++	 * are not left with "stuck" keys. The driver may continue
++	 * generate events even after we done here but they will not
++	 * reach any handlers.
++	 */
++	if (is_event_supported(EV_KEY, dev->evbit, EV_MAX)) {
++		for (code = 0; code <= KEY_MAX; code++) {
++			if (is_event_supported(code, dev->keybit, KEY_MAX) &&
++			    test_bit(code, dev->key)) {
++				input_pass_event(dev, EV_KEY, code, 0);
++			}
++		}
++		input_pass_event(dev, EV_SYN, SYN_REPORT, 1);
++	}
++
++	list_for_each_entry(handle, &dev->h_list, d_node)
++		handle->open = 0;
++
++	spin_unlock_irq(&dev->event_lock);
++}
++
+ static int input_fetch_keycode(struct input_dev *dev, int scancode)
+ {
+ 	switch (dev->keycodesize) {
+@@ -473,7 +668,8 @@ static unsigned int input_proc_devices_p
+ 
+ static void *input_devices_seq_start(struct seq_file *seq, loff_t *pos)
+ {
+-	/* acquire lock here ... Yes, we do need locking, I knowi, I know... */
++	if (mutex_lock_interruptible(&input_mutex))
++		return NULL;
+ 
+ 	return seq_list_start(&input_dev_list, *pos);
+ }
+@@ -485,7 +681,7 @@ static void *input_devices_seq_next(stru
+ 
+ static void input_devices_seq_stop(struct seq_file *seq, void *v)
+ {
+-	/* release lock here */
++	mutex_unlock(&input_mutex);
  }
  
- static void mousedev_disconnect(struct input_handle *handle)
-@@ -801,33 +984,42 @@ static void mousedev_disconnect(struct i
- 	struct mousedev *mousedev = handle->private;
+ static void input_seq_print_bitmap(struct seq_file *seq, const char *name,
+@@ -569,7 +765,9 @@ static const struct file_operations inpu
  
- 	mixdev_remove_device(mousedev);
--	input_unregister_handle(handle);
- 	mousedev_destroy(mousedev);
+ static void *input_handlers_seq_start(struct seq_file *seq, loff_t *pos)
+ {
+-	/* acquire lock here ... Yes, we do need locking, I knowi, I know... */
++	if (mutex_lock_interruptible(&input_mutex))
++		return NULL;
++
+ 	seq->private = (void *)(unsigned long)*pos;
+ 	return seq_list_start(&input_handler_list, *pos);
+ }
+@@ -582,7 +780,7 @@ static void *input_handlers_seq_next(str
+ 
+ static void input_handlers_seq_stop(struct seq_file *seq, void *v)
+ {
+-	/* release lock here */
++	mutex_unlock(&input_mutex);
  }
  
- static const struct input_device_id mousedev_ids[] = {
- 	{
--		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_RELBIT,
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_KEYBIT |
-+				INPUT_DEVICE_ID_MATCH_RELBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_REL) },
- 		.keybit = { [LONG(BTN_LEFT)] = BIT(BTN_LEFT) },
- 		.relbit = { BIT(REL_X) | BIT(REL_Y) },
--	},	/* A mouse like device, at least one button, two relative axes */
-+	},	/* A mouse like device, at least one button,
-+		   two relative axes */
- 	{
--		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_RELBIT,
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_RELBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_REL) },
- 		.relbit = { BIT(REL_WHEEL) },
- 	},	/* A separate scrollwheel */
- 	{
--		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_KEYBIT |
-+				INPUT_DEVICE_ID_MATCH_ABSBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_ABS) },
- 		.keybit = { [LONG(BTN_TOUCH)] = BIT(BTN_TOUCH) },
- 		.absbit = { BIT(ABS_X) | BIT(ABS_Y) },
--	},	/* A tablet like device, at least touch detection, two absolute axes */
-+	},	/* A tablet like device, at least touch detection,
-+		   two absolute axes */
- 	{
--		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_KEYBIT |
-+				INPUT_DEVICE_ID_MATCH_ABSBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_ABS) },
- 		.keybit = { [LONG(BTN_TOOL_FINGER)] = BIT(BTN_TOOL_FINGER) },
--		.absbit = { BIT(ABS_X) | BIT(ABS_Y) | BIT(ABS_PRESSURE) | BIT(ABS_TOOL_WIDTH) },
-+		.absbit = { BIT(ABS_X) | BIT(ABS_Y) | BIT(ABS_PRESSURE) |
-+				BIT(ABS_TOOL_WIDTH) },
- 	},	/* A touchpad */
+ static int input_handlers_seq_show(struct seq_file *seq, void *v)
+@@ -1005,6 +1203,7 @@ struct input_dev *input_allocate_device(
+ 		dev->dev.class = &input_class;
+ 		device_initialize(&dev->dev);
+ 		mutex_init(&dev->mutex);
++		spin_lock_init(&dev->event_lock);
+ 		INIT_LIST_HEAD(&dev->h_list);
+ 		INIT_LIST_HEAD(&dev->node);
  
- 	{ },	/* Terminating entry */
+@@ -1022,7 +1221,7 @@ EXPORT_SYMBOL(input_allocate_device);
+  * This function should only be used if input_register_device()
+  * was not called yet or if it failed. Once device was registered
+  * use input_unregister_device() and memory will be freed once last
+- * refrence to the device is dropped.
++ * reference to the device is dropped.
+  *
+  * Device should be allocated by input_allocate_device().
+  *
+@@ -1092,6 +1291,18 @@ void input_set_capability(struct input_d
+ }
+ EXPORT_SYMBOL(input_set_capability);
+ 
++/**
++ * input_register_device - register device with input core
++ * @dev: device to be registered
++ *
++ * This function registers device with input core. The device must be
++ * allocated with input_allocate_device() and all it's capabilities
++ * set up before registering.
++ * If function fails the device must be freed with input_free_device().
++ * Once device has been successfully registered it can be unregistered
++ * with input_unregister_device(); input_free_device() should not be
++ * called in this case.
++ */
+ int input_register_device(struct input_dev *dev)
+ {
+ 	static atomic_t input_no = ATOMIC_INIT(0);
+@@ -1099,7 +1310,7 @@ int input_register_device(struct input_d
+ 	const char *path;
+ 	int error;
+ 
+-	set_bit(EV_SYN, dev->evbit);
++	__set_bit(EV_SYN, dev->evbit);
+ 
+ 	/*
+ 	 * If delay and period are pre-set by the driver, then autorepeating
+@@ -1120,8 +1331,6 @@ int input_register_device(struct input_d
+ 	if (!dev->setkeycode)
+ 		dev->setkeycode = input_default_setkeycode;
+ 
+-	list_add_tail(&dev->node, &input_dev_list);
+-
+ 	snprintf(dev->dev.bus_id, sizeof(dev->dev.bus_id),
+ 		 "input%ld", (unsigned long) atomic_inc_return(&input_no) - 1);
+ 
+@@ -1137,49 +1346,79 @@ int input_register_device(struct input_d
+ 		dev->name ? dev->name : "Unspecified device", path ? path : "N/A");
+ 	kfree(path);
+ 
++	error = mutex_lock_interruptible(&input_mutex);
++	if (error) {
++		device_del(&dev->dev);
++		return error;
++	}
++
++	list_add_tail(&dev->node, &input_dev_list);
++
+ 	list_for_each_entry(handler, &input_handler_list, node)
+ 		input_attach_handler(dev, handler);
+ 
+ 	input_wakeup_procfs_readers();
+ 
++	mutex_unlock(&input_mutex);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(input_register_device);
+ 
++/**
++ * input_unregister_device - unregister previously registered device
++ * @dev: device to be unregistered
++ *
++ * This function unregisters an input device. Once device is unregistered
++ * the caller should not try to access it as it may get freed at any moment.
++ */
+ void input_unregister_device(struct input_dev *dev)
+ {
+ 	struct input_handle *handle, *next;
+-	int code;
+ 
+-	for (code = 0; code <= KEY_MAX; code++)
+-		if (test_bit(code, dev->key))
+-			input_report_key(dev, code, 0);
+-	input_sync(dev);
++	input_disconnect_device(dev);
+ 
+-	del_timer_sync(&dev->timer);
++	mutex_lock(&input_mutex);
+ 
+ 	list_for_each_entry_safe(handle, next, &dev->h_list, d_node)
+ 		handle->handler->disconnect(handle);
+ 	WARN_ON(!list_empty(&dev->h_list));
+ 
++	del_timer_sync(&dev->timer);
+ 	list_del_init(&dev->node);
+ 
+-	device_unregister(&dev->dev);
+-
+ 	input_wakeup_procfs_readers();
++
++	mutex_unlock(&input_mutex);
++
++	device_unregister(&dev->dev);
+ }
+ EXPORT_SYMBOL(input_unregister_device);
+ 
++/**
++ * input_register_handler - register a new input handler
++ * @handler: handler to be registered
++ *
++ * This function registers a new input handler (interface) for input
++ * devices in the system and attaches it to all input devices that
++ * are compatible with the handler.
++ */
+ int input_register_handler(struct input_handler *handler)
+ {
+ 	struct input_dev *dev;
++	int retval;
++
++	retval = mutex_lock_interruptible(&input_mutex);
++	if (retval)
++		return retval;
+ 
+ 	INIT_LIST_HEAD(&handler->h_list);
+ 
+ 	if (handler->fops != NULL) {
+-		if (input_table[handler->minor >> 5])
+-			return -EBUSY;
+-
++		if (input_table[handler->minor >> 5]) {
++			retval = -EBUSY;
++			goto out;
++		}
+ 		input_table[handler->minor >> 5] = handler;
+ 	}
+ 
+@@ -1189,14 +1428,26 @@ int input_register_handler(struct input_
+ 		input_attach_handler(dev, handler);
+ 
+ 	input_wakeup_procfs_readers();
+-	return 0;
++
++ out:
++	mutex_unlock(&input_mutex);
++	return retval;
+ }
+ EXPORT_SYMBOL(input_register_handler);
+ 
++/**
++ * input_unregister_handler - unregisters an input handler
++ * @handler: handler to be unregistered
++ *
++ * This function disconnects a handler from its input devices and
++ * removes it from lists of known handlers.
++ */
+ void input_unregister_handler(struct input_handler *handler)
+ {
+ 	struct input_handle *handle, *next;
+ 
++	mutex_lock(&input_mutex);
++
+ 	list_for_each_entry_safe(handle, next, &handler->h_list, h_node)
+ 		handler->disconnect(handle);
+ 	WARN_ON(!list_empty(&handler->h_list));
+@@ -1207,14 +1458,50 @@ void input_unregister_handler(struct inp
+ 		input_table[handler->minor >> 5] = NULL;
+ 
+ 	input_wakeup_procfs_readers();
++
++	mutex_unlock(&input_mutex);
+ }
+ EXPORT_SYMBOL(input_unregister_handler);
+ 
++/**
++ * input_register_handle - register a new input handle
++ * @handle: handle to register
++ *
++ * This function puts a new input handle onto device's
++ * and handler's lists so that events can flow through
++ * it once it is opened using input_open_device().
++ *
++ * This function is supposed to be called from handler's
++ * connect() method.
++ */
+ int input_register_handle(struct input_handle *handle)
+ {
+ 	struct input_handler *handler = handle->handler;
++	struct input_dev *dev = handle->dev;
++	int error;
++
++	/*
++	 * We take dev->mutex here to prevent race with
++	 * input_release_device().
++	 */
++	error = mutex_lock_interruptible(&dev->mutex);
++	if (error)
++		return error;
++	list_add_tail_rcu(&handle->d_node, &dev->h_list);
++	mutex_unlock(&dev->mutex);
++	/*
++	 * We don't use synchronize_rcu() here because we rely
++	 * on dev->event_lock to protect read-side critical
++	 * section in input_pass_event().
++	 */
++	synchronize_sched();
+ 
+-	list_add_tail(&handle->d_node, &handle->dev->h_list);
++	/*
++	 * Since we are supposed to be called from ->connect()
++	 * which is mutually exclusive with ->disconnect()
++	 * we can't be racing with input_unregister_handle()
++	 * and so separate lock is not needed here.
++	 */
+ 	list_add_tail(&handle->h_node, &handler->h_list);
+ 
+ 	if (handler->start)
+@@ -1224,10 +1511,29 @@ int input_register_handle(struct input_h
+ }
+ EXPORT_SYMBOL(input_register_handle);
+ 
++/**
++ * input_unregister_handle - unregister an input handle
++ * @handle: handle to unregister
++ *
++ * This function removes input handle from device's
++ * and handler's lists.
++ *
++ * This function is supposed to be called from handler's
++ * disconnect() method.
++ */
+ void input_unregister_handle(struct input_handle *handle)
+ {
++	struct input_dev *dev = handle->dev;
++
+ 	list_del_init(&handle->h_node);
+-	list_del_init(&handle->d_node);
++
++	/*
++	 * Take dev->mutex to prevent race with input_release_device().
++	 */
++	mutex_lock(&dev->mutex);
++	list_del_rcu(&handle->d_node);
++	mutex_unlock(&dev->mutex);
++	synchronize_sched();
+ }
+ EXPORT_SYMBOL(input_unregister_handle);
+ 
+Index: work/include/linux/input.h
+===================================================================
+--- work.orig/include/linux/input.h
++++ work/include/linux/input.h
+@@ -845,7 +845,7 @@ struct ff_rumble_effect {
+  *	defining effect parameters
+  *
+  * This structure is sent through ioctl from the application to the driver.
+- * To create a new effect aplication should set its @id to -1; the kernel
++ * To create a new effect application should set its @id to -1; the kernel
+  * will return assigned @id which can later be used to update or delete
+  * this effect.
+  *
+@@ -925,9 +925,82 @@ struct ff_effect {
+ #define BIT(x)	(1UL<<((x)%BITS_PER_LONG))
+ #define LONG(x) ((x)/BITS_PER_LONG)
+ 
++/**
++ * struct input_dev - represents an input device
++ * @name: name of the device
++ * @phys: physical path to the device in the system hierarchy
++ * @uniq: unique identification code for the device (if device has it)
++ * @id: id of the device (struct input_id)
++ * @evbit: bitmap of types of events supported by the device (EV_KEY,
++ *	EV_REL, etc.)
++ * @keybit: bitmap of keys/buttons this device has
++ * @relbit: bitmap of relative axes for the device
++ * @absbit: bitmap of absolute axes for the device
++ * @mscbit: bitmap of miscellaneous events supported by the device
++ * @ledbit: bitmap of leds present on the device
++ * @sndbit: bitmap of sound effects supported by the device
++ * @ffbit: bitmap of force feedback effects supported by the device
++ * @swbit: bitmap of switches present on the device
++ * @keycodemax: size of keycode table
++ * @keycodesize: size of elements in keycode table
++ * @keycode: map of scancodes to keycodes for this device
++ * @setkeycode: optional method to alter current keymap, used to implement
++ *	sparse keymaps. If not supplied default mechanism will be used
++ * @getkeycode: optional method to retrieve current keymap. If not supplied
++ *	default mechanism will be used
++ * @ff: force feedback structure associated with the device if device
++ *	supports force feedback effects
++ * @repeat_key: stores key code of the last key pressed; used to implement
++ *	software autorepeat
++ * @timer: timer for software autorepeat
++ * @sync: set to 1 when there were no new events since last EV_SYNC
++ * @abs: current values for reports from absolute axes
++ * @rep: current values for autorepeat parameters (delay, rate)
++ * @key: reflects current state of device's keys/buttons
++ * @led: reflects current state of device's LEDs
++ * @snd: reflects current state of sound effects
++ * @sw: reflects current state of device's switches
++ * @absmax: maximum values for events coming from absolute axes
++ * @absmin: minimum values for events coming from absolute axes
++ * @absfuzz: describes noisiness for axes
++ * @absflat: size of the center flat position (used by joydev)
++ * @open: this method is called when the very first user calls
++ *	input_open_device(). The driver must prepare the device
++ *	to start generating events (start polling thread,
++ *	request an IRQ, submit URB, etc.)
++ * @close: this method is called when the very last user calls
++ *	input_close_device().
++ * @flush: purges the device. Most commonly used to get rid of force
++ *	feedback effects loaded into the device when disconnecting
++ *	from it
++ * @event: event handler for events sent _to_ the device, like EV_LED
++ *	or EV_SND. The device is expected to carry out the requested
++ *	action (turn on a LED, play sound, etc.) The call is protected
++ *	by @event_lock and must not sleep
++ * @grab: input handle that currently has the device grabbed (via
++ *	EVIOCGRAB ioctl). When a handle grabs a device it becomes sole
++ *	recipient for all input events coming from the device
++ * @event_lock: this spinlock is is taken when input core receives
++ *	and processes a new event for the device (in input_event()).
++ *	Code that accesses and/or modifies parameters of a device
++ *	(such as keymap or absmin, absmax, absfuzz, etc.) after device
++ *	has been registered with input core must take this lock.
++ * @mutex: serializes calls to open(), close() and flush() methods
++ * @users: stores number of users (input handlers) that opened this
++ *	device. It is used by input_open_device() and input_close_device()
++ *	to make sure that dev->open() is only called when the first
++ *	user opens device and dev->close() is called when the very
++ *	last user closes the device
++ * @going_away: marks devices that are in a middle of unregistering and
++ *	causes input_open_device*() fail with -ENODEV.
++ * @dev: driver model's view of this device
++ * @h_list: list of input handles associated with the device. When
++ *	accessing the list dev->mutex must be held
++ * @node: used to place the device onto input_dev_list
++ */
+ struct input_dev {
+ 
+-	void *private;
++	void *private;	/* do not use */
+ 
+ 	const char *name;
+ 	const char *phys;
+@@ -955,8 +1028,6 @@ struct input_dev {
+ 	unsigned int repeat_key;
+ 	struct timer_list timer;
+ 
+-	int state;
+-
+ 	int sync;
+ 
+ 	int abs[ABS_MAX + 1];
+@@ -979,8 +1050,11 @@ struct input_dev {
+ 
+ 	struct input_handle *grab;
+ 
+-	struct mutex mutex;	/* serializes open and close operations */
++	spinlock_t event_lock;
++	struct mutex mutex;
++
+ 	unsigned int users;
++	int going_away;
+ 
+ 	struct device dev;
+ 	union {			/* temporarily so while we switching to struct device */
+@@ -1046,7 +1120,9 @@ struct input_handle;
+ /**
+  * struct input_handler - implements one of interfaces for input devices
+  * @private: driver-specific data
+- * @event: event handler
++ * @event: event handler. This method is being called by input core with
++ *	interrupts disabled and dev->event_lock spinlock held and so
++ *	it may not sleep
+  * @connect: called when attaching a handler to an input device
+  * @disconnect: disconnects a handler from input device
+  * @start: starts handler for given handle. This function is called by
+@@ -1058,10 +1134,18 @@ struct input_handle;
+  * @name: name of the handler, to be shown in /proc/bus/input/handlers
+  * @id_table: pointer to a table of input_device_ids this driver can
+  *	handle
+- * @blacklist: prointer to a table of input_device_ids this driver should
++ * @blacklist: pointer to a table of input_device_ids this driver should
+  *	ignore even if they match @id_table
+  * @h_list: list of input handles associated with the handler
+  * @node: for placing the driver onto input_handler_list
++ *
++ * Input handlers attach to input devices and create input handles. There
++ * are likely several handlers attached to any given input device at the
++ * same time. All of them will get their copy of input event generated by
++ * the device.
++ *
++ * Note that input core serializes calls to connect() and disconnect()
++ * methods.
+  */
+ struct input_handler {
+ 
+@@ -1083,6 +1167,18 @@ struct input_handler {
+ 	struct list_head	node;
+ };
+ 
++/**
++ * struct input_handle - links input device with an input handler
++ * @private: handler-specific data
++ * @open: counter showing whether the handle is 'open', i.e. should deliver
++ *	events from its device
++ * @name: name given to the handle by handler that created it
++ * @dev: input device the handle is attached to
++ * @handler: handler that works with the device through this handle
++ * @d_node: used to put the handle on device's list of attached handles
++ * @h_node: used to put the handle on handler's list of handles from which
++ *	it gets events
++ */
+ struct input_handle {
+ 
+ 	void *private;
+@@ -1205,7 +1301,7 @@ extern struct class input_class;
+  * @max_effects: maximum number of effects supported by device
+  * @effects: pointer to an array of effects currently loaded into device
+  * @effect_owners: array of effect owners; when file handle owning
+- *	an effect gets closed the effcet is automatically erased
++ *	an effect gets closed the effect is automatically erased
+  *
+  * Every force-feedback device must implement upload() and playback()
+  * methods; erase() is optional. set_gain() and set_autocenter() need
