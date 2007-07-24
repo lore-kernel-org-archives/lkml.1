@@ -1,76 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbXGXIRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbXGXITy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbXGXIRs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbXGXIRb
+	id S1753313AbXGXITy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXGXITl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:17:31 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:10072 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752163AbXGXIRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:17:30 -0400
-Date: Tue, 24 Jul 2007 10:17:50 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       mark.fasheh@oracle.com
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070724081750.GM3287@kernel.dk>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org> <20070723220446.GA5822@martell.zuzino.mipt.ru> <20070723152712.02ded067.akpm@linux-foundation.org>
+	Tue, 24 Jul 2007 04:19:41 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:34241 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753554AbXGXITk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 04:19:40 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Towards eliminating the freezer
+Date: Tue, 24 Jul 2007 10:21:35 +0200
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0707231124590.3545-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707231124590.3545-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070723152712.02ded067.akpm@linux-foundation.org>
+Message-Id: <200707241021.35573.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23 2007, Andrew Morton wrote:
-> I worked out that the crash I saw was in
-> 
->         BUG_ON(!pte_none(*(kmap_pte-idx)));
-> 
-> in the read of kmap_pte[idx].  Which would be weird as the caller is using 
-> a literal KM_USER0.
-> 
-> So maybe I goofed, and that BUG_ON is triggering (it scrolled off, and I am
-> unable to reproduce it now).
-> 
-> If that BUG_ON _is_ triggering then it might indicate that someone is doing
-> a __GFP_HIGHMEM|__GFP_ZERO allocation while holding KM_USER0.
+Am Montag 23 Juli 2007 schrieb Alan Stern:
+> Now here's an idea which might work.  Can we require every caller of
+> device_add() to hold some existing device's semaphore?  Normally it
+> would be the semaphore of the new device's parent, but it could be a
+> higher ancestor.  There even could be a single "root" semaphore for
+> drivers registering a top-level device with no parent.
 
-Or doing double kunmaps, or doing a kunmap_atomic() on the page, not the
-address. I've seen both of those end up triggering that BUG_ON() in a
-later kmap.
+What prevents us from having a device addition semaphore?
+Adding device is not critical to performance, is it?
 
-Looking over the 2.6.22..2.6.23-rc1 diff, I found one such error in
-ocfs2 at least. But you are probably not using that, so I'll keep
-looking...
-
----
-
-[PATCH] ocfs2: bad kunmap_atomic()
-
-kunmap_atomic() takes the virtual address, not the mapped page as
-argument.
-
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index 5727cd1..c4034f6 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -2153,7 +2153,7 @@ static int ocfs2_splice_write_actor(struct pipe_inode_info *pipe,
- 	src = buf->ops->map(pipe, buf, 1);
- 	dst = kmap_atomic(page, KM_USER1);
- 	memcpy(dst + offset, src + buf->offset, count);
--	kunmap_atomic(page, KM_USER1);
-+	kunmap_atomic(dst, KM_USER1);
- 	buf->ops->unmap(pipe, buf, src);
- 
- 	copied = ocfs2_write_end(file, file->f_mapping, sd->pos, count, count,
-
--- 
-Jens Axboe
-
+	Regards
+		Oliver
