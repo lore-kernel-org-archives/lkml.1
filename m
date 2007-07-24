@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932454AbXGXJQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934506AbXGXJRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932454AbXGXJQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759191AbXGXJQk
+	id S934506AbXGXJRM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762922AbXGXJQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:16:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41149 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758747AbXGXJQi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:16:38 -0400
-Date: Tue, 24 Jul 2007 02:15:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-Message-Id: <20070724021526.3d92286b.akpm@linux-foundation.org>
-In-Reply-To: <46A5C12B.3080904@shadowen.org>
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky>
-	<46A534EA.6030008@intel.com>
-	<46A5C12B.3080904@shadowen.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 05:16:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37514 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762013AbXGXJQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 05:16:43 -0400
+Date: Tue, 24 Jul 2007 11:16:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] pci/hotplug/cpqphp_ctrl.c: remove stale BKL use
+Message-ID: <20070724091637.GA6554@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 10:06:51 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+Subject: pci/hotplug/cpqphp_ctrl.c: remove stale BKL use
+From: Ingo Molnar <mingo@elte.hu>
 
-> > This is a royal pain, since it now throws an ERROR for the obviously
-> > preferable piece of code below:
-> > 
-> > if (err) {
-> >     do_something();
-> >     return -ERR;
-> > } else {
-> >     do_somthing_else();
-> > }
-> 
-> Hmmm, is that obviouly nicer than the below?  Its fully a line longer
-> for no benefit.  But ignoring that, this seems to have snuck in to
-> CodingStyle hmmm ... will see what I can do if anything to stop these
-> being picked up I guess.
-> 
-> 	if (err) {
-> 		do_something();
-> 		return -ERR;
-> 	} else
-> 		do_something_else();
+remove stale BKL use from drivers/pci/hotplug/cpqphp_ctrl.c.
 
-The kool kids on linux-usb-devel largely ended up deciding that the second
-version looks dorky.
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/pci/hotplug/cpqphp_ctrl.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Especially if there's a comment over do_something_else(), and if there's
-not a comment, perhaps there should be?
-
-> Andrew, as you merged the change to CodingStyle I'll take that as your
-> being ok with these being accepted.
-
-It's very marginal and is sure to get people hot and bothered.  I'd suggest
-that checkpatch be neutral on that.
-
+Index: linux-rt-rebase.q/drivers/pci/hotplug/cpqphp_ctrl.c
+===================================================================
+--- linux-rt-rebase.q.orig/drivers/pci/hotplug/cpqphp_ctrl.c
++++ linux-rt-rebase.q/drivers/pci/hotplug/cpqphp_ctrl.c
+@@ -1746,10 +1746,8 @@ static void pushbutton_helper_thread(uns
+ static int event_thread(void* data)
+ {
+ 	struct controller *ctrl;
+-	lock_kernel();
++
+ 	daemonize("phpd_event");
+-	
+-	unlock_kernel();
+ 
+ 	while (1) {
+ 		dbg("!!!!event_thread sleeping\n");
