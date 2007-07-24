@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbXGXOa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762007AbXGXOa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758840AbXGXOa2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbXGXOaG
+	id S1762007AbXGXOa5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756411AbXGXOaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:30:06 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35745 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755288AbXGXOaB (ORCPT
+	Tue, 24 Jul 2007 10:30:09 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:39382 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755526AbXGXOaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:30:01 -0400
-Subject: Re: [PATCH respin, was PATCH for review] During VM oom condition,
-	kill all threads in process group
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Reply-To: will_schmidt@vnet.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-In-Reply-To: <20070723141641.5759a287.akpm@linux-foundation.org>
-References: <20070719348.540885000@suse.de>
-	 <20070719134840.47B5114E6E@wotan.suse.de>
-	 <20070719140411.GD16279@infradead.org>
-	 <Pine.LNX.4.64.0707191614180.7377@anakin>
-	 <1185214185.22237.30.camel@farscape.rchland.ibm.com>
-	 <20070723141641.5759a287.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM
-Date: Tue, 24 Jul 2007 09:28:44 -0500
-Message-Id: <1185287324.22237.39.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 10:30:04 -0400
+Date: Tue, 24 Jul 2007 16:31:47 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070724143147.GE4074@enneenne.com>
+References: <20070717180550.GA24759@enneenne.com> <1185197716.14697.244.camel@pmac.infradead.org> <20070724080013.GA22171@gundam.enneenne.com> <1185284942.14697.319.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185284942.14697.319.camel@pmac.infradead.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS - definitive version
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 14:16 -0700, Andrew Morton wrote:
-> On Mon, 23 Jul 2007 13:09:45 -0500
-> Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
+On Tue, Jul 24, 2007 at 02:49:02PM +0100, David Woodhouse wrote:
 > 
-> > During VM oom condition, kill all threads in process group.
-> > 
-> > We have had complaints where a threaded application is left in a bad
-> > state after one of it's threads is killed when we hit a VM: out_of_memory
-> > condition.
-> > Killing just one of the process threads can leave the application in a
-> > bad state, whereas killing the entire process group would allow for
-> > the application to restart, or be otherwise handled, and makes it very
-> > obvious that something has gone wrong.
-> > 
-> > This change allows the entire process group to be taken down, rather
-> > than just the one thread.
+> I think you still haven't quite got the 32-bit vs. 64-bit compatibility
+> right. Remember that on i386, the alignment of a uint64_t is only 4
+> bytes, while on most other architectures it's 8 bytes. On i386, there
+> will be no padding between the two consecutive 'struct pps_ktime'
+> members of struct pps_kinfo and struct pps_kparams. But on most
+> platforms there will be padding to ensure correct alignment.
 > 
-> Just checking...
-> 
-> blackfin
-> h8300
-> m68knommu
-> uml
-> v850
-> 
-> were not changed.  Intentional?
+> The simple fix is probably to make the 'nsec' member a 64-bit integer
+> too. Then it'll be the same for i386 and x86_64 and you won't need a
+> compatibility syscall routine.
 
-Yes.  Those arch's don't have the VM oom code that I could see.   There
-is an occasional do_exit() reference elsewhere in the fault handler
-code, for reasons other than VM oom, so I deliberately didn't touch
-those either.    
+By doing:
 
+ struct pps_ktime {
+        __u64 sec;
+-       __u32 nsec;
++       __u64 nsec;
+ };
 
+I got:
 
+  GEN     .version
+  CHK     include/linux/compile.h
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+drivers/built-in.o: In function `sys_time_pps_fetch':
+(.text+0x5f05e): undefined reference to `__udivdi3'
+make: *** [.tmp_vmlinux1] Error 1
+
+I suppose the problem is here:
+
+                ticks = to.sec * HZ;
+                ticks += to.nsec / (NSEC_PER_SEC / HZ);
+
+Suggestions? :)
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
