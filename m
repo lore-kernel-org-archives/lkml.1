@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbXGXEiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbXGXEip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbXGXEiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 00:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbXGXEiL
+	id S1752457AbXGXEip (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 00:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbXGXEid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 00:38:11 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:17864 "EHLO
+	Tue, 24 Jul 2007 00:38:33 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:17916 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750705AbXGXEiJ (ORCPT
+	with ESMTP id S1752737AbXGXEiR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 00:38:09 -0400
-Date: Mon, 23 Jul 2007 21:42:11 -0700
+	Tue, 24 Jul 2007 00:38:17 -0400
+Date: Mon, 23 Jul 2007 21:42:15 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: gregkh <greg@kroah.com>
-Subject: [PATCH] kernel-doc fixes for PCI and drivers/base/
-Message-Id: <20070723214211.9beda07f.randy.dunlap@oracle.com>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] kernel-doc fix for kmod.c
+Message-Id: <20070723214215.6a0270df.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -30,35 +30,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix undocumented function parameters in PCI and drivers/base.
-
-Warning(linux-2.6.23-rc1//drivers/pci/pci.c:1526): No description found for parameter 'rq'
-Warning(linux-2.6.23-rc1//drivers/base/firmware_class.c:245): No description found for parameter 'bin_attr'
+Fix kmod.c:
+Warning(linux-2.6.23-rc1//kernel/kmod.c:364): No description found for parameter 'envp'
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/base/firmware_class.c |    1 +
- drivers/pci/pci.c             |    2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ kernel/kmod.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6.23-rc1.orig/drivers/base/firmware_class.c
-+++ linux-2.6.23-rc1/drivers/base/firmware_class.c
-@@ -232,6 +232,7 @@ fw_realloc_buffer(struct firmware_priv *
+--- linux-2.6.23-rc1.orig/kernel/kmod.c
++++ linux-2.6.23-rc1/kernel/kmod.c
+@@ -351,11 +351,11 @@ static inline void register_pm_notifier_
+ 
  /**
-  * firmware_data_write - write method for firmware
-  * @kobj: kobject for the device
-+ * @bin_attr: bin_attr structure
-  * @buffer: buffer being written
-  * @offset: buffer offset for write in total data store area
-  * @count: buffer size
---- linux-2.6.23-rc1.orig/drivers/pci/pci.c
-+++ linux-2.6.23-rc1/drivers/pci/pci.c
-@@ -1517,7 +1517,7 @@ EXPORT_SYMBOL(pcie_get_readrq);
- /**
-  * pcie_set_readrq - set PCI Express maximum memory read request
-  * @dev: PCI device to query
-- * @count: maximum memory read count in bytes
-+ * @rq: maximum memory read count in bytes
-  *    valid values are 128, 256, 512, 1024, 2048, 4096
+  * call_usermodehelper_setup - prepare to call a usermode helper
+- * @path - path to usermode executable
+- * @argv - arg vector for process
+- * @envp - environment for process
++ * @path: path to usermode executable
++ * @argv: arg vector for process
++ * @envp: environment for process
   *
-  * If possible sets maximum read byte count
+- * Returns either NULL on allocation failure, or a subprocess_info
++ * Returns either %NULL on allocation failure, or a subprocess_info
+  * structure.  This should be passed to call_usermodehelper_exec to
+  * exec the process and free the structure.
+  */
