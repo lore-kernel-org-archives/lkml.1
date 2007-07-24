@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935349AbXGXI6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935321AbXGXI7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935349AbXGXI6t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935271AbXGXI63
+	id S935321AbXGXI7O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934947AbXGXI6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:58:29 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:12946 "EHLO relay.sw.ru"
+	Tue, 24 Jul 2007 04:58:51 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:5038 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935072AbXGXI60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:58:26 -0400
-Date: Tue, 24 Jul 2007 12:58:57 +0400
+	id S935201AbXGXI6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 04:58:50 -0400
+Date: Tue, 24 Jul 2007 12:59:21 +0400
 From: Dmitry Monakhov <dmonakhov@openvz.org>
 To: linux-kernel@vger.kernel.org
 Cc: device-mapper development <dm-devel@redhat.com>
-Subject: [PATCH 6/8] dm: dm-emc.c Convert  kmalloc + memset  to kzalloc
-Message-ID: <20070724085857.GF16507@dnb.sw.ru>
+Subject: [PATCH 7/8] dm: dm-path-selector.c Convert  kmalloc + memset  to
+	kzalloc
+Message-ID: <20070724085921.GG16507@dnb.sw.ru>
 Mail-Followup-To: linux-kernel@vger.kernel.org,
 	device-mapper development <dm-devel@redhat.com>
 MIME-Version: 1.0
@@ -28,27 +29,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 ---
- drivers/md/dm-emc.c |    6 ++----
+ drivers/md/dm-path-selector.c |    6 ++----
  1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/md/dm-emc.c b/drivers/md/dm-emc.c
-index 265c467..f04e950 100644
---- a/drivers/md/dm-emc.c
-+++ b/drivers/md/dm-emc.c
-@@ -224,12 +224,10 @@ fail_path:
+diff --git a/drivers/md/dm-path-selector.c b/drivers/md/dm-path-selector.c
+index f10a0c8..ca1bb63 100644
+--- a/drivers/md/dm-path-selector.c
++++ b/drivers/md/dm-path-selector.c
+@@ -94,12 +94,10 @@ out:
  
- static struct emc_handler *alloc_emc_handler(void)
+ static struct ps_internal *_alloc_path_selector(struct path_selector_type *pst)
  {
--	struct emc_handler *h = kmalloc(sizeof(*h), GFP_KERNEL);
-+	struct emc_handler *h = kzalloc(sizeof(*h), GFP_KERNEL);
+-	struct ps_internal *psi = kmalloc(sizeof(*psi), GFP_KERNEL);
++	struct ps_internal *psi = kzalloc(sizeof(*psi), GFP_KERNEL);
  
--	if (h) {
--		memset(h, 0, sizeof(*h));
-+	if (h)
- 		spin_lock_init(&h->lock);
+-	if (psi) {
+-		memset(psi, 0, sizeof(*psi));
++	if (psi)
+ 		psi->pst = *pst;
 -	}
  
- 	return h;
+ 	return psi;
  }
 -- 
 1.5.2.2
