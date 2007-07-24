@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763038AbXGXD2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbXGXDlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763038AbXGXD2Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 23:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbXGXD2H
+	id S1761533AbXGXDlW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 23:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbXGXDlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 23:28:07 -0400
-Received: from ozlabs.org ([203.10.76.45]:59257 "EHLO ozlabs.org"
+	Mon, 23 Jul 2007 23:41:13 -0400
+Received: from MGW4.Sony.CO.JP ([137.153.0.46]:44449 "EHLO mgw4.sony.co.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753314AbXGXD2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 23:28:06 -0400
-Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Rob Landley <rob@landley.net>
-In-Reply-To: <20070723200617.87507f16.rdunlap@xenotime.net>
-References: <1184980678.6344.1.camel@localhost.localdomain>
-	 <20070723171238.1a832b31.akpm@linux-foundation.org>
-	 <20070723192113.0eaa0ad8.rdunlap@xenotime.net>
-	 <20070723200617.87507f16.rdunlap@xenotime.net>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 13:27:39 +1000
-Message-Id: <1185247659.1803.130.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1755534AbXGXDlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 23:41:12 -0400
+X-Greylist: delayed 3223 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jul 2007 23:41:07 EDT
+Date: Tue, 24 Jul 2007 11:47:21 +0900
+From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Subject: Re: [Cbe-oss-dev] [PATCH][36/37] Clean up duplicate includes in sound/ppc/
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+       cbe-oss-dev@ozlabs.org
+In-Reply-To: <200707211704.07263.jesper.juhl@gmail.com>
+References: <200707211704.07263.jesper.juhl@gmail.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.063
+Message-Id: <20070724114325.3254.MOKUNO@sm.sony.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.31 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 20:06 -0700, Randy Dunlap wrote:
-> On Mon, 23 Jul 2007 19:21:13 -0700 Randy Dunlap wrote:
-> > It's great that Rusty took the time to produce all of this documentation.
-> > Few people do that today.
 
-Thanks Randy, it was something of an experiment.  We'll see if it has
-the desired effect (ie. encouraging new hackers).
+On Sat, 21 Jul 2007 17:04:07 +0200
+Jesper Juhl <jesper.juhl@gmail.com> wrote:
 
-> Neat as that is, I'm concerned that it will be difficult to maintain
-> (the order numbers at least -- or are they just difficult to set up
-> the first time?).
+> Hi,
+> 
+> This patch cleans up duplicate includes in
+> 	XXXX/
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+> diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+> index 1aa0b46..27b6189 100644
+> --- a/sound/ppc/snd_ps3.c
+> +++ b/sound/ppc/snd_ps3.c
+> @@ -33,7 +33,6 @@
+>  #include <linux/dmapool.h>
+>  #include <linux/dma-mapping.h>
+>  #include <asm/firmware.h>
+> -#include <linux/io.h>
+>  #include <asm/dma.h>
+>  #include <asm/lv1call.h>
+>  #include <asm/ps3.h>
 
-Setup was a pain, but maintenance hasn't been too bad.  Most changes
-don't deeply alter the code structure.  After major surgery I diff the
-documentation output to check I haven't broke anything major (eg.
-removed a title or a section terminator).
+Acked-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
 
-> Advantage:  it does keep the source code + doc text together.
-> Martin (former kernel-doc maintainer) was going to come up with
-> some way to do this, but he abandoned it.
-
-Yeah, code documentation like this belongs in comments IMHO, and even
-there it can rot.
-
-Thanks,
-Rusty.
+--
+Masakazu MOKUNO
 
