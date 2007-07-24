@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764344AbXGWX6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbXGXAEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764344AbXGWX6n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 19:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbXGWX6g
+	id S1762266AbXGXAEU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 20:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbXGXAEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 19:58:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52568 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752432AbXGWX6f (ORCPT
+	Mon, 23 Jul 2007 20:04:10 -0400
+Received: from mga05.intel.com ([192.55.52.89]:57110 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752432AbXGXAEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 19:58:35 -0400
-Date: Mon, 23 Jul 2007 16:58:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Kconfig:  Remove top level menu "Code maturity level
- options"
-Message-Id: <20070723165813.20848a85.akpm@linux-foundation.org>
-In-Reply-To: <200707210658.28241.a1426z@gawab.com>
-References: <200707210658.28241.a1426z@gawab.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 23 Jul 2007 20:04:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,572,1175497200"; 
+   d="scan'208";a="271795821"
+Subject: Re: [PATCH] spinlock in function hugetlb_fault could be deleted
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Adam Litke <aglitke@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, agl@us.ibm.com
+In-Reply-To: <a0a62dfc0707230727r3d9b5f18i69156073e6e6d4a5@mail.gmail.com>
+References: <1185178727.4688.63.camel@ymzhang>
+	 <a0a62dfc0707230727r3d9b5f18i69156073e6e6d4a5@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 24 Jul 2007 08:03:08 +0800
+Message-Id: <1185235388.4688.68.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007 06:58:28 +0300
-Al Boldi <a1426z@gawab.com> wrote:
+On Mon, 2007-07-23 at 09:27 -0500, Adam Litke wrote:
+> Hello.  hugetlb_instantiation_mutex is an extremely heavy-weight lock
+> whose days are numbered (hopefully).  It exists primarily to arbitrate
+> a race condition where n (n > 1) threads of execution race to satisfy
+> the same page fault for a process.  Even though only one hugetlb page
+> is needed, if (n) are not available, the application can receive a
+> bogus VM_FAULT_OOM.
+Thanks for your kind comments.
 
 > 
-> This patch removes the top level menu "Code maturity level options", and 
-> moves its options into menu "General setup".
-> 
-> This makes Kconfig less cluttered and easier to setup.
-> 
-> 
-> Cc: Andrew Morton <akpm@osdl.org>
-> Signed-off-by: Al Boldi <a1426z@gawab.com>
-> 
-> ---
-> --- a/init/Kconfig	2007-07-09 06:38:47.000000000 +0300
-> +++ b/init/Kconfig	2007-07-21 06:42:06.000000000 +0300
-> @@ -7,7 +7,7 @@ config DEFCONFIG_LIST
->  	default "/boot/config-$UNAME_RELEASE"
->  	default "arch/$ARCH/defconfig"
->  
-> -menu "Code maturity level options"
-> +menu "General setup"
->  
->  config EXPERIMENTAL
->  	bool "Prompt for development and/or incomplete code/drivers"
-> @@ -61,9 +61,6 @@ config INIT_ENV_ARG_LIMIT
->  	  Maximum of each of the number of arguments and environment
->  	  variables passed to init from the kernel command line.
->  
-> -endmenu
-> -
-> -menu "General setup"
->  
->  config LOCALVERSION
->  	string "Local version - append to kernel release"
+> Anyway, the hugetlb_instantiation_mutex approach has few friends
+> around here, so rather than making the code rely more heavily upon it,
+> perhaps you could focus you efforts on helping us remove it.
+That's the correct direction. I will check if the mutex could be removed. 
 
-OK (IMO).  The "Code maturity level options" menu only has a single
-entry, and I doubt if it will grow more entries any time soon.  It
-makes sense to kill it and to move its sole entry into "General setup".
+> 
+> On 7/23/07, Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> > Function hugetlb_fault needn't hold spinlock mm->page_table_lock,
+> > because when hugetlb_fault is called:
+> > 1) mm->mmap_sem is held already;
+> > 2) hugetlb_instantiation_mutex is held by hugetlb_fault, which prevents
+> > other threads/processes from entering this critical area. It's impossible
+> > for other threads/processes to change the page table now.
+> 
