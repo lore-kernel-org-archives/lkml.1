@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760511AbXGXTHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbXGXTIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760511AbXGXTHZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbXGXTHN
+	id S1761485AbXGXTIG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbXGXTHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:07:13 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58068 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994AbXGXTHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:07:12 -0400
-Message-ID: <46A64DD8.6000607@garzik.org>
-Date: Tue, 24 Jul 2007 15:07:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       =?ISO-8859-1?Q?S=E9bastien_Du?= =?ISO-8859-1?Q?gu=E9?= 
-	<sebastien.dugue@bull.net>,
+	Tue, 24 Jul 2007 15:07:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35862 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752994AbXGXTHx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 15:07:53 -0400
+Date: Tue, 24 Jul 2007 12:07:51 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mel Gorman <mel@skynet.ie>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
- platform devices - broke my serial console
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>	<200707240948.45916.bjorn.helgaas@hp.com>	<46A63BC3.3050208@garzik.org> <20070724110946.8678d202.akpm@linux-foundation.org>
-In-Reply-To: <20070724110946.8678d202.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
+Message-ID: <20070724120751.401bcbcb@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com>
+References: <1185185020.8197.11.camel@twins>
+	<20070723112143.GB19437@skynet.ie>
+	<1185190711.8197.15.camel@twins>
+	<Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com>
+	<1185256869.8197.27.camel@twins>
+	<Pine.LNX.4.64.0707240007100.3128@schroedinger.engr.sgi.com>
+	<1185261894.8197.33.camel@twins>
+	<Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com>
+Organization: Silicon Graphics, Inc.
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Well I queued up a tentative revert patch but then I re-read the changlog:
-> 
->     x86, serial: convert legacy COM ports to platform devices
->     
->     Make x86 COM ports into platform devices and don't probe for them
->     if we have PNP.
->     
->     This prevents double discovery, where a device was found both by
->     the legacy probe and by 8250_pnp, e.g.,
->     
->         serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
->         00:02: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+GFP_LEVEL_MASK is used to allow the pass through of page allocator
+flags. Currently these are
 
-If this actually causes a problem, then the drivers are buggy.  We have 
-standard APIs for checking this stuff...
+#define GFP_LEVEL_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS| \
+                        __GFP_COLD|__GFP_NOWARN|__GFP_REPEAT| \
+                        __GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP| \
+                        __GFP_NOMEMALLOC|__GFP_HARDWALL|__GFP_THISNODE|
+			__GFP_MOVABLE)
 
-Turning off legacy serial probing is just a bandaid, the resource bug is 
-still there [by definition, if double-probing problems exist].
+Some of these flags control page allocator reclaim and fallback
+behavior. If they are specified for a slab alloc operation then they
+are effective if a new slab has to be allocated. These are
 
+1. Reclaim control
 
->     This also means IRDA devices without a UART PNP ID will no longer be
->     claimed by the serial driver, which might require changes in IRDA
->     drivers and administration.
+__GFP_WAIT
+__GFP_IO
+__GFP_FS
+__GFP_NOWARN
+__GFP_REPEAT
+__GFP_NOFAIL
+__GFP_NORETRY
 
-This was completely unaddressed, I presume?
+2. Reserve control
 
+__GFP_HIGH
+__GFP_NOMEMALLOC
 
->     In addition to this patch, you may need to configure a setserial init
->     script, e.g., /etc/init.d/setserial, so it doesn't poke legacy UART
->     stuff back in.  On Debian, "dpkg-reconfigure setserial" with the "kernel"
->     option does this.
+2. Fallback control
 
-So this patch breaks some userspace too?
+__GFP_HARDWALL	(cpuset contraints)
+__GFP_THISNODE (handled by SLAB on its own, SLUB/SLOB pass through)
 
+AFAIK these make sense.
 
->     To force the old legacy probe behavior even when we have PNPBIOS or
->     ACPI, load the new legacy_serial module (or build 8250 static) with
->     the "legacy_serial.force" option.
-> 
-> So 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26 fixed a bunch of longstanding
-> nasties while breaking Sebastien's machine (at least).
-> 
-> We of course want the best of both worlds here, so I'll keep the revert
-> patch in -mm for a while, see what happens.  Although I can't immediately
-> see any way in which this can be fixed...
+Then there are some other flags. I am wondering why they are in
+GFP_LEVEL_MASK?
 
-I see VERY few positives, a whole lot of trouble, and a couple band-aids.
+__GFP_COLD	Does not make sense for slab allocators since we have
+		to touch the page immediately.
 
-	Jeff
+__GFP_COMP	No effect. Added by the page allocator on their own
+		if a higher order allocs are used for a slab.
 
+__GFP_MOVABLE	The movability of a slab is determined by the
+		options specified at kmem_cache_create time. If this is
+		specified at kmalloc time then we will have some random
+		slabs movable and others not. 
 
