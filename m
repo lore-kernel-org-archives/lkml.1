@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbXGXTbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761252AbXGXTcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759324AbXGXTbm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbXGXTba
+	id S1761252AbXGXTcd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXGXTcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:31:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50634 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750787AbXGXTb2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:31:28 -0400
-Date: Tue, 24 Jul 2007 12:30:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Marcin ??lusarz <marcin.slusarz@gmail.com>,
-       Jarek Poplawski <jarkao2@o2.pl>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-In-Reply-To: <20070724094202.GA11610@elte.hu>
-Message-ID: <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
- <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com>
- <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu>
+	Tue, 24 Jul 2007 15:32:23 -0400
+Received: from mail.suse.de ([195.135.220.2]:53443 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754507AbXGXTcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 15:32:22 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	<20070723183839.GA5874@martell.zuzino.mipt.ru>
+	<20070723190152.GA5755@martell.zuzino.mipt.ru>
+	<20070723132431.42afbae8.akpm@linux-foundation.org>
+	<20070723204045.GD5755@martell.zuzino.mipt.ru>
+	<20070723210153.GA5753@martell.zuzino.mipt.ru>
+	<20070723141137.171e4ac1.akpm@linux-foundation.org>
+	<alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
+	<20070724175951.GC6019@stusta.de>
+	<alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org>
+	<20070724112843.0cc104c2.akpm@linux-foundation.org>
+	<alpine.LFD.0.999.0707241207290.3607@woody.linux-foundation.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 24 Jul 2007 22:27:11 +0200
+In-Reply-To: <alpine.LFD.0.999.0707241207290.3607@woody.linux-foundation.org>
+Message-ID: <p73r6mxsg2o.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Jul 2007, Ingo Molnar wrote:
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 > 
-> please try the patch below instead.
+> So "called once" should probably make the inlining weight bigger (ie 
+> inline *larger* functions than you would otherwise), it just shouldn't 
+> make it "infinite". It's not worth it.
 
-I'm hoping this is just a "let's see if the behavior changes" patch, not 
-something that you think should be applied if it fixes something?
+There's probably a --param where it can be tweaked exactly. The
+problem is that --params tend to be very gcc version specific
+and might do something completely different on a newer or 
+older version. So it's better not to use them.
 
-This patch looks like it is trying to paper over (rather than fix) some 
-possible bug in the "->disable" logic. Makes sense as a "let's see if it's 
-that" kind of thing, but not as a "let's fix it".
-
-Or am I missing something?
-
-		Linus
+-Andi
