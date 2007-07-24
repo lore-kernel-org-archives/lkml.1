@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764015AbXGXUfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764216AbXGXUhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764015AbXGXUfw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbXGXUfm
+	id S1764216AbXGXUhT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757942AbXGXUhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:35:42 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:42573 "EHLO atlrel6.hp.com"
+	Tue, 24 Jul 2007 16:37:05 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58988 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754547AbXGXUfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:35:41 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Date: Tue, 24 Jul 2007 14:34:32 -0600
-User-Agent: KMail/1.9.6
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       =?iso-8859-1?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707241353.57458.bjorn.helgaas@hp.com> <46A65D7D.6040409@garzik.org>
-In-Reply-To: <46A65D7D.6040409@garzik.org>
+	id S1757944AbXGXUhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:37:02 -0400
+Message-ID: <46A662EB.6070707@garzik.org>
+Date: Tue, 24 Jul 2007 16:36:59 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net, csnook@redhat.com
+Subject: Re: [PATCH 1/5] atl1: change tpd_avail function name
+References: <1184888714454-git-send-email-jacliburn@bellsouth.net> <1184888714650-git-send-email-jacliburn@bellsouth.net>
+In-Reply-To: <1184888714650-git-send-email-jacliburn@bellsouth.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707241434.32374.bjorn.helgaas@hp.com>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 July 2007 02:13:49 pm Jeff Garzik wrote:
-> Bjorn Helgaas wrote:
-> >   - Linux enumerates CPUs with the MADT; I think Windows uses the ACPI
-> >     namespace.  Sometimes there are multiple MADTs, and sometimes Linux
-> >     uses the wrong one.
+Jay Cliburn wrote:
+> Change tpd_avail() to atl1_tpd_avail().
 > 
-> Color me skeptical.  I think we would have bug reports if we were really 
-> getting this wrong a lot of the time.
+> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+> ---
+>  drivers/net/atl1/atl1_main.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 
-We do have bug reports, like http://bugzilla.kernel.org/show_bug.cgi?id=7465
-Not very many, but enough that I'd like to get to the root cause.
+applied 1-5
 
-> You seem to be missing that ignoring BIOS is often a VERY GOOD thing, 
-> that has served us well many many times in the past.
 
-I can see that I'm not going to win this argument :-)
-
-But I would like to find and fix the problem with Sebastien's machine,
-because the patch does fix real problems with IRDA and I think the fix
-for Sebastien is likely to fix other PNP issues.
-
-Bjorn
