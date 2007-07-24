@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932531AbXGXUkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932460AbXGXUlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932531AbXGXUkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932432AbXGXUkG
+	id S932460AbXGXUlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932408AbXGXUkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:40:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38789 "EHLO mx1.redhat.com"
+	Tue, 24 Jul 2007 16:40:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59092 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932424AbXGXUkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:40:01 -0400
-Message-ID: <46A66393.5000705@redhat.com>
-Date: Tue, 24 Jul 2007 16:39:47 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S932336AbXGXUkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:40:45 -0400
+Message-ID: <46A663CA.3050000@garzik.org>
+Date: Tue, 24 Jul 2007 16:40:42 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Tong Li <tong.n.li@intel.com>, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> <46A53C88.6060006@redhat.com> <Pine.LNX.4.64.0707240954560.8026@tongli.jf.intel.com> <46A64002.8080103@redhat.com> <46A6576A.9020506@nortel.com>
-In-Reply-To: <46A6576A.9020506@nortel.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       =?ISO-8859-1?Q?S=E9bastie?= =?ISO-8859-1?Q?n_Dugu=E9?= 
+	<sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
+ platform devices - broke my serial console
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707241353.57458.bjorn.helgaas@hp.com> <46A65D7D.6040409@garzik.org> <200707241434.32374.bjorn.helgaas@hp.com>
+In-Reply-To: <200707241434.32374.bjorn.helgaas@hp.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Chris Snook wrote:
+Bjorn Helgaas wrote:
+> On Tuesday 24 July 2007 02:13:49 pm Jeff Garzik wrote:
+>> Bjorn Helgaas wrote:
+>>>   - Linux enumerates CPUs with the MADT; I think Windows uses the ACPI
+>>>     namespace.  Sometimes there are multiple MADTs, and sometimes Linux
+>>>     uses the wrong one.
+>> Color me skeptical.  I think we would have bug reports if we were really 
+>> getting this wrong a lot of the time.
 > 
->> Concerns aside, I agree that fairness is important, and I'd really 
->> like to see a test case that demonstrates the problem.
+> We do have bug reports, like http://bugzilla.kernel.org/show_bug.cgi?id=7465
+> Not very many, but enough that I'd like to get to the root cause.
 > 
-> One place that might be useful is the case of fairness between resource 
-> groups, where the load balancer needs to consider each group separately.
+>> You seem to be missing that ignoring BIOS is often a VERY GOOD thing, 
+>> that has served us well many many times in the past.
+> 
+> I can see that I'm not going to win this argument :-)
+> 
+> But I would like to find and fix the problem with Sebastien's machine,
+> because the patch does fix real problems with IRDA and I think the fix
+> for Sebastien is likely to fix other PNP issues.
 
-You mean like the CFS group scheduler patches?  I don't see how this patch is 
-related to that, besides working on top of it.
+Please go back and fix the original issue!
 
-> Now it may be the case that trying to keep the load of each class within 
-> X% of the other cpus is sufficient, but it's not trivial.
+If you are having problems caused by double-probing, the fix is NOT to 
+remove one the probes.  The fix is to ensure use of proper resource 
+reservation, and in some cases, add co-driver-awareness.
 
-I agree.  My suggestion is that we try being fair from the bottom-up, rather 
-than top-down.  If most of the rebalancing is local, we can minimize expensive 
-locking and cross-node migrations, and scale very nicely on large NUMA boxes.
+Your entire justification for the patch has not been proven, since you 
+demonstrably have not solved the original bug for which your patch was 
+intended to solve.
 
-> Consider the case where you have a resource group that is allocated 50% 
-> of each cpu in a dual cpu system, and only have a single task in that 
-> group.  This means that in order to make use of the full group 
-> allocation, that task needs to be load-balanced to the other cpu as soon 
-> as it gets scheduled out.  Most load-balancers can't handle that kind of 
-> granularity, but I have guys in our engineering team that would really 
-> like this level of performance.
+	Jeff
 
-Divining the intentions of the administrator is an AI-complete problem and we're 
-not going to try to solve that in the kernel.  An intelligent administrator 
-could also allocate 50% of each CPU to a resource group containing all the 
-*other* processes.  Then, when the other processes are scheduled out, your 
-single task will run on whichever CPU is idle.  This will very quickly 
-equilibrate to the scheduling ping-pong you seem to want.  The scheduler 
-deliberately avoids this kind of migration by default because it hurts cache and 
-TLB performance, so if you want to override this very sane default behavior, 
-you're going to have to explicitly configure it yourself.
 
-> We currently use CKRM on an SMP machine, but the only way we can get 
-> away with it is because our main app is affined to one cpu and just 
-> about everything else is affined to the other.
-
-If you're not explicitly allocating resources, you're just low-latency, not 
-truly realtime.  Realtime requires guaranteed resources, so messing with 
-affinities is a necessary evil.
-
-> We have another SMP box that would benefit from group scheduling, but we 
-> can't use it because the load balancer is not nearly good enough.
-
-Which scheduler?  Have you tried the CFS group scheduler patches?
-
-	-- Chris
