@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935479AbXGXI7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935541AbXGXJAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935479AbXGXI7f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935351AbXGXI7S
+	id S935541AbXGXJAA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934735AbXGXI7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:59:18 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:11828 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935339AbXGXI7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:59:16 -0400
-Date: Tue, 24 Jul 2007 12:59:47 +0400
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: linux-kernel@vger.kernel.org
-Cc: device-mapper development <dm-devel@redhat.com>
-Subject: [PATCH 8/8] dm: dm-target.c Convert  kmalloc + memset  to kzalloc
-Message-ID: <20070724085947.GH16507@dnb.sw.ru>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	device-mapper development <dm-devel@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070724085106.GD20538@dnb.sw.ru>
-Organization: SWsoft
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Tue, 24 Jul 2007 04:59:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55036 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935505AbXGXI7k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 04:59:40 -0400
+Date: Tue, 24 Jul 2007 01:58:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Message-Id: <20070724015846.b30d723c.akpm@linux-foundation.org>
+In-Reply-To: <20070724085358.GA13845@kroah.com>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei>
+	<20070724010224.bbfb82bc.akpm@linux-foundation.org>
+	<20070724085358.GA13845@kroah.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
----
- drivers/md/dm-target.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+On Tue, 24 Jul 2007 01:53:58 -0700 Greg KH <greg@kroah.com> wrote:
 
-diff --git a/drivers/md/dm-target.c b/drivers/md/dm-target.c
-index 477a041..835cf95 100644
---- a/drivers/md/dm-target.c
-+++ b/drivers/md/dm-target.c
-@@ -88,12 +88,10 @@ void dm_put_target_type(struct target_type *t)
+> On Tue, Jul 24, 2007 at 01:02:24AM -0700, Andrew Morton wrote:
+> > On Sat, 14 Jul 2007 12:37:01 -0400 (EDT) James Morris <jmorris@namei.org> wrote:
+> > 
+> > > Convert LSM into a static interface
+> > 
+> > allmodconfig broke
+> > 
+> > security/built-in.o: In function `rootplug_bprm_check_security':
+> > security/root_plug.c:64: undefined reference to `usb_find_device'
+> > security/root_plug.c:70: undefined reference to `usb_put_dev'
+> 
+> That's wierd, who would have disabled the exports of those functions or
+> removed the "#include <linux/usb.h>" from this file?
+> 
+
+root_plug is linked into vmlinux and usb is modular.  I did this:
+
+--- a/security/Kconfig~security-convert-lsm-into-a-static-interface-fix-2
++++ a/security/Kconfig
+@@ -82,7 +82,7 @@ config SECURITY_CAPABILITIES
  
- static struct tt_internal *alloc_target(struct target_type *t)
- {
--	struct tt_internal *ti = kmalloc(sizeof(*ti), GFP_KERNEL);
-+	struct tt_internal *ti = kzalloc(sizeof(*ti), GFP_KERNEL);
- 
--	if (ti) {
--		memset(ti, 0, sizeof(*ti));
-+	if (ti)
- 		ti->tt = *t;
--	}
- 
- 	return ti;
- }
--- 
-1.5.2.2
+ config SECURITY_ROOTPLUG
+ 	bool "Root Plug Support"
+-	depends on USB && SECURITY
++	depends on USB=y && SECURITY
+ 	help
+ 	  This is a sample LSM module that should only be used as such.
+ 	  It prevents any programs running with egid == 0 if a specific
+_
 
 
+I suppose we could do SECURITY_ROOTPLUG=m if USB=m, but I thought the
+whole point was to disallow modular LSM clients?
