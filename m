@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935853AbXGXKAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933062AbXGXKKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935853AbXGXKAs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 06:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932455AbXGXKAi
+	id S933062AbXGXKKb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 06:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761947AbXGXKKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 06:00:38 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:33344 "EHLO mail4.iitk.ac.in"
+	Tue, 24 Jul 2007 06:10:14 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:40207 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765384AbXGXKAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 06:00:37 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Tue, 24 Jul 2007 15:32:02 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: David Howells <dhowells@redhat.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered
- unnecessarily
-In-Reply-To: <19305.1185270274@redhat.com>
-Message-ID: <Pine.LNX.4.64.0707241526110.1433@cselinux1.cse.iitk.ac.in>
-References: <Pine.LNX.4.64.0707241154060.1433@cselinux1.cse.iitk.ac.in>
- <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>
- <46A578A1.5010504@yahoo.com.au> <19305.1185270274@redhat.com>
+	id S1761242AbXGXKKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 06:10:12 -0400
+Date: Tue, 24 Jul 2007 14:10:36 +0400
+From: Dmitry Monakhov <dmonakhov@sw.ru>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>
+Subject: Re: [PATCH 8/8] dm: dm-target.c Convert  kmalloc + memset  to
+	kzalloc
+Message-ID: <20070724101036.GI16507@dnb.sw.ru>
+Mail-Followup-To: "Robert P. J. Day" <rpjday@mindspring.com>,
+	linux-kernel@vger.kernel.org,
+	device-mapper development <dm-devel@redhat.com>
+References: <33136714.1185268299275.JavaMail.root@mswamui-valley.atl.sa.earthlink.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <33136714.1185268299275.JavaMail.root@mswamui-valley.atl.sa.earthlink.net>
+Organization: SWsoft.
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-On Tue, 24 Jul 2007, David Howells wrote:
-
-> Satyam Sharma <ssatyam@cse.iitk.ac.in> wrote:
+On 05:11 Втр 24 Июл     , Robert P. J. Day wrote:
 > 
-> > OTOH, as per Linus' review it seems we can drop the "memory" clobber
-> > and specify the output operand for the extended asm as "+m". But I
-> > must admit I didn't quite understand that at all.
 > 
-> As I understand it, the "+m" indicates to the compiler a restriction on the
-> ordering of things that access that particular memory location, whereas a
-> "memory" indicates a restriction on the orderings of all accesses to memory -
-> precisely what you need to produce a lock.
+> -----Original Message-----
+> >From: Dmitry Monakhov <dmonakhov@openvz.org>
+> >Sent: Jul 24, 2007 4:59 AM
+> >To: linux-kernel@vger.kernel.org
+> >Cc: device-mapper development <dm-devel@redhat.com>
+> >Subject: [PATCH 8/8] dm: dm-target.c Convert  kmalloc + memset  to kzalloc
+> >
+> >Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+> >---
+> > drivers/md/dm-target.c |    6 ++----
+> > 1 files changed, 2 insertions(+), 4 deletions(-)
+> >
+> >diff --git a/drivers/md/dm-target.c b/drivers/md/dm-target.c
+> >index 477a041..835cf95 100644
+> >--- a/drivers/md/dm-target.c
+> >+++ b/drivers/md/dm-target.c
+> >@@ -88,12 +88,10 @@ void dm_put_target_type(struct target_type *t)
+> > 
+> > static struct tt_internal *alloc_target(struct target_type *t)
+> > {
+> >-	struct tt_internal *ti = kmalloc(sizeof(*ti), GFP_KERNEL);
+> >+	struct tt_internal *ti = kzalloc(sizeof(*ti), GFP_KERNEL);
+> > 
+> >-	if (ti) {
+> >-		memset(ti, 0, sizeof(*ti));
+> >+	if (ti)
+> > 		ti->tt = *t;
+> >-	}
+> > 
+> > 	return ti;
+> > }
+> >-- 
+> >1.5.2.2
+> >
+> >
+> 
+> would it not have made more sense to have submitted all those related,
+> single-change patches as one patch?
+Yes i think so (i've already wrote bout this in fist msg), but
+dm maintainers may have different oppinion.
+BTW: It is allways easier fold many patches to one, than split one 
+patch to many.
+> 
+> rday
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Ok, thanks -- I didn't know gcc's behaviour w.r.t. "+m" at all, but in my
-defense I'd add all this was quite poorly/wrongly documented in the docs.
-
-> There are a number of things that use test_and_set_bit() and co to implement a
-> lock or other synchronisation.  This means that they must exhibit LOCK-class
-> barrier effects or better.  LOCK-class barrier effects mean, more or less,
-> that all memory accesses issued before the lock must happen before all memory
-> accesses issued after the lock.  But it most happen at both CPU-level and
-> compiler-level.  The "memory" constraint instructs the compiler in this
-> regard.
-
-Yes, thanks for laying this out so clearly, again. So combined with what
-you explained above, I think I now fully understand why most of this
-series was incorrect ...
-
-> Remember also that this is gcc black magic and so some of it has had to be
-> worked out empirically - possibly after sacrificing a goat under a full moon.
-
-:-)
-
-
-Satyam
