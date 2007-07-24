@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbXGXV5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbXGXWA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759244AbXGXV5c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbXGXV5X
+	id S1758545AbXGXWA2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 18:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbXGXWAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:57:23 -0400
-Received: from qb-out-0506.google.com ([72.14.204.237]:58066 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755899AbXGXV5V (ORCPT
+	Tue, 24 Jul 2007 18:00:20 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:32811 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753232AbXGXWAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:57:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=i8fZOQVW2PcmeLwAw83gFiRQViwgPVEai5zEVU/HiYjSi+RWjcnLYH5UIXXFaAoP3+m2OwFmYTXk25pszUd82sEDOBNsSxGBP57fVMoWd/wYnvzFs9Oosx0ZfKL1zst7lQ+dxdBFwDamvmZsppwf+n847p8wriLP71Oum/E8VDk=
-Message-ID: <6bffcb0e0707241457m1a5f30a7w98470e0ad98ebdb8@mail.gmail.com>
-Date: Tue, 24 Jul 2007 23:57:20 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: 2.6.23-rc1: known regressions with patches
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Gabriel C" <nix.or.die@googlemail.com>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Tejun Heo" <htejun@gmail.com>, "Kay Sievers" <kay.sievers@gmail.com>,
-       "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       "Vitaly Bordug" <vitb@kernel.crashing.org>,
-       "Takashi Iwai" <tiwai@suse.de>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-fsdevel@vger.kernel.org, "Doug Chapman" <doug.chapman@hp.com>,
-       "Vasily Tarasov" <vtaras@openvz.org>,
-       "Thierry MERLE" <thierry.merle@free.fr>, v4l-dvb-maintainer@linuxtv.org,
-       "Dwaine P. Garden" <dwainegarden@rogers.com>,
-       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       "Adrian Bunk" <bunk@stusta.de>
-In-Reply-To: <20070723225924.GC25741@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Jul 2007 18:00:19 -0400
+Date: Tue, 24 Jul 2007 23:06:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jeff Garzik <jeff@garzik.org>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
+ platform devices - broke my serial console
+Message-ID: <20070724230626.72f8ad2a@the-village.bc.nu>
+In-Reply-To: <200707241456.35769.bjorn.helgaas@hp.com>
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
+	<200707241434.32374.bjorn.helgaas@hp.com>
+	<46A663CA.3050000@garzik.org>
+	<200707241456.35769.bjorn.helgaas@hp.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46A47940.7030801@googlemail.com> <20070723225924.GC25741@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/07/07, Greg KH <gregkh@suse.de> wrote:
-> On Mon, Jul 23, 2007 at 11:47:44AM +0200, Michal Piotrowski wrote:
-> > Unclassified
-> >
-> > Subject         : kobject link failure
-> > References      : http://lkml.org/lkml/2007/7/19/495
-> > Last known good : ?
->
-> This is caused by a patch that happened after 2.6.22 was released, so it
-> is a regression.
+>   - use setserial to make the serial driver forget about ttyS2
+>     so an IR driver could claim it, or
+> 
+>   - use setserial to change the IRQ to 3 and just use the device
+>     in SIR mode, which is 16550-compatible so you can use the
+>     serial driver
+> 
+> I didn't express that very clearly in the changelog.
 
-Yes, I know. "?" is a default value. When someone says that bug
-appeared after 2.6.22-git7 I'm adding this information to "Last known
-good".
+So the actual problem is quite different. Your IR driver for the port
+should have an interface to tell the serial layer to make it unavailable.
+End of problem and you can then use either service without setserial magic
 
->
-> > Submitter       : Jan Engelhardt <jengelh@linux01.gwdg.de>
-> > Caused-By       : ?
-> > Handled-By      : Cornelia Huck <cornelia.huck@de.ibm.com>
-> >                   Greg Kroah-Hartman <gregkh@suse.de>
-> > Patch           : http://lkml.org/lkml/2007/7/20/143
-> > Status          : patch available
->
-> I'll be sending Cornelia's patch to Linus within the week to fix this.
->
-> thanks,
->
-> greg k-h
->
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+Alan
