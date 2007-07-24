@@ -1,61 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbXGXUNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761345AbXGXUOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760145AbXGXUNX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXGXUNN
+	id S1761345AbXGXUOf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbXGXUO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:13:13 -0400
-Received: from pat.uio.no ([129.240.10.15]:52175 "EHLO pat.uio.no"
+	Tue, 24 Jul 2007 16:14:27 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58744 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751807AbXGXUNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:13:11 -0400
-Subject: Re: [PATCH RFC] extent mapped page cache
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070724160032.7a7097db@think.oraclecorp.com>
-References: <20070710210326.GA29963@think.oraclecorp.com>
-	 <20070724160032.7a7097db@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 16:13:05 -0400
-Message-Id: <1185307985.6586.50.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1755837AbXGXUO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:14:26 -0400
+Message-ID: <46A65D7D.6040409@garzik.org>
+Date: Tue, 24 Jul 2007 16:13:49 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       =?ISO-8859-1?Q?S=E9bastie?= =?ISO-8859-1?Q?n_Dugu=E9?= 
+	<sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
+ platform devices - broke my serial console
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <46A63BC3.3050208@garzik.org> <Pine.LNX.4.64N.0707241914060.17807@blysk.ds.pg.gda.pl> <200707241353.57458.bjorn.helgaas@hp.com>
+In-Reply-To: <200707241353.57458.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.108)
-X-UiO-Scanned: 7C68EE737FC0C41FDE2BF98440D39ACF629E48C2
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 121 total 2956083 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 16:00 -0400, Chris Mason wrote:
-> On Tue, 10 Jul 2007 17:03:26 -0400
-> Chris Mason <chris.mason@oracle.com> wrote:
+Bjorn Helgaas wrote:
+> On Tuesday 24 July 2007 12:17:36 pm Maciej W. Rozycki wrote:
+>> On Tue, 24 Jul 2007, Jeff Garzik wrote:
+>>
+>>> It seems clear from this report that we cannot, should not, trust BIOS for
+>>> something (a) so simple and (b) that has been working for over a decade.
+>>  And (c) something BIOS writers have never ever in their most unlikely 
+>> imagination expected to be trusted for.
 > 
-> > This patch aims to demonstrate one way to replace buffer heads with a
-> > few extent trees.  Buffer heads provide a few different features:
-> > 
-> > 1) Mapping of logical file offset to blocks on disk
-> > 2) Recording state (dirty, locked etc)
-> > 3) Providing a mechanism to access sub-page sized blocks.
-> > 
-> > This patch covers #1 and #2, I'll start on #3 a little later next
-> > week.
-> > 
-> Well, almost.  I decided to try out an rbtree instead of the radix,
-> which turned out to be much faster.  Even though individual operations
-> are slower, the rbtree was able to do many fewer ops to accomplish the
-> same thing, especially for merging extents together.  It also uses much
-> less ram.
+> I don't think it's quite so clear-cut.  It is true that "poke at 0x3e8,
+> and if it responds, assume it's a 16550 with IRQ 4" is simple.  But it
+> doesn't always work.  Google for "irda setserial" and you'll find many
+> cases where the serial driver's blind probe erroneously claims an IRDA
+> device.  The SIR mode of IRDA devices is basically 16550-compatible,
+> so this wouldn't be a big problem, except that the blind probe often
+> assumes the wrong IRQ.  So users have to use setserial to fix up the
+> incorrect assumptions made by the blind probe.
+> 
+> We haven't debugged the problem on Sebastien's machine yet.  I suspect
+> we'll find that his serial port *is* described by ACPI, but that there's
+> some little difference in the way Linux discovers those devices compared
+> to how Windows does it.  If we figure out how to use ACPI more like
+> Windows does, I think we'll fix several little issues, including the one
+> on Sebastien's machine.
 
-The problem with an rbtree is that you can't use it together with RCU to
-do lockless lookups. You can probably modify it to allocate nodes
-dynamically (like the radix tree does) and thus make it RCU-compatible,
-but then you risk losing the two main benefits that you list above.
+You have not fixed the double-probe problem either.  That should have 
+been fixed before 7e92b4fc34 was even considered for upstream.
 
-Trond
+
+> We have a whole laundry list of minor issues because we either don't
+> listen to the BIOS at all, or we use it differently than Windows does.
+
+Getting [back] to this thread, I know that most versions of Windows poke 
+the serial port directly.  It's pretty obvious when running Windows in 
+an emulator.
+
+
+> Here are a few off the top of my head:
+> 
+>   - IRDA drivers have platform-specific code to "preconfigure" (discover
+>     and reprogram) bridges on the way to the IR device
+>   - Hardware sensor drivers conflict with ACPI embedded controller
+>     drivers, so every once in a while, they return bogus readings
+
+Driver bug, completely unrelated to not "listen[ing] to the BIOS"
+
+
+>   - PCMCIA devices grab resources already in use by a PNP device,
+>     causing the PNP device to stop working
+
+ditto
+
+
+>   - Linux enumerates CPUs with the MADT; I think Windows uses the ACPI
+>     namespace.  Sometimes there are multiple MADTs, and sometimes Linux
+>     uses the wrong one.
+
+Color me skeptical.  I think we would have bug reports if we were really 
+getting this wrong a lot of the time.
+
+
+> If we keep papering over these problems by ignoring what ACPI is trying
+> to tell us, we're going to be adding machine-specific hacks forever.
+> Of course, there are ACPI bugs.  But Windows does rely on ACPI, and
+> Microsoft doesn't want to add those per-platform hacks any more than
+> we do.  So we might as well try to take advantage of the ACPI testing
+> they do.
+
+You seem to be missing that ignoring BIOS is often a VERY GOOD thing, 
+that has served us well many many times in the past.
+
+	Jeff
+
 
