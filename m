@@ -1,94 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934661AbXGXLrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933348AbXGXLuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934661AbXGXLrj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 07:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXGXLrb
+	id S933348AbXGXLuF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 07:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbXGXLtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 07:47:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40070 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Jul 2007 07:49:55 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:54703 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752908AbXGXLrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 07:47:31 -0400
-Date: Tue, 24 Jul 2007 13:47:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Andrew Morton <akpm@osdl.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-Message-ID: <20070724114713.GA9817@elte.hu>
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A53F3A.7060509@intel.com> <46A5E39D.7030009@shadowen.org>
+	id S1752908AbXGXLty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 07:49:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
+	b=W7T37r/UP00gwxCy+q4WZ4KnAbBMiEI3hjbfYT7yCY2/7zQnz3VIgbiEiQhTjz4C0U4wsX/SXmmnnmMoPLtxqWT2ACjIplaR2poESHqzcfO781U8Qr1T4aqDqqy+ylLV;
+Message-ID: <17994.simon.1185277788@5ec7c279.invalid>
+In-Reply-To: <3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com>
+References: <46A59EAA.9030105@simon.arlott.org.uk>
+    <20070724072540.GA835@suse.de>
+    <20070724100314.3c606131@gondolin.boeblingen.de.ibm.com>
+    <20070724084654.GB13152@suse.de>
+    <3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com>
+Date: Tue, 24 Jul 2007 12:49:48 +0100
+Subject: Re: sysfs/udev broken in latest git?
+From: "Simon Arlott" <simon@fire.lp0.eu>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Greg KH" <gregkh@suse.de>, "Cornelia Huck" <cornelia.huck@de.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.10a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A5E39D.7030009@shadowen.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, July 24, 2007 10:20, Kay Sievers wrote:
+> On 7/24/07, Greg KH <gregkh@suse.de> wrote:
+>> On Tue, Jul 24, 2007 at 10:03:14AM +0200, Cornelia Huck wrote:
+>> > On Tue, 24 Jul 2007 00:25:40 -0700,
+>> > Greg KH <gregkh@suse.de> wrote:
+>> >
+>> > > On Tue, Jul 24, 2007 at 07:39:38AM +0100, Simon Arlott wrote:
+>> > > > The following commit appears to break some of my udev rules (I don't
+>> > > > have the time to finish the bisect right now, but there's only four
+>> > > > changes showing in "git bisect visualize" - this one is tagged
+>> > > > bisect/bad, and the other three are docs/docs/unrelated).
+>> > > >
+>> > > > Neither of these symlinks get created by udev on kernels marked bad
+>> > > > (see bisect log below):
+>> > > >
+>> > > > ACTION=="add", \
+>> > > >         KERNEL=="event*", \
+>> > > >         SUBSYSTEM=="input", \
+>> > > >         SYSFS{description}=="i8042 KBD port", \
+>> > > >         NAME="input/%k", \
+>> > > >         SYMLINK="input/i8042-kbd", \
+>> > > >         MODE="0640", \
+>> > > >         GROUP="event"
+>> > > >
+>> > > > ACTION=="add", \
+>> > > >         KERNEL=="event*", \
+>> > > >         SUBSYSTEM=="input", \
+>> > > >         SYSFS{manufacturer}=="Logitech", \
+>> > > >         SYSFS{product}=="USB-PS/2 Optical Mouse", \
+>> > > >         NAME="input/%k", \
+>> > > >         SYMLINK="input/logitech-mouse", \
+>> > > >         MODE="0640", \
+>> > > >         GROUP="event"
+>
+> Simon, please run:
+>   udevinfo --attribute-walk --path=<devpath>
+> for the mouse on the working and the non-working kernel.
 
-* Andy Whitcroft <apw@shadowen.org> wrote:
+On the working kernel:
 
-> > within the last 3 weeks, this script went from *really usable* to *a 
-> > big noise maker*.
+  looking at device '/devices/pci0000:00/0000:00:0c.0/usb2/2-2/2-2:1.0':
+    KERNEL=="2-2:1.0"
+    SUBSYSTEM=="usb"
+    DRIVER=="usbhid"
+    ATTR{modalias}=="usb:v046DpC044d2710dc00dsc00dp00ic03isc01ip02"
+    ATTR{bInterfaceProtocol}=="02"
+    ATTR{bInterfaceSubClass}=="01"
+    ATTR{bInterfaceClass}=="03"
+    ATTR{bNumEndpoints}=="01"
+    ATTR{bAlternateSetting}==" 0"
+    ATTR{bInterfaceNumber}=="00"
 
-seconded ...
+  looking at parent device '/devices/pci0000:00/0000:00:0c.0/usb2/2-2':
+    KERNELS=="2-2"
+    SUBSYSTEMS=="usb"
+    DRIVERS=="usb"
+    ATTRS{product}=="USB-PS/2 Optical Mouse"
+    ATTRS{manufacturer}=="Logitech"
+    ATTRS{quirks}=="0x0"
+    ATTRS{maxchild}=="0"
+    ATTRS{version}==" 2.00"
+    ATTRS{devnum}=="3"
+    ATTRS{busnum}=="2"
+    ATTRS{speed}=="1.5"
+    ATTRS{bMaxPacketSize0}=="8"
+    ATTRS{bNumConfigurations}=="1"
+    ATTRS{bDeviceProtocol}=="00"
+    ATTRS{bDeviceSubClass}=="00"
+    ATTRS{bDeviceClass}=="00"
+    ATTRS{bcdDevice}=="2710"
+    ATTRS{idProduct}=="c044"
+    ATTRS{idVendor}=="046d"
+    ATTRS{bMaxPower}==" 98mA"
+    ATTRS{bmAttributes}=="a0"
+    ATTRS{bConfigurationValue}=="1"
+    ATTRS{bNumInterfaces}==" 1"
+    ATTRS{configuration}==""
+    ATTRS{dev}=="189:130"
 
-v0.06 was "almost there". I fixed kernel/sched.c to be completely clean, 
-except for 3 false positives. That was a real improvement, and i started 
-to like checkpatch.pl.
+  looking at parent device '/devices/pci0000:00/0000:00:0c.0/usb2':
+    KERNELS=="usb2"
+    SUBSYSTEMS=="usb"
+    DRIVERS=="usb"
+    ATTRS{serial}=="0000:00:0c.0"
+    ATTRS{product}=="UHCI Host Controller"
+    ATTRS{manufacturer}=="Linux 2.6.22-git uhci_hcd"
+    ATTRS{quirks}=="0x0"
+    ATTRS{maxchild}=="2"
+    ATTRS{version}==" 1.10"
+    ATTRS{devnum}=="1"
+    ATTRS{busnum}=="2"
+    ATTRS{speed}=="12"
+    ATTRS{bMaxPacketSize0}=="64"
+    ATTRS{bNumConfigurations}=="1"
+    ATTRS{bDeviceProtocol}=="00"
+    ATTRS{bDeviceSubClass}=="00"
+    ATTRS{bDeviceClass}=="09"
+    ATTRS{bcdDevice}=="0206"
+    ATTRS{idProduct}=="0000"
+    ATTRS{idVendor}=="0000"
+    ATTRS{bMaxPower}=="  0mA"
+    ATTRS{bmAttributes}=="e0"
+    ATTRS{bConfigurationValue}=="1"
+    ATTRS{bNumInterfaces}==" 1"
+    ATTRS{configuration}==""
+    ATTRS{dev}=="189:128"
 
-v0.08 is a clear step backwards: it emits 61 warnings now, 90% of which 
-are totally bogus. The only 'fix' for many of those warnings is to make 
-the code _worse_. That is unacceptable.
+  looking at parent device '/devices/pci0000:00/0000:00:0c.0':
+    KERNELS=="0000:00:0c.0"
+    SUBSYSTEMS=="pci"
+    DRIVERS=="uhci_hcd"
+    ATTRS{msi_bus}==""
+    ATTRS{broken_parity_status}=="0"
+    ATTRS{enable}=="1"
+    ATTRS{modalias}=="pci:v00001106d00003038sv00001106sd00003038bc0Csc03i00"
+    ATTRS{local_cpus}=="1"
+    ATTRS{irq}=="11"
+    ATTRS{class}=="0x0c0300"
+    ATTRS{subsystem_device}=="0x3038"
+    ATTRS{subsystem_vendor}=="0x1106"
+    ATTRS{device}=="0x3038"
+    ATTRS{vendor}=="0x1106"
 
-> > Warning on multiple declarations on a line is nice, but IMO really 
-> > too verbose (why is "int i, j;" bad? Did C somehow change syntax 
-> > today?).
-> 
-> No the normal response is two fold:
-> 
-> 1) "what the heck are i and j those are meaningless names"
-> 2) "please can we have some comments for those variables"
+  looking at parent device '/devices/pci0000:00':
+    KERNELS=="pci0000:00"
+    SUBSYSTEMS==""
+    DRIVERS==""
+    ATTRS{uevent}==""
 
-you really should not even be arguing about this. LOOK AT the many false 
-positives in sched.c. This is perfectly readable code:
+I can't run it on the non-working kernel until this evening...
 
- void __init sched_init(void)
- {
-         u64 now = sched_clock();
-         int highest_cpu = 0;
-         int i, j;
+> And make sure you have only one rule for input devices or  use
+> SYMLINK+="", otherwise it overwrites any earlier rule. And if you have
+> an earlier rule which already names the device, this one will be
+> ignored because it has NAME= in it.
 
-         for_each_possible_cpu(i) {
-                 struct rt_prio_array *array;
-                 struct rq *rq;
+These rules are before the other event* rules.
 
-                 rq = cpu_rq(i);
+>> > > Ugh, I thought this was all fixed up properly :(
+>> >
+>> > I thought this as well :(
+>> >
+>> > But I'm a bit confused: The patch in git has
+>> >
+>> > +       /* only bus-device parents get a "device"-link */
+>> > +       if (dev->parent && dev->parent->bus) {
+>> > +               error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
+>> > +                                         "device");
+>> >
+>> > and
+>> >
+>> > -               if (parent) {
+>> > -                       sysfs_create_link(&dev->kobj, &dev->parent->kobj,
+>> > -                                                       "device");
+>> >
+>> > which really look like two different things. (My original patch didn't
+>> > have the check for the parent's bus.) Don't know what happened here :(
+>>
+>> Ugh, this might be a merge issue with Kay's block layer device work that
+>> was in my tree, but I had to merge by hand around this area.
+>>
+>> > (Simon: Do the links reappear if you change
+>> >       if (dev->parent && dev->parent->bus)
+>> > to
+>> >       if (dev->parent)
+>> > in device_add_class_symlinks()?)
+>>
+>> Yeah, that would be good to find out.
+>>
+>> Kay, did I mess up the merge here?
+>
+> It looks fine to me. "device" links must never point to anything else
+> than a bus device.
 
-this warning for "i, j" is clearly bogus. So are many of the other 
-warnings. checkpatch.pl went from a useful tool that improved the 
-quality of the kernel to a rigid, unflexible policeman. It needs to be 
-fixed or needs to be gotten rid of.
 
-> which normally leads to the suggestion that it be the following form:
-> 
-> 	int source;		/* source clock hand */
-> 	int destination;	/* destination clock hand */
-
-what the hell are you thinking? Not every trivial line of code needs to 
-be commented. Comments are needed for the _nontrivial_ lines of code, 
-and there's no way a tool can decide that. The longer "destination" 
-variable suggested by you can _easily_ make a previously readable piece 
-of code unreadable.
-
-	Ingo
+-- 
+Simon Arlott
