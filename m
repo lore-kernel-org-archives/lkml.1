@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934300AbXGXIwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934841AbXGXIwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934300AbXGXIwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765509AbXGXIvd
+	id S934841AbXGXIwf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934702AbXGXIv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:51:33 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51047 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758812AbXGXIva (ORCPT
+	Tue, 24 Jul 2007 04:51:56 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:1170 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763209AbXGXIvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:51:30 -0400
-Date: Tue, 24 Jul 2007 09:50:08 +0100
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Florian Lohoff <flo@rfc822.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1 sky2 boot crash in sky2_mac_intr
-Message-ID: <20070724095008.0eb154fe@oldman.hamilton.local>
-In-Reply-To: <20070724082205.GA19480@paradigm.rfc822.org>
-References: <20070724082205.GA19480@paradigm.rfc822.org>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 04:51:54 -0400
+Message-ID: <46A5BD97.10601@imap.cc>
+Date: Tue, 24 Jul 2007 10:51:35 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: LKML <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
+       nix.or.die@googlemail.com
+Subject: Re: 2.6.22-git17 boot failure
+References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc> <46A5444D.4080304@goop.org>
+In-Reply-To: <46A5444D.4080304@goop.org>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig97A0DCD1E7F067FE38BC0653"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 10:22:05 +0200
-Florian Lohoff <flo@rfc822.org> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig97A0DCD1E7F067FE38BC0653
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Hi,
-> i am seeing irregular crashes on boot in the sky2_mac_intr. This is an
-> Fujitsu Siemens Lifebook E8110 with a Core Duo. Currently i suspect some
-> strange BIOS issues as the issues i see with the sky2 aka parity errors
-> etc i also see sometimes with the integrated ipw3945 which complains
-> about firmware errors. It seems the BIOS randomly fails to initialize
-> all the hardware. To reproduce this crash and catch it on the serial
-> console it took me around 12 boots. The machine is stable once correctly
-> booted and i work most of the day on it.
-> 
-> [   46.479939] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low) -> IRQ 19
-> [   46.568569] sky2 0000:02:00.0: v1.16 addr 0xf0000000 irq 19 Yukon-EC Ultra (0xb4) rev 2
-> [   46.664555] sky2 eth0: addr 00:17:42:13:45:8c
-> 
-> [   61.958741] sky2 eth1: enabling interface
-> [   62.010834] sky2 eth1: phy write timeout
+Jeremy Fitzhardinge schrieb:
+> Well, it looks to me like it all falls over once it hits usermode;
+> everything up till then is identical (except for the Xen-related
+> initcalls which naturally don't exist in the non-Xen case).
 
-The problem is related to power management. The PHY has a number of PCI configuration
-registers for power control, and the function of these changes based on the version and
-revision of the chip. The driver does work on older versions of the EC-U, in
-Fujitsu laptop's, it is just the new rev that is broken.
+Just a wild thought: could the actual problem be with accessing the
+initrd? After all, everything that's failing is based on modules
+which are stuffed there. But I know far too less about initrd to
+pursue this thought further.
 
-The driver should probably fail smarter (by not loading) if the PHY isn't powered
-up correctly, but that doesn't help your problem.
+> I'm at a loss.  I don't know if there's some way to debug the initrd in=
 
-The vendor has provided me with documentation on many versions
-of the chip, but I don't have doc's on the lastest revision differences of the EC Ultra, 
-so a proper solution is not easily available.  The best method for resolving this would
-be to first try the vendor driver version of sk98lin and see if that fixes it. If so,
-then it is easy to change sky2, to match the phy setup in the vendor driver.
-Another possibility is to look for places in sky2 driver where there are places
-that compare version/revision.
+> more detail.  I suspect that its failing all PCI probing, rather being =
+a
+> specific SCSI/AHCI problem (since none of the other messages appear eit=
+her).
+>=20
+> Does the Xen case just hang, or reboot, or what?  The kernel messages
+> just appear to stop.  I'd expect it to at least complain about not
+> mounting the root filesystem or something.
 
-The most likely bits that need to change are in PCI registers: 0x80, 0x84 and 0x88
-You could also load the windows driver and dump PCI config space (with lspci from
-cygwin), and see what the settings are there.
+Yes, of course. Sorry, I thought I'd mentioned that. It shows the
+standard behaviour of a Suse that cannot mount its root filesystem:
+first a message: "waiting for /dev/system/root to appear" followed
+by a series of dots, and then fallback into a standalone /bin/sh.
 
-I am away from my office for a month, and therefore away from any sky2
-hardware for testing. 
+> Andi, any thoughts about how to debug the suse boot sequence?
+>=20
+>     J
 
+<listening eagerly>
+
+T.
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig97A0DCD1E7F067FE38BC0653
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGpb2XMdB4Whm86/kRAiCTAJ4gYaeRDnjOAn5jDSVmWoT41IsV4gCffFgy
+UZFlnMfA2UceR3MSjoSynQU=
+=gCZv
+-----END PGP SIGNATURE-----
+
+--------------enig97A0DCD1E7F067FE38BC0653--
