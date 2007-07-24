@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbXGXXN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761948AbXGXXN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761502AbXGXXN0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 19:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbXGXXNT
+	id S1761948AbXGXXN6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 19:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756660AbXGXXNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 19:13:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37491 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754441AbXGXXNS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 19:13:18 -0400
-Date: Tue, 24 Jul 2007 16:12:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mel Gorman <mel@skynet.ie>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
-Message-Id: <20070724161247.ee1a2546.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707241541310.7288@schroedinger.engr.sgi.com>
-References: <1185185020.8197.11.camel@twins>
-	<20070723112143.GB19437@skynet.ie>
-	<1185190711.8197.15.camel@twins>
-	<Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com>
-	<1185256869.8197.27.camel@twins>
-	<Pine.LNX.4.64.0707240007100.3128@schroedinger.engr.sgi.com>
-	<1185261894.8197.33.camel@twins>
-	<Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com>
-	<20070724120751.401bcbcb@schroedinger.engr.sgi.com>
-	<20070724122542.d4ac734a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0707241234460.13653@schroedinger.engr.sgi.com>
-	<20070724151046.d8fbb7da.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0707241541310.7288@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 19:13:51 -0400
+Received: from deine-taler.de ([217.160.107.63]:54947 "EHLO deine-taler.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754757AbXGXXNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 19:13:50 -0400
+Date: Wed, 25 Jul 2007 01:13:49 +0200
+From: Ulrich Kunitz <kune@deine-taler.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       honza@jikos.cz, jkosina@suse.cz
+Subject: Re: Is PIE randomization breaking klibc binaries?
+Message-ID: <20070724231349.GA20720@deine-taler.de>
+References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com> <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com> <20070724220053.GA20531@deine-taler.de> <46A68003.6060901@redhat.com> <46A68118.9080902@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A68118.9080902@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 16:00:32 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+On 07-07-24 15:45 H. Peter Anvin wrote:
 
-> On Tue, 24 Jul 2007, Andrew Morton wrote:
+> Chuck Ebbert wrote:
+> >
+> >Okay, I tested with Fedora on x86_64 and it worked there too.
+> >(Not that that proves much.)
+> >
+> >Did you capture any of the error messages, like the address
+> >of the segfault?
+> >
 > 
-> > I think I'll duck this for now.  Otherwise I have a suspicion that I'll
-> > be the first person to run it and I'm too old for such excitement.
+> FWIW, on x86-64, this should show up in dmesg.
 > 
-> I always had the suspicion that you have some magical script 
-> which will immediately tell you that a patch is not working ;-)
+> 	-hpa
 
-sort of a defensive crouch.
+Guys, this is at boot time and most of the binaries don't work.
+However at the end busybox is called and then there is a shell,
+where I can call the binaries and force the segmentation
+violation. Pencil and paper work usually. But right now I don't
+have the broken kernel anymore and it's 1 am here. Wait for
+tomorrow.
 
-> Works fine on x86_64 (on top of the ctor cleanup patchset) and passes the 
-> kernel build test but then there may be creatively designed drivers and 
-> such that pass these flags to the slab allocators which will now BUG.
-
-__GFP_COLD looks OK.
-
-__GFP_COMP I'm not so sure about. 
-drivers/char/drm/drm_pci.c:drm_pci_alloc() (and other places like infiniband)
-pass it into dma_alloc_coherent() which some architectures implement via slab.  umm,
-arch/arm/mm/consistent.c is one such.
-
-__GFP_MOVABLE looks OK.
-
+-- 
+Uli Kunitz
