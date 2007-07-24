@@ -1,41 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbXGXIDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762902AbXGXIEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666AbXGXIDs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbXGXIDP
+	id S1762902AbXGXIEh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbXGXIEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:03:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36851 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751211AbXGXIDM (ORCPT
+	Tue, 24 Jul 2007 04:04:05 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:24368 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754106AbXGXIDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:03:12 -0400
-Date: Tue, 24 Jul 2007 01:02:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Morris <jmorris@namei.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
-Message-Id: <20070724010224.bbfb82bc.akpm@linux-foundation.org>
-In-Reply-To: <Line.LNX.4.64.0707141233490.26711@d.namei>
-References: <Line.LNX.4.64.0707141233490.26711@d.namei>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 24 Jul 2007 04:03:22 -0400
+Date: Tue, 24 Jul 2007 10:03:14 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sysfs/udev broken in latest git?
+Message-ID: <20070724100314.3c606131@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070724072540.GA835@suse.de>
+References: <46A59EAA.9030105@simon.arlott.org.uk>
+	<20070724072540.GA835@suse.de>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jul 2007 12:37:01 -0400 (EDT) James Morris <jmorris@namei.org> wrote:
+On Tue, 24 Jul 2007 00:25:40 -0700,
+Greg KH <gregkh@suse.de> wrote:
 
-> Convert LSM into a static interface
+> On Tue, Jul 24, 2007 at 07:39:38AM +0100, Simon Arlott wrote:
+> > The following commit appears to break some of my udev rules (I don't 
+> > have the time to finish the bisect right now, but there's only four 
+> > changes showing in "git bisect visualize" - this one is tagged 
+> > bisect/bad, and the other three are docs/docs/unrelated).
+> > 
+> > Neither of these symlinks get created by udev on kernels marked bad 
+> > (see bisect log below):
+> > 
+> > ACTION=="add", \
+> >         KERNEL=="event*", \
+> >         SUBSYSTEM=="input", \
+> >         SYSFS{description}=="i8042 KBD port", \
+> >         NAME="input/%k", \
+> >         SYMLINK="input/i8042-kbd", \
+> >         MODE="0640", \
+> >         GROUP="event"
+> > 
+> > ACTION=="add", \
+> >         KERNEL=="event*", \
+> >         SUBSYSTEM=="input", \
+> >         SYSFS{manufacturer}=="Logitech", \
+> >         SYSFS{product}=="USB-PS/2 Optical Mouse", \
+> >         NAME="input/%k", \
+> >         SYMLINK="input/logitech-mouse", \
+> >         MODE="0640", \
+> >         GROUP="event"
 
-allmodconfig broke
+> Ugh, I thought this was all fixed up properly :(
 
-security/built-in.o: In function `rootplug_bprm_check_security':
-security/root_plug.c:64: undefined reference to `usb_find_device'
-security/root_plug.c:70: undefined reference to `usb_put_dev'
+I thought this as well :(
 
+But I'm a bit confused: The patch in git has
+
++       /* only bus-device parents get a "device"-link */
++       if (dev->parent && dev->parent->bus) {
++               error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
++                                         "device");
+
+and
+
+-               if (parent) {
+-                       sysfs_create_link(&dev->kobj, &dev->parent->kobj,
+-                                                       "device");
+
+which really look like two different things. (My original patch didn't
+have the check for the parent's bus.) Don't know what happened here :(
+
+(Simon: Do the links reappear if you change
+	if (dev->parent && dev->parent->bus)
+to
+	if (dev->parent)
+in device_add_class_symlinks()?)
