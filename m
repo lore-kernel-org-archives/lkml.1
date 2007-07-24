@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758944AbXGXPTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbXGXPUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758944AbXGXPTb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 11:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbXGXPTX
+	id S1758752AbXGXPUb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 11:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXGXPUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 11:19:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55457 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752866AbXGXPTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 11:19:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
-Date: Tue, 24 Jul 2007 17:27:34 +0200
-User-Agent: KMail/1.9.5
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Pavel Machek" <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       "Jeremy Maitin-Shepard" <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       "Kexec Mailing List" <kexec@lists.infradead.org>
-References: <9D7649D18729DE4BB2BD7B494F7FEDC236CF66@pdsmsx415.ccr.corp.intel.com>
-In-Reply-To: <9D7649D18729DE4BB2BD7B494F7FEDC236CF66@pdsmsx415.ccr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 24 Jul 2007 11:20:23 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:47208 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750903AbXGXPUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 11:20:22 -0400
+Date: Tue, 24 Jul 2007 11:20:18 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       jbeulich@novell.com, zach@vmware.com, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/11] x86: Fix alternatives and kprobes to remap write-protected kernel text
+Message-ID: <20070724152018.GA31729@Krystal>
+References: <20070720532.949522000@suse.de> <20070720153246.6597614E79@wotan.suse.de> <1185257169.1803.213.camel@localhost.localdomain> <20070724135750.GD26634@Krystal> <46A61821.3070703@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707241727.35589.rjw@sisk.pl>
+In-Reply-To: <46A61821.3070703@goop.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:19:42 up 7 days,  9:53,  3 users,  load average: 0.56, 0.39, 0.38
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 24 July 2007 16:00, Huang, Ying wrote:
-> >From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
-> >This is not the point.  There are memory regions that you should not
-> _restore_,
-> >because that will cause harm.
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Mathieu Desnoyers wrote:
+> > Hi Rusty,
 > >
-> >> On x86_64, there is another usage of nosave during processing E820
-> >> memory map. But I don't know why the memory region other than
-> E820_RAM
-> >> are marked as nosave. I think only the memory region of type E820_RAM
-> >> will be thought of normal memory, others will be thought as reserved.
-> Is
-> >> it sufficient just to check whether the page is reserved?
-> >
-> >No, it's not.
+> > Good catch. I also still wonder why alternative (except alternative smp,
+> > which is ok) and paravirt patching functions are not marked __init. I really
+> > hope they are never used when NMI, MCE are enabled or when threads may
+> > have been preempted in the site being patched, or it could result in an
+> > illegal instruction.
+> >   
 > 
-> The "/proc/iomem" records information of all memory regions including
-> "normal RAM" and all kinds of reserved regions, which is backed by
-> iomem_resource. On x86_64, it is initialized in the exact same way as
-> nosave region initialization.
+> We need to patch modules at load time.  Presumably an NMI/MCE handler
+> will not depend on code in a being-loaded module.
 > 
-> I think maybe we can replace the "nosave region" concepts with
-> "iomem_resource" (maybe need some enhancement).
+>     J
+> 
 
-Yes, I think that might be done.
+Oh yes, I see. That's ok since the code of a being-loaded module is not
+executed yet.
 
-Geetings,
-Rafael
+Thanks,
 
+Mathieu
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
