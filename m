@@ -1,94 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933462AbXGXJlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935867AbXGXJln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933462AbXGXJlM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 05:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935685AbXGXJkq
+	id S935867AbXGXJln (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 05:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933062AbXGXJkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 05:40:46 -0400
-Received: from hydra.gt.owl.de ([195.71.99.218]:53295 "EHLO hydra.gt.owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935556AbXGXJko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 05:40:44 -0400
-Date: Tue, 24 Jul 2007 11:40:42 +0200
-From: Florian Lohoff <flo@rfc822.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1 sky2 boot crash in sky2_mac_intr
-Message-ID: <20070724094042.GA6414@paradigm.rfc822.org>
-References: <20070724082205.GA19480@paradigm.rfc822.org> <20070724095008.0eb154fe@oldman.hamilton.local>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
-Content-Disposition: inline
-In-Reply-To: <20070724095008.0eb154fe@oldman.hamilton.local>
-Organization: rfc822 - pure communication
-X-SpiderMe: mh-200707241138@listme.rfc822.org
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 24 Jul 2007 05:40:51 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53455 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935700AbXGXJkt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 05:40:49 -0400
+Date: Tue, 24 Jul 2007 10:33:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Rob Landley <rob@landley.net>, "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
+Message-ID: <20070724103325.7c5b1d24@the-village.bc.nu>
+In-Reply-To: <alpine.LFD.0.999.0707231808560.3607@woody.linux-foundation.org>
+References: <1184980678.6344.1.camel@localhost.localdomain>
+	<20070723171238.1a832b31.akpm@linux-foundation.org>
+	<1185238908.1803.63.camel@localhost.localdomain>
+	<alpine.LFD.0.999.0707231808560.3607@woody.linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> So when you say "there's not enough poetry", next time you'll know why. 
+> You *really* don't want want poetry.
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That isn't poetry. We'll be doing Finnish jokes next 8). I'm also not
+sure that kernel documentation in rhyme is the best idea:
 
-On Tue, Jul 24, 2007 at 09:50:08AM +0100, Stephen Hemminger wrote:
-> The problem is related to power management. The PHY has a number of PCI c=
-onfiguration
-> registers for power control, and the function of these changes based on t=
-he version and
-> revision of the chip. The driver does work on older versions of the EC-U,=
- in
-> Fujitsu laptop's, it is just the new rev that is broken.
->=20
-> The driver should probably fail smarter (by not loading) if the PHY isn't=
- powered
-> up correctly, but that doesn't help your problem.
->=20
-> The vendor has provided me with documentation on many versions
-> of the chip, but I don't have doc's on the lastest revision differences o=
-f the EC Ultra,=20
-> so a proper solution is not easily available.  The best method for resolv=
-ing this would
-> be to first try the vendor driver version of sk98lin and see if that fixe=
-s it. If so,
-> then it is easy to change sky2, to match the phy setup in the vendor driv=
-er.
-> Another possibility is to look for places in sky2 driver where there are =
-places
-> that compare version/revision.
->=20
-> The most likely bits that need to change are in PCI registers: 0x80, 0x84=
- and 0x88
-> You could also load the windows driver and dump PCI config space (with ls=
-pci from
-> cygwin), and see what the settings are there.
->=20
-> I am away from my office for a month, and therefore away from any sky2
-> hardware for testing.=20
+---------------
 
-I'll try the above and keep you posted. The crash itself seems to be a
-2.6.23-rc1 regression though. I never experienced this with 2.6.22-rc5
-which i was running before.
+Ah look at all the laundered pages
+Ah look at all the laundered pages
 
-Flo
---=20
-Florian Lohoff                  flo@rfc822.org             +49-171-2280134
-	Those who would give up a little freedom to get a little=20
-          security shall soon have neither - Benjamin Franklin
+Handling Pages
+Pick up the list and the link where kswap has been
+A paging scheme
+Runs down the I/O
+Watching the queues that now keep me a list of the store
+Who is it for
 
---rwEMma7ioTxnRzrJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+All the laundered pages
+Where do they all come from
+All the laundered pages
+Where do they all belong
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Meeting bdflush
+Writing the pages of a disk file that no one will clear
+No task comes near
+Look at it working
+Sleeping a lot in the night when there's no pressure there
+What does it care
 
-iD8DBQFGpckaUaz2rXW+gJcRAoNYAKCt3aq5A3B1lqUbvoO57TRfnOQG1wCguTMG
-hCp1yaZ4hRGlLEem1zRgO4Q=
-=G1dI
------END PGP SIGNATURE-----
+All the laundered pages
+Where do they all come from
+All the laundered pages
+Where do they all belong
 
---rwEMma7ioTxnRzrJ--
+Ah look at all the laundered pages
+Ah look at all the laundered pages
+
+Oracle DB
+Died under load and was freed along with its name
+No admin came
+Good old bdflush
+Wiping the dirt from the pages as it walks down the chain
+Nothing was aged
+
+All the laundered pages
+(Ah look at all the laundered pages)
+Where do they all come from
+All the laundered pages
+(Ah look at all the laundered pages)
+Where do they all belong
+
+
