@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932307AbXGXUhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764777AbXGXUib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932307AbXGXUhx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXGXUhg
+	id S1764777AbXGXUib (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759671AbXGXUhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:37:36 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59016 "EHLO mail.dvmed.net"
+	Tue, 24 Jul 2007 16:37:39 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59019 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754909AbXGXUhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:37:35 -0400
-Message-ID: <46A66305.9090904@garzik.org>
-Date: Tue, 24 Jul 2007 16:37:25 -0400
+	id S1758233AbXGXUhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:37:36 -0400
+Message-ID: <46A6630C.9010502@garzik.org>
+Date: Tue, 24 Jul 2007 16:37:32 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: jes@trained-monkey.org, linux-acenic@sunsite.dk, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/net/acenic.c: fix check-after-use
-References: <20070723080232.GF26212@stusta.de>
-In-Reply-To: <20070723080232.GF26212@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH] eHEA: net_poll support
+References: <200707231605.03459.ossthema@de.ibm.com>
+In-Reply-To: <200707231605.03459.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
 X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
@@ -28,14 +32,16 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> The Coverity checker noted that we've already dereferenced "dev" when we 
-> check whether it's NULL.
+Jan-Bernd Themann wrote:
+> net_poll support for eHEA added
 > 
-> Since it's impossible that "dev" is NULL at this place this patch 
-> removes the NULL check.
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> ---
 > 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+>  drivers/net/ehea/ehea.h      |    2 +-
+>  drivers/net/ehea/ehea_main.c |   22 +++++++++++++++++++++-
+>  2 files changed, 22 insertions(+), 2 deletions(-)
 
 applied
 
