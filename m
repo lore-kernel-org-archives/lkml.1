@@ -1,31 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764845AbXGXOY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761600AbXGXO1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764845AbXGXOY0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbXGXOYT
+	id S1761600AbXGXO1e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXGXO10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:24:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56251 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758413AbXGXOYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:24:19 -0400
-Message-ID: <46A60B91.8000405@garzik.org>
-Date: Tue, 24 Jul 2007 10:24:17 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 24 Jul 2007 10:27:26 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49940 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750761AbXGXO1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 10:27:25 -0400
+Date: Tue, 24 Jul 2007 10:27:24 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: Towards eliminating the freezer
+In-Reply-To: <200707241021.35573.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0707241025020.3568-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Boring limeriks (was: [PATCH 1/7] lguest: documentation pt I:
- Preparation)
-References: <200707241720.30271.a1426z@gawab.com>
-In-Reply-To: <200707241720.30271.a1426z@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I thought limericks were supposed to be dirty... :)
+On Tue, 24 Jul 2007, Oliver Neukum wrote:
+
+> Am Montag 23 Juli 2007 schrieb Alan Stern:
+> > Now here's an idea which might work.  Can we require every caller of
+> > device_add() to hold some existing device's semaphore?  Normally it
+> > would be the semaphore of the new device's parent, but it could be a
+> > higher ancestor.  There even could be a single "root" semaphore for
+> > drivers registering a top-level device with no parent.
+> 
+> What prevents us from having a device addition semaphore?
+> Adding device is not critical to performance, is it?
+
+It would create a locking order violation.  Many drivers hold a device
+semaphore while registering a child device, so they would acquire your
+new semaphore while holding a device sem.  But the PM core needs to
+prevent registration while calling suspend() methods, so it would need
+to acquire the device sems while holding your new semaphore.
+
+Alan Stern
 
