@@ -1,49 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbXGXFfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbXGXFgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbXGXFfa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 01:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXGXFfU
+	id S1755487AbXGXFgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 01:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXGXFgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 01:35:20 -0400
-Received: from il.qumranet.com ([82.166.9.18]:57834 "EHLO il.qumranet.com"
+	Tue, 24 Jul 2007 01:36:01 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53012 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbXGXFfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 01:35:18 -0400
-Message-ID: <46A58F88.9050906@qumranet.com>
-Date: Tue, 24 Jul 2007 08:35:04 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	id S1750912AbXGXFgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 01:36:00 -0400
+Message-ID: <46A58FBA.5010505@garzik.org>
+Date: Tue, 24 Jul 2007 01:35:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>
-CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC 1/8]KVM: fix bugs in kvm sched integration patch
-References: <1185173492.2645.65.camel@sli10-conroe.sh.intel.com>	 <46A48713.9080404@qumranet.com> <1185241544.24201.15.camel@sli10-conroe.sh.intel.com>
-In-Reply-To: <1185241544.24201.15.camel@sli10-conroe.sh.intel.com>
-Content-Type: text/plain; charset=UTF-8
+To: Dmitry Torokhov <dtor@insightbb.com>
+CC: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/RFT 1/5] Input: implement proper locking in input core
+References: <20070724044520.913891976.dtor@insightbb.com> <20070724044858.192608314.dtor@insightbb.com>
+In-Reply-To: <20070724044858.192608314.dtor@insightbb.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 24 Jul 2007 08:35:04 +0300 (IDT)
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaohua Li wrote:
->>
->>> 1. vmcs_readl/vmcs_writel are called with preempt enabled
->>>  
->>>       
->> Why is that bad?
->>     
-> 1. raw_smp_processor_id()
-> 2. migrate to other cpu
-> 3. current->kvm_vcpu->cpu != the cpu id of step 1.
-> you will see the warning.
->   
+Dmitry Torokhov wrote:
+> +static void input_repeat_key(unsigned long data)
+> +{
+> +	struct input_dev *dev = (void *) data;
+>  
+> -			change_bit(code, dev->key);
+> +	spin_lock_irq(&dev->event_lock);
+[...]
+> +void input_inject_event(struct input_handle *handle,
+> +			unsigned int type, unsigned int code, int value)
+>  {
+> -	struct input_dev *dev = (void *) data;
+> +	struct input_dev *dev = handle->dev;
+> +	struct input_handle *grab;
+>  
+> -	if (!test_bit(dev->repeat_key, dev->key))
+> -		return;
+> +	if (is_event_supported(type, dev->evbit, EV_MAX)) {
+> +		spin_lock_irq(&dev->event_lock);
+>  
+> -	input_event(dev, EV_KEY, dev->repeat_key, 2);
+> -	input_sync(dev);
+> +		grab = rcu_dereference(dev->grab);
+> +		if (!grab || grab == handle)
+> +			input_handle_event(dev, type, code, value);
+>  
+> -	if (dev->rep[REP_PERIOD])
+> -		mod_timer(&dev->timer, jiffies + msecs_to_jiffies(dev->rep[REP_PERIOD]));
+> +		spin_unlock_irq(&dev->event_lock);
+> +	}
+>  }
+> +EXPORT_SYMBOL(input_inject_event);
+[...]
+> +	spin_lock_irq(&dev->event_lock);
+> +
+> +	/*
+> +	 * Simulate keyup events for all pressed keys so that handlers
+> +	 * are not left with "stuck" keys. The driver may continue
+> +	 * generate events even after we done here but they will not
+> +	 * reach any handlers.
+> +	 */
+> +	if (is_event_supported(EV_KEY, dev->evbit, EV_MAX)) {
+> +		for (code = 0; code <= KEY_MAX; code++) {
+> +			if (is_event_supported(code, dev->keybit, KEY_MAX) &&
+> +			    test_bit(code, dev->key)) {
+> +				input_pass_event(dev, EV_KEY, code, 0);
+> +			}
+> +		}
+> +		input_pass_event(dev, EV_SYN, SYN_REPORT, 1);
+> +	}
+> +
+> +	list_for_each_entry(handle, &dev->h_list, d_node)
+> +		handle->open = 0;
+> +
+> +	spin_unlock_irq(&dev->event_lock);
 
-Ah, that code is gone from preempt-hooks, hence I didn't understand you.
 
-The current version of the patchset does not change
-vmcs_readl/vmcs_writel.  So I think everything is safe.
+spin_lock_irq() should generally be avoided.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+In cases like the first case -- input_repeat_key() -- you are making 
+incorrect assumptions about the state of interrupts.  The other cases 
+are probably ok, but in general spin_lock_irq() has a long history of 
+being very fragile and quite often wrong.
+
+Use spin_lock_irqsave() to be safe.  Definitely in input_repeat_key(), 
+but I strongly recommend removing spin_lock_irq() from all your patches 
+here.
+
+	Jeff
+
 
