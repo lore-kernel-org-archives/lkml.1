@@ -1,71 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbXGXGph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761874AbXGXGqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbXGXGph (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 02:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXGXGpa
+	id S1761874AbXGXGqM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 02:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbXGXGp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 02:45:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:60567 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751030AbXGXGpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 02:45:30 -0400
-Subject: Re: [kvm-devel] [RFC 0/8]KVM: swap out guest pages
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <46A59A75.8050501@qumranet.com>
-References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com>
-	 <46A4829C.9080104@qumranet.com>
-	 <1185232218.1803.36.camel@localhost.localdomain>
-	 <46A58E8B.8050507@qumranet.com>
-	 <1185257474.1803.216.camel@localhost.localdomain>
-	 <46A59A75.8050501@qumranet.com>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 16:45:09 +1000
-Message-Id: <1185259509.1803.237.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 02:45:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38958 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbXGXGp4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 02:45:56 -0400
+Date: Mon, 23 Jul 2007 23:38:18 -0700
+From: Greg KH <greg@kroah.com>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Rob Landley <rob@landley.net>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel@vger.kernel.org, Michael-Luke Jones <mlj28@cam.ac.uk>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Rod Whitby <rod@whitby.id.au>,
+       Russell King <rmk@arm.linux.org.uk>, david@lang.hm
+Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
+Message-ID: <20070724063818.GB31806@kroah.com>
+References: <8I2t1-7jt-5@gated-at.bofh.it> <8IlPa-3Gl-61@gated-at.bofh.it> <8IzyM-86P-47@gated-at.bofh.it> <8Jb1c-7vL-3@gated-at.bofh.it> <8Jbuh-84N-3@gated-at.bofh.it> <E1ICDr7-0000e9-P4@be1.lrz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1ICDr7-0000e9-P4@be1.lrz>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 09:21 +0300, Avi Kivity wrote:
-> Rusty Russell wrote:
-> > Actually, get_user_pages() does that for you.  You have to make R/O any
-> > writable pte where the guest doesn't set the dirty bit (so you can trap
-> > it later) but last I put a printk in there, Linux doesn't do that.
+On Sat, Jul 21, 2007 at 02:14:41PM +0200, Bodo Eggert wrote:
+> Greg KH <greg@kroah.com> wrote:
+> > On Fri, Jul 20, 2007 at 08:21:39PM -0400, Rob Landley wrote:
 > 
-> Don't understand.  You mean Linux always sets the dirty bit when it
-> makes a page writable?  Surely some mistake.
+> >> I'm not trying to document /sys/devices.  I'm trying to document hotplug,
+> >> populating /dev, and things like firmware loading that fall out of that.
+> >> This requires use of sysfs, and I'm only trying to document as much of sysfs
+> >> as you need to do that.
+> > 
+> > Like I stated before, you do not need to even have sysfs mounted to have
+> > a dynamic /dev.
+> > 
+> > And why do you need to document populating /dev dynamically?  udev
+> > already solves this problem for you, it's not like people are going off
+> > and reinventing udev for their own enjoyment would not at least look at
+> > how it solves this problem first.
 > 
-> It probably does do so on demand write faults, but I'm sure the dirty
-> bit can get cleaned out by the swapper.
+> Turning your words around, you get: "Whatever one of these programs does
+> documents how dynamic devices should be handled." If this is true, any
+> change that makes one of these programs break is a kernel bug.
 
-Yeah, me dumb.  I should put that printk back and try doing a kernel
-compile.
+Not at all.  The kernel changed things numerous times that showed up as
+bugs in udev, and I fully admit that (and have in the past, numerous
+times.)
 
-> > If not, it does get harder.  A callback in the mm struct to say "I want
-> > to swap your page out" is required if we don't take a reference to the
-> > page.  Dirty bit handling would be an interesting issue (maybe the
-> > callback can say "No!" and dirty the page again?).
+> Besides that: How am I supposed to be able to correctly change udev if
+> there is no document telling me what would work and what happens to
+> work by accident?
+
+Um, the same way you change any codebase?  :)
+
+> > To do otherwise would be foolish :)
 > 
-> Since we have rmap, I don't see that as an issue.  Given a page, we can
-> easily drop all refs.  Though lguest doesn't do that, right?
+> Some people like to fool around and create even smaller wheels.
+> E.g. I'm changing the ACPI button driver to just call Ctrl_alt_del
+> in order not to have an extra process running and free 0.2 % of my RAM.
 
-Yeah, rmap might maul some puppies.  I could do poor man's rmap tho with
-one backref and a bit to say "there are more".  Then if that bit is set,
-I just drop all 4 shadows 8)
+That's great, and I have nothing against that, and encourage you to do
+so.
 
-> I'm also concerned with picking the correct page, but there's no good
-> solution here.
+But I don't suppose you are trying to complain to the ACPI developers
+about this whole thing now are you?  Are you hasseling them and
+demanding that they fully document their interfaces that you need to use
+so that you can hook into their code differently than they wish you to
+do so?
 
-But since you have rmap, if there was a cb when the the page was
-undirtied, you could undirty the ptes.  When there "I want to kick this
-page out" cb comes along, see if one of the ptes is now dirty, dirty the
-page and return "no".
+> > Firmware loading is fine to document if you wish to do so.  But again,
+> > why?  We already have multiple userspace programs that provide this
+> > feature for them.  Perhaps you want to document how to add firmware to a
+> > system in order for these different programs to pick them up?
+> 
+> I once tried to install a firmware for hotplug. Even finding the place whre
+> I'm supposed to put it was harder than rewriting that *beep* from start,
+> but I could not rewrite it because I didn't have any documentation.
 
-Maybe it's too simplistic, but it might work.
-Rusty.
+The firmware layer has never been fully documented, and the maintainer
+of the code died a few years ago.  It has been well known that this is
+one area of the kernel that needs a lot of attention and help.  Please
+feel free to chip in if you can do so.
 
+> Even digging in that pile of wrapper scrips in order to debug that thing
+> was a nightmare. (Having a number of places where the firmware will be
+> expected in one of many versions and formats stored using one of many
+> filenames can drive you nuts.)
+
+I fully agree.
+
+> > Or perhaps you want to document how to add this kind of functionality to
+> > your kernel driver so that it can handle firmware loading by using the
+> > firmware interface that the kernel provides?
+> 
+> I suppose that's missing, too. Or scattered in a number of contradicting
+> and mostly outdated howtos across the internet.
+
+Ir proably is, hence my suggestion on something that would be very
+valuable to have documented.
+
+> > If you just want to document the hotplug/uevent api, then do just that.
+> > However I think you are overreaching with your scope here and getting
+> > mighty confused in the process.
+> 
+> In other words: Grasping sysfs is not a feasible task? If this is true,
+> how can anybody reliably use sysfs?
+
+Huh, I never stated that at all.  If you wish to fully document sysfs
+and how it works, then great, do that.  But that was not the stated
+intent of this document, and is why I think the author got confused as
+he was attempting to put a narrow portion of how sysfs works as a
+reflection on how the whole of the body works.
+
+thanks,
+
+greg k-h
