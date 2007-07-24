@@ -1,59 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761915AbXGXCGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763344AbXGXCJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761915AbXGXCGQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 22:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbXGXCGG
+	id S1763344AbXGXCJF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 22:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbXGXCIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 22:06:06 -0400
-Received: from mga01.intel.com ([192.55.52.88]:43597 "EHLO mga01.intel.com"
+	Mon, 23 Jul 2007 22:08:55 -0400
+Received: from mail.windriver.com ([147.11.1.11]:44085 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752678AbXGXCGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 22:06:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,572,1175497200"; 
-   d="scan'208";a="271833808"
-Subject: Re: [kvm-devel] [RFC 0/8]KVM: swap out guest pages
-From: Shaohua Li <shaohua.li@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Avi Kivity <avi@qumranet.com>, kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070723123443.GB3674@infradead.org>
-References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com>
-	 <46A4829C.9080104@qumranet.com> <20070723122510.GA3674@infradead.org>
-	 <46A49F30.5010206@qumranet.com>  <20070723123443.GB3674@infradead.org>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 10:00:55 +0800
-Message-Id: <1185242455.24201.30.camel@sli10-conroe.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	id S1757297AbXGXCIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 22:08:55 -0400
+Date: Mon, 23 Jul 2007 19:07:37 -0700 (PDT)
+From: Jeremy Katz <jeremy.katz@windriver.com>
+X-X-Sender: jkatz@localhost.localdomain
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Stable Team <stable@kernel.org>
+Subject: Re: [PATCH] posix-timer: fix deletion race
+In-Reply-To: <20070720141529.GA218@tv-sign.ru>
+Message-ID: <Pine.LNX.4.63.0707231858420.9759@localhost.localdomain>
+References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain>
+ <1184662429.12353.426.camel@chaos> <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
+ <1184703427.12353.476.camel@chaos> <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
+ <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
+ <20070718161156.GA761@tv-sign.ru> <Pine.LNX.4.63.0707181203110.3157@localhost.localdomain>
+ <20070720141529.GA218@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-OriginalArrivalTime: 24 Jul 2007 02:07:38.0195 (UTC) FILETIME=[6898D230:01C7CD97]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 20:34 +0800, Christoph Hellwig wrote:
-> On Mon, Jul 23, 2007 at 03:29:36PM +0300, Avi Kivity wrote:
-> > >Actually it requires lots of deep down VM internals symbols that'll
-> never
-> > >get exported.
-> > >
-> > > 
-> >
-> > What's "it" here?  kvm-specific address space or generic vmas.
-> 
-> The patches in this thread.
-> 
-> > Generic vmas will be more intrusive AFAICT.
-> 
-> People use intrusive differently.  Doing big changes to core code is
-> not
-> a problem if we actually get a proper interface.  Just exporting core
-> function without other changes and then writing code in modules that
-> pokes into internals is much much worse.
-The patch follows the same way shm swap out pages. The only difference
-is kvm is a module but shm not. why kvm can't use the symbols shm used?
+On Fri, 20 Jul 2007, Oleg Nesterov wrote:
 
-Sure, it's possible to write guest memory to a file so not use the
-symbols, if you really hate this, I'll consider the alternative method.
+> On 07/18, Jeremy Katz wrote:
+>>
+>> On Wed, 18 Jul 2007, Oleg Nesterov wrote:
+>>
+>>> Jeremy, I agree with Thomas that your patch should not be right, but it
+>>> does make a difference. Perhaps this is just the timing, but who knows.
+>>> Could you add some printk's to be sure that lock_timer() actually fails
+>>> while it never should?
+>>
+>> Agreed.
+>>
+>> Unfortunately, adding any significant output appears to alter the
+>> situation to the point where the issue either does not occur, or takes
+>> significantly longer to surface.
+>
+> No, no, I didn't mean any significant output. You changed itimer_delete()
+>
+> 	>  -       spin_lock_irqsave(&timer->it_lock, flags);
+> 	>  +       /* timer already deleted? */
+> 	>  +       if (lock_timer(timer->it_id, &flags) == NULL)
+> 	>  +               return;
+>
+> This change should not help, lock_timer() should always succeed here.
+> But since it makes a difference, we can make something like
+>
+> 	if (lock_timer(timer->it_id, &flags) == NULL) {
+> 		printk("Impossible! but it happened.\n");
+> 		return;
+> 	}
+>
+> The same for posix_timer_fn().
 
-Thanks,
-Shaohua
+Ahh, of course.  I did try that at some point, and remember seeing at 
+least the occasional failure.  This time, taking the spinlock and then 
+checking for a valid timer ID, I did not see the locking fail.  I did see 
+the attempt to use a freed sigqueue, further suggesting my 'fix' merely 
+altered the timing sufficiently to hide the issue.
+
+> I still can't believe we have a double-free problem, this looks imposiible.
+> Do you see the
+>
+> 	"idr_remove called for id=%d which is not allocated.\n"
+>
+> in syslog?
+
+No.  I also added some accounting with atomic counters, and don't see 
+evidence of a second call to release_posix_timer.
+
+> Could you try the patch below? Perhaps we have some wierd problem with
+> ->sigq corruption.
+
+Tried, with apparent effect.
+
+To add to the body of data: Turning off hyperthreading in the hardware 
+does not resolve the issue.  Limiting the system to one CPU does appear to 
+work.
+
+
+Jeremy
