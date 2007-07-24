@@ -1,91 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbXGXEKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXGXETi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbXGXEKf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 00:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXGXEKW
+	id S1754132AbXGXETi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 00:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXGXETa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 00:10:22 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:49492 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbXGXEKU (ORCPT
+	Tue, 24 Jul 2007 00:19:30 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:32120 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750738AbXGXET3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 00:10:20 -0400
-Message-ID: <46A57B40.9010807@gmail.com>
-Date: Tue, 24 Jul 2007 06:08:32 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 24 Jul 2007 00:19:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=a+Kvwr+9thuuKN79JQ6djx4yHhBczlW/FpUpU3E3IGAblmbBL1ehWYq4IfM6DZoRDQgj5sJkMIlMrVyE7peckS+chxLaNS4dIKdSBAJM2PXhjuRLaSeTb2E563KEr4s4VaTJFSHIslHgA1mHugLlDabetcjrZeZZx/upaOv6/wE=  ;
+X-YMail-OSG: b00QYzwVM1mU8VSga.BWsMDzbdaqWTqhrOo26uGerQxwBsrc0cm1GnYxewhK4lF.5kRXKr3zYw--
+Message-ID: <46A57DCB.7050609@yahoo.com.au>
+Date: Tue, 24 Jul 2007 14:19:23 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>
-CC: linux-fsdevel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFH] Partition table recovery
-References: <200707200813.03553.a1426z@gawab.com> <46A24846.7050803@gmail.com> <20070722011141.GJ26752@thunk.org> <200707220710.31402.a1426z@gawab.com> <20070722162802.GA20174@thunk.org> <46A46399.5090406@gmail.com> <20070723135832.GD19927@thunk.org>
-In-Reply-To: <20070723135832.GD19927@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/8] i386: bitops: Kill volatile-casting of memory addresses
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <20070723160548.22137.66072.sendpatchset@cselinux1.cse.iitk.ac.in> <alpine.LFD.0.999.0707231046140.3607@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707231046140.3607@woody.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/23/2007 03:58 PM, Theodore Tso wrote:
+Linus Torvalds wrote:
+> 
+> On Mon, 23 Jul 2007, Satyam Sharma wrote:
+> 
+> 
+>>[4/8] i386: bitops: Kill volatile-casting of memory addresses
+> 
+> 
+> This is wrong.
+> 
+> The "const volatile" is so that you can pass an arbitrary pointer. The 
+> only kind of abritraty pointer is "const volatile".
+> 
+> In other words, the "volatile" has nothing at all to do with whether the 
+> memory is volatile or not (the same way "const" has nothing to do with it: 
+> it's purely a C type *safety* issue, exactly the same way "const" is a 
+> type safety issue.
+> 
+> A "const" on a pointer doesn't mean that the thing it points to cannot 
+> change. When you pass a source pointer to "strlen()", it doesn't have to 
+> be constant. But "strlen()" takes a "const" pointer, because it work son 
+> constant pointers *too*.
+> 
+> Same deal here.
+> 
+> Admittedly this may be mostly historic, but regardless - the "volatiles" 
+> are right.
+> 
+> Using volatile on *data* is generally considered incorrect and bad taste, 
+> but using it in situations like this potentially makes sense.
+> 
+> Of course, if we remove all "volatiles" in data in the kernel (with the 
+> possible exception of "jiffies"), we can then remove them from function 
+> declarations too, but it should be done in that order.
 
-> Well, I'm considering this to be a MBR backup scheme, so Minix and BSD 
-> slices are legacy systems which are out of scope.  If they are busted in
-> the same way as MBR in terms of not having redundant backups of critical
-> data, when they have a lot fewer excuses that MBR, and they can address
-> that issue in their own way.  The number of Linux users that also have
-> Minix and BSD partitions are a vanishingly small number in any case.
+Well, regardless, it still forces the function to treat the pointer
+target as volatile, won't it? It definitely prevents valid optimisations
+that would be useful for me in mm/page_alloc.c where page flags are
+being set up or torn down or checked with non-atomic bitops.
 
-I'd in fact expect quite a few people to have a FreeBSD partition around. 
-And MINIX if they are in university and in an operating systems course...
+OK, not the i386 functions as much because they are all in asm anwyay,
+but in general (btw. why does i386 or any architecture define their own
+non-atomic bitops? If the version in asm-generic/bitops/non-atomic.h
+is not good enough then surely it is a bug in gcc or that file?)
 
-But "they should take whatever precautions they want themselves" is a valid 
-argument.
+Anyway by type safety, do you mean it will stop the compiler from
+warning if a pointer to a volatile is passed to the bitop? If so, then
+why don't we just kill all the volatiles out of here and fix any
+warnings that comeup? I doubt there would be many, and of those, some
+might show up real synchronisation problems.
 
-[ blkid ]
-
-> Yeah, good point, I'd have to add that support into blkid.  It's been
-> on my todo list, but I just haven't gotten around to it yet.
-
-I'll for now stop updating the partbackup thingy as posted. Given that Linux 
-  only follows the first extended in the list of extendeds (which sort of 
-destroys the nice recursion anyway) it might want to be iterative instead of 
-recursive if the thing has a future -- not very important though.
-
-> My concern of sysfs is that #1, it won't work on older kernels since
-> you would need to add new fields to backup what we want,
-
-I'd be okay with that.
-
-> and #2, I'm still fundamentally distrustful of sysfs because there isn't
-> a bright line between what is an exported interface that will never
-> change, and something which is considered an "internal implementation
-> detail" that can change whenever some kernel hacker feels like it.  (Or
-> when some kernel hacker is careless...)  So as far as I'm concerned sysfs
-> is a terrible, TERRIBLE way to export a published interface where we 
-> promise stability to userspace.
-
-Oh come on, that's going overboard a bit, it's not all _that_ bad! Finding 
-say "sda" will be possible without breaking too many times. Admittedly, the 
-kernel's partittion scanning order is also not likely to change as it would 
-certainly break userspace, but code duplication, with the possiblity of bugs 
-slipping in at least userspace-ways (considering the kernel the reference no 
-matter what it does) is a concern. Somewhat. A little.
-
-> So I'd just as soon do this in userspace; after all, the entire partition
-> manager (and there are multiple ones; fdisk, sfdisk, gpart, etc.) all in
-> userspace, and that needs to be in synch with the kernel partition
-> reading code anyway.  So one more userspace implementation is in my mind
-> much cleaner than trying to push the needed functionality into sysfs, and
-> then hoping against hope that it doesn't accidentally change in the
-> future.
-
-* rene envisions /lib/libpart.so...
-
-Not to mention my Grand Visions of a totally new Linux native partitioning 
-scheme probably modelled after BSD slices (as also mentioned in a previous 
-message just now). Or perhaps LVM already fills that role comfortably. It's 
-certainly what I hear everyone talking about these days.
-
-Rene.
+-- 
+SUSE Labs, Novell Inc.
