@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934186AbXGXBSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934567AbXGXBTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934186AbXGXBSy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 21:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbXGXBSn
+	id S934567AbXGXBTi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 21:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbXGXBT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 21:18:43 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51817 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759311AbXGXBSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 21:18:43 -0400
-Message-ID: <46A5536E.6010606@garzik.org>
-Date: Mon, 23 Jul 2007 21:18:38 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Mon, 23 Jul 2007 21:19:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33347 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761395AbXGXBTY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 21:19:24 -0400
+Date: Mon, 23 Jul 2007 18:18:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Rob Landley <rob@landley.net>, "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
+In-Reply-To: <1185238908.1803.63.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.0.999.0707231808560.3607@woody.linux-foundation.org>
+References: <1184980678.6344.1.camel@localhost.localdomain> 
+ <20070723171238.1a832b31.akpm@linux-foundation.org>
+ <1185238908.1803.63.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.23-rc1: i386 section mismatch warnings
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-make allmodconfig on i386:
 
-WARNING: vmlinux(.text+0xc0101183): Section mismatch: reference to 
-.init.text:start_kernel (between 'is386' and 'check_x87')
-WARNING: vmlinux(.text+0xc02cfcdb): Section mismatch: reference to 
-.init.text:kernel_init (between 'rest_init' and 'kthreadd_setup')
-WARNING: vmlinux(.text+0xc02d5ed2): Section mismatch: reference to 
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02d5ede): Section mismatch: reference to 
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02d5eea): Section mismatch: reference to 
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02d5ef6): Section mismatch: reference to 
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02cfda4): Section mismatch: reference to 
-.init.text:__alloc_bootmem_node (between 'alloc_node_mem_map' and 
-'zone_wait_table_init')
-WARNING: vmlinux(.text+0xc02cfe4e): Section mismatch: reference to 
-.init.text:__alloc_bootmem_node (between 'zone_wait_table_init' and 
-'vgacon_scrollback_startup')
-WARNING: vmlinux(.text+0xc02d64c6): Section mismatch: reference to 
-.init.text: (between 'iret_exc' and '_etext')
-WARNING: vmlinux(.text+0xc02cfea7): Section mismatch: reference to 
-.init.text:__alloc_bootmem (between 'vgacon_scrollback_startup' and 
-'fb_find_logo')
-WARNING: vmlinux(.text+0xc02cfecb): Section mismatch: reference to 
-.init.data:logo_linux_mono (between 'fb_find_logo' and 'schedule')
-WARNING: vmlinux(.text+0xc02cfed5): Section mismatch: reference to 
-.init.data:logo_linux_clut224 (between 'fb_find_logo' and 'schedule')
-WARNING: vmlinux(.text+0xc02cfeda): Section mismatch: reference to 
-.init.data:logo_linux_vga16 (between 'fb_find_logo' and 'schedule')
-WARNING: vmlinux(.text+0xc02d6612): Section mismatch: reference to 
-.init.text: (between 'iret_exc' and '_etext')
+
+On Tue, 24 Jul 2007, Rusty Russell wrote:
+> 
+> Indeed, no code changes, and I feel strongly that it should go into
+> 2.6.23 because it's *fun*.   And (as often complained) there's not
+> enough poetry in the kernel.
+
+There's a reason for that.
+
+	There once was a lad from Braidwood
+	With a wife and a hatred for FUD
+	  He hacked kernels for fun,
+	  couldn't get them to run.
+	But he always felt that he should.
+
+See?
+
+So when you say "there's not enough poetry", next time you'll know why. 
+You *really* don't want want poetry.
+
+		Linus
+
+PS. Nothing rhymes with Ballalaba.
