@@ -1,65 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934632AbXGXCOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbXGXCPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934632AbXGXCOo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 22:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbXGXCMT
+	id S1761755AbXGXCPN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 22:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761801AbXGXCMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 22:12:19 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:40699 "HELO ustc.edu.cn"
+	Mon, 23 Jul 2007 22:12:20 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:40668 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1757664AbXGXCMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759471AbXGXCMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Jul 2007 22:12:13 -0400
-Message-ID: <385243123.51698@ustc.edu.cn>
+Message-ID: <385243123.88041@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070724020042.882116065@mail.ustc.edu.cn>
+Message-Id: <20070724020042.426486651@mail.ustc.edu.cn>
 References: <20070724020009.677809022@mail.ustc.edu.cn>
 User-Agent: quilt/0.45-1
-Date: Tue, 24 Jul 2007 10:00:17 +0800
+Date: Tue, 24 Jul 2007 10:00:14 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 08/10] readahead: remove the limit max_sectors_kb imposed on max_readahead_kb
-Content-Disposition: inline; filename=remove-readahead-size-limit.patch
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH 05/10] readahead: basic support of interleaved reads
+Content-Disposition: inline; filename=readahead-interleaved-reads.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the size limit max_sectors_kb imposed on max_readahead_kb.
+This is a simplified version of the pagecache context based readahead.
+It handles the case of multiple threads reading on the same fd and invalidating
+each others' readahead state. It does the trick by scanning the pagecache and
+recovering the current read stream's readahead status.
 
-The size restriction is unreasonable. Especially when max_sectors_kb cannot
-grow larger than max_hw_sectors_kb, which can be rather small for some disk
-drives.
+The algorithm works in a opportunistic way, in that it do not try to detect
+interleaved reads _actively_, which requires a probe into the page cache(which
+means a little more overheads for random reads). It only tries to handle a
+previously started sequential readahead whose state was overwritten by
+another concurrent stream, and it can do this job pretty well.
 
-Cc: Jens Axboe <jens.axboe@oracle.com>
+Negative and positive examples(or what you can expect from it):
+
+1) it cannot detect and serve perfect request-by-request interleaved reads
+   right:
+	time	stream 1  stream 2
+	0 	1         
+	1 	          1001
+	2 	2
+	3 	          1002
+	4 	3
+	5 	          1003
+	6 	4
+	7 	          1004
+	8 	5
+	9	          1005
+Here no single readahead will be carried out.
+
+2) However, if it's two concurrent reads by two threads, the chance of the
+   initial sequential readahead be started is huge. Once the first sequential
+   readahead is started for a stream, this patch will ensure that the readahead
+   window continues to rampup and won't be disturbed by other streams.
+
+	time	stream 1  stream 2
+	0 	1         
+	1 	2
+	2 	          1001
+	3 	3
+	4 	          1002
+	5 	          1003
+	6 	4
+	7 	5
+	8 	          1004
+	9 	6
+	10	          1005
+	11	7
+	12	          1006
+	13	          1007
+Here steam 1 will start a readahead at page 2, and stream 2 will start its
+first readahead at page 1003. From then on the two streams will be served right.
+
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/ll_rw_blk.c |    9 ---------
- 1 file changed, 9 deletions(-)
+ mm/readahead.c |   33 +++++++++++++++++++++++----------
+ 1 file changed, 23 insertions(+), 10 deletions(-)
 
---- linux-2.6.22-rc6-mm1.orig/block/ll_rw_blk.c
-+++ linux-2.6.22-rc6-mm1/block/ll_rw_blk.c
-@@ -3945,7 +3945,6 @@ queue_max_sectors_store(struct request_q
- 			max_hw_sectors_kb = q->max_hw_sectors >> 1,
- 			page_kb = 1 << (PAGE_CACHE_SHIFT - 10);
- 	ssize_t ret = queue_var_store(&max_sectors_kb, page, count);
--	int ra_kb;
+--- linux-2.6.22-rc6-mm1.orig/mm/readahead.c
++++ linux-2.6.22-rc6-mm1/mm/readahead.c
+@@ -371,6 +371,29 @@ ondemand_readahead(struct address_space 
+ 	}
  
- 	if (max_sectors_kb > max_hw_sectors_kb || max_sectors_kb < page_kb)
- 		return -EINVAL;
-@@ -3954,14 +3953,6 @@ queue_max_sectors_store(struct request_q
- 	 * values synchronously:
- 	 */
- 	spin_lock_irq(q->queue_lock);
+ 	/*
++	 * Hit a marked page without valid readahead state.
++	 * E.g. interleaved reads.
++	 * Query the pagecache for async_size, which normally equals to
++	 * readahead size. Ramp it up and use it as the new readahead size.
++	 */
++	if (hit_readahead_marker) {
++		pgoff_t start;
++
++		read_lock_irq(&mapping->tree_lock);
++		start = radix_tree_next_hole(&mapping->page_tree, offset, max+1);
++		read_unlock_irq(&mapping->tree_lock);
++
++		if (!start || start - offset > max)
++			return 0;
++
++		ra->start = start;
++		ra->size = start - offset;	/* old async_size */
++		ra->size = get_next_ra_size(ra, max);
++		ra->async_size = ra->size;
++		goto readit;
++	}
++
++	/*
+ 	 * It may be one of
+ 	 * 	- first read on start of file
+ 	 * 	- sequential cache miss
+@@ -381,16 +404,6 @@ ondemand_readahead(struct address_space 
+ 	ra->size = get_init_ra_size(req_size, max);
+ 	ra->async_size = ra->size > req_size ? ra->size - req_size : ra->size;
+ 
 -	/*
--	 * Trim readahead window as well, if necessary:
+-	 * Hit on a marked page without valid readahead state.
+-	 * E.g. interleaved reads.
+-	 * Not knowing its readahead pos/size, bet on the minimal possible one.
 -	 */
--	ra_kb = q->backing_dev_info.ra_pages << (PAGE_CACHE_SHIFT - 10);
--	if (ra_kb > max_sectors_kb)
--		q->backing_dev_info.ra_pages =
--				max_sectors_kb >> (PAGE_CACHE_SHIFT - 10);
+-	if (hit_readahead_marker) {
+-		ra->start++;
+-		ra->size = get_next_ra_size(ra, max);
+-	}
 -
- 	q->max_sectors = max_sectors_kb << 1;
- 	spin_unlock_irq(q->queue_lock);
- 
+ readit:
+ 	return ra_submit(ra, mapping, filp);
+ }
 
 --
