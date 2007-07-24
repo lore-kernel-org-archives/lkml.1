@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934982AbXGXI4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935078AbXGXI44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934982AbXGXI4Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765151AbXGXI4M
+	id S935078AbXGXI44 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933261AbXGXI4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:56:12 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:26275 "EHLO relay.sw.ru"
+	Tue, 24 Jul 2007 04:56:44 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:43209 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763150AbXGXI4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:56:11 -0400
-Date: Tue, 24 Jul 2007 12:56:42 +0400
+	id S932439AbXGXI4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 04:56:43 -0400
+Date: Tue, 24 Jul 2007 12:57:11 +0400
 From: Dmitry Monakhov <dmonakhov@openvz.org>
 To: linux-kernel@vger.kernel.org
 Cc: device-mapper development <dm-devel@redhat.com>
-Subject: [PATCH 2/8] dm: Fix workqueue leak for raid5
-Message-ID: <20070724085642.GB16507@dnb.sw.ru>
+Subject: [PATCH 3/8] dm: dm-raid1 resource leaks fixes.
+Message-ID: <20070724085711.GC16507@dnb.sw.ru>
 Mail-Followup-To: linux-kernel@vger.kernel.org,
 	device-mapper development <dm-devel@redhat.com>
 MIME-Version: 1.0
@@ -26,24 +26,78 @@ User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+- Add missing 'dm_io_client_destroy' to alloc_context error path.
+- Reorganize mirror constructor error path in order to prevent
+  workqueue leakage.
+
 Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 ---
- drivers/md/raid5.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/md/dm-raid1.c |   28 +++++++++++++++-------------
+ 1 files changed, 15 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 0f30826..79dd2c7 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -4985,6 +4985,8 @@ static int run(mddev_t *mddev)
- abort:
- 	if (conf) {
- 		print_raid5_conf(conf);
-+		if (conf->workqueue)
-+			destroy_workqueue(conf->workqueue);
- 		safe_put_page(conf->spare_page);
- 		kfree(conf->disks);
- 		kfree(conf->stripe_hashtbl);
+diff --git a/drivers/md/dm-raid1.c b/drivers/md/dm-raid1.c
+index 144071e..58b9f1a 100644
+--- a/drivers/md/dm-raid1.c
++++ b/drivers/md/dm-raid1.c
+@@ -974,6 +974,7 @@ static struct mirror_set *alloc_context(unsigned int nr_mirrors,
+ 
+ 	if (rh_init(&ms->rh, ms, dl, region_size, ms->nr_regions)) {
+ 		ti->error = "Error creating dirty region hash";
++		dm_io_client_destroy(ms->io_client);
+ 		kfree(ms);
+ 		return NULL;
+ 	}
+@@ -1163,16 +1164,14 @@ static int mirror_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+ 	ms->kmirrord_wq = create_singlethread_workqueue("kmirrord");
+ 	if (!ms->kmirrord_wq) {
+ 		DMERR("couldn't start kmirrord");
+-		free_context(ms, ti, m);
+-		return -ENOMEM;
++		r = -ENOMEM;
++		goto out_free_context;
+ 	}
+ 	INIT_WORK(&ms->kmirrord_work, do_mirror);
+ 
+ 	r = parse_features(ms, argc, argv, &args_used);
+-	if (r) {
+-		free_context(ms, ti, ms->nr_mirrors);
+-		return r;
+-	}
++	if (r)
++		goto out_destroy_wq;
+ 
+ 	argv += args_used;
+ 	argc -= args_used;
+@@ -1188,19 +1187,22 @@ static int mirror_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+ 
+ 	if (argc) {
+ 		ti->error = "Too many mirror arguments";
+-		free_context(ms, ti, ms->nr_mirrors);
+-		return -EINVAL;
++		r = -EINVAL;
++		goto out_destroy_wq;
+ 	}
+ 
+ 	r = kcopyd_client_create(DM_IO_PAGES, &ms->kcopyd_client);
+-	if (r) {
+-		destroy_workqueue(ms->kmirrord_wq);
+-		free_context(ms, ti, ms->nr_mirrors);
+-		return r;
+-	}
++	if (r)
++		goto out_destroy_wq;
+ 
+ 	wake(ms);
+ 	return 0;
++
++out_destroy_wq:
++	destroy_workqueue(ms->kmirrord_wq);
++out_free_context:
++	free_context(ms, ti, ms->nr_mirrors);
++	return r;
+ }
+ 
+ static void mirror_dtr(struct dm_target *ti)
 -- 
 1.5.2.2
 
