@@ -1,100 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbXGXFgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbXGXFjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbXGXFgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 01:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXGXFgB
+	id S1757612AbXGXFjR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 01:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXGXFjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 01:36:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53012 "EHLO mail.dvmed.net"
+	Tue, 24 Jul 2007 01:39:07 -0400
+Received: from il.qumranet.com ([82.166.9.18]:41358 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbXGXFgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 01:36:00 -0400
-Message-ID: <46A58FBA.5010505@garzik.org>
-Date: Tue, 24 Jul 2007 01:35:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1752115AbXGXFjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 01:39:06 -0400
+Message-ID: <46A5906B.6080301@qumranet.com>
+Date: Tue, 24 Jul 2007 08:38:51 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Dmitry Torokhov <dtor@insightbb.com>
-CC: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/RFT 1/5] Input: implement proper locking in input core
-References: <20070724044520.913891976.dtor@insightbb.com> <20070724044858.192608314.dtor@insightbb.com>
-In-Reply-To: <20070724044858.192608314.dtor@insightbb.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Shaohua Li <shaohua.li@intel.com>
+CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC 7/8]KVM: swap out guest pages
+References: <1185173505.2645.71.camel@sli10-conroe.sh.intel.com>	 <46A491C4.8010302@qumranet.com> <1185241908.24201.22.camel@sli10-conroe.sh.intel.com>
+In-Reply-To: <1185241908.24201.22.camel@sli10-conroe.sh.intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 24 Jul 2007 08:38:51 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> +static void input_repeat_key(unsigned long data)
-> +{
-> +	struct input_dev *dev = (void *) data;
->  
-> -			change_bit(code, dev->key);
-> +	spin_lock_irq(&dev->event_lock);
-[...]
-> +void input_inject_event(struct input_handle *handle,
-> +			unsigned int type, unsigned int code, int value)
->  {
-> -	struct input_dev *dev = (void *) data;
-> +	struct input_dev *dev = handle->dev;
-> +	struct input_handle *grab;
->  
-> -	if (!test_bit(dev->repeat_key, dev->key))
-> -		return;
-> +	if (is_event_supported(type, dev->evbit, EV_MAX)) {
-> +		spin_lock_irq(&dev->event_lock);
->  
-> -	input_event(dev, EV_KEY, dev->repeat_key, 2);
-> -	input_sync(dev);
-> +		grab = rcu_dereference(dev->grab);
-> +		if (!grab || grab == handle)
-> +			input_handle_event(dev, type, code, value);
->  
-> -	if (dev->rep[REP_PERIOD])
-> -		mod_timer(&dev->timer, jiffies + msecs_to_jiffies(dev->rep[REP_PERIOD]));
-> +		spin_unlock_irq(&dev->event_lock);
-> +	}
->  }
-> +EXPORT_SYMBOL(input_inject_event);
-[...]
-> +	spin_lock_irq(&dev->event_lock);
-> +
-> +	/*
-> +	 * Simulate keyup events for all pressed keys so that handlers
-> +	 * are not left with "stuck" keys. The driver may continue
-> +	 * generate events even after we done here but they will not
-> +	 * reach any handlers.
-> +	 */
-> +	if (is_event_supported(EV_KEY, dev->evbit, EV_MAX)) {
-> +		for (code = 0; code <= KEY_MAX; code++) {
-> +			if (is_event_supported(code, dev->keybit, KEY_MAX) &&
-> +			    test_bit(code, dev->key)) {
-> +				input_pass_event(dev, EV_KEY, code, 0);
-> +			}
-> +		}
-> +		input_pass_event(dev, EV_SYN, SYN_REPORT, 1);
-> +	}
-> +
-> +	list_for_each_entry(handle, &dev->h_list, d_node)
-> +		handle->open = 0;
-> +
-> +	spin_unlock_irq(&dev->event_lock);
+Shaohua Li wrote:
+>>>  
+>>>       
+>> You're not removing any shadows of the page, in case that page is a
+>> guest page table.  But I don't see anything wrong with it -- the page
+>> won't change while it's in swap.
+>>     
+> You are right. Should we?
+>   
 
+I don't think so.  It's just strange to have shadows for a guest page
+that is swapped out, so I pointed that out.  But as the page cannot
+change in swap, everything is safe.  I guess that kernel page tables
+could be swapped out after a short while in a guest that doesn't swap
+its own kernel pages.
 
-spin_lock_irq() should generally be avoided.
-
-In cases like the first case -- input_repeat_key() -- you are making 
-incorrect assumptions about the state of interrupts.  The other cases 
-are probably ok, but in general spin_lock_irq() has a long history of 
-being very fragile and quite often wrong.
-
-Use spin_lock_irqsave() to be safe.  Definitely in input_repeat_key(), 
-but I strongly recommend removing spin_lock_irq() from all your patches 
-here.
-
-	Jeff
-
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
