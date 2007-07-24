@@ -1,83 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934420AbXGXIbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763515AbXGXIf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934420AbXGXIbw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764492AbXGXIbk
+	id S1763515AbXGXIf4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXGXIfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:31:40 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:46151 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761058AbXGXIbi (ORCPT
+	Tue, 24 Jul 2007 04:35:47 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51196 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752480AbXGXIfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:31:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=sX0nRVMokb2PYJSS44H+uh3jWo5LKeoPYpb3v+LP6Pl6i1FKPTbnvMD0SWrAS8kTpJtV7sLKaQ6E2nCzBVI/FzJR8DIQqS0TVyY2ButrNiQguGj5UZnPiRmZGgct9VYziYf9vyqqg9sWkbQMUwf9dpsAHx6DPx7GvVs68lz6KiY=  ;
-X-YMail-OSG: EtmMsoYVM1n7kuOMQAYr.O42PMvU_8plkRfPrGPKBtxsYLADrzgpONrorb1mKQ2fmCgP6B50hQ--
-Message-ID: <46A5B8E4.1050503@yahoo.com.au>
-Date: Tue, 24 Jul 2007 18:31:32 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 8/8] i386: bitops: smp_mb__{before, after}_clear_bit()
- definitions
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <20070723160608.22137.14790.sendpatchset@cselinux1.cse.iitk.ac.in> <46A577AA.4020804@yahoo.com.au> <Pine.LNX.4.64.0707241208440.1433@cselinux1.cse.iitk.ac.in> <46A5AECB.3060208@goop.org>
-In-Reply-To: <46A5AECB.3060208@goop.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 24 Jul 2007 04:35:45 -0400
+Date: Tue, 24 Jul 2007 01:34:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       mark.fasheh@oracle.com, dan.j.williams@intel.com,
+       "Nelson, Shannon" <shannon.nelson@intel.com>
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Message-Id: <20070724013455.691e6752.akpm@linux-foundation.org>
+In-Reply-To: <20070724082207.GN3287@kernel.dk>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	<20070723183839.GA5874@martell.zuzino.mipt.ru>
+	<20070723190152.GA5755@martell.zuzino.mipt.ru>
+	<20070723132431.42afbae8.akpm@linux-foundation.org>
+	<20070723204045.GD5755@martell.zuzino.mipt.ru>
+	<20070723210153.GA5753@martell.zuzino.mipt.ru>
+	<20070723141137.171e4ac1.akpm@linux-foundation.org>
+	<20070723220446.GA5822@martell.zuzino.mipt.ru>
+	<20070723152712.02ded067.akpm@linux-foundation.org>
+	<20070724081750.GM3287@kernel.dk>
+	<20070724082207.GN3287@kernel.dk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Satyam Sharma wrote:
-> 
->>Consider this (the above two functions exist only for clear_bit(),
->>the atomic variant, as you already know), the _only_ memory reference
->>we care about is that of the address of the passed bit-string:
->>
->>(1) The compiler must not optimize / elid it (i.e. we need to disallow
->>    compiler optimization for that reference) -- but we've already taken
->>    care of that with the __asm__ __volatile__ and the constraints on
->>    the memory "addr" operand there, and,
->>(2) For the i386, it also includes an implicit memory (CPU) barrier
->>    already.
->>
->>So I /think/ it makes sense to let the compiler optimize _other_ memory
->>references across the call to clear_bit(). There's a difference. I think
->>we'd be safe even if we do this, because the synchronization in callers
->>must be based upon the _passed bit-string_, otherwise _they_ are the
->>ones who're buggy.
->>
->>[ However, elsewhere Jeremy Fitzhardinge mentioned the case of
->>  some callers, for instance, doing a memset() on an alias of
->>  the same bit-string. But again, I think that is dodgy/buggy/
->>  extremely border-line usage on the caller's side itself ...
->>  *unless* the caller is doing that inside a higher-level lock
->>  anyway, in which case he wouldn't be needing to use the
->>  locked variants either ... ]
->>  
-> 
-> 
-> You miss my point.  If you have:
-> 
-> 	memset(&my_bitmask, 0, sizeof(my_bitmask));
-> 	set_bit(my_bitmask, 44);
-> 
-> Then unless the set_bit has a constraint argument which covers the whole
-> of the (multiword) bitmask, the compiler may see fit to interleave the
-> memset writes with the set_bit in bad ways.  In other words, plain "+m"
-> (*(long *)ptr) won't cut it.  You'd need "+m" (my_bitmask), I think.
+On Tue, 24 Jul 2007 10:22:07 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-That's a valid point, and looks like it is a bug in the existing i386
-macros, doesn't it? We should be clobbering addr + BITOP_WORD(nr).
+> On Tue, Jul 24 2007, Jens Axboe wrote:
+> > On Mon, Jul 23 2007, Andrew Morton wrote:
+> > > I worked out that the crash I saw was in
+> > > 
+> > >         BUG_ON(!pte_none(*(kmap_pte-idx)));
+> > > 
+> > > in the read of kmap_pte[idx].  Which would be weird as the caller is using 
+> > > a literal KM_USER0.
+> > > 
+> > > So maybe I goofed, and that BUG_ON is triggering (it scrolled off, and I am
+> > > unable to reproduce it now).
+> > > 
+> > > If that BUG_ON _is_ triggering then it might indicate that someone is doing
+> > > a __GFP_HIGHMEM|__GFP_ZERO allocation while holding KM_USER0.
+> > 
+> > Or doing double kunmaps, or doing a kunmap_atomic() on the page, not the
+> > address. I've seen both of those end up triggering that BUG_ON() in a
+> > later kmap.
+> > 
+> > Looking over the 2.6.22..2.6.23-rc1 diff, I found one such error in
+> > ocfs2 at least. But you are probably not using that, so I'll keep
+> > looking...
+> 
+> What about the new async crypto stuff? I've been looking, but is it
+> guarenteed that async_memcpy() runs in process context with interrupts
+> enabled always? If not, there's a km type bug there.
 
--- 
-SUSE Labs, Novell Inc.
+I think Shannon maintains that now.
+
+> In general, I think the highmem stuff could do with more safety checks:
+> 
+> - People ALWAYS get the atomic unmaps wrong, passing in the page instead
+>   of the address. I've seen tons of these. And since kunmap_atomic()
+>   takes a void pointer, nobody notices until it goes boom.
+
+yeah, it's a real trap.  For a while I had a patch which converted
+kmap_atomic() to return a char*, and kunmap_atomic() to take a char*, so
+misuse got compile warnings.  But it was a pig to maintain so I tossed it. 
+It'd be somewhat easier to do now we've converted a lot of callers to
+clear_user_highpage() and similar.
+
+> - People easily get the km type wrong - they use KM_USERx in interrupt
+>   context, or one of the irq variants without disabling interrupts.
+> 
+> If we could just catch these two types of bugs, we've got a lot of these
+> problems covered.
+
+Here's the -mm debug patch:
+
+
+diff -puN arch/i386/mm/highmem.c~kmap_atomic-debugging arch/i386/mm/highmem.c
+--- a/arch/i386/mm/highmem.c~kmap_atomic-debugging
++++ a/arch/i386/mm/highmem.c
+@@ -30,7 +30,44 @@ void *kmap_atomic(struct page *page, enu
+ {
+ 	enum fixed_addresses idx;
+ 	unsigned long vaddr;
++	static unsigned warn_count = 10;
+ 
++	if (unlikely(warn_count == 0))
++		goto skip;
++
++	if (unlikely(in_interrupt())) {
++		if (in_irq()) {
++			if (type != KM_IRQ0 && type != KM_IRQ1 &&
++			    type != KM_BIO_SRC_IRQ && type != KM_BIO_DST_IRQ &&
++			    type != KM_BOUNCE_READ) {
++				WARN_ON(1);
++				warn_count--;
++			}
++		} else if (!irqs_disabled()) {	/* softirq */
++			if (type != KM_IRQ0 && type != KM_IRQ1 &&
++			    type != KM_SOFTIRQ0 && type != KM_SOFTIRQ1 &&
++			    type != KM_SKB_SUNRPC_DATA &&
++			    type != KM_SKB_DATA_SOFTIRQ &&
++			    type != KM_BOUNCE_READ) {
++				WARN_ON(1);
++				warn_count--;
++			}
++		}
++	}
++
++	if (type == KM_IRQ0 || type == KM_IRQ1 || type == KM_BOUNCE_READ ||
++			type == KM_BIO_SRC_IRQ || type == KM_BIO_DST_IRQ) {
++		if (!irqs_disabled()) {
++			WARN_ON(1);
++			warn_count--;
++		}
++	} else if (type == KM_SOFTIRQ0 || type == KM_SOFTIRQ1) {
++		if (irq_count() == 0 && !irqs_disabled()) {
++			WARN_ON(1);
++			warn_count--;
++		}
++	}
++skip:
+ 	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
+ 	pagefault_disable();
+ 
+_
+
