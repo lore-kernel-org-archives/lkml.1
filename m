@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbXGXFsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbXGXFw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755279AbXGXFsi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 01:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbXGXFs3
+	id S1759369AbXGXFw5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 01:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXGXFwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 01:48:29 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55404 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752386AbXGXFs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 01:48:29 -0400
-Date: Tue, 24 Jul 2007 07:49:43 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Kconfig:  Remove top level menu "Code maturity level options"
-Message-ID: <20070724054943.GA12946@uranus.ravnborg.org>
-References: <200707210658.28241.a1426z@gawab.com> <20070723165813.20848a85.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 24 Jul 2007 01:52:49 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:43995 "EHLO
+	asav08.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752325AbXGXFwt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 01:52:49 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AusRABsxpUZKhRO4Rmdsb2JhbACHNIgdAQEBIwYMAQ
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [RFC/RFT 1/5] Input: implement proper locking in input core
+Date: Tue, 24 Jul 2007 01:52:45 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+References: <20070724044520.913891976.dtor@insightbb.com> <20070724044858.192608314.dtor@insightbb.com> <46A58FBA.5010505@garzik.org>
+In-Reply-To: <46A58FBA.5010505@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070723165813.20848a85.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200707240152.47006.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 04:58:13PM -0700, Andrew Morton wrote:
-> On Sat, 21 Jul 2007 06:58:28 +0300
-> Al Boldi <a1426z@gawab.com> wrote:
-> 
-> > 
-> > This patch removes the top level menu "Code maturity level options", and 
-> > moves its options into menu "General setup".
-> > 
-> > This makes Kconfig less cluttered and easier to setup.
-> > 
-> > 
-> > Cc: Andrew Morton <akpm@osdl.org>
-> > Signed-off-by: Al Boldi <a1426z@gawab.com>
-> > 
-> > ---
-> > --- a/init/Kconfig	2007-07-09 06:38:47.000000000 +0300
-> > +++ b/init/Kconfig	2007-07-21 06:42:06.000000000 +0300
-> > @@ -7,7 +7,7 @@ config DEFCONFIG_LIST
-> >  	default "/boot/config-$UNAME_RELEASE"
-> >  	default "arch/$ARCH/defconfig"
-> >  
-> > -menu "Code maturity level options"
-> > +menu "General setup"
-> >  
-> >  config EXPERIMENTAL
-> >  	bool "Prompt for development and/or incomplete code/drivers"
-> > @@ -61,9 +61,6 @@ config INIT_ENV_ARG_LIMIT
-> >  	  Maximum of each of the number of arguments and environment
-> >  	  variables passed to init from the kernel command line.
-> >  
-> > -endmenu
-> > -
-> > -menu "General setup"
-> >  
-> >  config LOCALVERSION
-> >  	string "Local version - append to kernel release"
-> 
-> OK (IMO).  The "Code maturity level options" menu only has a single
-> entry, and I doubt if it will grow more entries any time soon.  It
-> makes sense to kill it and to move its sole entry into "General setup".
+Hi Jeff, 
 
-Agreed. These should be a reason for a menu and a single entry is not enough.
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+On Tuesday 24 July 2007 01:35, Jeff Garzik wrote:
+> 
+> spin_lock_irq() should generally be avoided.
+> 
+> In cases like the first case -- input_repeat_key() -- you are making 
+> incorrect assumptions about the state of interrupts.  The other cases 
+> are probably ok, but in general spin_lock_irq() has a long history of 
+> being very fragile and quite often wrong.
+> 
+> Use spin_lock_irqsave() to be safe.  Definitely in input_repeat_key(), 
+> but I strongly recommend removing spin_lock_irq() from all your patches 
+> here.
+>
 
-	Sam
+Thasnk you for looking at the patches. Actually I went back and forth
+between spin_lock_irq and spin_lock_irqsave.. I will change back to
+irqsave version, it is indeed safer.
+
+-- 
+Dmitry
