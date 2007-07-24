@@ -1,221 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935010AbXGXCQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934571AbXGXCRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935010AbXGXCQi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 22:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763502AbXGXCMW
+	id S934571AbXGXCRG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 22:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934749AbXGXCQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 22:12:22 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:40717 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1759351AbXGXCMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 22:12:14 -0400
-Message-ID: <385243123.75006@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070724020043.189132028@mail.ustc.edu.cn>
-References: <20070724020009.677809022@mail.ustc.edu.cn>
-User-Agent: quilt/0.45-1
-Date: Tue, 24 Jul 2007 10:00:19 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 10/10] filemap: convert some unsigned long to pgoff_t
-Content-Disposition: inline; filename=pgoff_t.patch
+	Mon, 23 Jul 2007 22:16:27 -0400
+Received: from xenotime.net ([66.160.160.81]:55824 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1763586AbXGXCQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 22:16:25 -0400
+Date: Mon, 23 Jul 2007 19:21:13 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Rob Landley <rob@landley.net>, "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
+Message-Id: <20070723192113.0eaa0ad8.rdunlap@xenotime.net>
+In-Reply-To: <20070723171238.1a832b31.akpm@linux-foundation.org>
+References: <1184980678.6344.1.camel@localhost.localdomain>
+	<20070723171238.1a832b31.akpm@linux-foundation.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert some 'unsigned long' to pgoff_t.
+On Mon, 23 Jul 2007 17:12:38 -0700 Andrew Morton wrote:
 
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> On Sat, 21 Jul 2007 11:17:58 +1000
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > The netfilter code had very good documentation: the Netfilter Hacking
+> > HOWTO.  Noone ever read it.
+> > 
+> > So this time I'm trying something different, using a bit of
+> > Knuthiness.  Start with drivers/lguest/README.
+> 
+> um.
+> 
+> I'm OK with merging patches and given lguest's newness, the timestamp on
+> these patches, the fact that they don't change code generation (right?) and
+> my reluctance to carry large do-nothing patches for two months, I'd be OK
+> with squeaking them into 2.6.23.
+> 
+> But I worry that you're proposing adding what appears to be new
+> Documentation-related machinery and infrastructure when there's already
+> increased activity in that area from other people and we might all be
+> headed in different directions and stuff.
+> 
+> So first I think we'd best form a kernel kommittee and mull this for a
+> while (preferably months) to screw you around as much as poss, OK?  ;)
+> 
+> Items for consideration would be:
+> 
+> - if this stuff is good, shouldn't other code be using it?  If so, is
+>   this new infrastructure in the correct place?
+
+I wouldn't mind having a new doc infrastructure, but I don't see this as it.
+
+> - if, otoh, this infrastructure is _not_ suitable for other code, well,
+>   what was wrong with it?
+
+I think that we don't want to give up html/pdf/ps output formats in
+favor of just text or C source code.  If we do continue to have
+multiple "rich" output formats, we need even more rich syntax rules
+than we have right now.  OTOH, if we dump all of those rich output
+formats, we have less tool spice that is needed.
+
+(I'm not ignoring Andrew's question here.  I'm just applying the
+7 patches/series and looking at it more.)
+
+> - if the requirement is good, perhaps alternative implementations should
+>   be explored (dunno what).
+
+Yes, but I dunno what either.
+
+
+> IOW, I'd be interested in hearing Rob and Randy's opinions on it all,
+> please.
+
+It's great that Rusty took the time to produce all of this documentation.
+Few people do that today.
+
+Were current kernel-doc tools not sufficient?  If not, why not?
+
 ---
- include/linux/pagemap.h |   23 ++++++++++++-----------
- mm/filemap.c            |   32 ++++++++++++++++----------------
- 2 files changed, 28 insertions(+), 27 deletions(-)
-
---- linux-2.6.22-rc6-mm1.orig/include/linux/pagemap.h
-+++ linux-2.6.22-rc6-mm1/include/linux/pagemap.h
-@@ -83,11 +83,11 @@ static inline struct page *page_cache_al
- typedef int filler_t(void *, struct page *);
- 
- extern struct page * find_get_page(struct address_space *mapping,
--				unsigned long index);
-+				pgoff_t index);
- extern struct page * find_lock_page(struct address_space *mapping,
--				unsigned long index);
-+				pgoff_t index);
- extern struct page * find_or_create_page(struct address_space *mapping,
--				unsigned long index, gfp_t gfp_mask);
-+				pgoff_t index, gfp_t gfp_mask);
- unsigned find_get_pages(struct address_space *mapping, pgoff_t start,
- 			unsigned int nr_pages, struct page **pages);
- unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t start,
-@@ -100,41 +100,42 @@ struct page *__grab_cache_page(struct ad
- /*
-  * Returns locked page at given index in given cache, creating it if needed.
-  */
--static inline struct page *grab_cache_page(struct address_space *mapping, unsigned long index)
-+static inline struct page *grab_cache_page(struct address_space *mapping,
-+								pgoff_t index)
- {
- 	return find_or_create_page(mapping, index, mapping_gfp_mask(mapping));
- }
- 
- extern struct page * grab_cache_page_nowait(struct address_space *mapping,
--				unsigned long index);
-+				pgoff_t index);
- extern struct page * read_cache_page_async(struct address_space *mapping,
--				unsigned long index, filler_t *filler,
-+				pgoff_t index, filler_t *filler,
- 				void *data);
- extern struct page * read_cache_page(struct address_space *mapping,
--				unsigned long index, filler_t *filler,
-+				pgoff_t index, filler_t *filler,
- 				void *data);
- extern int read_cache_pages(struct address_space *mapping,
- 		struct list_head *pages, filler_t *filler, void *data);
- 
- static inline struct page *read_mapping_page_async(
- 						struct address_space *mapping,
--					     unsigned long index, void *data)
-+						     pgoff_t index, void *data)
- {
- 	filler_t *filler = (filler_t *)mapping->a_ops->readpage;
- 	return read_cache_page_async(mapping, index, filler, data);
- }
- 
- static inline struct page *read_mapping_page(struct address_space *mapping,
--					     unsigned long index, void *data)
-+					     pgoff_t index, void *data)
- {
- 	filler_t *filler = (filler_t *)mapping->a_ops->readpage;
- 	return read_cache_page(mapping, index, filler, data);
- }
- 
- int add_to_page_cache(struct page *page, struct address_space *mapping,
--				unsigned long index, gfp_t gfp_mask);
-+				pgoff_t index, gfp_t gfp_mask);
- int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
--				unsigned long index, gfp_t gfp_mask);
-+				pgoff_t index, gfp_t gfp_mask);
- extern void remove_from_page_cache(struct page *page);
- extern void __remove_from_page_cache(struct page *page);
- 
---- linux-2.6.22-rc6-mm1.orig/mm/filemap.c
-+++ linux-2.6.22-rc6-mm1/mm/filemap.c
-@@ -594,7 +594,7 @@ void fastcall __lock_page_nosync(struct 
-  * Is there a pagecache struct page at the given (mapping, offset) tuple?
-  * If yes, increment its refcount and return it; if no, return NULL.
-  */
--struct page * find_get_page(struct address_space *mapping, unsigned long offset)
-+struct page * find_get_page(struct address_space *mapping, pgoff_t offset)
- {
- 	struct page *page;
- 
-@@ -618,7 +618,7 @@ EXPORT_SYMBOL(find_get_page);
-  * Returns zero if the page was not present. find_lock_page() may sleep.
-  */
- struct page *find_lock_page(struct address_space *mapping,
--				unsigned long offset)
-+				pgoff_t offset)
- {
- 	struct page *page;
- 
-@@ -664,7 +664,7 @@ EXPORT_SYMBOL(find_lock_page);
-  * memory exhaustion.
-  */
- struct page *find_or_create_page(struct address_space *mapping,
--		unsigned long index, gfp_t gfp_mask)
-+		pgoff_t index, gfp_t gfp_mask)
- {
- 	struct page *page;
- 	int err;
-@@ -794,7 +794,7 @@ EXPORT_SYMBOL(find_get_pages_tag);
-  * and deadlock against the caller's locked page.
-  */
- struct page *
--grab_cache_page_nowait(struct address_space *mapping, unsigned long index)
-+grab_cache_page_nowait(struct address_space *mapping, pgoff_t index)
- {
- 	struct page *page = find_get_page(mapping, index);
- 
-@@ -870,10 +870,10 @@ void do_generic_mapping_read(struct addr
- 			     read_actor_t actor)
- {
- 	struct inode *inode = mapping->host;
--	unsigned long index;
--	unsigned long offset;
--	unsigned long last_index;
--	unsigned long prev_index;
-+	pgoff_t index;
-+	pgoff_t last_index;
-+	pgoff_t prev_index;
-+	unsigned long offset;      /* offset into pagecache page */
- 	unsigned int prev_offset;
- 	int error;
- 
-@@ -885,7 +885,7 @@ void do_generic_mapping_read(struct addr
- 
- 	for (;;) {
- 		struct page *page;
--		unsigned long end_index;
-+		pgoff_t end_index;
- 		loff_t isize;
- 		unsigned long nr, ret;
- 
-@@ -1255,7 +1255,7 @@ EXPORT_SYMBOL(generic_file_sendfile);
- 
- static ssize_t
- do_readahead(struct address_space *mapping, struct file *filp,
--	     unsigned long index, unsigned long nr)
-+	     pgoff_t index, unsigned long nr)
- {
- 	if (!mapping || !mapping->a_ops || !mapping->a_ops->readpage)
- 		return -EINVAL;
-@@ -1275,8 +1275,8 @@ asmlinkage ssize_t sys_readahead(int fd,
- 	if (file) {
- 		if (file->f_mode & FMODE_READ) {
- 			struct address_space *mapping = file->f_mapping;
--			unsigned long start = offset >> PAGE_CACHE_SHIFT;
--			unsigned long end = (offset + count - 1) >> PAGE_CACHE_SHIFT;
-+			pgoff_t start = offset >> PAGE_CACHE_SHIFT;
-+			pgoff_t end = (offset + count - 1) >> PAGE_CACHE_SHIFT;
- 			unsigned long len = end - start + 1;
- 			ret = do_readahead(mapping, file, start, len);
- 		}
-@@ -1294,7 +1294,7 @@ asmlinkage ssize_t sys_readahead(int fd,
-  * This adds the requested page to the page cache if it isn't already there,
-  * and schedules an I/O to read in its contents from disk.
-  */
--static int fastcall page_cache_read(struct file * file, unsigned long offset)
-+static int fastcall page_cache_read(struct file * file, pgoff_t offset)
- {
- 	struct address_space *mapping = file->f_mapping;
- 	struct page *page; 
-@@ -1540,7 +1540,7 @@ EXPORT_SYMBOL(generic_file_mmap);
- EXPORT_SYMBOL(generic_file_readonly_mmap);
- 
- static struct page *__read_cache_page(struct address_space *mapping,
--				unsigned long index,
-+				pgoff_t index,
- 				int (*filler)(void *,struct page*),
- 				void *data)
- {
-@@ -1574,7 +1574,7 @@ repeat:
-  * after submitting it to the filler.
-  */
- struct page *read_cache_page_async(struct address_space *mapping,
--				unsigned long index,
-+				pgoff_t index,
- 				int (*filler)(void *,struct page*),
- 				void *data)
- {
-@@ -1623,7 +1623,7 @@ EXPORT_SYMBOL(read_cache_page_async);
-  * If the page does not get brought uptodate, return -EIO.
-  */
- struct page *read_cache_page(struct address_space *mapping,
--				unsigned long index,
-+				pgoff_t index,
- 				int (*filler)(void *,struct page*),
- 				void *data)
- {
-
---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
