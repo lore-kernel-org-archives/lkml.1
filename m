@@ -1,123 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbXGXUtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932540AbXGXUur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932424AbXGXUtM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:49:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXGXUs6
+	id S932540AbXGXUur (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbXGXUui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:48:58 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:51943 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754535AbXGXUs4 (ORCPT
+	Tue, 24 Jul 2007 16:50:38 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:15624 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753481AbXGXUuh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:48:56 -0400
-X-Sasl-enc: 3Mpc2rULGK9prOapaJTb2IfIKMivSv7AJgGXuOJcSywa 1185310135
-Message-ID: <46A665AB.9010207@imap.cc>
-Date: Tue, 24 Jul 2007 22:48:43 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Tue, 24 Jul 2007 16:50:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HAKvkQbw7lS967eHrhCGvxsgUOvw4Vye2wyMB4L1rX65eSVg3xrlCBJmakzCKhPaNgXsBnoBFhZ2Kz9ydXk8OMYZaefWiUoRUBOFY4PduGDmCgBAlHUGXemtziusBug4RwGyTmQOsqLztE7KHF5XoQDRJ1tluwR4pvd11/XThKQ=
+Message-ID: <86802c440707241350o4e5d2d24w654c935fb2972b54@mail.gmail.com>
+Date: Tue, 24 Jul 2007 13:50:35 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Helge Hafting" <helge.hafting@aitel.hist.no>
+Subject: Re: Patches for REALLY TINY 386 kernels
+Cc: "Andi Kleen" <andi@firstfloor.org>, "Uwe Hermann" <uwe@hermann-uwe.de>,
+       "Matt Mackall" <mpm@selenic.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Jonathan Campbell" <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <46A61163.3000701@aitel.hist.no>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Olaf Hering <olh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: 2.6.22-git17 boot failure
-References: <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc> <46A5444D.4080304@goop.org> <20070724091018.GA26724@one.firstfloor.org> <20070724095614.GB625@suse.de> <46A64019.4010508@imap.cc> <46A64CD5.2030800@goop.org> <20070724191231.GA359@one.firstfloor.org>
-In-Reply-To: <20070724191231.GA359@one.firstfloor.org>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC759D47B3141EC055BA35F22"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <469A8AED.7070207@nerdgrounds.com> <p737ioyxwyq.fsf@bingen.suse.de>
+	 <469E3806.4030804@zytor.com> <20070718194137.GG11166@waste.org>
+	 <20070718201043.GF3898@one.firstfloor.org>
+	 <20070718204102.GM11115@waste.org> <20070720072730.GN3700@greenwood>
+	 <20070720073509.GA19833@one.firstfloor.org>
+	 <46A61163.3000701@aitel.hist.no>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC759D47B3141EC055BA35F22
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 7/24/07, Helge Hafting <helge.hafting@aitel.hist.no> wrote:
+> Andi Kleen wrote:
+> >> Some people are putting Linux kernels in the "BIOS" (i.e. ROM chip) when
+> >> using LinuxBIOS (www.linuxbios.org). It _does_ make a lot of difference
+> >> there how big the kernel is. At the moment you can't do that with
+> >> anything smaller than a 1 MB chip. But if people could use 512 KB chips
+> >> because the kernel is small enough that would sure be a great thing.
+> >>
+> >
+> > I'm sure it would be possibel to save a lot of text size. But I don't
+> > think removing the relatively small CPUID code is the right way.
+> > That is just a big maintenance issue for little gain.
+> >
+> Well - anyone compiling linux for BIOS usage is targetting
+> a single machine.  So an ability to target a single machine is useful,
+> i.e. run the CPUID at compile-time, put the answer in a constant/macro,
+> let the optimizer prune the alternatives. :-)
 
-Am 24.07.2007 21:12 schrieb Andi Kleen:
-> On Tue, Jul 24, 2007 at 12:02:45PM -0700, Jeremy Fitzhardinge wrote:
->> Phew, I was getting worried there for a minute.  Does the install scri=
-pt
->> check for CONFIG_XEN in the kernel config or something?
->=20
-> Yes 10.2 mkinitrd does. But it still should work because a dom0
-> kernel would obviously need all the drivers. A paravirt ops
-> kernel native is like a dom0 variant.
+we are using AMD64 + LinuxBIOS + Kernel (without acpi) + kexec to load
+final kernel.
+So we can use drivers in kernel for any media (SCSI, SATA, IB,...),
+not like EFI need every driver re-porting. and We could use KVM in
+kernel to load other OS if needed.
 
-Apparently not, given that the generated init script is mistaking
-a native environment for a domU instead of a dom0.
+The problem is Kernel is getting bigger and bigger. and old Tiny
+kernel is stopping at 2.6.18...
 
-In fact, when running 2.6.23-rc1 natively, no matter if compiled
-with or without Xen support, the directory /proc/xen doesn't even
-exist:
+add CONFIG_TINY_KERNEL in the kernel to remove unnessceary workaround
+and quirks...
 
-ts@xenon:~> uname -a
-Linux xenon 2.6.23-rc1-testing #6 SMP PREEMPT Mon Jul 23 22:23:41 CEST 20=
-07 i686 i686 i386 GNU/Linux
-ts@xenon:~> ls -l /proc/xen/
-ls: cannot access /proc/xen/: No such file or directory
-ts@xenon:~>
-
-The same holds for the non-Xen Suse kernel:
-
-ts@xenon:~> uname -a
-Linux xenon 2.6.18.8-0.5-default #1 SMP Fri Jun 22 12:17:53 UTC 2007 i686=
- i686 i386 GNU/Linux
-ts@xenon:~> ls -l /proc/xen/
-ls: cannot access /proc/xen/: No such file or directory
-ts@xenon:~>
-
-But when running Xen with the Opensuse Xen kernel as Dom0:
-
-ts@xenon:~> uname -a
-Linux xenon 2.6.18.8-0.5-xen #1 SMP Fri Jun 22 12:17:53 UTC 2007 i686 i68=
-6 i386 GNU/Linux
-ts@xenon:~> ls -l /proc/xen/
-total 0
--rw-r--r-- 1 root root 0 Jul 24 22:08 balloon
--r-------- 1 root root 0 Jul 24 22:08 capabilities
--r-------- 1 root root 0 Jul 24 22:01 privcmd
--r-------- 1 root root 0 Jul 24 22:08 xenbus
--rw------- 1 root root 0 Jul 24 22:01 xsd_kva
--r-------- 1 root root 0 Jul 24 22:08 xsd_port
-ts@xenon:~> sudo cat /proc/xen/capabilities
-root's password:
-control_d
-ts@xenon:~>
-
-OTOH, the Opensuse Xen kernel vmlinuz-2.6.18.8-0.5-xen cannot even
-be booted natively because GRUB complains immediately:
-  Error 13: Invalid or unsupported executable format
-Conversely, the Xen loader flatly refuses to load a self-compiled,
-Xen enabled 2.6.23-rc1 kernel as dom0, complaining:
-  DOM0 image is not an Xen-compatible Elf image.
-So I guess the point is moot, because you cannot use the same image
-as dom0 and natively, anyway.
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigC759D47B3141EC055BA35F22
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGpmW1MdB4Whm86/kRApBdAJ9cy/JjgY4GF16+uj6rcyiwSsJESQCffJ2N
-icPDC76KEv3qxCQOyZLVSzk=
-=dtgA
------END PGP SIGNATURE-----
-
---------------enigC759D47B3141EC055BA35F22--
+YH
