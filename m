@@ -1,75 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbXGXVGC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbXGXVHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760004AbXGXVGC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:06:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbXGXVFy
+	id S1755052AbXGXVHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 17:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbXGXVHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:05:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59333 "EHLO mail.dvmed.net"
+	Tue, 24 Jul 2007 17:07:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56735 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754249AbXGXVFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:05:53 -0400
-Message-ID: <46A669AD.6070803@garzik.org>
-Date: Tue, 24 Jul 2007 17:05:49 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1751278AbXGXVHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 17:07:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Towards eliminating the freezer
+Date: Tue, 24 Jul 2007 23:14:51 +0200
+User-Agent: KMail/1.9.5
+Cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0707241549280.17124-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707241549280.17124-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       =?ISO-8859-1?Q?S=E9bastie?= =?ISO-8859-1?Q?n_Dugu=E9?= 
-	<sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
- platform devices - broke my serial console
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707241434.32374.bjorn.helgaas@hp.com> <46A663CA.3050000@garzik.org> <200707241456.35769.bjorn.helgaas@hp.com>
-In-Reply-To: <200707241456.35769.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200707242314.52355.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> Keith Owens did report an issue with the double probe, but I confess
-> I don't fully understand it.
-
-heh, ok...
-
-
-> The real problem was that the serial driver claimed a non-serial
-> device.  On many laptops, there's an IR device at 0x3e8, IRQ 3.
-> The serial driver claimed this as ttyS2, using IRQ 4.  So if you
-> wanted to use the IR device, you had to either:
+On Tuesday, 24 July 2007 22:24, Alan Stern wrote:
+> On Tue, 24 Jul 2007, Rafael J. Wysocki wrote:
 > 
->   - use setserial to make the serial driver forget about ttyS2
->     so an IR driver could claim it, or
+> > Hmm, I still don't understand why we can't lock dpm_list_mutex before the
+> > "For each" loop (we already do something like this in device_suspend() and
+> > device_resume()) and that would simplify things.
+> > 
+> > It seems that we can do something like this:
+> > 
+> > device_suspend:
+> > 	Lock dpm_list_mutex (from now on, new devices cannot be added)
+> > 	For each device on dpm_active, reverse
+> > 		acquire dev->sem (from now on, no new drivers can bind to dev)
+> > 		suspend(dev)
+> > 		move dev to dpm_off
 > 
->   - use setserial to change the IRQ to 3 and just use the device
->     in SIR mode, which is 16550-compatible so you can use the
->     serial driver
+> You have a minor error there; it's necessary to unlock dpm_list_mutex 
+> while acquiring dev-sem and then lock it again.
+
+Ah, right, now I see that.
+
+> But more importantly, this code acquires the device semaphores in the wrong
+> order.  They have to be acquired going forward (from the top of the device
+> tree down), not backward.
+
+Yes, I've overlooked that too.
+
+> Here's my proposal in a more explicit form.  Before doing
+> device_suspend() we call lock_all_devices():
 > 
-> I didn't express that very clearly in the changelog.
+> struct list_head dpm_locked;
+> 
+> static void lock_all_devices()
+> {
+> 	mutex_lock(&dpm_list_mtx);
+> 	while (!list_empty(&dpm_active)) {
+> 		struct list_head *entry = dpm_active.next;
+> 		struct device *dev = to_device(entry);
+> 
+> 		get_device(dev);
+> 		mutex_unlock(&dpm_list_mtx);
+> 		down(&dev->sem);
+> 		mutex_lock(&dpm_list_mtx);
+> 
+> 		if (list_empty(entry))		/* Device was removed */
+> 			up(&dev->sem);
+> 		else			/* Move it to the dpm_locked list */
+> 			list_move_tail(entry, &dpm_locked);
+> 		put_device(dev);
+> 	}
+> }
+> 
+> Then device_suspend() can be simplified:
+> 
+> int device_suspend(pm_message_t state)
+> {
+> 	int error = 0;
+> 
+> 	might_sleep();
+> 	list_for_each_entry_reverse(dev, &dpm_locked, power.entry) {
+> 		error = suspend_device(dev, state);
+> 
+> 		if (error) {
+> 			printk(KERN_ERR "Could not suspend device %s: "
+> 				"error %d%s\n",
+> 				kobject_name(&dev->kobj), error,
+> 				error == -EAGAIN ? " (please convert to suspend_late)" : "");
+> 			break;
+> 		}
+> 		list_move(&dev->power.entry, &dpm_off);
 
-That cannot be a justification for breaking serial port probe that has 
-been working for 10+ years.
+Is that safe with list_for_each_entry_reverse?
 
-The VAST MAJORITY of computers, all told, have one or more serial ports 
-in the expected places.  We must consider the majority first, then 
-tackle edge cases like weirdo laptops that can be detected by other means.
+> 	}
+> 	if (error)
+> 		dpm_resume();
+> 	return error;
+> }
+> 
+> Appropriate changes are needed in the resume pathway as well, together 
+> with an unlock_all_devices() routine:
 
-Now that we have established the double-probe problem as potentially 
-bogus, and not investigated at all, we are left with:
+Sure.
 
-You changed legacy serial probing, affecting millions of computers, due 
-to a few machines with unusual IR configurations.
+> static void unlock_all_devices(void)
+> {
+> 	while (!list_empty(&dpm_locked)) {
+> 		struct list_head *entry = dpm_locked.prev;
+> 		struct device *dev = to_device(entry);
+> 
+> 		list_move(entry, &dpm_active);
+> 		up(&dev->sem);
+> 	}
+> 	mutex_unlock(&dpm_list_mtx);
+> }
 
-At this point the "revert! revert!" submarine alarm is sounding quite 
-loudly.  You can fix IR without breaking legacy serial.
+Yes, that looks fine. 
 
-	Jeff
+So, who's writing the patch? ;-)
+
+> Incidentally, what is dpm_mtx for?  It doesn't seem to do anything 
+> useful.  Is it a relic of the former runtime PM support?
+
+I think so.  IMO it can be removed.
+
+I also think it would be nicer to have all of the functions in
+drivers/base/power/{main|suspend|resume}.c moved to one file.
+
+Greetings,
+Rafael
 
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
