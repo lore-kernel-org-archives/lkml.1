@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765956AbXGXANn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXGXAPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765956AbXGXANn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 20:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbXGXANh
+	id S933046AbXGXAPJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 20:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbXGXAO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 20:13:37 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53953 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755411AbXGXANg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 20:13:36 -0400
-Date: Mon, 23 Jul 2007 17:12:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Rob Landley <rob@landley.net>, "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
-Message-Id: <20070723171238.1a832b31.akpm@linux-foundation.org>
-In-Reply-To: <1184980678.6344.1.camel@localhost.localdomain>
-References: <1184980678.6344.1.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Jul 2007 20:14:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:43547 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755411AbXGXAO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 20:14:57 -0400
+Message-ID: <46A5444D.4080304@goop.org>
+Date: Mon, 23 Jul 2007 17:14:05 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Tilman Schmidt <tilman@imap.cc>
+CC: LKML <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
+       nix.or.die@googlemail.com
+Subject: Re: 2.6.22-git17 boot failure
+References: <46A3EC92.3050504@imap.cc> <46A3FBB7.9000608@imap.cc> <46A46BF9.6010906@goop.org> <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc>
+In-Reply-To: <46A53396.2060902@imap.cc>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jul 2007 11:17:58 +1000
-Rusty Russell <rusty@rustcorp.com.au> wrote:
+Tilman Schmidt wrote:
+> Am 23.07.2007 22:32 schrieb Jeremy Fitzhardinge:
+>   
+>> How much of this is modules?  Is the initrd probing for scsi/sata? 
+>> Maybe the the vdso change is having an effect.
+>>     
+>
+> Pretty much all of it is modules. The base system is openSUSE 10.2, and
+> SuSE has a long habit of building everything as modules and putting the
+> drivers needed for accessing the root filesystem into an initrd. I have
+> fought it for a while but nowadays I'm playing along.
+>
+> So yes, all of ahci, pata_marvell, aic7xxx, jbd, dm_mod, ext3 are in
+> fact modules in initrd. Would it help to try a kernel with some or all
+> of these built in?
+>
+>   
+>> Ooh, wait.  Do you have an old version of the Xen patches in place,
+>> perhaps?
+>>     
+>
+> In which place? I installed and successfully ran the Xen packages that
+> came with openSUSE 10.2, so there is a 2.6.18 kernel with SuSE's Xen
+> patches on the machine. But that shouldn't have any influence on the
+> kernel.org kernels I build myself, should it?
+>
+>   
+>>  Does drivers/block/Makefile have:
+>>
+>> obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
+>>
+>> (vs := xen-blkfront.o)
+>>     
+>
+> It has the "+=" variant.
+>
+>   
+>> Could you do a before and after booting with initcall_debug=1?
+>>     
+>
+> "Before" and "after" meaning with CONFIG_XEN=n and CONFIG_XEN=y, I
+> suppose. The resulting logs are a bit biggish, so I have put them on
+> http://www.phnxsoft.com/~ts/linux/ for download. Let me know if you
+> prefer having them mailed.
 
-> The netfilter code had very good documentation: the Netfilter Hacking
-> HOWTO.  Noone ever read it.
-> 
-> So this time I'm trying something different, using a bit of
-> Knuthiness.  Start with drivers/lguest/README.
+Well, it looks to me like it all falls over once it hits usermode;
+everything up till then is identical (except for the Xen-related
+initcalls which naturally don't exist in the non-Xen case).
 
-um.
+I'm at a loss.  I don't know if there's some way to debug the initrd in
+more detail.  I suspect that its failing all PCI probing, rather being a
+specific SCSI/AHCI problem (since none of the other messages appear either).
 
-I'm OK with merging patches and given lguest's newness, the timestamp on
-these patches, the fact that they don't change code generation (right?) and
-my reluctance to carry large do-nothing patches for two months, I'd be OK
-with squeaking them into 2.6.23.
+Does the Xen case just hang, or reboot, or what?  The kernel messages
+just appear to stop.  I'd expect it to at least complain about not
+mounting the root filesystem or something.
 
-But I worry that you're proposing adding what appears to be new
-Documentation-related machinery and infrastructure when there's already
-increased activity in that area from other people and we might all be
-headed in different directions and stuff.
+Andi, any thoughts about how to debug the suse boot sequence?
 
-So first I think we'd best form a kernel kommittee and mull this for a
-while (preferably months) to screw you around as much as poss, OK?  ;)
-
-Items for consideration would be:
-
-- if this stuff is good, shouldn't other code be using it?  If so, is
-  this new infrastructure in the correct place?
-
-- if, otoh, this infrastructure is _not_ suitable for other code, well,
-  what was wrong with it?
-
-- if the requirement is good, perhaps alternative implementations should
-  be explored (dunno what).
-
-
-IOW, I'd be interested in hearing Rob and Randy's opinions on it all,
-please.
+    J
