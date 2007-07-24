@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764128AbXGXOxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbXGXOzC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764128AbXGXOxB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbXGXOww
+	id S1759217AbXGXOzC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:55:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbXGXOyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:52:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49986 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbXGXOww (ORCPT
+	Tue, 24 Jul 2007 10:54:53 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4009 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbXGXOyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:52:52 -0400
-Subject: Re: [PATCH] LinuxPPS - definitive version
-From: David Woodhouse <dwmw2@infradead.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070724142050.GD4074@enneenne.com>
-References: <20070717180550.GA24759@enneenne.com>
-	 <1185197716.14697.244.camel@pmac.infradead.org>
-	 <20070724080013.GA22171@gundam.enneenne.com>
-	 <1185284942.14697.319.camel@pmac.infradead.org>
-	 <20070724142050.GD4074@enneenne.com>
-Content-Type: text/plain
-Date: Tue, 24 Jul 2007 15:52:49 +0100
-Message-Id: <1185288769.14697.339.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+	Tue, 24 Jul 2007 10:54:52 -0400
+Message-ID: <46A611D3.3070808@shadowen.org>
+Date: Tue, 24 Jul 2007 15:50:59 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: jschopp <jschopp@austin.ibm.com>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A53F3A.7060509@intel.com> <46A60581.90800@austin.ibm.com> <20070724143342.GB6019@stusta.de>
+In-Reply-To: <20070724143342.GB6019@stusta.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 16:20 +0200, Rodolfo Giometti wrote:
-> On Tue, Jul 24, 2007 at 02:49:02PM +0100, David Woodhouse wrote:
+Adrian Bunk wrote:
+> On Tue, Jul 24, 2007 at 08:58:25AM -0500, jschopp wrote:
+>>> within the last 3 weeks, this script went from *really usable* to *a big 
+>>> noise maker*.
+>> As we (mostly Andy of late) add more checks (good) there is bound to be 
+>> some code we just didn't forsee that generates false positives (bad).  You 
+>> can see a consistent history of cleaning these up as quickly as people send 
+>> them in.  Hopefully in the interim there aren't too many false positives 
+>> and the script is still useful.  We do try to put the new tests through 
+>> their paces before adding them in, but our imaginations are limited.
+>>
+>> The goal has always been to err on the side of missing badness in code to 
+>> avoid false positives. This way, when there is output it has a very high 
+>> chance of not wasting your time.  Wait a couple weeks and it'll be there 
+>> again.
+>> ...
 > 
-> > Also 's/unknow /unknown /' (2 instances)
+> And it will be known as "noise maker" for years, even if that'll be 
+> fixed in a few weeks...
 > 
-> ?? I didn't find them:
-> 
->    $ grep 'unknow ' Documentation/pps/pps.txt
+> Running it on the latest -rc or -mm should usually give good hints 
+> whether the output has become better or worse.
 
-Elsewhere in the patch.
+I generally run a new release against all incoming patches on lkml for a
+few days before releasing.  The latest problem ones have been caused by
+a difference of opinion on what the CodingStyle means or about what the
+"best" style for a few things.  Multiple initialisation etc being good
+examples.
 
-> > In order for your handling of 'pps_source[source].info' to be safe with
-> > respect to pps_unregister_source(), you have to guarantee that
-> > pps_event() has finished -- and can't be in progress on another CPU --
-> > by the time your client's call to pps_unregister_source() completes. At
-> > first glance I think your existing clients have that right (you have
-> > del_timer_sync() before pps_unregister_source() in ktimer.c, for
-> > example). But you should make sure it's clearly documented for new
-> > clients.
-> 
-> This can be done only with locks, but it's not necessary since even if
-> a pps_unregister_source() runs while pps_event() executes on another
-> CPU the latter will write always on a valid area (even if it could be
-> a dummy one) and the data are not corrupted (note also that the data
-> will be, in any case, discarted since we are executing a
-> pps_unregister_source()).
+There is no way to test for "what the majority will dissagree with".
 
-Read Documentation/memory-barriers.txt
-
-There is a tiny but possibly non-zero chance that one CPU could be in
-pps_event() and might not yet have 'seen' the change to the .info field.
-Releasing the pps_mutex provides a write-barrier on the CPU which runs
-pps_unregister_source(), but there's no corresponding read-barrier on
-the CPU running pps_event(). You have to be careful about when
-pps_event() is run. It _MUST_ not touch the old info structure after
-pps_unregister_source() has completed.
-
-At the moment, I think it's OK because you won't be calling pps_event()
-at the wrong times. But you do need to make sure that requirement is
-documented. And I think you can remove the whole dummy_info thing
-because it's not necessary.
-
--- 
-dwmw2
-
+-apw
