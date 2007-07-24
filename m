@@ -1,118 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbXGXFmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbXGXFsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbXGXFmv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 01:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbXGXFmo
+	id S1755279AbXGXFsi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 01:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbXGXFs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 01:42:44 -0400
-Received: from il.qumranet.com ([82.166.9.18]:53701 "EHLO il.qumranet.com"
+	Tue, 24 Jul 2007 01:48:29 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55404 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751484AbXGXFmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 01:42:43 -0400
-Message-ID: <46A59145.3040705@qumranet.com>
-Date: Tue, 24 Jul 2007 08:42:29 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>
-CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC 0/8]KVM: swap out guest pages
-References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com>	 <46A4829C.9080104@qumranet.com> <1185241357.24201.12.camel@sli10-conroe.sh.intel.com>
-In-Reply-To: <1185241357.24201.12.camel@sli10-conroe.sh.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 24 Jul 2007 08:42:28 +0300 (IDT)
+	id S1752386AbXGXFs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 01:48:29 -0400
+Date: Tue, 24 Jul 2007 07:49:43 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Kconfig:  Remove top level menu "Code maturity level options"
+Message-ID: <20070724054943.GA12946@uranus.ravnborg.org>
+References: <200707210658.28241.a1426z@gawab.com> <20070723165813.20848a85.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070723165813.20848a85.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaohua Li wrote:
-> On Mon, 2007-07-23 at 18:27 +0800, Avi Kivity wrote:
->   
->> Shaohua Li wrote:
->>     
->>> This patch series make kvm guest pages be able to be swapped out and
->>> dynamically allocated. Without it, all guest memory is allocated at
->>> guest start time.
->>>
->>> patches are against latest git, and you need first patch Avi's
->>>       
->> kvm-sch
->>     
->>> integration patch
->>>
->>>       
->> (http://sourceforge.net/mailarchive/forum.php?thread_name=11841693332609-git-send-email-avi%40qumranet.com&forum_name=kvm-devel ).
->>     
->>> Patch is quite stable in my test. With the patch, I can run a 256M
->>> memory guest in a 300M memory host.
->>>       
->> What about the opposite?
->>
->>     
->>> If guest is idle, the memory it used
->>> can be less than 10M. I did a simple performance test (measure
->>>       
->> kernel
->>     
->>> build time in guest), if there is few swap, the performance w/wo the
->>> patch difference isn't significent. If you have better measurement
->>> approach, please let me try.
->>>
->>> Unresolved issue:
->>> 1. swapoff doesn't work, we need a hook.
->>> 2. SMP guest might not work, as kvm doesn't support smp till now.
->>> 3. better algorithm to select swaped out guest pages according to
->>> guest's memory usage.
->>> Maybe more.
->>>
->>> Any suggests and comments are appreciated.
->>>  
->>>       
->> The big question is whether to have kvm's own address_space or not.
->>
->> Having an address_space (like your patch does) is remarkably simple,
->> and
->> requires few hooks from the current vm.  However using existing vmas
->> mapped by the user has many advantages:
->>
->> - compatible with s390 requirements
->> - allows the user to use hugetlbfs pages, which have a performance
->> advantage using ept/npt (but which are unswappable)
->> - allows the user to map a file (which can be regarded as way to
->> specify
->> the swap device)
->> - better ingration with the rest of the vm
->>
->> I am quite torn between the simplicity of your approach and the
->> advantages of using generic vmas.  However, s390 pretty much forces
->> our
->> hand.
->>
->> What is your opinion of extending generic vmas to back kvm guest
->> memory?
->>     
-> several issues:
-> 1. vma is to manage usersapce address, kvm guest uses full address
-> space.
-> 2. qemu itself must use some address space.
->   
+On Mon, Jul 23, 2007 at 04:58:13PM -0700, Andrew Morton wrote:
+> On Sat, 21 Jul 2007 06:58:28 +0300
+> Al Boldi <a1426z@gawab.com> wrote:
+> 
+> > 
+> > This patch removes the top level menu "Code maturity level options", and 
+> > moves its options into menu "General setup".
+> > 
+> > This makes Kconfig less cluttered and easier to setup.
+> > 
+> > 
+> > Cc: Andrew Morton <akpm@osdl.org>
+> > Signed-off-by: Al Boldi <a1426z@gawab.com>
+> > 
+> > ---
+> > --- a/init/Kconfig	2007-07-09 06:38:47.000000000 +0300
+> > +++ b/init/Kconfig	2007-07-21 06:42:06.000000000 +0300
+> > @@ -7,7 +7,7 @@ config DEFCONFIG_LIST
+> >  	default "/boot/config-$UNAME_RELEASE"
+> >  	default "arch/$ARCH/defconfig"
+> >  
+> > -menu "Code maturity level options"
+> > +menu "General setup"
+> >  
+> >  config EXPERIMENTAL
+> >  	bool "Prompt for development and/or incomplete code/drivers"
+> > @@ -61,9 +61,6 @@ config INIT_ENV_ARG_LIMIT
+> >  	  Maximum of each of the number of arguments and environment
+> >  	  variables passed to init from the kernel command line.
+> >  
+> > -endmenu
+> > -
+> > -menu "General setup"
+> >  
+> >  config LOCALVERSION
+> >  	string "Local version - append to kernel release"
+> 
+> OK (IMO).  The "Code maturity level options" menu only has a single
+> entry, and I doubt if it will grow more entries any time soon.  It
+> makes sense to kill it and to move its sole entry into "General setup".
 
-My idea is to keep the current slot concept, but instead of having kvm
-allocate pages for a slot, it would call get_user_pages() for a virtual
-address range.  Userspace doesn't directly talk about vmas, just virtual
-address ranges.
+Agreed. These should be a reason for a menu and a single entry is not enough.
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-
-> 3. kvm need special page fault for shadow page table. generic page table
-> operations can't be directly used for guest.
-> I have no idea if your idea is feasible. The s390 guys said their shadow
-> page table is the same as host, this is why they can easily implement
-> swap, x86 is hard.
->   
-
-No question that it is hard.  I'd like to explore just how hard it is.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+	Sam
