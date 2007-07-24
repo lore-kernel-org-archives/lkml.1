@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbXGXQyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbXGXQ4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761298AbXGXQyu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 12:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbXGXQyn
+	id S1760064AbXGXQ4l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 12:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXGXQ4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 12:54:43 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48087 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751860AbXGXQym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 12:54:42 -0400
-Date: Tue, 24 Jul 2007 18:54:52 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, nigel@suspend2.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: which signal is sent to freeze process?
-Message-ID: <20070724165452.GA24151@elf.ucw.cz>
-References: <A3258B497F1C1441AD36A2E8B45FD6285507A5@scsmsx412.amr.corp.intel.com> <200707210010.05877.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD62858D512@scsmsx412.amr.corp.intel.com> <200707232125.09070.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD62858D5AE@scsmsx412.amr.corp.intel.com>
+	Tue, 24 Jul 2007 12:56:33 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39361 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbXGXQ4d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 12:56:33 -0400
+Date: Tue, 24 Jul 2007 18:56:32 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andy Whitcroft <apw@shadowen.org>
+cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+In-Reply-To: <46A5E39D.7030009@shadowen.org>
+Message-ID: <Pine.LNX.4.64.0707241854140.18990@fbirervta.pbzchgretzou.qr>
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A53F3A.7060509@intel.com>
+ <46A5E39D.7030009@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD62858D5AE@scsmsx412.amr.corp.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-Can you generate small testcase that demonstrates the problem?
+On Jul 24 2007 12:33, Andy Whitcroft wrote:
+>
+>> Warning on multiple declarations on a line is nice, but IMO really too
+>> verbose (why is "int i, j;" bad? Did C somehow change syntax today?).
+>
+>No the normal response is two fold:
+>
+>1) "what the heck are i and j those are meaningless names"
 
-> Then what would be the correct way to handle resume process. The other
-> way of course is to make all the applications check the errno in case of
-> failure. But that seems more more problematic then system call checking.
-> What do you say?
-
-Hmm, does that testcase behave correctly over SIGSTOP/SIGCONT? I'm not
-saying kernel behaves nicely here, but perhaps fixing the apps to
-check errno properly is the right thing to do? :-)
-								Pavel
+Can we at least assume the submitter is sane in some ways?
+i and j are picked for obvious iterater values - you would not want
+verbosify that to fruit_iterator and process_iterator or whatever
+because it's a hell lot more typing.
+It takes more than a few Perl regexes to actually grasp the semantics
+of whether "i" is useful or not.
 
 
+	Jan
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
