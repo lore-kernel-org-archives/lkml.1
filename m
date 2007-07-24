@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbXGXSAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbXGXSBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761485AbXGXSAl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 14:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755563AbXGXSA3
+	id S1757476AbXGXSBD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 14:01:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbXGXSAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 14:00:29 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43251 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755310AbXGXSA1 (ORCPT
+	Tue, 24 Jul 2007 14:00:53 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:41564 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755013AbXGXSAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 14:00:27 -0400
-Date: Tue, 24 Jul 2007 19:59:51 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070724175951.GC6019@stusta.de>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org> <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
+	Tue, 24 Jul 2007 14:00:51 -0400
+Date: Tue, 24 Jul 2007 20:00:50 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Paul Mundt <lethal@linux-sh.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+In-Reply-To: <20070724172217.GA10725@linux-sh.org>
+Message-ID: <Pine.LNX.4.64.0707242000120.18990@fbirervta.pbzchgretzou.qr>
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A534EA.6030008@intel.com>
+ <46A5C12B.3080904@shadowen.org> <20070724021526.3d92286b.akpm@linux-foundation.org>
+ <20070724172217.GA10725@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 23, 2007 at 02:28:11PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 23 Jul 2007, Andrew Morton wrote:
-> > 
-> > It'd be nice to get a clean trace.  Are you able to obtain the full
-> > trace with CONFIG_FRAME_POINTER=y?
-> 
-> If you are talking about
-> 
-> 	http://userweb.kernel.org/~akpm/dsc03659.jpg
-> 
-> then I think that _is_ a full trace. It's certainly not very messy, and it 
-> seems accurate. It's just that inlining makes it much harder to see the 
-> call-graphs, but that's what inlining does..
-> 
-> For example, missing from the call graph is
-> 
-> 	get_page_from_freelist ->
-> 	  buffered_rmqueue ->		[ missing - inlined ]
-> 	    prep_new_page ->		[ missing - inlined ]
-> 	      prep_zero_page ->		[ missing - inlined ]
-> 		clear_highpage ->	[ missing - inlined ]
-> 		  kmap_atomic ->	[ missing - tailcall ]
-> 		    kmap_atomic_prot
-> 
-> but I'm pretty sure the call trace is good (and I'm also pretty sure gcc 
-> is overly aggressive at inlining, and that it causes us pain for 
-> debugging, but whatever)
->...
 
-For prep_zero_page() and clear_highpage() we can't blame gcc since we 
-force gcc to always inline them.
+On Jul 25 2007 02:22, Paul Mundt wrote:
+>Perhaps CodingStyle can start being versioned, so people can opt out of
+>certain 'improvements' whenever someone has a vision, much like some
+>nameless licenses.
 
-buffered_rmqueue() and prep_new_page() are static functions with only 
-one caller each, and for the normal non-debug case it's a really nice 
-optimization to have them inlined automatically. But it might make sense 
-to add -fno-inline-functions-called-once to the CFLAGS depending on some 
-debug option?
+I'd say Codingstyle is versioned by means of git commit IDs.
 
-> 			Linus
+>
+>Personally I prefer the second style, and if there's a comment block,
+>then it makes sense to complete the tree with {}'s (the keyword here is
+>prefer, as it's a personal preference). checkpatch has been quite useful
+>for catching obviously broken things, and now it seems like it's just
+>overreaching. Perhaps this functionality can be split in to a lite
+>checkpatch for catching show-stoppers for application and then something
+>more akin to a CodingStyle validator for the folks interested in
+>arbitrarily defining convention, which they can use freely while the rest
+>of us try to get something useful done.
 
-cu
-Adrian
+/me thinks of ... checkpath --check-me-harder
 
+
+	Jan
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
