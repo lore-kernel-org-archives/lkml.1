@@ -1,111 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933082AbXGXIjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934409AbXGXIjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933082AbXGXIjc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbXGXIjV
+	id S934409AbXGXIjz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXGXIjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:39:21 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:31095 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752923AbXGXIjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:39:20 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=HB/KVV1SjY/Gzv9StaUMLm94Byc41Hn3xx7s/yhZUXUb/lgK3rShh3EvtvwmL6rJos4GxX2CAJXUFHdGfR4LEeWEQOiC9R+iy53Ym9tcyLSgb4BLiWAhZyRd4WeSQ2D1sA8VL4egmGlviYm5ntf5c3/u0TKolhddEzGX6H2EDJA=  ;
-X-YMail-OSG: S8lowbwVM1l0FBcYTV00zGhqbaUd4o_ecv02LU3fmS5DV6he2IfhbA6lgfcFe5.745SYULk4Qw--
-Message-ID: <46A5BAB3.2030503@yahoo.com.au>
-Date: Tue, 24 Jul 2007 18:39:15 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 24 Jul 2007 04:39:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51794 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765495AbXGXIjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 04:39:31 -0400
+Date: Tue, 24 Jul 2007 10:38:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+Subject: [patch] mm: reduce pagetable-freeing latencies
+Message-ID: <20070724083855.GA858@elte.hu>
 MIME-Version: 1.0
-To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered unnecessarily
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in> <46A578A1.5010504@yahoo.com.au> <Pine.LNX.4.64.0707241154060.1433@cselinux1.cse.iitk.ac.in> <46A5A929.4020706@yahoo.com.au> <Pine.LNX.4.64.0707241304410.1433@cselinux1.cse.iitk.ac.in>
-In-Reply-To: <Pine.LNX.4.64.0707241304410.1433@cselinux1.cse.iitk.ac.in>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> On Tue, 24 Jul 2007, Nick Piggin wrote:
-> 
-> 
->>>>[...]
->>>>
->>>>__test_and_change_bit is one that you could remove the memory clobber
->>>>from.
->>>
->>>Yes, for the atomic versions we don't care if we're asking gcc to
->>>generate trashy code (even though I'd have wanted to only disallow
->>>problematic optimizations -- ones involving the passed bit-string
->>>address -- there, and allow other memory references to be optimized
->>>as and how the compiler feels like it) because the atomic variants
->>>are slow anyway and we probably want to be extra-safe there.
->>>
->>>But for the non-atomic variants, it does make sense to remove the
->>>memory clobber (and the unneeded __asm__ __volatile__ that another
->>>patch did -- for the non-atomic variants, again).
->>
->>No. It has nothing to do with atomicity and all to do with ordering.
-> 
-> 
-> The memory clobber, or the volatile asm? There's more than one variable
-> here ... but still, I don't think either affects _ordering_ in any
-> _direct_ way.
 
-The clobber which you remove with this patch.
+the patch below has been tested in -rt for a long time - lets get it 
+upstream please. It fixes some bad latencies on PREEMPT too.
 
+	Ingo
 
->>For example test_bit, clear_bit, set_bit, etc are all atomic but none
->>place any restrictions on ordering.
-> 
-> 
-> In that case we need to update comments in include/asm-i386/bitops.h
+----------------------->
+From: Hugh Dickins <hugh@veritas.com>
+Subject: mm: reduce pagetable-freeing latencies
 
-Hmm... yeah it looks like they could be reordered. I think?
+2.6.15-rc1 moved the unlinking of a vma from its prio_tree and anon_vma
+into free_pgtables: so the vma is hidden from rmap and vmtruncate before
+freeing its page tables, allowing safe descent without page table lock.
+But free_pgtables is still called with preemption disabled, and Lee
+Revell has now detected high latency there.
 
+The right fix will be to rework the mmu_gathering, not to need preemption
+disabled; but for now an ugly CONFIG_PREEMPT block in free_pgtables, to
+make an initial unlinking pass with preemption enabled - made uglier by
+CONFIG_IA64 definitions (only ia64 actually uses the start and end given
+to tlb_finish_mmu, and our floor and ceiling don't quite work for those).
+These CONFIG choices being to minimize the additional TLB flushing.
 
->>__test_and_change_bit has no restriction on ordering, so as long as
->>the correct operands are clobbered, a "memory" clobber to enforce a
->>compiler barrier is not needed.
-> 
-> 
-> But why even for the other operations? Consider (current code of)
-> test_and_set_bit():
-> 
-> static inline int test_and_set_bit(int nr, volatile unsigned long * addr)
-> {
-> 	int oldbit;
-> 	__asm__ __volatile__( LOCK_PREFIX
-> 		"btsl %2,%1\n\tsbbl %0,%0"
-> 		:"=r" (oldbit),"+m" (ADDR)
-> 		:"Ir" (nr) : "memory");
-> 
-> 	return oldbit;
-> }
-> 
-> The only memory reference in there is to the passed address, it will
-> be modified, yes, but that's been made obvious to gcc in the asm
-> already. So why are we marking all of memory as clobbered, is the
-> question. (I just read Jeremy's latest reply, but I don't see how
-> or why the memory clobber helps that case either -- does a memory
-> clobber affect how gcc would order / reorder code?)
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+--
 
-Of course, because then the compiler can't assume anything about
-the contents of memory after the operation.
+ mm/memory.c |   32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-   #define barrier() __asm__ __volatile__("": : :"memory")
-
-A memory clobber is equivalent to a compiler barrier.
-
--- 
-SUSE Labs, Novell Inc.
+Index: linux-rt-rebase.q/mm/memory.c
+===================================================================
+--- linux-rt-rebase.q.orig/mm/memory.c
++++ linux-rt-rebase.q/mm/memory.c
+@@ -264,18 +264,48 @@ void free_pgd_range(struct mmu_gather **
+ 		flush_tlb_pgtables((*tlb)->mm, start, end);
+ }
+ 
++#ifdef CONFIG_IA64
++#define tlb_start_addr(tlb)	(tlb)->start_addr
++#define tlb_end_addr(tlb)	(tlb)->end_addr
++#else
++#define tlb_start_addr(tlb)	0UL	/* only ia64 really uses it */
++#define tlb_end_addr(tlb)	0UL	/* only ia64 really uses it */
++#endif
++
+ void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
+ 		unsigned long floor, unsigned long ceiling)
+ {
++#ifdef CONFIG_PREEMPT
++	struct vm_area_struct *unlink = vma;
++	int fullmm = (*tlb)->fullmm;
++
++	if (!vma)	/* Sometimes when exiting after an oops */
++		return;
++	if (vma->vm_next)
++		tlb_finish_mmu(*tlb, tlb_start_addr(*tlb), tlb_end_addr(*tlb));
++	/*
++	 * Hide vma from rmap and vmtruncate before freeeing pgtables,
++	 * with preemption enabled, except when unmapping just one area.
++	 */
++	while (unlink) {
++		anon_vma_unlink(unlink);
++		unlink_file_vma(unlink);
++		unlink = unlink->vm_next;
++	}
++	if (vma->vm_next)
++		*tlb = tlb_gather_mmu(vma->vm_mm, fullmm);
++#endif
+ 	while (vma) {
+ 		struct vm_area_struct *next = vma->vm_next;
+ 		unsigned long addr = vma->vm_start;
+ 
++#ifndef CONFIG_PREEMPT
+ 		/*
+ 		 * Hide vma from rmap and vmtruncate before freeing pgtables
+ 		 */
+ 		anon_vma_unlink(vma);
+ 		unlink_file_vma(vma);
++#endif
+ 
+ 		if (is_vm_hugetlb_page(vma)) {
+ 			hugetlb_free_pgd_range(tlb, addr, vma->vm_end,
+@@ -288,8 +318,10 @@ void free_pgtables(struct mmu_gather **t
+ 			       && !is_vm_hugetlb_page(next)) {
+ 				vma = next;
+ 				next = vma->vm_next;
++#ifndef CONFIG_PREEMPT
+ 				anon_vma_unlink(vma);
+ 				unlink_file_vma(vma);
++#endif
+ 			}
+ 			free_pgd_range(tlb, addr, vma->vm_end,
+ 				floor, next? next->vm_start: ceiling);
