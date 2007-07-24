@@ -1,96 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762591AbXGXAG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764492AbXGXAKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762591AbXGXAG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 20:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbXGXAGt
+	id S1764492AbXGXAKf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 20:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbXGXAK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 20:06:49 -0400
-Received: from xenotime.net ([66.160.160.81]:36376 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752432AbXGXAGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 20:06:48 -0400
-Date: Mon, 23 Jul 2007 17:11:32 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@osdl.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-Message-Id: <20070723171132.bc4d7b98.rdunlap@xenotime.net>
-In-Reply-To: <46A534EA.6030008@intel.com>
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky>
-	<46A534EA.6030008@intel.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jul 2007 20:10:26 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:38860 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbXGXAKZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 20:10:25 -0400
+Date: Mon, 23 Jul 2007 20:10:23 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+Subject: Re: Git tree for old kernels from before the current tree
+In-reply-to: <20070723234628.GN21668@ftp.linux.org.uk>
+X-X-Sender: nico@xanadu.home
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Paul Mundt <lethal@linux-sh.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Git Mailing List <git@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.0.999.0707231957450.6355@xanadu.home>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=us-ascii
+Content-transfer-encoding: 7BIT
+References: <9e4733910707221349s462aa11bj714956f7cdc72aac@mail.gmail.com>
+ <Pine.LNX.4.64.0707222257540.32367@fbirervta.pbzchgretzou.qr>
+ <20070722211314.GA13850@linux-sh.org>
+ <Pine.LNX.4.64.0707222344540.32367@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.64.0707230000170.32367@fbirervta.pbzchgretzou.qr>
+ <46A3D5EA.2050600@zytor.com>
+ <alpine.LFD.0.999.0707230950340.3607@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0707231343350.6355@xanadu.home>
+ <alpine.LFD.0.999.0707231057480.3607@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0707231432560.6355@xanadu.home>
+ <20070723234628.GN21668@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 16:08:26 -0700 Kok, Auke wrote:
+On Tue, 24 Jul 2007, Al Viro wrote:
 
-> Andy Whitcroft wrote:
-> > This version brings a number of new checks, and a number of bug
-> > fixes.  Of note:
+> On Mon, Jul 23, 2007 at 03:06:09PM -0400, Nicolas Pitre wrote:
+> >  - v0.96 sources
 > > 
-> >   - warnings for multiple assignments per line
+> >  - v0.99.12 announcement
+> > 
+> >  - sources for v0.99.13{abcdefghij} (got k, don't know where the serie 
+> >    ends) as well as announcements for all of them
+> > 
+> >  - all announcements for v0.99.14{a-z} except for pl14r
+> > 
+> >  - announcements for pl15c to pl15j, 1.0-pre1, and ALPHA-1.0.
+> > 
+> > Otherwise the archive appears fairly complete with almost 3 years of 
+> > Linux development history captured in a 3MB pack file.
 > 
-> 
-> This is bugged. e.g. the following line will hit this exception check:
-> 
-> 	int i = some_function(a, b, c);
+> Umm...  IIRC, tar was unhappy with several tarballs on ftp.kernel.org.
+> Do you have replacements (or instructions re combination of tar(1) options
+> to make it eat them)?
 
-Agreed.
+I have sanitized .tgz files that I use to stuff a Git repo with.  I 
+recall that some of them were reconstructed through patching an earlier 
+or later kernel version because the original ones were corrupted. Some 
+patches were retrieved from other archival sites, etc.  Then the result 
+was 
+cross checked with summary lists like this one: 
 
-...
+http://www.uwsg.iu.edu/hypermail/linux/kernel/0110.1/1684.html
 
-> This is a royal pain, since it now throws an ERROR for the obviously preferable 
-> piece of code below:
-> 
-> if (err) {
-> 	do_something();
-> 	return -ERR;
-> } else {
-> 	do_somthing_else();
-> }
-> 
-> 
-> 
-> Also, CondingStyle explicitly permits this style (even encourages it):
-
-Yes, Linus has recently written that he prefers that style also.
-
-The problem (to me at least) is that this patch:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e659ba4a0d2d471c0d73590f78e1a1b5a1eede48
-
-was not discussed before it was merged.  It was discussed a little bit
-after it was merged.  Basically we have no concensus on this patch,
-just a dictate (which we can all live with).
+This was a while ago so I don't remember the exact steps, but that 
+wasn't always trivial.
 
 
-
-> ---
-> Do not unnecessarily use braces where a single statement will do.
-> 
-> if (condition)
-> 	action();
-> 
-> This does not apply if one branch of a conditional statement is a single
-> statement. Use braces in both branches.
-> 
-> if (condition) {
-> 	do_this();
-> 	do_that();
-> } else {
-> 	otherwise();
-> }
-> ---
-> 
-> So, IMO this test needs to go, unless the script becomes smart enough to know 
-> that either side of the else requires braces. It's definately not an ERROR.
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Nicolas
