@@ -1,156 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXGXIWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933581AbXGXI0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933760AbXGXIWc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933461AbXGXIWL
+	id S933581AbXGXI0F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:26:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758468AbXGXIZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:22:11 -0400
-Received: from hydra.gt.owl.de ([195.71.99.218]:53178 "EHLO hydra.gt.owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933456AbXGXIWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:22:07 -0400
-Date: Tue, 24 Jul 2007 10:22:05 +0200
-From: Florian Lohoff <flo@rfc822.org>
-To: Stephen Hemminger <shemminger@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.23-rc1 sky2 boot crash in sky2_mac_intr
-Message-ID: <20070724082205.GA19480@paradigm.rfc822.org>
+	Tue, 24 Jul 2007 04:25:51 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:57082 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756476AbXGXIZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 04:25:50 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Devesh Sharma" <devesh28@gmail.com>
+Subject: Re: Need Help on compat_ioctl implementation
+Date: Tue, 24 Jul 2007 09:28:49 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, kernelnewbies@nl.linux.org
+References: <309a667c0707240015q4a9f32d0h88f0b25f2714d1dc@mail.gmail.com>
+In-Reply-To: <309a667c0707240015q4a9f32d0h88f0b25f2714d1dc@mail.gmail.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VS++wcV0S1rZb1Fb"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: rfc822 - pure communication
-X-SpiderMe: mh-200707241011@listme.rfc822.org
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707240928.50378.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+Iv7EjNmmoqHLddNJUiW7J6SjLqLKQpnfnLg/
+ 6xLxps56xcvCs0jpkj8qYRaVTIaLf1PZiLDxWa2VEGaPibqpzG
+ YF+5MeQGhPTqQ8kEokwCw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 24 July 2007, Devesh Sharma wrote:
+> Hello all,
+> I am facing some difficulty to implement compat_ioctl entry point in
+> my driver code, please help me out to sort out the things.
+> The ioctl is READ WRITE type,
+> It takes one header structure as argument the structure is as follows,
+> typedef struct
+>     {
+>         unsigned int Header;
+>         void  *          Data;
+>         unsigned int  Size;
+>     } IOCTL_HEADER;
+> 
+> corresponding compat strucutre is
+> typedef struct ioctl_header32
+> {
+>  compat_uint_t  Header ;
+>  compat_uptr_t Data ;
+>  compat_uint_t Size ;
+> }IOCTL_HEADER32 ;
+> 
+> the IOCTL is expected to fill following structure and return.
+> typedef struct
+> {
+>     unsigned int msgsize;
+>     char           msg[512];
+> } MSG ;
 
---VS++wcV0S1rZb1Fb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+What driver is that? Is it in the mainline kernel? If not, you
+should probably completely redo your ioctl interface, as this
+has problems to start with, even for the non-compat case...
 
+>  compat_ioctl entry point is as follows.
+> 
+> long func_ioctl32(
+> 
+>             struct file *filp,
+> 
+>             unsigned int cmd,
+> 
+>             unsigned long arg)
+> {
+>     long ret = 0 ;
+>     IOCTL_HEADER hdr64 ;
+>     IOCTL_HEADER32 __user *hdr32 ;
+>     unsigned long tmp ;
+>     u64 data ;
+>     unsigned long size ;
+> 
+>     hdr32 = (IOCTL_HEADER32 __user *)compat_ptr(arg) ;
+>     __get_user(tmp, &(hdr32->Header)) ;
+>     __get_user(data, &(hdr32->Data)) ;
+>     __get_user(size, &(hdr32->Size)) ;
+> 
+>     if(!access_ok(
+>                   VERIEY_READ|VERIFY_WRITE,
+>                   compat_ptr(data),
+>                   sizeof(unsigned long)))
+>     {
+>         printk("No access to this address\n") ;
+>         return -EFAULT ;
+>     }
 
-Hi,
-i am seeing irregular crashes on boot in the sky2_mac_intr. This is an
-Fujitsu Siemens Lifebook E8110 with a Core Duo. Currently i suspect some
-strange BIOS issues as the issues i see with the sky2 aka parity errors
-etc i also see sometimes with the integrated ipw3945 which complains
-about firmware errors. It seems the BIOS randomly fails to initialize
-all the hardware. To reproduce this crash and catch it on the serial
-console it took me around 12 boots. The machine is stable once correctly
-booted and i work most of the day on it.
+You need to check access_ok() before you attempt __get_user.
+Also, you must check the return code from each __get_user,
+because access_ok() does not check if the data is actually
+readable, only if it is part of the user space address range.
 
-[   46.479939] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low) -=
-> IRQ 19
-[   46.568569] sky2 0000:02:00.0: v1.16 addr 0xf0000000 irq 19 Yukon-EC Ult=
-ra (0xb4) rev 2
-[   46.664555] sky2 eth0: addr 00:17:42:13:45:8c
+It would be easier to do a single copy_from_user on the entire
+32 bit header.
 
-[   61.958741] sky2 eth1: enabling interface
-[   62.010834] sky2 eth1: phy write timeout
-[   62.060319] sky2 eth1: phy write timeout
-[   62.109819] sky2 eth1: phy write timeout
-[   62.159330] sky2 eth1: phy write timeout
-[   62.208811] sky2 eth1: phy write timeout
-[   62.258306] sky2 eth1: phy write timeout
-[   62.307786] sky2 eth1: phy write timeout
-[   62.357323] sky2 eth1: phy write timeout
-[   62.406820] sky2 eth1: phy write timeout
-[   62.456304] sky2 eth1: phy write timeout
-[   62.505796] sky2 eth1: phy write timeout
-[   62.555275] sky2 eth1: phy write timeout
-[   62.604766] sky2 eth1: phy write timeout
-[   62.654259] sky2 eth1: phy write timeout
-[   62.703736] sky2 eth1: phy write timeout
-[   62.750601] sky2 0000:02:00.0: error interrupt status=3D0xffffffff
-[   62.822361] sky2 0000:02:00.0: PCI hardware error (0xffff)
-[   62.887897] sky2 0000:02:00.0: PCI Express error (0xffffffff)
-[   62.956548] sky2 eth1: hw error interrupt status 0xffffffff
-[   63.023112] sky2 eth1: ram data read parity error
-[   63.079308] sky2 eth1: ram data write parity error
-[   63.136536] sky2 eth1: MAC parity error
-[   63.182382] BUG: unable to handle kernel NULL pointer dereference at vir=
-tual address 0000020c
-[   63.284354]  printing eip:
-[   63.316658] e004c528
-[   63.342729] *pde =3D 00000000
-[   63.376072] Oops: 0000 [#1]
-[   63.409407] PREEMPT SMP=20
-[   63.439704] Modules linked in: sbp2 hci_usb bluetooth snd_hda_intel snd_=
-pcm_oss snd_pcm snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi snd_ra=
-wmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device pcmcia ipw3945 sm=
-sc_ircc2 ehci_hcd snd ieee80211 ieee80211_crypt uhci_hcd ohci1394 sdhci yen=
-ta_socket rsrc_nonstatic parport_pc parport irda ieee1394 mmc_core ide_cd u=
-sbcore pcmcia_core crc_ccitt snd_page_alloc sky2
-[   63.883256] CPU:    0
-[   63.883257] EIP:    0060:[<e004c528>]    Not tainted VLI
-[   63.883258] EFLAGS: 00010202   (2.6.23-rc1 #1)
-[   64.026826] EIP is at sky2_mac_intr+0x14/0xac [sky2]
-[   64.086857] eax: 00000080   ebx: 00000001   ecx: 00000008   edx: 00000000
-[   64.167942] esi: df4d6c00   edi: ffffffff   ebp: ffffffff   esp: de3c1dbc
-[   64.249024] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-[   64.318683] Process ifconfig (pid: 1878, ti=3Dde3c0000 task=3Ddf43b740 t=
-ask.ti=3Dde3c0000)
-[   64.409113] Stack: e004e1e0 e0051fa5 df4d5000 00000000 c15ae914 00042010=
- ffffffff ffffffff=20
-[   64.509381]        e004f737 e00521b2 e00520cf c15ae914 ffffffff c040fbe0=
- de3c1e4c df4d5000=20
-[   64.609644]        df4d6c00 00000000 000000ff c02c3be6 c13c5400 c02c9ea9=
- c13d9dc0 00000287=20
-[   64.709905] Call Trace:
-[   64.741230]  [<e004e1e0>] sky2_hw_error+0xf9/0x12a [sky2]
-[   64.805757]  [<e004f737>] sky2_poll+0x1da/0xa88 [sky2]
-[   64.867171]  [<c02c3be6>] kfree_skbmem+0x8/0x61
-[   64.921311]  [<c02c9ea9>] net_tx_action+0x61/0xd0
-[   64.977521]  [<c02c9ea9>] net_tx_action+0x61/0xd0
-[   65.033734]  [<c02c9ea9>] net_tx_action+0x61/0xd0
-[   65.089942]  [<c02ca586>] net_rx_action+0x92/0x1b5
-[   65.147197]  [<c012a467>] __do_softirq+0x58/0xba
-[   65.202372]  [<c012a4fa>] do_softirq+0x31/0x36
-[   65.255472]  [<c012a8cb>] local_bh_enable_ip+0x36/0x56
-[   65.316876]  [<e004d816>] sky2_up+0x234/0x5df [sky2]
-[   65.376203]  [<c02c9da1>] dev_open+0x2e/0x68
-[   65.427223]  [<c02c80e3>] dev_change_flags+0x9d/0x14e
-[   65.487590]  [<c0305886>] devinet_ioctl+0x224/0x532
-[   65.545874]  [<c02c9686>] dev_ifsioc+0x113/0x396
-[   65.601043]  [<c02c8ef2>] dev_load+0x24/0x4b
-[   65.652060]  [<c02be7ad>] sock_ioctl+0x0/0x1be
-[   65.705159]  [<c02be94c>] sock_ioctl+0x19f/0x1be
-[   65.760329]  [<c011b983>] do_page_fault+0x269/0x58e
-[   65.818613]  [<c02be7ad>] sock_ioctl+0x0/0x1be
-[   65.871708]  [<c0177703>] do_ioctl+0x1f/0x62
-[   65.922732]  [<c017797d>] vfs_ioctl+0x237/0x249
-[   65.976869]  [<c01779c2>] sys_ioctl+0x33/0x4d
-[   66.028925]  [<c0103e52>] sysenter_past_esp+0x5f/0x85
-[   66.089293]  [<c0320000>] pfkey_send_notify+0x41/0x226
-[   66.150699]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D
-[   66.193363] Code: 05 e0 e8 da a2 0d e0 03 1f c7 03 00 04 00 00 83 c4 1c =
-5b 5e 5f 5d c3 55 57 56 89 c6 53 89 d3 83 ec 10 8b 54 90 08 89 d8 c1 e0 07 =
-<8b> ba 0c 02 00 00 89 44 24 0c 05 08 0f 00 00 03 06 f6 47 0d 02=20
-[   66.422172] EIP: [<e004c528>] sky2_mac_intr+0x14/0xac [sky2] SS:ESP 0068=
-:de3c1dbc
-[   66.511713] Kernel panic - not syncing: Fatal exception in interrupt
+>     hdr64.Header = tmp ;
+>     hdr64.Data    = data ;
 
-Flo
---=20
-Florian Lohoff                  flo@rfc822.org             +49-171-2280134
-	Those who would give up a little freedom to get a little=20
-          security shall soon have neither - Benjamin Franklin
+this needs to do a compat_ptr() conversion.
 
---VS++wcV0S1rZb1Fb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+>     hdr64.Size   = size ;
+>     handle_ioctls(filp, cmd, (void *)&hdr64) ; /*This func is specific
+> to compat ioctl.*/
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+your handle_ioctls should not need to be specific to compat ioctl,
+it's much easier to use the same code for both cases.
 
-iD8DBQFGpbatUaz2rXW+gJcRAhOhAJ0ZrUbDhrzuO0GRx2Wi2m20hyytuACgpvMW
-OXeqduEqFyZa/Vol68QP+CM=
-=uEP8
------END PGP SIGNATURE-----
+>    return ret;
+> }
+> 
+> In handle_ioctl I am doing following steps.
+> {
+> ioctl_hdr = (IOCTL_HEADER *)cmd_buff ;
+> 
+>     switch(cmd)
+>     {
+>         case IOCTL_MSG_GET :
+>              {
+>                  MSG32 *msg32 ; /* Compat msg struct is defined.*/
 
---VS++wcV0S1rZb1Fb--
+The way you showed the definition, MSG32 is identical to MSG,
+so you should not define a new structure.
+
+>                   MSG msg ;
+>                  unsigned int i ;
+> 
+>                  msg32 = (MSG32 __user *)ioctl_hdr->Data ;
+>                  msg.msgsize = 128 ;
+>                  strcpy(msg.msg, MSG_STR) ; /*MSG_STR is a macro string*/
+>                  put_user(msg.msgsize, &(msg32->msgsize)) ; /* This
+> works fine.*/
+>                  put_user(msg.msg[0], (char *) compat_ptr(msg32->msg))
+> ; /* This is giving SEG FAULT */
+
+this is not the place to use compat_ptr. If you want to write a single
+character here, you could do it like
+
+	put_user(msg.msg[0], &msg32->msg[0]));
+
+But really, you should not need a compat handler for this part, just
+call the native handle_ioctl function on the msg.
+
+>              }
+>      }
+> }
+> 
+> Question :
+> What is the correct way to perform string copy? Or is this method
+> correct? if not what is the correct way?
+> Any links or pointers are most welcome
+
+Honestly, your code looks so wrong that it's probably not worth trying
+to get just the compat_ioctl part right. Please give a pointer to
+the full source.
+
+	Arnd <><
