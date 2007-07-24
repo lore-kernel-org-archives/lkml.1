@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763198AbXGXRcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbXGXRkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763198AbXGXRcs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 13:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbXGXRcj
+	id S1760858AbXGXRkU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 13:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbXGXRkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 13:32:39 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:23257 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754387AbXGXRci (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 13:32:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gJEuqWOOcLVlx86797q67SE7XFK2hE/0oP3kCPz1d23YRjN+isnMBzxZkxbbjTGXwu03j7UT4kJjXaJ5taMlWOSJizBpQZVdpCipbA3TUiTLVmkXDwrVxLeYNVPkZHJVHe44kjjb/qlG0YABrFE3yjvQiQEd/PDmZQFjFrw+3n8=
-Message-ID: <86802c440707241032u21fc6150gb1cf52678e97b1ab@mail.gmail.com>
-Date: Tue, 24 Jul 2007 10:32:37 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 3/10] try parent numa_node at first before using default v2
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, ak@suse.de, clameter@sgi.com,
-       cornelia.huck@de.ibm.com, davem@davemloft.net, greg@kroah.com,
-       hch@infradead.org, rientjes@google.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <46A5C105.20707@s5r6.in-berlin.de>
+	Tue, 24 Jul 2007 13:40:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57424 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754872AbXGXRkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 13:40:08 -0400
+Message-ID: <46A63964.7000900@garzik.org>
+Date: Tue, 24 Jul 2007 13:39:48 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/8] i386: bitops: Kill volatile-casting of memory addresses
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>  <20070723160548.22137.66072.sendpatchset@cselinux1.cse.iitk.ac.in>  <alpine.LFD.0.999.0707231046140.3607@woody.linux-foundation.org> <1185270544.5439.252.camel@localhost.localdomain> <alpine.LFD.0.999.0707241017440.3607@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707241017440.3607@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200707231323.57502.yinghai.lu@sun.com>
-	 <46A5C105.20707@s5r6.in-berlin.de>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/24/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> On 7/23/2007 10:23 PM, Yinghai Lu wrote:
-> > this one already in -mm, but it needs [PATCH 1/10]
-> >
-> > [PATCH 3/10] try parent numa_node at first before using default v2
-> [...]
-> > this patch is using second method.
-> [...]
->
-> Could you shorten the patch description?
->
-> Don't describe what your patch _does not_ do.  Don't even describe _how_
-> your patch does what it does (unless it's obfuscated, but then that
-> would be a bad patch anyway).
->
-> Just describe _why_ it does something.
-> --
+Linus Torvalds wrote:
+> And before we remove that "volatile", we'd better make damn sure that 
+> there isn't any driver that does
+> 
+> 	/* Wait for the command queue to be cleared by DMA */
+> 	while (test_bit(...))
+> 		;
+> 
+> or similar.
+> 
+> Yes, it's annoying, but this is a scary and subtle area. And we sadly 
+> _have_ had code that does things like that.
 
-Please check it is OK.
 
-[PATCH 3/10] try parent numa_node at first before using default v2
+I certainly cannot speak for all the grotty drivers out there, but I've 
+never ever seen anything like the above.  I would consider anyone using 
+kernel bit operations on DMA memory to be more than a little crazy.  But 
+that's just me :)
 
-in the device_add, we try to use use parent numa_node.
-need to make sure pci root bus's bridge device numa_node is set.
-then we could use device->numa_node direclty for all device.
-and don't need to call pcibus_to_node().
+Usually you will see
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+	while (1) {
+		rmb();
+		if (software_index == hardware_index_in_DMA_memory)
+			break;
+		
+		... handle a unit of work ...
+	}
+
+Though ISTR being told that even rmb() was not sufficient in all cases 
+[nonetheless, that's what I use in net and SATA drivers and email 
+recommendations, and people seem happy]
+
+	Jeff
+
+
