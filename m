@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761624AbXGXOLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbXGXORt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761624AbXGXOLq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXGXOLh
+	id S1761782AbXGXORt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757070AbXGXORl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:11:37 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43024 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756522AbXGXOLg (ORCPT
+	Tue, 24 Jul 2007 10:17:41 -0400
+Received: from smtp.nokia.com ([131.228.20.173]:21439 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756712AbXGXORk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:11:36 -0400
-Date: Tue, 24 Jul 2007 15:17:48 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jeff@garzik.org
-Subject: [PATCH] pata_hpt37x: Fix 2.6.22 clock PLL regression
-Message-ID: <20070724151748.7e99f4f0@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 10:17:40 -0400
+Subject: Re: [linux-pm] Power Management framework proposal
+From: Igor Stoppa <igor.stoppa@nokia.com>
+To: ext Jerome Glisse <j.glisse@gmail.com>
+Cc: "david@lang.hm" <david@lang.hm>,
+       "ext linux-pm-bounces@lists.linux-foundation.org" 
+	<linux-pm-bounces@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	 <1185091022.19678.28.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
+	 <1185105911.29238.43.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
+	 <1185187720.26628.23.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707231033430.3828@asgard.lang.hm>
+	 <4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: OSSO
+Date: Tue, 24 Jul 2007 17:18:16 +0300
+Message-Id: <1185286696.12325.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 24 Jul 2007 14:16:45.0214 (UTC) FILETIME=[43DA2BE0:01C7CDFD]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-07-24 at 10:43 +0200, ext Jerome Glisse wrote:
 
-	Just one version of Linux ago
-	The PLL code broke - oh no!
-	But set the right mode
-	And fix up the code
-	Makes the PLL timing sync go
+> I believe a central place where user can set/change hw state to save
+> power or to increase computational power is definitely a goal to pursue.
+> But i truly think that the OHM approach is the best one ie using plugins
+> so that one can make a plugin specific for each device. The point is that
+> i believe there is no way to do an abstract interface for this and trying to
+> do so will endup doing ugly code and any interface would fail to encompass
+> all possible tweak that might exist for all devices.
+> 
+> For instance on graphics card you could do the following (maybe more):
+> -change GPU clock
+> -change memory clock
+> -disable part of engine
+> -disable unit
+> i truly don't think you can make a common interface for all this, more
+> over there might be constraint on how you can change things (GPU &
+> memory clock might need to follow a given ratio). So you definitely
+> need knowledge in the user space program to handle this.
 
-Closes-bug: #8791
-Signed-off-by: Alan Cox <alan@redhat.com>
+Even simpler case: LCD backlight can come in many flavors, both in terms
+of brightness levels and fixed amount of current required to keep it ON.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc1/drivers/ata/pata_hpt37x.c linux-2.6.23rc1/drivers/ata/pata_hpt37x.c
---- linux.vanilla-2.6.23rc1/drivers/ata/pata_hpt37x.c	2007-07-23 12:56:11.000000000 +0100
-+++ linux-2.6.23rc1/drivers/ata/pata_hpt37x.c	2007-07-23 14:44:39.000000000 +0100
-@@ -26,7 +26,7 @@
- #include <linux/libata.h>
- 
- #define DRV_NAME	"pata_hpt37x"
--#define DRV_VERSION	"0.6.6"
-+#define DRV_VERSION	"0.6.7"
- 
- struct hpt_clock {
- 	u8	xfer_speed;
-@@ -1103,17 +1103,17 @@
- 
- 		/* Select the DPLL clock. */
- 		pci_write_config_byte(dev, 0x5b, 0x21);
--		pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low);
-+		pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low | 0x100);
- 
- 		for(adjust = 0; adjust < 8; adjust++) {
- 			if (hpt37x_calibrate_dpll(dev))
- 				break;
- 			/* See if it'll settle at a fractionally different clock */
--			if ((adjust & 3) == 3) {
--				f_low --;
--				f_high ++;
--			}
--			pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low);
-+			if (adjust & 1)
-+				f_low -= adjust >> 1;
-+			else
-+				f_high += adjust >> 1;
-+			pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low | 0x100);
- 		}
- 		if (adjust == 8) {
- 			printk(KERN_WARNING "hpt37x: DPLL did not stabilize.\n");
+Trying to abstract such details from the decision-making makes little
+sense.
+Isolating that into a separate module, instead, brings the best of both
+worlds:
+-containment of the HW-specific code
+-leveraging every possible, no matter how exotic, power saving mode
+available.
+
+
+-- 
+Cheers, Igor
+
+Igor Stoppa <igor.stoppa@nokia.com>
+(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
