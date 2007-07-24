@@ -1,179 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934943AbXGXCQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935010AbXGXCQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934943AbXGXCQK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 22:16:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762853AbXGXCMV
+	id S935010AbXGXCQi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 22:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763502AbXGXCMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 22:12:21 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:40639 "HELO ustc.edu.cn"
+	Mon, 23 Jul 2007 22:12:22 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:40717 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1757892AbXGXCMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759351AbXGXCMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Jul 2007 22:12:14 -0400
-Message-ID: <385243122.57859@ustc.edu.cn>
+Message-ID: <385243123.75006@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070724020042.135275161@mail.ustc.edu.cn>
+Message-Id: <20070724020043.189132028@mail.ustc.edu.cn>
 References: <20070724020009.677809022@mail.ustc.edu.cn>
 User-Agent: quilt/0.45-1
-Date: Tue, 24 Jul 2007 10:00:12 +0800
+Date: Tue, 24 Jul 2007 10:00:19 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 03/10] readahead: combine file_ra_state.prev_index/prev_offset into prev_pos
-Content-Disposition: inline; filename=merge-start-prev_index.patch
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 10/10] filemap: convert some unsigned long to pgoff_t
+Content-Disposition: inline; filename=pgoff_t.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Combine the file_ra_state members
-				unsigned long prev_index
-				unsigned int prev_offset
-into
-				loff_t prev_pos
+Convert some 'unsigned long' to pgoff_t.
 
-It is more consistent and better supports huge files.
-
-Thanks to Peter for the nice proposal!
-
-Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
 ---
- fs/ext3/dir.c      |    2 +-
- fs/ext4/dir.c      |    2 +-
- fs/splice.c        |    2 +-
- include/linux/fs.h |    3 +--
- mm/filemap.c       |   11 ++++++-----
- mm/readahead.c     |   15 ++++++++-------
- 6 files changed, 18 insertions(+), 17 deletions(-)
+ include/linux/pagemap.h |   23 ++++++++++++-----------
+ mm/filemap.c            |   32 ++++++++++++++++----------------
+ 2 files changed, 28 insertions(+), 27 deletions(-)
 
---- linux-2.6.22-rc6-mm1.orig/include/linux/fs.h
-+++ linux-2.6.22-rc6-mm1/include/linux/fs.h
-@@ -778,8 +778,7 @@ struct file_ra_state {
+--- linux-2.6.22-rc6-mm1.orig/include/linux/pagemap.h
++++ linux-2.6.22-rc6-mm1/include/linux/pagemap.h
+@@ -83,11 +83,11 @@ static inline struct page *page_cache_al
+ typedef int filler_t(void *, struct page *);
  
- 	unsigned int ra_pages;		/* Maximum readahead window */
- 	int mmap_miss;			/* Cache miss stat for mmap accesses */
--	unsigned long prev_index;	/* Cache last read() position */
--	unsigned int prev_offset;	/* Offset where last read() ended in a page */
-+	loff_t prev_pos;		/* Cache last read() position */
- };
- 
+ extern struct page * find_get_page(struct address_space *mapping,
+-				unsigned long index);
++				pgoff_t index);
+ extern struct page * find_lock_page(struct address_space *mapping,
+-				unsigned long index);
++				pgoff_t index);
+ extern struct page * find_or_create_page(struct address_space *mapping,
+-				unsigned long index, gfp_t gfp_mask);
++				pgoff_t index, gfp_t gfp_mask);
+ unsigned find_get_pages(struct address_space *mapping, pgoff_t start,
+ 			unsigned int nr_pages, struct page **pages);
+ unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t start,
+@@ -100,41 +100,42 @@ struct page *__grab_cache_page(struct ad
  /*
+  * Returns locked page at given index in given cache, creating it if needed.
+  */
+-static inline struct page *grab_cache_page(struct address_space *mapping, unsigned long index)
++static inline struct page *grab_cache_page(struct address_space *mapping,
++								pgoff_t index)
+ {
+ 	return find_or_create_page(mapping, index, mapping_gfp_mask(mapping));
+ }
+ 
+ extern struct page * grab_cache_page_nowait(struct address_space *mapping,
+-				unsigned long index);
++				pgoff_t index);
+ extern struct page * read_cache_page_async(struct address_space *mapping,
+-				unsigned long index, filler_t *filler,
++				pgoff_t index, filler_t *filler,
+ 				void *data);
+ extern struct page * read_cache_page(struct address_space *mapping,
+-				unsigned long index, filler_t *filler,
++				pgoff_t index, filler_t *filler,
+ 				void *data);
+ extern int read_cache_pages(struct address_space *mapping,
+ 		struct list_head *pages, filler_t *filler, void *data);
+ 
+ static inline struct page *read_mapping_page_async(
+ 						struct address_space *mapping,
+-					     unsigned long index, void *data)
++						     pgoff_t index, void *data)
+ {
+ 	filler_t *filler = (filler_t *)mapping->a_ops->readpage;
+ 	return read_cache_page_async(mapping, index, filler, data);
+ }
+ 
+ static inline struct page *read_mapping_page(struct address_space *mapping,
+-					     unsigned long index, void *data)
++					     pgoff_t index, void *data)
+ {
+ 	filler_t *filler = (filler_t *)mapping->a_ops->readpage;
+ 	return read_cache_page(mapping, index, filler, data);
+ }
+ 
+ int add_to_page_cache(struct page *page, struct address_space *mapping,
+-				unsigned long index, gfp_t gfp_mask);
++				pgoff_t index, gfp_t gfp_mask);
+ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+-				unsigned long index, gfp_t gfp_mask);
++				pgoff_t index, gfp_t gfp_mask);
+ extern void remove_from_page_cache(struct page *page);
+ extern void __remove_from_page_cache(struct page *page);
+ 
 --- linux-2.6.22-rc6-mm1.orig/mm/filemap.c
 +++ linux-2.6.22-rc6-mm1/mm/filemap.c
-@@ -881,8 +881,8 @@ void do_generic_mapping_read(struct addr
- 
- 	index = *ppos >> PAGE_CACHE_SHIFT;
- 	next_index = index;
--	prev_index = ra.prev_index;
--	prev_offset = ra.prev_offset;
-+	prev_index = ra.prev_pos >> PAGE_CACHE_SHIFT;
-+	prev_offset = ra.prev_pos & (PAGE_CACHE_SIZE-1);
- 	last_index = (*ppos + desc->count + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
- 	offset = *ppos & ~PAGE_CACHE_MASK;
- 
-@@ -968,7 +968,6 @@ page_ok:
- 		index += offset >> PAGE_CACHE_SHIFT;
- 		offset &= ~PAGE_CACHE_MASK;
- 		prev_offset = offset;
--		ra.prev_offset = offset;
- 
- 		page_cache_release(page);
- 		if (ret == nr && desc->count)
-@@ -1055,7 +1054,9 @@ no_cached_page:
- 
- out:
- 	*_ra = ra;
--	_ra->prev_index = prev_index;
-+	_ra->prev_pos = prev_index;
-+	_ra->prev_pos <<= PAGE_CACHE_SHIFT;
-+	_ra->prev_pos |= prev_offset;
- 
- 	*ppos = ((loff_t) index << PAGE_CACHE_SHIFT) + offset;
- 	if (filp)
-@@ -1435,7 +1436,7 @@ retry_find:
- 	 * Found the page and have a reference on it.
- 	 */
- 	mark_page_accessed(page);
--	ra->prev_index = page->index;
-+	ra->prev_pos = page->index << PAGE_CACHE_SHIFT;
- 	return page;
- 
- outside_data_content:
---- linux-2.6.22-rc6-mm1.orig/mm/readahead.c
-+++ linux-2.6.22-rc6-mm1/mm/readahead.c
-@@ -45,7 +45,7 @@ void
- file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
+@@ -594,7 +594,7 @@ void fastcall __lock_page_nosync(struct 
+  * Is there a pagecache struct page at the given (mapping, offset) tuple?
+  * If yes, increment its refcount and return it; if no, return NULL.
+  */
+-struct page * find_get_page(struct address_space *mapping, unsigned long offset)
++struct page * find_get_page(struct address_space *mapping, pgoff_t offset)
  {
- 	ra->ra_pages = mapping->backing_dev_info->ra_pages;
--	ra->prev_index = -1;
-+	ra->prev_pos = -1;
- }
- EXPORT_SYMBOL_GPL(file_ra_state_init);
+ 	struct page *page;
  
-@@ -318,7 +318,7 @@ static unsigned long get_next_ra_size(st
-  * indicator. The flag won't be set on already cached pages, to avoid the
-  * readahead-for-nothing fuss, saving pointless page cache lookups.
-  *
-- * prev_index tracks the last visited page in the _previous_ read request.
-+ * prev_pos tracks the last visited byte in the _previous_ read request.
-  * It should be maintained by the caller, and will be used for detecting
-  * small random reads. Note that the readahead algorithm checks loosely
-  * for sequential patterns. Hence interleaved reads might be served as
-@@ -342,11 +342,9 @@ ondemand_readahead(struct address_space 
- 		   bool hit_readahead_marker, pgoff_t offset,
- 		   unsigned long req_size)
+@@ -618,7 +618,7 @@ EXPORT_SYMBOL(find_get_page);
+  * Returns zero if the page was not present. find_lock_page() may sleep.
+  */
+ struct page *find_lock_page(struct address_space *mapping,
+-				unsigned long offset)
++				pgoff_t offset)
  {
--	int max;	/* max readahead pages */
--	int sequential;
--
--	max = ra->ra_pages;
--	sequential = (offset - ra->prev_index <= 1UL) || (req_size > max);
-+	int	max = ra->ra_pages;	/* max readahead pages */
-+	pgoff_t prev_offset;
-+	int	sequential;
+ 	struct page *page;
  
- 	/*
- 	 * It's the expected callback offset, assume sequential access.
-@@ -360,6 +358,9 @@ ondemand_readahead(struct address_space 
- 		goto readit;
- 	}
+@@ -664,7 +664,7 @@ EXPORT_SYMBOL(find_lock_page);
+  * memory exhaustion.
+  */
+ struct page *find_or_create_page(struct address_space *mapping,
+-		unsigned long index, gfp_t gfp_mask)
++		pgoff_t index, gfp_t gfp_mask)
+ {
+ 	struct page *page;
+ 	int err;
+@@ -794,7 +794,7 @@ EXPORT_SYMBOL(find_get_pages_tag);
+  * and deadlock against the caller's locked page.
+  */
+ struct page *
+-grab_cache_page_nowait(struct address_space *mapping, unsigned long index)
++grab_cache_page_nowait(struct address_space *mapping, pgoff_t index)
+ {
+ 	struct page *page = find_get_page(mapping, index);
  
-+	prev_offset = ra->prev_pos >> PAGE_CACHE_SHIFT;
-+	sequential = offset - prev_offset <= 1UL || req_size > max;
-+
- 	/*
- 	 * Standalone, small read.
- 	 * Read as is, and do not pollute the readahead state.
---- linux-2.6.22-rc6-mm1.orig/fs/ext3/dir.c
-+++ linux-2.6.22-rc6-mm1/fs/ext3/dir.c
-@@ -143,7 +143,7 @@ static int ext3_readdir(struct file * fi
- 					sb->s_bdev->bd_inode->i_mapping,
- 					&filp->f_ra, filp,
- 					index, 1);
--			filp->f_ra.prev_index = index;
-+			filp->f_ra.prev_pos = index << PAGE_CACHE_SHIFT;
- 			bh = ext3_bread(NULL, inode, blk, 0, &err);
+@@ -870,10 +870,10 @@ void do_generic_mapping_read(struct addr
+ 			     read_actor_t actor)
+ {
+ 	struct inode *inode = mapping->host;
+-	unsigned long index;
+-	unsigned long offset;
+-	unsigned long last_index;
+-	unsigned long prev_index;
++	pgoff_t index;
++	pgoff_t last_index;
++	pgoff_t prev_index;
++	unsigned long offset;      /* offset into pagecache page */
+ 	unsigned int prev_offset;
+ 	int error;
+ 
+@@ -885,7 +885,7 @@ void do_generic_mapping_read(struct addr
+ 
+ 	for (;;) {
+ 		struct page *page;
+-		unsigned long end_index;
++		pgoff_t end_index;
+ 		loff_t isize;
+ 		unsigned long nr, ret;
+ 
+@@ -1255,7 +1255,7 @@ EXPORT_SYMBOL(generic_file_sendfile);
+ 
+ static ssize_t
+ do_readahead(struct address_space *mapping, struct file *filp,
+-	     unsigned long index, unsigned long nr)
++	     pgoff_t index, unsigned long nr)
+ {
+ 	if (!mapping || !mapping->a_ops || !mapping->a_ops->readpage)
+ 		return -EINVAL;
+@@ -1275,8 +1275,8 @@ asmlinkage ssize_t sys_readahead(int fd,
+ 	if (file) {
+ 		if (file->f_mode & FMODE_READ) {
+ 			struct address_space *mapping = file->f_mapping;
+-			unsigned long start = offset >> PAGE_CACHE_SHIFT;
+-			unsigned long end = (offset + count - 1) >> PAGE_CACHE_SHIFT;
++			pgoff_t start = offset >> PAGE_CACHE_SHIFT;
++			pgoff_t end = (offset + count - 1) >> PAGE_CACHE_SHIFT;
+ 			unsigned long len = end - start + 1;
+ 			ret = do_readahead(mapping, file, start, len);
  		}
+@@ -1294,7 +1294,7 @@ asmlinkage ssize_t sys_readahead(int fd,
+  * This adds the requested page to the page cache if it isn't already there,
+  * and schedules an I/O to read in its contents from disk.
+  */
+-static int fastcall page_cache_read(struct file * file, unsigned long offset)
++static int fastcall page_cache_read(struct file * file, pgoff_t offset)
+ {
+ 	struct address_space *mapping = file->f_mapping;
+ 	struct page *page; 
+@@ -1540,7 +1540,7 @@ EXPORT_SYMBOL(generic_file_mmap);
+ EXPORT_SYMBOL(generic_file_readonly_mmap);
  
---- linux-2.6.22-rc6-mm1.orig/fs/ext4/dir.c
-+++ linux-2.6.22-rc6-mm1/fs/ext4/dir.c
-@@ -142,7 +142,7 @@ static int ext4_readdir(struct file * fi
- 					sb->s_bdev->bd_inode->i_mapping,
- 					&filp->f_ra, filp,
- 					index, 1);
--			filp->f_ra.prev_index = index;
-+			filp->f_ra.prev_pos = index << PAGE_CACHE_SHIFT;
- 			bh = ext4_bread(NULL, inode, blk, 0, &err);
- 		}
- 
---- linux-2.6.22-rc6-mm1.orig/fs/splice.c
-+++ linux-2.6.22-rc6-mm1/fs/splice.c
-@@ -455,7 +455,7 @@ fill_it:
- 	 */
- 	while (page_nr < nr_pages)
- 		page_cache_release(pages[page_nr++]);
--	in->f_ra.prev_index = index;
-+	in->f_ra.prev_pos = index << PAGE_CACHE_SHIFT;
- 
- 	if (spd.nr_pages)
- 		return splice_to_pipe(pipe, &spd);
+ static struct page *__read_cache_page(struct address_space *mapping,
+-				unsigned long index,
++				pgoff_t index,
+ 				int (*filler)(void *,struct page*),
+ 				void *data)
+ {
+@@ -1574,7 +1574,7 @@ repeat:
+  * after submitting it to the filler.
+  */
+ struct page *read_cache_page_async(struct address_space *mapping,
+-				unsigned long index,
++				pgoff_t index,
+ 				int (*filler)(void *,struct page*),
+ 				void *data)
+ {
+@@ -1623,7 +1623,7 @@ EXPORT_SYMBOL(read_cache_page_async);
+  * If the page does not get brought uptodate, return -EIO.
+  */
+ struct page *read_cache_page(struct address_space *mapping,
+-				unsigned long index,
++				pgoff_t index,
+ 				int (*filler)(void *,struct page*),
+ 				void *data)
+ {
 
 --
