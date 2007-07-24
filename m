@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759137AbXGXGfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbXGXGh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759137AbXGXGfy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 02:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbXGXGfq
+	id S1760637AbXGXGh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 02:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbXGXGhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 02:35:46 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:51223 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753830AbXGXGfp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 02:35:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=QcoI66CdMhOEb9Au6pB6NgivqiP29GCAOyhpoJ+nlVlhiC+otpbbqrdCAweVsXR/27GOHNPnu9WJ1PUN//6Ju1cy03hBut0IRf0C4vZ6Ul5VE+CU7GwHjmwqtdeH+1cMowKuFTar/u4sSAGQWAYH2xy/YuZ9UBKbR/grr9OLJcA=
-Message-ID: <46A59DBA.4000704@gmail.com>
-Date: Tue, 24 Jul 2007 15:35:38 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Tue, 24 Jul 2007 02:37:15 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:41190 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752440AbXGXGhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 02:37:13 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Tue, 24 Jul 2007 12:08:37 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered
+ unnecessarily
+In-Reply-To: <46A578A1.5010504@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0707241154060.1433@cselinux1.cse.iitk.ac.in>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <46A578A1.5010504@yahoo.com.au>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Gabriel C <nix.or.die@googlemail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de
-Subject: Re: Oops while modprobing phy fixed module
-References: <4698BF14.10807@googlemail.com>	<a781481a0707142239l397672c6p4fd1dc8dfb73e07c@mail.gmail.com>	<469A5C94.7030201@googlemail.com>	<a781481a0707151414l3efcd2d0q93db88a32b90e344@mail.gmail.com>	<469A9D5D.10509@googlemail.com>	<469B61C8.8010902@googlemail.com>	<a781481a0707160819w1be9128cxb3cdd06ba068b20d@mail.gmail.com>	<469BB7B8.3060002@gmail.com>	<469BB9CA.6090500@googlemail.com>	<469BC2D6.5090008@googlemail.com>	<469BC34C.4080107@googlemail.com>	<469DAA52.1010803@gmail.com> <20070723125323.27a864f7@schroedinger.engr.sgi.com>
-In-Reply-To: <20070723125323.27a864f7@schroedinger.engr.sgi.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Wed, 18 Jul 2007 14:51:14 +0900
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> Okay, successfully reproduced here.  Will hunt down.
-> 
-> Next time simply boot with "slub_debug". It will save a lot of time.
+On Tue, 24 Jul 2007, Nick Piggin wrote:
 
-Alright, thanks.
+> Satyam Sharma wrote:
+> > From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> > 
+> > [6/8] i386: bitops: Don't mark memory as clobbered unnecessarily
+> > 
+> > The goal is to let gcc generate good, beautiful, optimized code.
+> > 
+> > But test_and_set_bit, test_and_clear_bit, __test_and_change_bit,
+> > and test_and_change_bit unnecessarily mark all of memory as clobbered,
+> > thereby preventing gcc from doing perfectly valid optimizations.
+> > 
+> > The case of __test_and_change_bit() is particularly surprising, given
+> > that it's a variant where we don't make any guarantees at all.
+> 
+> __test_and_change_bit is one that you could remove the memory clobber
+> from.
 
--- 
-tejun
+Yes, for the atomic versions we don't care if we're asking gcc to
+generate trashy code (even though I'd have wanted to only disallow
+problematic optimizations -- ones involving the passed bit-string
+address -- there, and allow other memory references to be optimized
+as and how the compiler feels like it) because the atomic variants
+are slow anyway and we probably want to be extra-safe there.
+
+But for the non-atomic variants, it does make sense to remove the
+memory clobber (and the unneeded __asm__ __volatile__ that another
+patch did -- for the non-atomic variants, again).
+
+OTOH, as per Linus' review it seems we can drop the "memory" clobber
+and specify the output operand for the extended asm as "+m". But I
+must admit I didn't quite understand that at all.
+
+[ I should probably start reading gcc sources, the docs are said to
+  be insufficient/out-of-date, as per the reviews of the patches. ]
+
+
+Satyam
