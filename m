@@ -1,132 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbYLLCMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbYLLCSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbYLLCMc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 21:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757110AbYLLCMT
+	id S1757920AbYLLCSF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 21:18:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbYLLCRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 21:12:19 -0500
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:39145 "HELO
+	Thu, 11 Dec 2008 21:17:49 -0500
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:39386 "HELO
 	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756986AbYLLCMS (ORCPT
+	by vger.kernel.org with SMTP id S1756945AbYLLCRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 21:12:18 -0500
+	Thu, 11 Dec 2008 21:17:49 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=GIQln+qZ2TmRD26ZugNA/xm3qMSIJTXR9G2RTyedbfZEcrQibXZUOP/dW0XFE05g0Dosdn4K7wgVoRQcKay/bEGBHYk35RvPYJlx2D/lUDj+15La4tM401VqbZEByC74guMnMtXNehu1QqZ0n8MCbeNDlJCZvrl7eg8XU1G3ndk=  ;
-X-YMail-OSG: FKxlFMsVM1nMsrMhMKUazldHXpg26EG61RxCSjb55krMzJb22gAmbY.h7dzmdtwZi0tbJYHowOxnw8VS3z9OahDOKshe9cdWxfJV2R0Ch5i3vfb2UQ3NUE10GfzirdVgbVoF5U_i0lEb6px7etn7T51KDC_RfSSr6Axbtj3564rJLpG_Q3wyo3G.u_eS
+  b=1+DvMecyQkm0LWgm+AfKCN7os0Bi9gfSqJYHFJZLYzUTp+5aDi9caTNBVAKK1vH5QksN6bPB9yBwb+kJNtXs+oaeGgApUT/6+exnmMpxIByt9bdxqnWWebcz4E7D4cA9h1MSH915WMMMCXQIaYI1UDpgAiNN9f/hj+KMTzaPd34=  ;
+X-YMail-OSG: pArl.UEVM1lnXEe8gzXjtv7j0YNnRmmNilKeS6HhYoW0T9yGUqfcWZWolfZG6qNMTHgDjItkrxY6x4rRhuqjdm68elxgVhvSRjL1kEB6CE36LDuOV5FlSLBTRu8hiJ0xKe_cPsFm5Ipdbo9Pdav37q2x2_kXUwCZ6vJ1eTsE
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH v3 3/7] fs: Introduce a per_cpu last_ino allocator
-Date: Tue, 24 Jul 2007 11:34:41 +1000
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
+Date: Tue, 24 Jul 2007 11:40:12 +1000
 User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org,
-       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
-	<kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <493100B0.6090104@cosmosbay.com> <49419696.9080509@cosmosbay.com>
-In-Reply-To: <49419696.9080509@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+References: <49416494.6040009@goop.org> <200707241052.13825.nickpiggin@yahoo.com.au> <4941C568.4070207@goop.org>
+In-Reply-To: <4941C568.4070207@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707241134.42512.nickpiggin@yahoo.com.au>
+Message-Id: <200707241140.12945.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 December 2008 09:39, Eric Dumazet wrote:
-> new_inode() dirties a contended cache line to get increasing
-> inode numbers.
+On Friday 12 December 2008 12:59, Jeremy Fitzhardinge wrote:
+> Nick Piggin wrote:
+> > Hi,
+> >
+> > On Friday 12 December 2008 06:05, Jeremy Fitzhardinge wrote:
+> >> Hi Nick,
+> >>
+> >> In Xen when we're killing the lazy vmalloc aliases, we're only concerned
+> >> about the pagetable references to the mapped pages, not the TLB entries.
+> >
+> > Hm? Why is that? Why wouldn't it matter if some page table page gets
+> > written to via a stale TLB?
 >
-> Solve this problem by providing to each cpu a per_cpu variable,
-> feeded by the shared last_ino, but once every 1024 allocations.
->
-> This reduce contention on the shared last_ino, and give same
-> spreading ino numbers than before.
-> (same wraparound after 2^32 allocations)
+> No.  Well, yes, it would, but Xen itself will do whatever tlb flushes
+> are necessary to keep it safe (it must, since it doesn't trust guest
+> kernels).  It's fairly clever about working out which cpus need flushing
+> and if other flushes have already done the job.
 
-I don't suppose this would cause any filesystems to do silly
-things?
+OK. Yeah, then the problem is simply that the guest may reuse that virtual
+memory for another vmap.
 
-Seems like a good idea, if you could just add a #define instead
-of 1024.
 
+> >> For the most part eliminating the TLB flushes would be a performance
+> >> optimisation, but there's at least one case where we need to shoot down
+> >> aliases in an interrupt-disabled section, so the TLB shootdown IPIs
+> >> would potentially deadlock.
+> >
+> > So... 2.6.28 is deadlocky for you?
 >
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> ---
->  fs/inode.c |   35 ++++++++++++++++++++++++++++++++---
->  1 files changed, 32 insertions(+), 3 deletions(-)
+> No.  The deadlock is in the new dom0 code I'm working on.  I haven't
+> posted it yet (well, it hasn't been merged).
+
+OK, good.
+
+
+> In this case, I'm swizzling the physical pages underlying a piece of
+> guest pseudo-physical memory so that it is physically contiguous and/or
+> under the device limit, so I can set up DMA buffers, swiotlb memory,
+> etc.  This requires removing the mappings to the old pages and replacing
+> them with new mappings, but I need to make sure the old pages have no
+> other aliases before I can release them back to Xen.  (This can all
+> happen in dma_alloc_coherent in a device driver with interrupts
+> disabled, so the IPI causes deadlock warnings.)
 >
-> diff --git a/fs/inode.c b/fs/inode.c
-> index f94f889..dc8e72a 100644
-> --- a/fs/inode.c
-> +++ b/fs/inode.c
-> @@ -556,6 +556,36 @@ repeat:
->  	return node ? inode : NULL;
->  }
+> The TLB is irrelevant because Xen will make sure any stale entries are
+> flushed appropriately before giving those pages out to any other domain.
+
+OK.
+
+
+> >> I'm wondering what your thoughts are about this approach?
+> >
+> > Doesn't work, because that's allowing virtual addresses to be reused
+> > before they have TLBs flushed.
 >
-> +#ifdef CONFIG_SMP
-> +/*
-> + * Each cpu owns a range of 1024 numbers.
-> + * 'shared_last_ino' is dirtied only once out of 1024 allocations,
-> + * to renew the exhausted range.
-> + */
-> +static DEFINE_PER_CPU(int, last_ino);
-> +
-> +static int last_ino_get(void)
-> +{
-> +	static atomic_t shared_last_ino;
-> +	int *p = &get_cpu_var(last_ino);
-> +	int res = *p;
-> +
-> +	if (unlikely((res & 1023) == 0))
-> +		res = atomic_add_return(1024, &shared_last_ino) - 1024;
-> +
-> +	*p = ++res;
-> +	put_cpu_var(last_ino);
-> +	return res;
-> +}
-> +#else
-> +static int last_ino_get(void)
-> +{
-> +	static int last_ino;
-> +
-> +	return ++last_ino;
-> +}
-> +#endif
-> +
->  /**
->   *	new_inode 	- obtain an inode
->   *	@sb: superblock
-> @@ -575,7 +605,6 @@ struct inode *new_inode(struct super_block *sb)
->  	 * error if st_ino won't fit in target struct field. Use 32bit counter
->  	 * here to attempt to avoid that.
->  	 */
-> -	static unsigned int last_ino;
->  	struct inode * inode;
+> Right, I see.  It's a question of flush on unmap or flush on map.
+
+Yes. And flushing on unmap is easier of course, because we know exactly
+what we've just unmapped.
+
+
+> > You could have a xen specific function which goes through the lazy maps
+> > and unmaps their page tables, but leaves them in the virtual address
+> > allocator (so a subsequent lazy flush will still do the TLB flush before
+> > allowing the addresses to be reused).
 >
->  	spin_lock_prefetch(&inode_lock);
-> @@ -583,11 +612,11 @@ struct inode *new_inode(struct super_block *sb)
->  	inode = alloc_inode(sb);
->  	if (inode) {
->  		percpu_counter_inc(&nr_inodes);
-> +		inode->i_state = 0;
-> +		inode->i_ino = last_ino_get();
->  		spin_lock(&inode_lock);
->  		list_add(&inode->i_list, &inode_in_use);
->  		list_add(&inode->i_sb_list, &sb->s_inodes);
-> -		inode->i_ino = ++last_ino;
-> -		inode->i_state = 0;
->  		spin_unlock(&inode_lock);
->  	}
->  	return inode;
+> Yes, that would work.
+
+That would be my preferred approach.
