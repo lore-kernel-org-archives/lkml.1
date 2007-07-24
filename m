@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759240AbXGXPfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbXGXPj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759240AbXGXPfn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 11:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXGXPfg
+	id S1757239AbXGXPj1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 11:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbXGXPjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 11:35:36 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:59980 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751856AbXGXPff (ORCPT
+	Tue, 24 Jul 2007 11:39:18 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55999 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752679AbXGXPjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 11:35:35 -0400
-Date: Tue, 24 Jul 2007 16:35:31 +0100
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] Do not trigger OOM-killer for high-order allocation failures
-Message-ID: <20070724153531.GA30585@skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Tue, 24 Jul 2007 11:39:18 -0400
+Date: Tue, 24 Jul 2007 16:39:16 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: [PATCH][RFC] getting rid of stupid loop in BUG()
+Message-ID: <20070724153916.GS21668@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-out_of_memory() may be called when an allocation is failing and the direct
-reclaim is not making any progress. This does not take into account the
-requested order of the allocation. If the request if for an order larger
-than PAGE_ALLOC_COSTLY_ORDER, it is reasonable to fail the allocation
-because the kernel makes no guarantees about those allocations succeeding.
+	AFAICS, the patch below should do it for i386; instead of
+using a dummy loop to tell gcc that this sucker never returns,
+we do
+static void __always_inline __noreturn __BUG(const char *file, int line);
+containing the actual asm we want to insert and define BUG() as
+__BUG(__FILE__, __LINE__).  It looks safe, but I don't claim enough
+experience with gcc __asm__ potential nastiness, so...
 
-This false OOM situation can occur if a user is trying to grow the hugepage
-pool in a script like;
+Comments, objections?
 
-#!/bin/bash
-REQUIRED=$1
-echo 1 > /proc/sys/vm/hugepages_treat_as_movable
-echo $REQUIRED > /proc/sys/vm/nr_hugepages
-ACTUAL=`cat /proc/sys/vm/nr_hugepages`
-while [ $REQUIRED -ne $ACTUAL ]; do
-	echo Huge page pool at $ACTUAL growing to $REQUIRED
-	echo $REQUIRED > /proc/sys/vm/nr_hugepages
-	ACTUAL=`cat /proc/sys/vm/nr_hugepages`
-	sleep 1
-done
-
-This is a reasonable scenario when ZONE_MOVABLE is in use but triggers OOM
-easily on 2.6.23-rc1. This patch will fail an allocation for an order above
-PAGE_ALLOC_COSTLY_ORDER instead of killing processes and retrying.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-
----
- page_alloc.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 40954fb..da57173 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1350,6 +1350,10 @@ nofail_alloc:
- 		if (page)
- 			goto got_pg;
+diff --git a/include/asm-i386/bug.h b/include/asm-i386/bug.h
+index b0fd78c..294bc55 100644
+--- a/include/asm-i386/bug.h
++++ b/include/asm-i386/bug.h
+@@ -7,31 +7,27 @@
+  * The offending file and line are encoded encoded in the __bug_table section.
+  */
  
-+		/* The OOM killer will not help higher order allocs so fail */
-+		if (order > PAGE_ALLOC_COSTLY_ORDER)
-+			goto nopage;
+-#ifdef CONFIG_BUG
+ #define HAVE_ARCH_BUG
+ 
+-#ifdef CONFIG_DEBUG_BUGVERBOSE
+-#define BUG()								\
+-	do {								\
+-		asm volatile("1:\tud2\n"				\
+-			     ".pushsection __bug_table,\"a\"\n"		\
+-			     "2:\t.long 1b, %c0\n"			\
+-			     "\t.word %c1, 0\n"				\
+-			     "\t.org 2b+%c2\n"				\
+-			     ".popsection"				\
+-			     : : "i" (__FILE__), "i" (__LINE__),	\
+-			     "i" (sizeof(struct bug_entry)));		\
+-		for(;;) ;						\
+-	} while(0)
++#define BUG() __BUG(__FILE__, __LINE__)
 +
- 		out_of_memory(zonelist, gfp_mask, order);
- 		goto restart;
- 	}
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
++#include <asm-generic/bug.h>
+ 
++#ifdef CONFIG_BUG
++static void __always_inline __noreturn __BUG(const char *file, int line)
++{
++#ifdef CONFIG_DEBUG_BUGVERBOSE
++	asm volatile("1:\tud2\n"
++		     ".pushsection __bug_table,\"a\"\n"
++		     "2:\t.long 1b, %c0\n"
++		     "\t.word %c1, 0\n"
++		     "\t.org 2b+%c2\n"
++		     ".popsection"
++		     : : "i" (file), "i" (line),
++		     "i" (sizeof(struct bug_entry)));
+ #else
+-#define BUG()								\
+-	do {								\
+-		asm volatile("ud2");					\
+-		for(;;) ;						\
+-	} while(0)
++	asm volatile("ud2");
+ #endif
++}
+ #endif
+-
+-#include <asm-generic/bug.h>
+ #endif
