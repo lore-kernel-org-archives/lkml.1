@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbXGXThS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762062AbXGXTkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbXGXThS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbXGXThE
+	id S1762062AbXGXTkt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbXGXTkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:37:04 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50106 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756841AbXGXThD (ORCPT
+	Tue, 24 Jul 2007 15:40:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51691 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754073AbXGXTkl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:37:03 -0400
-Date: Tue, 24 Jul 2007 12:36:59 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mel Gorman <mel@skynet.ie>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
-In-Reply-To: <20070724122542.d4ac734a.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0707241234460.13653@schroedinger.engr.sgi.com>
-References: <1185185020.8197.11.camel@twins> <20070723112143.GB19437@skynet.ie>
- <1185190711.8197.15.camel@twins> <Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com>
- <1185256869.8197.27.camel@twins> <Pine.LNX.4.64.0707240007100.3128@schroedinger.engr.sgi.com>
- <1185261894.8197.33.camel@twins> <Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com>
- <20070724120751.401bcbcb@schroedinger.engr.sgi.com>
- <20070724122542.d4ac734a.akpm@linux-foundation.org>
+	Tue, 24 Jul 2007 15:40:41 -0400
+Date: Tue, 24 Jul 2007 12:39:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Trent Piepho <xyzzy@speakeasy.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered
+ unnecessarily
+In-Reply-To: <Pine.LNX.4.58.0707240058370.30561@shell4.speakeasy.net>
+Message-ID: <alpine.LFD.0.999.0707241236020.3607@woody.linux-foundation.org>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <46A578A1.5010504@yahoo.com.au> <Pine.LNX.4.64.0707241154060.1433@cselinux1.cse.iitk.ac.in>
+ <46A5A929.4020706@yahoo.com.au>
+ <Pine.LNX.4.58.0707240058370.30561@shell4.speakeasy.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007, Andrew Morton wrote:
 
-> > __GFP_MOVABLE	The movability of a slab is determined by the
-> > 		options specified at kmem_cache_create time. If this is
-> > 		specified at kmalloc time then we will have some random
-> > 		slabs movable and others not. 
+
+On Tue, 24 Jul 2007, Trent Piepho wrote:
 > 
-> Yes, they seem inappropriate.  Especially the first two.
+> Speaking of that, why are all the asm functions in arch/i386/lib/string.c
+> defined as having a memory clobber, even those which don't modify memory
+> like strcmp, strchr, strlen and so on?
 
-The third one would randomize __GFP_MOVABLE allocs from the page allocator 
-since one __GFP_MOVABLE alloc may allocate a slab that is then used for 
-!__GFP_MOVABLE allocs.
+That's because the memory clobber will serialize the inline asm with 
+anything else that reads or writes memory.
 
-Maybe something like this? Note that we may get into some churn here 
-since slab allocations that any of these flags will BUG.
+So even if we don't actually change any memory, if we cannot describe what 
+we *read*, then we need to tell gcc to not re-order us wrt things that 
+could *write*. And the simplest way to do that is to say that you clobber 
+memory, even if you don't.
 
+So as a more concrete example: imagine that we're doing a "strlen()" on 
+some local variable. We need to tell gcc that that variable has to be 
+updated in memory before it schedules the asm. The memory clobber does 
+that.
 
+(Yes, the "asm volatile" may do so too, but it's very unclear what the 
+"volatile" on the asm actually does, so ..)
 
-GFP_LEVEL_MASK: Remove __GFP_COLD, __GFP_COMP and __GFPMOVABLE
-
-Add an explanation for the GFP_LEVEL_MASK and remove the flags
-that should not be passed through derived allocators.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6/include/linux/gfp.h
-===================================================================
---- linux-2.6.orig/include/linux/gfp.h	2007-07-24 12:31:04.000000000 -0700
-+++ linux-2.6/include/linux/gfp.h	2007-07-24 12:32:50.000000000 -0700
-@@ -53,12 +53,15 @@ struct vm_area_struct;
- #define __GFP_BITS_SHIFT 20	/* Room for 20 __GFP_FOO bits */
- #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
- 
--/* if you forget to add the bitmask here kernel will crash, period */
-+/*
-+ * GFP_LEVEL_MASK is used to filter out flags to be passed on to the
-+ * page allocator in derived allocators such as slab allocators and
-+ * vmalloc. It should not contain flags that are to be handled by the
-+ * derived allocators themselves.
-+ */
- #define GFP_LEVEL_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS| \
--			__GFP_COLD|__GFP_NOWARN|__GFP_REPEAT| \
--			__GFP_NOFAIL|__GFP_NORETRY|__GFP_COMP| \
--			__GFP_NOMEMALLOC|__GFP_HARDWALL|__GFP_THISNODE| \
--			__GFP_MOVABLE)
-+		__GFP_NOWARN|__GFP_REPEAT|__GFP_NOFAIL|__GFP_NORETRY| \
-+		__GFP_NOMEMALLOC|__GFP_HARDWALL|__GFP_THISNODE| __GFP_MOVABLE)
- 
- /* This equals 0, but use constants in case they ever change */
- #define GFP_NOWAIT	(GFP_ATOMIC & ~__GFP_HIGH)
+		Linus
