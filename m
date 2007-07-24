@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933456AbXGXIvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934642AbXGXIvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933456AbXGXIvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 04:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758812AbXGXIvD
+	id S934642AbXGXIvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 04:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760066AbXGXIvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 04:51:03 -0400
-Received: from mail.clusterfs.com ([74.0.229.162]:43113 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758465AbXGXIu7 (ORCPT
+	Tue, 24 Jul 2007 04:51:31 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:36843 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760800AbXGXIva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 04:50:59 -0400
-Date: Tue, 24 Jul 2007 02:50:56 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
+	Tue, 24 Jul 2007 04:51:30 -0400
+Date: Tue, 24 Jul 2007 01:53:58 -0700
+From: Greg KH <greg@kroah.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Fengguang Wu <fengguang.wu@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Rusty Russell <rusty@rustcorp.com.au>, Dave Jones <davej@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
-       Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
-       Mingming Cao <cmm@us.ibm.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Chris Ahna <christopher.j.ahna@intel.com>,
-       David Mosberger-Tang <davidm@hpl.hp.com>,
-       Kyle McMartin <kyle@parisc-linux.org>,
-       Dave Jones <davej@codemonkey.org.uk>, Dave Airlie <airlied@linux.ie>
-Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
-Message-ID: <20070724085056.GE5992@schatzie.adilger.int>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Fengguang Wu <fengguang.wu@gmail.com>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Rusty Russell <rusty@rustcorp.com.au>, Dave Jones <davej@redhat.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
-	Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
-	Mingming Cao <cmm@us.ibm.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	Chris Ahna <christopher.j.ahna@intel.com>,
-	David Mosberger-Tang <davidm@hpl.hp.com>,
-	Kyle McMartin <kyle@parisc-linux.org>,
-	Dave Jones <davej@codemonkey.org.uk>, Dave Airlie <airlied@linux.ie>
-References: <20070721210005.000228000@chello.nl> <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com> <20070722081010.GA6317@mail.ustc.edu.cn> <1185093236.6344.87.camel@localhost.localdomain> <46A46E4B.7050007@yahoo.com.au> <385201377.00678@ustc.edu.cn> <20070723124009.5fcf4fef.akpm@linux-foundation.org> <385238729.01475@ustc.edu.cn> <20070723181701.c5551449.akpm@linux-foundation.org>
-Mime-Version: 1.0
+Cc: James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH try #3] security: Convert LSM into a static interface
+Message-ID: <20070724085358.GA13845@kroah.com>
+References: <Line.LNX.4.64.0707141233490.26711@d.namei> <20070724010224.bbfb82bc.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070723181701.c5551449.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+In-Reply-To: <20070724010224.bbfb82bc.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 23, 2007  18:17 -0700, Andrew Morton wrote:
-> hm, yes, there is a risk that the code was accidentally correct.  Or the
-> code has only ever dealt with power-of-2 inputs, in which case it happens
-> to work either way.
+On Tue, Jul 24, 2007 at 01:02:24AM -0700, Andrew Morton wrote:
+> On Sat, 14 Jul 2007 12:37:01 -0400 (EDT) James Morris <jmorris@namei.org> wrote:
 > 
-> David(s) and ext4-people: could we please have a close review of these
-> changes?
-> > @@ -1706,8 +1704,8 @@ static int ext4_fill_super (struct super
-> > -	sbi->s_addr_per_block_bits = log2(EXT4_ADDR_PER_BLOCK(sb));
-> > -	sbi->s_desc_per_block_bits = log2(EXT4_DESC_PER_BLOCK(sb));
-> > +	sbi->s_addr_per_block_bits = ilog2(EXT4_ADDR_PER_BLOCK(sb));
-> > +	sbi->s_desc_per_block_bits = ilog2(EXT4_DESC_PER_BLOCK(sb));
+> > Convert LSM into a static interface
+> 
+> allmodconfig broke
+> 
+> security/built-in.o: In function `rootplug_bprm_check_security':
+> security/root_plug.c:64: undefined reference to `usb_find_device'
+> security/root_plug.c:70: undefined reference to `usb_put_dev'
 
-For the ext[234] code there has only ever been power-of-two values for
-ADDR_PER_BLOCK() and DESC_PER_BLOCK().
+That's wierd, who would have disabled the exports of those functions or
+removed the "#include <linux/usb.h>" from this file?
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+thanks,
 
+greg k-h
