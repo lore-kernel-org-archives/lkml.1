@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760694AbXGXNWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbXGXN0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760694AbXGXNWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 09:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbXGXNWe
+	id S1760741AbXGXN0w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 09:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbXGXN0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 09:22:34 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:56584 "EHLO atlrel7.hp.com"
+	Tue, 24 Jul 2007 09:26:45 -0400
+Received: from mga03.intel.com ([143.182.124.21]:64571 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058AbXGXNWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 09:22:33 -0400
-Message-ID: <46A5F91B.50403@hp.com>
-Date: Tue, 24 Jul 2007 09:05:31 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	id S1753345AbXGXN0o convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 09:26:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,574,1175497200"; 
+   d="scan'208";a="254056069"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Adrian Bunk <bunk@stusta.de>, lksctp-developers@lists.sourceforge.net,
-       Gabriel C <nix.or.die@googlemail.com>,
-       "Nelson, Shannon" <shannon.nelson@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Lksctp-developers] __unsafe() usage
-References: <46A3FE3E.20300@googlemail.com>	<BAE9DCEF64577A439B3A37F36F9B691C02B820A3@orsmsx418.amr.corp.intel.com>	<20070723175927.GM26212@stusta.de> <1185232601.1803.41.camel@localhost.localdomain>
-In-Reply-To: <1185232601.1803.41.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [linux-pm] Re: Hibernation considerations
+Date: Tue, 24 Jul 2007 21:26:35 +0800
+Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC236CF5C@pdsmsx415.ccr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.0707231605410.2556-100000@iolanthe.rowland.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [linux-pm] Re: Hibernation considerations
+Thread-Index: AcfNZzRH1AJF/7lyQCex9Hk4S3/JIgAjBHSQ
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>, <david@lang.hm>
+Cc: "Jeremy Maitin-Shepard" <jbms@cmu.edu>, "Milton Miller" <miltonm@bga.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       <nigel@nigel.suspend2.net>, "Pavel Machek" <pavel@ucw.cz>
+X-OriginalArrivalTime: 24 Jul 2007 13:26:38.0933 (UTC) FILETIME=[43F81850:01C7CDF6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
->  
-[... snip ...]
+>From: Alan Stern [mailto:stern@rowland.harvard.edu]
+>It can't.  Indeed, in the absence of a freezer, user threads will need
+>devices (more accurately, will submit I/O requests for devices) that
+>have to be kept quiescent or low-power.  Drivers will need to delay
+>those requests until the devices are returned to full operation.
+>
+>That's exactly what I've been saying all along: Drivers will need to
+>be changed to delay I/O requests, if there is no freezer.
 
-> diff -r d7af727512fd net/sctp/protocol.c
-> --- a/net/sctp/protocol.c	Tue Jul 24 08:30:05 2007 +1000
-> +++ b/net/sctp/protocol.c	Tue Jul 24 09:12:43 2007 +1000
-> @@ -1176,7 +1176,6 @@ SCTP_STATIC __init int sctp_init(void)
->  	if (status)
->  		goto err_v6_add_protocol;
->  
-> -	__unsafe(THIS_MODULE);
->  	status = 0;
->  out:
->  	return status;
-> @@ -1216,6 +1215,7 @@ err_chunk_cachep:
->  	goto out;
->  }
->  
-> +#if 0
->  /* Exit handler for the SCTP protocol.  */
->  SCTP_STATIC __exit void sctp_exit(void)
->  {
-> @@ -1263,9 +1263,10 @@ SCTP_STATIC __exit void sctp_exit(void)
->  
->  	proto_unregister(&sctp_prot);
->  }
-> +module_exit(sctp_exit);
-> +#endif
->  
->  module_init(sctp_init);
-> -module_exit(sctp_exit);
->  
+If it is a too big work to implement "delaying I/O requests" for every
+driver, is it possible to implement it as follow:
 
-Please don't remove module_exit point for SCTP.  Simply removing the __unsafe() call will
-be sufficient.
+1. It is triggered to suspend to RAM/DISK.
+2. Replace the driver related syscall entries (such as sys_read,
+sys_write, sys_ioctl, etc) in sys_call_table with special wrapper
+entries provided by "suspend to RAM/DISK" subsystem, which will delay
+I/O requests if appropriate.
+3. When devices are quiesced, they are put into "low power" state and
+system is put into suspend state; or the image is written to disk
+(through snapshot/uswsusp or kexeced kernel).
+4. After resuming from RAM/DISK, devices are put into "normal" state and
+the syscall entries replaced in step 2 are restored.
 
-The code has recently been cleaned up to allow safe unloading and I working on final
-cleanups.  It currently works correctly with forced unloading.
-
-Thanks
-
--vlad
-
+Best Regards,
+Huang Ying
