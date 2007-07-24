@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbXGXVrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbXGXVrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbXGXVrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbXGXVrM
+	id S1760232AbXGXVrx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 17:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbXGXVro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:47:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41233 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752901AbXGXVrL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:47:11 -0400
-Date: Tue, 24 Jul 2007 14:46:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Andi Kleen <andi@firstfloor.org>, Trent Piepho <xyzzy@speakeasy.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered
- unnecessarily
-In-Reply-To: <46A66F9E.1030509@goop.org>
-Message-ID: <alpine.LFD.0.999.0707241444040.3607@woody.linux-foundation.org>
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
- <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>
- <46A578A1.5010504@yahoo.com.au> <Pine.LNX.4.64.0707241154060.1433@cselinux1.cse.iitk.ac.in>
- <46A5A929.4020706@yahoo.com.au> <Pine.LNX.4.58.0707240058370.30561@shell4.speakeasy.net>
- <alpine.LFD.0.999.0707241236020.3607@woody.linux-foundation.org>
- <p73myxlsfl4.fsf@bingen.suse.de> <alpine.LFD.0.999.0707241304560.3607@woody.linux-foundation.org>
- <46A66F9E.1030509@goop.org>
+	Tue, 24 Jul 2007 17:47:44 -0400
+Received: from iona.labri.fr ([147.210.8.143]:43788 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753531AbXGXVrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 17:47:43 -0400
+Date: Tue, 24 Jul 2007 23:47:36 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-kernel@vger.kernel.org
+Cc: Egmont Koblinger <egmont@uhulinux.hu>
+Subject: Re: console UTF-8 fixes
+Message-ID: <20070724214736.GL3700@interface.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org, Egmont Koblinger <egmont@uhulinux.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+Egmont got some UTF-8 fixes in mainline, Andrew Morton suggested it
+might be a good time to remember about bug 7746 Support for unicode dead
+keys: http://bugzilla.kernel.org/show_bug.cgi?id=7746 :
 
-On Tue, 24 Jul 2007, Jeremy Fitzhardinge wrote:
-> >
-> > But gcc docs also talk about the other things volatile means, including 
-> > "not significantly moved".
-> 
-> Actually, it doesn't.  In fact it goes out of its way to say that "asm
-> volatile" statements can be moved quite a bit, with respect to other
-> asms, other code, jumps, basic blocks, etc.
+« Quoting a mail from Vojtech Pavlik:
 
-Ahh. That's newer.
+"Several languages (polish, czech, slovak, ...) use dead keys (keys that
+don't do anything per se, but put an accent on the next letter). And
+now almost everyone is switching to unicode. And Linux kernel doesn't
+support unicode for dead keys. This means trouble."
+(full mail at
+http://www.ussg.iu.edu/hypermail/linux/kernel/0405.3/1387.html)
 
-Historically, gcc manuals used to say "may not be deleted or significantly 
-reordered".
+And indeed, see http://bugs.debian.org/404503
 
-So they've weakened what it means, probably exactly because it wasn't 
-well-defined before either.
+There is a more recent patch proposed on
+http://www.ussg.iu.edu/hypermail/linux/kernel/0503.2/1723.html
 
-		Linus
+Is there any objection to the proposed way? (extending the internal
+type, and add a new ioctl for uploading unicode dead keys). »
+
+Samuel
