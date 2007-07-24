@@ -1,67 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbXGXXE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760331AbXGXXH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbXGXXE2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 19:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXGXXEV
+	id S1760331AbXGXXH6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 19:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbXGXXHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 19:04:21 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:42403
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbXGXXEV (ORCPT
+	Tue, 24 Jul 2007 19:07:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34048 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753492AbXGXXHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 19:04:21 -0400
-Date: Tue, 24 Jul 2007 16:02:46 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-Subject: Re: Power Management framework proposal
-In-Reply-To: <1185313138.5439.285.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0707241556140.6590@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm> 
- <1185125189.2714.13.camel@laptopd505.fenrus.org> 
- <1185229405.5439.148.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0707241313580.6590@asgard.lang.hm>
- <1185313138.5439.285.camel@localhost.localdomain>
+	Tue, 24 Jul 2007 19:07:48 -0400
+Date: Tue, 24 Jul 2007 16:07:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH] pata_hpt37x: Fix 2.6.22 clock PLL regression
+In-Reply-To: <20070724151748.7e99f4f0@the-village.bc.nu>
+Message-ID: <alpine.LFD.0.999.0707241607150.3607@woody.linux-foundation.org>
+References: <20070724151748.7e99f4f0@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007, Benjamin Herrenschmidt wrote:
 
-> On Tue, 2007-07-24 at 13:14 -0700, david@lang.hm wrote:
->>> I think we need a set of constraints that trickle down the power
->> tree
->>> and limit what a given driver can do locally.
->>
->> what sort of contraints are you thinking of?
->
-> A parent power state defines what states children can be in. For
-> example. A way to express those dependencies would be nice. Or
-> alternatiely, the power state of all the children defines the power
-> state a parent can go in automatically.
 
-Ok, I see tow things here.
+On Tue, 24 Jul 2007, Alan Cox wrote:
+> 
+> 	Just one version of Linux ago
+> 	The PLL code broke - oh no!
+> 	But set the right mode
+> 	And fix up the code
+> 	Makes the PLL timing sync go
 
-1. do you really want to try and propogate things like this from one to 
-the other, or would it be good enough to flag the issue and let the 
-software selecting the modes implement this contraint?
+Alan, I'm getting a bit worried about you.
 
-2. how can you standardize the requirements?
-
-at the very least you have
-
-for this mode all children must be off
-
-for this mode all children must be in a mode that includes a 'suspended' 
-flag (this could be made implicit by saying that you must suspend children 
-before parents) and then just flagging the 'suspended, but not off' modes)
-
-what requirements are needed? (I'm sure that there are others, but 
-hopefully it's possible to avoid requirements like 'the clock speed for 
-device A must be >X to allow device B to operate in mode Y')
-
-David Lang
+		Linus
