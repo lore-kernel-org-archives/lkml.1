@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbXGXN0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762275AbXGXN2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760741AbXGXN0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 09:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbXGXN0p
+	id S1762275AbXGXN2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 09:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbXGXN2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 09:26:45 -0400
-Received: from mga03.intel.com ([143.182.124.21]:64571 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753345AbXGXN0o convert rfc822-to-8bit (ORCPT
+	Tue, 24 Jul 2007 09:28:08 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57213 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753038AbXGXN2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 09:26:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,574,1175497200"; 
-   d="scan'208";a="254056069"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [linux-pm] Re: Hibernation considerations
-Date: Tue, 24 Jul 2007 21:26:35 +0800
-Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC236CF5C@pdsmsx415.ccr.corp.intel.com>
-In-Reply-To: <Pine.LNX.4.44L0.0707231605410.2556-100000@iolanthe.rowland.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [linux-pm] Re: Hibernation considerations
-Thread-Index: AcfNZzRH1AJF/7lyQCex9Hk4S3/JIgAjBHSQ
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>, <david@lang.hm>
-Cc: "Jeremy Maitin-Shepard" <jbms@cmu.edu>, "Milton Miller" <miltonm@bga.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       <nigel@nigel.suspend2.net>, "Pavel Machek" <pavel@ucw.cz>
-X-OriginalArrivalTime: 24 Jul 2007 13:26:38.0933 (UTC) FILETIME=[43F81850:01C7CDF6]
+	Tue, 24 Jul 2007 09:28:07 -0400
+Date: Tue, 24 Jul 2007 14:28:05 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Alban Crequy <alban.crequy@seanodes.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] error management in add_disk()
+Message-ID: <20070724132805.GR21668@ftp.linux.org.uk>
+References: <20070724135753.18fccf4f@alban>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070724135753.18fccf4f@alban>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Alan Stern [mailto:stern@rowland.harvard.edu]
->It can't.  Indeed, in the absence of a freezer, user threads will need
->devices (more accurately, will submit I/O requests for devices) that
->have to be kept quiescent or low-power.  Drivers will need to delay
->those requests until the devices are returned to full operation.
->
->That's exactly what I've been saying all along: Drivers will need to
->be changed to delay I/O requests, if there is no freezer.
+On Tue, Jul 24, 2007 at 01:57:53PM +0200, Alban Crequy wrote:
+> Hi,
+> 
+> I have a problem with the error management of add_disk() and del_gendisk().
+> 
+> add_disk() adds an entry in /sys/block/<name>. The filename in /sys/block is
+> not (struct gen_disk)->disk_name but more or less the first KOBJ_NAME_LEN
+> characters of (struct gen_disk)->disk_name.
+> 
+> #define KOBJ_NAME_LEN                   20
+> 
+> My problem occurs when we try to add 2 disks with different names, but when
+> the KOBJ_NAME_LEN first characters are the same.
 
-If it is a too big work to implement "delaying I/O requests" for every
-driver, is it possible to implement it as follow:
+So don't do that.
 
-1. It is triggered to suspend to RAM/DISK.
-2. Replace the driver related syscall entries (such as sys_read,
-sys_write, sys_ioctl, etc) in sys_call_table with special wrapper
-entries provided by "suspend to RAM/DISK" subsystem, which will delay
-I/O requests if appropriate.
-3. When devices are quiesced, they are put into "low power" state and
-system is put into suspend state; or the image is written to disk
-(through snapshot/uswsusp or kexeced kernel).
-4. After resuming from RAM/DISK, devices are put into "normal" state and
-the syscall entries replaced in step 2 are restored.
-
-Best Regards,
-Huang Ying
+> The attached test module triggers the problem. You can try something like:
+> for i in $(seq 1 100) ; do insmod ./adddiskbug.ko ; rmmod adddiskbug ; done
+> 
+> The attached patch fixes the problem by changing the prototype of add_disk() and
+> register_disk() to return errors.
+ 
+This is bogus.  Just what would callers do with these error values?
+Ignore them silently?  Bail out?  Can't do - at that point disk just might
+have been opened already.  add_disk() is the point of no return; we are
+already past the last point where we could bail out.
