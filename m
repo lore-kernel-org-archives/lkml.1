@@ -1,77 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760149AbXGXFU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760420AbXGXFV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760149AbXGXFU5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 01:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbXGXFTP
+	id S1760420AbXGXFV3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 01:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759464AbXGXFUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 01:19:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34999 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755487AbXGXFTN (ORCPT
+	Tue, 24 Jul 2007 01:20:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:11322 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759363AbXGXFUg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 01:19:13 -0400
-Date: Mon, 23 Jul 2007 22:18:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-Message-Id: <20070723221846.d2744f42.akpm@linux-foundation.org>
-In-Reply-To: <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<200707102015.44004.kernel@kolivas.org>
-	<9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	<46A57068.3070701@yahoo.com.au>
-	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 01:20:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=AuY8vlB+ufMS85zJek42B7lUDWtuusOsbQ7kkOAiqdY4aKm+Pvy3uNDHOyXH+okqK9nbRnJk4CesLmwQIUfyHvsSjHyNNzFJFxPf3SE17UKC8wsAvcK7BpC12UO7JkXNnDxh/CcRJ/1YmCazrNp5iu5gV/n3GgsXRWIiT6gAcIs=
+Date: Tue, 24 Jul 2007 09:20:31 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Message-ID: <20070724052031.GA5811@martell.zuzino.mipt.ru>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru> <20070723132431.42afbae8.akpm@linux-foundation.org> <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org> <20070723220446.GA5822@martell.zuzino.mipt.ru> <20070723152712.02ded067.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070723152712.02ded067.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 21:53:38 -0700 "Ray Lee" <ray-lk@madrabbit.org> wrote:
-
+On Mon, Jul 23, 2007 at 03:27:12PM -0700, Andrew Morton wrote:
+> On Tue, 24 Jul 2007 02:04:46 +0400
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> Since this merge period has appeared particularly frazzling for
-> Andrew, I've been keeping silent and waiting for him to get to a point
-> where there's a breather. I didn't feel it would be polite to request
-> yet more work out of him while he had a mess on his hands.
-
-Let it just be noted that Con is not the only one who has expended effort
-on this patch.  It's been in -mm for nearly two years and it has meant
-ongoing effort for me and, to a lesser extent, other MM developers to keep
-it alive.
-
-> But, given this has come to a head, I'm asking now.
+> > On Mon, Jul 23, 2007 at 02:11:37PM -0700, Andrew Morton wrote:
+> > > On Tue, 24 Jul 2007 01:01:53 +0400
+> > > Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> > > 
+> > > > On Tue, Jul 24, 2007 at 12:40:45AM +0400, Alexey Dobriyan wrote:
+> > > > > > I had more complete info: http://article.gmane.org/gmane.linux.network/66966
+> > > > > > 
+> > > > > > You're using DEBUG_PAGEALLOC, but I was not, so I think we can rule that out.
+> > > > > > 
+> > > > > > I haven't worked out where that kmap_atomic() call is coming from yet. 
+> > > > > > Both traces point up into the page allocator, but I _think_ that's stack
+> > > > > > gunk.
+> > > > > 
+> > > > > Ahh, you suspect networking.
+> > > > > 
+> > > > > Here, setup is 2 cheap-ass 100Mb realtek 8139 NICs, one to campus network
+> > > > > receiving ~20 junk packets per second, one gathering netconsole output
+> > > > > and ssh to it, no conntracks and fancy stuff.
+> > > > > 
+> > > > > [reboots with cables physically unplugged]
+> > > > 
+> > > > OK, I run gdb recompile, cat(1) every file in /usr/portage (shitload of
+> > > > small files) with both cables unplugged. It all went fine for ~5 minutes
+> > > > after that it crashed exactly same way after 10 secs after plugging one
+> > > > of them.
+> > > 
+> > > It'd be nice to get a clean trace.  Are you able to obtain the full
+> > > trace with CONFIG_FRAME_POINTER=y?
+> > 
+> > Sorry, no camera shot, finding camera requires wakening up M. :)
+> > 
+> > It took longer that usual, but here it is
+> > 
+> > 	kmap_atomic
+> > 	get_page_from_freelist
+> > 	__alloc_pages
+> > 	cache_alloc_refill
+> > 	__alloc_pages
+> > 	cache_alloc_refill
+> > 	kmem_cache_alloc
+> > 	dst_alloc
+> > 	ip_route_input
+> > 	ip_rcv
+> > 	netif_receive_skb
+> > 	rtl8139_poll
+> > 	net_rx_action
+> > 	__do_softirq
+> > 	do_softirq
+> > 	irq_exit
+> > 	do_IRQ
+> > 	common_interrupt
+> > 	handle_mm_fault
+> > 	do_page_fault
+> > 	error_core
+> > 
+> > much more loaded x86_64 box near also running 2.6.23-rc1 with debugging
+> > turned on, using atl1 driver doesn't experience any crashes.
+> > 
+> > And I found 2.6.22-b91cba52e9b7b3f1c0037908a192d93a869ca9e5-x entry on
+> > top of grub config which means b91cba52e9b7b3f1c0037908a192d93a869ca9e5
+> > _without_ any debugging was OK.
 > 
-> Andrew? You've always given the impression that you want this run more
-> as an engineering effort than an artistic endeavour, so help us out
-> here. What are your concerns with swap prefetch? What sort of
-> comparative data would you like to see to justify its inclusion, or to
-> prove that it's not needed?
+> I worked out that the crash I saw was in
+> 
+>         BUG_ON(!pte_none(*(kmap_pte-idx)));
+> 
+> in the read of kmap_pte[idx].  Which would be weird as the caller is using 
+> a literal KM_USER0.
+> 
+> So maybe I goofed, and that BUG_ON is triggering (it scrolled off, and I am
+> unable to reproduce it now).
+> 
+> If that BUG_ON _is_ triggering then it might indicate that someone is doing
+> a __GFP_HIGHMEM|__GFP_ZERO allocation while holding KM_USER0.
+> 
+> If they're holding an atomic kmap then they'll be running in_atomic so it
+> is unlikely that they accidentally added __GFP_WAIT because lots of people
+> would be getting lots of might_sleep() warnings.
+> 
+> Hence that first VM_BUG_ON in prep_zero_page() _should_ be triggering.
+> 
+> Do you have CONFIG_DEBUG_VM enabled?
 
-Critera are different for each patch, but it usually comes down to a
-cost/benefit judgement.  Does the benefit of the patch exceed its
-maintenance cost over the lifetime of the kernel (whatever that is).
+Yes.
 
-In this case the answer to that has never been clear to me.  The (much
-older) fs-aio patches were (are) in a similar situation.
+> Also, it might be useful to apply -mm's kmap_atomic-debugging.patch.  it
+> will detect lots of abuse.
 
-The other consideration here is, as Nick points out, are the problems which
-people see this patch solving for them solveable in other, better ways? 
-IOW, is this patch fixing up preexisting deficiencies post-facto?
-
-To attack the second question we could start out with bug reports: system A
-with workload B produces result C.  I think result C is wrong for <reasons>
-and would prefer to see result D.
-
-> Or are we reading too much into the fact that it isn't merged? In
-> short, communicate please, it will help.
-
-Well.  The above, plus there's always a lot of stuff happening in MM land,
-and I haven't seen much in the way of enthusiasm from the usual MM
-developers.
+I hit it only once with this patch applied, but there were no additional
+warnings.
 
