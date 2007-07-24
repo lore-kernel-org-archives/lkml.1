@@ -1,38 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXGXRxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbXGXR75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760766AbXGXRxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 13:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbXGXRxL
+	id S1759296AbXGXR75 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 13:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbXGXR7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 13:53:11 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46455 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752397AbXGXRxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 13:53:10 -0400
-To: Aaron Porter <atporter@primate.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: miserable performance of 2.6.21 under network load
-References: <20070724172513.GB24543@primate.net>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 24 Jul 2007 20:48:00 +0200
-In-Reply-To: <20070724172513.GB24543@primate.net>
-Message-ID: <p73vec9sknz.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 24 Jul 2007 13:59:48 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:29933 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272AbXGXR7s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 13:59:48 -0400
+Date: Tue, 24 Jul 2007 11:03:39 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+Message-Id: <20070724110339.9fd0853e.randy.dunlap@oracle.com>
+In-Reply-To: <20070724102035.6447565c.randy.dunlap@oracle.com>
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky>
+	<46A534EA.6030008@intel.com>
+	<46A5C12B.3080904@shadowen.org>
+	<20070724021526.3d92286b.akpm@linux-foundation.org>
+	<46A5E034.2030205@shadowen.org>
+	<Pine.LNX.4.64.0707241849340.18990@fbirervta.pbzchgretzou.qr>
+	<20070724102035.6447565c.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aaron Porter <atporter@primate.net> writes:
+On Tue, 24 Jul 2007 10:20:35 -0700 Randy Dunlap wrote:
 
-> 	I'm in the process up upgrading a pool of apache servers from
-> 2.6.17.8 to 2.6.21.5, and we're seeing a pretty major change in behavior.
-> Under identical network load, 2.6.21 has a load average more than 3 times
-> higher, cpu 0 spends well over 90% of its time in interrupts (vs ~30%
-> under 2.6.17). When we hit 3k apache sessions, ksoftirqd eats 100% of cpu0
-> and our network traffic drops off rapidly. The end result is that 2.6.17
-> performs twice as well under this load.
+> On Tue, 24 Jul 2007 18:51:39 +0200 (CEST) Jan Engelhardt wrote:
+> 
+> > 
+> > On Jul 24 2007 12:19, Andy Whitcroft wrote:
+> > >>>> if (err) {
+> > >>>>     do_something();
+> > >>>>     return -ERR;
+> > >>>> } else {
+> > >>>>     do_somthing_else();
+> > >>>> }
+> > >>>
+> > >>> 	if (err) {
+> > >>> 		do_something();
+> > >>> 		return -ERR;
+> > >>> 	} else
+> > >>> 		do_something_else();
+> > >> 
+> > >> The kool kids on linux-usb-devel largely ended up deciding that the second
+> > >> version looks dorky.
+> > >
+> > >Ok, now if either the preceeding block or following block has {}'s then
+> > >we don't report this block for being one line long.  We will miss some
+> > >this way, but hey.
+> > 
+> > As per Ingo Molnar [ http://lkml.org/lkml/2006/9/5/68 ],
+> > all blocks in an if-else 'tree' should be {} if there is at least one
+> > with more than two statements. (And I do not disagree.)
+> 
+> You are actually referring to this commit:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e659ba4a0d2d471c0d73590f78e1a1b5a1eede48
+> 
+> which did not appear on lkml for review... :(
 
-Can you oprofile it?
+Oops, I stand corrected (my previous search was based on the patch filename):
 
--Andi
+http://lkml.org/lkml/2007/5/4/50
+or
+http://marc.info/?l=linux-kernel&m=117826369817272&w=2
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
