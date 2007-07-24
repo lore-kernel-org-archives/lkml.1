@@ -1,82 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbXGXX01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbXGXXan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761455AbXGXX01 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 19:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757285AbXGXX0R
+	id S1760718AbXGXXan (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 19:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbXGXXae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 19:26:17 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:13626 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756796AbXGXX0P (ORCPT
+	Tue, 24 Jul 2007 19:30:34 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:35533 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756227AbXGXXac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 19:26:15 -0400
-Date: Tue, 24 Jul 2007 19:25:09 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH RFC] extent mapped page cache
-Message-ID: <20070724192509.5bc9b3fe@think.oraclecorp.com>
-In-Reply-To: <1185312343.5535.5.camel@lappy>
-References: <20070710210326.GA29963@think.oraclecorp.com>
-	<20070724160032.7a7097db@think.oraclecorp.com>
-	<1185307985.6586.50.camel@localhost>
-	<1185312343.5535.5.camel@lappy>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 19:30:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KUiC1IRWkZPTrM+1QZYBvprGUtP7b0vDyzNBTslIluhwu5TgDPuzdExx2Ump7bmLh2rSEzhI5RY8ptsPzigoGQ3NXa/gJuLs/3YNna6z9KqwOH5xuDjwG/eX8Njoi3cUZ5f1vSI4aDGNtpN1ZJp20eMxB7+w8aqZKOixRUoTDJU=
+Message-ID: <6bffcb0e0707241630p3599ad99sfd778097b307e78c@mail.gmail.com>
+Date: Wed, 25 Jul 2007 01:30:31 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Florian Lohoff" <flo@rfc822.org>
+Subject: Re: 2.6.23-rc1 sky2 boot crash in sky2_mac_intr
+Cc: "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20070724094042.GA6414@paradigm.rfc822.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20070724082205.GA19480@paradigm.rfc822.org>
+	 <20070724095008.0eb154fe@oldman.hamilton.local>
+	 <20070724094042.GA6414@paradigm.rfc822.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 23:25:43 +0200
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+Hi Florian,
 
-> On Tue, 2007-07-24 at 16:13 -0400, Trond Myklebust wrote:
-> > On Tue, 2007-07-24 at 16:00 -0400, Chris Mason wrote:
-> > > On Tue, 10 Jul 2007 17:03:26 -0400
-> > > Chris Mason <chris.mason@oracle.com> wrote:
-> > > 
-> > > > This patch aims to demonstrate one way to replace buffer heads
-> > > > with a few extent trees.  Buffer heads provide a few different
-> > > > features:
-> > > > 
-> > > > 1) Mapping of logical file offset to blocks on disk
-> > > > 2) Recording state (dirty, locked etc)
-> > > > 3) Providing a mechanism to access sub-page sized blocks.
-> > > > 
-> > > > This patch covers #1 and #2, I'll start on #3 a little later
-> > > > next week.
-> > > > 
-> > > Well, almost.  I decided to try out an rbtree instead of the
-> > > radix, which turned out to be much faster.  Even though
-> > > individual operations are slower, the rbtree was able to do many
-> > > fewer ops to accomplish the same thing, especially for merging
-> > > extents together.  It also uses much less ram.
-> > 
-> > The problem with an rbtree is that you can't use it together with
-> > RCU to do lockless lookups. You can probably modify it to allocate
-> > nodes dynamically (like the radix tree does) and thus make it
-> > RCU-compatible, but then you risk losing the two main benefits that
-> > you list above.
+On 24/07/07, Florian Lohoff <flo@rfc822.org> wrote:
+> On Tue, Jul 24, 2007 at 09:50:08AM +0100, Stephen Hemminger wrote:
+> > The problem is related to power management. The PHY has a number of PCI configuration
+> > registers for power control, and the function of these changes based on the version and
+> > revision of the chip. The driver does work on older versions of the EC-U, in
+> > Fujitsu laptop's, it is just the new rev that is broken.
+> >
+> > The driver should probably fail smarter (by not loading) if the PHY isn't powered
+> > up correctly, but that doesn't help your problem.
+> >
+> > The vendor has provided me with documentation on many versions
+> > of the chip, but I don't have doc's on the lastest revision differences of the EC Ultra,
+> > so a proper solution is not easily available.  The best method for resolving this would
+> > be to first try the vendor driver version of sk98lin and see if that fixes it. If so,
+> > then it is easy to change sky2, to match the phy setup in the vendor driver.
+> > Another possibility is to look for places in sky2 driver where there are places
+> > that compare version/revision.
+> >
+> > The most likely bits that need to change are in PCI registers: 0x80, 0x84 and 0x88
+> > You could also load the windows driver and dump PCI config space (with lspci from
+> > cygwin), and see what the settings are there.
+> >
+> > I am away from my office for a month, and therefore away from any sky2
+> > hardware for testing.
+>
+> I'll try the above and keep you posted. The crash itself seems to be a
+> 2.6.23-rc1 regression though. I never experienced this with 2.6.22-rc5
+> which i was running before.
 
-The tree is a critical part of the patch, but it is also the easiest to
-rip out and replace.  Basically the code stores a range by inserting
-an object at an index corresponding to the end of the range.
+Can you try to figure out what is causing this crash and then use git-bisect?
 
-Then it does searches by looking forward from the start of the range.
-More or less any tree that can search and return the first key >=
-than the requested key will work.
+Regards,
+Michal
 
-So, I'd be happy to rip out the tree and replace with something else.
-Going completely lockless will be tricky, its something that will deep
-thought once the rest of the interface is sane.
-
--chris
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
