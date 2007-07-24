@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932671AbXGXB5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761915AbXGXCGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932671AbXGXB5N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jul 2007 21:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760385AbXGXB46
+	id S1761915AbXGXCGQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jul 2007 22:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbXGXCGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jul 2007 21:56:58 -0400
-Received: from mga01.intel.com ([192.55.52.88]:40688 "EHLO mga01.intel.com"
+	Mon, 23 Jul 2007 22:06:06 -0400
+Received: from mga01.intel.com ([192.55.52.88]:43597 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759595AbXGXB46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jul 2007 21:56:58 -0400
+	id S1752678AbXGXCGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jul 2007 22:06:05 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,572,1175497200"; 
-   d="scan'208";a="271829941"
-Subject: Re: [RFC 7/8]KVM: swap out guest pages
+   d="scan'208";a="271833808"
+Subject: Re: [kvm-devel] [RFC 0/8]KVM: swap out guest pages
 From: Shaohua Li <shaohua.li@intel.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <46A491C4.8010302@qumranet.com>
-References: <1185173505.2645.71.camel@sli10-conroe.sh.intel.com>
-	 <46A491C4.8010302@qumranet.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Avi Kivity <avi@qumranet.com>, kvm-devel <kvm-devel@lists.sourceforge.net>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070723123443.GB3674@infradead.org>
+References: <1185173489.2645.64.camel@sli10-conroe.sh.intel.com>
+	 <46A4829C.9080104@qumranet.com> <20070723122510.GA3674@infradead.org>
+	 <46A49F30.5010206@qumranet.com>  <20070723123443.GB3674@infradead.org>
 Content-Type: text/plain
-Date: Tue, 24 Jul 2007 09:51:48 +0800
-Message-Id: <1185241908.24201.22.camel@sli10-conroe.sh.intel.com>
+Date: Tue, 24 Jul 2007 10:00:55 +0800
+Message-Id: <1185242455.24201.30.camel@sli10-conroe.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-23 at 19:32 +0800, Avi Kivity wrote:
-> Shaohua Li wrote:
-> > Make KVM guest pages be allocated dynamically and able to be swaped
-> out.
+On Mon, 2007-07-23 at 20:34 +0800, Christoph Hellwig wrote:
+> On Mon, Jul 23, 2007 at 03:29:36PM +0300, Avi Kivity wrote:
+> > >Actually it requires lots of deep down VM internals symbols that'll
+> never
+> > >get exported.
+> > >
+> > > 
 > >
-> > One issue: all inodes returned from anon_inode_getfd are shared,
-> > if one module changes field of the inode, other moduels might break.
-> > Should we introduce a new API to not share inode?
-> >
-> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > ---
-> >  drivers/kvm/kvm.h      |    8 +
-> >  drivers/kvm/kvm_main.c |  220
-> +++++++++++++++++++++++++++++++++++++++++++++----
-> >  2 files changed, 211 insertions(+), 17 deletions(-)
-> >
-> > +
-> > +     /*
-> > +      * We just zap vcpu 0's page table. For a SMP guest, we should
-> zap all
-> > +      * vcpus'. It's better shadow page table is per-vm.
-> > +      */
-> > +     if (PagePrivate(page))
-> > +             kvm_mmu_zap_pagetbl(&kvm->vcpus[0], page->index);
-> > +
-> >  
+> > What's "it" here?  kvm-specific address space or generic vmas.
 > 
-> You're not removing any shadows of the page, in case that page is a
-> guest page table.  But I don't see anything wrong with it -- the page
-> won't change while it's in swap.
-You are right. Should we?
+> The patches in this thread.
+> 
+> > Generic vmas will be more intrusive AFAICT.
+> 
+> People use intrusive differently.  Doing big changes to core code is
+> not
+> a problem if we actually get a proper interface.  Just exporting core
+> function without other changes and then writing code in modules that
+> pokes into internals is much much worse.
+The patch follows the same way shm swap out pages. The only difference
+is kvm is a module but shm not. why kvm can't use the symbols shm used?
+
+Sure, it's possible to write guest memory to a file so not use the
+symbols, if you really hate this, I'll consider the alternative method.
+
+Thanks,
+Shaohua
