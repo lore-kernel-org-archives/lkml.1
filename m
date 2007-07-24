@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761203AbYBPUcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbYBPUdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761203AbYBPUcz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 15:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759575AbYBPU3u
+	id S1761309AbYBPUdZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 15:33:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbYBPU3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 15:29:50 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:40146 "EHLO havoc.gtf.org"
+	Sat, 16 Feb 2008 15:29:52 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:45379 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758387AbYBPU3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 15:29:19 -0500
-Message-Id: <890f8ea13478c6e999c32b51387d17d0615183be.1203189978.git.jeff@garzik.org>
+	id S1758630AbYBPU3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 15:29:21 -0500
+Message-Id: <faa11d625ba1e35278ca9ad75a1099dc0a24bad7.1203189978.git.jeff@garzik.org>
 In-Reply-To: <167d76873c13943668c7f4443bfa60bb1552ecb2.1203189978.git.jeff@garzik.org>
 References: <167d76873c13943668c7f4443bfa60bb1552ecb2.1203189978.git.jeff@garzik.org>
 From: Jeff Garzik <jeff@garzik.org>
 To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
        linux-kernel@vger.kernel.org
-Date: Wed, 31 Oct 2007 01:12:15 -0400
-Subject: [PATCH 10/14] [ISDN] HiSax gazel: convert to modern ISA/PCI probing
+Date: Tue, 24 Jul 2007 08:26:59 -0400
+Subject: [PATCH 11/14] [ISDN] HiSax niccy: convert to modern ISA/PNP/PCI probing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,125 +25,135 @@ Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 ---
  drivers/isdn/hisax/Kconfig  |    3 +-
  drivers/isdn/hisax/Makefile |    2 +-
- drivers/isdn/hisax/config.c |   25 +----
- drivers/isdn/hisax/gazel.c  |  248 ++++++++++++++++++++++++++++++++----------
- 4 files changed, 194 insertions(+), 84 deletions(-)
+ drivers/isdn/hisax/config.c |   26 +---
+ drivers/isdn/hisax/niccy.c  |  460 +++++++++++++++++++++++++++++++------------
+ 4 files changed, 334 insertions(+), 157 deletions(-)
 
 diff --git a/drivers/isdn/hisax/Kconfig b/drivers/isdn/hisax/Kconfig
-index 14951c0..dbc296e 100644
+index dbc296e..02cdc57 100644
 --- a/drivers/isdn/hisax/Kconfig
 +++ b/drivers/isdn/hisax/Kconfig
-@@ -306,7 +306,8 @@ config HISAX_SCT_QUADRO
+@@ -257,7 +257,8 @@ config HISAX_NETJET_U
  	  settings.
  
- config HISAX_GAZEL
--	bool "Gazel cards"
-+	tristate "Gazel cards"
+ config HISAX_NICCY
+-	bool "Niccy PnP/PCI card"
++	tristate "Niccy PnP/PCI card"
 +	depends on (ISA || PCI)
  	help
- 	  This enables HiSax support for the Gazel cards.
+ 	  This enables HiSax support for the Dr. Neuhaus Niccy PnP or PCI.
  
 diff --git a/drivers/isdn/hisax/Makefile b/drivers/isdn/hisax/Makefile
-index e5bd497..10ab294 100644
+index 10ab294..9efd189 100644
 --- a/drivers/isdn/hisax/Makefile
 +++ b/drivers/isdn/hisax/Makefile
-@@ -23,6 +23,7 @@ obj-$(CONFIG_HISAX_NETJET)		+= netjet_s.o libhisax.o
- obj-$(CONFIG_HISAX_NETJET_U)		+= netjet_u.o libhisax.o
+@@ -24,6 +24,7 @@ obj-$(CONFIG_HISAX_NETJET_U)		+= netjet_u.o libhisax.o
  obj-$(CONFIG_HISAX_TELESPCI)		+= telespci.o libhisax.o
  obj-$(CONFIG_HISAX_FRITZPCI)		+= avm_pci.o libhisax.o
-+obj-$(CONFIG_HISAX_GAZEL)		+= gazel.o libhisax.o
+ obj-$(CONFIG_HISAX_GAZEL)		+= gazel.o libhisax.o
++obj-$(CONFIG_HISAX_NICCY)		+= niccy.o libhisax.o
  
  bkm_a4t_pci-y				:= bkm_a4t.o jade.o
  enternow-y				:= enternow_pci.o amd7930_fn.o
-@@ -64,5 +65,4 @@ hisax-$(CONFIG_HISAX_NICCY)		+= niccy.o
+@@ -61,7 +62,6 @@ hisax-$(CONFIG_HISAX_SPORTSTER)		+= sportster.o
+ hisax-$(CONFIG_HISAX_MIC)		+= mic.o
+ hisax-$(CONFIG_HISAX_HFCS)		+= hfcscard.o hfc_2bds0.o
+ hisax-$(CONFIG_HISAX_HFC_SX)		+= hfc_sx.o
+-hisax-$(CONFIG_HISAX_NICCY)		+= niccy.o
  hisax-$(CONFIG_HISAX_ISURF)		+= isurf.o isar.o
  hisax-$(CONFIG_HISAX_HSTSAPHIR)		+= saphir.o
  hisax-$(CONFIG_HISAX_SCT_QUADRO)	+= bkm_a8.o
--hisax-$(CONFIG_HISAX_GAZEL)		+= gazel.o
- 
 diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
-index e6738a6..63dba42 100644
+index 63dba42..243c7c9 100644
 --- a/drivers/isdn/hisax/config.c
 +++ b/drivers/isdn/hisax/config.c
-@@ -229,13 +229,6 @@ const char *CardType[] = {
- #define DEFAULT_CFG {1,0x0,0,0}
+@@ -201,13 +201,6 @@ const char *CardType[] = {
+ #define DEFAULT_CFG {5,0x2E0,0,0}
  #endif
  
--#ifdef CONFIG_HISAX_GAZEL
+-#ifdef CONFIG_HISAX_NICCY
 -#undef DEFAULT_CARD
 -#undef DEFAULT_CFG
--#define DEFAULT_CARD ISDN_CTYPE_GAZEL
--#define DEFAULT_CFG {15,0x180,0,0}
+-#define DEFAULT_CARD ISDN_CTYPE_NICCY
+-#define DEFAULT_CFG {0,0x0,0,0}
 -#endif
 -
- #ifndef DEFAULT_CARD
- #define DEFAULT_CARD 0
- #define DEFAULT_CFG {0,0,0,0}
-@@ -471,10 +464,6 @@ extern int setup_saphir(struct IsdnCard *card);
- extern int setup_sct_quadro(struct IsdnCard *card);
+ #ifdef CONFIG_HISAX_ISURF
+ #undef DEFAULT_CARD
+ #undef DEFAULT_CFG
+@@ -258,10 +251,6 @@ static int io[HISAX_MAX_CARDS] = { 0, };
+ #ifdef CONFIG_HISAX_16_3
+ #define IO0_IO1
+ #endif
+-#ifdef CONFIG_HISAX_NICCY
+-#undef IO0_IO1
+-#define IO0_IO1
+-#endif
+ #ifdef IO0_IO1
+ static int io0[HISAX_MAX_CARDS] __devinitdata = { 0, };
+ static int io1[HISAX_MAX_CARDS] __devinitdata = { 0, };
+@@ -448,10 +437,6 @@ extern int setup_hfcs(struct IsdnCard *card);
+ extern int setup_hfcsx(struct IsdnCard *card);
  #endif
  
--#if CARD_GAZEL
--extern int setup_gazel(struct IsdnCard *card);
+-#if CARD_NICCY
+-extern int setup_niccy(struct IsdnCard *card);
 -#endif
 -
- /*
-  * Find card with given driverId
-  */
-@@ -860,11 +849,6 @@ static int __devinit hisax_cs_setup_card(struct IsdnCard *card)
- 		ret = setup_sct_quadro(card);
+ #if CARD_ISURF
+ extern int setup_isurf(struct IsdnCard *card);
+ #endif
+@@ -829,11 +814,6 @@ static int __devinit hisax_cs_setup_card(struct IsdnCard *card)
+ 		ret = setup_hfcsx(card);
  		break;
  #endif
--#if CARD_GAZEL
--	case ISDN_CTYPE_GAZEL:
--		ret = setup_gazel(card);
+-#if CARD_NICCY
+-	case ISDN_CTYPE_NICCY:
+-		ret = setup_niccy(card);
 -		break;
 -#endif
- 	case ISDN_CTYPE_DYNAMIC:
- 		ret = 2;
- 		break;
-@@ -877,6 +861,7 @@ static int __devinit hisax_cs_setup_card(struct IsdnCard *card)
- 	case ISDN_CTYPE_NETJET_U:
+ #if CARD_ISURF
+ 	case ISDN_CTYPE_ISURF:
+ 		ret = setup_isurf(card);
+@@ -862,6 +842,7 @@ static int __devinit hisax_cs_setup_card(struct IsdnCard *card)
  	case ISDN_CTYPE_TELESPCI:
  	case ISDN_CTYPE_FRITZPCI:
-+	case ISDN_CTYPE_GAZEL:
+ 	case ISDN_CTYPE_GAZEL:
++	case ISDN_CTYPE_NICCY:
  		printk(KERN_WARNING "HiSax: Support for %s Card has moved "
  		       "to separate PCI driver module\n",
  		       CardType[card->typ]);
-@@ -1325,7 +1310,6 @@ static int __init HiSax_init(void)
- 		case ISDN_CTYPE_ACERP10:
- 		case ISDN_CTYPE_S0BOX:
- 		case ISDN_CTYPE_HSTSAPHIR:
--		case ISDN_CTYPE_GAZEL:
- 		case ISDN_CTYPE_HFC_SX:
- 		case ISDN_CTYPE_HFC_SP_PCMCIA:
+@@ -1276,7 +1257,6 @@ static int __init HiSax_init(void)
+ 
+ #ifdef IO0_IO1
+ 		case ISDN_CTYPE_PNP:
+-		case ISDN_CTYPE_NICCY:
  			cards[j].para[0] = irq[i];
-@@ -1348,6 +1332,7 @@ static int __init HiSax_init(void)
- 		case ISDN_CTYPE_NETJET_U:
+ 			cards[j].para[1] = io0[i];
+ 			cards[j].para[2] = io1[i];
+@@ -1333,6 +1313,7 @@ static int __init HiSax_init(void)
  		case ISDN_CTYPE_TELESPCI:
  		case ISDN_CTYPE_FRITZPCI:
-+		case ISDN_CTYPE_GAZEL:
+ 		case ISDN_CTYPE_GAZEL:
++		case ISDN_CTYPE_NICCY:
  			break;
  
  		case ISDN_CTYPE_SCT_QUADRO:
-@@ -1828,12 +1813,6 @@ static struct pci_device_id hisax_pci_tbl[] __devinitdata = {
- 	{PCI_VENDOR_ID_ELSA,     PCI_DEVICE_ID_ELSA_MICROLINK,   PCI_ANY_ID, PCI_ANY_ID},
- 	{PCI_VENDOR_ID_ELSA,     PCI_DEVICE_ID_ELSA_QS3000,      PCI_ANY_ID, PCI_ANY_ID},
- #endif
--#ifdef CONFIG_HISAX_GAZEL
--	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_R685,         PCI_ANY_ID, PCI_ANY_ID},
--	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_R753,         PCI_ANY_ID, PCI_ANY_ID},
--	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_DJINN_ITOO,   PCI_ANY_ID, PCI_ANY_ID},
--	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_OLITEC,       PCI_ANY_ID, PCI_ANY_ID},
--#endif
+@@ -1816,9 +1797,6 @@ static struct pci_device_id hisax_pci_tbl[] __devinitdata = {
  #ifdef CONFIG_HISAX_SCT_QUADRO
  	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_9050,         PCI_ANY_ID, PCI_ANY_ID},
  #endif
-diff --git a/drivers/isdn/hisax/gazel.c b/drivers/isdn/hisax/gazel.c
-index 0ea3b46..db4cec7 100644
---- a/drivers/isdn/hisax/gazel.c
-+++ b/drivers/isdn/hisax/gazel.c
-@@ -13,12 +13,21 @@
+-#ifdef CONFIG_HISAX_NICCY
+-	{PCI_VENDOR_ID_SATSAGEM, PCI_DEVICE_ID_SATSAGEM_NICCY,   PCI_ANY_ID,PCI_ANY_ID},
+-#endif
+ #ifdef CONFIG_HISAX_SEDLBAUER
+ 	{PCI_VENDOR_ID_TIGERJET, PCI_DEVICE_ID_TIGERJET_100,     PCI_ANY_ID,PCI_ANY_ID},
+ #endif
+diff --git a/drivers/isdn/hisax/niccy.c b/drivers/isdn/hisax/niccy.c
+index 421b8e6..ef48515 100644
+--- a/drivers/isdn/hisax/niccy.c
++++ b/drivers/isdn/hisax/niccy.c
+@@ -15,11 +15,21 @@
  
  #include <linux/init.h>
  #include "hisax.h"
@@ -151,171 +161,220 @@ index 0ea3b46..db4cec7 100644
  #include "isac.h"
  #include "hscx.h"
  #include "isdnl1.h"
- #include "ipac.h"
-+#include <linux/isa.h>
  #include <linux/pci.h>
- 
-+static int gazel_protocol;		/* 0 == use DEFAULT_PROTO */
+-#include <linux/isapnp.h>
++#include <linux/pnp.h>
++#include <linux/isa.h>
++
++static int niccy_protocol;		/* 0 == use DEFAULT_PROTO */
 +
 +#ifdef CONFIG_ISA
-+static int gazel_irq;			/* 0 == no ISA probing */
-+static int gazel_io_base;		/* 0 == no ISA probing */
-+#endif /* CONFIG_ISA */
-+
- static const char *gazel_revision = "$Revision: 2.19.2.4 $";
- 
- #define R647      1
-@@ -483,7 +492,8 @@ reserve_regions(struct IsdnCard *card, struct IsdnCardState *cs)
- 	return 1;
- }
- 
--static int __devinit
-+#ifdef CONFIG_ISA
-+static void __devinit
- setup_gazelisa(struct IsdnCard *card, struct IsdnCardState *cs)
- {
- 	printk(KERN_INFO "Gazel: ISA PnP card automatic recognition\n");
-@@ -527,58 +537,35 @@ setup_gazelisa(struct IsdnCard *card, struct IsdnCardState *cs)
- 			       cs->irq, cs->hw.gazel.ipac);
- 			break;
- 	}
--
--	return (0);
- }
++static int niccy_base0;
++static int niccy_base1;
++static int niccy_irq;
 +#endif /* CONFIG_ISA */
  
--#ifdef CONFIG_PCI_LEGACY
--static struct pci_dev *dev_tel __devinitdata = NULL;
--
-+#ifdef CONFIG_PCI
- static int __devinit
--setup_gazelpci(struct IsdnCardState *cs)
-+setup_gazelpci(struct IsdnCard *card)
- {
- 	u_int pci_ioaddr0 = 0, pci_ioaddr1 = 0;
- 	u_char pci_irq = 0, found;
--	u_int nbseek, seekcard;
-+	u_int seekcard;
-+	struct IsdnCardState *cs = card->cs;
-+	struct pci_dev *dev_tel = (void *) card->para[0];
+ static const char *niccy_revision = "$Revision: 1.21.2.4 $";
  
- 	printk(KERN_WARNING "Gazel: PCI card automatic recognition\n");
- 
- 	found = 0;
--	seekcard = PCI_DEVICE_ID_PLX_R685;
--	for (nbseek = 0; nbseek < 4; nbseek++) {
--		if ((dev_tel = pci_find_device(PCI_VENDOR_ID_PLX,
--					seekcard, dev_tel))) {
--			if (pci_enable_device(dev_tel))
--				return 1;
--			pci_irq = dev_tel->irq;
--			pci_ioaddr0 = pci_resource_start(dev_tel, 1);
--			pci_ioaddr1 = pci_resource_start(dev_tel, 2);
--			found = 1;
--		}
--		if (found)
--			break;
--		else {
--			switch (seekcard) {
--				case PCI_DEVICE_ID_PLX_R685:
--					seekcard = PCI_DEVICE_ID_PLX_R753;
--					break;
--				case PCI_DEVICE_ID_PLX_R753:
--					seekcard = PCI_DEVICE_ID_PLX_DJINN_ITOO;
--					break;
--				case PCI_DEVICE_ID_PLX_DJINN_ITOO:
--					seekcard = PCI_DEVICE_ID_PLX_OLITEC;
--					break;
--			}
--		}
--	}
--	if (!found) {
--		printk(KERN_WARNING "Gazel: No PCI card found\n");
--		return (1);
--	}
-+	seekcard = dev_tel->device;
-+
-+	if (pci_enable_device(dev_tel))
-+		return 1;
-+	pci_irq = dev_tel->irq;
-+	pci_ioaddr0 = pci_resource_start(dev_tel, 1);
-+	pci_ioaddr1 = pci_resource_start(dev_tel, 2);
-+
- 	if (!pci_irq) {
- 		printk(KERN_WARNING "Gazel: No IRQ for PCI card found\n");
- 		return 1;
- 	}
-+
- 	cs->hw.gazel.pciaddr[0] = pci_ioaddr0;
- 	cs->hw.gazel.pciaddr[1] = pci_ioaddr1;
- 	setup_isac(cs);
-@@ -620,10 +607,10 @@ setup_gazelpci(struct IsdnCardState *cs)
- 
- 	return (0);
+@@ -222,142 +232,18 @@ static int niccy_card_msg(struct IsdnCardState *cs, int mt, void *arg)
+ 	return 0;
  }
--#endif /* CONFIG_PCI_LEGACY */
-+#endif /* CONFIG_PCI */
  
--int __devinit
--setup_gazel(struct IsdnCard *card)
-+static int __devinit
-+setup_gazel_rest(struct IsdnCard *card)
+-#ifdef __ISAPNP__
+-static struct pnp_card *pnp_c __devinitdata = NULL;
+-#endif
+-
+-int __devinit setup_niccy(struct IsdnCard *card)
++static int __devinit setup_niccy(struct IsdnCard *card)
  {
  	struct IsdnCardState *cs = card->cs;
  	char tmp[64];
-@@ -632,23 +619,6 @@ setup_gazel(struct IsdnCard *card)
- 	strcpy(tmp, gazel_revision);
- 	printk(KERN_INFO "Gazel: Driver Revision %s\n", HiSax_getrev(tmp));
  
--	if (cs->typ != ISDN_CTYPE_GAZEL)
--		return (0);
+ 	strcpy(tmp, niccy_revision);
+ 	printk(KERN_INFO "HiSax: Niccy driver Rev. %s\n", HiSax_getrev(tmp));
+-	if (cs->typ != ISDN_CTYPE_NICCY)
+-		return 0;
+-#ifdef __ISAPNP__
+-	if (!card->para[1] && isapnp_present()) {
+-		struct pnp_dev *pnp_d = NULL;
+-		int err;
 -
--	if (card->para[0]) {
--		if (setup_gazelisa(card, cs))
--			return (0);
--	} else {
--
--#ifdef CONFIG_PCI_LEGACY
--		if (setup_gazelpci(cs))
--			return (0);
--#else
--		printk(KERN_WARNING "Gazel: Card PCI requested and NO_PCI_BIOS, unable to config\n");
--		return (0);
--#endif				/* CONFIG_PCI */
+-		pnp_c = pnp_find_card(ISAPNP_VENDOR('S', 'D', 'A'),
+-				ISAPNP_FUNCTION(0x0150), pnp_c);
+-		if (pnp_c) {
+-			pnp_d = pnp_find_dev(pnp_c,
+-					ISAPNP_VENDOR('S', 'D', 'A'),
+-					ISAPNP_FUNCTION(0x0150), pnp_d);
+-			if (!pnp_d) {
+-				printk(KERN_ERR "NiccyPnP: PnP error card "
+-					"found, no device\n");
+-				return 0;
+-			}
+-			pnp_disable_dev(pnp_d);
+-			err = pnp_activate_dev(pnp_d);
+-			if (err < 0) {
+-				printk(KERN_WARNING "%s: pnp_activate_dev "
+-					"ret(%d)\n", __FUNCTION__, err);
+-				return 0;
+-			}
+-			card->para[1] = pnp_port_start(pnp_d, 0);
+-			card->para[2] = pnp_port_start(pnp_d, 1);
+-			card->para[0] = pnp_irq(pnp_d, 0);
+-			if (!card->para[0] || !card->para[1] ||
+-					!card->para[2]) {
+-				printk(KERN_ERR "NiccyPnP:some resources are "
+-					"missing %ld/%lx/%lx\n",
+-					card->para[0], card->para[1],
+-					card->para[2]);
+-				pnp_disable_dev(pnp_d);
+-				return 0;
+-			}
+-		} else
+-			printk(KERN_INFO "NiccyPnP: no ISAPnP card found\n");
 -	}
+-#endif
+-	if (card->para[1]) {
+-		cs->hw.niccy.isac = card->para[1] + ISAC_PNP;
+-		cs->hw.niccy.hscx = card->para[1] + HSCX_PNP;
+-		cs->hw.niccy.isac_ale = card->para[2] + ISAC_PNP;
+-		cs->hw.niccy.hscx_ale = card->para[2] + HSCX_PNP;
+-		cs->hw.niccy.cfg_reg = 0;
+-		cs->subtyp = NICCY_PNP;
+-		cs->irq = card->para[0];
+-		if (!request_region(cs->hw.niccy.isac, 2, "niccy data")) {
+-			printk(KERN_WARNING "HiSax: NICCY data port %x-%x "
+-				"already in use\n",
+-				cs->hw.niccy.isac, cs->hw.niccy.isac + 1);
+-			return 0;
+-		}
+-		if (!request_region(cs->hw.niccy.isac_ale, 2, "niccy addr")) {
+-			printk(KERN_WARNING "HiSax: NICCY address port %x-%x "
+-				"already in use\n",
+-				cs->hw.niccy.isac_ale,
+-				cs->hw.niccy.isac_ale + 1);
+-			release_region(cs->hw.niccy.isac, 2);
+-			return 0;
+-		}
+-	} else {
+-#ifdef CONFIG_PCI_LEGACY
+-		static struct pci_dev *niccy_dev __devinitdata;
 -
- 	if (reserve_regions(card, cs)) {
- 		return (0);
+-		u_int pci_ioaddr;
+-		cs->subtyp = 0;
+-		if ((niccy_dev = pci_find_device(PCI_VENDOR_ID_SATSAGEM,
+-						 PCI_DEVICE_ID_SATSAGEM_NICCY,
+-						 niccy_dev))) {
+-			if (pci_enable_device(niccy_dev))
+-				return 0;
+-			/* get IRQ */
+-			if (!niccy_dev->irq) {
+-				printk(KERN_WARNING
+-				       "Niccy: No IRQ for PCI card found\n");
+-				return 0;
+-			}
+-			cs->irq = niccy_dev->irq;
+-			cs->hw.niccy.cfg_reg = pci_resource_start(niccy_dev, 0);
+-			if (!cs->hw.niccy.cfg_reg) {
+-				printk(KERN_WARNING
+-				       "Niccy: No IO-Adr for PCI cfg found\n");
+-				return 0;
+-			}
+-			pci_ioaddr = pci_resource_start(niccy_dev, 1);
+-			if (!pci_ioaddr) {
+-				printk(KERN_WARNING
+-				       "Niccy: No IO-Adr for PCI card found\n");
+-				return 0;
+-			}
+-			cs->subtyp = NICCY_PCI;
+-		} else {
+-			printk(KERN_WARNING "Niccy: No PCI card found\n");
+-			return 0;
+-		}
+-		cs->irq_flags |= IRQF_SHARED;
+-		cs->hw.niccy.isac = pci_ioaddr + ISAC_PCI_DATA;
+-		cs->hw.niccy.isac_ale = pci_ioaddr + ISAC_PCI_ADDR;
+-		cs->hw.niccy.hscx = pci_ioaddr + HSCX_PCI_DATA;
+-		cs->hw.niccy.hscx_ale = pci_ioaddr + HSCX_PCI_ADDR;
+-		if (!request_region(cs->hw.niccy.isac, 4, "niccy")) {
+-			printk(KERN_WARNING
+-			       "HiSax: NICCY data port %x-%x already in use\n",
+-			       cs->hw.niccy.isac, cs->hw.niccy.isac + 4);
+-			return 0;
+-		}
+-		if (!request_region(cs->hw.niccy.cfg_reg, 0x40, "niccy pci")) {
+-			printk(KERN_WARNING
+-			       "HiSax: NICCY pci port %x-%x already in use\n",
+-			       cs->hw.niccy.cfg_reg,
+-			       cs->hw.niccy.cfg_reg + 0x40);
+-			release_region(cs->hw.niccy.isac, 4);
+-			return 0;
+-		}
+-#else
+-		printk(KERN_WARNING "Niccy: io0 0 and NO_PCI_BIOS\n");
+-		printk(KERN_WARNING "Niccy: unable to config NICCY PCI\n");
+-		return 0;
+-#endif				/* CONFIG_PCI_LEGACY */
+-	}
+-	printk(KERN_INFO "HiSax: NICCY %s config irq:%d data:0x%X ale:0x%X\n",
+-		(cs->subtyp == 1) ? "PnP" : "PCI",
++
++	WARN_ON(cs->typ != ISDN_CTYPE_NICCY);
++
++	printk(KERN_INFO "HiSax: %s %s config irq:%d data:0x%X ale:0x%X\n",
++		"niccy", (cs->subtyp == 1) ? "PnP" : "PCI",
+ 		cs->irq, cs->hw.niccy.isac, cs->hw.niccy.isac_ale);
+ 	setup_isac(cs);
+ 	cs->readisac = &ReadISAC;
+@@ -378,3 +264,315 @@ int __devinit setup_niccy(struct IsdnCard *card)
  	}
-@@ -688,3 +658,163 @@ setup_gazel(struct IsdnCard *card)
- 
- 	return (1);
+ 	return 1;
  }
 +
 +#ifdef CONFIG_ISA
 +
-+static int __devinit gazel_isa_setup(struct IsdnCard *card)
++static int __devinit niccy_isa_setup(struct IsdnCard *card)
 +{
 +	struct IsdnCardState *cs = card->cs;
 +
-+	setup_gazelisa(card, cs);
++	cs->hw.niccy.isac = card->para[1] + ISAC_PNP;
++	cs->hw.niccy.hscx = card->para[1] + HSCX_PNP;
++	cs->hw.niccy.isac_ale = card->para[2] + ISAC_PNP;
++	cs->hw.niccy.hscx_ale = card->para[2] + HSCX_PNP;
++	cs->hw.niccy.cfg_reg = 0;
++	cs->subtyp = NICCY_PNP;
++	cs->irq = card->para[0];
++	if (!request_region(cs->hw.niccy.isac, 2, "niccy data")) {
++		printk(KERN_WARNING "HiSax: %s data port %x-%x "
++			"already in use\n", "niccy",
++			cs->hw.niccy.isac, cs->hw.niccy.isac + 1);
++		return 0;
++	}
++	if (!request_region(cs->hw.niccy.isac_ale, 2, "niccy addr")) {
++		printk(KERN_WARNING "HiSax: %s address port %x-%x "
++			"already in use\n", "niccy",
++			cs->hw.niccy.isac_ale,
++			cs->hw.niccy.isac_ale + 1);
++		release_region(cs->hw.niccy.isac, 2);
++		return 0;
++	}
 +
-+	return setup_gazel_rest(card);
++	return setup_niccy(card);
 +}
 +
-+static int __devinit gazel_isa_init_one(struct device *dev, unsigned int id)
++static int __devinit niccy_isa_init_one(struct device *dev, unsigned int id)
 +{
-+	struct IsdnCard icard = { ISDN_CTYPE_GAZEL, };
++	struct IsdnCard icard = { ISDN_CTYPE_NICCY, };
 +	int cardnr;
 +
-+	icard.para[0] = gazel_irq;
-+	icard.para[1] = gazel_io_base;
-+	if (!gazel_protocol)
++	icard.para[0] = niccy_irq;
++	icard.para[1] = niccy_base0;
++	icard.para[2] = niccy_base1;
++	if (!niccy_protocol)
 +		icard.protocol = DEFAULT_PROTO;
 +	else
-+		icard.protocol = gazel_protocol;
++		icard.protocol = niccy_protocol;
 +
-+	cardnr = hisax_init_hotplug(&icard, gazel_isa_setup);
++	cardnr = hisax_init_hotplug(&icard, niccy_isa_setup);
 +	if (cardnr < 0)
 +		return -ENODEV;
 +
@@ -323,7 +382,7 @@ index 0ea3b46..db4cec7 100644
 +	return 0;
 +}
 +
-+static int __devexit gazel_isa_remove_one(struct device *dev, unsigned int id)
++static int __devexit niccy_isa_remove_one(struct device *dev, unsigned int id)
 +{
 +	int cardnr = (unsigned long) dev_get_drvdata(dev);
 +
@@ -331,40 +390,156 @@ index 0ea3b46..db4cec7 100644
 +	return 0;
 +}
 +
-+static struct isa_driver gazel_isa_driver = {
-+	.probe		= gazel_isa_init_one,
-+	.remove		= __devexit_p(gazel_isa_remove_one),
++static struct isa_driver niccy_isa_driver = {
++	.probe		= niccy_isa_init_one,
++	.remove		= __devexit_p(niccy_isa_remove_one),
 +	.driver = {
 +		.owner	= THIS_MODULE,
-+		.name	= "gazel_pci",
++		.name	= "niccy_pci",
 +	},
 +};
 +
++#ifdef CONFIG_PNP
++
++static int __devinit niccy_pnp_setup(struct IsdnCard *card)
++{
++	struct pnp_dev *pnp_d = (void *) card->para[0];
++	int err;
++
++	pnp_disable_dev(pnp_d);
++	err = pnp_activate_dev(pnp_d);
++	if (err < 0) {
++		printk(KERN_WARNING "%s: pnp_activate_dev "
++			"ret(%d)\n", __func__, err);
++		return 0;
++	}
++	card->para[1] = pnp_port_start(pnp_d, 0);
++	card->para[2] = pnp_port_start(pnp_d, 1);
++	card->para[0] = pnp_irq(pnp_d, 0);
++	if (!card->para[0] || !card->para[1] ||
++			!card->para[2]) {
++		printk(KERN_ERR "NiccyPnP:some resources are "
++			"missing %ld/%lx/%lx\n",
++			card->para[0], card->para[1],
++			card->para[2]);
++		pnp_disable_dev(pnp_d);
++		return 0;
++	}
++
++	return niccy_isa_setup(card);
++}
++
++static int __devinit niccy_pnp_init_one(struct pnp_dev *pdev,
++				       const struct pnp_device_id *dev_id)
++{
++	struct IsdnCard icard = { ISDN_CTYPE_NICCY, };
++	int cardnr;
++
++	icard.para[0] = (unsigned long) pdev;
++	if (!niccy_protocol)
++		icard.protocol = DEFAULT_PROTO;
++	else
++		icard.protocol = niccy_protocol;
++
++	cardnr = hisax_init_hotplug(&icard, niccy_pnp_setup);
++	if (cardnr < 0)
++		return -ENODEV;
++
++	pnp_set_drvdata(pdev, (void *)(unsigned long) cardnr);
++	return 0;
++}
++
++static void __devexit niccy_pnp_remove_one(struct pnp_dev *pdev)
++{
++	int cardnr = (unsigned long) pnp_get_drvdata(pdev);
++
++	HiSax_closecard(cardnr);
++}
++
++static struct pnp_device_id niccy_pnp_table[] = {
++	{ .id = "SDA0150", },
++
++	{ .id = "" }		/* terminate list */
++};
++
++static struct pnp_driver niccy_pnp_driver = {
++	.name		= "niccy",
++	.id_table	= niccy_pnp_table,
++	.probe		= niccy_pnp_init_one,
++	.remove		= __devexit_p(niccy_pnp_remove_one),
++};
++#endif /* CONFIG_PNP */
 +#endif /* CONFIG_ISA */
 +
 +#ifdef CONFIG_PCI
 +
-+static int __devinit gazel_pci_setup(struct IsdnCard *card)
++static int __devinit niccy_pci_setup(struct IsdnCard *card)
 +{
-+	if (setup_gazelpci(card))
-+		return 1;	/* error */
++	u_int pci_ioaddr;
++	struct pci_dev *niccy_dev = (void *) card->para[0];
++	struct IsdnCardState *cs = card->cs;
 +
-+	return setup_gazel_rest(card);
++	cs->subtyp = 0;
++	if (pci_enable_device(niccy_dev))
++		return 0;
++	/* get IRQ */
++	if (!niccy_dev->irq) {
++		printk(KERN_WARNING
++		       "Niccy: No IRQ for PCI card found\n");
++		return 0;
++	}
++	cs->irq = niccy_dev->irq;
++	cs->hw.niccy.cfg_reg = pci_resource_start(niccy_dev, 0);
++	if (!cs->hw.niccy.cfg_reg) {
++		printk(KERN_WARNING
++		       "Niccy: No IO-Adr for PCI cfg found\n");
++		return 0;
++	}
++	pci_ioaddr = pci_resource_start(niccy_dev, 1);
++	if (!pci_ioaddr) {
++		printk(KERN_WARNING
++		       "Niccy: No IO-Adr for PCI card found\n");
++		return 0;
++	}
++	cs->subtyp = NICCY_PCI;
++	cs->irq_flags |= IRQF_SHARED;
++	cs->hw.niccy.isac = pci_ioaddr + ISAC_PCI_DATA;
++	cs->hw.niccy.isac_ale = pci_ioaddr + ISAC_PCI_ADDR;
++	cs->hw.niccy.hscx = pci_ioaddr + HSCX_PCI_DATA;
++	cs->hw.niccy.hscx_ale = pci_ioaddr + HSCX_PCI_ADDR;
++	if (!request_region(cs->hw.niccy.isac, 4, "niccy")) {
++		printk(KERN_WARNING
++		       "HiSax: %s data port %x-%x already in use\n",
++		       "niccy",
++		       cs->hw.niccy.isac, cs->hw.niccy.isac + 4);
++		return 0;
++	}
++	if (!request_region(cs->hw.niccy.cfg_reg, 0x40, "niccy pci")) {
++		printk(KERN_WARNING
++		       "HiSax: %s pci port %x-%x already in use\n",
++		       "niccy",
++		       cs->hw.niccy.cfg_reg,
++		       cs->hw.niccy.cfg_reg + 0x40);
++		release_region(cs->hw.niccy.isac, 4);
++		return 0;
++	}
++
++	return setup_niccy(card);
 +}
 +
-+static int __devinit gazel_pci_init_one(struct pci_dev *pdev,
++static int __devinit niccy_pci_init_one(struct pci_dev *pdev,
 +				      const struct pci_device_id *ent)
 +{
-+	struct IsdnCard icard = { ISDN_CTYPE_GAZEL, };
++	struct IsdnCard icard = { ISDN_CTYPE_NICCY, };
 +	int cardnr;
 +
 +	icard.para[0] = (unsigned long) pdev;
-+	if (!gazel_protocol)
++	if (!niccy_protocol)
 +		icard.protocol = DEFAULT_PROTO;
 +	else
-+		icard.protocol = gazel_protocol;
++		icard.protocol = niccy_protocol;
 +
-+	cardnr = hisax_init_hotplug(&icard, gazel_pci_setup);
++	cardnr = hisax_init_hotplug(&icard, niccy_pci_setup);
 +	if (cardnr < 0)
 +		return -ENODEV;
 +
@@ -372,38 +547,42 @@ index 0ea3b46..db4cec7 100644
 +	return 0;
 +}
 +
-+static struct pci_device_id gazel_pci_table[] = {
-+	{ PCI_VDEVICE(PLX, PCI_DEVICE_ID_PLX_R685) },
-+	{ PCI_VDEVICE(PLX, PCI_DEVICE_ID_PLX_R753) },
-+	{ PCI_VDEVICE(PLX, PCI_DEVICE_ID_PLX_DJINN_ITOO) },
-+	{ PCI_VDEVICE(PLX, PCI_DEVICE_ID_PLX_OLITEC) },
++static struct pci_device_id niccy_pci_table[] = {
++	{ PCI_VDEVICE(SATSAGEM, PCI_DEVICE_ID_SATSAGEM_NICCY) },
 +
 +	{ }		/* terminate list */
 +};
 +
-+static struct pci_driver gazel_pci_driver = {
-+	.name		= "gazel_pci",
-+	.id_table	= gazel_pci_table,
-+	.probe		= gazel_pci_init_one,
++static struct pci_driver niccy_pci_driver = {
++	.name		= "niccy",
++	.id_table	= niccy_pci_table,
++	.probe		= niccy_pci_init_one,
 +	.remove		= hisax_pci_remove_one,
 +};
 +
 +#endif /* CONFIG_PCI */
 +
-+static int __init gazel_mod_init(void)
++static int __init niccy_mod_init(void)
 +{
 +	int rc = 0;
 +
 +#ifdef CONFIG_ISA
-+	if (gazel_irq && gazel_io_base) {
-+		rc = isa_register_driver(&gazel_isa_driver, 1);
++	if (niccy_irq && niccy_base0 && niccy_base1) {
++		rc = isa_register_driver(&niccy_isa_driver, 1);
 +		if (rc)
 +			return rc;
 +	}
++#ifdef CONFIG_PNP
++	else {
++		rc = pnp_register_driver(&niccy_pnp_driver);
++		if (rc)
++			return rc;
++	}
++#endif
 +#endif /* CONFIG_ISA */
 +
 +#ifdef CONFIG_PCI
-+	rc = pci_register_driver(&gazel_pci_driver);
++	rc = pci_register_driver(&niccy_pci_driver);
 +	if (rc)
 +		goto err_out_isa;
 +#endif /* CONFIG_PCI */
@@ -414,42 +593,53 @@ index 0ea3b46..db4cec7 100644
 +err_out_isa:
 +
 +#ifdef CONFIG_ISA
-+	if (gazel_irq && gazel_io_base)
-+		isa_unregister_driver(&gazel_isa_driver);
++	if (niccy_irq && niccy_base0 && niccy_base1)
++		isa_unregister_driver(&niccy_isa_driver);
++#ifdef CONFIG_PNP
++	else
++		pnp_unregister_driver(&niccy_pnp_driver);
++#endif /* CONFIG_PNP */
 +#endif /* CONFIG_ISA */
 +
 +	return rc;
 +#endif /* CONFIG_PCI */
 +}
 +
-+static void __exit gazel_mod_exit(void)
++static void __exit niccy_mod_exit(void)
 +{
 +#ifdef CONFIG_PCI
-+	pci_unregister_driver(&gazel_pci_driver);
++	pci_unregister_driver(&niccy_pci_driver);
 +#endif /* CONFIG_PCI */
 +
 +#ifdef CONFIG_ISA
-+	if (gazel_irq && gazel_io_base)
-+		isa_unregister_driver(&gazel_isa_driver);
++	if (niccy_irq && niccy_base0 && niccy_base1)
++		isa_unregister_driver(&niccy_isa_driver);
++#ifdef CONFIG_PNP
++	else
++		pnp_unregister_driver(&niccy_pnp_driver);
++#endif /* CONFIG_PNP */
 +#endif /* CONFIG_ISA */
 +}
 +
-+module_init(gazel_mod_init);
-+module_exit(gazel_mod_exit);
++module_init(niccy_mod_init);
++module_exit(niccy_mod_exit);
 +
 +#ifdef CONFIG_ISA
-+module_param_named(irq, gazel_irq, int, 0444);
++module_param_named(irq, niccy_irq, int, 0444);
 +MODULE_PARM_DESC(irq, "ISA IRQ.  Zero disables ISA support (default).");
 +
-+module_param_named(io, gazel_io_base, int, 0444);
-+MODULE_PARM_DESC(io, "ISA I/O base.  Zero disables ISA support (default).");
++module_param_named(base0, niccy_base0, int, 0444);
++MODULE_PARM_DESC(base0, "ISA I/O base #0.  Zero disables ISA support (default).");
++
++module_param_named(base1, niccy_base1, int, 0444);
++MODULE_PARM_DESC(base1, "ISA I/O base #1.  Zero disables ISA support (default).");
 +#endif /* CONFIG_ISA */
 +
-+module_param_named(protocol, gazel_protocol, int, 0444);
++module_param_named(protocol, niccy_protocol, int, 0444);
 +MODULE_PARM_DESC(protocol, "Values 0 (default) through 4. See ISDN_PTYPE_xxx in linux/isdnif.h");
 +
-+MODULE_DEVICE_TABLE(pci, gazel_pci_table);
-+MODULE_DESCRIPTION("ISDN HiSax Gazel PCI/ISA driver");
++MODULE_DEVICE_TABLE(pci, niccy_pci_table);
++MODULE_DESCRIPTION("ISDN HiSax Niccy PCI/PNP driver");
 +MODULE_LICENSE("GPL");
 -- 
 1.5.3.8
