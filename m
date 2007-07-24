@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbXGXV0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbXGXV35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758378AbXGXV0W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 17:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbXGXV0F
+	id S1758211AbXGXV35 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 17:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXGXV3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 17:26:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56268 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbXGXV0D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 17:26:03 -0400
-Subject: Re: [PATCH RFC] extent mapped page cache
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Chris Mason <chris.mason@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <1185307985.6586.50.camel@localhost>
-References: <20070710210326.GA29963@think.oraclecorp.com>
-	 <20070724160032.7a7097db@think.oraclecorp.com>
-	 <1185307985.6586.50.camel@localhost>
+	Tue, 24 Jul 2007 17:29:49 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51515 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751881AbXGXV3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 17:29:48 -0400
+Subject: Re: [patch] mm: reduce pagetable-freeing latencies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <p73abtmt2y7.fsf@bingen.suse.de>
+References: <20070724083855.GA858@elte.hu>
+	 <20070724015441.8604d85d.akpm@linux-foundation.org>
+	 <1185270045.5439.249.camel@localhost.localdomain>
+	 <p73abtmt2y7.fsf@bingen.suse.de>
 Content-Type: text/plain
-Date: Tue, 24 Jul 2007 23:25:43 +0200
-Message-Id: <1185312343.5535.5.camel@lappy>
+Date: Wed, 25 Jul 2007 07:29:18 +1000
+Message-Id: <1185312559.5439.276.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 16:13 -0400, Trond Myklebust wrote:
-> On Tue, 2007-07-24 at 16:00 -0400, Chris Mason wrote:
-> > On Tue, 10 Jul 2007 17:03:26 -0400
-> > Chris Mason <chris.mason@oracle.com> wrote:
-> > 
-> > > This patch aims to demonstrate one way to replace buffer heads with a
-> > > few extent trees.  Buffer heads provide a few different features:
-> > > 
-> > > 1) Mapping of logical file offset to blocks on disk
-> > > 2) Recording state (dirty, locked etc)
-> > > 3) Providing a mechanism to access sub-page sized blocks.
-> > > 
-> > > This patch covers #1 and #2, I'll start on #3 a little later next
-> > > week.
-> > > 
-> > Well, almost.  I decided to try out an rbtree instead of the radix,
-> > which turned out to be much faster.  Even though individual operations
-> > are slower, the rbtree was able to do many fewer ops to accomplish the
-> > same thing, especially for merging extents together.  It also uses much
-> > less ram.
+On Tue, 2007-07-24 at 14:13 +0200, Andi Kleen wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 > 
-> The problem with an rbtree is that you can't use it together with RCU to
-> do lockless lookups. You can probably modify it to allocate nodes
-> dynamically (like the radix tree does) and thus make it RCU-compatible,
-> but then you risk losing the two main benefits that you list above.
+> > > What a truly putrid patch.  I am suspecting that this was a quick
+> > > get-you-out-of-trouble thing, which then got forgotten about.
+> > > 
+> > > We have two months to do the "right fix".  Please?
+> > 
+> > Working on it... 
+> 
+> Ideally the patch would DTRT even on non preemptible kernels,
+> aka do cond_resched()s when needed.
 
-I thought on this, and I came to the conclusion that the tree rotations
-used to balance binary trees are incompatible with RCU. The rotation can
-hide one branch. Hence I started writing a B+tree that is RCU compatible
-much like the Radix tree.
+First is to rework the batch structure to make it more manageable. That
+is, patch #1 will keep the page list in per-cpu (and thus non-preempt),
+but the batch "head" will be on the stack.
 
-Current code here:
-  http://programming.kicks-ass.net/kernel-patches/vma_lookup/btree.patch
+Now, there are two approaches regarding getting rid of the
+get_cpu/put_cpu:
 
-Still needs some work, but is usable.
+ - One is to have a small number of entries for the page list in the
+batch structure on the stack, and attempt to gfp' a page for more. If
+that fails, we can still free, though with less batching, using only the
+few entries in the batch struct itself. That's Hugh initial appraoch
+iirc.
+
+ - Another is to hook up with those folks who've been asking for a
+notifier that we are being preempted/scheduled out. In this case, I can
+happily access the per-cpu list, and just trigger a batch flush if we
+happen to be scheduled out.
+
+I tend to prefer the former solution though, gfp should be fast, and
+there is no need to force a flush if we get scheduled out. It would be
+rare to hit the worst case scenario of falling back to the few page
+heads in the batch itself. On the other hand, that solution has the
+problem of bloating the stack a bit (with the few page pointers) even in
+the case where I plan to use the extended batch outside of zap_*, such
+as fork, mprotect, ....
+
+So I'll first do patch #1, which will not fix the problem, but will make
+the fix easier to fit in, in the meantime, please provide feedback of
+your preferred solution for avoiding the get/put_cpu of the 2 above,
+unless you find a good 3rd one.
+
+Cheers,
+Ben.
 
