@@ -1,44 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbXGXNGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbXGXNHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758357AbXGXNGQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 09:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbXGXNGG
+	id S1759412AbXGXNHb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 09:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXGXNHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 09:06:06 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:46141 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbXGXNGF (ORCPT
+	Tue, 24 Jul 2007 09:07:23 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:18726 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751721AbXGXNHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 09:06:05 -0400
-Message-ID: <46A5F52C.6060101@aitel.hist.no>
-Date: Tue, 24 Jul 2007 14:48:44 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: vraghavan3@mail.gatech.edu
-CC: Nobin Mathew <nobin.mathew@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Reading a physical memory location
-References: <1184010444.469290cce48df@webmail.mail.gatech.edu> <8d6898730707091539y14cf5afbsed7ed769526da0a1@mail.gmail.com> <1184091142.4693cc06850f7@webmail.mail.gatech.edu>
-In-Reply-To: <1184091142.4693cc06850f7@webmail.mail.gatech.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 09:07:23 -0400
+Date: Tue, 24 Jul 2007 09:00:17 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
+Cc: Adrian Bunk <bunk@stusta.de>, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/hwmon/lm93.c: array overruns
+Message-ID: <20070724130017.GA5101@jupiter.solarsys.private>
+References: <20070723005453.GS26212@stusta.de> <200707230936.58135.hjk@linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200707230936.58135.hjk@linutronix.de>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vraghavan3@mail.gatech.edu wrote:
-> Thanks for the quick reply. But I was wondering as to why I would have to map
-> the physical address to the virtual address when I know that the string is
-> permanently in the physical memory because its loaded into flash. 
-Because that is how any CPU with a MMU works.
-All accesses to memory goes through page tables (virtual memory) -
-there is no alternative. But this is not a problem, as the kernel can
-map any physical address for you. 
+* Hans-Jürgen Koch <hjk@linutronix.de> [2007-07-23 09:36:57 +0200]:
+> Am Montag 23 Juli 2007 02:54 schrieb Adrian Bunk:
+> > The Coverity checker spotted the following array overruns
+> > in drivers/hwmon/lm93.c:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> > struct lm93_data {
+> > ...
+> >         struct {
+> >                 u8 min;
+> >                 u8 max;
+> >         } temp_lim[3];
+> > ...
+> > };
+> > ...
+> > static void lm93_update_client_common(struct lm93_data *data,
+> >                                       struct i2c_client *client)
+> > {
+> > ...
+> >         for (i = 0; i < 4; i++) {
+> >                 data->temp_lim[i].min =
+> >                         lm93_read_byte(client, LM93_REG_TEMP_MIN(i));
+> >                 data->temp_lim[i].max =
+> >                         lm93_read_byte(client, LM93_REG_TEMP_MAX(i));
+> >         }
+> > ...
+> > 
+> > <--  snip  -->
+> 
+> This patch should fix it. Thanks a lot, Adrian!
+> 
+> ----
+> This fixes an array overflow bug. We have 4 pairs of min/max temperature 
+> limits, not 3.
+> 
+> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+> 
+> --
+> Index: linux-2.6.23-rc/drivers/hwmon/lm93.c
+> ===================================================================
+> --- linux-2.6.23-rc.orig/drivers/hwmon/lm93.c	2007-07-23 09:22:56.000000000 +0200
+> +++ linux-2.6.23-rc/drivers/hwmon/lm93.c	2007-07-23 09:29:37.000000000 +0200
+> @@ -234,7 +234,7 @@
+>  	struct {
+>  		u8 min;
+>  		u8 max;
+> -	} temp_lim[3];
+> +	} temp_lim[4];
+>  
+>  	/* vin1 - vin16: low and high limits */
+>  	struct {
+> 
+> 
 
-> Is there a way
-> to directly read from the physical memory location? 
-The way is to map the page containing that address.  You can
-then read whatever you want from that page. Nothing is ever accessed
-by physical address, physical addresses is only used indirectly
-to set up the page tables.
+Applied to testing, thanks.
 
-Helge Hafting
+-- 
+Mark M. Hoffman
+mhoffman@lightlink.com
+
