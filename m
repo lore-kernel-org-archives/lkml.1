@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbXGXTRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXGXTXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbXGXTRV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbXGXTRF
+	id S1760016AbXGXTXQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbXGXTXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:17:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52113 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754768AbXGXTRD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:17:03 -0400
-Date: Tue, 24 Jul 2007 12:15:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-In-Reply-To: <20070724112843.0cc104c2.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0707241207290.3607@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
- <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru>
- <20070723132431.42afbae8.akpm@linux-foundation.org>
- <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru>
- <20070723141137.171e4ac1.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
- <20070724175951.GC6019@stusta.de> <alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org>
- <20070724112843.0cc104c2.akpm@linux-foundation.org>
+	Tue, 24 Jul 2007 15:23:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36509 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752994AbXGXTXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 15:23:01 -0400
+Message-ID: <46A65190.8070600@redhat.com>
+Date: Tue, 24 Jul 2007 15:22:56 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Aaron Porter <atporter@primate.net>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: miserable performance of 2.6.21 under network load
+References: <20070724172513.GB24543@primate.net> <p73vec9sknz.fsf@bingen.suse.de> <20070724184908.GD24543@primate.net>
+In-Reply-To: <20070724184908.GD24543@primate.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Jul 2007, Andrew Morton wrote:
+Aaron Porter wrote:
+> On Tue, Jul 24, 2007 at 08:48:00PM +0200, Andi Kleen wrote:
+>> Aaron Porter <atporter@primate.net> writes:
+>>
+>>> 	I'm in the process up upgrading a pool of apache servers from
+>>> 2.6.17.8 to 2.6.21.5, and we're seeing a pretty major change in behavior.
+>>> Under identical network load, 2.6.21 has a load average more than 3 times
+>>> higher, cpu 0 spends well over 90% of its time in interrupts (vs ~30%
+>>> under 2.6.17). When we hit 3k apache sessions, ksoftirqd eats 100% of cpu0
+>>> and our network traffic drops off rapidly. The end result is that 2.6.17
+>>> performs twice as well under this load.
+>> Can you oprofile it?
 > 
-> fwiw, -fno-inline-functions-called-once (who knew?) takes i386 allnoconfig
-> vmlinux .text from 928360 up to 955362 bytes (27k larger).
-> 
-> A surprisingly large increase - I wonder if it did something dumb.  It
-> appears to still correctly inline those things which we've manually marked
-> inline.  hm.
+> # opreport -l
+> CPU: AMD64 processors, speed 1994.52 MHz (estimated)
+> Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit mask of 0x00 (No unit mask) count 100000
+> samples  %        app name                 symbol name
+> 914379   48.8404  vmlinux-2.6.21.5         check_poison_obj
+> 341920   18.2632  vmlinux-2.6.21.5         poison_obj
 
-I think inlining small enough functions is worth it, and the thing is, the 
-kernel is actually pretty damn good at having lots of small functions. 
-It's one of the few things I really care about from a coding style 
-standpoint.
+I bet you have CONFIG_DEBUG_SLAB turned off in your 2.6.17 kernel, and turned on 
+in your 2.6.21 kernel.
 
-So I'm not surprised that "-fno-inline-functions-called-once" makes things 
-larger, because I think it's generally a good idea to inline things that 
-are just called once. But it does make things harder to debug, and the 
-performance advantages become increasingly small for bigger functions.
-
-And that's a balancing act. Do we care about performance? Yes. But do we 
-care so much that it's worth inlining something like buffered_rmqueue()? 
-
-So I would not be surprised if "-fno-inline-functions-called-once" will 
-disable *all* the inlining heuristics, and say "oh, it's not an inline 
-function, and it's only called once, so we won't inline it at all".
-
-So "called once" should probably make the inlining weight bigger (ie 
-inline *larger* functions than you would otherwise), it just shouldn't 
-make it "infinite". It's not worth it.
-
-		Linus
+	-- Chris
