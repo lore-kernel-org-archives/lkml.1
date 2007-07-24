@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763966AbXGXTQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbXGXTRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763966AbXGXTQW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 15:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbXGXTQM
+	id S1754768AbXGXTRV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 15:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbXGXTRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 15:16:12 -0400
-Received: from gw.goop.org ([64.81.55.164]:51334 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbXGXTQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 15:16:11 -0400
-Message-ID: <46A64FC1.5050808@goop.org>
-Date: Tue, 24 Jul 2007 12:15:13 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Tue, 24 Jul 2007 15:17:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52113 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754768AbXGXTRD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 15:17:03 -0400
+Date: Tue, 24 Jul 2007 12:15:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+In-Reply-To: <20070724112843.0cc104c2.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0707241207290.3607@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+ <20070723183839.GA5874@martell.zuzino.mipt.ru> <20070723190152.GA5755@martell.zuzino.mipt.ru>
+ <20070723132431.42afbae8.akpm@linux-foundation.org>
+ <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru>
+ <20070723141137.171e4ac1.akpm@linux-foundation.org>
+ <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org>
+ <20070724175951.GC6019@stusta.de> <alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org>
+ <20070724112843.0cc104c2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Tilman Schmidt <tilman@imap.cc>, Olaf Hering <olh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: 2.6.22-git17 boot failure
-References: <46A481FD.2030607@imap.cc> <46A4C081.6070305@goop.org> <46A504A3.3070205@imap.cc> <46A51079.5030006@goop.org> <46A53396.2060902@imap.cc> <46A5444D.4080304@goop.org> <20070724091018.GA26724@one.firstfloor.org> <20070724095614.GB625@suse.de> <46A64019.4010508@imap.cc> <46A64CD5.2030800@goop.org> <20070724191231.GA359@one.firstfloor.org>
-In-Reply-To: <20070724191231.GA359@one.firstfloor.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Yes 10.2 mkinitrd does. But it still should work because a dom0
-> kernel would obviously need all the drivers. A paravirt ops
-> kernel native is like a dom0 variant.
->
-> http://firstfloor.org/~andi/mkinitrd
 
-Well, it appears to be assuming that a dom0 Xen kernel will have stuff
-in /proc/xen/.
 
-    J
+On Tue, 24 Jul 2007, Andrew Morton wrote:
+> 
+> fwiw, -fno-inline-functions-called-once (who knew?) takes i386 allnoconfig
+> vmlinux .text from 928360 up to 955362 bytes (27k larger).
+> 
+> A surprisingly large increase - I wonder if it did something dumb.  It
+> appears to still correctly inline those things which we've manually marked
+> inline.  hm.
 
+I think inlining small enough functions is worth it, and the thing is, the 
+kernel is actually pretty damn good at having lots of small functions. 
+It's one of the few things I really care about from a coding style 
+standpoint.
+
+So I'm not surprised that "-fno-inline-functions-called-once" makes things 
+larger, because I think it's generally a good idea to inline things that 
+are just called once. But it does make things harder to debug, and the 
+performance advantages become increasingly small for bigger functions.
+
+And that's a balancing act. Do we care about performance? Yes. But do we 
+care so much that it's worth inlining something like buffered_rmqueue()? 
+
+So I would not be surprised if "-fno-inline-functions-called-once" will 
+disable *all* the inlining heuristics, and say "oh, it's not an inline 
+function, and it's only called once, so we won't inline it at all".
+
+So "called once" should probably make the inlining weight bigger (ie 
+inline *larger* functions than you would otherwise), it just shouldn't 
+make it "infinite". It's not worth it.
+
+		Linus
