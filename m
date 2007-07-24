@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761305AbXGXRV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbXGXRWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761305AbXGXRV0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 13:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXGXRVS
+	id S1762151AbXGXRWz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 13:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXGXRWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 13:21:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53147 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753999AbXGXRVR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 13:21:17 -0400
-Date: Tue, 24 Jul 2007 10:20:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/8] i386: bitops: Kill volatile-casting of memory
- addresses
-In-Reply-To: <1185270544.5439.252.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.0.999.0707241017440.3607@woody.linux-foundation.org>
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
-  <20070723160548.22137.66072.sendpatchset@cselinux1.cse.iitk.ac.in> 
- <alpine.LFD.0.999.0707231046140.3607@woody.linux-foundation.org>
- <1185270544.5439.252.camel@localhost.localdomain>
+	Tue, 24 Jul 2007 13:22:48 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:42293 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755832AbXGXRWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 13:22:47 -0400
+Date: Wed, 25 Jul 2007 02:22:17 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+Message-ID: <20070724172217.GA10725@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andy Whitcroft <apw@shadowen.org>,
+	"Kok, Auke" <auke-jan.h.kok@intel.com>,
+	Randy Dunlap <rdunlap@xenotime.net>,
+	Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A534EA.6030008@intel.com> <46A5C12B.3080904@shadowen.org> <20070724021526.3d92286b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070724021526.3d92286b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 24 Jul 2007, Benjamin Herrenschmidt wrote:
+On Tue, Jul 24, 2007 at 02:15:26AM -0700, Andrew Morton wrote:
+> On Tue, 24 Jul 2007 10:06:51 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
 > 
->  - This "volatile" will allow to pass pointers to volatile data to the
-> bitops.
+> > > This is a royal pain, since it now throws an ERROR for the obviously
+> > > preferable piece of code below:
+> > > 
+> > > if (err) {
+> > >     do_something();
+> > >     return -ERR;
+> > > } else {
+> > >     do_somthing_else();
+> > > }
+> > 
+> > Hmmm, is that obviouly nicer than the below?  Its fully a line longer
+> > for no benefit.  But ignoring that, this seems to have snuck in to
+> > CodingStyle hmmm ... will see what I can do if anything to stop these
+> > being picked up I guess.
+> > 
+> > 	if (err) {
+> > 		do_something();
+> > 		return -ERR;
+> > 	} else
+> > 		do_something_else();
 > 
->  - Most users of "volatile" in the kenrel (except maybe jiffies) are
-> bogus
+> The kool kids on linux-usb-devel largely ended up deciding that the second
+> version looks dorky.
 > 
->  - Thus let's remove it -as a type safety thing- to catch more of those
-> stupid volatile that shouldn't be ? :-)
+Since when did linux-usb-devel decide stylistic nits of the rest of the
+kernel? Let them do what they want in drivers/usb, I have a hard time
+accepting that what someone arbitrarily decides they want to do in their
+directory suddenly blanketly applies to the rest of the kernel, and
+therefore warrants a CodingStyle update.
 
-Quite frankly, I'd really really rather kill the "volatile" data
-structures independently. Once that is done, it doesn't really matter any
-more.
+Perhaps CodingStyle can start being versioned, so people can opt out of
+certain 'improvements' whenever someone has a vision, much like some
+nameless licenses.
 
-> Besides, as Nick pointed out, it prevents some valid optimizations.
-
-No it doesn't. Not the ones on the functions that just do an inline asm.
-
-The only valid optimization it might break is for "constant_test_bit()", 
-which isn't even using inline asm.
-
-And before we remove that "volatile", we'd better make damn sure that 
-there isn't any driver that does
-
-	/* Wait for the command queue to be cleared by DMA */
-	while (test_bit(...))
-		;
-
-or similar.
-
-Yes, it's annoying, but this is a scary and subtle area. And we sadly 
-_have_ had code that does things like that.
-
-		Linus
+Personally I prefer the second style, and if there's a comment block,
+then it makes sense to complete the tree with {}'s (the keyword here is
+prefer, as it's a personal preference). checkpatch has been quite useful
+for catching obviously broken things, and now it seems like it's just
+overreaching. Perhaps this functionality can be split in to a lite
+checkpatch for catching show-stoppers for application and then something
+more akin to a CodingStyle validator for the folks interested in
+arbitrarily defining convention, which they can use freely while the rest
+of us try to get something useful done.
