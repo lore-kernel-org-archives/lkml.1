@@ -1,97 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbXGXShd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759073AbXGXSii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbXGXShd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 14:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXGXShZ
+	id S1759073AbXGXSii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 14:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbXGXSib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 14:37:25 -0400
-Received: from mail.windriver.com ([147.11.1.11]:39361 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994AbXGXShY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 14:37:24 -0400
-Date: Tue, 24 Jul 2007 11:36:21 -0700 (PDT)
-From: Jeremy Katz <jeremy.katz@windriver.com>
-X-X-Sender: jkatz@localhost.localdomain
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [PATCH] posix-timer: fix deletion race
-In-Reply-To: <20070724145142.GA199@tv-sign.ru>
-Message-ID: <Pine.LNX.4.63.0707240827320.25961@localhost.localdomain>
-References: <Pine.LNX.4.63.0707131058390.10358@localhost.localdomain>
- <1184662429.12353.426.camel@chaos> <Pine.LNX.4.63.0707171131580.10358@localhost.localdomain>
- <1184703427.12353.476.camel@chaos> <Pine.LNX.4.63.0707171558570.10358@localhost.localdomain>
- <Pine.LNX.4.63.0707171654020.10358@localhost.localdomain>
- <20070718161156.GA761@tv-sign.ru> <Pine.LNX.4.63.0707181203110.3157@localhost.localdomain>
- <20070720141529.GA218@tv-sign.ru> <Pine.LNX.4.63.0707231858420.9759@localhost.localdomain>
- <20070724145142.GA199@tv-sign.ru>
+	Tue, 24 Jul 2007 14:38:31 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4347 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbXGXSia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 14:38:30 -0400
+Message-ID: <46A6471F.1090003@shadowen.org>
+Date: Tue, 24 Jul 2007 19:38:23 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-OriginalArrivalTime: 24 Jul 2007 18:36:21.0820 (UTC) FILETIME=[883B9FC0:01C7CE21]
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A53F3A.7060509@intel.com> <46A5E39D.7030009@shadowen.org> <Pine.LNX.4.64.0707241854140.18990@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0707241854140.18990@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007, Oleg Nesterov wrote:
-
-> On 07/23, Jeremy Katz wrote:
+Jan Engelhardt wrote:
+> On Jul 24 2007 12:33, Andy Whitcroft wrote:
+>>> Warning on multiple declarations on a line is nice, but IMO really too
+>>> verbose (why is "int i, j;" bad? Did C somehow change syntax today?).
+>> No the normal response is two fold:
 >>
->> On Fri, 20 Jul 2007, Oleg Nesterov wrote:
->>
->>> I still can't believe we have a double-free problem, this looks imposiible.
->>> Do you see the
->>>
->>> 	"idr_remove called for id=%d which is not allocated.\n"
->>>
->>> in syslog?
->>
->> No.  I also added some accounting with atomic counters, and don't see
->> evidence of a second call to release_posix_timer.
->
-> Interesting. Could you show the patch? Where does sys_timer_create() set
-> counter == 1?
+>> 1) "what the heck are i and j those are meaningless names"
+> 
+> Can we at least assume the submitter is sane in some ways?
+> i and j are picked for obvious iterater values - you would not want
+> verbosify that to fruit_iterator and process_iterator or whatever
+> because it's a hell lot more typing.
+> It takes more than a few Perl regexes to actually grasp the semantics
+> of whether "i" is useful or not.
 
---- kernel/posix-timers.c.old      2007-07-24 11:21:29.000000000 -0700
-+++ kernel/posix-timers.c       2007-07-20 15:49:51.000000000 -0700
-@@ -409,13 +409,17 @@ static struct k_itimer * alloc_posix_tim
-  #define IT_ID_NOT_SET  0
-  static void release_posix_timer(struct k_itimer *tmr, int it_id_set)
-  {
-+       atomic_inc(&tmr->freecount);
-@@ -443,6 +447,7 @@ sys_timer_create(const clockid_t which_c
-         new_timer = alloc_posix_timer();
-         if (unlikely(!new_timer))
-                 return -EAGAIN;
-+       atomic_set(&new_timer->freecount, 0);
+I was mearly quoting the what I'd seen.  I am completely ambivalent on
+the whole process.  I had assumed when we updated the documentation to
+strongly indicate that this was a style guide not a robot with patch
+veto power that people would realise they could ignore those things they
+disagreed with and things would be good.	
 
---- include/linux/posix-timers.h.old  2007-07-24 11:32:36.000000000 -0700
-+++ include/linux/posix-timers.h      2007-07-20 15:15:44.000000000 -0700
-@@ -62,6 +62,7 @@ struct k_itimer {
-                         unsigned long expires;
-                 } mmtimer;
-         } it;
-+       atomic_t freecount;
-  };
+checkpatch is only intended to tell you what a Reviewer is likely to
+pick up and winge about and is intended to save _them_ time, their time
+generally being more limited that yours if for no other reason than you
+want your patch in, and they may have no vested interest.
 
-  struct k_clock {
+That said I want it to be as unannoying as we can and we will have
+loosened most of the checks you do not like in the next release.
 
+-apw
 
-Examination was done through a kgdb session when it caught the bug. 
-freecount always had the expected value, 1 during a delete operation, 
-and 0 otherwise.
-
->>> Could you try the patch below? Perhaps we have some wierd problem with
->>> ->sigq corruption.
->>
->> Tried, with apparent effect.
->
-> You mean, "null pointer dereference" in release_posix_timer() ? Or it was
-> BUG_ON(timr && !timr->sigq) in lock_timer() ?
-
-Sorry.  That should have been "without apparent effect".
-
-> I assume you didn't apply any other patches except Thomas's, yes?
-
-Alone, as well as with Thomas' patch. Neither way changed the behavior.
-
-Jeremy
