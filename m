@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765002AbXGXUjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbXGXUkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765002AbXGXUjs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 16:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932336AbXGXUiE
+	id S932390AbXGXUkV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 16:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764593AbXGXUiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 16:38:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59045 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932334AbXGXUh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 16:37:59 -0400
-Message-ID: <46A66323.7000000@garzik.org>
-Date: Tue, 24 Jul 2007 16:37:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [patch 2/3] netdev: i82596 Ethernet needs <asm/cacheflush.h>
-References: <20070720164043.523003359@mail.of.borg> <20070720164323.848002388@mail.of.borg>
-In-Reply-To: <20070720164323.848002388@mail.of.borg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Jul 2007 16:38:25 -0400
+Received: from smtp1.Stanford.EDU ([171.67.22.28]:51522 "EHLO
+	smtp1.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764273AbXGXUiW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 16:38:22 -0400
+Subject: Re: v2.6.22.1-rt5
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rui Nuno Capela <rncbc@rncbc.org>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070724203417.GA29343@elte.hu>
+References: <20070723210236.GA25104@elte.hu> <46A51D9E.8040104@rncbc.org>
+	 <20070724073932.GA18740@elte.hu>
+	 <1185305679.16400.17.camel@cmn3.stanford.edu>
+	 <1185305725.16400.19.camel@cmn3.stanford.edu>
+	 <20070724200546.GA24964@elte.hu>
+	 <1185308623.16400.28.camel@cmn3.stanford.edu>
+	 <20070724203417.GA29343@elte.hu>
+Content-Type: text/plain
+Date: Tue, 24 Jul 2007 13:38:20 -0700
+Message-Id: <1185309500.16400.29.camel@cmn3.stanford.edu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> netdev: i82596 Ethernet needs <asm/cacheflush.h> on m68k
+On Tue, 2007-07-24 at 22:34 +0200, Ingo Molnar wrote:
+> * Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
 > 
-> drivers/net/82596.c: In function 'init_rx_bufs':
-> drivers/net/82596.c:552: error: implicit declaration of function 'cache_clear'
-> drivers/net/82596.c: In function 'i596_start_xmit':
-> drivers/net/82596.c:1104: error: implicit declaration of function 'cache_push'
+> > > apparently you caught that 3 seconds window where the .23-rc1-rt1 
+> > > release script moved old patches into the older/ directory :-)
+> > 
+> > Yup, good timing... :-) Hard to do again...
+> > (BTW, will you keep 2.6.22.x patches going for a while?)
 > 
-> The driver still compiles on ia32 (CONFIG_APRICOT=y)
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> yeah, that's the plan: to keep .22-rt updated until .23 is released. 
+> (Thomas agrees with that approach too)
 
-applied
+Thank you thank you to all involved! That's very good news...
+-- Fernando
 
 
