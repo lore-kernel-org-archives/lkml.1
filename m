@@ -1,90 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761904AbXGXP66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbXGXQAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761904AbXGXP66 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 11:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761195AbXGXP6q
+	id S1761567AbXGXQAY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 12:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbXGXQAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 11:58:46 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4100 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761102AbXGXP6p (ORCPT
+	Tue, 24 Jul 2007 12:00:08 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:17120 "EHLO
+	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754270AbXGXQAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 11:58:45 -0400
-Message-ID: <46A621B3.6060902@shadowen.org>
-Date: Tue, 24 Jul 2007 16:58:43 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 24 Jul 2007 12:00:05 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Tue, 24 Jul 2007 09:59:52 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: bunk@stusta.de
+cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/ide/pci/cs5535.c: array overrun
+Message-ID: <20070724155952.GA13874@cosmic.amd.com>
+References: <06FDA0246543E443ABBB36B1FCD5CC0603CF3360@SAUSEXMB2.amd.com>
 MIME-Version: 1.0
-To: Mel Gorman <mel@skynet.ie>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] Do not trigger OOM-killer for high-order allocation failures
-References: <20070724153531.GA30585@skynet.ie>
-In-Reply-To: <20070724153531.GA30585@skynet.ie>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070724124524.GA6019@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 24 Jul 2007 15:59:44.0864 (UTC)
+ FILETIME=[A735EE00:01C7CE0B]
+X-WSS-ID: 6AB8FE7A0X82388140-14-01
+Content-Type: multipart/mixed;
+ boundary="PEIAKu/WMn1b1Hv9"
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-> out_of_memory() may be called when an allocation is failing and the direct
-> reclaim is not making any progress. This does not take into account the
-> requested order of the allocation. If the request if for an order larger
-> than PAGE_ALLOC_COSTLY_ORDER, it is reasonable to fail the allocation
-> because the kernel makes no guarantees about those allocations succeeding.
-> 
-> This false OOM situation can occur if a user is trying to grow the hugepage
-> pool in a script like;
-> 
-> #!/bin/bash
-> REQUIRED=$1
-> echo 1 > /proc/sys/vm/hugepages_treat_as_movable
-> echo $REQUIRED > /proc/sys/vm/nr_hugepages
-> ACTUAL=`cat /proc/sys/vm/nr_hugepages`
-> while [ $REQUIRED -ne $ACTUAL ]; do
-> 	echo Huge page pool at $ACTUAL growing to $REQUIRED
-> 	echo $REQUIRED > /proc/sys/vm/nr_hugepages
-> 	ACTUAL=`cat /proc/sys/vm/nr_hugepages`
-> 	sleep 1
-> done
-> 
-> This is a reasonable scenario when ZONE_MOVABLE is in use but triggers OOM
-> easily on 2.6.23-rc1. This patch will fail an allocation for an order above
-> PAGE_ALLOC_COSTLY_ORDER instead of killing processes and retrying.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-We have had this problem for a long time.  When allocating large pages
-we could find ourselves unable to allocate such a page nor reclaim one
-for ourselves.  At this point we will OOM with little hope of that
-actually changing the situation for the better.
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-As you say PAGE_ALLOC_COSTLY_ORDER pretty much defines the orders at
-which any sort of guarantee of success is provided.  It seems preferable
-to fail a allocations above this order/ than killing things to try and
-make it available.  As higher order users already have to handle failure
-to allocate they should be best equipped to continue.
+> The Coverity checker spotted the following array overrun in 
+> drivers/ide/pci/cs5535.c:
 
-Acked-by: Andy Whitcroft <apw@shadowen.org>
+<-- snip -->
 
-> ---
->  page_alloc.c |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 40954fb..da57173 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1350,6 +1350,10 @@ nofail_alloc:
->  		if (page)
->  			goto got_pg;
->  
-> +		/* The OOM killer will not help higher order allocs so fail */
-> +		if (order > PAGE_ALLOC_COSTLY_ORDER)
-> +			goto nopage;
-> +
->  		out_of_memory(zonelist, gfp_mask, order);
->  		goto restart;
->  	}
+>	if (speed >= XFER_UDMA_0 && speed <= XFER_UDMA_7)
+>		reg |= cs5535_udma_timings[speed - XFER_UDMA_0];
 
--apw
+Fix is attached.  Somebody got overzealous - the 5535 only supports
+up to UDMA4, which matches the array.
+
+Jordan
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/x-diff;
+ charset=us-ascii
+Content-Disposition: inline;
+ filename=5535-fix-overrun.patch
+Content-Transfer-Encoding: 7bit
+
+[PATCH] Fix an ovverun found in the 5535 IDE driver
+
+From: Jordan Crouse <jordan.crouse@amd.com>
+
+As found by the Coverity checker, and reported by Adrian Bunk, this
+fixes a overrun error in the 5535 IDE driver.  Somebody got a little
+excited with the if() statement - the 5535 only supports UDMA 0-4.
+
+Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+---
+
+ drivers/ide/pci/cs5535.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ide/pci/cs5535.c b/drivers/ide/pci/cs5535.c
+index ce44e38..9bd526d 100644
+--- a/drivers/ide/pci/cs5535.c
++++ b/drivers/ide/pci/cs5535.c
+@@ -116,7 +116,7 @@ static void cs5535_set_speed(ide_drive_t *drive, u8 speed)
+ 
+ 		reg &= 0x80000000UL;  /* Preserve the PIO format bit */
+ 
+-		if (speed >= XFER_UDMA_0 && speed <= XFER_UDMA_7)
++		if (speed >= XFER_UDMA_0 && speed <= XFER_UDMA_4)
+ 			reg |= cs5535_udma_timings[speed - XFER_UDMA_0];
+ 		else if (speed >= XFER_MW_DMA_0 && speed <= XFER_MW_DMA_2)
+ 			reg |= cs5535_mwdma_timings[speed - XFER_MW_DMA_0];
+
+--PEIAKu/WMn1b1Hv9--
+
+
