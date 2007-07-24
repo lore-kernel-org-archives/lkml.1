@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbXGXOuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764128AbXGXOxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbXGXOuy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 10:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763563AbXGXOu1
+	id S1764128AbXGXOxB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 10:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbXGXOww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 10:50:27 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:45465 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757463AbXGXOuZ (ORCPT
+	Tue, 24 Jul 2007 10:52:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49986 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbXGXOww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 10:50:25 -0400
-Date: Tue, 24 Jul 2007 10:50:22 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Huang, Ying" <ying.huang@intel.com>
-cc: david@lang.hm, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Milton Miller <miltonm@bga.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
-Subject: RE: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <9D7649D18729DE4BB2BD7B494F7FEDC236CF5C@pdsmsx415.ccr.corp.intel.com>
-Message-ID: <Pine.LNX.4.44L0.0707241046060.3568-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Jul 2007 10:52:52 -0400
+Subject: Re: [PATCH] LinuxPPS - definitive version
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070724142050.GD4074@enneenne.com>
+References: <20070717180550.GA24759@enneenne.com>
+	 <1185197716.14697.244.camel@pmac.infradead.org>
+	 <20070724080013.GA22171@gundam.enneenne.com>
+	 <1185284942.14697.319.camel@pmac.infradead.org>
+	 <20070724142050.GD4074@enneenne.com>
+Content-Type: text/plain
+Date: Tue, 24 Jul 2007 15:52:49 +0100
+Message-Id: <1185288769.14697.339.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007, Huang, Ying wrote:
-
-> >From: Alan Stern [mailto:stern@rowland.harvard.edu]
-> >It can't.  Indeed, in the absence of a freezer, user threads will need
-> >devices (more accurately, will submit I/O requests for devices) that
-> >have to be kept quiescent or low-power.  Drivers will need to delay
-> >those requests until the devices are returned to full operation.
-> >
-> >That's exactly what I've been saying all along: Drivers will need to
-> >be changed to delay I/O requests, if there is no freezer.
+On Tue, 2007-07-24 at 16:20 +0200, Rodolfo Giometti wrote:
+> On Tue, Jul 24, 2007 at 02:49:02PM +0100, David Woodhouse wrote:
 > 
-> If it is a too big work to implement "delaying I/O requests" for every
-> driver, is it possible to implement it as follow:
+> > Also 's/unknow /unknown /' (2 instances)
 > 
-> 1. It is triggered to suspend to RAM/DISK.
-> 2. Replace the driver related syscall entries (such as sys_read,
-> sys_write, sys_ioctl, etc) in sys_call_table with special wrapper
-> entries provided by "suspend to RAM/DISK" subsystem, which will delay
-> I/O requests if appropriate.
-> 3. When devices are quiesced, they are put into "low power" state and
-> system is put into suspend state; or the image is written to disk
-> (through snapshot/uswsusp or kexeced kernel).
-> 4. After resuming from RAM/DISK, devices are put into "normal" state and
-> the syscall entries replaced in step 2 are restored.
+> ?? I didn't find them:
+> 
+>    $ grep 'unknow ' Documentation/pps/pps.txt
 
-Ha!  I made exactly this same suggestion (URL lost in the mists of 
-time), except that I proposed changing the syscall entries for every 
-system call, not just the driver-related ones.
+Elsewhere in the patch.
 
-Nobody seemed to think it would work very well.
+> > In order for your handling of 'pps_source[source].info' to be safe with
+> > respect to pps_unregister_source(), you have to guarantee that
+> > pps_event() has finished -- and can't be in progress on another CPU --
+> > by the time your client's call to pps_unregister_source() completes. At
+> > first glance I think your existing clients have that right (you have
+> > del_timer_sync() before pps_unregister_source() in ktimer.c, for
+> > example). But you should make sure it's clearly documented for new
+> > clients.
+> 
+> This can be done only with locks, but it's not necessary since even if
+> a pps_unregister_source() runs while pps_event() executes on another
+> CPU the latter will write always on a valid area (even if it could be
+> a dummy one) and the data are not corrupted (note also that the data
+> will be, in any case, discarted since we are executing a
+> pps_unregister_source()).
 
-It leaves a few loose ends.  For example, suppose a user thread is 
-already in the middle of a system call and is about to start doing some 
-I/O (maybe it's waiting for a timer to expire).
+Read Documentation/memory-barriers.txt
 
-In the end, this doesn't seem to be very different from freezing all 
-user threads.
+There is a tiny but possibly non-zero chance that one CPU could be in
+pps_event() and might not yet have 'seen' the change to the .info field.
+Releasing the pps_mutex provides a write-barrier on the CPU which runs
+pps_unregister_source(), but there's no corresponding read-barrier on
+the CPU running pps_event(). You have to be careful about when
+pps_event() is run. It _MUST_ not touch the old info structure after
+pps_unregister_source() has completed.
 
-Alan Stern
+At the moment, I think it's OK because you won't be calling pps_event()
+at the wrong times. But you do need to make sure that requirement is
+documented. And I think you can remove the whole dummy_info thing
+because it's not necessary.
+
+-- 
+dwmw2
 
