@@ -1,96 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbXGXHQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933119AbXGXHQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932525AbXGXHQS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 03:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbXGXHQG
+	id S933119AbXGXHQz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 03:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759319AbXGXHQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 03:16:06 -0400
-Received: from kuber.nabble.com ([216.139.236.158]:36209 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757407AbXGXHQF (ORCPT
+	Tue, 24 Jul 2007 03:16:45 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:37439 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758234AbXGXHQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 03:16:05 -0400
-Message-ID: <11758042.post@talk.nabble.com>
-Date: Tue, 24 Jul 2007 00:16:03 -0700 (PDT)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: workqueue is not working?
-In-Reply-To: <11706967.post@talk.nabble.com>
+	Tue, 24 Jul 2007 03:16:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=SPs7mfquNA5uJtdepztZOPT35Wo3yIcl2pOfCyfuchAzhUCbQsp3F6TzAeo3uaXw6aIfpt3j/1wJ8YIAaAXtRzkg5oZcIxghbi1dDuhDwVSrbcf2RKssCR4jx0o0p40M7hsG6sxFqjxqdsUww3VZMRq+9BXxFTSy6y7pmrPwz2c=  ;
+X-YMail-OSG: tiEjY.AVM1n6HaFwFrEoqeqoBKZEJYXmfS7kKnIJIb62ljMa_B2ALCZb8D9bszPXhReLjlWzyA--
+Message-ID: <46A5A756.8040008@yahoo.com.au>
+Date: Tue, 24 Jul 2007 17:16:38 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/8] i386: bitops: Kill volatile-casting of memory addresses
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in> <20070723160548.22137.66072.sendpatchset@cselinux1.cse.iitk.ac.in> <alpine.LFD.0.999.0707231046140.3607@woody.linux-foundation.org> <46A57DCB.7050609@yahoo.com.au> <Pine.LNX.4.64.0707241115120.1433@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <Pine.LNX.4.64.0707241115120.1433@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Nabble-From: misbah_khan@engineer.com
-References: <4ae3c140511171505j33dc4c2ere731f1b3c55f9741@mail.gmail.com> <11706967.post@talk.nabble.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Satyam Sharma wrote:
+> On Tue, 24 Jul 2007, Nick Piggin wrote:
+> 
+> 
+>>Linus Torvalds wrote:
+>>
 
-hi ..
-There is a reply to you please find it and revert me back 
+>>>Of course, if we remove all "volatiles" in data in the kernel (with the
+>>>possible exception of "jiffies"), we can then remove them from function
+>>>declarations too, but it should be done in that order.
+>>
+>>Well, regardless, it still forces the function to treat the pointer
+>>target as volatile, won't it? It definitely prevents valid optimisations
+>>that would be useful for me in mm/page_alloc.c where page flags are
+>>being set up or torn down or checked with non-atomic bitops.
+> 
+> 
+> Yes, and yes. But I think what he meant there is that we'd need to
+> audit the kernel for all users of set_bit and friends and see if callers
+> actually pass in any _data_ that _is_ volatile. So we have to kill them
+> there first, and then in the function declarations here. I think I'll put
+> that on my long-term todo list, but see below.
 
--misbah
+Yeah that is probably what he meant.
 
-Misbah khan wrote:
-> 
-> I didnt got very clearly what you actually did. But i guess you did faced
-> some problem to work with work queue ( Bottom half of the handler ) I
-> suggest you with an example code so that you could try with it and hope
-> your doubt would get cleared.
-> 
-> /* work queue register and initialize */
-> static DECLARE_WORK(queue_name,(void *)func_name,func_arq_ptr);
-> 
-> eg :-
-> 
-> static DECLARE_WORK(my_queue,(void *)my_func,NULL);
-> 
-> /* In the Interrupt handler you need to call the bottom half of the
-> function */
-> 
-> schedule_work(&my_queue);
-> 
-> /* The function defination is like this */
-> void my_func(void)
-> {
->        printk(" Hello from kernal land \n");
-> }
-> 
-> I hope this example will make your code to work for you , for any
-> clarification please let me know 
-> 
-> thanks 
+
+>>Anyway by type safety, do you mean it will stop the compiler from
+>>warning if a pointer to a volatile is passed to the bitop?
 > 
 > 
-> 
-> 
-> Xin Zhao wrote:
->> 
->> I tried to schedule some work in an softirq handler. The way I did is
->> as follows:
->> 
->> I use create_workqueue to initialize a workqueue "vrpciod_workqueue",
->> 
->> in the softirq, I do INIT_WORK(work, func, data), and then
->> queue_work(vrpciod_workqueue, work);
->> 
->> I think func() should be called a bit later. However, I noticed that
->> func() is never called by the workqueue. I don't know why.
->> 
->> Can soneone give me some suggestions? Many thanks!
->> 
->> Xin
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
->> in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->> 
->> 
-> 
-> 
+> The compiler would start warning for all those cases (passing in
+> a pointer to volatile data, when the bitops have lost the volatile
+> casting from their function declarations), actually. Something like
+> "passing argument discards qualifiers from pointer type" ... but
+> considering I didn't see *any* of those warnings after these patches,
+> I'm confused as to what exactly Linus meant here ... and what exactly
+> do we need to do "kill the volatiles".
+
+Because even with an allyesconfig, your compile isn't testing the
+entire kernel. So given the relatively minor benefit of removing
+the volatiles, I suppose we shouldn't risk slipping a bug in. If
+you can make gcc throw an error in that case it would be a different
+story.
 
 -- 
-View this message in context: http://www.nabble.com/workqueue-is-not-working--tf573889.html#a11758042
-Sent from the linux-kernel mailing list archive at Nabble.com.
-
+SUSE Labs, Novell Inc.
