@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbXGYXxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbXGYX7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbXGYXxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 19:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbXGYXxL
+	id S1753345AbXGYX7K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 19:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXGYX65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 19:53:11 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:6327 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbXGYXxK (ORCPT
+	Wed, 25 Jul 2007 19:58:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57180 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750805AbXGYX64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 19:53:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=KGem5O38ksBJ+F2TEyiDpyMmMNyLp/YVS/JyCOOVwGwByj42rzqGj0uxJPkXUQSE2sR899YAaejEtqliUvv+vOBqgq6ncMY7w/vyoTuZJMtbq8FpwV4QiUqovReni2m6k41NWr8TyJhAUQp1OVgsU6hjL4pRCqunikOthtNV72Q=
-Message-ID: <46A7E199.4050906@googlemail.com>
-Date: Thu, 26 Jul 2007 01:49:45 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Al Viro <viro@ftp.linux.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc1: i386 section mismatch warnings
-References: <46A5536E.6010606@garzik.org> <20070724014512.GO21668@ftp.linux.org.uk> <46A5AEE0.1070202@googlemail.com> <20070725211550.GB29705@uranus.ravnborg.org>
-In-Reply-To: <20070725211550.GB29705@uranus.ravnborg.org>
-Content-Type: text/plain; charset=us-ascii
+	Wed, 25 Jul 2007 19:58:56 -0400
+Date: Wed, 25 Jul 2007 16:58:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: masouds@google.com (Masoud Asgharifard Sharbiani)
+Cc: Andi Kleen <ak@suse.de>, Kirill Korotaev <dev@openvz.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i386-show-unhandled-signals-v3
+Message-Id: <20070725165805.1bcd5a02.akpm@linux-foundation.org>
+In-Reply-To: <20070725234005.GA11292@google.com>
+References: <20070718154759.GA26425@google.com>
+	<46A76210.5020903@openvz.org>
+	<200707251657.44217.ak@suse.de>
+	<20070725140455.cbbc0dde.akpm@linux-foundation.org>
+	<4517d1380707251407v178068baxcc76a86f8337cc27@mail.gmail.com>
+	<20070725162528.7d485ff8.akpm@linux-foundation.org>
+	<20070725234005.GA11292@google.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Tue, Jul 24, 2007 at 09:48:48AM +0200, Gabriel C wrote:
->> Al Viro wrote:
->>> On Mon, Jul 23, 2007 at 09:18:38PM -0400, Jeff Garzik wrote:
->>>> make allmodconfig on i386:
->>>>
->>>> WARNING: vmlinux(.text+0xc0101183): Section mismatch: reference to 
->>> Ignore.  vmlinux.o ones are interesting; so are ones in modules.
->>> vmlinux ones are either duplicates of vmlinux.o or false positives.
->> allyesconfig has a lot Section mismatch warnings , are these false positive too ?
->>
->>
->> http://lkml.org/lkml/2007/7/22/312
+On Wed, 25 Jul 2007 16:40:06 -0700
+masouds@google.com (Masoud Asgharifard Sharbiani) wrote:
+
+> > Look: if there's a way in which an unprivileged user can trigger a printk
+> > we fix it, end of story.  I don't know why this even slightly
+> > controversial.
+> > 
 > 
-> Fixed in latest kbuild.git. See the following two patches.
->
+> Fair enough. Here it is:
 
-One left on vmlinux.o :) and some on vmlinux.
+My favourite words.
 
-...
+> ---------------
+> Hello,
+> This patch makes the i386 behave the same way that x86_64 does when a
+> segfault happens. A line gets printed to the kernel log so that tools
+> that need to check for failures can behave more uniformly between
+> different kernels. Like x86_64, it can be disabled by setting
+> debug.show_unhandled_signals sysctl variable to 0 (or by doing
+> echo 0 > /proc/sys/debug/show_unhandled_signals)
 
-WARNING: vmlinux.o(.text+0x183): Section mismatch: reference to .init.text.1:start_kernel (between 'is386' and 'check_x87')
+Do we really need the ratelimiting?  If the admin turns this on then he's
+presumably prepared for the consequences.
 
-...
+I guess "yes", as people (even distros) are likely to turn this on and
+forget about it.
 
-This is on current git head with the 2 patches and allyesconfig. 
-
- 
-> 	Sam
-> 
-
-
-Gabriel
+The patch is larger than I expected, ho hum.
