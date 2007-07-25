@@ -1,58 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763862AbXGYVnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbXGYVpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763862AbXGYVnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 17:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbXGYVnG
+	id S1763664AbXGYVpu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 17:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbXGYVpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 17:43:06 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:51360 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753763AbXGYVnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 17:43:05 -0400
-Message-id: <31400312111566521886@wsc.cz>
-Subject: [PATCH 1/1] Char: moxa, fix and optimise empty timer
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Wed, 25 Jul 2007 23:43:29 +0200 (CEST)
+	Wed, 25 Jul 2007 17:45:43 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44397 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752727AbXGYVpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 17:45:42 -0400
+Date: Wed, 25 Jul 2007 23:45:15 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.53
+Message-ID: <20070725214515.GJ3572@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-moxa, fix and optimise empty timer
+Security fixes since 2.6.16.52:
+- CVE-2007-2876: {ip,nf}_conntrack_sctp: fix remotely triggerable NULL dereference
 
-don't wait and delete empty timer in empty timer function. Also fire next
-empty timer at rounded jiffies to save power.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
 
----
-commit da52793b6347e8b6b048526ce2422e29b20bb335
-tree ad0bee78e45beef89dc740f81e0606d782296542
-parent 3a69b463dcad1ff142f46e8fb74e7dc5a092eb60
-author Jiri Slaby <jirislaby@gmail.com> Wed, 25 Jul 2007 23:42:49 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Wed, 25 Jul 2007 23:42:49 +0200
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
- drivers/char/moxa.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index ed76f0a..5000b3b 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -1040,14 +1040,14 @@ static void check_xmit_empty(unsigned long data)
- 	struct moxa_port *ch;
- 
- 	ch = (struct moxa_port *) data;
--	del_timer_sync(&moxa_ports[ch->port].emptyTimer);
- 	if (ch->tty && (ch->statusflags & EMPTYWAIT)) {
- 		if (MoxaPortTxQueue(ch->port) == 0) {
- 			ch->statusflags &= ~EMPTYWAIT;
- 			tty_wakeup(ch->tty);
- 			return;
- 		}
--		mod_timer(&moxa_ports[ch->port].emptyTimer, jiffies + HZ);
-+		mod_timer(&moxa_ports[ch->port].emptyTimer,
-+				round_jiffies(jiffies + HZ));
- 	} else
- 		ch->statusflags &= ~EMPTYWAIT;
- }
+
+Changes since 2.6.16.52:
+
+Adrian Bunk (2):
+      Linux 2.6.16.53-rc1
+      Linux 2.6.16.53
+
+Al Viro (2):
+      coda: wrong order of arguments of ->readdir()
+      ieee1394: forgotten dereference...
+
+Albert Lee (1):
+      ide: clear bmdma status in ide_intr() for ICHx controllers (revised #4)
+
+Andrew Morton (1):
+      ntfs_init_locked_inode(): fix array indexing
+
+Dave Jones (1):
+      [IPV4]: Correct rp_filter help text.
+
+David S. Miller (1):
+      [NET]: Fix BMSR_100{HALF,FULL}2 defines in linux/mii.h
+
+Dmitry Butskoy (1):
+      [IPV6]: MSG_ERRQUEUE messages do not pass to connected raw sockets
+
+Ingo Molnar (1):
+      8139too.c: fix netpoll deadlock
+
+Jan Engelhardt (1):
+      [SPARC]: Linux always started with 9600 8N1
+
+Johannes Berg (1):
+      [NET] skbuff: remove export of static symbol
+
+Mark Glines (1):
+      [TCP]: Use default 32768-61000 outgoing port range in all cases.
+
+Patrick McHardy (2):
+      [NETFILTER]: {ip,nf}_conntrack_sctp: fix remotely triggerable NULL ptr dereference (CVE-2007-2876)
+      [NET]: Fix gen_estimator timer removal race
+
+Vasily Averin (1):
+      [NET]: "wrong timeout value" in sk_wait_data() v2
+
+Vlad Yasevich (1):
+      SCTP: Add scope_id validation for link-local binds
+
+Yasuyuki Kozakai (1):
+      [NETFILTER]: nf_conntrack: don't track locally generated special ICMP error
+
+
+ Makefile                                     |    2 
+ drivers/ide/ide-cd.c                         |    8 ++
+ drivers/ide/ide-io.c                         |   11 +++
+ drivers/ide/ide.c                            |    1 
+ drivers/ide/pci/piix.c                       |   63 ++++++++++++++-----
+ drivers/ieee1394/nodemgr.c                   |    2 
+ drivers/net/8139too.c                        |    5 -
+ drivers/serial/suncore.c                     |    6 -
+ fs/coda/dir.c                                |    2 
+ fs/ntfs/inode.c                              |    2 
+ include/linux/ide.h                          |    1 
+ include/linux/mii.h                          |    4 -
+ net/core/gen_estimator.c                     |    3 
+ net/core/skbuff.c                            |    1 
+ net/core/sock.c                              |   14 +++-
+ net/ipv4/Kconfig                             |    6 -
+ net/ipv4/inet_connection_sock.c              |    4 -
+ net/ipv4/netfilter/ip_conntrack_proto_sctp.c |    3 
+ net/ipv4/netfilter/nf_conntrack_proto_icmp.c |   22 +-----
+ net/ipv4/tcp.c                               |    3 
+ net/ipv6/icmp.c                              |    2 
+ net/netfilter/nf_conntrack_proto_sctp.c      |    3 
+ net/sctp/ipv6.c                              |    4 +
+ 23 files changed, 114 insertions(+), 58 deletions(-)
+
