@@ -1,239 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760459AbXGYLz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbXGYLzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760459AbXGYLz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 07:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbXGYLzQ
+	id S1762151AbXGYLzm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 07:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbXGYLzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 07:55:16 -0400
-Received: from il.qumranet.com ([82.166.9.18]:56502 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbXGYLzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 07:55:14 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: KVM fixes for 2.6.23-rc2
-Date: Wed, 25 Jul 2007 14:55:23 +0300
-Message-Id: <11853645231572-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.2.4
+	Wed, 25 Jul 2007 07:55:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:2881 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757245AbXGYLzV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 07:55:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GLyNEhDQHmhrmpBN6Pi6fGvuQd/lZB13PLxrASzIei+adzmZllDOlqSe+QfJkblExbMmOjj62wFVKuUFmHmo7bdc7rAhEsvta7iY8H839az8yAUk0oSCORnVLQNAAHvcQj32Mnq43FF0Qfw5X50PbyOeMJaR1LfgGWbaREboIAY=
+Message-ID: <288dbef70707250455p656b09cft20ebc7a013e8a76f@mail.gmail.com>
+Date: Wed, 25 Jul 2007 19:55:21 +0800
+From: "Shaohua Li" <shaoh.li@gmail.com>
+To: "Avi Kivity" <avi@qumranet.com>
+Subject: Re: [kvm-devel] [RFC 7/8]KVM: swap out guest pages
+Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <46A612C8.6090804@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1185173505.2645.71.camel@sli10-conroe.sh.intel.com>
+	 <46A612C8.6090804@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+2007/7/24, Avi Kivity <avi@qumranet.com>:
+> Shaohua Li wrote:
+> > Make KVM guest pages be allocated dynamically and able to be swaped out.
+> >
+> > One issue: all inodes returned from anon_inode_getfd are shared,
+> > if one module changes field of the inode, other moduels might break.
+> > Should we introduce a new API to not share inode?
+> >
+> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > ---
+> >
+> > +static int kvm_set_page_dirty(struct page *page)
+> > +{
+> > +     if (!PageDirty(page))
+> > +             SetPageDirty(page);
+> > +     return 0;
+> > +}
+> > +
+> > +static int kvm_writepage(struct page *page, struct writeback_control *wbc)
+> > +{
+> > +     struct address_space *mapping = page->mapping;
+> > +     struct kvm *kvm = address_space_to_kvm(mapping);
+> > +     int ret = 0;
+> > +
+> > +     /*
+> > +      * gfn_to_page is called with kvm->lock hold, which might invoke page
+> > +      * reclaim. So the .writepage should check if we already hold the lock
+> > +      * to avoid deadlock.
+> > +      */
+> > +     if (!mutex_trylock(&kvm->lock)) {
+> > +             set_page_dirty(page);
+> > +             return AOP_WRITEPAGE_ACTIVATE;
+> > +     }
+> > +
+> > +     /*
+> > +      * We just zap vcpu 0's page table. For a SMP guest, we should zap all
+> > +      * vcpus'. It's better shadow page table is per-vm.
+> > +      */
+> > +     if (PagePrivate(page))
+> > +             kvm_mmu_zap_pagetbl(&kvm->vcpus[0], page->index);
+> > +
+> > +     ret = kvm_move_to_swap(page);
+> > +     if (ret) {
+> > +             set_page_dirty(page);
+> > +             goto out;
+> > +     }
+> > +     unlock_page(page);
+> > +out:
+> > +     mutex_unlock(&kvm->lock);
+> > +
+> > +     return ret;
+> > +}
+> > +
+> >
+>
+> Perhaps we can use this as a base for userspace-allocated memory.  We
+> still have a kvm inode and address_space; but instead of calling
+> kvm_move_to_swap(), we use the memory slot and virtual address offset to
+> locate the underlying address_space and call that ->writepage().
+>
+> So:
+>   kvm_writepage() removes any shadow page table references
+>   the underlying ->writepage() does the work of paging to the underlying
+> store
+So write to a file, right? Yes, it can avoid use move to swap, and
+should be feasible.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
+> We need to figure out how to avoid the underlying ->writepage() from not
+> within the context of kvm_writepage().  Maybe have a page flag
+> signifying layered address spaces?
+>
+> [it probably violates fifteen different mm assumptions; I need to study
+> that code]
+>
+> An alternative would be to have kvm set a page flag signifying it has
+> references to the page when it installs it in a shadow pte.  The mm
+> would notice the flag and call kvm to clear it below proceeding with
+> normal ->writepage().
+This page_private flag's job, I think.
 
-to fix various issues in kvm, including a silent, moderately rare guest
-data corruption, a performance regression on forky workloads, a problem
-with nx capable guests on non-nx-enabled hosts, and a race with cpu
-hotplug.
-
-
-Aurelien Jarno (1):
-      KVM: disable writeback for 0x0f 0x01 instructions.
-
-Avi Kivity (3):
-      KVM: Correctly handle writes crossing a page boundary
-      Revert "KVM: Avoid useless memory write when possible"
-      KVM: Fix removal of nx capability from guest cpuid
-
-Rusty Russell (1):
-      KVM: Fix unlikely kvm_create vs decache_vcpus_on_cpu race
-
- drivers/kvm/kvm_main.c    |   44 +++++++++++++++++++++++++++++++-------------
- drivers/kvm/x86_emulate.c |    2 ++
- 2 files changed, 33 insertions(+), 13 deletions(-)
-
-commit b0fcd903e6f3f47189baddf3fe085bdf78c9644c
-Author: Avi Kivity <avi@qumranet.com>
-Date:   Sun Jul 22 18:48:54 2007 +0300
-
-    KVM: Correctly handle writes crossing a page boundary
-    
-    Writes that are contiguous in virtual memory may not be contiguous in
-    physical memory; so split writes that straddle a page boundary.
-    
-    Thanks to Aurelien for reporting the bug, patient testing, and a fix
-    to this very patch.
-    
-    Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
-    Signed-off-by: Avi Kivity <avi@qumranet.com>
-
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index bcbe683..a0a3fdd 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1078,10 +1078,10 @@ static int emulator_write_phys(struct kvm_vcpu *vcpu, gpa_t gpa,
- 	return 1;
- }
- 
--static int emulator_write_emulated(unsigned long addr,
--				   const void *val,
--				   unsigned int bytes,
--				   struct x86_emulate_ctxt *ctxt)
-+static int emulator_write_emulated_onepage(unsigned long addr,
-+					   const void *val,
-+					   unsigned int bytes,
-+					   struct x86_emulate_ctxt *ctxt)
- {
- 	struct kvm_vcpu      *vcpu = ctxt->vcpu;
- 	struct kvm_io_device *mmio_dev;
-@@ -1113,6 +1113,26 @@ static int emulator_write_emulated(unsigned long addr,
- 	return X86EMUL_CONTINUE;
- }
- 
-+static int emulator_write_emulated(unsigned long addr,
-+				   const void *val,
-+				   unsigned int bytes,
-+				   struct x86_emulate_ctxt *ctxt)
-+{
-+	/* Crossing a page boundary? */
-+	if (((addr + bytes - 1) ^ addr) & PAGE_MASK) {
-+		int rc, now;
-+
-+		now = -addr & ~PAGE_MASK;
-+		rc = emulator_write_emulated_onepage(addr, val, now, ctxt);
-+		if (rc != X86EMUL_CONTINUE)
-+			return rc;
-+		addr += now;
-+		val += now;
-+		bytes -= now;
-+	}
-+	return emulator_write_emulated_onepage(addr, val, bytes, ctxt);
-+}
-+
- static int emulator_cmpxchg_emulated(unsigned long addr,
- 				     const void *old,
- 				     const void *new,
-
-
-commit 5e58cfe41c7e5902c32bb7f62993d43fb4c48ccf
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Jul 23 17:08:21 2007 +1000
-
-    KVM: Fix unlikely kvm_create vs decache_vcpus_on_cpu race
-    
-    We add the kvm to the vm_list before initializing the vcpu mutexes,
-    which can be mutex_trylock()'ed by decache_vcpus_on_cpu().
-    
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-    Signed-off-by: Avi Kivity <avi@qumranet.com>
-
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index a0a3fdd..46efbe7 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -297,9 +297,6 @@ static struct kvm *kvm_create_vm(void)
- 	kvm_io_bus_init(&kvm->pio_bus);
- 	spin_lock_init(&kvm->lock);
- 	INIT_LIST_HEAD(&kvm->active_mmu_pages);
--	spin_lock(&kvm_lock);
--	list_add(&kvm->vm_list, &vm_list);
--	spin_unlock(&kvm_lock);
- 	kvm_io_bus_init(&kvm->mmio_bus);
- 	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
- 		struct kvm_vcpu *vcpu = &kvm->vcpus[i];
-@@ -309,6 +306,9 @@ static struct kvm *kvm_create_vm(void)
- 		vcpu->kvm = kvm;
- 		vcpu->mmu.root_hpa = INVALID_PAGE;
- 	}
-+	spin_lock(&kvm_lock);
-+	list_add(&kvm->vm_list, &vm_list);
-+	spin_unlock(&kvm_lock);
- 	return kvm;
- }
- 
-
-
-commit 7cfa4b0a43286b1da3afa4f5f99d52e65a8f30fc
-Author: Avi Kivity <avi@qumranet.com>
-Date:   Mon Jul 23 18:33:14 2007 +0300
-
-    Revert "KVM: Avoid useless memory write when possible"
-    
-    This reverts commit a3c870bdce4d34332ebdba7eb9969592c4c6b243.  While it
-    does save useless updates, it (probably) defeats the fork detector, causing
-    a massive performance loss.
-    
-    Signed-off-by: Avi Kivity <avi@qumranet.com>
-
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 46efbe7..a8d8db8 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1070,10 +1070,8 @@ static int emulator_write_phys(struct kvm_vcpu *vcpu, gpa_t gpa,
- 		return 0;
- 	mark_page_dirty(vcpu->kvm, gpa >> PAGE_SHIFT);
- 	virt = kmap_atomic(page, KM_USER0);
--	if (memcmp(virt + offset_in_page(gpa), val, bytes)) {
--		kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
--		memcpy(virt + offset_in_page(gpa), val, bytes);
--	}
-+	kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
-+	memcpy(virt + offset_in_page(gpa), val, bytes);
- 	kunmap_atomic(virt, KM_USER0);
- 	return 1;
- }
-
-
-commit 4c981b43d7ec18818754bf85b829865abd0ce340
-Author: Avi Kivity <avi@qumranet.com>
-Date:   Wed Jul 25 09:22:12 2007 +0300
-
-    KVM: Fix removal of nx capability from guest cpuid
-    
-    Testing the wrong bit caused kvm not to disable nx on the guest when it is
-    disabled on the host (an mmu optimization relies on the nx bits being the
-    same in the guest and host).
-    
-    This allows Windows to boot when nx is disabled on te host (e.g. when
-    host pae is disabled).
-    
-    Signed-off-by: Avi Kivity <avi@qumranet.com>
-
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index a8d8db8..9685609 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -2432,9 +2432,9 @@ static void cpuid_fix_nx_cap(struct kvm_vcpu *vcpu)
- 			break;
- 		}
- 	}
--	if (entry && (entry->edx & EFER_NX) && !(efer & EFER_NX)) {
-+	if (entry && (entry->edx & (1 << 20)) && !(efer & EFER_NX)) {
- 		entry->edx &= ~(1 << 20);
--		printk(KERN_INFO ": guest NX capability removed\n");
-+		printk(KERN_INFO "kvm: guest NX capability removed\n");
- 	}
- }
- 
-
-
-commit d37c85571904a622cbabc7a2e04b8c919de75ac0
-Author: Aurelien Jarno <aurelien@aurel32.net>
-Date:   Wed Jul 25 10:19:54 2007 +0200
-
-    KVM: disable writeback for 0x0f 0x01 instructions.
-    
-    0x0f 0x01 instructions (ie lgdt, lidt, smsw, lmsw and invlpg) does
-    not use writeback. This patch set no_wb=1 when emulating those
-    instructions.
-    
-    This fixes a regression booting the FreeBSD kernel on AMD.
-    
-    Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
-    Signed-off-by: Avi Kivity <avi@qumranet.com>
-
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 1b800fc..1f979cb 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -1178,6 +1178,8 @@ pop_instruction:
- twobyte_insn:
- 	switch (b) {
- 	case 0x01: /* lgdt, lidt, lmsw */
-+		/* Disable writeback. */
-+		no_wb = 1;
- 		switch (modrm_reg) {
- 			u16 size;
- 			unsigned long address;
+Thanks,
+Shaohua
