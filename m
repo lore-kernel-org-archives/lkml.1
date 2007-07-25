@@ -1,139 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933263AbXGYPer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933114AbXGYPhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933263AbXGYPer (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 11:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933032AbXGYPee
+	id S933114AbXGYPhd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 11:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbXGYPhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 11:34:34 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:57177 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753348AbXGYPea (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 11:34:30 -0400
-Date: Wed, 25 Jul 2007 08:39:01 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: Regression in serial console on ia64 after 2.6.22
-In-reply-to: <20070725071718.GB18068@verge.net.au>
-To: Horms <horms@verge.net.au>
-Cc: linux-ia64 <linux-ia64@vger.kernel.org>, Tony Luck <tony.luck@intel.com>,
-       Andi Kleen <ak@suse.de>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Russell King <rmk@arm.linux.org.uk>, Gerd Hoffmann <kraxel@suse.de>,
+	Wed, 25 Jul 2007 11:37:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40712 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753348AbXGYPhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 11:37:23 -0400
+Message-ID: <46A76E10.7090004@redhat.com>
+Date: Wed, 25 Jul 2007 11:36:48 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Eric St-Laurent <ericstl34@sympatico.ca>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Fengguang Wu <fengguang.wu@gmail.com>, Dave Jones <davej@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <46A76E95.90903@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <20070719074147.GA23879@verge.net.au> <46A0191E.3000100@sun.com>
- <200707241657.33095.yinghai.lu@sun.com> <20070725071718.GB18068@verge.net.au>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+       Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>
+Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
+References: <20070721210005.000228000@chello.nl>	 <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com>	 <20070722081010.GA6317@mail.ustc.edu.cn>	 <1185093236.6344.87.camel@localhost.localdomain>	 <46A46E4B.7050007@yahoo.com.au> <1185338106.7105.44.camel@perkele>	 <46A6DD7F.1050505@yahoo.com.au> <1185344325.7105.91.camel@perkele>	 <46A6F732.3080905@yahoo.com.au> <1185349711.7105.154.camel@perkele>
+In-Reply-To: <1185349711.7105.154.camel@perkele>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Horms wrote:
-> On Tue, Jul 24, 2007 at 04:57:32PM -0700, Yinghai Lu wrote:
->> IA64
->>
->> Subject         : Regression in serial console on ia64 after 2.6.22
->> References      : http://marc.info/?l=linux-ia64&m=118483645914066&w=2
->> Last known good : ?
->> Submitter       : Horms <horms@verge.net.au>
->> Caused-By       : Yinghai Lu <Yinghai.Lu@Sun.COM>
->>                   commit 18a8bd949d6adb311ea816125ff65050df1f3f6e
->> Handled-By      : ?
->> Status          : unknown
->>
->>
->> please test this patch.
->>
->> YH
+Eric St-Laurent wrote:
+> On Wed, 2007-25-07 at 17:09 +1000, Nick Piggin wrote:
 > 
-> I just posted a similar patch (sorry, I didn't see your post until
-> afterwards). I guess that we both have the same ideas :)
+>> A new list could be a possibility. One problem with adding lists is just
+>> trying to work out how to balance scanning rates between them, another
+>> problem is CPU overhead of moving pages from one to another... 
 > 
->>
->> [PATCH] ia64: move machvec_init before parse_early_param
->>
->> So ia64_mv is initialized before early console
->>
->> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
->>
->> diff --git a/arch/ia64/kernel/machvec.c b/arch/ia64/kernel/machvec.c
->> index 13df337..a94feaa 100644
->> --- a/arch/ia64/kernel/machvec.c
->> +++ b/arch/ia64/kernel/machvec.c
->> @@ -14,12 +14,6 @@ struct ia64_machine_vector ia64_mv;
->>  EXPORT_SYMBOL(ia64_mv);
->>  
->>  static __initdata const char *mvec_name;
->> -static __init int setup_mvec(char *s)
->> -{
->> -	mvec_name = s;
->> -	return 0;
->> -}
->> -early_param("machvec", setup_mvec);
->>  
->>  static struct ia64_machine_vector * __init
->>  lookup_machvec (const char *name)
->> @@ -42,6 +36,10 @@ machvec_init (const char *name)
->>  
->>  	if (!name)
->>  		name = mvec_name ? mvec_name : acpi_get_sysname();
+> Disk sizes seem to increase more rapidly that the ability to read them
+> quickly.  Fortunately the processing power increase greatly too.
 > 
-> I think that mvec_name can be disposed of all together as
-> its only used by the line above and setup_mvec(), which in
-> turn is only used by early_param. I got rid of mvec_name in
-> my incantation of this patch, and it seemed to work quite well.
+> It may be a good idea to spend more CPU cycles to better decide how the
+> VM should juggle with this data. We've got to keep those multi-cores cpu
+> busy.
 
-with cmd_line or NULL, mvec_nanme could get assigned.
-next machvec_init(NULL) could reuse that
+Agreed, up to a level.  You cannot let hundreds of gigabytes
+worth of memory sit around with (stale) accessed bits set,
+and then have to scan millions of pages all at once when free
+memory finally runs low.
 
-> 
->> +
->> +	if (!mvec_name)
->> +		mvec_name = name;
->> +
->>  	mv = lookup_machvec(name);
->>  	if (!mv)
->>  		panic("generic kernel failed to find machine vector for"
->> diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
->> index cf06fe7..b06d7b7 100644
->> --- a/arch/ia64/kernel/setup.c
->> +++ b/arch/ia64/kernel/setup.c
->> @@ -481,6 +481,9 @@ int __init reserve_elfcorehdr(unsigned long *start, unsigned long *end)
->>  void __init
->>  setup_arch (char **cmdline_p)
->>  {
->> +#ifdef CONFIG_IA64_GENERIC
->> +	char *mvstr;
->> +#endif
->>  	unw_init();
->>  
->>  	ia64_patch_vtop((u64) __start___vtop_patchlist, (u64) __end___vtop_patchlist);
->> @@ -491,12 +494,15 @@ setup_arch (char **cmdline_p)
->>  	efi_init();
->>  	io_port_init();
->>  
->> -	parse_early_param();
->> -
->>  #ifdef CONFIG_IA64_GENERIC
->> -	machvec_init(NULL);
->> +	mvstr = strstr(*cmd_line_p, "machvec=")
->> +	if (mvstr)
->> +		mvstr = strchr(mvstr, '=') + 1;
->> +	machvec_init(mvstr);
->>  #endif
-> 
-> Do you need to copy and truncate mvstr on ' ' in the case
-> that machvec= isn't the last argument on the command line?
-> I did this in my patch, though I didn't test to see if
-> it was uneccessary.
+The amount of CPU time spent in the pageout code at any point
+in time needs to be limited.
 
-or may need to update lookup_machvec...
-from strcmp to strstr...
+> If we don't see much work on this area it's surely because it's really
+> not a problem anymore for most workloads. Database have their own cache
+> management and disk scheduling, file servers just add more ram or
+> processors, etc.
 
-just want to the code to be less changes as possible.
+It is a really big problem for some (fairly common) workloads,
+though.
 
-YH
+One of the main reasons there has been little activity in this
+area upstream is that nobody (at least, nobody I talked to)
+had real fixes in mind for the problem.
+
+All we had were workarounds for RHEL, not the kind of real
+fixes that are interesting for upstream.
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
