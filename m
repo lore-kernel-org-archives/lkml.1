@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763426AbXGYHTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764325AbXGYHUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763426AbXGYHTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXGYHTe
+	id S1764325AbXGYHUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764053AbXGYHTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:19:34 -0400
-Received: from il.qumranet.com ([82.166.9.18]:60049 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752799AbXGYHTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:19:33 -0400
-Message-ID: <46A6F983.3040005@qumranet.com>
-Date: Wed, 25 Jul 2007 10:19:31 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Shaohua Li <shaoh.li@gmail.com>
-CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [kvm-devel] [RFC 4/8]KVM: move gfn_to_page out of kmap/unmap
- pars
-References: <1185173499.2645.68.camel@sli10-conroe.sh.intel.com>	 <46A5C884.8060200@qumranet.com> <288dbef70707240618l71bd8678n28a39e663dab3c1c@mail.gmail.com>
-In-Reply-To: <288dbef70707240618l71bd8678n28a39e663dab3c1c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Jul 2007 03:19:49 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:36194 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761894AbXGYHTs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:19:48 -0400
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+From: Eric St-Laurent <ericstl34@sympatico.ca>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Matthew Hawkins <darthmdh@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
+       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org,
+       Paul Jackson <pj@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Rene Herman <rene.herman@gmail.com>
+In-Reply-To: <1185346076.6528.12.camel@Homer.simpson.net>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	 <46A57068.3070701@yahoo.com.au>
+	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	 <46A58B49.3050508@yahoo.com.au>
+	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
+	 <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au>
+	 <b21f8390707242319gb17e4c9h274635b4c7fc1801@mail.gmail.com>
+	 <1185346076.6528.12.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Wed, 25 Jul 2007 03:19:44 -0400
+Message-Id: <1185347984.7105.134.camel@perkele>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 25 Jul 2007 10:19:32 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaohua Li wrote:
-> 2007/7/24, Avi Kivity <avi@qumranet.com>:
->> Shaohua Li wrote:
->> > gfn_to_page might sleep with swap support. Move it out of the kmap
->> calls.
->> >
->> >
->>
->> I'd like to apply this to the kvm.git master branch so we don't have to
->> maintain it.  Was this tested on a highmem machine?  If not, I can do
->> it.
-> My test system has 1G memory, so it should work. I only tested 32bit
-> system, better check a x64 build.
->
+On Wed, 2007-25-07 at 08:47 +0200, Mike Galbraith wrote:
 
-This is now in, after minor merge fixups.
+> Heh.  Here we have a VM developer expressing his interest in the problem
+> space, and you offer him a steaming jug of STFU because he doesn't say
+> what you want to hear.  I wonder how many killfiles you just entered.
+> 
+
+Agreed.
+
+(a bit OT)
+
+People should understand that it's not (I think) about a desktop
+workload vs enterprise workloads war.
+
+I see it mostly as a progression versus regressions trade-off. And
+adding potentially useless or unmaintained code is a regression from the
+maintainers POV.
+
+The best way to justify a patch and have it integrated is to have a
+scientific testing method with repeatable numbers.
+
+Con has done so for his patch, his benchmark demonstrated good
+improvements.
+
+But I feel some of his supporters have indirectly harmed his cause by
+their comments.  Also, the fact that Con recently stopped maintaining
+his work out of frustration also don't help having his patch merged. 
+
+Again I'm not personally pushing this patch, I don't need it.
+
+Con has worked for many years on two area that still cause problems for
+desktop users: scheduler interactivity and pagecache trashing.  Now that
+the scheduler has been fixed, let's have the VM fixed too.
+
+Sorry for the slightly OT post, and please don't start a flame war...
 
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+- Eric
+
 
