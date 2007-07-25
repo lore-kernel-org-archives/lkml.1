@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932863AbXGYBhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXGYBh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932863AbXGYBhA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 21:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759793AbXGYBgw
+	id S932418AbXGYBh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 21:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932362AbXGYBg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 21:36:52 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:39645 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758897AbXGYBgv (ORCPT
+	Tue, 24 Jul 2007 21:36:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45785 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932323AbXGYBgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 21:36:51 -0400
-Date: Tue, 24 Jul 2007 21:36:21 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: v2.6.22.1-rt5
-In-reply-to: <20070724191027.GA13268@elte.hu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Message-id: <200707242136.21457.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070724120436.GA14466@elte.hu>
- <200707241156.03149.gene.heskett@gmail.com> <20070724191027.GA13268@elte.hu>
-User-Agent: KMail/1.9.7
+	Tue, 24 Jul 2007 21:36:55 -0400
+Date: Tue, 24 Jul 2007 18:36:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] Fix arch/i386/kernel/nmi.c -
+ 'unknown_nmi_panic_callback' declared 'static' but never defined warning
+Message-Id: <20070724183636.63844865.akpm@linux-foundation.org>
+In-Reply-To: <46A3AE06.9030706@googlemail.com>
+References: <46A3AE06.9030706@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 July 2007, Ingo Molnar wrote:
->* Gene Heskett <gene.heskett@gmail.com> wrote:
->> The above stanza still needs some tlc.  I built a 2.6.22.1-rt6 (rt5
->> wouldn't build) using the same old config that a make oldconfig didn't
->> fuss about, but the reboot never completed, see the attached, heavily
->> smunched camera shot of the panic.
->>
->> Kinda looks like hda/sda confusion, with rt3 (this boot), its hda*,
->> what is it now?  fstab or kernel config error?
->
->yeah, as long as your filesystems are created with a proper label, all
->that you need to do is to change all 'hda' to 'sda' in the new kernel's
->/etc/grub.conf entry. (or enable the old IDE code in the .config, under
->CONFIG_IDE)
->
->	Ingo
+On Sun, 22 Jul 2007 21:20:38 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
 
-Changing the "root (hd0,0)" to (sd0,0) failed.  Grub can't parse the (sd0,0).
+> I get this warning when CONFIG_SYSCTL is not set :
+> 
+> ...
+> 
+> arch/i386/kernel/nmi.c:52: warning: 'unknown_nmi_panic_callback' declared 'static' but never defined
+> 
+> ...
+> 
+> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+> 
+> ---
+> 
+> diff --git a/arch/i386/kernel/nmi.c b/arch/i386/kernel/nmi.c
+> index 03b7f55..cf11121 100644
+> --- a/arch/i386/kernel/nmi.c
+> +++ b/arch/i386/kernel/nmi.c
+> @@ -49,8 +49,9 @@ static unsigned int nmi_hz = HZ;
+>  static DEFINE_PER_CPU(short, wd_enabled);
+>  
+>  /* local prototypes */
+> +#ifdef CONFIG_SYSCTL
+>  static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu);
+> -
+> +#endif
+>  static int endflag __initdata = 0;
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-WHERE CAN THE MATTER BE
-	Oh, dear, where can the matter be
-	When it's converted to energy?
-	There is a slight loss of parity.
-	Johnny's so long at the fair.
+guys, please take a closer look at the code which you're changing?  We can
+obviously move do_nmi_callback() down to above
+__trigger_all_cpu_backtrace() and then do away with this declaration
+altogether.
