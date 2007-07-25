@@ -1,330 +1,357 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbXGYMno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbXGYMn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762457AbXGYMno (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 08:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759752AbXGYMnA
+	id S1760930AbXGYMn6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 08:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760703AbXGYMnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 08:43:00 -0400
-Received: from il.qumranet.com ([82.166.9.18]:39206 "EHLO il.qumranet.com"
+	Wed, 25 Jul 2007 08:43:01 -0400
+Received: from il.qumranet.com ([82.166.9.18]:39209 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756567AbXGYMm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757095AbXGYMm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Jul 2007 08:42:58 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        shaohua.li@intel.com, rusty@rustcorp.com.au, Andi Kleen <ak@suse.de>,
        Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 2/3] KVM: Use the scheduler preemption hooks to make kvm preemptible
-Date: Wed, 25 Jul 2007 15:43:06 +0300
-Message-Id: <1185367387391-git-send-email-avi@qumranet.com>
+Subject: [PATCH 3/3] KVM: Convert vm lock to a mutex
+Date: Wed, 25 Jul 2007 15:43:07 +0300
+Message-Id: <11853673872091-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.2.4
 In-Reply-To: <11853673872732-git-send-email-avi@qumranet.com>
 References: <11853673872732-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current kvm disables preemption while the new virtualization registers are
-in use.  This of course is not very good for latency sensitive workloads (one
-use of virtualization is to offload user interface and other latency
-insensitive stuff to a container, so that it is easier to analyze the
-remaining workload).  This patch re-enables preemption for kvm; preemption
-is now only disabled when switching the registers in and out, and during
-the switch to guest mode and back.
+From: Shaohua Li <shaohua.li@intel.com>
 
-Contains fixes from Shaohua Li <shaohua.li@intel.com>.
+This allows the kvm mmu to perform sleepy operations, such as memory
+allocation.
 
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/Kconfig    |    1 +
- drivers/kvm/kvm.h      |    4 +++-
- drivers/kvm/kvm_main.c |   46 +++++++++++++++++++++++++++++++++++++++-------
- drivers/kvm/mmu.c      |    2 --
- drivers/kvm/svm.c      |    6 ++----
- drivers/kvm/vmx.c      |   17 +++++++++--------
- 6 files changed, 54 insertions(+), 22 deletions(-)
+ drivers/kvm/kvm.h      |    2 +-
+ drivers/kvm/kvm_main.c |   54 ++++++++++++++++++++++++------------------------
+ drivers/kvm/mmu.c      |    8 +++---
+ drivers/kvm/svm.c      |    8 +++---
+ drivers/kvm/vmx.c      |    8 +++---
+ 5 files changed, 40 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
-index 6cecc39..65e009b 100644
---- a/drivers/kvm/Kconfig
-+++ b/drivers/kvm/Kconfig
-@@ -11,6 +11,7 @@ if VIRTUALIZATION
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support"
- 	depends on X86 && EXPERIMENTAL
-+	select PREEMPT_HOOKS
- 	select ANON_INODES
- 	---help---
- 	  Support hosting fully virtualized guest machines using hardware
 diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index fc27c2f..50ddd3c 100644
+index 50ddd3c..ca167c4 100644
 --- a/drivers/kvm/kvm.h
 +++ b/drivers/kvm/kvm.h
-@@ -13,6 +13,7 @@
- #include <linux/signal.h>
- #include <linux/sched.h>
- #include <linux/mm.h>
-+#include <linux/preempt.h>
- #include <asm/signal.h>
+@@ -420,7 +420,7 @@ struct kvm_memory_slot {
+ };
  
- #include "vmx.h"
-@@ -310,6 +311,7 @@ void kvm_io_bus_register_dev(struct kvm_io_bus *bus,
- 
- struct kvm_vcpu {
- 	struct kvm *kvm;
-+	struct preempt_hook preempt_hook;
- 	int vcpu_id;
- 	union {
- 		struct vmcs *vmcs;
-@@ -456,7 +458,7 @@ struct kvm_arch_ops {
- 	int (*vcpu_create)(struct kvm_vcpu *vcpu);
- 	void (*vcpu_free)(struct kvm_vcpu *vcpu);
- 
--	void (*vcpu_load)(struct kvm_vcpu *vcpu);
-+	void (*vcpu_load)(struct kvm_vcpu *vcpu, int cpu);
- 	void (*vcpu_put)(struct kvm_vcpu *vcpu);
- 	void (*vcpu_decache)(struct kvm_vcpu *vcpu);
- 
+ struct kvm {
+-	spinlock_t lock; /* protects everything except vcpus */
++	struct mutex lock; /* protects everything except vcpus */
+ 	int naliases;
+ 	struct kvm_mem_alias aliases[KVM_ALIAS_SLOTS];
+ 	int nmemslots;
 diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index f6c6b0b..4f45247 100644
+index 4f45247..6e76345 100644
 --- a/drivers/kvm/kvm_main.c
 +++ b/drivers/kvm/kvm_main.c
-@@ -54,6 +54,8 @@ static cpumask_t cpus_hardware_enabled;
+@@ -310,7 +310,7 @@ static struct kvm *kvm_create_vm(void)
+ 		return ERR_PTR(-ENOMEM);
  
- struct kvm_arch_ops *kvm_arch_ops;
- 
-+static __read_mostly struct preempt_ops kvm_preempt_ops;
-+
- #define STAT_OFFSET(x) offsetof(struct kvm_vcpu, stat.x)
- 
- static struct kvm_stats_debugfs_item {
-@@ -239,13 +241,21 @@ EXPORT_SYMBOL_GPL(kvm_put_guest_fpu);
-  */
- static void vcpu_load(struct kvm_vcpu *vcpu)
- {
-+	int cpu;
-+
- 	mutex_lock(&vcpu->mutex);
--	kvm_arch_ops->vcpu_load(vcpu);
-+	cpu = get_cpu();
-+	preempt_hook_register(&vcpu->preempt_hook);
-+	kvm_arch_ops->vcpu_load(vcpu, cpu);
-+	put_cpu();
- }
- 
- static void vcpu_put(struct kvm_vcpu *vcpu)
- {
-+	preempt_disable();
- 	kvm_arch_ops->vcpu_put(vcpu);
-+	preempt_hook_unregister(&vcpu->preempt_hook);
-+	preempt_enable();
- 	mutex_unlock(&vcpu->mutex);
- }
- 
-@@ -1638,9 +1648,7 @@ void kvm_resched(struct kvm_vcpu *vcpu)
- {
- 	if (!need_resched())
- 		return;
--	vcpu_put(vcpu);
- 	cond_resched();
--	vcpu_load(vcpu);
- }
- EXPORT_SYMBOL_GPL(kvm_resched);
- 
-@@ -1706,11 +1714,9 @@ static int pio_copy_data(struct kvm_vcpu *vcpu)
- 	unsigned bytes;
- 	int nr_pages = vcpu->pio.guest_pages[1] ? 2 : 1;
- 
--	kvm_arch_ops->vcpu_put(vcpu);
- 	q = vmap(vcpu->pio.guest_pages, nr_pages, VM_READ|VM_WRITE,
- 		 PAGE_KERNEL);
- 	if (!q) {
--		kvm_arch_ops->vcpu_load(vcpu);
- 		free_pio_guest_pages(vcpu);
- 		return -ENOMEM;
- 	}
-@@ -1722,7 +1728,6 @@ static int pio_copy_data(struct kvm_vcpu *vcpu)
- 		memcpy(p, q, bytes);
- 	q -= vcpu->pio.guest_page_offset;
- 	vunmap(q);
--	kvm_arch_ops->vcpu_load(vcpu);
- 	free_pio_guest_pages(vcpu);
- 	return 0;
- }
-@@ -2390,6 +2395,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
- 	int r;
- 	struct kvm_vcpu *vcpu;
+ 	kvm_io_bus_init(&kvm->pio_bus);
+-	spin_lock_init(&kvm->lock);
++	mutex_init(&kvm->lock);
+ 	INIT_LIST_HEAD(&kvm->active_mmu_pages);
+ 	kvm_io_bus_init(&kvm->mmio_bus);
+ 	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+@@ -457,7 +457,7 @@ static int load_pdptrs(struct kvm_vcpu *vcpu, unsigned long cr3)
+ 	int ret;
  	struct page *page;
-+	int cpu;
  
- 	r = -EINVAL;
- 	if (!valid_vcpu(n))
-@@ -2430,7 +2436,11 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
- 	if (r < 0)
- 		goto out_free_vcpus;
+-	spin_lock(&vcpu->kvm->lock);
++	mutex_lock(&vcpu->kvm->lock);
+ 	page = gfn_to_page(vcpu->kvm, pdpt_gfn);
+ 	/* FIXME: !page - emulate? 0xff? */
+ 	pdpt = kmap_atomic(page, KM_USER0);
+@@ -476,7 +476,7 @@ static int load_pdptrs(struct kvm_vcpu *vcpu, unsigned long cr3)
  
--	kvm_arch_ops->vcpu_load(vcpu);
-+	vcpu->preempt_hook.ops = &kvm_preempt_ops;
-+	cpu = get_cpu();
-+	preempt_hook_register(&vcpu->preempt_hook);
-+	kvm_arch_ops->vcpu_load(vcpu, cpu);
-+	put_cpu();
- 	r = kvm_mmu_setup(vcpu);
- 	if (r >= 0)
- 		r = kvm_arch_ops->vcpu_setup(vcpu);
-@@ -3147,6 +3157,25 @@ static struct sys_device kvm_sysdev = {
+ out:
+ 	kunmap_atomic(pdpt, KM_USER0);
+-	spin_unlock(&vcpu->kvm->lock);
++	mutex_unlock(&vcpu->kvm->lock);
  
- hpa_t bad_page_address;
- 
-+static inline struct kvm_vcpu *preempt_hook_to_vcpu(struct preempt_hook *hook)
-+{
-+	return container_of(hook, struct kvm_vcpu, preempt_hook);
-+}
-+
-+static void kvm_sched_in(struct preempt_hook *hook, int cpu)
-+{
-+	struct kvm_vcpu *vcpu = preempt_hook_to_vcpu(hook);
-+
-+	kvm_arch_ops->vcpu_load(vcpu, cpu);
-+}
-+
-+static void kvm_sched_out(struct preempt_hook *hook)
-+{
-+	struct kvm_vcpu *vcpu = preempt_hook_to_vcpu(hook);
-+
-+	kvm_arch_ops->vcpu_put(vcpu);
-+}
-+
- int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
- {
- 	int r;
-@@ -3193,6 +3222,9 @@ int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
- 		goto out_free;
- 	}
- 
-+	kvm_preempt_ops.sched_in = kvm_sched_in;
-+	kvm_preempt_ops.sched_out = kvm_sched_out;
-+
- 	return r;
- 
- out_free:
-diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index 3c33957..fdb967a 100644
---- a/drivers/kvm/mmu.c
-+++ b/drivers/kvm/mmu.c
-@@ -275,9 +275,7 @@ static int mmu_topup_memory_caches(struct kvm_vcpu *vcpu)
- 	r = __mmu_topup_memory_caches(vcpu, GFP_NOWAIT);
- 	if (r < 0) {
- 		spin_unlock(&vcpu->kvm->lock);
--		kvm_arch_ops->vcpu_put(vcpu);
- 		r = __mmu_topup_memory_caches(vcpu, GFP_KERNEL);
--		kvm_arch_ops->vcpu_load(vcpu);
- 		spin_lock(&vcpu->kvm->lock);
- 	}
- 	return r;
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 850a1b1..e3a4722 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -610,11 +610,10 @@ static void svm_free_vcpu(struct kvm_vcpu *vcpu)
- 	kfree(vcpu->svm);
+ 	return ret;
  }
+@@ -536,9 +536,9 @@ void set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+ 	kvm_arch_ops->set_cr0(vcpu, cr0);
+ 	vcpu->cr0 = cr0;
  
--static void svm_vcpu_load(struct kvm_vcpu *vcpu)
-+static void svm_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- {
--	int cpu, i;
-+	int i;
- 
--	cpu = get_cpu();
- 	if (unlikely(cpu != vcpu->cpu)) {
- 		u64 tsc_this, delta;
- 
-@@ -640,7 +639,6 @@ static void svm_vcpu_put(struct kvm_vcpu *vcpu)
- 		wrmsrl(host_save_user_msrs[i], vcpu->svm->host_user_msrs[i]);
- 
- 	rdtscll(vcpu->host_tsc);
--	put_cpu();
+-	spin_lock(&vcpu->kvm->lock);
++	mutex_lock(&vcpu->kvm->lock);
+ 	kvm_mmu_reset_context(vcpu);
+-	spin_unlock(&vcpu->kvm->lock);
++	mutex_unlock(&vcpu->kvm->lock);
+ 	return;
  }
- 
- static void svm_vcpu_decache(struct kvm_vcpu *vcpu)
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index dac2f93..90f28f0 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -345,6 +345,7 @@ static void vmx_save_host_state(struct kvm_vcpu *vcpu)
- static void vmx_load_host_state(struct kvm_vcpu *vcpu)
- {
- 	struct vmx_host_state *hs = &vcpu->vmx_host_state;
-+	unsigned long flags;
- 
- 	if (!hs->loaded)
+ EXPORT_SYMBOL_GPL(set_cr0);
+@@ -577,9 +577,9 @@ void set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
  		return;
-@@ -357,12 +358,12 @@ static void vmx_load_host_state(struct kvm_vcpu *vcpu)
- 		 * If we have to reload gs, we must take care to
- 		 * preserve our gs base.
- 		 */
--		local_irq_disable();
-+		local_irq_save(flags);
- 		load_gs(hs->gs_sel);
- #ifdef CONFIG_X86_64
- 		wrmsrl(MSR_GS_BASE, vmcs_readl(HOST_GS_BASE));
- #endif
--		local_irq_enable();
-+		local_irq_restore(flags);
- 
- 		reload_tss();
  	}
-@@ -376,14 +377,11 @@ static void vmx_load_host_state(struct kvm_vcpu *vcpu)
-  * Switches to specified vcpu, until a matching vcpu_put(), but assumes
-  * vcpu mutex is already taken.
-  */
--static void vmx_vcpu_load(struct kvm_vcpu *vcpu)
-+static void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- {
- 	u64 phys_addr = __pa(vcpu->vmcs);
--	int cpu;
- 	u64 tsc_this, delta;
- 
--	cpu = get_cpu();
--
- 	if (vcpu->cpu != cpu)
- 		vcpu_clear(vcpu);
- 
-@@ -428,7 +426,6 @@ static void vmx_vcpu_put(struct kvm_vcpu *vcpu)
- {
- 	vmx_load_host_state(vcpu);
- 	kvm_put_guest_fpu(vcpu);
--	put_cpu();
+ 	kvm_arch_ops->set_cr4(vcpu, cr4);
+-	spin_lock(&vcpu->kvm->lock);
++	mutex_lock(&vcpu->kvm->lock);
+ 	kvm_mmu_reset_context(vcpu);
+-	spin_unlock(&vcpu->kvm->lock);
++	mutex_unlock(&vcpu->kvm->lock);
  }
+ EXPORT_SYMBOL_GPL(set_cr4);
  
- static void vmx_fpu_activate(struct kvm_vcpu *vcpu)
-@@ -2011,6 +2008,8 @@ again:
- 	if (unlikely(r))
+@@ -616,7 +616,7 @@ void set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
+ 	}
+ 
+ 	vcpu->cr3 = cr3;
+-	spin_lock(&vcpu->kvm->lock);
++	mutex_lock(&vcpu->kvm->lock);
+ 	/*
+ 	 * Does the new cr3 value map to physical memory? (Note, we
+ 	 * catch an invalid cr3 even in real-mode, because it would
+@@ -630,7 +630,7 @@ void set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
+ 		inject_gp(vcpu);
+ 	else
+ 		vcpu->mmu.new_cr3(vcpu);
+-	spin_unlock(&vcpu->kvm->lock);
++	mutex_unlock(&vcpu->kvm->lock);
+ }
+ EXPORT_SYMBOL_GPL(set_cr3);
+ 
+@@ -707,7 +707,7 @@ static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
+ 		mem->flags &= ~KVM_MEM_LOG_DIRTY_PAGES;
+ 
+ raced:
+-	spin_lock(&kvm->lock);
++	mutex_lock(&kvm->lock);
+ 
+ 	memory_config_version = kvm->memory_config_version;
+ 	new = old = *memslot;
+@@ -736,7 +736,7 @@ raced:
+ 	 * Do memory allocations outside lock.  memory_config_version will
+ 	 * detect any races.
+ 	 */
+-	spin_unlock(&kvm->lock);
++	mutex_unlock(&kvm->lock);
+ 
+ 	/* Deallocate if slot is being removed */
+ 	if (!npages)
+@@ -775,10 +775,10 @@ raced:
+ 		memset(new.dirty_bitmap, 0, dirty_bytes);
+ 	}
+ 
+-	spin_lock(&kvm->lock);
++	mutex_lock(&kvm->lock);
+ 
+ 	if (memory_config_version != kvm->memory_config_version) {
+-		spin_unlock(&kvm->lock);
++		mutex_unlock(&kvm->lock);
+ 		kvm_free_physmem_slot(&new, &old);
+ 		goto raced;
+ 	}
+@@ -796,13 +796,13 @@ raced:
+ 	kvm_mmu_slot_remove_write_access(kvm, mem->slot);
+ 	kvm_flush_remote_tlbs(kvm);
+ 
+-	spin_unlock(&kvm->lock);
++	mutex_unlock(&kvm->lock);
+ 
+ 	kvm_free_physmem_slot(&old, &new);
+ 	return 0;
+ 
+ out_unlock:
+-	spin_unlock(&kvm->lock);
++	mutex_unlock(&kvm->lock);
+ out_free:
+ 	kvm_free_physmem_slot(&new, &old);
+ out:
+@@ -820,14 +820,14 @@ static int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
+ 	int n;
+ 	unsigned long any = 0;
+ 
+-	spin_lock(&kvm->lock);
++	mutex_lock(&kvm->lock);
+ 
+ 	/*
+ 	 * Prevent changes to guest memory configuration even while the lock
+ 	 * is not taken.
+ 	 */
+ 	++kvm->busy;
+-	spin_unlock(&kvm->lock);
++	mutex_unlock(&kvm->lock);
+ 	r = -EINVAL;
+ 	if (log->slot >= KVM_MEMORY_SLOTS)
+ 		goto out;
+@@ -846,18 +846,18 @@ static int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
+ 	if (copy_to_user(log->dirty_bitmap, memslot->dirty_bitmap, n))
  		goto out;
  
-+	preempt_disable();
-+
- 	if (!vcpu->mmio_read_completed)
- 		do_interrupt_requests(vcpu, kvm_run);
+-	spin_lock(&kvm->lock);
++	mutex_lock(&kvm->lock);
+ 	kvm_mmu_slot_remove_write_access(kvm, log->slot);
+ 	kvm_flush_remote_tlbs(kvm);
+ 	memset(memslot->dirty_bitmap, 0, n);
+-	spin_unlock(&kvm->lock);
++	mutex_unlock(&kvm->lock);
  
-@@ -2153,6 +2152,9 @@ again:
- 	vcpu->interrupt_window_open = (vmcs_read32(GUEST_INTERRUPTIBILITY_INFO) & 3) == 0;
+ 	r = 0;
  
- 	asm ("mov %0, %%ds; mov %0, %%es" : : "r"(__USER_DS));
-+	vcpu->launched = 1;
-+
-+	preempt_enable();
+ out:
+-	spin_lock(&kvm->lock);
++	mutex_lock(&kvm->lock);
+ 	--kvm->busy;
+-	spin_unlock(&kvm->lock);
++	mutex_unlock(&kvm->lock);
+ 	return r;
+ }
  
- 	if (unlikely(fail)) {
- 		kvm_run->exit_reason = KVM_EXIT_FAIL_ENTRY;
-@@ -2167,7 +2169,6 @@ again:
- 	if (unlikely(prof_on == KVM_PROFILING))
- 		profile_hit(KVM_PROFILING, (void *)vmcs_readl(GUEST_RIP));
+@@ -887,7 +887,7 @@ static int kvm_vm_ioctl_set_memory_alias(struct kvm *kvm,
+ 	    < alias->target_phys_addr)
+ 		goto out;
  
--	vcpu->launched = 1;
- 	r = kvm_handle_exit(kvm_run, vcpu);
- 	if (r > 0) {
- 		/* Give scheduler a change to reschedule. */
+-	spin_lock(&kvm->lock);
++	mutex_lock(&kvm->lock);
+ 
+ 	p = &kvm->aliases[alias->slot];
+ 	p->base_gfn = alias->guest_phys_addr >> PAGE_SHIFT;
+@@ -901,7 +901,7 @@ static int kvm_vm_ioctl_set_memory_alias(struct kvm *kvm,
+ 
+ 	kvm_mmu_zap_all(kvm);
+ 
+-	spin_unlock(&kvm->lock);
++	mutex_unlock(&kvm->lock);
+ 
+ 	return 0;
+ 
+@@ -1884,12 +1884,12 @@ int kvm_setup_pio(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
+ 	vcpu->pio.cur_count = now;
+ 
+ 	for (i = 0; i < nr_pages; ++i) {
+-		spin_lock(&vcpu->kvm->lock);
++		mutex_lock(&vcpu->kvm->lock);
+ 		page = gva_to_page(vcpu, address + i * PAGE_SIZE);
+ 		if (page)
+ 			get_page(page);
+ 		vcpu->pio.guest_pages[i] = page;
+-		spin_unlock(&vcpu->kvm->lock);
++		mutex_unlock(&vcpu->kvm->lock);
+ 		if (!page) {
+ 			inject_gp(vcpu);
+ 			free_pio_guest_pages(vcpu);
+@@ -2282,13 +2282,13 @@ static int kvm_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
+ 	gpa_t gpa;
+ 
+ 	vcpu_load(vcpu);
+-	spin_lock(&vcpu->kvm->lock);
++	mutex_lock(&vcpu->kvm->lock);
+ 	gpa = vcpu->mmu.gva_to_gpa(vcpu, vaddr);
+ 	tr->physical_address = gpa;
+ 	tr->valid = gpa != UNMAPPED_GVA;
+ 	tr->writeable = 1;
+ 	tr->usermode = 0;
+-	spin_unlock(&vcpu->kvm->lock);
++	mutex_unlock(&vcpu->kvm->lock);
+ 	vcpu_put(vcpu);
+ 
+ 	return 0;
+diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
+index fdb967a..bfe16d5 100644
+--- a/drivers/kvm/mmu.c
++++ b/drivers/kvm/mmu.c
+@@ -274,9 +274,9 @@ static int mmu_topup_memory_caches(struct kvm_vcpu *vcpu)
+ 
+ 	r = __mmu_topup_memory_caches(vcpu, GFP_NOWAIT);
+ 	if (r < 0) {
+-		spin_unlock(&vcpu->kvm->lock);
++		mutex_unlock(&vcpu->kvm->lock);
+ 		r = __mmu_topup_memory_caches(vcpu, GFP_KERNEL);
+-		spin_lock(&vcpu->kvm->lock);
++		mutex_lock(&vcpu->kvm->lock);
+ 	}
+ 	return r;
+ }
+@@ -1067,7 +1067,7 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
+ {
+ 	int r;
+ 
+-	spin_lock(&vcpu->kvm->lock);
++	mutex_lock(&vcpu->kvm->lock);
+ 	r = mmu_topup_memory_caches(vcpu);
+ 	if (r)
+ 		goto out;
+@@ -1075,7 +1075,7 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
+ 	kvm_arch_ops->set_cr3(vcpu, vcpu->mmu.root_hpa);
+ 	kvm_mmu_flush_tlb(vcpu);
+ out:
+-	spin_unlock(&vcpu->kvm->lock);
++	mutex_unlock(&vcpu->kvm->lock);
+ 	return r;
+ }
+ EXPORT_SYMBOL_GPL(kvm_mmu_load);
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index e3a4722..ac7d8b0 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -905,21 +905,21 @@ static int pf_interception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	if (is_external_interrupt(exit_int_info))
+ 		push_irq(vcpu, exit_int_info & SVM_EVTINJ_VEC_MASK);
+ 
+-	spin_lock(&vcpu->kvm->lock);
++	mutex_lock(&vcpu->kvm->lock);
+ 
+ 	fault_address  = vcpu->svm->vmcb->control.exit_info_2;
+ 	error_code = vcpu->svm->vmcb->control.exit_info_1;
+ 	r = kvm_mmu_page_fault(vcpu, fault_address, error_code);
+ 	if (r < 0) {
+-		spin_unlock(&vcpu->kvm->lock);
++		mutex_unlock(&vcpu->kvm->lock);
+ 		return r;
+ 	}
+ 	if (!r) {
+-		spin_unlock(&vcpu->kvm->lock);
++		mutex_unlock(&vcpu->kvm->lock);
+ 		return 1;
+ 	}
+ 	er = emulate_instruction(vcpu, kvm_run, fault_address, error_code);
+-	spin_unlock(&vcpu->kvm->lock);
++	mutex_unlock(&vcpu->kvm->lock);
+ 
+ 	switch (er) {
+ 	case EMULATE_DONE:
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index 90f28f0..ece992f 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -1596,19 +1596,19 @@ static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	if (is_page_fault(intr_info)) {
+ 		cr2 = vmcs_readl(EXIT_QUALIFICATION);
+ 
+-		spin_lock(&vcpu->kvm->lock);
++		mutex_lock(&vcpu->kvm->lock);
+ 		r = kvm_mmu_page_fault(vcpu, cr2, error_code);
+ 		if (r < 0) {
+-			spin_unlock(&vcpu->kvm->lock);
++			mutex_unlock(&vcpu->kvm->lock);
+ 			return r;
+ 		}
+ 		if (!r) {
+-			spin_unlock(&vcpu->kvm->lock);
++			mutex_unlock(&vcpu->kvm->lock);
+ 			return 1;
+ 		}
+ 
+ 		er = emulate_instruction(vcpu, kvm_run, cr2, error_code);
+-		spin_unlock(&vcpu->kvm->lock);
++		mutex_unlock(&vcpu->kvm->lock);
+ 
+ 		switch (er) {
+ 		case EMULATE_DONE:
 -- 
 1.5.2.4
 
