@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765545AbXGYOqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765992AbXGYOqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765545AbXGYOqQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 10:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbXGYOqE
+	id S1765992AbXGYOqx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 10:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbXGYOqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 10:46:04 -0400
-Received: from www.comattitude.fr ([91.121.13.180]:4044 "EHLO
-	mail2.comattitude.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754712AbXGYOqD (ORCPT
+	Wed, 25 Jul 2007 10:46:44 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44037 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755056AbXGYOqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 10:46:03 -0400
-X-Greylist: delayed 1624 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jul 2007 10:46:03 EDT
-Message-ID: <46A75BD1.5090402@wanadoo.fr>
-Date: Wed, 25 Jul 2007 16:18:57 +0200
-From: =?ISO-8859-1?Q?S=E9bastien_CRAMATTE?= <s.cramatte@wanadoo.fr>
-Organization: Zen Soluciones
-User-Agent: Thunderbird 2.0.0.5 (Macintosh/20070716)
+	Wed, 25 Jul 2007 10:46:43 -0400
+Date: Wed, 25 Jul 2007 16:46:16 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>, linux-kernel@vger.kernel.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [-mm patch] one e1000 driver should be enough for everyone
+Message-ID: <20070725144615.GC3572@stusta.de>
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <20070725133650.GB3572@stusta.de> <46A754C7.9080004@garzik.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Marvell 88SE6121 with patched pata_marvell still doesn't works 
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46A754C7.9080004@garzik.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+On Wed, Jul 25, 2007 at 09:48:55AM -0400, Jeff Garzik wrote:
+> Adrian Bunk wrote:
+>> BTW:
+>> Unless I'm misunderstanding anything, the new driver should support a 
+>> superset of what the old driver supported.
+>> Therefore, it would be good if the final merge into Linus' tree will
+>> do an
+>>   rm -r drivers/net/e1000
+>>   mv drivers/net/e1000new drivers/net/e1000
+>
+> Based on the most recent discussion, e1000new (or whatever it will be 
+> called) should support only the newer PCI-Express chips, while e1000 will 
+> retain support for the older chips.
 
-I've got an MSI P35 motherboard with
-4 SATAs ports via ICH9R southbridge chipset and 1 SATA and IDE via
-Marvell 88SE6121
+I found the discussion, and Christoph's e1000e sounds like the best name 
+("new" doesn't say whether it's a new driver for old hardware or a 
+driver for new hardware).
 
-In bios, It's possible to set ICH9 in  RAID, AHCI or IDE mode but  not
-Marvell chipset
+> Over the long term this will allow e1000new to grow without affecting 
+> support for the older, stable chips.
+>
+> So, e1000 is not going away.
 
-I've applied the patch bellow against a 2.6.20 kernel
+No problem for me, but this obviously implies that global code in the 
+new driver has to be renamed.
 
-http://marc.info/?l=linux-kernel&m=116808637400504&w=2
+And please ensure that they will always support distinct PCI IDs, or 
+there will be the following common pattern if both drivers support
+a card:
+- user tries driver A
+- driver A doesn't work (although it should have worked)
+- user tries driver B
+- driver B works
+- a later kernel removes support for this card from driver B
+- user tries driver A
+- driver A still doesn't work
+- user writes bug report
 
-In dmesg I've got this kind of line
+Users should report bugs early instead of bouncing between different 
+drivers.
 
-ATA: abnormal status 0x7F on port 0xE807
+> 	Jeff
 
-I've got a 320Gb HD and  DVD burner plugged on the IDE connector.
+cu
+Adrian
 
-Does anyone  know how can solve this ?
-Normally I should use a 2.6.22 kernel to have support for hardware
-monitoring  and cpucore driver.
+-- 
 
-Regards
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
