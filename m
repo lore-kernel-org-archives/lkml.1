@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932392AbXGYBJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932558AbXGYBOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932392AbXGYBJm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 21:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758142AbXGYBJb
+	id S932558AbXGYBOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 21:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758361AbXGYBOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 21:09:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:54280 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757594AbXGYBJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 21:09:30 -0400
+	Tue, 24 Jul 2007 21:14:15 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:43534 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758142AbXGYBOO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 21:14:14 -0400
+Date: Wed, 25 Jul 2007 03:13:46 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: jschopp <jschopp@austin.ibm.com>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.08
+Message-ID: <20070725011346.GA3572@stusta.de>
+References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A534EA.6030008@intel.com> <46A5C12B.3080904@shadowen.org> <20070724021526.3d92286b.akpm@linux-foundation.org> <20070724172217.GA10725@linux-sh.org> <Pine.LNX.4.64.0707242000120.18990@fbirervta.pbzchgretzou.qr> <46A64587.2010704@shadowen.org> <20070724194901.GE6019@stusta.de> <46A661FB.7040504@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18086.41665.610756.139183@cargo.ozlabs.ibm.com>
-Date: Wed, 25 Jul 2007 11:09:21 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 1/3] ps3: Disk Storage Driver
-In-Reply-To: <46A5E610.7000508@shadowen.org>
-References: <20070716161539.075822000@pademelon.sonytel.be>
-	<20070716162206.392129000@pademelon.sonytel.be>
-	<20070718163637.3f0e0164.akpm@linux-foundation.org>
-	<46A5E610.7000508@shadowen.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46A661FB.7040504@austin.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft writes:
+On Tue, Jul 24, 2007 at 03:32:59PM -0500, jschopp wrote:
+>>> Yep I think the consensus is we need a
+>>> "--i-don't-agree-just-check-things-which-will-get-me-rejected-out-of-hand"
+>>> option of some sort which will restrict output to the real errors.
+>> No, the default should be to show only the real errors.
+>
+> CodingStyle violations are real errors.
+>
+> If we have agreed that code should look a certain way, and there is a patch 
+> that doesn't look that way, that is an error.  Maybe not a runtime error, 
+> but a readability error.  A reviewability error.  A maintainability error.  
+> A big waste of everybodies time.
+>
+> I personally don't care if code is indented with 2 spaces, 4 spaces, or a 
+> tab.  What I do care about is that all the code is indented consistently so 
+> we don't waste an ounce of our energy reading code/patches and thinking 
+> about indentation or even worse spending our time arguing over it on 
+> mailing lists when there are better things to argue about.
+>
+> Back when I wrote the early versions of this script I didn't write it 
+> because I'm anal retentive about CodingStyle.  I wrote it for the exact 
+> opposite reason.  I was tired of seeing email on mailing lists reviewing 
+> patches saying there was indentation with spaces instead of tabs, or 
+> trailing whitespace, or { on the wrong line.  It was a waste of the 
+> reviewers time, it was a waste of the developers time, it was a waste of 
+> the time of everybody on the mailing lists.  We should spend all that 
+> energy arguing over the merits of what the code does.
 
-> Ok, this is something we need to decide on.  Currently we only ask for
-> consistent spacing on all the mathematic operators.  This is mostly as
-> we do see a large number of non-spaced uses in defines and the like.
-> 
-> I am happy to expand these tests so they are always spaced on both sides
-> style if that is the preference.
+There's a relatively small amount of common codingstyle mistakes 
+accounting for most of these mistakes.
 
-It depends very much on the context - on the precedence and relative
-importance of one operator with respect to other operators and the
-statement as a whole.  In general I prefer spaces around binary
-operators, but there are situations where not putting spaces around
-some operators can enhance the readability of the statement as a
-whole.
+> So let's argue over the CodingStyle once and be done with the argument 
+> instead of having the argument every day on the mailing lists forever.  We 
+> end up with more time to argue over much more interesting subjects and we 
+> end up with consistent code that is easy to read, review, and maintain.
 
-If checkpatch.pl starts whinging about operators without spaces that
-will just be yet another reason not to use it IMHO.
+It's also important to note that there are slightly different 
+codingstyles in different parts of the kernel, and you won't get people 
+to agree on one.
 
-Also, I prefer the style where the ? and : operators have a space
-after them but not before them, rather than a space either side.
+A common codingstyle is important, but unifying the last bits is simply 
+not worth the hassle.
 
-Paul.
+There are more important things than exploiting the corner cases of 
+codingstyle, e.g. could you teach checkpatch.pl to give exactly two 
+errors for the following code?
+
+
+	while (a);
+		for (b = 0; b < 50; b++);
+			for (c = 0; c < sizeof(struct module); c++)
+				d = e;
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
