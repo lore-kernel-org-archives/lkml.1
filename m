@@ -1,229 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764965AbXGYMn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbXGYMno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764965AbXGYMn2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 08:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759702AbXGYMm7
+	id S1762457AbXGYMno (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 08:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759752AbXGYMnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 08:42:59 -0400
-Received: from il.qumranet.com ([82.166.9.18]:39207 "EHLO il.qumranet.com"
+	Wed, 25 Jul 2007 08:43:00 -0400
+Received: from il.qumranet.com ([82.166.9.18]:39206 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753815AbXGYMm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756567AbXGYMm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Jul 2007 08:42:58 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        shaohua.li@intel.com, rusty@rustcorp.com.au, Andi Kleen <ak@suse.de>,
        Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 1/3] SCHED: Generic hooks for trapping task preemption
-Date: Wed, 25 Jul 2007 15:43:05 +0300
-Message-Id: <11853673871109-git-send-email-avi@qumranet.com>
+Subject: [PATCH 2/3] KVM: Use the scheduler preemption hooks to make kvm preemptible
+Date: Wed, 25 Jul 2007 15:43:06 +0300
+Message-Id: <1185367387391-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.2.4
 In-Reply-To: <11853673872732-git-send-email-avi@qumranet.com>
 References: <11853673872732-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a general mechanism whereby a task can request the scheduler to
-notify it whenever it is preempted or scheduled back in.  This allows the
-task to swap any special-purpose registers like the fpu or Intel's VT
-registers.
+Current kvm disables preemption while the new virtualization registers are
+in use.  This of course is not very good for latency sensitive workloads (one
+use of virtualization is to offload user interface and other latency
+insensitive stuff to a container, so that it is easier to analyze the
+remaining workload).  This patch re-enables preemption for kvm; preemption
+is now only disabled when switching the registers in and out, and during
+the switch to guest mode and back.
+
+Contains fixes from Shaohua Li <shaohua.li@intel.com>.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- include/linux/preempt.h |   43 +++++++++++++++++++++++++++++++
- include/linux/sched.h   |    4 +++
- kernel/Kconfig.preempt  |    2 +
- kernel/sched.c          |   65 +++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 114 insertions(+), 0 deletions(-)
+ drivers/kvm/Kconfig    |    1 +
+ drivers/kvm/kvm.h      |    4 +++-
+ drivers/kvm/kvm_main.c |   46 +++++++++++++++++++++++++++++++++++++++-------
+ drivers/kvm/mmu.c      |    2 --
+ drivers/kvm/svm.c      |    6 ++----
+ drivers/kvm/vmx.c      |   17 +++++++++--------
+ 6 files changed, 54 insertions(+), 22 deletions(-)
 
-diff --git a/include/linux/preempt.h b/include/linux/preempt.h
-index d0926d6..788d2e5 100644
---- a/include/linux/preempt.h
-+++ b/include/linux/preempt.h
-@@ -8,6 +8,7 @@
+diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
+index 6cecc39..65e009b 100644
+--- a/drivers/kvm/Kconfig
++++ b/drivers/kvm/Kconfig
+@@ -11,6 +11,7 @@ if VIRTUALIZATION
+ config KVM
+ 	tristate "Kernel-based Virtual Machine (KVM) support"
+ 	depends on X86 && EXPERIMENTAL
++	select PREEMPT_HOOKS
+ 	select ANON_INODES
+ 	---help---
+ 	  Support hosting fully virtualized guest machines using hardware
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index fc27c2f..50ddd3c 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -13,6 +13,7 @@
+ #include <linux/signal.h>
+ #include <linux/sched.h>
+ #include <linux/mm.h>
++#include <linux/preempt.h>
+ #include <asm/signal.h>
  
- #include <linux/thread_info.h>
- #include <linux/linkage.h>
-+#include <linux/list.h>
+ #include "vmx.h"
+@@ -310,6 +311,7 @@ void kvm_io_bus_register_dev(struct kvm_io_bus *bus,
  
- #ifdef CONFIG_DEBUG_PREEMPT
-   extern void fastcall add_preempt_count(int val);
-@@ -60,4 +61,46 @@ do { \
+ struct kvm_vcpu {
+ 	struct kvm *kvm;
++	struct preempt_hook preempt_hook;
+ 	int vcpu_id;
+ 	union {
+ 		struct vmcs *vmcs;
+@@ -456,7 +458,7 @@ struct kvm_arch_ops {
+ 	int (*vcpu_create)(struct kvm_vcpu *vcpu);
+ 	void (*vcpu_free)(struct kvm_vcpu *vcpu);
  
- #endif
+-	void (*vcpu_load)(struct kvm_vcpu *vcpu);
++	void (*vcpu_load)(struct kvm_vcpu *vcpu, int cpu);
+ 	void (*vcpu_put)(struct kvm_vcpu *vcpu);
+ 	void (*vcpu_decache)(struct kvm_vcpu *vcpu);
  
-+#ifdef CONFIG_PREEMPT_HOOKS
-+
-+struct preempt_hook;
-+
-+/**
-+ * preempt_ops - hooks called when a task is preempted and rescheduled
-+ * @sched_in: we're about to be rescheduled:
-+ *    hook: struct preempt_hook for the task being scheduled
-+ *    cpu:  cpu we're scheduled on
-+ * @sched_out: we've just been preempted
-+ *    hook: struct preempt_hook for the task being preempted
-+ *    next: the task that's kicking us out
-+ */
-+struct preempt_ops {
-+	void (*sched_in)(struct preempt_hook *hook, int cpu);
-+	void (*sched_out)(struct preempt_hook *hook, struct task_struct *next);
-+};
-+
-+/**
-+ * preempt_hook - key for installing preemption hooks
-+ * @link: internal use
-+ * @ops: defines the hook functions to be called
-+ *
-+ * Usually used in conjunction with container_of().
-+ */
-+struct preempt_hook {
-+	struct hlist_node link;
-+	struct preempt_ops *ops;
-+};
-+
-+void preempt_hook_register(struct preempt_hook *hook);
-+void preempt_hook_unregister(struct preempt_hook *hook);
-+
-+static inline void preempt_hook_init(struct preempt_hook *hook,
-+				     struct preempt_ops *ops)
-+{
-+	INIT_HLIST_NODE(&hook->link);
-+	hook->ops = ops;
-+}
-+
-+#endif
-+
- #endif /* __LINUX_PREEMPT_H */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 33b9b48..c5e3f19 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -935,6 +935,10 @@ struct task_struct {
- 	struct sched_class *sched_class;
- 	struct sched_entity se;
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index f6c6b0b..4f45247 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -54,6 +54,8 @@ static cpumask_t cpus_hardware_enabled;
  
-+#ifdef CONFIG_PREEMPT_HOOKS
-+	struct hlist_head preempt_hooks;  /* list of struct preempt_hook */
-+#endif
-+
- 	unsigned short ioprio;
- #ifdef CONFIG_BLK_DEV_IO_TRACE
- 	unsigned int btrace_seq;
-diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
-index c64ce9c..6af9c72 100644
---- a/kernel/Kconfig.preempt
-+++ b/kernel/Kconfig.preempt
-@@ -63,3 +63,5 @@ config PREEMPT_BKL
- 	  Say Y here if you are building a kernel for a desktop system.
- 	  Say N if you are unsure.
+ struct kvm_arch_ops *kvm_arch_ops;
  
-+config PREEMPT_HOOKS
-+	bool
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 93cf241..100fe93 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1592,6 +1592,10 @@ static void __sched_fork(struct task_struct *p)
- 	INIT_LIST_HEAD(&p->run_list);
- 	p->se.on_rq = 0;
++static __read_mostly struct preempt_ops kvm_preempt_ops;
++
+ #define STAT_OFFSET(x) offsetof(struct kvm_vcpu, stat.x)
  
-+#ifdef CONFIG_PREEMPT_HOOKS
-+	INIT_HLIST_HEAD(&p->preempt_hooks);
-+#endif
-+
- 	/*
- 	 * We mark the process as running here, but have not actually
- 	 * inserted it onto the runqueue yet. This guarantees that
-@@ -1673,6 +1677,61 @@ void fastcall wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- 	task_rq_unlock(rq, &flags);
- }
- 
-+#ifdef CONFIG_PREEMPT_HOOKS
-+
-+/**
-+ * preempt_hook_register - tell me when current is being being preempted
-+ *                         and rescheduled
-+ */
-+void preempt_hook_register(struct preempt_hook *hook)
-+{
-+	hlist_add_head(&hook->link, &current->preempt_hooks);
-+}
-+EXPORT_SYMBOL_GPL(preempt_hook_register);
-+
-+/**
-+ * preempt_hook_unregister - no longer interested in preemption notifications
-+ *
-+ * This is safe to call from within a preemption hook.
-+ */
-+void preempt_hook_unregister(struct preempt_hook *hook)
-+{
-+	hlist_del(&hook->link);
-+}
-+EXPORT_SYMBOL_GPL(preempt_hook_unregister);
-+
-+static void fire_sched_in_preempt_hooks(struct task_struct *tsk)
-+{
-+	struct preempt_hook *hook;
-+	struct hlist_node *node;
-+
-+	hlist_for_each_entry(hook, node, &tsk->preempt_hooks, link)
-+		hook->ops->sched_in(hook, raw_smp_processor_id());
-+}
-+
-+static void fire_sched_out_preempt_hooks(struct task_struct *tsk,
-+					 struct task_struct *next)
-+{
-+	struct preempt_hook *hook;
-+	struct hlist_node *node;
-+
-+	hlist_for_each_entry(hook, node, &tsk->preempt_hooks, link)
-+		hook->ops->sched_out(hook, next);
-+}
-+
-+#else
-+
-+static void fire_sched_in_preempt_hooks(struct task_struct *tsk)
-+{
-+}
-+
-+static void fire_sched_out_preempt_hooks(struct task_struct *tsk,
-+					 struct task_struct *next)
-+{
-+}
-+
-+#endif
-+
- /**
-  * prepare_task_switch - prepare to switch tasks
-  * @rq: the runqueue preparing to switch
-@@ -1687,6 +1746,7 @@ void fastcall wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+ static struct kvm_stats_debugfs_item {
+@@ -239,13 +241,21 @@ EXPORT_SYMBOL_GPL(kvm_put_guest_fpu);
   */
- static inline void prepare_task_switch(struct rq *rq, struct task_struct *next)
+ static void vcpu_load(struct kvm_vcpu *vcpu)
  {
-+	fire_sched_out_preempt_hooks(current);
- 	prepare_lock_switch(rq, next);
- 	prepare_arch_switch(next);
- }
-@@ -1728,6 +1788,7 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	prev_state = prev->state;
- 	finish_arch_switch(prev);
- 	finish_lock_switch(rq, prev);
-+	fire_sched_in_preempt_hooks(current);
- 	if (mm)
- 		mmdrop(mm);
- 	if (unlikely(prev_state == TASK_DEAD)) {
-@@ -6335,6 +6396,10 @@ void __init sched_init(void)
- 
- 	set_load_weight(&init_task);
- 
-+#ifdef CONFIG_PREEMPT_HOOKS
-+	INIT_HLIST_HEAD(&init_task.preempt_hooks);
-+#endif
++	int cpu;
 +
- #ifdef CONFIG_SMP
- 	nr_cpu_ids = highest_cpu + 1;
- 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
+ 	mutex_lock(&vcpu->mutex);
+-	kvm_arch_ops->vcpu_load(vcpu);
++	cpu = get_cpu();
++	preempt_hook_register(&vcpu->preempt_hook);
++	kvm_arch_ops->vcpu_load(vcpu, cpu);
++	put_cpu();
+ }
+ 
+ static void vcpu_put(struct kvm_vcpu *vcpu)
+ {
++	preempt_disable();
+ 	kvm_arch_ops->vcpu_put(vcpu);
++	preempt_hook_unregister(&vcpu->preempt_hook);
++	preempt_enable();
+ 	mutex_unlock(&vcpu->mutex);
+ }
+ 
+@@ -1638,9 +1648,7 @@ void kvm_resched(struct kvm_vcpu *vcpu)
+ {
+ 	if (!need_resched())
+ 		return;
+-	vcpu_put(vcpu);
+ 	cond_resched();
+-	vcpu_load(vcpu);
+ }
+ EXPORT_SYMBOL_GPL(kvm_resched);
+ 
+@@ -1706,11 +1714,9 @@ static int pio_copy_data(struct kvm_vcpu *vcpu)
+ 	unsigned bytes;
+ 	int nr_pages = vcpu->pio.guest_pages[1] ? 2 : 1;
+ 
+-	kvm_arch_ops->vcpu_put(vcpu);
+ 	q = vmap(vcpu->pio.guest_pages, nr_pages, VM_READ|VM_WRITE,
+ 		 PAGE_KERNEL);
+ 	if (!q) {
+-		kvm_arch_ops->vcpu_load(vcpu);
+ 		free_pio_guest_pages(vcpu);
+ 		return -ENOMEM;
+ 	}
+@@ -1722,7 +1728,6 @@ static int pio_copy_data(struct kvm_vcpu *vcpu)
+ 		memcpy(p, q, bytes);
+ 	q -= vcpu->pio.guest_page_offset;
+ 	vunmap(q);
+-	kvm_arch_ops->vcpu_load(vcpu);
+ 	free_pio_guest_pages(vcpu);
+ 	return 0;
+ }
+@@ -2390,6 +2395,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
+ 	int r;
+ 	struct kvm_vcpu *vcpu;
+ 	struct page *page;
++	int cpu;
+ 
+ 	r = -EINVAL;
+ 	if (!valid_vcpu(n))
+@@ -2430,7 +2436,11 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
+ 	if (r < 0)
+ 		goto out_free_vcpus;
+ 
+-	kvm_arch_ops->vcpu_load(vcpu);
++	vcpu->preempt_hook.ops = &kvm_preempt_ops;
++	cpu = get_cpu();
++	preempt_hook_register(&vcpu->preempt_hook);
++	kvm_arch_ops->vcpu_load(vcpu, cpu);
++	put_cpu();
+ 	r = kvm_mmu_setup(vcpu);
+ 	if (r >= 0)
+ 		r = kvm_arch_ops->vcpu_setup(vcpu);
+@@ -3147,6 +3157,25 @@ static struct sys_device kvm_sysdev = {
+ 
+ hpa_t bad_page_address;
+ 
++static inline struct kvm_vcpu *preempt_hook_to_vcpu(struct preempt_hook *hook)
++{
++	return container_of(hook, struct kvm_vcpu, preempt_hook);
++}
++
++static void kvm_sched_in(struct preempt_hook *hook, int cpu)
++{
++	struct kvm_vcpu *vcpu = preempt_hook_to_vcpu(hook);
++
++	kvm_arch_ops->vcpu_load(vcpu, cpu);
++}
++
++static void kvm_sched_out(struct preempt_hook *hook)
++{
++	struct kvm_vcpu *vcpu = preempt_hook_to_vcpu(hook);
++
++	kvm_arch_ops->vcpu_put(vcpu);
++}
++
+ int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
+ {
+ 	int r;
+@@ -3193,6 +3222,9 @@ int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
+ 		goto out_free;
+ 	}
+ 
++	kvm_preempt_ops.sched_in = kvm_sched_in;
++	kvm_preempt_ops.sched_out = kvm_sched_out;
++
+ 	return r;
+ 
+ out_free:
+diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
+index 3c33957..fdb967a 100644
+--- a/drivers/kvm/mmu.c
++++ b/drivers/kvm/mmu.c
+@@ -275,9 +275,7 @@ static int mmu_topup_memory_caches(struct kvm_vcpu *vcpu)
+ 	r = __mmu_topup_memory_caches(vcpu, GFP_NOWAIT);
+ 	if (r < 0) {
+ 		spin_unlock(&vcpu->kvm->lock);
+-		kvm_arch_ops->vcpu_put(vcpu);
+ 		r = __mmu_topup_memory_caches(vcpu, GFP_KERNEL);
+-		kvm_arch_ops->vcpu_load(vcpu);
+ 		spin_lock(&vcpu->kvm->lock);
+ 	}
+ 	return r;
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index 850a1b1..e3a4722 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -610,11 +610,10 @@ static void svm_free_vcpu(struct kvm_vcpu *vcpu)
+ 	kfree(vcpu->svm);
+ }
+ 
+-static void svm_vcpu_load(struct kvm_vcpu *vcpu)
++static void svm_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
+-	int cpu, i;
++	int i;
+ 
+-	cpu = get_cpu();
+ 	if (unlikely(cpu != vcpu->cpu)) {
+ 		u64 tsc_this, delta;
+ 
+@@ -640,7 +639,6 @@ static void svm_vcpu_put(struct kvm_vcpu *vcpu)
+ 		wrmsrl(host_save_user_msrs[i], vcpu->svm->host_user_msrs[i]);
+ 
+ 	rdtscll(vcpu->host_tsc);
+-	put_cpu();
+ }
+ 
+ static void svm_vcpu_decache(struct kvm_vcpu *vcpu)
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index dac2f93..90f28f0 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -345,6 +345,7 @@ static void vmx_save_host_state(struct kvm_vcpu *vcpu)
+ static void vmx_load_host_state(struct kvm_vcpu *vcpu)
+ {
+ 	struct vmx_host_state *hs = &vcpu->vmx_host_state;
++	unsigned long flags;
+ 
+ 	if (!hs->loaded)
+ 		return;
+@@ -357,12 +358,12 @@ static void vmx_load_host_state(struct kvm_vcpu *vcpu)
+ 		 * If we have to reload gs, we must take care to
+ 		 * preserve our gs base.
+ 		 */
+-		local_irq_disable();
++		local_irq_save(flags);
+ 		load_gs(hs->gs_sel);
+ #ifdef CONFIG_X86_64
+ 		wrmsrl(MSR_GS_BASE, vmcs_readl(HOST_GS_BASE));
+ #endif
+-		local_irq_enable();
++		local_irq_restore(flags);
+ 
+ 		reload_tss();
+ 	}
+@@ -376,14 +377,11 @@ static void vmx_load_host_state(struct kvm_vcpu *vcpu)
+  * Switches to specified vcpu, until a matching vcpu_put(), but assumes
+  * vcpu mutex is already taken.
+  */
+-static void vmx_vcpu_load(struct kvm_vcpu *vcpu)
++static void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
+ 	u64 phys_addr = __pa(vcpu->vmcs);
+-	int cpu;
+ 	u64 tsc_this, delta;
+ 
+-	cpu = get_cpu();
+-
+ 	if (vcpu->cpu != cpu)
+ 		vcpu_clear(vcpu);
+ 
+@@ -428,7 +426,6 @@ static void vmx_vcpu_put(struct kvm_vcpu *vcpu)
+ {
+ 	vmx_load_host_state(vcpu);
+ 	kvm_put_guest_fpu(vcpu);
+-	put_cpu();
+ }
+ 
+ static void vmx_fpu_activate(struct kvm_vcpu *vcpu)
+@@ -2011,6 +2008,8 @@ again:
+ 	if (unlikely(r))
+ 		goto out;
+ 
++	preempt_disable();
++
+ 	if (!vcpu->mmio_read_completed)
+ 		do_interrupt_requests(vcpu, kvm_run);
+ 
+@@ -2153,6 +2152,9 @@ again:
+ 	vcpu->interrupt_window_open = (vmcs_read32(GUEST_INTERRUPTIBILITY_INFO) & 3) == 0;
+ 
+ 	asm ("mov %0, %%ds; mov %0, %%es" : : "r"(__USER_DS));
++	vcpu->launched = 1;
++
++	preempt_enable();
+ 
+ 	if (unlikely(fail)) {
+ 		kvm_run->exit_reason = KVM_EXIT_FAIL_ENTRY;
+@@ -2167,7 +2169,6 @@ again:
+ 	if (unlikely(prof_on == KVM_PROFILING))
+ 		profile_hit(KVM_PROFILING, (void *)vmcs_readl(GUEST_RIP));
+ 
+-	vcpu->launched = 1;
+ 	r = kvm_handle_exit(kvm_run, vcpu);
+ 	if (r > 0) {
+ 		/* Give scheduler a change to reschedule. */
 -- 
 1.5.2.4
 
