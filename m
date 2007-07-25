@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934452AbXGYTM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762798AbXGYTNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934452AbXGYTM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbXGYTMR
+	id S1762798AbXGYTNN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbXGYTM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:12:17 -0400
-Received: from mx28.mail.ru ([194.67.23.67]:32967 "EHLO mx28.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758625AbXGYTMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:12:16 -0400
-Date: Wed, 25 Jul 2007 23:14:37 +0400
-From: Evgeniy Dushistov <dushistov@mail.ru>
-To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-Cc: wli@holomorphy.com, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add in SunOS 4.1.x compatible mode for UFS
-Message-ID: <20070725191437.GA29943@rain>
-Mail-Followup-To: Mark Fortescue <mark@mtfhpc.demon.co.uk>,
-	wli@holomorphy.com, sparclinux@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.61.0707251718380.20510@mtfhpc.demon.co.uk>
+	Wed, 25 Jul 2007 15:12:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:11204 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755453AbXGYTMy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 15:12:54 -0400
+Date: Wed, 25 Jul 2007 22:12:57 +0300
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: Mike Christie <michaelc@cs.wisc.edu>
+Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       Roland Dreier <rdreier@cisco.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH trivial] include linux/mutex.h from scsi_transport_iscsi.h
+Message-ID: <20070725191257.GA2311@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <20070725110907.GF3826@mellanox.co.il> <46A79C00.200@cs.wisc.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0707251718380.20510@mtfhpc.demon.co.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <46A79C00.200@cs.wisc.edu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks good.
+> Quoting Mike Christie <michaelc@cs.wisc.edu>:
+> Subject: Re: [PATCH trivial] include linux/mutex.h from scsi_transport_iscsi.h
+> 
+> Michael S. Tsirkin wrote:
+> >scsi/scsi_transport_iscsi.h uses struct mutex, so while
+> >linux/mutex.h seems to be pulled in indirectly
+> >by one of the headers it includes, the right thing
+> >is to include linux/mutex.h directly.
+> >
+> 
+> Is that part about always including the header directly right?
 
-Just a few minor things:
+Think so. Analogous patches by me has been accepted in various
+subsystems. See e.g. f8916c11a4dc4cb2367e9bee1788f4e0f1b4eabc.
 
-On Wed, Jul 25, 2007 at 06:27:46PM +0100, Mark Fortescue wrote:
-> Macros have been put in to alow suport for the old static table Cylinder 
-> Groups
-> but this implementation does not use them yet.
+> If so 
+> then were you going to include list.h too,
 
-But why add them to patch?
- 
-> +	/* Sort out mod used on SunOS 4.1.3 for fs_state */
-> +	uspi->s_postblformat = fs32_to_cpu(sb, usb3->fs_postblformat);
-> +	if (((flags & UFS_ST_MASK) == UFS_ST_SUNOS) &&
-> +	    (uspi->s_postblformat != UFS_42POSTBLFMT))
-> +	{
-> +	    flags &= ~UFS_ST_MASK;
-> +	    flags |=  UFS_ST_SUN;
-> +	}
-> +
->  
+Makes sense. I'll repost.
 
-Documentation/CodingStyle: if () {
+> and were you going to fix up 
+> some of the other iscsi code?
 
->  	switch (UFS_SB(sb)->s_flags & UFS_ST_MASK) {
-> +	case UFS_ST_SUNOS:
-> +		if (fs32_to_cpu(sb, usb3->fs_postblformat == UFS_42POSTBLFMT))
-
-Really should be so?
-May be you mean:
-fs32_to_cpu(sb, usb3->fs_postblformat) == UFS_42POSTBLFMT ?
-                                     ^
-
+Not at the moment.
+The reason I noticed this is because I'm doing some other project.
+I'll post patches for other files if/when I notice any issues.
 
 -- 
-/Evgeniy
-
+MST
