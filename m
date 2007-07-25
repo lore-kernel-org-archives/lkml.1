@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935945AbXGYThk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935439AbXGYTk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935945AbXGYThk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXGYThb
+	id S935439AbXGYTk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760487AbXGYTkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:37:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45914 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1763286AbXGYTha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:37:30 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19kzqIut/pkAimTfrp2ikMQ5P+pXY//ryXgCN9ngw
-	mFqfiGlxJffJ4f
-Date: Wed, 25 Jul 2007 21:37:26 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
-In-Reply-To: <20070725165318.5331.23795.stgit@localhost.localdomain>
-Message-ID: <Pine.LNX.4.60.0707252130090.6234@poirot.grange>
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>
+	Wed, 25 Jul 2007 15:40:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:22680 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756345AbXGYTkM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 15:40:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WcOqVI31YYQPXd1oo3NQt0ATC6KyPEDJ+bMYpQaBpZH6+HaBFsnVIAbE2PubxNEpC9VFFPuryeBJcrYmLqVO5VUzMnVd0VBCBBcrBMJl/H6qe7hx3TZrLyYMpMcCQ8TJqCEI1zXZDQNFtW+PLS73KQ9IGrRm5s6Ra9NpoPlCqzY=
+Message-ID: <82e4877d0707251240t4c5dcff7wb3c7523e577ddb76@mail.gmail.com>
+Date: Wed, 25 Jul 2007 15:40:11 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: 2.6.22 - Suspend and Weird Load Averages
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Nigel Cunningham" <ncunningham@linuxmail.org>
+In-Reply-To: <20070725133919.GA9256@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <469E1AFE.7010108@gmail.com> <20070725133919.GA9256@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007, Vitaly Bordug wrote:
+Hi Pavel!
 
-> 
-> This is now very similar to pata_platform.c, they both use
-> same platform data structure and same resources.
-> 
-> To achieve that, byte_lanes_swapping platform data variable
-> and platform specified iops removed from that driver. It's fine,
-> since those were never used anyway.
-> 
-> pata_platform and ide_platform are carrying same driver names,
-> to easily switch between these drivers, without need to touch
-> platform code.
+On 7/25/07, Pavel Machek <pavel@ucw.cz> wrote:
 
-Why? There's a drivers/ide/arm/ide_arm.c IDe driver that some platforms 
-(not in the mainline) hack to access, e.g., CF cards in true-IDE mode. 
-About a month ago I submitted a patch to arm-linux-kernel switching that 
-driver to using platform-device. I got a reply, that it's not worth it now 
-that IDE is slowly becoming obsolete, and the pata_platform serves the 
-perpose perfectly well. I found this argument reasonable, I had the same 
-doubt, just wanted to double-check. So, why do we now need a new legacy 
-(a/drivers/ide/legacy/ide_platform.c) driver when a "modern" driver 
-exists?
+> Known, and Rafael/Nigel have patches to fix that.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Thanks for the info - Rafael/Nigel do you have any patches for me to
+try/modify - I am just curious to see what approach the patches take
+to fix this - I had started thinking about TASK_SUSPENDED which would
+be equivalent to TASK_UNINTERRUPTIBLE for all purposes except load
+calculation (not counted in nr_uninterruptible) but somehow I think
+there might be a less intrusive / more correct way to do this.
+
+>
+> OTOH I'm not sure it is a problem -- lets just say that suspend is
+> hard work and therefore it raises load avg?
+>                                                        Pavel
+
+Hehe, nope - that would be inefficient suspend for me! Any way I
+understand it's purely a cosmetic problem but if we could be
+cosmetically correct to report the right uptime after suspend sans the
+sleep time (unlike other OSes which include sleep time when reporting
+it) I think we should also fix this one to report correct load
+averages.
+
+Cheers
+
+Parag
