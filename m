@@ -1,101 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbXGYGS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763083AbXGYGTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239AbXGYGS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 02:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762796AbXGYGSu
+	id S1763083AbXGYGTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 02:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXGYGT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 02:18:50 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:36693 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753348AbXGYGSt (ORCPT
+	Wed, 25 Jul 2007 02:19:26 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:56298 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754159AbXGYGTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 02:18:49 -0400
-Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
-From: Eric St-Laurent <ericstl34@sympatico.ca>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Fengguang Wu <fengguang.wu@gmail.com>, Dave Jones <davej@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>
-In-Reply-To: <46A6DD7F.1050505@yahoo.com.au>
-References: <20070721210005.000228000@chello.nl>
-	 <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com>
-	 <20070722081010.GA6317@mail.ustc.edu.cn>
-	 <1185093236.6344.87.camel@localhost.localdomain>
-	 <46A46E4B.7050007@yahoo.com.au> <1185338106.7105.44.camel@perkele>
-	 <46A6DD7F.1050505@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 25 Jul 2007 02:18:45 -0400
-Message-Id: <1185344325.7105.91.camel@perkele>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 25 Jul 2007 02:19:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gFZXZlBWaUatMLUpts/YDFOpo26AAZbLrz1UKc/of0C+Hy5ayDwFQCF5f6pNOtFIbmpKNBK76IqjGC9ILR1V6gkvm7JS2JBhi4YVeFVRTxddh4CbmXg0a77jTMqyECGI5iTcLzhRj0jtl/x0LMJICNRiHCxTxaojEUIuL8nEjEE=
+Message-ID: <b21f8390707242319gb17e4c9h274635b4c7fc1801@mail.gmail.com>
+Date: Wed, 25 Jul 2007 16:19:19 +1000
+From: "Matthew Hawkins" <darthmdh@gmail.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+Cc: "Eric St-Laurent" <ericstl34@sympatico.ca>,
+       "Ray Lee" <ray-lk@madrabbit.org>, "Jesper Juhl" <jesper.juhl@gmail.com>,
+       linux-kernel@vger.kernel.org, "ck list" <ck@vds.kolivas.org>,
+       linux-mm@kvack.org, "Paul Jackson" <pj@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rene Herman" <rene.herman@gmail.com>
+In-Reply-To: <46A6E1A1.4010508@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	 <46A57068.3070701@yahoo.com.au>
+	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	 <46A58B49.3050508@yahoo.com.au>
+	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
+	 <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-25-07 at 15:19 +1000, Nick Piggin wrote:
+On 7/25/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> Not to say that neither fix some problems, but for such conceptually
+> big changes, it should take a little more effort than a constructed test
+> case and no consideration of the alternatives to get it merged.
 
-> What *I* think is supposed to happen is that newly read in pages get
-> put on the inactive list, and unless they get accessed againbefore
-> being reclaimed, they are allowed to fall off the end of the list
-> without disturbing active data too much.
-> 
-> I think there is a missing piece here, that we used to ease the reclaim
-> pressure off the active list when the inactive list grows relatively
-> much larger than it (which could indicate a lot of use-once pages in
-> the system).
+Swap Prefetch has existed since September 5, 2005.  Please Nick,
+enlighten us all with your "alternatives" which have been offered (in
+practical, not theoretical form) in the past 23 months, along with
+their non-constructed benchmarks proving their case and the hordes of
+happy users and kernel developers who have tested them out the wazoo
+and given their backing.  Or just take a nice steaming jug of STFU.
 
-Maybe a new list should be added to put newly read pages in it. If they
-are not used or used once after a certain period, they can be moved to
-the inactive list (or whatever).
-
-Newly read pages...
-
-- ... not used after this period are excessive readahead, we discard
-immediately.
-- ... used only once after this period, we discard soon.
-- ... used many/frequently are moved to active list.
-
-Surely the scan rate (do I make sense?) should be different for this
-newly-read list and the inactive list. 
-
-I also remember your split mapped/unmapped active list patches from a
-while ago.
-
-Can someone point me to a up-to-date documentation about the Linux VM?
-The books and documents I've seen are outdated.
-
-> I think I've been banned from touching vmscan.c, but if you're keen to
-> try a patch, I might be convinced to come out of retirement :)
-
-I'm more than willing!  Now that CFS is merged, redirect your energies
-from nicksched to nick-vm ;)
-
-Patches against any tree (stable, linus, mm, rt) are good. But I prefer
-the last stable release because it narrows down the possible problems
-that a moving target like the development tree may have.
-
-I test this on my main system, so patches with basic testing and
-reasonable stability are preferred. I just want to avoid data corruption
-bugs. FYI, I used to run the -rt tree most of the time.
-
-> One man's trash is another's treasure: some people will want the
-> files to remain in cache because they'll use them again (copy it
-> somewhere else, or start editing it after being copied or whatever).
-> 
-> But yeah, we can probably do better at the sequential read/write
-> case.
-
-Sure, but there are many hints to detect this: *large* (> most of the
-RAM), *streaming*, *used once*
-
-But if a program mmap() a 3/4 of the RAM area and "play" in it, it's a
-good sign that the streaming code shouldn't be active.
-
-
-
-- Eric
-
-
+-- 
+Matt
