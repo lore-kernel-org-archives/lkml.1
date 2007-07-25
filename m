@@ -1,49 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764565AbXGYHuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765345AbXGYHtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764565AbXGYHuJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762376AbXGYHtw
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1765345AbXGYHtw (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 25 Jul 2007 03:49:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54872 "EHLO mx2.mail.elte.hu"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762544AbXGYHtn
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 25 Jul 2007 03:49:43 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:33231 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764280AbXGYHtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:49:51 -0400
-Date: Wed, 25 Jul 2007 09:49:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: david@lang.hm, Eric St-Laurent <ericstl34@sympatico.ca>,
-       Rene Herman <rene.herman@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
-       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-Message-ID: <20070725074931.GA5125@elte.hu>
-References: <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com> <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au> <Pine.LNX.4.64.0707242252250.2229@asgard.lang.hm> <46A6E80B.6030704@yahoo.com.au> <Pine.LNX.4.64.0707242316410.2229@asgard.lang.hm> <46A6FAD8.6050107@yahoo.com.au>
+	id S1762341AbXGYHtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:49:42 -0400
+X-Greylist: delayed 1940 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jul 2007 03:49:41 EDT
+Date: Wed, 25 Jul 2007 16:17:19 +0900
+From: Horms <horms@verge.net.au>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: linux-ia64 <linux-ia64@vger.kernel.org>, Tony Luck <tony.luck@intel.com>,
+       Andi Kleen <ak@suse.de>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Russell King <rmk@arm.linux.org.uk>, Gerd Hoffmann <kraxel@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: Regression in serial console on ia64 after 2.6.22
+Message-ID: <20070725071718.GB18068@verge.net.au>
+References: <20070719074147.GA23879@verge.net.au> <46A0191E.3000100@sun.com> <200707241657.33095.yinghai.lu@sun.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46A6FAD8.6050107@yahoo.com.au>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200707241657.33095.yinghai.lu@sun.com>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 24, 2007 at 04:57:32PM -0700, Yinghai Lu wrote:
+> 
+> IA64
+> 
+> Subject         : Regression in serial console on ia64 after 2.6.22
+> References      : http://marc.info/?l=linux-ia64&m=118483645914066&w=2
+> Last known good : ?
+> Submitter       : Horms <horms@verge.net.au>
+> Caused-By       : Yinghai Lu <Yinghai.Lu@Sun.COM>
+>                   commit 18a8bd949d6adb311ea816125ff65050df1f3f6e
+> Handled-By      : ?
+> Status          : unknown
+> 
+> 
+> please test this patch.
+> 
+> YH
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+I just posted a similar patch (sorry, I didn't see your post until
+afterwards). I guess that we both have the same ideas :)
 
-> And yet despite my repeated pleas, none of those people has yet spent 
-> a bit of time with me to help analyse what is happening.
+> 
+> 
+> [PATCH] ia64: move machvec_init before parse_early_param
+> 
+> So ia64_mv is initialized before early console
+> 
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> 
+> diff --git a/arch/ia64/kernel/machvec.c b/arch/ia64/kernel/machvec.c
+> index 13df337..a94feaa 100644
+> --- a/arch/ia64/kernel/machvec.c
+> +++ b/arch/ia64/kernel/machvec.c
+> @@ -14,12 +14,6 @@ struct ia64_machine_vector ia64_mv;
+>  EXPORT_SYMBOL(ia64_mv);
+>  
+>  static __initdata const char *mvec_name;
+> -static __init int setup_mvec(char *s)
+> -{
+> -	mvec_name = s;
+> -	return 0;
+> -}
+> -early_param("machvec", setup_mvec);
+>  
+>  static struct ia64_machine_vector * __init
+>  lookup_machvec (const char *name)
+> @@ -42,6 +36,10 @@ machvec_init (const char *name)
+>  
+>  	if (!name)
+>  		name = mvec_name ? mvec_name : acpi_get_sysname();
 
-btw., it might help to give specific, precise instructions about what 
-people should do to help you analyze this problem.
+I think that mvec_name can be disposed of all together as
+its only used by the line above and setup_mvec(), which in
+turn is only used by early_param. I got rid of mvec_name in
+my incantation of this patch, and it seemed to work quite well.
 
-	Ingo
+> +
+> +	if (!mvec_name)
+> +		mvec_name = name;
+> +
+>  	mv = lookup_machvec(name);
+>  	if (!mv)
+>  		panic("generic kernel failed to find machine vector for"
+> diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+> index cf06fe7..b06d7b7 100644
+> --- a/arch/ia64/kernel/setup.c
+> +++ b/arch/ia64/kernel/setup.c
+> @@ -481,6 +481,9 @@ int __init reserve_elfcorehdr(unsigned long *start, unsigned long *end)
+>  void __init
+>  setup_arch (char **cmdline_p)
+>  {
+> +#ifdef CONFIG_IA64_GENERIC
+> +	char *mvstr;
+> +#endif
+>  	unw_init();
+>  
+>  	ia64_patch_vtop((u64) __start___vtop_patchlist, (u64) __end___vtop_patchlist);
+> @@ -491,12 +494,15 @@ setup_arch (char **cmdline_p)
+>  	efi_init();
+>  	io_port_init();
+>  
+> -	parse_early_param();
+> -
+>  #ifdef CONFIG_IA64_GENERIC
+> -	machvec_init(NULL);
+> +	mvstr = strstr(*cmd_line_p, "machvec=")
+> +	if (mvstr)
+> +		mvstr = strchr(mvstr, '=') + 1;
+> +	machvec_init(mvstr);
+>  #endif
+
+Do you need to copy and truncate mvstr on ' ' in the case
+that machvec= isn't the last argument on the command line?
+I did this in my patch, though I didn't test to see if
+it was uneccessary.
+
+
+>  
+> +	parse_early_param();
+> +
+>  	if (early_console_setup(*cmdline_p) == 0)
+>  		mark_bsp_online();
+>  
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
+
