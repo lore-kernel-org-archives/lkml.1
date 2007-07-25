@@ -1,87 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764735AbXGYH4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763978AbXGYH6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764735AbXGYH4s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbXGYH4k
+	id S1763978AbXGYH6N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbXGYH6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:56:40 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:10443 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbXGYH4j (ORCPT
+	Wed, 25 Jul 2007 03:58:00 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:15334 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbXGYH56 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:56:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VguncO/iUvYpD+faFF4H7baZlVH/bSfqcqpX0PuOnWWpElKgOYurYyXl3xOm7HEG4xKg11WKjl+g/Q3VPsED2PcRaR+bbEnDh4wjgiQ66tUpYF6b3/ZMaqGkBHZUYhTlio2Lnj92ew70gVzBKEL61AfVGN3IcEm555aZfaVraDE=
-Message-ID: <e9f486400707250056i7f6ef2aducef8c0f7cf11c09c@mail.gmail.com>
-Date: Wed, 25 Jul 2007 09:56:38 +0200
-From: "Henri Hunnekens" <henrihunnekens@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: TSC calibration sometimes not correct with RT patch.
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20070725073949.GB595@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 25 Jul 2007 03:57:58 -0400
+Date: Wed, 25 Jul 2007 09:58:08 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Simon Arlott" <simon@fire.lp0.eu>, "Greg KH" <gregkh@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: sysfs/udev broken in 2.6.23-rc1 [input, i2c, ...] (Was:
+ sysfs/udev broken in latest git?)
+Message-ID: <20070725095808.09b2cc2a@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <3ae72650707241719w6c7f2dc7s1bc29d7f1dfd4288@mail.gmail.com>
+References: <46A59EAA.9030105@simon.arlott.org.uk>
+	<20070724072540.GA835@suse.de>
+	<20070724100314.3c606131@gondolin.boeblingen.de.ibm.com>
+	<20070724084654.GB13152@suse.de>
+	<3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com>
+	<20070724145433.4848ada1@gondolin.boeblingen.de.ibm.com>
+	<46A628AC.3060900@simon.arlott.org.uk>
+	<3ae72650707240934o68047677n97e6081ff3f42ce7@mail.gmail.com>
+	<46A62F6A.8010403@simon.arlott.org.uk>
+	<3ae72650707241719w6c7f2dc7s1bc29d7f1dfd4288@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e9f486400707250025k163d34cdk97cf2722db739634@mail.gmail.com>
-	 <20070725073949.GB595@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some more information, the problems occurs on a SMP machine. I've
-added the system logging which displays the CPU speed. The last line
-shows an inaccurate processor speed! I'll try an update, but I expect
-this has something to do with the TSC calibration and that hasn't
-changed, If I'm correct.
+On Wed, 25 Jul 2007 02:19:18 +0200,
+"Kay Sievers" <kay.sievers@vrfy.org> wrote:
 
-Jul 23 07:50:53 localhost kernel: Detected 1795.663 MHz processor.
-Jul 23 08:07:35 localhost kernel: Detected 1795.707 MHz processor.
-Jul 23 08:27:44 localhost kernel: Detected 1795.623 MHz processor.
-Jul 23 08:36:56 localhost kernel: Detected 1795.599 MHz processor.
-Jul 23 08:43:36 localhost kernel: Detected 1795.641 MHz processor.
-Jul 23 08:55:12 localhost kernel: Detected 1795.587 MHz processor.
-Jul 23 09:13:26 localhost kernel: Detected 1795.625 MHz processor.
-Jul 23 09:38:31 localhost kernel: Detected 1795.573 MHz processor.
-Jul 23 09:54:39 localhost kernel: Detected 1795.662 MHz processor.
-Jul 23 10:01:57 localhost kernel: Detected 1795.645 MHz processor.
-Jul 23 10:22:18 localhost kernel: Detected 1795.648 MHz processor.
-Jul 23 10:55:43 localhost kernel: Detected 1795.582 MHz processor.
-Jul 23 11:00:29 localhost kernel: Detected 1795.589 MHz processor.
-Jul 23 11:08:32 localhost kernel: Detected 1795.632 MHz processor.
-Jul 23 11:24:30 localhost kernel: Detected 1795.610 MHz processor.
-Jul 23 13:40:28 localhost kernel: Detected 1795.607 MHz processor.
-Jul 23 13:47:15 localhost kernel: Detected 1795.557 MHz processor.
-Jul 23 13:51:40 localhost kernel: Detected 1795.641 MHz processor.
-Jul 23 14:20:38 localhost kernel: Detected 1795.646 MHz processor.
-Jul 23 14:41:08 localhost kernel: Detected 1795.615 MHz processor.
-Jul 23 14:49:27 localhost kernel: Detected 1795.677 MHz processor.
-Jul 23 14:56:51 localhost kernel: Detected 1795.596 MHz processor.
-Jul 24 07:44:17 localhost kernel: Detected 1795.651 MHz processor.
-Jul 24 07:51:07 localhost kernel: Detected 1795.585 MHz processor.
-Jul 24 09:05:18 localhost kernel: Detected 1795.660 MHz processor.
-Jul 24 10:32:21 localhost kernel: Detected 1795.614 MHz processor.
-Jul 24 10:42:39 localhost kernel: Detected 1823.703 MHz processor.
-<--------------
+> > >> Removing the dev->parent->bus check fixes it:
+> 
+> Yes, let's remove the check, I will check now if we possibly need to
+> fix more than this or only the block-device patch.
+
+It seems this is the only place we check for dev->parent->bus in the
+current git tree.
+
+Patch below.
 
 
-2007/7/25, Ingo Molnar <mingo@elte.hu>:
->
-> * Henri Hunnekens <henrihunnekens@gmail.com> wrote:
->
-> > I've seen that the calbration of the TSC timer was not always done
-> > correctly, which resulted in incorrect timers.
-> >
-> > I found out that local_irq_disable is used before the calibration is
-> > started. However with the RT patch applied this does not mean that the
-> > interrupts are disabled and therefore the calibration may fails when
-> > it's interrupted by an interrupt. Correct me if I'm wrong.
->
-> local_irq_disable() still disables interrupts, even in PREEMPT_RT. So
-> the problem should be elsewhere. Can you see similar problems on .22-rt
-> too? The hrt code saw a number of updates there.
->
->         Ingo
->
+driver core: revert "device" link creation check
+
+Commit 2ee97caf0a6602f749ddbfdb1449e383e1212707 introduced an extra
+check on when to create the "device" symlink. Unfortunately, this
+breaks input, so let's revert to the old behaviour.
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+---
+ drivers/base/core.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -680,8 +680,7 @@ static int device_add_class_symlinks(str
+ 		if (error)
+ 			goto out_subsys;
+ 	}
+-	/* only bus-device parents get a "device"-link */
+-	if (dev->parent && dev->parent->bus) {
++	if (dev->parent) {
+ 		error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
+ 					  "device");
+ 		if (error)
