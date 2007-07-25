@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbXGZASl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbXGZATR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbXGZASl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 20:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbXGZASe
+	id S1756591AbXGZATR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 20:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbXGZAS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 20:18:34 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36048 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbXGZASd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 20:18:33 -0400
-Subject: Re: pte_offset_map for ppc assumes HIGHPTE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dave McCracken <dave.mccracken@oracle.com>
-Cc: Andreas Schwab <schwab@suse.de>, Satya <satyakiran@gmail.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <200707251830.21944.dave.mccracken@oracle.com>
-References: <acbcf3840707251516w301f834cj5f6a81a494d359ed@mail.gmail.com>
-	 <jewswodqcn.fsf@sykes.suse.de>
-	 <1185405765.5439.371.camel@localhost.localdomain>
-	 <200707251830.21944.dave.mccracken@oracle.com>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 10:18:13 +1000
-Message-Id: <1185409094.5495.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 25 Jul 2007 20:18:59 -0400
+Received: from [12.38.223.190] ([12.38.223.190]:28445 "EHLO
+	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751399AbXGZAS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 20:18:58 -0400
+X-Greylist: delayed 1766 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jul 2007 20:18:58 EDT
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18087.57717.495366.413571@zeus.sw.starentnetworks.com>
+Date: Wed, 25 Jul 2007 19:49:09 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: netdev@vger.kernel.org, davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
+       "Srinivas Akkipeddi" <sakkiped@starentnetworks.com>
+Subject: [PATCH] IPv6: ipv6_addr_type() doesn't know about RFC4193 addresses
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-25 at 18:30 -0500, Dave McCracken wrote:
-> On Wednesday 25 July 2007, Benjamin Herrenschmidt wrote:
-> > Depends... if you have CONFIG_HIGHMEM and not CONFIG_HIGHPTE, you are
-> > wasting time going through kmap_atomic unnecessarily no ? it will probably
-> > not do anything because the PTE page is in lowmem but still...
-> 
-> Probably not much time.  You still need to do the page to virtual translation, 
-> which kmap_atomic does for you.
 
-Fair enough.
+ipv6_addr_type() doesn't check for 'Unique Local IPv6 Unicast
+Addresses' (RFC4193) and returns IPV6_ADDR_RESERVED for that range.
 
-Ben.
+SCTP uses this function and will fail bind() and connect() calls that
+use RFC4193 addresses, SCTP will also ignore inbound connections from
+RFC4193 addresses if listening on IPV6_ADDR_ANY.
 
+There may be other users of ipv6_addr_type() that could also have
+problems.
+
+Signed-off-by: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+Cc: Srinivas Akkipeddi <sakkiped@starentnetworks.com>
+
+===== net/ipv6/addrconf_core.c 1.2 vs edited =====
+--- 1.2/net/ipv6/addrconf_core.c	2007-02-26 14:42:57 -05:00
++++ edited/net/ipv6/addrconf_core.c	2007-07-25 15:21:41 -04:00
+@@ -50,6 +50,9 @@
+ 	if ((st & htonl(0xFFC00000)) == htonl(0xFEC00000))
+ 		return (IPV6_ADDR_SITELOCAL | IPV6_ADDR_UNICAST |
+ 			IPV6_ADDR_SCOPE_TYPE(IPV6_ADDR_SCOPE_SITELOCAL));		/* addr-select 3.1 */
++	if ((st & htonl(0xFE000000)) == htonl(0xFC000000))
++		return (IPV6_ADDR_UNICAST |
++			IPV6_ADDR_SCOPE_TYPE(IPV6_ADDR_SCOPE_GLOBAL));			/* RFC 4193 */
+ 
+ 	if ((addr->s6_addr32[0] | addr->s6_addr32[1]) == 0) {
+ 		if (addr->s6_addr32[2] == 0) {
 
