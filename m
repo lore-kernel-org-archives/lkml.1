@@ -1,46 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761870AbXGYHFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761315AbXGYHF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761870AbXGYHFk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbXGYHF3
+	id S1761315AbXGYHF6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761389AbXGYHFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:05:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53237 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750944AbXGYHF3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:05:29 -0400
-Date: Wed, 25 Jul 2007 00:05:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chris Lalancette <clalance@redhat.com>
-Cc: linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH]: Add command-line option to i8042 to completely disable
- it
-Message-Id: <20070725000504.f8ce49c1.akpm@linux-foundation.org>
-In-Reply-To: <46A4DFD2.2010501@redhat.com>
-References: <46A4DFD2.2010501@redhat.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Jul 2007 03:05:37 -0400
+Received: from mx.fr.bfs.de ([194.95.226.137]:57626 "EHLO mail.fr.bfs.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759869AbXGYHFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:05:34 -0400
+Message-ID: <46A6F637.5080405@bfs.de>
+Date: Wed, 25 Jul 2007 09:05:27 +0200
+From: walter harms <wharms@bfs.de>
+Reply-To: wharms@bfs.de
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: crash with 2.6.22.1 crash:ll_rw_blk.c blk_remove_plug()
+References: <469DD37C.8050200@bfs.de> <20070718103342.GI11657@kernel.dk>	 <469DF233.5080902@bfs.de> <20070718110724.GN11657@kernel.dk>	 <469E072E.7080400@bfs.de> <20070718123142.GV11657@kernel.dk>	 <46A38B1E.3090605@bfs.de>	 <a781481a0707221020m3c3a397fifa9076aefc63148a@mail.gmail.com>	 <20070722221717.GV11657@kernel.dk> <a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com>
+In-Reply-To: <a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 13:05:22 -0400 Chris Lalancette <clalance@redhat.com> wrote:
 
-> (I tried to send this patch to linux-input@, but it seems to be currently having
-> some problems, so I'm going directly to LKML).
+
+Satyam Sharma wrote:
+> On 7/23/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+>> On Sun, Jul 22 2007, Satyam Sharma wrote:
+>> > Hi Walter,
+>> >
+>> > Thanks for reporting this.
+>> >
+>> > On 7/22/07, walter harms <wharms@bfs.de> wrote:
+>> >> hello all,
+>> >> on my asus notebook tm620 there is a crash with 2.6.22 and 2.6.21
+>> >
+>> > Did this happen when you were resuming from a suspend-to-ram/disk?
+>> > [ I ask because I see swsusp in the trace below, linux-pm added to
+>> Cc: ]
+>> >
+>> >> ....
+>> >> Using IPI Shortcut mode
+>> >> WARNING: at block/ll_rw_blk.c:1575 blk_remove_plug()
+>> >>  [<c01ac87e>] blk_remove_plug+0x36/0x5a
+>> >>  [<c01ac8b6>] __generic_unplug_device+0x14/0x1f
+>> >>  [<c01ad587>] __make_request+0x39b/0x49c
+>> >>  [<c01abc8c>] generic_make_request+0x228/0x255
+>> >>  [<c01adb54>] submit_bio+0xa5/0xac
+>> >>  [<c013e233>] mempool_alloc+0x37/0xae
+>> >>  [<c01314dc>] submit+0xc2/0x11d
+>> >>  [<c0131585>] bio_read_page+0x24/0x27
+>> >>  [<c013188b>] swsusp_check+0x4f/0xaf
+>> >>  [<c012f6c2>] software_resume+0x5f/0x108
+>> >>  [<c037867e>] kernel_init+0xb0/0x212
+>> >>  [<c0103a16>] ret_from_fork+0x6/0x1c
+>> >>  [<c03785ce>] kernel_init+0x0/0x212
+>> >>  [<c03785ce>] kernel_init+0x0/0x212
+>> >>  [<c010465b>] kernel_thread_helper+0x7/0x10
+>> >>  =======================
+>> >
+>> > Surprising, that's a WARN_ON(!irqs_disabled()) but IRQs are disabled
+>> > alright on that codepath. OTOH, __make_request() is heavily
+>> goto-driven,
+>> > uses the non-save/restore variants of spin_lock_irq, and does not even
+>> > balance locks / unlocks for some error paths ... gaah.
+>>
+>> __make_request() must be called from process context, hence
+>> spin_lock_irq() is perfectly already and the fastest way to go. And of
+>> course the locking is balanced! So please save your 'gaah's for code
+>> you actually took the time to try and understand.
 > 
-> Certain (broken) pieces of South Bridge hardware will respond to
-> i8042_read_status() on boot with 0x0, despite there not being a real i8042
-> controller hooked up in the south bridge.  This can cause the detection for the
-> i8042 to return a "phantom" device, which hangs up later initialization.  Note
-> that using "i8042.nokbd" and/or "i8042.noaux" do not help with this, since this
-> shows up during i8042_controller_check() (before either of those options are
-> checked).  This patch adds a command-line option "i8042.disable", which just
-> completely disables any checking for the i8042 controller.
+> You're right, I didn't really look at that code for long (it even
+> explicitly
+> comments about what's going with the locking in there!) sorry about
+> that.
+> 
+> [ Off-topic: BTW does every call to __make_request() end up in
+> blk_remove_plug()? Since you're explicitly making the assumption
+> that it *must* be called from process context (and hence the use of
+> the non-save/restore variants), you could consider putting a
+> WARN_ON(irqs_disabled()) over there, and perhaps a WARN_ON
+> (!spin_is_locked(queue_lock)) in blk_remove_plug() instead, and
+> other such similar functions that currently have the !irqs_disabled
+> check. This way you'd effectively cover _both_ the assertions,
+> and in appropriate places -- just a suggestion. ]
+> 
+>> But it does look like unbalanced irq disable/enable calls. I'd guess in
+>> the suspend/resume path. Obviously something more esoteric, since this
+>> is the first such report for 2.6.22, so like some not-very-used driver
+>> for instance.
+> 
+> Now that I do look at the codepath, it does seem surprising irqs were
+> not disabled there. There are a bunch of calls to _other_ functions
+> between the spin_lock_irq and the blk_remove_plug via
+> __generic_unplug_device that would also have complained about
+> !irqs_disabled.
+> 
+> Walter, does this happen reproducibly?
+> 
 
-That's an unfortunate fix.  Is there really no way in which we
-can auto-detect such a situation without requiring a manual
-setting?
+yes, with 2.6.21 and 2.6.22.1
+
+re,
+ wh
+
+
+
+
+
+
