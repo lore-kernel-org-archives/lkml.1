@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935124AbXGYSbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934955AbXGYScU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935124AbXGYSbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933803AbXGYSaQ
+	id S934955AbXGYScU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934796AbXGYSaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:30:16 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3020 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762095AbXGYSaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:30:13 -0400
-Date: Wed, 25 Jul 2007 14:02:50 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Ken Moffat <zarniwhoop@ntlworld.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] what should 'uptime' be on suspend?
-Message-ID: <20070725140250.GD9256@ucw.cz>
-References: <46A0210E.6010207@tmr.com> <20070720171729.GA19935@deepthought> <20070720104215.476f4cc1.randy.dunlap@oracle.com> <20070720175730.GB21550@deepthought> <46A2101D.5020400@tmr.com>
+	Wed, 25 Jul 2007 14:30:22 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:53555 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934788AbXGYSaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 14:30:21 -0400
+Date: Wed, 25 Jul 2007 20:31:32 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Cc: Nathan Lynch <ntl@pobox.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: x86_64 has 2 x arch_vma_name() - can we drop one?
+Message-ID: <20070725183132.GA28408@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46A2101D.5020400@tmr.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2007-07-21 09:54:37, Bill Davidsen wrote:
-> Ken Moffat wrote:
-> >On Fri, Jul 20, 2007 at 10:42:15AM -0700, Randy Dunlap 
-> >wrote:
-> >  
-> >>man uptime:
-> >>	uptime - tell how long the system has been running
-> >>
-> >>I claim that the system is not running when it is 
-> >>suspended,
-> >>so the suspension time should not be included in 
-> >>uptime.
-> >>
-> >>    
-> > So, maybe I shouldn't have put corrected in inverted 
-> > commas,
-> >because this was a real correction and my previous 
-> >usage was an
-> >unintended side-effect of an error.
-> >
-> > Anyway, the current behaviour is known and I guess any 
-> > attempt to
-> >change it (e.g. to what Bill was expecting) won't be 
-> >well received.
-> >  
-> 
-> So is setting it to a random number considered correct 
-> behavior? Any of the first three values I mentioned 
-> would make sense, but the value I see is neither time 
-> since resume, time since power-on to do the resume, or 
-> any of the logical uptime values. That was the whole 
-> point of the original post, the uptime reported makes no 
-> sense at all.
+In include/linux/mm.h arch_vma_name() is declared __weak.
+This hide the fact that x86_64 has 2 implementations of
+said function.
 
-Ouch, seems like something is wrong with timer subsystem. Can you
-verify that rest of the clock machinery behaves ok?
+In arch/x86_64/mm/init.c:
+const char *arch_vma_name(struct vm_area_struct *vma)
+{
+	if (vma->vm_mm && vma->vm_start == (long)vma->vm_mm->context.vdso)
+		return "[vdso]";
+	if (vma == &gate_vma)
+		return "[vsyscall]";
+	return NULL;
+}
 
-We do manual correction of uptime during resume (IIRC) - perhaps
-something goes wrong there?
+And in arch/x86_64/ia32/syscall32.c:
+const char *arch_vma_name(struct vm_area_struct *vma)
+{
+	if (vma->vm_start == VSYSCALL32_BASE &&
+	    vma->vm_mm && vma->vm_mm->task_size == IA32_PAGE_OFFSET)
+		return "[vdso]";
+	return NULL;
+}
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+As no comment were preceeding the fucntions this seems not to be on
+purpose.
+If I am correct which one should die?
+
+The reason why this popped up is that the __weak definition in mm.h
+causes problems on at least powerpc (trigger a binutils bug).
+A similar bug is present at ia64 - but I have not confirmed if the
+same fix is needed.
+
+	Sam
