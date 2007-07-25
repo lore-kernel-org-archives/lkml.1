@@ -1,42 +1,45 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382AbXGSXcW (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 19 Jul 2007 19:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbXGSXcK
+	id S1762397AbXGYDZ5 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 24 Jul 2007 23:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbXGYDZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jul 2007 19:32:10 -0400
-Received: from fallback.us4.outblaze.com ([205.158.62.120]:41671 "EHLO
-	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754807AbXGSXcJ convert rfc822-to-8bit (ORCPT
+	Tue, 24 Jul 2007 23:25:47 -0400
+Received: from nlpproxy06.prodigy.net.mx ([148.235.52.26]:56153 "EHLO
+	smtp.prodigy.net.mx" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753802AbXGYDZq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jul 2007 19:32:09 -0400
-X-OB-Received: from unknown (205.158.62.133)
-  by wfilter.us4.outblaze.com; 19 Jul 2007 22:35:49 -0000
-Content-Disposition: inline
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-Type: text/plain; charset=iso-8859-1
-MIME-Version: 1.0
-From: "i d" <isa2018@bsdmail.com>
-To: lenny2@email.it
-Date: Fri, 20 Jul 2007 06:35:49 +0800
-Subject: Re:molto interessante
-X-Originating-Ip: 86.122.37.81
-X-Originating-Server: ws5-3.us4.outblaze.com
-Message-Id: <20070719223549.3FBB62478D@ws5-3.us4.outblaze.com>
+	Tue, 24 Jul 2007 23:25:46 -0400
+Date: Tue, 24 Jul 2007 20:25:48 -0700
+From: Deporte6am <98989@prodigy.net.mx>
+Subject: Patrocinio Carrera Urbana 2007
+To: TURISMO <envio6am@yahoo.it>
+Reply-to: Deporte6am <envio6am@yahoo.it>
+Message-id: <419-22007732532548701@6am>
+MIME-version: 1.0
+Content-type: text/plain; charset=windows-1252
+Content-transfer-encoding: 8BIT
+X-imss-version: 2.047
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:2
+X-imss-tmaseResult: TT:1 TS:3.8192 TC:1F TRN:10 TV:3.6.1039(15320.003)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:3 C:3 M:3 S:3 R:3 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S932382AbXGSXcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1762397AbXGYDZ5@vger.kernel.org>
 
-Perch=E8 questo indirizzo ti sembra da meno?  http://www.stilisti-itali=
-ani.it
 
-C'=E8 tutta la moda made in Italy, provalo e fammi sapere. Ciao.
+Estimada Empresa y/o Agencia de Publicidad:
 
---=20
-_______________________________________________
-Get your free email from http://bsdmail.com
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Ver Video Carrera Urbana 2006
+
+http://www.youtube.com/watch?v=blZtzUDSbMg&eurl=http%3A%2F%2Fwww%2Edeporte6am%2Ecom%2F
+
+INFO PATROCINIO NOV. 2007:
+Quest Medios
+Tel 51350564
+
+www.deporte6am.com
+
+www.carreraurbana.com
+
