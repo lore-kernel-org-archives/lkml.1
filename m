@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934890AbXGYSxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934683AbXGYSx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934890AbXGYSxK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764638AbXGYSw7
+	id S934683AbXGYSx2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934848AbXGYSxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:52:59 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:43009 "EHLO pasmtpA.tele.dk"
+	Wed, 25 Jul 2007 14:53:09 -0400
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:54076 "EHLO sabe.cs.wisc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762604AbXGYSw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:52:58 -0400
-Date: Wed, 25 Jul 2007 20:53:28 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-rc1-mm1
-Message-ID: <20070725185328.GA28199@uranus.ravnborg.org>
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	id S934216AbXGYSxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 14:53:07 -0400
+Message-ID: <46A79C00.200@cs.wisc.edu>
+Date: Wed, 25 Jul 2007 13:52:48 -0500
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+CC: James Bottomley <James.Bottomley@steeleye.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       Roland Dreier <rdreier@cisco.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH trivial] include linux/mutex.h from scsi_transport_iscsi.h
+References: <20070725110907.GF3826@mellanox.co.il>
+In-Reply-To: <20070725110907.GF3826@mellanox.co.il>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 08:48:50PM +0200, Michal Piotrowski wrote:
-> On 25/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
-> >
-> >
+Michael S. Tsirkin wrote:
+> scsi/scsi_transport_iscsi.h uses struct mutex, so while
+> linux/mutex.h seems to be pulled in indirectly
+> by one of the headers it includes, the right thing
+> is to include linux/mutex.h directly.
 > 
-> Andi, this might be interesting for you
-> 
-> make allmodconfig
-> make
-> [...]
-> WARNING: Absolute relocations present
-> Offset     Info     Type     Sym.Value Sym.Name
-> c02041b3 00705601   R_386_32 c0308aa8  _sdata
 
-Who did spit out this warning. Can you please provide make V=1
-where we see the lines preceeding the warning.
-
-And config please.
-
-	Sam
+Is that part about always including the header directly right? If so 
+then were you going to include list.h too, and were you going to fix up 
+some of the other iscsi code?
