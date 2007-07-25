@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbXGYDpC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbXGYDso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbXGYDpC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 23:45:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbXGYDow
+	id S1762173AbXGYDso (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 23:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXGYDsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 23:44:52 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:37441 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755994AbXGYDow (ORCPT
+	Tue, 24 Jul 2007 23:48:37 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:32019 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752773AbXGYDsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 23:44:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=IPwB1/bHMJSB7RlcIgCvoQ1ijUKVe8DLhcD/3eLrDr9vm+zANftmBk5b5zC3m+g7FD5CaNwhGRt4Zs02GL8LOrsrdnHvecq9WGA1T/JjeAgYC30xYXtpN1lCVgL9cWxbHCx8mC/LTFdxnTg+5EzJq7r0EEh2OjQ8L0/cF2/fGpo=  ;
-X-YMail-OSG: GkPcvu8VM1mD1Mby7oqErVcVd8JY9xSJKVd8ZaipnxW6s_mZ
-Message-ID: <46A6C72A.9020801@yahoo.com.au>
-Date: Wed, 25 Jul 2007 13:44:42 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 24 Jul 2007 23:48:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=RGQn4pXyG8a8Vpw1JwvQpA0k6l2Kx84IXw7oPRxN4+dod02JOv6c8DlqyNrcMr8bKrLivyAtjCx1oJR35de8xw9proJZ/RZ2tL19YqG5cXiE02e6Qt+v0wclHqNAQ7bUzGeJldlA7bJQ5Xj/mBU9C51VVYuFCcMSfqeTYmgNjrw=
+Message-ID: <91b13c310707242048lb54b071u5e7fc4272b142475@mail.gmail.com>
+Date: Wed, 25 Jul 2007 11:48:35 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Alexander Viro" <viro@zeniv.linux.org.uk>
+Subject: [RFC] fs/super.c: Why alloc_super use a static variable default_op?
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Bret Towe <magnade@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear
- mappings
-References: <dda83e780707241027k369c2f01j6d16b21266df3a05@mail.gmail.com>
-In-Reply-To: <dda83e780707241027k369c2f01j6d16b21266df3a05@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bret Towe wrote:
-> for a while in -git I've had an issue that on boot when gdm loads the
-> screen stays black
-> using ctrl-f1 doesn't return to a console and killing X doesn't help any
-> ssh'ing into the box does work top only shows 100% io-wait
-> dmesg shows nothing odd
-> 
-> the work around I have is at the moment is to just move the radeon drm 
-> module
-> out of the way so it doesn't load on boot and X works just fine like that
-> I did some bisecting which took a few days and tracked it down to
-> commit d00806b183152af6d24f46f0c33f14162ca1262a
-> 
-> its way to complex for me to revert it on top of -rc1 to verify that's
-> the issue tho
-> I keep forgetting to get a trace of what its waiting on when I'm in that 
-> kernel
-> I assume that would be of use and Ill get that later
-> 
-> the box this is happening on is a g4 mac mini the built in card is a 
-> radeon 9200
-> I'm not seeing any issues on an amd64 box with radeon card it's also a 
-> 9600 tho
+Why alloc_super use a static variable default_op?
+the static struct super_operations default_op is just all zeros, and
+just referenced as the initial value of a new allocated super_block,
+what does it for?
 
-Is this with a binary-only module? We saw an issue with that in SLES9
-where the module is returning a locked page from its nopage handler
-when it isn't really supposed to. It might be fixed in latest drivers,
-have you tried them?
+the filesystem dependent code such as ext2_fill_super would fill this
+field eventually,
+and after carefully checked, it seems no one filesystem would need a
+all zero default_op,
 
-Thanks,
-Nick
+as the command output in the kernel source tree:
+$ grep -RInw s_op fs/
+You could check all the use of s_op.
+
+/**
+ *	alloc_super	-	create new superblock
+ *	@type:	filesystem type superblock should belong to
+ *
+ *	Allocates and initializes a new &struct super_block.  alloc_super()
+ *	returns a pointer new superblock or %NULL if allocation had failed.
+ */
+static struct super_block *alloc_super(struct file_system_type *type)
+{
+	struct super_block *s = kzalloc(sizeof(struct super_block),  GFP_USER);
+
+	static struct super_operations default_op;
+
+	if (s) {
+		...
+		s->s_op = &default_op;
+		s->s_time_gran = 1000000000;
+	}
+out:
+	return s;
+}
+
 
 -- 
-SUSE Labs, Novell Inc.
+Denis Cheng
+Linux Application Developer
+
+"One of my most productive days was throwing away 1000 lines of code."
+ - Ken Thompson.
