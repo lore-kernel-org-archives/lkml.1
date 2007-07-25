@@ -1,88 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935107AbXGYTNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934580AbXGYTOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935107AbXGYTNv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761004AbXGYTNl
+	id S934580AbXGYTOU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760639AbXGYTNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 25 Jul 2007 15:13:42 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50158 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761013AbXGYTNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Jul 2007 15:13:41 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:58973 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760956AbXGYTNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:13:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iY5cq7/XVV/bsOThGLvP2WQuexxZ2VthfG5MVXypHHGnspaoOslKm18LcaK6F0yzfQTOyXlCx5wQTIYgidGR6yBCBSrJqXaaBAHFQoyVoYYfh7aLNSzQzbAK/6AN0kYr/kQ/mJqDrSoIwjNU7pMMsK9RC7MZ0ikwi7t3L7aUYRU=
-Message-ID: <f158dc670707251213i65501f9eh6d35a8712583cd90@mail.gmail.com>
-Date: Wed, 25 Jul 2007 13:13:34 -0600
-From: "Latchesar Ionkov" <lucho@ionkov.net>
-To: "Eric Van Hensbergen" <ericvh@gmail.com>
-Subject: Re: net/9p/mux.c: use-after-free
-Cc: "Adrian Bunk" <bunk@stusta.de>, v9fs-developer@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <a4e6962a0707251143ie0b0ce8s7d4a9078fed7eb26@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Wed, 25 Jul 2007 12:13:34 -0700
+From: sukadev@us.ibm.com
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Serge Hallyn <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 13/16] Switch to operating with pid_numbers instead of pids
+Message-ID: <20070725191334.GA19976@us.ibm.com>
+References: <468DF6F7.1010906@openvz.org> <468DF907.2060809@openvz.org> <20070725003619.GF3287@us.ibm.com> <46A720C8.5070803@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070723012014.GV26212@stusta.de>
-	 <a4e6962a0707251143ie0b0ce8s7d4a9078fed7eb26@mail.gmail.com>
-X-Google-Sender-Auth: a269294c00286a8d
+In-Reply-To: <46A720C8.5070803@openvz.org>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yep, it's a leak.
+Pavel Emelianov [xemul@openvz.org] wrote:
+| sukadev@us.ibm.com wrote:
+| >Pavel Emelianov [xemul@openvz.org] wrote:
+| >| Make alloc_pid() initialize pid_numbers and hash them
+| >| into the hashtable, not the struct pid itself.
+| >| 
+| >| Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+| >| 
+| >| ---
+| >| 
+| >|  pid.c |   47 +++++++++++++++++++++++++++++++++--------------
+| >|  1 files changed, 33 insertions(+), 14 deletions(-)
+| >| 
+| >| --- ./kernel/pid.c.ve12	2007-07-05 11:06:41.000000000 +0400
+| >| +++ ./kernel/pid.c	2007-07-05 11:08:23.000000000 +0400
+| >| @@ -28,8 +28,10 @@
+| >|  #include <linux/hash.h>
+| >|  #include <linux/pid_namespace.h>
+| >|  #include <linux/init_task.h>
+| >| +#include <linux/proc_fs.h>
+| >| 
+| >| -#define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
+| >| +#define pid_hashfn(nr, ns)	\
+| >| +	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+| >|  static struct hlist_head *pid_hash;
+| >|  static int pidhash_shift;
+| >|  struct pid init_struct_pid = INIT_STRUCT_PID;
+| >| @@ -194,7 +198,7 @@ fastcall void put_pid(struct pid *pid)
+| >|  	if (!pid)
+| >|  		return;
+| >| 
+| >| -	ns = pid->numbers[0].ns;
+| >| +	ns = pid->numbers[pid->level].ns;
+| >|  	if ((atomic_read(&pid->count) == 1) ||
+| >|  	     atomic_dec_and_test(&pid->count))
+| >|  		kmem_cache_free(ns->pid_cachep, pid);
+| >| @@ -210,13 +214,17 @@ static void delayed_put_pid(struct rcu_h
+| >|  fastcall void free_pid(struct pid *pid)
+| >|  {
+| >|  	/* We can be called with write_lock_irq(&tasklist_lock) held */
+| >| +	int i;
+| >|  	unsigned long flags;
+| >| 
+| >|  	spin_lock_irqsave(&pidmap_lock, flags);
+| >| -	hlist_del_rcu(&pid->pid_chain);
+| >| +	for (i = 0; i <= pid->level; i++)
+| >| +		hlist_del_rcu(&pid->numbers[i].pid_chain);
+| >|  	spin_unlock_irqrestore(&pidmap_lock, flags);
+| >| 
+| >| -	free_pidmap(&init_pid_ns, pid->nr);
+| >| +	for (i = 0; i <= pid->level; i++)
+| >| +		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
+| >| +
+| >|  	call_rcu(&pid->rcu, delayed_put_pid);
+| >|  }
+| >| 
+| >| @@ -224,30 +232,43 @@ struct pid *alloc_pid(struct pid_namespa
+| >|  {
+| >|  	struct pid *pid;
+| >|  	enum pid_type type;
+| >| -	int nr = -1;
+| >| +	struct pid_namespace *ns;
+| >| +	int i, nr;
+| >| 
+| >| -	pid = kmem_cache_alloc(init_pid_ns.pid_cachep, GFP_KERNEL);
+| >| +	pid = kmem_cache_alloc(pid_ns->pid_cachep, GFP_KERNEL);
+| >|  	if (!pid)
+| >|  		goto out;
+| >| 
+| >| -	nr = alloc_pidmap(current->nsproxy->pid_ns);
+| >| -	if (nr < 0)
+| >| -		goto out_free;
+| >| +	ns = pid_ns;
+| >| +	for (i = pid_ns->level; i >= 0; i--) {
+| >| +		nr = alloc_pidmap(ns);
+| >| +		if (nr < 0)
+| >| +			goto out_free;
+| >
+| >If pid_ns->level is say 3 and alloc_pidmap() succeeds when i=0,1
+| 
+| It cannot :) If level is 3, then we'll allocate for 3, 2, 1, 0 sequence.
+| The loop is descending, not ascending...
 
-Thanks,
-    Lucho
+Aah descending - thats right. But I still think there is a problem.
 
-On 7/25/07, Eric Van Hensbergen <ericvh@gmail.com> wrote:
-> On 7/22/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > The Coverity checker spotted the following use-after-free
-> > in net/9p/mux.c:
-> >
-> > <--  snip  -->
-> >
-> > ...
-> > struct p9_conn *p9_conn_create(struct p9_transport *trans, int msize,
-> >                                     unsigned char *extended)
-> > {
-> > ...
-> >         if (!m->tagpool) {
-> >                 kfree(m);
-> >                 return ERR_PTR(PTR_ERR(m->tagpool));
-> >         }
-> > ...
-> >
-> > <--  snip  -->
-> >
->
-> I've got a fix for this one:
->         if (!m->tagpool) {
->                 mtmp = ERR_PTR(PTR_ERR(m->tagpool));
->                 kfree(m);
->                 return mtmp;
->         }
->
-> but I was wondering about one of the other returns further down the function:
->
-> ...
->         memset(&m->poll_waddr, 0, sizeof(m->poll_waddr));
->         m->poll_task = NULL;
->         n = p9_mux_poll_start(m);
->         if (n)
->                 return ERR_PTR(n);
->
->         n = trans->poll(trans, &m->pt);
-> ...
->
-> lucho: doesn't that constitute a leak?  Shouldn't we be doing:
->
->         if (n) {
->                 kfree(m);
->                 return ERR_PTR(n);
->         }
->
->          -eric
->
+Here is your code that I am referring to:
+
+        pid = kmem_cache_alloc(pid_ns->pid_cachep, GFP_KERNEL);
+        if (!pid)
+                goto out;
+
+        ns = pid_ns;
+        for (i = pid_ns->level; i >= 0; i--) {
+                nr = alloc_pidmap(ns);
+                if (nr < 0)
+                        goto out_free;
+
+                pid->numbers[i].nr = nr;
+                pid->numbers[i].ns = ns;
+                ns = ns->parent;
+        }
+
+	pid->level = pid_ns->level;
+
+	<snip>
+
+out:
+	return pid;
+out_free:
+        for (i++; i <= pid->level; i++)
+                free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
+
+        kmem_cache_free(pid_ns->pid_cachep, pid);
+        pid = NULL;
+	goto out;
+
+<end code>
+
+Lets say initially pid_ns->level = 3 and alloc_pidmap() succeeds for
+i=3 and i=2 but fails for i=1 and we execute "goto out_free".
+
+But pid->level is uninitialized at this point right ?
+
+Even if it were set to zero (using kmem_cache_zalloc()), we may not
+free the two pidmap entries we allocated for i=3 and i=2.
+
+Suka
