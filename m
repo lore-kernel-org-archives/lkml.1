@@ -1,71 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXGYAT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbXGYAUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932178AbXGYAT3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 20:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbXGYATU
+	id S932121AbXGYAUJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 20:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760413AbXGYATn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 20:19:20 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:57615 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755023AbXGYATT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 20:19:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=AhLRiCdetZcY5hcb4ClvTO9BvtPePIS9DkYxUOwuGxa0CjdI80/vB7QOc4UQO8sHaG6WwoXkg9xnHe7jIRXShefQkR6f53j7Hvi9Uy2xTua3jTDnK0m05hXwpLriMjHmt+b1Vj5GBu257AnFOvVl9iBBElmYj6IZu46JkKN9W5Q=
-Message-ID: <3ae72650707241719w6c7f2dc7s1bc29d7f1dfd4288@mail.gmail.com>
-Date: Wed, 25 Jul 2007 02:19:18 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Simon Arlott" <simon@fire.lp0.eu>
-Subject: Re: sysfs/udev broken in 2.6.23-rc1 [input, i2c, ...] (Was: sysfs/udev broken in latest git?)
-Cc: "Cornelia Huck" <cornelia.huck@de.ibm.com>, "Greg KH" <gregkh@suse.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <46A62F6A.8010403@simon.arlott.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 24 Jul 2007 20:19:43 -0400
+Received: from www.osadl.org ([213.239.205.134]:57369 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932274AbXGYATg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 20:19:36 -0400
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcin ??lusarz <marcin.slusarz@gmail.com>,
+       Jarek Poplawski <jarkao2@o2.pl>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070724200431.GA22190@elte.hu>
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
+	 <20070629150759.GC2771@ff.dom.local>
+	 <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com>
+	 <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu>
+	 <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
+	 <20070724200431.GA22190@elte.hu>
+Content-Type: text/plain
+Date: Wed, 25 Jul 2007 02:19:31 +0200
+Message-Id: <1185322771.4175.102.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46A59EAA.9030105@simon.arlott.org.uk>
-	 <20070724072540.GA835@suse.de>
-	 <20070724100314.3c606131@gondolin.boeblingen.de.ibm.com>
-	 <20070724084654.GB13152@suse.de>
-	 <3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com>
-	 <20070724145433.4848ada1@gondolin.boeblingen.de.ibm.com>
-	 <46A628AC.3060900@simon.arlott.org.uk>
-	 <3ae72650707240934o68047677n97e6081ff3f42ce7@mail.gmail.com>
-	 <46A62F6A.8010403@simon.arlott.org.uk>
-X-Google-Sender-Auth: abaac181bcd889cd
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/24/07, Simon Arlott <simon@fire.lp0.eu> wrote:
-> On 24/07/07 17:34, Kay Sievers wrote:
-> > On 7/24/07, Simon Arlott <simon@fire.lp0.eu> wrote:
-> >> On 24/07/07 13:54, Cornelia Huck wrote:
-> >> > On Tue, 24 Jul 2007 11:20:02 +0200,
-> >> > "Kay Sievers" <kay.sievers@vrfy.org> wrote:
-> >> >
-> >> >> It looks fine to me. "device" links must never point to anything else
-> >> >> than a bus device.
+On Tue, 2007-07-24 at 22:04 +0200, Ingo Molnar wrote:
+> Marcin, could you try the patch below too? [without having any other 
+> patch applied.] It basically turns the critical section into an irqs-off 
+> critical section and thus checks whether your problem is related to that 
+> particular area of code.
+> 
 
-While it's still true, for input we have special rules because the
-"stacked class devices" existed only there. At least for
-SYSFS_DEPRECATED, all input devices should have a "device" symlink
-pointing to the bus-device.
+I read back on this thread and I think the problem is somewhere else:
 
-> >> > Hm, but then
-> >> > 1. The patch sneaks this check in (the old code only checked for
-> >> >    dev->parent)
-> >> > 2. The code is rather inconsistent now, since none of the other code
-> >> >    paths check for dev->parent->bus...
+delayed disable relies on the ability to re-trigger the interrupt in the
+case that a real interrupt happens after the software disable was set.
+In this case we actually disable the interrupt on the hardware level
+_after_ it occurred.
 
-Yeah, that's true.
+On enable_irq, we need to re-trigger the interrupt. On i386 this relies
+on a hardware resend mechanism (send_IPI_self()). 
 
-> >> Removing the dev->parent->bus check fixes it:
+Actually we only need the resend for edge type interrupts. Level type
+interrupts come back once enable_irq() re-enables the interrupt line.
 
-Yes, let's remove the check, I will check now if we possibly need to
-fix more than this or only the block-device patch.
+I assume that the interrupt in question is level triggered because it is
+shared and above the legacy irqs 0-15:
+
+	17:         12   IO-APIC-fasteoi   eth1, eth0
+
+Looking into the IO_APIC code, the resend via send_IPI_self() happens
+unconditionally. So the resend is done for level and edge interrupts.
+This makes the problem more mysterious.
+
+The code in question lib8390.c does
+
+	disable_irq();
+	fiddle_with_the_network_card_hardware()
+	enable_irq();
+
+The fiddle_with_the_network_card_hardware() might cause interrupts,
+which are cleared in the same code path again,
+
+Marcin found that when he disables the irq line on the hardware level
+(removing the delayed disable) the card is kept alive.
+
+So the difference is that we can get a resend on enable_irq, when an
+interrupt happens during the time, where we are in the disabled region.
+
+No idea how this affects the network card, as the code there must be
+able to handle interrupts, which are not originated from the card due to
+interrupt sharing.
+
+Marcin, can you please try the patch below ? It's just a debugging aid
+to gather some more data about that problem.
+
+If the patch fixes the problem, then we should try to disable the resend
+mechanism for not edge type irq lines on the irq_chip level (i.e. the
+IOAPIC code)
 
 Thanks,
-Kay
+
+	tglx
+
+--- linux-2.6.orig/kernel/irq/resend.c
++++ linux-2.6/kernel/irq/resend.c
+@@ -62,6 +62,15 @@ void check_irq_resend(struct irq_desc *desc, unsigned int irq)
+ 	 */
+ 	desc->chip->enable(irq);
+ 
++	/*
++	 * Temporary hack to figure out more about the problem, which
++	 * is causing the ancient network cards to die.
++	 */
++	if (desc->handle_irq != handle_edge_irq) {
++		printk(KERN_DEBUG "Skip resend for irq %u\n", irq);
++		return;
++	}
++
+ 	if ((status & (IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
+ 		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
+ 
+
+
