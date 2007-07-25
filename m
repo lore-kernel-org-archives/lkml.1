@@ -1,53 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934526AbXGYR27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934525AbXGYR3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934526AbXGYR27 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 13:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbXGYR2a
+	id S934525AbXGYR3v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 13:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764937AbXGYR3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 13:28:30 -0400
-Received: from pat.uio.no ([129.240.10.15]:41696 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755682AbXGYR23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 13:28:29 -0400
-Subject: Re: [patch] nfs: fix locking in nfs/inode.c in
-	nfs_free_open_context
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Christian Krafft <krafft@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070725170837.5fba5fd1@localhost>
-References: <20070725170837.5fba5fd1@localhost>
-Content-Type: text/plain
-Date: Wed, 25 Jul 2007 13:28:22 -0400
-Message-Id: <1185384502.6585.97.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 25 Jul 2007 13:29:38 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:59105 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755529AbXGYR3h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 13:29:37 -0400
+Message-ID: <46A78873.6010107@freescale.com>
+Date: Wed, 25 Jul 2007 12:29:23 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.7.10) Gecko/20050909 Red Hat/1.7.10-1.1.3.2
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+CC: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+ for CF	interface
+References: <20070725165318.5331.23795.stgit@localhost.localdomain> <20070725165326.5331.19920.stgit@localhost.localdomain>
+In-Reply-To: <20070725165326.5331.19920.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.104)
-X-UiO-Scanned: A2AC0103E329E23C0CD73CAEC8060C1AB9FA86CF
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 226 total 2968963 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-25 at 17:08 +0200, Christian Krafft wrote:
+Vitaly Bordug wrote:
+> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> index db0d003..f8f0e8a 100644
+> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> @@ -37,6 +37,15 @@
+>  		reg = <00000000 10000000>;
+>  	};
+>  
+> +	ide@f0000000 {
+> +		compatible = "mmio-ide";
+> +		device_type = "ide";
+> +		reg = <f0000000 10 f000020c 4>;
+> +		ioport_shift = <1>;
+> +		interrupts = <17 8>;
+> +		interrupt-parent = < &ipic >;
+> +	};
+> +
 
-> Obviously the locking code in nfs_free_open_context is wrong.
-> Checking the list for entries and removing the entry should be an atomic operation.
+Is this binding documented anywhere?  If it's a new binding, could we 
+use reg-shift instead of ioport_shift?  This is what ns16550 uses, and 
+in general dashes are preferable to underscores in device trees 
+(device_type is an ugly, historical exception).
 
-Wrong. It is quite safe to test the structure member ctx->list for
-emptiness outside the spinlock because we have an explicit guarantee
-that nobody else has a reference to this structure, plus the
-atomic_dec_and_test() in kref_put() has acted as a memory barrier for
-us.
+> diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> index 40a0194..d63a104 100644
+> --- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/delay.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/root_dev.h>
+> +#include <linux/pata_platform.h>
+>  
+>  #include <asm/system.h>
+>  #include <asm/atomic.h>
+> @@ -43,6 +44,75 @@ unsigned long isa_io_base = 0;
+>  unsigned long isa_mem_base = 0;
+>  #endif
+>  
+> +static int __init mmio_ide_of_init(void)
+> +{
+> +	struct device_node *np;
+> +	unsigned int i;
+> +
+> +	for (np = NULL, i = 0;
+> +	     (np = of_find_compatible_node(np, "ide", "mmio-ide")) != NULL;
+> +	     i++) {
+> +		int ret = 0;
+> +		struct resource res[3];
+> +		struct platform_device *pdev = NULL;
+> +		static struct pata_platform_info pdata;
 
-> Also list_del_init should be used, because list_del will leave the empty list in
-> an undefined condition.
+We really don't want code like this for every board with an MMIO IDE 
+controller.  At the very least, make it a generic function in sysdev; 
+better would be to make the driver also support of_platform devices.
 
-Huh? We're freeing the context. It will _never_ _ever_ _ever_ be used
-again. If anything tries to use ctx->list after this, then that is a
-major bug.
-
-Patch rejected...
-
-Trond
-
+-Scott
