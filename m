@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbXGYIkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762469AbXGYIks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbXGYIkP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 04:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbXGYIkE
+	id S1762469AbXGYIks (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 04:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXGYIkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 04:40:04 -0400
-Received: from mail.beamnet.de ([87.106.41.124]:58682 "EHLO server2.beamnet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751966AbXGYIkD (ORCPT <rfc822;<linux-kernel@vger.kernel.org>>);
-	Wed, 25 Jul 2007 04:40:03 -0400
-X-Greylist: delayed 1119 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jul 2007 04:40:03 EDT
-Subject: [PATCH] usb-serial: fix oti6858.c segfault in termios handling
-MIME-Version: 1.0
-Message-Id: <12789.1185351681.852842@server2.beamnet.de>
-Date: Wed, 25 Jul 2007 10:21:21 +0200
-From: Thomas Viehmann <tv@beamnet.de>
-To: <linux-kernel@vger.kernel.org>
-Cc: <linux-usb-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+	Wed, 25 Jul 2007 04:40:37 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:44684 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753263AbXGYIkf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 04:40:35 -0400
+Subject: Re: [RFC] fix slub krealloc()
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070723143724.1d0b26eb@schroedinger.engr.sgi.com>
+References: <1184773331.4002.4.camel@johannes.berg>
+	 <20070723133206.2220db7e@schroedinger.engr.sgi.com>
+	 <20070723134713.2b1218bd.akpm@linux-foundation.org>
+	 <20070723143724.1d0b26eb@schroedinger.engr.sgi.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zmcaQcGyeJBTNGZ0Latl"
+Date: Wed, 25 Jul 2007 10:40:56 +0200
+Message-Id: <1185352857.4006.4.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The oti6858 usb serial driver should use 
-kernel_termios_to_user_termios/
-user_termios_to_kernel_termios to avoid segfaults because the kernel
-uses a structure differing from that of user space with a different 
-size.
 
-Signed-off-by: Thomas Viehmann <tv@beamnet.de>
----
-I'm don't know the least thing about the type casting (it is lifted
-from kobil_sct.c), but I do get better success with the patch...
---- linux-2.6.23-rc1/drivers/usb/serial/oti6858.c.orig
-+++ linux-2.6.23-rc1/drivers/usb/serial/oti6858.c
-@@ -818,19 +818,22 @@
+--=-zmcaQcGyeJBTNGZ0Latl
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-        switch (cmd) {
-                case TCGETS:
--                       if (copy_to_user(user_arg, port->tty->termios,
--                                               sizeof(struct 
-ktermios))) {
-+                       if (kernel_termios_to_user_termios(
-+                                            (struct ktermios __user 
-*)arg,
-+                                            port->tty->termios))
-                                return -EFAULT;
--                       }
-                        return 0;
 
-                case TCSETS:
-                case TCSETSW:                  case TCSETSF:   -      
-                  if (copy_from_user(port->tty->termios, user_arg,
--                                               sizeof(struct 
-ktermios))) {
-+                       if 
-(user_termios_to_kernel_termios(port->tty->termios,
-+                                               (struct ktermios 
-__user *)arg))
-                                return -EFAULT;
--                       }
-                        oti6858_set_termios(port, NULL);
-                        return 0;
+> > I think we already fixed this?
 
---
-Thomas Viehmann, http://thomas.viehmann.net/
+> >     Fix ZERO_OR_NULL_PTR(ZERO_SIZE_PTR)
+>=20
+> There is no use of ZERO_OR_NULL ptr in krealloc. Linus added a check to
+> ksize() instead so that ksize(NULL) returns 0 instead of failing.
+
+However, this still doesn't fix the other corner case I pointed out:
+krealloc(NULL, 0, GFP_KERNEL) will give you a NULL pointer instead of a
+ZERO_SIZE_PTR afaict.
+
+johannes
+
+--=-zmcaQcGyeJBTNGZ0Latl
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGpwyY/ETPhpq3jKURAmm+AJ9fgdEet6EDdUkAsOkrMYq6smzK8ACgp8PC
+oArGqIqQwBK9aVRKjaJl+hs=
+=Eoff
+-----END PGP SIGNATURE-----
+
+--=-zmcaQcGyeJBTNGZ0Latl--
+
