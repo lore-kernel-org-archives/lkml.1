@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764049AbXGYNFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765289AbXGYNHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764049AbXGYNFs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbXGYNFl
+	id S1765289AbXGYNHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbXGYNGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:05:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43499 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755355AbXGYNFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:05:39 -0400
-Date: Wed, 25 Jul 2007 15:05:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: John Sigler <linux.kernel@free.fr>
-Cc: linux-rt-users@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Pin-pointing the root of unusual application latencies
-Message-ID: <20070725130536.GA12334@elte.hu>
-References: <469600F7.3060603@free.fr> <20070723095357.GA886@elte.hu> <46A4B7C2.1070304@free.fr> <20070723160442.GA7995@elte.hu> <46A5B8E3.4060004@free.fr> <46A74A58.1070704@free.fr>
+	Wed, 25 Jul 2007 09:06:53 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:50780 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbXGYNGw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:06:52 -0400
+Date: Wed, 25 Jul 2007 14:06:49 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
+Message-ID: <20070725130649.GC32445@skynet.ie>
+References: <1185185020.8197.11.camel@twins> <20070723112143.GB19437@skynet.ie> <1185190711.8197.15.camel@twins> <Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com> <1185256869.8197.27.camel@twins> <Pine.LNX.4.64.0707240007100.3128@schroedinger.engr.sgi.com> <1185261894.8197.33.camel@twins> <Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com> <20070724120751.401bcbcb@schroedinger.engr.sgi.com> <20070724122542.d4ac734a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <46A74A58.1070704@free.fr>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070724122542.d4ac734a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On (24/07/07 12:25), Andrew Morton didst pronounce:
+> On Tue, 24 Jul 2007 12:07:51 -0700
+> Christoph Lameter <clameter@sgi.com> wrote:
+> 
+> > Then there are some other flags. I am wondering why they are in
+> > GFP_LEVEL_MASK?
+> > 
+> > __GFP_COLD	Does not make sense for slab allocators since we have
+> > 		to touch the page immediately.
+> > 
+> > __GFP_COMP	No effect. Added by the page allocator on their own
+> > 		if a higher order allocs are used for a slab.
+> > 
+> > __GFP_MOVABLE	The movability of a slab is determined by the
+> > 		options specified at kmem_cache_create time. If this is
+> > 		specified at kmalloc time then we will have some random
+> > 		slabs movable and others not. 
+> 
+> Yes, they seem inappropriate.  Especially the first two.
 
-* John Sigler <linux.kernel@free.fr> wrote:
+And the third one is also inappropriate by the definition of GFP_LEVEL_MASK
+Christoph is using. If GFP_LEVEL_MASK is to be used to filter out flags
+that are unsuitable for higher allocators such as slab and vmalloc, then
+they shouldn't be using __GFP_MOVABLE because they are unlikely to do the
+correct thing with the pages.
 
-> >With a pair of the following in the middle:
-> >
-> >softirq--4     0....  670us : call_rcu (rt_run_flush)
-> >softirq--4     0D..1  670us : __rcu_advance_callbacks (call_rcu)
+When the flags were added, I was treating GFP_LEVEL_MASK as a set of
+allowed flags to the allocator.
 
-> Any idea what went wrong in the above function trace? Why is the 
-> kernel spinning in circles that way?
-
-does your test-app have higher priority than softirq--4 ?
-
-	Ingo
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
