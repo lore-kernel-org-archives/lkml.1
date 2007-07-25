@@ -1,302 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935875AbXGYTaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935970AbXGYTau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935875AbXGYTaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763206AbXGYTaZ
+	id S935970AbXGYTau (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935692AbXGYTac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:30:25 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53702 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753763AbXGYTaY (ORCPT
+	Wed, 25 Jul 2007 15:30:32 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45616
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S935418AbXGYTa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:30:24 -0400
-Date: Wed, 25 Jul 2007 12:25:46 -0700
-Message-Id: <200707251925.l6PJPkvj026348@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [GIT PULL] x86setup fixes for 2.6.23-rc2
+	Wed, 25 Jul 2007 15:30:29 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
+Date: Wed, 25 Jul 2007 15:30:26 -0400
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+References: <1184980678.6344.1.camel@localhost.localdomain> <20070723171238.1a832b31.akpm@linux-foundation.org> <20070723192113.0eaa0ad8.rdunlap@xenotime.net>
+In-Reply-To: <20070723192113.0eaa0ad8.rdunlap@xenotime.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707251530.26326.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Monday 23 July 2007 10:21:13 pm Randy Dunlap wrote:
+> On Mon, 23 Jul 2007 17:12:38 -0700 Andrew Morton wrote:
+> > On Sat, 21 Jul 2007 11:17:58 +1000
+> >
+> > Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > The netfilter code had very good documentation: the Netfilter Hacking
+> > > HOWTO.  Noone ever read it.
+> > >
+> > > So this time I'm trying something different, using a bit of
+> > > Knuthiness.  Start with drivers/lguest/README.
+> >
+> > um.
+> >
+> > I'm OK with merging patches and given lguest's newness, the timestamp on
+> > these patches, the fact that they don't change code generation (right?)
+> > and my reluctance to carry large do-nothing patches for two months, I'd
+> > be OK with squeaking them into 2.6.23.
+> >
+> > But I worry that you're proposing adding what appears to be new
+> > Documentation-related machinery and infrastructure when there's already
+> > increased activity in that area from other people and we might all be
+> > headed in different directions and stuff.
+> >
+> > So first I think we'd best form a kernel kommittee and mull this for a
+> > while (preferably months) to screw you around as much as poss, OK?  ;)
 
-Could you please pull:
+My cent and a half:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
+Writing documentation is not the hardest part.  It's brutally hard, falls way 
+behind the rest of development, and we may never have enough of it, but it 
+turns out it's not the real _problem_.
 
-H. Peter Anvin (4):
-      [x86 setup] APM: BX should be zero when disconnecting
-      [x86 setup] Fix typos in struct efi_info
-      [x86 setup] Make struct ist_info cross-architecture, and use in setup code
-      [x86 setup] Make struct apm_bios_info cross-architecture
+The problem, as Rusty pointed out, is that nobody can find the documentation 
+we've got because it's horribly indexed.
 
-Mikael Pettersson (1):
-      [x86 setup] APM detection logic bug fix
+There's Documentation/ and "make htmldocs" in the kernel, which don't 
+cross-reference each other.  Each of those has strong structural constraints: 
 
- arch/i386/boot/apm.c         |    7 ++++---
- arch/i386/boot/main.c        |   16 ++++++++--------
- include/asm-i386/bootparam.h |    9 +++++----
- include/asm-i386/ist.h       |   10 ++++++----
- include/asm-x86_64/ist.h     |    1 +
- include/linux/apm_bios.h     |   20 +++++++++++---------
- 6 files changed, 35 insertions(+), 28 deletions(-)
- create mode 100644 include/asm-x86_64/ist.h
+  Documentation is text and thus doesn't link out to the rest of the world
+  gracefully.  The index really needs to be HTML because it's going to link to
+  other HTML, PDF, video, wikis, tarballs of example code, source control web
+  interface entries with an interesting checkin comment, and strange things I
+  haven't even encountered yet.
 
-[Full changelog with diffs follows]
+  The htmldocs output is generated from the kernel source.  It doesn't even
+  link out to the text files in Documentation most of the time, let alone out
+  to the web.
 
-commit 4bf3b0bc3e98f77de88b336fd8d673649601b557
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Wed Jul 25 11:06:02 2007 -0700
+People assume including all the documentation into the kernel tarball is a 
+reasonable thing to do, but just the Ottawa Linux Symposium PDF files total 
+several megabytes, and that's a single source of information, only about half 
+of which is actually relevant to the kernel.  (Selecting that half turns out 
+to be nontrivial, and it changes over time as speculative things turn real 
+and other stuff goes the way of "caloric fluid".  Reiser 4 has bounced back 
+and forth something like 5 times now.)
 
-    [x86 setup] Make struct apm_bios_info cross-architecture
-    
-    struct apm_bios_info uses "unsigned short" and "unsigned long"
-    to mean u16 and u32 respectively.  Correct.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+There's documentation out on developer's web pages.  There's documentation in 
+wikipedia.  There's documentation on "magazine" style websites (Linux Weekly 
+News, Kerneltrap, Linux Journal, and more).  There's documentation in 
+developer blogs (kernelplanet.org aggregates several).  There's documentation 
+on project pages on sourceforge.  There's documentation in wikis like 
+kernelnewbies or Rik van Riel's mm stuff.  There's documentation in freely 
+available online books like Linux Device Drivers and Mel Gorman's memory 
+management book.
 
-diff --git a/include/linux/apm_bios.h b/include/linux/apm_bios.h
-index 290aef3..5f921c8 100644
---- a/include/linux/apm_bios.h
-+++ b/include/linux/apm_bios.h
-@@ -21,20 +21,22 @@ typedef unsigned short	apm_eventinfo_t;
- 
- #ifdef __KERNEL__
- 
-+#include <linux/types.h>
-+
- #define APM_CS		(GDT_ENTRY_APMBIOS_BASE * 8)
- #define APM_CS_16	(APM_CS + 8)
- #define APM_DS		(APM_CS_16 + 8)
- 
- struct apm_bios_info {
--	unsigned short	version;
--	unsigned short	cseg;
--	unsigned long	offset;
--	unsigned short	cseg_16;
--	unsigned short	dseg;
--	unsigned short	flags;
--	unsigned short	cseg_len;
--	unsigned short	cseg_16_len;
--	unsigned short	dseg_len;
-+	u16	version;
-+	u16	cseg;
-+	u32	offset;
-+	u16	cseg_16;
-+	u16	dseg;
-+	u16	flags;
-+	u16	cseg_len;
-+	u16	cseg_16_len;
-+	u16	dseg_len;
- };
- 
- /* Results of APM Installation Check */
+Lots of the time, the _rationale_ for something was explained on linux-kernel 
+and the best thing to do to really understand it is link to three or four 
+messages out of an lkml archive.  And sometimes, you need a summary.  
+(Summarizing the recent GPLv3 discussion from the kernel developers' 
+perspective isn't something I'm looking forward to, and no linking to a 1000+ 
+message thread and saying "read this" is not a substitute for a coherent 
+summary.  Jonathan Corbet does this kind of stuff, but it was still in 
+progress last time he wrote about it, and he didn't really try to extract a 
+coherent policy decision out of the flamewar and bounce it off Linus for a 
+thumbs up/thumbs down.)
 
-commit 238b706da1c6ebacc55986ac8668f3ede4621f2c
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Wed Jul 18 17:19:30 2007 -0700
+So I'm focusing on indexing all this existing (and new) documentation.  I'm 
+writing a few bits that I happen to think I know about, or that people come 
+to me and ask "where can I find documentation on this" and I can't find any, 
+so I research it and write it.  But mostly I'm attempting to turn 
+http://kernel.org/doc into the first stop to find something else.
 
-    [x86 setup] Make struct ist_info cross-architecture, and use in setup code
-    
-    Make "struct ist_info" valid on both i386 and x86-64, and use the
-    structure by name in the setup code.  Additionally, "Intel SpeedStep
-    IST" is redundant, refer to it as IST consistently.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Currently, that page is horrible, mostly because keeping up with the influx of 
+NEW information that needs organizing is almost impossible and the huge pile 
+of existing information gets neglected.  (I spent almost three months on 
+triage, which is kind of frustrating.)  But I'm getting on top of it and hope 
+to have a useful (if skeletal) index up there by the end of the week.  
+(Moving back to Austin is screwing it up but I'm -><- this close, darn it.)
 
-diff --git a/arch/i386/boot/main.c b/arch/i386/boot/main.c
-index 7f01f96..0eeef39 100644
---- a/arch/i386/boot/main.c
-+++ b/arch/i386/boot/main.c
-@@ -73,15 +73,15 @@ static void keyboard_set_repeat(void)
- }
- 
- /*
-- * Get Intel SpeedStep IST information.
-+ * Get Intel SpeedStep (IST) information.
-  */
--static void query_speedstep_ist(void)
-+static void query_ist(void)
- {
- 	asm("int $0x15"
--	    : "=a" (boot_params.speedstep_info[0]),
--	      "=b" (boot_params.speedstep_info[1]),
--	      "=c" (boot_params.speedstep_info[2]),
--	      "=d" (boot_params.speedstep_info[3])
-+	    : "=a" (boot_params.ist_info.signature),
-+	      "=b" (boot_params.ist_info.command),
-+	      "=c" (boot_params.ist_info.event),
-+	      "=d" (boot_params.ist_info.perf_level)
- 	    : "a" (0x0000e980),	 /* IST Support */
- 	      "d" (0x47534943)); /* Request value */
- }
-@@ -144,8 +144,8 @@ void main(void)
- 	query_voyager();
- #endif
- 
--	/* Query SpeedStep IST information */
--	query_speedstep_ist();
-+	/* Query Intel SpeedStep (IST) information */
-+	query_ist();
- 
- 	/* Query APM information */
- #if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
-diff --git a/include/asm-i386/bootparam.h b/include/asm-i386/bootparam.h
-index 211f3f9..b91b017 100644
---- a/include/asm-i386/bootparam.h
-+++ b/include/asm-i386/bootparam.h
-@@ -4,8 +4,9 @@
- #include <linux/types.h>
- #include <linux/screen_info.h>
- #include <linux/apm_bios.h>
--#include <asm/e820.h>
- #include <linux/edd.h>
-+#include <asm/e820.h>
-+#include <asm/ist.h>
- #include <video/edid.h>
- 
- struct setup_header {
-@@ -59,7 +60,7 @@ struct boot_params {
- 	struct screen_info screen_info;			/* 0x000 */
- 	struct apm_bios_info apm_bios_info;		/* 0x040 */
- 	u8  _pad2[12];					/* 0x054 */
--	u32 speedstep_info[4];				/* 0x060 */
-+	struct ist_info ist_info;			/* 0x060 */
- 	u8  _pad3[16];					/* 0x070 */
- 	u8  hd0_info[16];	/* obsolete! */		/* 0x080 */
- 	u8  hd1_info[16];	/* obsolete! */		/* 0x090 */
-diff --git a/include/asm-i386/ist.h b/include/asm-i386/ist.h
-index d13d1e6..ef2003e 100644
---- a/include/asm-i386/ist.h
-+++ b/include/asm-i386/ist.h
-@@ -19,11 +19,13 @@
- 
- #ifdef __KERNEL__
- 
-+#include <linux/types.h>
-+
- struct ist_info {
--	unsigned long	signature;
--	unsigned long	command;
--	unsigned long	event;
--	unsigned long	perf_level;
-+	u32 signature;
-+	u32 command;
-+	u32 event;
-+	u32 perf_level;
- };
- 
- extern struct ist_info ist_info;
-diff --git a/include/asm-x86_64/ist.h b/include/asm-x86_64/ist.h
-new file mode 100644
-index 0000000..338857e
---- /dev/null
-+++ b/include/asm-x86_64/ist.h
-@@ -0,0 +1 @@
-+#include <asm-i386/ist.h>
+To get the old to-do heap under control, most of linux-kernel is falling on 
+the floor, my to-read pile of things linked from lwn is getting laughably 
+long, things are sometimes scrolling off the bottom of kernelplanet.org 
+before I get to them, and so on.  But once I've got a skeleton to hang things 
+on, I can delegate bits of it (like the whole VFS documentation and 
+filesystems under it) to other people.
 
-commit f77b1ab383c8745447a3385e25729b92f2ec58a4
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Wed Jul 18 17:16:19 2007 -0700
+> > Items for consideration would be:
+> >
+> > - if this stuff is good, shouldn't other code be using it?  If so, is
+> >   this new infrastructure in the correct place?
+>
+> I wouldn't mind having a new doc infrastructure, but I don't see this as
+> it.
 
-    [x86 setup] Fix typos in struct efi_info
-    
-    Fix missing letters in the structure members of struct efi_info.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+There's a mailing list, linux-doc@vger.kernel.org, that was _made_ for this 
+kind of discussion.  I'm happy to have people tell me what I'm doing wrong, 
+make suggestions, or volunteer to tackle some problem.  (Note, after the 
+recent hotplug documentation thread, I feel the need to clarify that "you are 
+an idiot" does not, in and of itself, qualify as useful feedback.)
 
-diff --git a/include/asm-i386/bootparam.h b/include/asm-i386/bootparam.h
-index 427d865..211f3f9 100644
---- a/include/asm-i386/bootparam.h
-+++ b/include/asm-i386/bootparam.h
-@@ -48,9 +48,9 @@ struct efi_info {
- 	u32 _pad1;
- 	u32 efi_systab;
- 	u32 efi_memdesc_size;
--	u32 efi_memdec_version;
-+	u32 efi_memdesc_version;
- 	u32 efi_memmap;
--	u32 fi_memmap_size;
-+	u32 efi_memmap_size;
- 	u32 _pad2[2];
- };
- 
+> > - if, otoh, this infrastructure is _not_ suitable for other code, well,
+> >   what was wrong with it?
+>
+> I think that we don't want to give up html/pdf/ps output formats in
+> favor of just text or C source code.
 
-commit 1a13286b104faeeb4f4bc3bfbf4d4fcdcd2569ed
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Mon Jul 23 15:37:14 2007 -0700
+Agreed.  Keep in mind that whatever your infrastructure is, you will never be 
+generating the bulk of the contributions to it.  You will be integrating 
+outside contributions.  And the outside contributions are primarily in HTML 
+and PDF these days.  (Postscript less so, but it's still there.  And the 
+occasional batch of "source formats" (tex, docbook, etc) from which HTML and 
+PDF get produced, but if a web browser can't view the data format directly 
+the audience for the documentation's going to be about three people, 
+including the author.  Source code comments are an exception to this, but 
+that can of worms is familiar enough here already.  I note that man pages are 
+also sort of an exception, but a rapidly diminishing one as things like 
+doclifter get off the ground.  I note that the maintainer of the man-pages 
+package now has his own http://kernel.org/doc/man-pages directory because he 
+wants to generate his own html versions rather than having me do it with 
+doclifter.  The masters for most of the man pages are now in docbook anyway.)
 
-    [x86 setup] APM: BX should be zero when disconnecting
-    
-    For APM calls, BX contains the device index, which is zero for
-    the system BIOS.  Disconnect requres BX = 0.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> If we do continue to have 
+> multiple "rich" output formats, we need even more rich syntax rules
+> than we have right now.  OTOH, if we dump all of those rich output
+> formats, we have less tool spice that is needed.
 
-diff --git a/arch/i386/boot/apm.c b/arch/i386/boot/apm.c
-index 8be3f56..eab50c5 100644
---- a/arch/i386/boot/apm.c
-+++ b/arch/i386/boot/apm.c
-@@ -45,9 +45,10 @@ int query_apm_bios(void)
- 
- 	/* Disconnect first, just in case */
- 	ax = 0x5304;
-+	bx = 0;
- 	asm volatile("pushl %%ebp ; int $0x15 ; popl %%ebp"
--		     : "+a" (ax)
--		     : : "ebx", "ecx", "edx", "esi", "edi");
-+		     : "+a" (ax), "+b" (bx)
-+		     : : "ecx", "edx", "esi", "edi");
- 
- 	/* Paranoia */
- 	ebx = esi = 0;
+Keep in mind that the licensing on a lot of documentation allows it to be 
+freely redistributed but not freely modified.  (Yes, this sucks, but it's a 
+real world problem the same way PDF is a real world format.  Yes you can talk 
+to the author, convert it into another format, or write new documentation 
+once you've learned what you need from the other documentation.  But this 
+takes time.)
 
-commit 1514ab09edb071345fe17cd230c97f9e72c9478e
-Author: Mikael Pettersson <mikpe@it.uu.se>
-Date:   Tue Jul 24 00:25:59 2007 +0200
+> (I'm not ignoring Andrew's question here.  I'm just applying the
+> 7 patches/series and looking at it more.)
+>
+> > - if the requirement is good, perhaps alternative implementations should
+> >   be explored (dunno what).
+>
+> Yes, but I dunno what either.
 
-    [x86 setup] APM detection logic bug fix
-    
-    Starting with kernel 2.6.23-rc1, the i386 APM driver fails
-    on several of my machines with the message:
-    
-    apm: BIOS not found
-    
-    This happens because of a bug in the i386 boot code rewrite
-    from assembler to C. The original assembly code had the
-    following code in its APM BIOS presence test (boot/setup.S):
-    
-    	andw	$0x02, %cx			# Is 32 bit supported?
-    	je	done_apm_bios			# No 32-bit, no (good) APM BIOS
-    
-    That is, the code bails out if bit 2 is zero.
-    
-    In the new C version, this is coded as (boot/apm.c):
-    
-    	if (cx & 0x02)		/* 32 bits supported? */
-    		return -1;
-    
-    Here we see that the test has been accidentally inverted.
-    
-    The fix is to negate the test. I've verified that this
-    allows the APM driver to work again on my affected machines.
-    
-    Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+I don't want to impose a workflow on documentation authors.  I don't care what 
+tools they used to create HTML or PDF: they can do it in emacs or vi, they 
+can use a word processor, they can use latex, or something else entirely.  I 
+really don't care.  I just want to index the result.  Ideally I want to be 
+able to mirror it, and being able to send comments back to the author to get 
+updated versions is wonderful but at the moment it's sadly a luxury.
 
-diff --git a/arch/i386/boot/apm.c b/arch/i386/boot/apm.c
-index a34087c..8be3f56 100644
---- a/arch/i386/boot/apm.c
-+++ b/arch/i386/boot/apm.c
-@@ -40,7 +40,7 @@ int query_apm_bios(void)
- 	if (bx != 0x504d)	/* "PM" signature */
- 		return -1;
- 
--	if (cx & 0x02)		/* 32 bits supported? */
-+	if (!(cx & 0x02))		/* 32 bits supported? */
- 		return -1;
- 
- 	/* Disconnect first, just in case */
+For example, I have Mel Gorman's memory management book mirrored at 
+http://kernel.org/doc/gorman but Mel hasn't got time to update it, and he has 
+to ping his publisher to see what rights have reverted to him, and when it 
+comes to theoretical third-party contributions to it (of which there have so 
+far been none) he has to figure out how much control he wants to give up over 
+his baby anyway.  I put him and Don Marti of LinuxWorld in touch with each 
+other and Mel MIGHT have time to break the book up into a series of smaller 
+(updated) articles to run on LinuxWorld, each of which would be much easier 
+to replace with a new version if one of them gets too badly outdated...
+
+Half the time, when something gets passed from maintainer to maintainer, it 
+gets remastered into a new source format anyway.
+
+> > IOW, I'd be interested in hearing Rob and Randy's opinions on it all,
+> > please.
+>
+> It's great that Rusty took the time to produce all of this documentation.
+> Few people do that today.
+
+Yay Rusty!  He writes good docs.  Kudos to his hamster.
+
+Now the questions are:
+
+1) How do people _find_ this documentation.
+2) Review and integrating feedback.
+3) Keeping it up to date in future.
+
+I'm happy to index Rusty's doc.  This thread hasn't included the URL?  Google 
+comes up with the lwn.net copy of the start of this thread:
+http://lwn.net/Articles/242558/
+
+I'm trying to maintain a documentation index: I can't maintain all the 
+documentation I index, any more than Linus personally maintains the ipw2200 
+wireless driver (and associated firmware).  I can sometimes note when 
+something's out of date and try to do something about it, but the "something" 
+varies on a case-by-case basis.
+
+> Were current kernel-doc tools not sufficient?  If not, why not?
+
+If by the current kernel-doc tools you mean the giant perl script to beat 
+docbook out of javadoc-style comments out of the kernel source with regexes, 
+that's great for documenting the arguments to functions in the kernel, and 
+kind of sucks for correlating the most recent release of the man-pages 
+package (which documents the syscalls and such people actually _use_) with 
+anything else.
+
+Here's a video of a talk Linus Torvalds' gave on git a couple months back:
+http://youtube.com/watch?v=4XpnKHJAok8
+
+Is this something kernel developers might be interested in?  Probably.  Is 
+this something it makes the SLIGHTEST bit of sense to try to integrate into 
+the kernel-doc infrastructure?  Not really, no.
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
