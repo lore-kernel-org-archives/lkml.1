@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933444AbXGYSco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935270AbXGYSdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933444AbXGYSco (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934984AbXGYSa4
+	id S935270AbXGYSdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934864AbXGYSc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:30:56 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:34343 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934833AbXGYSay (ORCPT
+	Wed, 25 Jul 2007 14:32:58 -0400
+Received: from outbound-mail-49.bluehost.com ([69.89.18.18]:52215 "HELO
+	outbound-mail-49.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933727AbXGYSc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:30:54 -0400
-Date: Wed, 25 Jul 2007 19:30:52 +0100
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, apw@shadowen.org
-Subject: [PATCH] Allow nodes to exist that only contain ZONE_MOVABLE
-Message-ID: <20070725183052.GB1750@skynet.ie>
+	Wed, 25 Jul 2007 14:32:56 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Marco Berizzi" <pupilla@hotmail.com>
+Subject: Re: [drm:i810_wait_ring] *ERROR* space: 65476 wanted 65528
+Date: Wed, 25 Jul 2007 11:32:55 -0700
+User-Agent: KMail/1.9.4
+Cc: linux-kernel@vger.kernel.org
+References: <BAY103-DAV11C722665A129F5F6A5EFDB2F00@phx.gbl>
+In-Reply-To: <BAY103-DAV11C722665A129F5F6A5EFDB2F00@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Message-Id: <200707251132.55765.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 198.145.33.2 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the introduction of kernelcore=, a configurable zone is created on
-request. In some cases, this value will be small enough that some nodes
-contain only ZONE_MOVABLE. On some NUMA configurations when this occurs,
-arch-independent zone-sizing will get the size of the memory holes within the
-node incorrect. The value of present_pages goes negative and the boot fails.
+On Tuesday, July 24, 2007 2:55 am, Marco Berizzi wrote:
+> Hello everybody.
+> I'm running Slackware 12 with 2.6.23-rc1
+> and when I start X i get this error:
+>
+> Jul 24 10:11:16 Calimero kernel: [drm:drm_release] *ERROR*
+> reclaim_buffers_locked() deadlock. Please rework this
+> Jul 24 10:11:16 Calimero kernel: driver to use
+> reclaim_buffers_idlelocked() instead.
+> Jul 24 10:11:16 Calimero kernel: will go on reclaiming the buffers
+> anyway.
+> Jul 24 10:11:26 Calimero kernel: [drm:i810_wait_ring] *ERROR* space:
+> 65476 wanted 65528
+> Jul 24 10:11:26 Calimero kernel: [drm:i810_wait_ring] *ERROR* lockup
+> Jul 24 10:11:31 Calimero kernel: [drm:i810_wait_ring] *ERROR* space:
+> 65468 wanted 65528
+> Jul 24 10:11:31 Calimero kernel: [drm:i810_wait_ring] *ERROR* lockup
 
-This patch fixes the bug in the calculation of the size of the hole. The
-test case is to boot test a NUMA machine with a low value of kernelcore=
-before and after the patch is applied. While this bug exists in early kernel
-it cannot be triggered in practice.
+Looks like a DRM driver problem.  Can you file a bug for this at 
+freedesktop.org if there's not one already?
 
-This patch has been boot-tested on a variety machines with and without
-kernelcore= set.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-
----
- page_alloc.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 40954fb..6d3550c 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2775,11 +2775,11 @@ unsigned long __meminit __absent_pages_in_range(int nid,
- 	if (i == -1)
- 		return 0;
- 
-+	prev_end_pfn = min(early_node_map[i].start_pfn, range_end_pfn);
-+
- 	/* Account for ranges before physical memory on this node */
- 	if (early_node_map[i].start_pfn > range_start_pfn)
--		hole_pages = early_node_map[i].start_pfn - range_start_pfn;
--
--	prev_end_pfn = early_node_map[i].start_pfn;
-+		hole_pages = prev_end_pfn - range_start_pfn;
- 
- 	/* Find all holes for the zone within the node */
- 	for (; i != -1; i = next_active_region_index_in_nid(i, nid)) {
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks,
+Jesse
