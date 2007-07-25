@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935707AbXGYTfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935945AbXGYThk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935707AbXGYTfR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763397AbXGYTfF
+	id S935945AbXGYThk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXGYThb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:35:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55829
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758690AbXGYTfD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:35:03 -0400
-Date: Wed, 25 Jul 2007 12:35:01 -0700 (PDT)
-Message-Id: <20070725.123501.71119586.davem@davemloft.net>
-To: jeremy@goop.org
-Cc: viro@ftp.linux.org.uk, torvalds@linux-foundation.org, hpa@zytor.com,
-       kaos@ocs.com.au, xyzzy@speakeasy.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46A78A31.10506@goop.org>
-References: <alpine.LFD.0.999.0707251018280.3607@woody.linux-foundation.org>
-	<20070725172542.GG27237@ftp.linux.org.uk>
-	<46A78A31.10506@goop.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jul 2007 15:37:31 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45914 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1763286AbXGYTha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 15:37:30 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19kzqIut/pkAimTfrp2ikMQ5P+pXY//ryXgCN9ngw
+	mFqfiGlxJffJ4f
+Date: Wed, 25 Jul 2007 21:37:26 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
+In-Reply-To: <20070725165318.5331.23795.stgit@localhost.localdomain>
+Message-ID: <Pine.LNX.4.60.0707252130090.6234@poirot.grange>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Date: Wed, 25 Jul 2007 10:36:49 -0700
+On Wed, 25 Jul 2007, Vitaly Bordug wrote:
 
-> I tried that, but there's still no way of getting a pointer to the ud2a
-> instruction in there.  gcc just generates garbage if you try to use use
-> the &&label syntax on a label which isn't (potentially) the target of a
-> goto (it just gets placed somewhere random).
 > 
-> But there's a bigger problem than that.  If the BUG is in code which can
-> be replicated (ie inlined or unrolled), then it would also require
-> replicating the static variable...
+> This is now very similar to pata_platform.c, they both use
+> same platform data structure and same resources.
+> 
+> To achieve that, byte_lanes_swapping platform data variable
+> and platform specified iops removed from that driver. It's fine,
+> since those were never used anyway.
+> 
+> pata_platform and ide_platform are carrying same driver names,
+> to easily switch between these drivers, without need to touch
+> platform code.
 
-Another issue is that if you have a conditional trap instruction on
-your cpu, and you try the __label__ trick, GCC no longer converts:
+Why? There's a drivers/ide/arm/ide_arm.c IDe driver that some platforms 
+(not in the mainline) hack to access, e.g., CF cards in true-IDE mode. 
+About a month ago I submitted a patch to arm-linux-kernel switching that 
+driver to using platform-device. I got a reply, that it's not worth it now 
+that IDE is slowly becoming obsolete, and the pata_platform serves the 
+perpose perfectly well. I found this argument reasonable, I had the same 
+doubt, just wanted to double-check. So, why do we now need a new legacy 
+(a/drivers/ide/legacy/ide_platform.c) driver when a "modern" driver 
+exists?
 
-	BUG_ON(test)
-
-into just a:
-
-	set condition codes;
-	conditional_trap;
-
-sequence because the "stuff" inside the basic block is something
-more than just the __builtin_trap().
-
-The holy grail would be being able to get the perfect conditional
-trap sequence, plus the annotations in a seperate section.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
