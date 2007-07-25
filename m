@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762923AbXGYHNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763809AbXGYHOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762923AbXGYHNS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbXGYHNJ
+	id S1763809AbXGYHOs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbXGYHOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:13:09 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58731 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750944AbXGYHNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:13:08 -0400
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Curry <pacman@theworld.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>
-References: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>
-Content-Type: text/plain
-Date: Wed, 25 Jul 2007 17:12:45 +1000
-Message-Id: <1185347565.5439.310.camel@localhost.localdomain>
+	Wed, 25 Jul 2007 03:14:35 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:37749 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759788AbXGYHOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:14:33 -0400
+Date: Wed, 25 Jul 2007 09:23:45 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcin ??lusarz <marcin.slusarz@gmail.com>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070725072345.GA1843@ff.dom.local>
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185322771.4175.102.camel@chaos>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 21:28 -0400, Alan Curry wrote:
-> As of 2.6.22 the kernel doesn't recognize the i8042 keyboard/mouse controller
-> on the PegasosPPC. This is because of a feature/bug in the OF device tree:
-> the "device_type" attribute is an empty string instead of "8042" as the
-> kernel expects. This patch (against 2.6.22.1) adds a secondary detection
-> which looks for a device whose *name* is "8042" if there is no device whose
-> *type* is "8042".
+On Wed, Jul 25, 2007 at 02:19:31AM +0200, Thomas Gleixner wrote:
+> On Tue, 2007-07-24 at 22:04 +0200, Ingo Molnar wrote:
+> > Marcin, could you try the patch below too? [without having any other 
+> > patch applied.] It basically turns the critical section into an irqs-off 
+> > critical section and thus checks whether your problem is related to that 
+> > particular area of code.
+> > 
 > 
-> Signed-off-by: Alan Curry <pacman@world.std.com>
+> I read back on this thread and I think the problem is somewhere else:
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+So do I. Of course, I certainly miss most of the details, but I can't
+imagine how this yesterday Ingo's patch couldn't work - unless
+Marcin's test wasn't long enough...
 
-Note, if there's a volunteer, we could probably turn that code into a
-nice table lookup.
+IMHO, the main problem is that such delicate things shouldn't be
+changed this way. If current ideas work for Marcin they will probably
+break other boxes. Very similar symptoms were reported before Ingo's
+patch too, so it looks like this place is very fragile. If such
+things could happen:
 
-Cheers,
-Ben.
+(from: arch/i386/kernel/io_apic.c)
+> static void ack_ioapic_quirk_irq(unsigned int irq)
+> ...
+> /*
+>  * It appears there is an erratum which affects at least version 0x11
+>  * of I/O APIC (that's the 82093AA and cores integrated into various
+>  * chipsets).  Under certain conditions a level-triggered interrupt is
+>  * erroneously delivered as edge-triggered one but the respective IRR
+>  * bit gets set nevertheless.  As a result the I/O unit expects an EOI
+>  * message but it will never arrive and further interrupts are blocked
+>  * from the source.  The exact reason is so far unknown, but the
+>  * phenomenon was observed when two consecutive interrupt requests
+>  * from a given source get delivered to the same CPU and the source is
+>  * temporarily disabled in between.
+...
 
-> --- arch/powerpc/kernel/setup-common.c.orig	2007-07-24 19:04:17.000000000 -0500
-> +++ arch/powerpc/kernel/setup-common.c	2007-07-24 19:06:36.000000000 -0500
-> @@ -487,6 +487,10 @@ int check_legacy_ioport(unsigned long ba
->  	switch(base_port) {
->  	case I8042_DATA_REG:
->  		np = of_find_node_by_type(NULL, "8042");
-> +		/* Pegasos has no device_type on its 8042 node, look for the
-> +		 * name instead */
-> +		if (!np)
-> +			np = of_find_node_by_name(NULL, "8042");
->  		break;
->  	case FDC_BASE: /* FDC1 */
->  		np = of_find_node_by_type(NULL, "fdc");
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+there is no reason to think this is all.
 
+I can also see this comment in arch/x86_64/kernel/io_apic.c:
+
+> static void setup_IO_APIC_irq(int apic, int pin, unsigned int irq,
+>                               int trigger, int polarity)
+...
+>        /* Mask level triggered irqs.
+>         * Use IRQ_DELAYED_DISABLE for edge triggered irqs.
+>         */
+
+It seems somebody have seen a difference, probably after testing,
+but it wasn't respected.
+
+I also presume ne2k/lib8390.c solution could be a result of "real
+life", and I don't think Marcin's tests can be enough here. 
+
+So, my point is that such places first of all need some documented
+knobs in config or elsewere, which make it possible for users to
+easily go back to previous method (i.e. from 2.6.21 to 2.6.20 here).
+
+Regards,
+Jarek P.
