@@ -1,106 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935470AbXGYT3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934822AbXGYT2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935470AbXGYT3X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935831AbXGYT2y
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:28:54 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:26013 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S935812AbXGYT2w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S934822AbXGYT2w (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 25 Jul 2007 15:28:52 -0400
-Message-ID: <46A7A4EC.2020503@ru.mvista.com>
-Date: Wed, 25 Jul 2007 23:30:52 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761083AbXGYT2l
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 25 Jul 2007 15:28:41 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40339
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759659AbXGYT2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 15:28:40 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Greg KH <greg@kroah.com>
+Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
+Date: Wed, 25 Jul 2007 15:28:35 -0400
+User-Agent: KMail/1.9.6
+Cc: Bodo Eggert <7eggert@gmx.de>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel@vger.kernel.org, Michael-Luke Jones <mlj28@cam.ac.uk>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Rod Whitby <rod@whitby.id.au>,
+       Russell King <rmk@arm.linux.org.uk>, david@lang.hm
+References: <8I2t1-7jt-5@gated-at.bofh.it> <E1ICDr7-0000e9-P4@be1.lrz> <20070724063818.GB31806@kroah.com>
+In-Reply-To: <20070724063818.GB31806@kroah.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
- for CF	interface
-References: <20070725165318.5331.23795.stgit@localhost.localdomain> <20070725165326.5331.19920.stgit@localhost.localdomain> <46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com> <20070725180145.GA29689@ld0162-tx32.am.freescale.net> <46A7941F.2050300@ru.mvista.com> <46A798D8.7020906@freescale.com>
-In-Reply-To: <46A798D8.7020906@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707251528.36130.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Wood wrote:
+On Tuesday 24 July 2007 2:38:18 am Greg KH wrote:
+> > In other words: Grasping sysfs is not a feasible task? If this is true,
+> > how can anybody reliably use sysfs?
+>
+> Huh, I never stated that at all.  If you wish to fully document sysfs
+> and how it works, then great, do that.  But that was not the stated
+> intent of this document, and is why I think the author got confused as
+> he was attempting to put a narrow portion of how sysfs works as a
+> reflection on how the whole of the body works.
 
->> Scott Wood wrote:
+I am often confused.  Confusion is my natural state.  It's how I got started 
+writing documentation, as "notes to me" so I'd be able to reproduce what I 
+did.
 
->>>>    Also, what mmio-ide in the compat properly means in the context 
->>>> of ide_platform which is able to handle both port and memory mapped 
->>>> IDE.
+Currently my "one more thing to research before I can write this up" is your 
+earlier comment that I can coldplug the existing set of devices without 
+talking to sysfs.  Possibly there's a way to do this through netlink, but I 
+don't know of any way to send data _back_ to the kernel with the usermode 
+helper mechanism, and telling the kernel to do that for every device in the 
+system at once seems like a fork bomb waiting to happen anyway.
 
->>> I/O-space is only valid in the context of PCI, ISA, or similar buses, 
->>> and
->>> the bus-specific reg format indicates whether it's mmio-space or
->>> io-space.
+Yes, some embedded developers want to remove the networking layer from the 
+kernel, meaning they can't use netlink, meaning if we ever _do_ go to 
+dynamically allocated /dev nodes and you _must_ populate /dev by getting the 
+numbers out of the kernel, this is an issue.
 
->>    You could save time on lecturing me (and use it to look on the 
->> driver ;-).
+So far, I've been able to devote about 15 minutes to this topic since the 
+weekend, and that was stolen from something else...
 
-> Sorry, I misread the question as being a mismatch between the 
-> capabilities of the device binding and the driver, not about the 
-> specific compatible name.
+> thanks,
+>
+> greg k-h
 
-    That too. :-)
+Rob
 
-> Something like "generic-ide" would probably be better.
-
-    I strongly disagree with "generic" part. The generic IDE could only be 
-said of 1:1 I/O mapped IDE ports, not about this fancy mapping.
-
->>> What is board specific about a set of standard IDE registers at a given
-
->>    The regisrer mapping used is highly non-standard.
-
-> The gap between registers is nonstandard, but that's a fairly common 
-> type of noncompliance in embedded-land, and probably merits being 
-
-    That is only a common variation of embedded non-compliancy (which doesn't 
-make it a compliancy. ;-)
-    There are worse cases in the bi-endian land, even with the standard 8-bit 
-regs and 1-byte stride. *Hopefully*, this driver could also support those...
-
-> supported in a generic way.  I wouldn't call it "highly" nonstandard.
-
-    Yeah, there are also 8250 "compatible" UARTs that use 32-bit memory 
-accesses, and even worse -- with some registers mapped differently than on 
-8250 (those can't be called compatible by any means), yet 8250.c drives all of 
-them.  I'm not really sure it was such a good idea to merge, say Alchemy UART 
-support into 8250.c.
-
-> Is there some other non-standardness that I'm missing?
-
-    *Hopefully*, none.  The original Kumar's driver pretended to handle 
-byte-lane swapping too (but that was ugly :-).
-
->>    We're already in board specific code, so why the heck not? :-)
-
->>> various ns16550-compatibles out there as well?
-
->>    I never suggested that -- what I did suggest was make of_serial.c 
->> recognize certain chip types and register them with 8250 driver.
-
-> What would be the advantage of maintaining a list of chips whose only 
-
-    Nobody's talking about the advantages, just about the device tree accepted 
-practices (which we've already tried to bypass with MTD node -- causing a lot 
-of bashing until David Woodhouse came to help :-).
-
-> difference is register spacing, rather than just using reg-shift and 
-> being done with it?
-
-    Please read the linuxppc-dev archive's threads following form David's 
-patches.  Or maybe Segher could repeat this for you. ;-)
-
-> -Scott
-
-MBR, Sergei
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
