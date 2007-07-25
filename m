@@ -1,86 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932757AbXGYOyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbXGYO4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932757AbXGYOyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 10:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761702AbXGYOyo
+	id S932696AbXGYO4q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 10:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758493AbXGYO4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 10:54:44 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:33855 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761835AbXGYOyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 10:54:43 -0400
-Message-ID: <46A7636F.5010108@pimpmylinux.org>
-Date: Wed, 25 Jul 2007 16:51:27 +0200
-From: Gabriel C <crazy@pimpmylinux.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Wed, 25 Jul 2007 10:56:40 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:52717 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756740AbXGYO4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 10:56:39 -0400
+Message-ID: <46A76472.1060204@hp.com>
+Date: Wed, 25 Jul 2007 10:55:46 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: Fwd: [PATCH] Fix arch/i386/kernel/nmi.c - 'unknown_nmi_panic_callback'
- declared 'static' but never defined warning
-References: <46A3AE06.9030706@googlemail.com>	 <20070724183636.63844865.akpm@linux-foundation.org> <1820d69d0707250657y36c902deya66c2171dade843f@mail.gmail.com>
-In-Reply-To: <1820d69d0707250657y36c902deya66c2171dade843f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Adrian Bunk <bunk@stusta.de>, lksctp-developers@lists.sourceforge.net,
+       Gabriel C <nix.or.die@googlemail.com>,
+       "Nelson, Shannon" <shannon.nelson@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [Lksctp-developers] __unsafe() usage
+References: <46A3FE3E.20300@googlemail.com>	 <BAE9DCEF64577A439B3A37F36F9B691C02B820A3@orsmsx418.amr.corp.intel.com>	 <20070723175927.GM26212@stusta.de>	 <1185232601.1803.41.camel@localhost.localdomain>  <46A5F91B.50403@hp.com> <1185316027.1803.351.camel@localhost.localdomain>
+In-Reply-To: <1185316027.1803.351.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> ---------- Forwarded message ----------
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: 25.07.2007 03:36
-> Subject: Re: [PATCH] Fix arch/i386/kernel/nmi.c -
-> 'unknown_nmi_panic_callback' declared 'static' but never defined warning
-> To: Gabriel C <nix.or.die@googlemail.com>
-> Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <
-> mingo@redhat.com>, Andi Kleen <ak@suse.de>
+Rusty Russell wrote:
+> On Tue, 2007-07-24 at 09:05 -0400, Vlad Yasevich wrote:
+>> Please don't remove module_exit point for SCTP.  Simply removing the __unsafe() call will
+>> be sufficient.
+>>
+>> The code has recently been cleaned up to allow safe unloading and I working on final
+>> cleanups.  It currently works correctly with forced unloading.
 > 
-> On Sun, 22 Jul 2007 21:20:38 +0200 Gabriel C <nix.or.die@googlemail.com>
-> wrote:
+> Thanks Vlad!
 > 
->> I get this warning when CONFIG_SYSCTL is not set :
->>
->> ...
->>
->> arch/i386/kernel/nmi.c:52: warning: 'unknown_nmi_panic_callback' declared
-> 'static' but never defined
->> ...
->>
->> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
->>
->> ---
->>
->> diff --git a/arch/i386/kernel/nmi.c b/arch/i386/kernel/nmi.c
->> index 03b7f55..cf11121 100644
->> --- a/arch/i386/kernel/nmi.c
->> +++ b/arch/i386/kernel/nmi.c
->> @@ -49,8 +49,9 @@ static unsigned int nmi_hz = HZ;
->>  static DEFINE_PER_CPU(short, wd_enabled);
->>
->>  /* local prototypes */
->> +#ifdef CONFIG_SYSCTL
->>  static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu);
->> -
->> +#endif
->>  static int endflag __initdata = 0;
-> 
-> guys, please take a closer look at the code which you're changing?  We can
-> obviously move do_nmi_callback() down to above
-> __trigger_all_cpu_backtrace() and then do away with this declaration
-> altogether.
-> 
+> I think that's everyone...
 
-I will try to do it better next time , sorry.
-
-Oh and I just realized the fix ( whatever it will be at least ) need be done for arch/x86_64/kernel/nmi.c too.
-
-
-Regards,
-
-Gabriel
-
-
-
-
+Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
