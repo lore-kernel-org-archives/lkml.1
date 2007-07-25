@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765705AbXGYNjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765938AbXGYNkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765705AbXGYNjj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759948AbXGYNjc
+	id S1765938AbXGYNkb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbXGYNkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:39:32 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:3497 "EHLO ra.tuxdriver.com"
+	Wed, 25 Jul 2007 09:40:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60216 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760344AbXGYNjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:39:31 -0400
-Date: Wed, 25 Jul 2007 09:37:59 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, wwoods@redhat.com
-Subject: Re: [PATCH]: allow individual core dump methods to be unlimited when sending to a pipe
-Message-ID: <20070725133759.GA420@hmsreliant.homelinux.net>
-References: <20070722153947.GA11941@hmsreliant.homelinux.net> <20070724020939.7644f18c.akpm@linux-foundation.org> <20070724151738.GB23976@hmsreliant.homelinux.net> <20070724220358.864db265.akpm@linux-foundation.org>
+	id S1760703AbXGYNkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:40:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: 2.6.23-rc1-mm1: chipsfb_pci_suspend problem
+Date: Wed, 25 Jul 2007 15:48:10 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <46A7483C.60005@fr.ibm.com>
+In-Reply-To: <46A7483C.60005@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070724220358.864db265.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200707251548.10962.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 10:03:58PM -0700, Andrew Morton wrote:
+On Wednesday, 25 July 2007 14:55, Cedric Le Goater wrote:
+> Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
 > 
-> SuperH allmodconfig broke:
+> from pm-move-definition-of-struct-pm_ops-to-suspendh.patch :
 > 
-> fs/binfmt_flat.c:83: warning: initialization from incompatible pointer type
-> fs/binfmt_flat.c:94: error: conflicting types for 'flat_core_dump'
-> fs/binfmt_flat.c:78: error: previous declaration of 'flat_core_dump' was here
-> fs/binfmt_flat.c:94: error: conflicting types for 'flat_core_dump'
-> fs/binfmt_flat.c:78: error: previous declaration of 'flat_core_dump' was here
-> fs/binfmt_flat.c: In function `decompress_exec':
-> fs/binfmt_flat.c:293: warning: label `out' defined but not used
-> fs/binfmt_flat.c: In function `load_flat_file':
-> fs/binfmt_flat.c:462: warning: unsigned int format, long int arg (arg 3)
-> fs/binfmt_flat.c:462: warning: unsigned int format, long int arg (arg 4)
-> fs/binfmt_flat.c:518: warning: comparison of distinct pointer types lacks a cast
-> fs/binfmt_flat.c:549: warning: passing arg 1 of `ksize' makes pointer from integer without a cast
-> fs/binfmt_flat.c:601: warning: passing arg 1 of `ksize' makes pointer from integer without a cast
-> fs/binfmt_flat.c: At top level:
-> fs/binfmt_flat.c:78: warning: 'flat_core_dump' used but never defined
-> fs/binfmt_flat.c:94: warning: 'flat_core_dump' defined but not used
+> drivers/video/chipsfb.c: In function 'chipsfb_pci_suspend':
+> drivers/video/chipsfb.c:461: error: 'PM_SUSPEND_MEM' undeclared (first use in this function)
+> drivers/video/chipsfb.c:461: error: (Each undeclared identifier is reported only once
+> drivers/video/chipsfb.c:461: error: for each function it appears in.)
 
-Damn!  Sorry about that.  At least I have a mediocre excuse in that it was on an
-arch I didn't have hardware to test with.  Should have caught that sooner
-though.  Heres the patch for it.
+Well, actually, this is a bug in chipsfb.c, as it shouldn't use PM_SUSPEND_MEM
+in there, but PMSG_SUSPEND (patch untested).
 
-Regards
-Neil
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Greetings,
+Rafael
 
 
- binfmt_flat.c |    2 +-
+---
+ drivers/video/chipsfb.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
-index e8f8198..cc24c5d 100644
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -75,7 +75,7 @@ static int load_flat_shared_library(int id, struct lib_info *p);
- #endif
+Index: linux-2.6.23-rc1/drivers/video/chipsfb.c
+===================================================================
+--- linux-2.6.23-rc1.orig/drivers/video/chipsfb.c
++++ linux-2.6.23-rc1/drivers/video/chipsfb.c
+@@ -458,7 +458,7 @@ static int chipsfb_pci_suspend(struct pc
  
- static int load_flat_binary(struct linux_binprm *, struct pt_regs * regs);
--static int flat_core_dump(long signr, struct pt_regs * regs, struct file *file, u32 limit);
-+static int flat_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit);
+ 	if (state.event == pdev->dev.power.power_state.event)
+ 		return 0;
+-	if (state.event != PM_SUSPEND_MEM)
++	if (state != PMSG_SUSPEND)
+ 		goto done;
  
- static struct linux_binfmt flat_format = {
- 	.module		= THIS_MODULE,
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+ 	acquire_console_sem();
