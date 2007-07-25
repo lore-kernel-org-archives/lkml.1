@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762354AbXGYVSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbXGYVT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762354AbXGYVSS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 17:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbXGYVSK
+	id S1765426AbXGYVT1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 17:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXGYVTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 17:18:10 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44377 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751055AbXGYVSJ (ORCPT
+	Wed, 25 Jul 2007 17:19:19 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:34781 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750982AbXGYVTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 17:18:09 -0400
-Date: Wed, 25 Jul 2007 23:17:41 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, jason.wessel@windriver.com,
-       amitkale@linsyssoft.com, lethal@linux-sh.org
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net
-Subject: 2.6.23-rc1-mm1: git-kgdb breaks sh compilation
-Message-ID: <20070725211741.GI3572@stusta.de>
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
+	Wed, 25 Jul 2007 17:19:18 -0400
+Message-ID: <46A7BE26.4010900@zytor.com>
+Date: Wed, 25 Jul 2007 14:18:30 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Gabriel C <nix.or.die@googlemail.com>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, gregkh@suse.de
+Subject: Re: 2.6.23-rc1-mm1
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com> <20070725185328.GA28199@uranus.ravnborg.org> <46A7A1EF.8060307@zytor.com> <46A7B983.90407@googlemail.com> <46A7BB12.7060504@googlemail.com> <46A7BC79.7020902@zytor.com> <46A7BCE3.3040709@googlemail.com>
+In-Reply-To: <46A7BCE3.3040709@googlemail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.22-rc6-mm1:
->...
->  git-kgdb.patch
+Gabriel C wrote:
+> H. Peter Anvin wrote:
+>> Gabriel C wrote:
+>>>> WARNING: Absolute relocations present
+>>>> Offset     Info     Type     Sym.Value Sym.Name
+>>>> c0202e73 00703601   R_386_32 c03071bc  _sdata
+>>>>
+>>>> $ grep c03071bc System.map
+>>>> c03071bc R __tracedata_end
+>>>> c03071bc A _sdata
+>> What is at 0xc0202e73?
 > 
->  git trees
->...
+> grep returns nothing for 0xc0202e73
+> 
 
-This causes the following compile error on sh:
+What is the symbol immediately before and after that, then?
 
-<--  snip  -->
-
-...
-  CC      drivers/serial/sh-sci.o
-drivers/serial/sh-sci.c: In function 'put_string':
-drivers/serial/sh-sci.c:188: error: 'hexchars' undeclared (first use in this function)
-drivers/serial/sh-sci.c:188: error: (Each undeclared identifier is reported only once
-drivers/serial/sh-sci.c:188: error: for each function it appears in.)
-make[3]: *** [drivers/serial/sh-sci.o] Error 1
-
-<--  snip  -->
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	-hpa
