@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765033AbXGYH03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764778AbXGYH2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765033AbXGYH03 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764378AbXGYHZ7
+	id S1764778AbXGYH2E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbXGYH1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:25:59 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:53124 "EHLO pasmtpA.tele.dk"
+	Wed, 25 Jul 2007 03:27:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39221 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763196AbXGYHZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:25:58 -0400
-Date: Wed, 25 Jul 2007 09:27:12 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Andy Fleming <afleming@freescale.com>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-Subject: Re: modpost warning question
-Message-ID: <20070725072712.GB24093@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0707250210520.14366@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755123AbXGYH1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:27:52 -0400
+Date: Wed, 25 Jul 2007 09:27:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+Cc: Linux RT Users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Darren Hart <dvhltc@us.ibm.com>, john stultz <johnstul@us.ibm.com>,
+       Josh Triplett <josht@linux.vnet.ibm.com>
+Subject: Re: [PATCH RT] Fix RT balancing tasks pulling
+Message-ID: <20070725072700.GC26955@elte.hu>
+References: <20070724154202.224f12e8@frecb000686.frec.bull.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707250210520.14366@blarg.am.freescale.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070724154202.224f12e8@frecb000686.frec.bull.fr>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 02:14:12AM -0500, Kumar Gala wrote:
-> I'm seeing the following warning:
+
+* Sébastien Dugué <sebastien.dugue@bull.net> wrote:
+
+>   Hi Ingo, Thomas,
 > 
-> WARNING: vmlinux.o(.init.text+0x1acdc): Section mismatch: reference to
-> .exit.text:gfar_mdio_exit (between 'gfar_init' and 'gfar_mdio_init')
+>   this one-liner fixes a bug in balance_rt_tasks() which sometimes 
+> manifests by having a lower prio task being scheduled while a higher 
+> prio task is sitting waiting on another runqueue.
 > 
-> I don't understand why its not ok to access .exit.text from .init.text
+>   This is pretty hard to reproduce on low cpu count machines, for 
+> example, I had to have sched_football run in a loop for ~38h before it 
+> failed on a dual HT Xeon box.
 
-Several architectures discards .exit.text in the final linker
-script (arch/$(ARCH)/kernel/vmlinux.lds.S
+really nice catch! Applied.
 
-So any references to .exit.text will when a module is build-in result
-in a linker error because ld will flag it as an error when we reference
-a symbol in a discarded section.
-
-For the popular architectures (i386,x86_64) we discard .exit.text at
-runtime so here we do not see the error from ld (sadly).
-
-	Sam
+	Ingo
