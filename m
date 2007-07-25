@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763985AbXGYHPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763051AbXGYHP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763985AbXGYHPB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761670AbXGYHOm
+	id S1763051AbXGYHP2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbXGYHPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:14:42 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42482 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760610AbXGYHOj (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:14:39 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Rene Herman <rene.herman@gmail.com>
-Cc: david@lang.hm, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-In-Reply-To: Your message of "Wed, 25 Jul 2007 07:30:37 +0200."
-             <46A6DFFD.9030202@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <200707102015.44004.kernel@kolivas.org> <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <46A57068.3070701@yahoo.com.au> <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com> <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com> <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>
-            <46A6DFFD.9030202@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1185347660_3413P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 25 Jul 2007 03:14:20 -0400
-Message-ID: <30701.1185347660@turing-police.cc.vt.edu>
+	Wed, 25 Jul 2007 03:15:04 -0400
+Received: from gate.crashing.org ([63.228.1.57]:32827 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764165AbXGYHPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:15:01 -0400
+Date: Wed, 25 Jul 2007 02:14:12 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: sam@ravnborg.org
+cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Andy Fleming <afleming@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org
+Subject: modpost warning question
+Message-ID: <Pine.LNX.4.64.0707250210520.14366@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1185347660_3413P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <30677.1185347635.1@turing-police.cc.vt.edu>
+I'm seeing the following warning:
 
-On Wed, 25 Jul 2007 07:30:37 +0200, Rene Herman said:
+WARNING: vmlinux.o(.init.text+0x1acdc): Section mismatch: reference to
+.exit.text:gfar_mdio_exit (between 'gfar_init' and 'gfar_mdio_init')
 
-> Yes, but what's locate's usage scenario? I've never, ever wanted to use it. 
-> When do you know the name of something but not where it's located, other 
-> than situations which "which" wouldn't cover and after just having 
-> installed/unpacked something meaning locate doesn't know about it yet either?
+I don't understand why its not ok to access .exit.text from .init.text
 
-My favorite use - with 5 Fedora kernels and as many -mm kernels on my laptop,
-doing a 'locate moby' finds all the moby.c and moby.o and moby.ko for
-the various releases. For bonus points, something like:
+The following addresses the issue, however I don't particularly like it:
 
-ls -lt `locate iwl3945.ko`
+diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
+index ac3596f..100bf41 100644
+--- a/drivers/net/gianfar_mii.c
++++ b/drivers/net/gianfar_mii.c
+@@ -245,7 +245,7 @@ int __init gfar_mdio_init(void)
+ 	return driver_register(&gianfar_mdio_driver);
+ }
 
-to find all 19 copies that are on my system, and remind me which ones were
-compiled when.  Or just when you remember the name of some one-off 100-line
-Perl program that you wrote 6 months ago, but not sure which directory you
-left it in... ;)
-
-You want hard numbers? Here you go - 'locate' versus 'find'
-(/usr/src/ has about 290K files on it):
-
-%  strace locate iwl3945.ko  >| /tmp/foo3 2>&1
-% wc /tmp/foo3
-  96  592 6252 /tmp/foo3
-% strace find /usr/src /lib -name iwl3945.ko >| /tmp/foo4 2>&1
-% wc /tmp/foo4
-  328380  1550032 15708205 /tmp/foo4
-
-# echo 1 > /proc/sys/vm/drop_caches     (to empty the caches
-
-% time locate iwl3945.ko > /dev/null
-
-real    0m0.872s
-user    0m0.867s
-sys     0m0.008s
-
-% time find /usr/src /lib -name iwl3945.ko > /dev/null
-find: /usr/src/lost+found: Permission denied
-
-real    1m12.241s
-user    0m1.128s
-sys     0m3.566s
-
-So 96 system calls in 1 second, against 328K calls in a minute.  There's your
-use case, right there.  Now if we can just find a way for that find/updatedb
-to not be as painful to the rest of the system.....
-
-
-
-
-
---==_Exmh_1185347660_3413P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGpvhMcC3lWbTT17ARApzIAKDeWs0+L/41cIMa80MBkaM7fEdMKwCgimtj
-Mfu/czdM6pdPQMmynnE381I=
-=uMEx
------END PGP SIGNATURE-----
-
---==_Exmh_1185347660_3413P--
+-void __exit gfar_mdio_exit(void)
++void gfar_mdio_exit(void)
+ {
+ 	driver_unregister(&gianfar_mdio_driver);
+ }
+diff --git a/drivers/net/gianfar_mii.h b/drivers/net/gianfar_mii.h
+index 5d34004..b373091 100644
+--- a/drivers/net/gianfar_mii.h
++++ b/drivers/net/gianfar_mii.h
+@@ -42,5 +42,5 @@ struct gfar_mii {
+ int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum);
+ int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value);
+ int __init gfar_mdio_init(void);
+-void __exit gfar_mdio_exit(void);
++void gfar_mdio_exit(void);
+ #endif /* GIANFAR_PHY_H */
