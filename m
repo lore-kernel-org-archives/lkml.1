@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933698AbXGYQrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbXGYQuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933698AbXGYQrg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 12:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbXGYQr3
+	id S932859AbXGYQuy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 12:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759226AbXGYQur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 12:47:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39346 "EHLO mail.dvmed.net"
+	Wed, 25 Jul 2007 12:50:47 -0400
+Received: from main.gmane.org ([80.91.229.2]:59066 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754537AbXGYQr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 12:47:28 -0400
-Message-ID: <46A77E92.6020902@garzik.org>
-Date: Wed, 25 Jul 2007 12:47:14 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
- platform devices - broke my serial console
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <p73ir88sax1.fsf@bingen.suse.de> <20070725164808.41404dc7@the-village.bc.nu> <200707251006.42948.bjorn.helgaas@hp.com>
-In-Reply-To: <200707251006.42948.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1755682AbXGYQuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 12:50:46 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Ed Swierk <eswierk@arastra.com>
+Subject: Re: Longer command line for kexec on i386
+Date: Wed, 25 Jul 2007 16:50:26 +0000 (UTC)
+Message-ID: <loom.20070725T174305-393@post.gmane.org>
+References: <loom.20070723T172709-232@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 68.166.32.218 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.5) Gecko/20070718 Fedora/2.0.0.5-1.fc7 Firefox/2.0.0.5)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> The IR driver would be the clear owner of the entire device.  Of course,
-> this still only works if we get rid of the 8250 blind probe for 0x3e8
-> or figure out some API for the IR driver to tell the 8250 driver to get
-> its mitts off.
+Ed Swierk <eswierk <at> arastra.com> writes:
 
+> I made the following change to kexec:
+>
+> [deleted]
+> 
+> but I'm now seeing intermittent corruption of the initrd in the new kernel--a
+> few bytes at different locations each time.
+> 
+> I suspect I've neglected some other important changes to the boot protocol.  
 
-Load driver B before loading driver A.
+The corruption is due to a "hardware" bug (qemu), which was in fact corrupting
+memory (http://article.gmane.org/gmane.comp.emulators.qemu/18774).  Extending
+the command line in kexec somehow made the corruption noticeable.
 
-	Jeff
+--Ed
 
 
