@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935542AbXGYTSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935597AbXGYTTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935542AbXGYTSg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761764AbXGYTS1
+	id S935597AbXGYTTR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbXGYTTC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:18:27 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37454 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761726AbXGYTS0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:18:26 -0400
-Message-ID: <46A7A1EF.8060307@zytor.com>
-Date: Wed, 25 Jul 2007 12:18:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 25 Jul 2007 15:19:02 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54735 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760118AbXGYTS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 15:18:59 -0400
+Date: Wed, 25 Jul 2007 21:18:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Li, Tong N" <tong.n.li@intel.com>
+Cc: linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+Message-ID: <20070725191848.GB4463@elte.hu>
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu> <1185387605.14095.16.camel@tongli.jf.intel.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-rc1-mm1
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com> <20070725185328.GA28199@uranus.ravnborg.org>
-In-Reply-To: <20070725185328.GA28199@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185387605.14095.16.camel@tongli.jf.intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Wed, Jul 25, 2007 at 08:48:50PM +0200, Michal Piotrowski wrote:
->> On 25/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
->>>
->>>
->> Andi, this might be interesting for you
->>
->> make allmodconfig
->> make
->> [...]
->> WARNING: Absolute relocations present
->> Offset     Info     Type     Sym.Value Sym.Name
->> c02041b3 00705601   R_386_32 c0308aa8  _sdata
-> 
-> Who did spit out this warning. Can you please provide make V=1
-> where we see the lines preceeding the warning.
-> 
-> And config please.
-> 
 
-config: "make allmodconfig"
+* Li, Tong N <tong.n.li@intel.com> wrote:
 
-System.map would be more interesting, especially what is at 0xc02041b3.
+> The problem I see is that the current load balancing code is quite 
+> hueristic and can be quite inaccurate sometimes. Its goal is to 
+> maintain roughly equal load on each core, where load is defined to be 
+> the sum of the weights of all tasks on a core. If all tasks have the 
+> same weight, this is a simple problem. If different weights exist, 
+> this is an NP-hard problem and our current hueristic can perform badly 
+> under various workloads. A simple example, if we have four tasks on 
+> two cores and they have weights 1, 5, 7, 7. The balanced partition 
+> would have 1 and 7 on core 1 and 5 and 7 on core 2. But you can see 
+> the load isn't evenly distributed; in fact, it's not possible to 
+> evenly distribute the load in this case. Thus, my opinion is that only 
+> balancing the load as we do now is not enough to achieve SMP fairness. 
+> My patch was intended to address this problem.
 
-	-hpa
+could you please try my patch nevertheless and see how much it differs 
+in practice from your solution, and cite specific examples and 
+measurements? (please measure over longer periods of time such as 120 
+seconds or 300 seconds - so that slow-rate balancing has its chance to 
+work)
+
+	Ingo
