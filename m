@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934633AbXGYStB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935365AbXGYSt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934633AbXGYStB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759836AbXGYSsy
+	id S935365AbXGYSt1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935233AbXGYStJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:48:54 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:39000 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755529AbXGYSsx (ORCPT
+	Wed, 25 Jul 2007 14:49:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58511 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935141AbXGYStG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:48:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pdA5+C0dRZI3EM/mTcAixKYJB/OQgb2tWD66cQJNyc+FqLv/iTkBddR31nxhc04Gd+fQ3/0oa8sbLH8/iEo1aTcIIMMafClAKRSnrO+hUXjLC8MoRcmaSsbi2ohMdp9ifgmRcpO2ZrniIR3BRVVXjarmLX/6CPV3HuAR+0ZEnN4=
-Message-ID: <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com>
-Date: Wed, 25 Jul 2007 20:48:50 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc1-mm1
-Cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>
-In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
+	Wed, 25 Jul 2007 14:49:06 -0400
+Date: Wed, 25 Jul 2007 11:48:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
+In-Reply-To: <200707251238.50218.lenb@kernel.org>
+Message-ID: <alpine.LFD.0.999.0707251147130.3607@woody.linux-foundation.org>
+References: <200707251238.50218.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
->
->
 
-Andi, this might be interesting for you
 
-make allmodconfig
-make
-[...]
-WARNING: Absolute relocations present
-Offset     Info     Type     Sym.Value Sym.Name
-c02041b3 00705601   R_386_32 c0308aa8  _sdata
+On Wed, 25 Jul 2007, Len Brown wrote:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> 
+> Fixes regressions -- a build failure, an oops, some dmesg spam.
+> Also fixes some D-state issues and adds ACPI module auto-loading.
+> Yes, I'd hoped to get the last two in before rc1.
+> I'm hopeful that a couple-days into rc2 is sufficiently early for them.
 
-Regards,
-Michal
+I hate pulling this, but I did. However, what I hate even more after 
+having done so is that ACPI now seems to select CPU hotplug. Why?
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+That is just *broken*. Sure, if you select STR or hibernation, we need CPU 
+hotplug, but just for picking ACPI? Why?
+
+		Linus
