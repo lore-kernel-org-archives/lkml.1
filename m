@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765206AbXGYXMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765354AbXGYXRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765206AbXGYXMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 19:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760295AbXGYXL6
+	id S1765354AbXGYXRf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 19:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761038AbXGYXRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 19:11:58 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:65142 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759998AbXGYXL5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 19:11:57 -0400
-Date: Wed, 25 Jul 2007 17:12:55 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: very big device. try to use READ CAPACITY(16)
-In-reply-to: <fa.zVvXcMRLRvR5DEG+ZLYeulb/+oA@ifi.uio.no>
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <46A7D8F7.7030002@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-2; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.zVvXcMRLRvR5DEG+ZLYeulb/+oA@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Wed, 25 Jul 2007 19:17:25 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37118 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760155AbXGYXRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 19:17:23 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX1/JYU9e30nJUT90+Gs0eHAvGC0koj3ndYjnAkchlU
+	jarvRF1MdXv5kM
+Date: Thu, 26 Jul 2007 01:17:14 +0200
+From: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>
+To: Len Brown <lenb@kernel.org>
+Cc: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Time Problems with 2.6.23-rc1-gf695baf2
+Message-ID: <20070725231714.GA24867@alice>
+References: <20070723221630.GA28951@alice> <6bffcb0e0707241614s7b563b5bu114d2ecb227b1557@mail.gmail.com> <20070725113349.GB5469@alice> <200707251250.22469.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200707251250.22469.lenb@kernel.org>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.22.1 (x86_64)
+X-Uptime: 01:14:56 up 14:27,  6 users,  load average: 0.63, 0.60, 0.51
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arkadiusz Miskiewicz wrote:
-> Hello,
+* Len Brown (lenb@kernel.org) wrote:
+> > > > > [   13.506890] ACPI Exception (processor_throttling-0084): AE_NOT_FOUND, Evaluating _PTC [20070126]
+> > > > > [   13.507101] ACPI Exception (processor_throttling-0147): AE_NOT_FOUND, Evaluating _TSS [20070126]
 > 
-> What does "very big device. try to use READ CAPACITY(16)" mean for user? Is 
-> this advice for driver developer or for user (if for user then what does it 
-> mean exactly) ?
+> Note that these are just noise -- new code being verbose when looking for an optional feature.
+> 
+> The fact that hitting the power button a bunch of times
+> to make the system move along suggests some sort of missing interrupt problem --
+> most likely the timer itself.
+> 
+> [   13.868574] Probing IDE interface ide0...
+> [  387.279576] Clocksource tsc unstable (delta = 370195339890 ns)
+> 
+> 5-minutes -- a long probe:-)
+> 
+> > CONFIG_NO_HZ=y
+> 
+> does CONFIG_NO_HZ=n make a difference?
 
-It isn't really advice at all, just indicates that the sd driver needed 
-to use the bigger version of READ CAPACITY for that device. It looks 
-like that message has now been reworded to "trying to use" instead of 
-"try to use", so it doesn't sound like it's saying the user has to do 
-something.
+[   41.007654] EXT3 FS on hda1, internal journal
+[  322.133656] Clocksource tsc unstable (delta = 276476174785 ns)
+Boot went fine but the system got pretty unresponsive later, 2-3 seconds
+delay after keypresses on an idle system and a hang during shutdown which i had to resolve by
+pressing the power button (not to switch it of the hard way, but to keep it rebooting)
 
+> > CONFIG_HIGH_RES_TIMERS=y
 > 
-> 
-> sdc : very big device. try to use READ CAPACITY(16).
-> SCSI device sdc: 4823210240 512-byte hdwr sectors (2469484 MB)
-> sdc: Write Protect is off
-> sdc: Mode Sense: 00 12 00 00
-> SCSI device sdc: write cache: enabled, read cache: enabled, doesn't support 
-> DPO or FUA
-> sdc : very big device. try to use READ CAPACITY(16).
-> SCSI device sdc: 4823210240 512-byte hdwr sectors (2469484 MB)
-> sdc: Write Protect is off
-> sdc: Mode Sense: 00 12 00 00
-> SCSI device sdc: write cache: enabled, read cache: enabled, doesn't support 
-> DPO or FUA
->  sdc: unknown partition table
-> sd 0:2:0:0: Attached scsi disk sdc
-> 
-> 2.6.21.6, stex driver
-> 
+> does CONFIG_HIGH_RES_TIMERS=n make a difference?
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+doesnt change anything
 
+> does "irqpoll" make any difference?
+> does "notsc" make any difference?
+> does "idle=poll" make any difference?
+
+I tried these with the HIGH_RES_TIMERS=n, irqpoll and notsc dont change
+a thing, idle=poll makes it boot normally
+
+
+Greetings, Eric
