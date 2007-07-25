@@ -1,109 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932350AbXGYAWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbXGYAgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932350AbXGYAWS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 20:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757038AbXGYAWI
+	id S932358AbXGYAgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 20:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760256AbXGYAg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 20:22:08 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:8650 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756585AbXGYAWG (ORCPT
+	Tue, 24 Jul 2007 20:36:29 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:38774 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760204AbXGYAg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 20:22:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=r1EIQSlAoYbEuX81ZpJ87tU53Mn6xQuAx17CcagMTEHRQRImlmb0UZucCTQNAilJT7h4zOPBX1x05TcHfkrouphm+b915R89odlk18qSpZHsv2rLqDGbwweGosdM0+P3MLx22oQ4LqEpEqPXqH41RGelfdA8a4QI3bLloTgqmY4=
-Message-ID: <a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com>
-Date: Wed, 25 Jul 2007 05:52:05 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: crash with 2.6.22.1 crash:ll_rw_blk.c blk_remove_plug()
-Cc: wharms@bfs.de, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "pm list" <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <20070722221717.GV11657@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 20:36:27 -0400
+Date: Tue, 24 Jul 2007 17:36:19 -0700
+From: sukadev@us.ibm.com
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 13/16] Switch to operating with pid_numbers instead of pids
+Message-ID: <20070725003619.GF3287@us.ibm.com>
+References: <468DF6F7.1010906@openvz.org> <468DF907.2060809@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <469DD37C.8050200@bfs.de> <20070718103342.GI11657@kernel.dk>
-	 <469DF233.5080902@bfs.de> <20070718110724.GN11657@kernel.dk>
-	 <469E072E.7080400@bfs.de> <20070718123142.GV11657@kernel.dk>
-	 <46A38B1E.3090605@bfs.de>
-	 <a781481a0707221020m3c3a397fifa9076aefc63148a@mail.gmail.com>
-	 <20070722221717.GV11657@kernel.dk>
+In-Reply-To: <468DF907.2060809@openvz.org>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/23/07, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Sun, Jul 22 2007, Satyam Sharma wrote:
-> > Hi Walter,
-> >
-> > Thanks for reporting this.
-> >
-> > On 7/22/07, walter harms <wharms@bfs.de> wrote:
-> >> hello all,
-> >> on my asus notebook tm620 there is a crash with 2.6.22 and 2.6.21
-> >
-> > Did this happen when you were resuming from a suspend-to-ram/disk?
-> > [ I ask because I see swsusp in the trace below, linux-pm added to Cc: ]
-> >
-> >> ....
-> >> Using IPI Shortcut mode
-> >> WARNING: at block/ll_rw_blk.c:1575 blk_remove_plug()
-> >>  [<c01ac87e>] blk_remove_plug+0x36/0x5a
-> >>  [<c01ac8b6>] __generic_unplug_device+0x14/0x1f
-> >>  [<c01ad587>] __make_request+0x39b/0x49c
-> >>  [<c01abc8c>] generic_make_request+0x228/0x255
-> >>  [<c01adb54>] submit_bio+0xa5/0xac
-> >>  [<c013e233>] mempool_alloc+0x37/0xae
-> >>  [<c01314dc>] submit+0xc2/0x11d
-> >>  [<c0131585>] bio_read_page+0x24/0x27
-> >>  [<c013188b>] swsusp_check+0x4f/0xaf
-> >>  [<c012f6c2>] software_resume+0x5f/0x108
-> >>  [<c037867e>] kernel_init+0xb0/0x212
-> >>  [<c0103a16>] ret_from_fork+0x6/0x1c
-> >>  [<c03785ce>] kernel_init+0x0/0x212
-> >>  [<c03785ce>] kernel_init+0x0/0x212
-> >>  [<c010465b>] kernel_thread_helper+0x7/0x10
-> >>  =======================
-> >
-> > Surprising, that's a WARN_ON(!irqs_disabled()) but IRQs are disabled
-> > alright on that codepath. OTOH, __make_request() is heavily goto-driven,
-> > uses the non-save/restore variants of spin_lock_irq, and does not even
-> > balance locks / unlocks for some error paths ... gaah.
->
-> __make_request() must be called from process context, hence
-> spin_lock_irq() is perfectly already and the fastest way to go. And of
-> course the locking is balanced! So please save your 'gaah's for code
-> you actually took the time to try and understand.
+Pavel Emelianov [xemul@openvz.org] wrote:
+| Make alloc_pid() initialize pid_numbers and hash them
+| into the hashtable, not the struct pid itself.
+| 
+| Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+| 
+| ---
+| 
+|  pid.c |   47 +++++++++++++++++++++++++++++++++--------------
+|  1 files changed, 33 insertions(+), 14 deletions(-)
+| 
+| --- ./kernel/pid.c.ve12	2007-07-05 11:06:41.000000000 +0400
+| +++ ./kernel/pid.c	2007-07-05 11:08:23.000000000 +0400
+| @@ -28,8 +28,10 @@
+|  #include <linux/hash.h>
+|  #include <linux/pid_namespace.h>
+|  #include <linux/init_task.h>
+| +#include <linux/proc_fs.h>
+| 
+| -#define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
+| +#define pid_hashfn(nr, ns)	\
+| +	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+|  static struct hlist_head *pid_hash;
+|  static int pidhash_shift;
+|  struct pid init_struct_pid = INIT_STRUCT_PID;
+| @@ -194,7 +198,7 @@ fastcall void put_pid(struct pid *pid)
+|  	if (!pid)
+|  		return;
+| 
+| -	ns = pid->numbers[0].ns;
+| +	ns = pid->numbers[pid->level].ns;
+|  	if ((atomic_read(&pid->count) == 1) ||
+|  	     atomic_dec_and_test(&pid->count))
+|  		kmem_cache_free(ns->pid_cachep, pid);
+| @@ -210,13 +214,17 @@ static void delayed_put_pid(struct rcu_h
+|  fastcall void free_pid(struct pid *pid)
+|  {
+|  	/* We can be called with write_lock_irq(&tasklist_lock) held */
+| +	int i;
+|  	unsigned long flags;
+| 
+|  	spin_lock_irqsave(&pidmap_lock, flags);
+| -	hlist_del_rcu(&pid->pid_chain);
+| +	for (i = 0; i <= pid->level; i++)
+| +		hlist_del_rcu(&pid->numbers[i].pid_chain);
+|  	spin_unlock_irqrestore(&pidmap_lock, flags);
+| 
+| -	free_pidmap(&init_pid_ns, pid->nr);
+| +	for (i = 0; i <= pid->level; i++)
+| +		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
+| +
+|  	call_rcu(&pid->rcu, delayed_put_pid);
+|  }
+| 
+| @@ -224,30 +232,43 @@ struct pid *alloc_pid(struct pid_namespa
+|  {
+|  	struct pid *pid;
+|  	enum pid_type type;
+| -	int nr = -1;
+| +	struct pid_namespace *ns;
+| +	int i, nr;
+| 
+| -	pid = kmem_cache_alloc(init_pid_ns.pid_cachep, GFP_KERNEL);
+| +	pid = kmem_cache_alloc(pid_ns->pid_cachep, GFP_KERNEL);
+|  	if (!pid)
+|  		goto out;
+| 
+| -	nr = alloc_pidmap(current->nsproxy->pid_ns);
+| -	if (nr < 0)
+| -		goto out_free;
+| +	ns = pid_ns;
+| +	for (i = pid_ns->level; i >= 0; i--) {
+| +		nr = alloc_pidmap(ns);
+| +		if (nr < 0)
+| +			goto out_free;
 
-You're right, I didn't really look at that code for long (it even explicitly
-comments about what's going with the locking in there!) sorry about
-that.
+If pid_ns->level is say 3 and alloc_pidmap() succeeds when i=0,1
+and fails when i=2, we would try to free_pidmap() even from 
+pid->pid_number[2].pid_ns. This would incorrectly a)
+drop reference count on that pid namespace, and incorrectly
+increment pidmap->nr_free.
 
-[ Off-topic: BTW does every call to __make_request() end up in
-blk_remove_plug()? Since you're explicitly making the assumption
-that it *must* be called from process context (and hence the use of
-the non-save/restore variants), you could consider putting a
-WARN_ON(irqs_disabled()) over there, and perhaps a WARN_ON
-(!spin_is_locked(queue_lock)) in blk_remove_plug() instead, and
-other such similar functions that currently have the !irqs_disabled
-check. This way you'd effectively cover _both_ the assertions,
-and in appropriate places -- just a suggestion. ]
+Should we use kmem_cache_zalloc() and check for a non-NULL pid_ns
+before calling free_pidmap() below ?
 
-> But it does look like unbalanced irq disable/enable calls. I'd guess in
-> the suspend/resume path. Obviously something more esoteric, since this
-> is the first such report for 2.6.22, so like some not-very-used driver
-> for instance.
+| 
+| +		pid->numbers[i].nr = nr;
+| +		pid->numbers[i].ns = ns;
+| +		ns = ns->parent;
+| +	}
+| +
+| +	pid->level = pid_ns->level;
+|  	atomic_set(&pid->count, 1);
+| -	pid->nr = nr;
+|  	for (type = 0; type < PIDTYPE_MAX; ++type)
+|  		INIT_HLIST_HEAD(&pid->tasks[type]);
+| 
+|  	spin_lock_irq(&pidmap_lock);
+| -	hlist_add_head_rcu(&pid->pid_chain, &pid_hash[pid_hashfn(pid->nr)]);
+| +	for (i = pid->level; i >= 0; i--)
+| +		hlist_add_head_rcu(&pid->numbers[i].pid_chain,
+| +				&pid_hash[pid_hashfn(pid->numbers[i].nr,
+| +					pid->numbers[i].ns)]);
+|  	spin_unlock_irq(&pidmap_lock);
+| -
+|  out:
+|  	return pid;
+| 
+|  out_free:
+| -	kmem_cache_free(init_pid_ns.pid_cachep, pid);
+| +	for (i++; i <= pid->level; i++)
+| +		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
 
-Now that I do look at the codepath, it does seem surprising irqs were
-not disabled there. There are a bunch of calls to _other_ functions
-between the spin_lock_irq and the blk_remove_plug via
-__generic_unplug_device that would also have complained about
-!irqs_disabled.
-
-Walter, does this happen reproducibly?
-
-Satyam
+i.e all pid->numbers[] may not be initialized here right ?
