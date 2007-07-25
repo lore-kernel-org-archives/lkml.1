@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764834AbXGYWIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbXGYWQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764834AbXGYWIK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 18:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbXGYWH6
+	id S1761045AbXGYWQR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 18:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbXGYWQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 18:07:58 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:51028 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754649AbXGYWH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 18:07:57 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Thu, 26 Jul 2007 03:39:31 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: akpm@linux-foundation.org
-cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] dma: INTEL_IOATDMA build fix
-Message-ID: <Pine.LNX.4.64.0707260336280.3877@cselinux1.cse.iitk.ac.in>
+	Wed, 25 Jul 2007 18:16:04 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:12988 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755282AbXGYWQC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 18:16:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=sU+2+ccRKj07o+sPHKuTm6SnTnvXkKZ06Hb8/ISZPCps1zfmjdJWNEnV0GWN2u4iRoycmF71xrGzMUM9IjawqwIJbfjeRRhxLXni+ktm8/8HJDKx/lNszJDbo6yGcV2Ql7tXYtmg1hb8YUFvqlss4s7IzhO1lZ+E2HibPmRknZM=
+Message-ID: <acbcf3840707251516w301f834cj5f6a81a494d359ed@mail.gmail.com>
+Date: Wed, 25 Jul 2007 17:16:01 -0500
+From: Satya <satyakiran@gmail.com>
+To: linuxppc-dev@ozlabs.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: pte_offset_map for ppc assumes HIGHPTE
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make CONFIG_INTEL_IOATDMA select CONFIG_DCA because it uses code
-exported from said dependency:
+hello,
+The implementation of pte_offset_map() for ppc assumes that PTEs are
+kept in highmem (CONFIG_HIGHPTE). There is only one implmentation of
+pte_offset_map() as follows (include/asm-ppc/pgtable.h):
 
-# CONFIG_DCA is not set
-CONFIG_INTEL_IOATDMA=m
+#define pte_offset_map(dir, addr)               \
+         ((pte_t *) kmap_atomic(pmd_page(*(dir)), KM_PTE0) + pte_index(addr))
 
-ERROR: "alloc_dca_provider" [drivers/dma/ioatdma.ko] undefined!
-ERROR: "register_dca_provider" [drivers/dma/ioatdma.ko] undefined!
-ERROR: "unregister_dca_provider" [drivers/dma/ioatdma.ko] undefined!
-ERROR: "free_dca_provider" [drivers/dma/ioatdma.ko] undefined!
-make[1]: *** [__modpost] Error 1
+Shouldn't this be made conditional according to CONFIG_HIGHPTE is
+defined or not (as implemented in include/asm-i386/pgtable.h) ?
 
-"select" seems ok because CONFIG_DCA looks library-like and doesn't itself
-depend upon anything else.
+the same goes for pte_offset_map_nested and the corresponding unmap functions.
 
-Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-
----
-
- drivers/dma/Kconfig |    1 +
- 1 files changed, 1 insertion(+)
-
-diff -ruNp a/drivers/dma/Kconfig b/drivers/dma/Kconfig
---- a/drivers/dma/Kconfig	2007-07-26 03:31:47.000000000 +0530
-+++ b/drivers/dma/Kconfig	2007-07-26 03:32:14.000000000 +0530
-@@ -28,6 +28,7 @@ comment "DMA Devices"
- config INTEL_IOATDMA
- 	tristate "Intel I/OAT DMA support"
- 	depends on DMA_ENGINE && PCI
-+	select DCA
- 	default m
- 	---help---
- 	  Enable support for the Intel(R) I/OAT DMA engine.
+thanks,
+Satya Popuri
