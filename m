@@ -1,107 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935098AbXGYSo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935316AbXGYSoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935098AbXGYSo3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762242AbXGYSoU
+	id S935316AbXGYSoq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933162AbXGYSo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:44:20 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:28379 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758929AbXGYSoT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:44:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tGCanXbYSZ+NOoZZTYcOmU1V8lzPE+UQmz5EnItTfF8rr4vwjT+nIjPuWRBIT2FN5bob9ES5tctFL9gMFsbAAgxoUdJ+YJc6PEawUic5AkeWx0gxywQPlpMrzkAqhY8pzwWEiWyNMDiIKm/ue3QLz3FwGklpmYVX5vC6ydd+bMI=
-Message-ID: <dda83e780707251144w5041d393r4d93291daba1d4be@mail.gmail.com>
-Date: Wed, 25 Jul 2007 11:44:18 -0700
-From: "Bret Towe" <magnade@gmail.com>
-To: "Nick Piggin" <npiggin@suse.de>
-Subject: Re: [patch] agp: don't lock pages
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>, airlied@gmail.com
-In-Reply-To: <20070725111922.GF29011@wotan.suse.de>
+	Wed, 25 Jul 2007 14:44:28 -0400
+Received: from mail.zelnet.ru ([80.92.97.13]:57880 "EHLO mail.zelnet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934512AbXGYSo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 14:44:26 -0400
+Message-ID: <46A799F9.5050806@namesys.com>
+Date: Wed, 25 Jul 2007 22:44:09 +0400
+From: Edward Shishkin <edward@namesys.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       reiserfs-devel@vger.kernel.org
+Subject: Re: 2.6.23-rc1-mm1: reiser4 <-> lzo compile error
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <20070725182221.GG3572@stusta.de>
+In-Reply-To: <20070725182221.GG3572@stusta.de>
+X-Enigmail-Version: 0.86.0.0
+X-Enigmail-Supports: pgp-inline, pgp-mime
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070725111922.GF29011@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/07, Nick Piggin <npiggin@suse.de> wrote:
-> Hi,
->
-> Does this patch solve the X problem? Does anyone see anything wrong
-> with it or know why agp was locking the pages?
+Adrian Bunk wrote:
 
-Yeap the mac mini is happy again
-Thanks
+><--  snip  -->
+>
+>...
+>  LD      .tmp_vmlinux1
+>lib/built-in.o: In function `lzo1x_1_compress':
+>(.text+0x13eae): multiple definition of `lzo1x_1_compress'
+>fs/built-in.o:(.text+0x117075): first defined here
+>make[1]: *** [.tmp_vmlinux1] Error 1
+>
+><--  snip  -->
+>
+>AFAIR, we once had a patch in -mm changing reiser4 to use the
+>LZO code that is now in the kernel?
+>  
+>
 
-> --
-> AGP should not need to lock pages. They are not protecting any race
-> because there is no lock_page calls, only SetPageLocked.
+Yup, I'll take a look..
+
+>cu
+>Adrian
 >
-> This is causing hangs with d00806b183152af6d24f46f0c33f14162ca1262a.
+>  
 >
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
->
-> diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
-> index d535c40..3db4f40 100644
-> --- a/drivers/char/agp/generic.c
-> +++ b/drivers/char/agp/generic.c
-> @@ -1170,7 +1170,6 @@ void *agp_generic_alloc_page(struct agp_
->         map_page_into_agp(page);
->
->         get_page(page);
-> -       SetPageLocked(page);
->         atomic_inc(&agp_bridge->current_memory_agp);
->         return page_address(page);
->  }
-> @@ -1187,7 +1186,6 @@ void agp_generic_destroy_page(void *addr
->         page = virt_to_page(addr);
->         unmap_page_from_agp(page);
->         put_page(page);
-> -       unlock_page(page);
->         free_page((unsigned long)addr);
->         atomic_dec(&agp_bridge->current_memory_agp);
->  }
-> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-> index a124060..2f319f4 100644
-> --- a/drivers/char/agp/intel-agp.c
-> +++ b/drivers/char/agp/intel-agp.c
-> @@ -213,7 +213,6 @@ static void *i8xx_alloc_pages(void)
->         }
->         global_flush_tlb();
->         get_page(page);
-> -       SetPageLocked(page);
->         atomic_inc(&agp_bridge->current_memory_agp);
->         return page_address(page);
->  }
-> @@ -229,7 +228,6 @@ static void i8xx_destroy_pages(void *add
->         change_page_attr(page, 4, PAGE_KERNEL);
->         global_flush_tlb();
->         put_page(page);
-> -       unlock_page(page);
->         __free_pages(page, 2);
->         atomic_dec(&agp_bridge->current_memory_agp);
->  }
-> diff --git a/drivers/char/agp/sgi-agp.c b/drivers/char/agp/sgi-agp.c
-> index cda608c..98cf8ab 100644
-> --- a/drivers/char/agp/sgi-agp.c
-> +++ b/drivers/char/agp/sgi-agp.c
-> @@ -51,7 +51,6 @@ static void *sgi_tioca_alloc_page(struct
->                 return NULL;
->
->         get_page(page);
-> -       SetPageLocked(page);
->         atomic_inc(&agp_bridge->current_memory_agp);
->         return page_address(page);
->  }
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+
