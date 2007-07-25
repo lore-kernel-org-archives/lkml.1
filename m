@@ -1,71 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933866AbXGYQy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933976AbXGYQzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933866AbXGYQy6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 12:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXGYQys
+	id S933976AbXGYQzd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 12:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763970AbXGYQzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 12:54:48 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44135 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754721AbXGYQyr (ORCPT
+	Wed, 25 Jul 2007 12:55:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59436 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752061AbXGYQzR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 12:54:47 -0400
-Date: Wed, 25 Jul 2007 18:54:20 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: SL Baur <steve@xemacs.org>
-Cc: jschopp <jschopp@austin.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-Message-ID: <20070725165420.GD3572@stusta.de>
-References: <46A534EA.6030008@intel.com> <46A5C12B.3080904@shadowen.org> <20070724021526.3d92286b.akpm@linux-foundation.org> <20070724172217.GA10725@linux-sh.org> <Pine.LNX.4.64.0707242000120.18990@fbirervta.pbzchgretzou.qr> <46A64587.2010704@shadowen.org> <20070724194901.GE6019@stusta.de> <46A661FB.7040504@austin.ibm.com> <20070725011346.GA3572@stusta.de> <ed10ee420707250839s60904507xb777b61c2d043bd@mail.gmail.com>
+	Wed, 25 Jul 2007 12:55:17 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Noah Watkins <nwatkins@ittc.ku.edu>
+Subject: Re: 2.6.23-rc1 -- build failure
+Date: Wed, 25 Jul 2007 12:55:12 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <20070725161116.GF23458@ittc.ku.edu>
+In-Reply-To: <20070725161116.GF23458@ittc.ku.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <ed10ee420707250839s60904507xb777b61c2d043bd@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200707251255.12359.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 08:39:36AM -0700, SL Baur wrote:
-> On 7/24/07, Adrian Bunk <bunk@stusta.de> wrote:
->
->> There are more important things than exploiting the corner cases of
->> codingstyle, e.g. could you teach checkpatch.pl to give exactly two
->> errors for the following code?
->>
->>
->>         while (a);
->>                 for (b = 0; b < 50; b++);
->>                         for (c = 0; c < sizeof(struct module); c++)
->>                                 d = e;
->
-> There are three errors there.  The while (a) busy wait needs a cpu_relax()
+On Wednesday 25 July 2007 12:11, Noah Watkins wrote:
+> Latest git tree gives following build errors (config attached):
+> 
+> make -C /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6 O=/yggnfs/nwatkins/kernels/git-linux-2.6/build
+>   Using /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6 as source for kernel
+>   GEN     /yggnfs/nwatkins/kernels/git-linux-2.6/build/Makefile
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+>   CC      arch/i386/kernel/acpi/cstate.o
+> In file included from /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/arch/i386/kernel/acpi/cstate.c:16:
+> /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/include/acpi/processor.h:90: error: expected specifier-qualifier-list before ‘acpi_integer’
+> /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/include/acpi/processor.h:108: error: expected specifier-qualifier-list before ‘acpi_integer’
+> /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/include/acpi/processor.h:131: error: expected specifier-qualifier-list before ‘acpi_integer’
+> /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/include/acpi/processor.h:149: error: expected specifier-qualifier-list before ‘acpi_integer’
+> /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/include/acpi/processor.h:205: error: expected specifier-qualifier-list before ‘acpi_handle’
+> /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/include/acpi/processor.h:319: warning: ‘struct acpi_device’ declared inside parameter list
+> /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/include/acpi/processor.h:319: warning: its scope is only this definition or declaration, which is probably not what you want
+> /yggnfs/nwatkins/kernels/git-linux-2.6/linux-2.6/include/acpi/processor.h:322: warning: ‘struct acpi_device’ declared inside parameter list
+> make[4]: *** [arch/i386/kernel/acpi/cstate.o] Error 1
+> make[3]: *** [arch/i386/kernel/acpi] Error 2
+> make[2]: *** [arch/i386/kernel] Error 2
+> make[1]: *** [_all] Error 2
+> make: *** [all] Error 2
 
-OK, granted. But this is dummy code, and this is not what I'd expect 
-checkpatch.pl to check for.
+try this:
 
-> or something, the first for is at the wrong level of indentation and the
-> second for is at the wrong level of indentation relative to the first one.
+>From akpm@linux-foundation.org Mon Jul 23 20:50:44 2007
 
-If someone writes the code this way, the problem is usually not the 
-indentation that is most likely correct, but the fact that the code does 
-something completely different from what the author thought it would do.
 
-We already had such bugs in the kernel, they are unlikely to be spotted 
-at code review, but for a script that looks at the source code they 
-should be easy to spot.
+-----------------------------------------------------
+Subject: X86_POWERNOW_K8_ACPI must depend on ACPI
+From: Adrian Bunk <bunk@stusta.de>
 
-cu
-Adrian
+This patch fixes the following compile error introduced by
+commit e8666b2718fdb5bf0ea7c3126f7e292bbbf2946b and reported
+by Alexey Dobriyan:
 
--- 
+<--  snip  -->
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+   CC      arch/i386/kernel/acpi/cstate.o
+In file included from arch/i386/kernel/acpi/cstate.c:17:
+include/acpi/processor.h:88: error: expected specifier-qualifier-list before 'acpi_integer'
 
+<--  snip  -->
+
+If you select something you must ensure that the dependencies of what
+you are selecting are fulfilled.
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+Cc: Dave Jones <davej@redhat.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/i386/kernel/cpu/cpufreq/Kconfig |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN arch/i386/kernel/cpu/cpufreq/Kconfig~x86_powernow_k8_acpi-must-depend-on-acpi arch/i386/kernel/cpu/cpufreq/Kconfig
+--- a/arch/i386/kernel/cpu/cpufreq/Kconfig~x86_powernow_k8_acpi-must-depend-on-acpi
++++ a/arch/i386/kernel/cpu/cpufreq/Kconfig
+@@ -92,7 +92,7 @@ config X86_POWERNOW_K8
+ config X86_POWERNOW_K8_ACPI
+ 	bool "ACPI Support"
+ 	select ACPI_PROCESSOR
+-	depends on X86_POWERNOW_K8
++	depends on ACPI && X86_POWERNOW_K8
+ 	default y
+ 	help
+ 	  This provides access to the K8s Processor Performance States via ACPI.
+_
