@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbXGYEy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758708AbXGYE55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbXGYEy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 00:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbXGYEyT
+	id S1758708AbXGYE55 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 00:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbXGYE5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 00:54:19 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:22357 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750794AbXGYEyS (ORCPT
+	Wed, 25 Jul 2007 00:57:50 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:33654 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750946AbXGYE5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 00:54:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=dElzPDSLdoKTMntsD9kXnwF5W2O5LH3cVxds0bD0jKf9j5sXf1eAR+UDGbZYMT7YHc3oq7TW8yBuctBt3y8geOvFAtX5FJbTuhynUYbYdgu+1eAhHZ/am+kvZb07RaBnO6yG13m5sBvQ+6bDGWVnphTKdTDWbPbFBwxLE3597qE=  ;
-X-YMail-OSG: LEzDQgsVM1k6wxysZ2ox3jkgcqRMZFi.tfrs5A_8y5DyyLAuLJmKeqDMlf72ICqieF2zoUjkvQ--
-Message-ID: <46A6D775.4030802@yahoo.com.au>
-Date: Wed, 25 Jul 2007 14:54:13 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 25 Jul 2007 00:57:50 -0400
+Message-ID: <46A6D7D2.4050708@gmail.com>
+Date: Wed, 25 Jul 2007 06:55:46 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/8] i386: bitops: Kill volatile-casting of memory addresses
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>  <20070723160548.22137.66072.sendpatchset@cselinux1.cse.iitk.ac.in>  <alpine.LFD.0.999.0707231046140.3607@woody.linux-foundation.org> <1185270544.5439.252.camel@localhost.localdomain> <alpine.LFD.0.999.0707241017440.3607@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707241017440.3607@woody.linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org>	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	 <46A57068.3070701@yahoo.com.au>	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>	 <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <46A6CC56.6040307@yahoo.com.au>
+In-Reply-To: <46A6CC56.6040307@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Tue, 24 Jul 2007, Benjamin Herrenschmidt wrote:
+On 07/25/2007 06:06 AM, Nick Piggin wrote:
 
->>Besides, as Nick pointed out, it prevents some valid optimizations.
-> 
-> 
-> No it doesn't. Not the ones on the functions that just do an inline asm.
-> 
-> The only valid optimization it might break is for "constant_test_bit()", 
-> which isn't even using inline asm.
+> Ray Lee wrote:
 
-The constant case is probably most used (at least for page flags), and
-is most important for me. constant_test_bit may not be using inline asm,
-but the volatile pointer target means that it reloads the value and can't
-do much optimisation over it.
+>> Anyway, my point is that I worry that tuning for an unusual and 
+>> infrequent workload (which updatedb certainly is), is the wrong way to 
+>> go.
+> 
+> Well it runs every day or so for every desktop Linux user, and it has
+> similarities with other workloads.
 
-BTW. once volatile goes away, i386 really should start using the C
-versions of __set_bit and __clear_bit as well IMO. (at least for the
-constant bitnr case), so gcc can potentially optimise better.
+It certainly doesn't run for me ever. Always kind of a "that's not the 
+point" comment but I just keep wondering whenever I see anyone complain 
+about updatedb why the _hell_ they are running it in the first place. If 
+anyone who never uses "locate" for anything simply disable updatedb, the 
+problem will for a large part be solved.
 
--- 
-SUSE Labs, Novell Inc.
+This not just meant as a cheap comment; while I can think of a few similar 
+loads even on the desktop (scanning a browser cache, a media player indexing 
+a large amount of media files, ...) I've never heard of problems _other_ 
+than updatedb. So just junk that crap and be happy.
+
+Rene.
