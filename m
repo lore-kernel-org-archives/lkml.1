@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbXGYFAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXGYFCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbXGYFAa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 01:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbXGYFAX
+	id S1759426AbXGYFCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 01:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbXGYFCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 01:00:23 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:35678 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750946AbXGYFAW (ORCPT
+	Wed, 25 Jul 2007 01:02:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59628 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750946AbXGYFCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 01:00:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=W6mi85dpi03fPIhXTtgSqBRTy7iOcleQ/jPYnFVxEEF1YkiGOAygGYoOFxijSI74H7gfax2n8PsybfAHWyC65ldY0nEf9KDtmpnzCYIjRlLAIFOcy24opS/lQ3affiVpfZRZAIIFMawFlsFwkbf5xmkO6ClrWfjAJyTH732OB5U=  ;
-X-YMail-OSG: e59v7FIVM1n9L29RzHZuWl1VMT8XDtoz6L5OG11IbSTcxKtfr4fTBSPlfc2DopXlwZxrgvZkQQ--
-Message-ID: <46A6D8DF.8060205@yahoo.com.au>
-Date: Wed, 25 Jul 2007 15:00:15 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org>	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	 <46A57068.3070701@yahoo.com.au>	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>	 <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
-In-Reply-To: <46A6D7D2.4050708@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 25 Jul 2007 01:02:04 -0400
+Date: Tue, 24 Jul 2007 22:01:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: mel@skynet.ie (Mel Gorman)
+Cc: bob.picco@hp.com, apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix corruption of memmap on IA64 SPARSEMEM when
+ mem_section is not a power of 2
+Message-Id: <20070724220116.0d9fb8b5.akpm@linux-foundation.org>
+In-Reply-To: <20070313104201.GA16842@skynet.ie>
+References: <20070313104201.GA16842@skynet.ie>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 07/25/2007 06:06 AM, Nick Piggin wrote:
-> 
->> Ray Lee wrote:
-> 
-> 
->>> Anyway, my point is that I worry that tuning for an unusual and 
->>> infrequent workload (which updatedb certainly is), is the wrong way 
->>> to go.
->>
->>
->> Well it runs every day or so for every desktop Linux user, and it has
->> similarities with other workloads.
-> 
-> 
-> It certainly doesn't run for me ever. Always kind of a "that's not the 
-> point" comment but I just keep wondering whenever I see anyone complain 
-> about updatedb why the _hell_ they are running it in the first place. If 
-> anyone who never uses "locate" for anything simply disable updatedb, the 
-> problem will for a large part be solved.
-> 
-> This not just meant as a cheap comment; while I can think of a few 
-> similar loads even on the desktop (scanning a browser cache, a media 
-> player indexing a large amount of media files, ...) I've never heard of 
-> problems _other_ than updatedb. So just junk that crap and be happy.
+On Tue, 13 Mar 2007 10:42:02 +0000 mel@skynet.ie (Mel Gorman) wrote:
 
-OK fair point, but the counter point that there are real patterns
-that just use-once a lot of metadata (ls, for example. grep even.)
+> There are problems in the use of SPARSEMEM and pageblock flags that causes
+> problems on ia64.
+> 
+> The first part of the problem is that units are incorrect in
+> SECTION_BLOCKFLAGS_BITS computation. This results in a map_section's
+> section_mem_map being treated as part of a bitmap which isn't good. This
+> was evident with an invalid virtual address when mem_init attempted to free
+> bootmem pages while relinquishing control from the bootmem allocator.
+> 
+> The second part of the problem occurs because the pageblock flags bitmap is
+> be located with the mem_section. The SECTIONS_PER_ROOT computation using
+> sizeof (mem_section) may not be a power of 2 depending on the size of the
+> bitmap. This renders masks and other such things not power of 2 base. This
+> issue was seen with SPARSEMEM_EXTREME on ia64. This patch moves the bitmap
+> outside of mem_section and uses a pointer instead in the mem_section. The
+> bitmaps are allocated when the section is being initialised.
+> 
+> Note that sparse_early_usemap_alloc() does not use alloc_remap() like
+> sparse_early_mem_map_alloc(). The allocation required for the bitmap on x86,
+> the only architecture that uses alloc_remap is typically smaller than a cache
+> line. alloc_remap() pads out allocations to the cache size which would be
+> a needless waste.
+> 
+> Credit to Bob Picco for identifying the original problem and effecting a
+> fix for the SECTION_BLOCKFLAGS_BITS calculation. Credit to Andy Whitcroft
+> for devising the best way of allocating the bitmaps only when required for
+> the section.
 
--- 
-SUSE Labs, Novell Inc.
+SuperH allmodconfig blew up:
+
+mm/sparse.c: In function `sparse_init':
+mm/sparse.c:482: error: implicit declaration of function `sparse_early_usemap_alloc'
+mm/sparse.c:482: warning: assignment makes pointer from integer without a cast
+mm/sparse.c: In function `sparse_add_one_section':
+mm/sparse.c:553: error: implicit declaration of function `__kmalloc_section_usemap'
+mm/sparse.c:553: warning: assignment makes pointer from integer without a cast
