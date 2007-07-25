@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762640AbXGYK2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762810AbXGYKbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762640AbXGYK2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 06:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758803AbXGYK15
+	id S1762810AbXGYKbT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 06:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698AbXGYKbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 06:27:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41515 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756473AbXGYK14 (ORCPT
+	Wed, 25 Jul 2007 06:31:11 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:11158 "EHLO
+	outbound1-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752559AbXGYKbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 06:27:56 -0400
-Date: Wed, 25 Jul 2007 11:27:52 +0100
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Florian Lohoff <flo@rfc822.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1 sky2 boot crash in sky2_mac_intr
-Message-ID: <20070725112752.11d21751@oldman.hamilton.local>
-In-Reply-To: <20070725072202.GA4905@paradigm.rfc822.org>
-References: <20070724082205.GA19480@paradigm.rfc822.org>
-	<20070724095008.0eb154fe@oldman.hamilton.local>
-	<20070724094042.GA6414@paradigm.rfc822.org>
-	<6bffcb0e0707241630p3599ad99sfd778097b307e78c@mail.gmail.com>
-	<20070725072202.GA4905@paradigm.rfc822.org>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Jul 2007 06:31:10 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Organization: AMD
+To: "Henri Hunnekens" <henrihunnekens@gmail.com>
+Subject: Re: TSC calibration sometimes not correct with RT patch.
+Date: Wed, 25 Jul 2007 12:30:23 +0200
+User-Agent: KMail/1.9.7
+cc: "Ingo Molnar" <mingo@elte.hu>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+References: <e9f486400707250025k163d34cdk97cf2722db739634@mail.gmail.com>
+ <20070725073949.GB595@elte.hu>
+ <e9f486400707250056i7f6ef2aducef8c0f7cf11c09c@mail.gmail.com>
+In-Reply-To: <e9f486400707250056i7f6ef2aducef8c0f7cf11c09c@mail.gmail.com>
+MIME-Version: 1.0
+Message-ID: <200707251230.24311.joachim.deguara@amd.com>
+X-OriginalArrivalTime: 25 Jul 2007 10:30:19.0999 (UTC)
+ FILETIME=[CCD89EF0:01C7CEA6]
+X-WSS-ID: 6AB9F9D17CS3229970-01-01
+Content-Type: text/plain;
+ charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 09:22:02 +0200
-Florian Lohoff <flo@rfc822.org> wrote:
+On Wednesday 25 July 2007 09:56:38 Henri Hunnekens wrote:
+> Some more information, the problems occurs on a SMP machine. I've
+> added the system logging which displays the CPU speed. The last line
+> shows an inaccurate processor speed! I'll try an update, but I expect
+> this has something to do with the TSC calibration and that hasn't
+> changed, If I'm correct.
 
-> On Wed, Jul 25, 2007 at 01:30:31AM +0200, Michal Piotrowski wrote:
-> > >I'll try the above and keep you posted. The crash itself seems to be a
-> > >2.6.23-rc1 regression though. I never experienced this with 2.6.22-rc5
-> > >which i was running before.
-> > 
-> > Can you try to figure out what is causing this crash and then use 
-> > git-bisect?
-> 
-> Are there so many changes between 2.6.22-rc5 and 2.6.23-rc1 for the sky2?
-> 
-> As the crash is not that reproducible, just occasionally on boot i guess
-> bisecting is more or less waste of time.
-> 
-> Flo
-> -- 
-> Florian Lohoff                  flo@rfc822.org             +49-171-2280134
-> 	Those who would give up a little freedom to get a little 
->           security shall soon have neither - Benjamin Franklin
+Could it just be that an SMI happened during the calibration?
 
-I would suspect these as possible causes of the regression was one of these
-patches.
+-Joachim
 
-commit 8f70920f2f2a699b4ad35e625071cd92f4ba6ca3
-Author: Stephen Hemminger <shemminger@linux-foundation.org>
-Date:   Mon Jun 4 17:23:25 2007 -0700
-
-    sky2: GPIO register
-    
-    The General Purpose I/O register is yet another hardware workaround
-    catchall. Enable workaround that vendor driver does to stay
-    but for bug compatiable.
-    
-    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
-
-commit 451af33552286b426940a32126bd3ece243223a3
-Author: Stephen Hemminger <shemminger@linux-foundation.org>
-Date:   Mon Jun 4 17:23:24 2007 -0700
-
-    sky2: enable clocks before probe
-    
-    Catch-22: On Yukon EX (88E8071) need to have internal clocks enabled
-    before reading chip id. It is harmless on other chips.
-    
-    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
-
-commit fc99fe0618f355b708ce88fedaca9783072ac3d5
-Author: Stephen Hemminger <shemminger@linux-foundation.org>
-Date:   Mon Jun 4 17:23:22 2007 -0700
-
-    sky2: Add PCI device specfic register 4 & 5
-    
-    Need to setup more PCI control control registers are on Yukon EX.
-    Some of these also exist on Yukon EC-U as well.
-    
-    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
