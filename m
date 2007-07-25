@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbXGYO4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932604AbXGYO7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932696AbXGYO4q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 10:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758493AbXGYO4k
+	id S932604AbXGYO7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 10:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbXGYO7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 10:56:40 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:52717 "EHLO atlrel9.hp.com"
+	Wed, 25 Jul 2007 10:59:09 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58156 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756740AbXGYO4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 10:56:39 -0400
-Message-ID: <46A76472.1060204@hp.com>
-Date: Wed, 25 Jul 2007 10:55:46 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	id S1756708AbXGYO7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 10:59:08 -0400
+From: Andi Kleen <ak@suse.de>
+To: Kirill Korotaev <dev@openvz.org>
+Subject: Re: i386-show-unhandled-signals-v3
+Date: Wed, 25 Jul 2007 16:57:43 +0200
+User-Agent: KMail/1.9.1
+Cc: Masoud Asgharifard Sharbiani <masouds@google.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070718154759.GA26425@google.com> <46A76210.5020903@openvz.org>
+In-Reply-To: <46A76210.5020903@openvz.org>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Adrian Bunk <bunk@stusta.de>, lksctp-developers@lists.sourceforge.net,
-       Gabriel C <nix.or.die@googlemail.com>,
-       "Nelson, Shannon" <shannon.nelson@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [Lksctp-developers] __unsafe() usage
-References: <46A3FE3E.20300@googlemail.com>	 <BAE9DCEF64577A439B3A37F36F9B691C02B820A3@orsmsx418.amr.corp.intel.com>	 <20070723175927.GM26212@stusta.de>	 <1185232601.1803.41.camel@localhost.localdomain>  <46A5F91B.50403@hp.com> <1185316027.1803.351.camel@localhost.localdomain>
-In-Reply-To: <1185316027.1803.351.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707251657.44217.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Tue, 2007-07-24 at 09:05 -0400, Vlad Yasevich wrote:
->> Please don't remove module_exit point for SCTP.  Simply removing the __unsafe() call will
->> be sufficient.
->>
->> The code has recently been cleaned up to allow safe unloading and I working on final
->> cleanups.  It currently works correctly with forced unloading.
-> 
-> Thanks Vlad!
-> 
-> I think that's everyone...
+On Wednesday 25 July 2007 16:45, Kirill Korotaev wrote:
+> plz don't enable it by default... :/
+> any user can spam syslog with these messages and if syslog is run as root
+> can take the whole diskspace...
 
-Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+There are plenty of other ways to cause syslog messages anyways; this argument 
+is 100% bogus.
+
+-Andi
