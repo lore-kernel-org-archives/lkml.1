@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764130AbXGYUxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764470AbXGYUxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764130AbXGYUxH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 16:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759105AbXGYUwv
+	id S1764470AbXGYUxe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 16:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756631AbXGYUxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 16:52:51 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:59707 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757828AbXGYUwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 16:52:49 -0400
-Date: Wed, 25 Jul 2007 15:52:38 -0500
+	Wed, 25 Jul 2007 16:53:24 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:59631 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762233AbXGYUxW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 16:53:22 -0400
+Date: Wed, 25 Jul 2007 15:53:11 -0500
 From: Michael Halcrow <mhalcrow@us.ibm.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, toml@us.ibm.com
-Subject: [PATCH 6/7] eCryptfs: Remove unnecessary variable initializations
-Message-ID: <20070725205238.GW14091@halcrow.austin.ibm.com>
+Subject: [PATCH 7/7] eCryptfs: Make needlessly global symbols static
+Message-ID: <20070725205311.GX14091@halcrow.austin.ibm.com>
 Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
 References: <20070725204855.GQ14091@halcrow.austin.ibm.com>
 MIME-Version: 1.0
@@ -26,45 +27,149 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Andrew Morton wrote:
-> >       struct mutex *tfm_mutex = NULL;
->
-> This initialisation looks like it's here to kill bogus gcc warning
-> (if it is, it should have been commented).  Please investigate
-> uninitialized_var() and __maybe_unused sometime.
+> Please check that all the newly-added global symbols do indeed need
+> to be global.
 
-Remove some unnecessary variable initializations. There may be a few
-more such intializations remaining in the code base; a future patch
-will take care of those.
+Change symbols in keystore.c and crypto.o to static if they do not
+need to be global.
 
 Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
 ---
- fs/ecryptfs/keystore.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ fs/ecryptfs/crypto.c          |    8 +++---
+ fs/ecryptfs/ecryptfs_kernel.h |    7 ------
+ fs/ecryptfs/keystore.c        |   43 +++++++++++++++++++++--------------------
+ 3 files changed, 26 insertions(+), 32 deletions(-)
 
+diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
+index 7aa2f48..8e9b36d 100644
+--- a/fs/ecryptfs/crypto.c
++++ b/fs/ecryptfs/crypto.c
+@@ -123,9 +123,9 @@ out:
+ 	return rc;
+ }
+ 
+-int ecryptfs_crypto_api_algify_cipher_name(char **algified_name,
+-					   char *cipher_name,
+-					   char *chaining_modifier)
++static int ecryptfs_crypto_api_algify_cipher_name(char **algified_name,
++						  char *cipher_name,
++						  char *chaining_modifier)
+ {
+ 	int cipher_name_len = strlen(cipher_name);
+ 	int chaining_modifier_len = strlen(chaining_modifier);
+@@ -1859,7 +1859,7 @@ out:
+  * should be released by other functions, such as on a superblock put
+  * event, regardless of whether this function succeeds for fails.
+  */
+-int
++static int
+ ecryptfs_process_key_cipher(struct crypto_blkcipher **key_tfm,
+ 			    char *cipher_name, size_t *key_size)
+ {
+diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
+index e09e1fb..6cd1e18 100644
+--- a/fs/ecryptfs/ecryptfs_kernel.h
++++ b/fs/ecryptfs/ecryptfs_kernel.h
+@@ -156,7 +156,6 @@ struct ecryptfs_auth_tok {
+ 	} token;
+ } __attribute__ ((packed));
+ 
+-int ecryptfs_get_auth_tok_sig(char **sig, struct ecryptfs_auth_tok *auth_tok);
+ void ecryptfs_dump_auth_tok(struct ecryptfs_auth_tok *auth_tok);
+ extern void ecryptfs_to_hex(char *dst, char *src, size_t src_size);
+ extern void ecryptfs_from_hex(char *dst, char *src, int dst_size);
+@@ -536,9 +535,6 @@ void ecryptfs_destroy_crypt_stat(struct ecryptfs_crypt_stat *crypt_stat);
+ void ecryptfs_destroy_mount_crypt_stat(
+ 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat);
+ int ecryptfs_init_crypt_ctx(struct ecryptfs_crypt_stat *crypt_stat);
+-int ecryptfs_crypto_api_algify_cipher_name(char **algified_name,
+-					   char *cipher_name,
+-					   char *chaining_modifier);
+ #define ECRYPTFS_LOWER_I_MUTEX_NOT_HELD 0
+ #define ECRYPTFS_LOWER_I_MUTEX_HELD 1
+ int ecryptfs_write_inode_size_to_metadata(struct file *lower_file,
+@@ -579,13 +575,10 @@ int ecryptfs_generate_key_packet_set(char *dest_base,
+ 				     struct ecryptfs_crypt_stat *crypt_stat,
+ 				     struct dentry *ecryptfs_dentry,
+ 				     size_t *len, size_t max);
+-int process_request_key_err(long err_code);
+ int
+ ecryptfs_parse_packet_set(struct ecryptfs_crypt_stat *crypt_stat,
+ 			  unsigned char *src, struct dentry *ecryptfs_dentry);
+ int ecryptfs_truncate(struct dentry *dentry, loff_t new_length);
+-int ecryptfs_process_key_cipher(struct crypto_blkcipher **key_tfm,
+-				char *cipher_name, size_t *key_size);
+ int ecryptfs_inode_test(struct inode *inode, void *candidate_lower_inode);
+ int ecryptfs_inode_set(struct inode *inode, void *lower_inode);
+ void ecryptfs_init_inode(struct inode *inode, struct inode *lower_inode);
 diff --git a/fs/ecryptfs/keystore.c b/fs/ecryptfs/keystore.c
-index a718136..d9739bc 100644
+index d9739bc..63c6ded 100644
 --- a/fs/ecryptfs/keystore.c
 +++ b/fs/ecryptfs/keystore.c
-@@ -1009,7 +1009,7 @@ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
+@@ -39,7 +39,7 @@
+  * determine the type of error, make appropriate log entries, and
+  * return an error code.
+  */
+-int process_request_key_err(long err_code)
++static int process_request_key_err(long err_code)
  {
- 	struct scatterlist dst_sg;
- 	struct scatterlist src_sg;
--	struct mutex *tfm_mutex = NULL;
-+	struct mutex *tfm_mutex;
- 	struct blkcipher_desc desc = {
- 		.flags = CRYPTO_TFM_REQ_MAY_SLEEP
- 	};
-@@ -1123,8 +1123,8 @@ int ecryptfs_parse_packet_set(struct ecryptfs_crypt_stat *crypt_stat,
- 	size_t found_auth_tok;
- 	size_t next_packet_is_auth_tok_packet;
- 	struct list_head auth_tok_list;
--	struct ecryptfs_auth_tok *matching_auth_tok = NULL;
--	struct ecryptfs_auth_tok *candidate_auth_tok = NULL;
-+	struct ecryptfs_auth_tok *matching_auth_tok;
-+	struct ecryptfs_auth_tok *candidate_auth_tok;
- 	char *candidate_auth_tok_sig;
- 	size_t packet_size;
- 	struct ecryptfs_auth_tok *new_auth_tok;
+ 	int rc = 0;
+ 
+@@ -396,6 +396,27 @@ out:
+ 	return rc;
+ }
+ 
++static int
++ecryptfs_get_auth_tok_sig(char **sig, struct ecryptfs_auth_tok *auth_tok)
++{
++	int rc = 0;
++
++	(*sig) = NULL;
++	switch (auth_tok->token_type) {
++	case ECRYPTFS_PASSWORD:
++		(*sig) = auth_tok->token.password.signature;
++		break;
++	case ECRYPTFS_PRIVATE_KEY:
++		(*sig) = auth_tok->token.private_key.signature;
++		break;
++	default:
++		printk(KERN_ERR "Cannot get sig for auth_tok of type [%d]\n",
++		       auth_tok->token_type);
++		rc = -EINVAL;
++	}
++	return rc;
++}
++
+ /**
+  * decrypt_pki_encrypted_session_key - Decrypt the session key with the given auth_tok.
+  * @auth_tok: The key authentication token used to decrypt the session key
+@@ -1082,26 +1103,6 @@ out:
+ 	return rc;
+ }
+ 
+-int ecryptfs_get_auth_tok_sig(char **sig, struct ecryptfs_auth_tok *auth_tok)
+-{
+-	int rc = 0;
+-
+-	(*sig) = NULL;
+-	switch (auth_tok->token_type) {
+-	case ECRYPTFS_PASSWORD:
+-		(*sig) = auth_tok->token.password.signature;
+-		break;
+-	case ECRYPTFS_PRIVATE_KEY:
+-		(*sig) = auth_tok->token.private_key.signature;
+-		break;
+-	default:
+-		printk(KERN_ERR "Cannot get sig for auth_tok of type [%d]\n",
+-		       auth_tok->token_type);
+-		rc = -EINVAL;
+-	}
+-	return rc;
+-}
+-
+ /**
+  * ecryptfs_parse_packet_set
+  * @crypt_stat: The cryptographic context
 -- 
 1.5.1.6
 
