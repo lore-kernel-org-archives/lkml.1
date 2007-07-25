@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762912AbXGYGkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763470AbXGYGll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762912AbXGYGkG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 02:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbXGYGjz
+	id S1763470AbXGYGll (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 02:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbXGYGle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 02:39:55 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44864 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751603AbXGYGjy (ORCPT
+	Wed, 25 Jul 2007 02:41:34 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36177 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751603AbXGYGld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 02:39:54 -0400
-Date: Wed, 25 Jul 2007 07:39:53 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: rae l <crquan@gmail.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [RFC] fs/super.c: Why alloc_super use a static variable default_op?
-Message-ID: <20070725063953.GC27237@ftp.linux.org.uk>
-References: <91b13c310707242048lb54b071u5e7fc4272b142475@mail.gmail.com> <20070725041407.GA27237@ftp.linux.org.uk> <91b13c310707242129u6aa09166j74ad42d31adc4ad7@mail.gmail.com> <20070725043744.GB27237@ftp.linux.org.uk> <91b13c310707242221g27178dacs433d16cdfb119851@mail.gmail.com>
+	Wed, 25 Jul 2007 02:41:33 -0400
+Date: Tue, 24 Jul 2007 23:40:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>,
+       cpufreq@www.linux.org.uk
+Subject: Re: [PATCH]gx-suspmod.c use boot_cpu_data instead of
+ current_cpu_data
+Message-Id: <20070724234045.2cec5525.akpm@linux-foundation.org>
+In-Reply-To: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
+References: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <91b13c310707242221g27178dacs433d16cdfb119851@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 01:21:19PM +0800, rae l wrote:
- 
-> But there are also many other subsystems will do
-> fs/dcache.c:
-> void dput(struct dentry *dentry)
-> 	if (dentry->d_op && dentry->d_op->d_delete) {
-> Do you think it's worth optimizing it with a static d_op filled?
+On Wed, 25 Jul 2007 14:19:05 +0000 Dave Young <hidave.darkstar@gmail.com> wrote:
+
+> Hi,
+> in preemptible kernel will report BUG: using smp_processor_id() in preemptible, so use boot_cpu_data instead of current_cpu_data.
 > 
-> we can add a static variable to d_alloc and set its initial d_op to
-> this static variable?
-> struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> 
+> ---
+> arch/i386/kernel/cpu/cpufreq/gx-suspmod.c |    4 ++--
+> 1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -pur linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c
+> --- linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c	2007-07-25 14:11:06.000000000 +0000
+> +++ linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c	2007-07-25 13:57:29.000000000 +0000
+> @@ -181,8 +181,8 @@ static __init struct pci_dev *gx_detect_
+>  	struct pci_dev *gx_pci = NULL;
+>  
+>  	/* check if CPU is a MediaGX or a Geode. */
+> -	if ((current_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
+> -	    (current_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
+> +	if ((boot_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
+> +	    (boot_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
+>  		dprintk("error: no MediaGX/Geode processor found!\n");
+>  		return NULL;
+>  	}
 
-Try and compare...  It really depends - I suspect that for dentries the
-situation differs since the case of ->d_op == NULL is *common*.  So
-these checks actually might be a win - we are not unlikely to bail out
-on the first one, without hitting the contents of *dentry->d_op.
+um, I suspect it really wants to get at the current CPU.  But putting a
+preempt_disable() around just that code is meaningless: the current CPU
+could change immediately before or after the code block. It needs deeper
+fixing, methinks.
 
-For superblocks and inodes that is different - if we go looking for a method,
-we *are* going to hit the method table anyway; it's not going to be NULL in
-anything resembling a normal case.  So having the pointer to table initialized
-that way is an obvious win - we don't really lose on space (savings in .text
-at least balance the loss in .bss), we win on simpler logics and we actually
-win by skipping the useless test.
-
-How well would that pay for dentries...  Hell knows.  Space-wise it's the
-same story, but we might end up doing extra work at accesses.  Try it - it's
-not a hard patch to write, after all.
