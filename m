@@ -1,66 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763079AbXGYKsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbXGYK5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763079AbXGYKsd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 06:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXGYKs0
+	id S1762290AbXGYK5G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 06:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXGYK4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 06:48:26 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59848 "EHLO gate.crashing.org"
+	Wed, 25 Jul 2007 06:56:55 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:38604 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755639AbXGYKs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 06:48:26 -0400
-Subject: Re: [patch] mm: reduce pagetable-freeing latencies
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <20070725102608.GB9045@one.firstfloor.org>
-References: <20070724083855.GA858@elte.hu>
-	 <20070724015441.8604d85d.akpm@linux-foundation.org>
-	 <1185270045.5439.249.camel@localhost.localdomain>
-	 <p73abtmt2y7.fsf@bingen.suse.de>
-	 <1185312559.5439.276.camel@localhost.localdomain>
-	 <1185345850.8197.64.camel@twins> <20070725094605.GA9045@one.firstfloor.org>
-	 <1185358093.5439.325.camel@localhost.localdomain>
-	 <20070725102608.GB9045@one.firstfloor.org>
-Content-Type: text/plain
-Date: Wed, 25 Jul 2007 20:46:53 +1000
-Message-Id: <1185360414.5439.335.camel@localhost.localdomain>
+	id S1755639AbXGYK4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 06:56:54 -0400
+Date: Wed, 25 Jul 2007 14:56:46 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/2] Use list_head in binfmt handling
+Message-ID: <20070725105646.GA11047@localhost.sw.ru>
+References: <200707250521.l6P5LIOp018521@imap1.linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707250521.l6P5LIOp018521@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-25 at 12:26 +0200, Andi Kleen wrote:
-> > Plan is fixed array or 4 or maybe 8 entries (pointers), that shouldn't
-> > be -too- bad. The code path I'm a bit worried about is
-> 
-> Yep.
-> 
-> > unmap_mapping_ranges() which goes into zapping page tables from deep
-> > within filesystems.
-> 
-> Your aim is to conserve stack space? 
-> The worst case has to work without overflow anyways, so using VLAs don't 
-> help you. Just allocate the largest size you can safely afford.
-> 
-> This is also easier to test; if it is too large it is better when
-> the overflow triggers always.
-> 
-> They are more useful in user space with larger stacks when you don't 
-> know the maximum size.
+On Tue, Jul 24, 2007 at 10:16:44PM -0700, akpm@linux-foundation.org wrote:
+> arch/sparc64/kernel/binfmt_aout32.c:41: warning: missing braces around initializer
+> arch/sparc64/kernel/binfmt_aout32.c:41: warning: (near initialization for `aout32_format.lh')
+> arch/sparc64/kernel/binfmt_aout32.c:41: warning: initialization from incompatible pointer type
+> arch/sparc64/kernel/binfmt_aout32.c:41: warning: initialization from incompatible pointer type
+> arch/sparc64/kernel/binfmt_aout32.c:41: warning: initialization from incompatible pointer type
+> arch/sparc64/kernel/binfmt_aout32.c:41: warning: initialization from incompatible pointer type
+> arch/sparc64/kernel/binfmt_aout32.c:43: warning: initialization makes pointer from integer without a cast
 
-In fact, i discussed with peter and I think the best is to only have one
-entry in the stack mmu_gather structure. If we fail to allocate a page
-to batch entries, we flush that one and steal it :-) Then we have a page
-to gather more.
+> --- a/arch/sparc64/kernel/binfmt_aout32.c~use-list_head-in-binfmt-handling-fix
+> +++ a/arch/sparc64/kernel/binfmt_aout32.c
+> @@ -38,8 +38,12 @@ static int load_aout32_library(struct fi
+>  static int aout32_core_dump(long signr, struct pt_regs * regs, struct file *file);
+>  
+>  static struct linux_binfmt aout32_format = {
+> -	NULL, THIS_MODULE, load_aout32_binary, load_aout32_library, aout32_core_dump,
+> -	PAGE_SIZE
+> +	.lh	=	LIST_HEAD_INIT(aout32_format.lh),
+> +	.module =	THIS_MODULE,
+> +	.load_binary =	load_aout32_binary,
+> +	.load_shlib =	load_aout32_library,
+> +	.core_dump =	aout32_core_dump,
+> +	.min_coredump =	PAGE_SIZE,
+>  };
 
-I'll give that a go tomorrow, I got delayed by some stupid HW issues
-today.
+Doh! Thanks, Andrew.
 
-Cheers,
-Ben.
+list_head initialization is unneeded, because register_binfmt() will
+reinitialize it anyway.
 
+Here is final version which was test-compiled on sparc64 and on mips
+(after irixelf.c BROKEN removal):
+
+
+
+[PATCH 1/2] Use list_head in binfmt handling
+
+Switch single-linked binfmt formats list to usual list_head's.
+This leads to one-liners in register_binfmt() and unregister_binfmt().
+The downside is one pointer more in struct linux_binfmt. This is not a
+problem, since the set of registered binfmts on typical box is very small --
+(ELF + something distro enabled for you).
+
+Test-booted, played with executable .txt files, modprobe/rmmod binfmt_misc.
+
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
+
+ arch/mips/kernel/irixelf.c          |    7 +++++--
+ arch/sparc64/kernel/binfmt_aout32.c |    7 +++++--
+ fs/exec.c                           |   34 ++++++----------------------------
+ include/linux/binfmts.h             |    2 +-
+ 4 files changed, 17 insertions(+), 33 deletions(-)
+
+--- a/arch/mips/kernel/irixelf.c
++++ b/arch/mips/kernel/irixelf.c
+@@ -47,8 +47,11 @@ static int irix_core_dump(long signr, struct pt_regs * regs,
+                           struct file *file);
+ 
+ static struct linux_binfmt irix_format = {
+-	NULL, THIS_MODULE, load_irix_binary, load_irix_library,
+-	irix_core_dump, PAGE_SIZE
++	.module		= THIS_MODULE,
++	.load_binary	= load_irix_binary,
++	.load_shlib	= load_irix_library,
++	.core_dump	= irix_core_dump,
++	.min_coredump	= PAGE_SIZE,
+ };
+ 
+ /* Debugging routines. */
+--- a/arch/sparc64/kernel/binfmt_aout32.c
++++ b/arch/sparc64/kernel/binfmt_aout32.c
+@@ -38,8 +38,11 @@ static int load_aout32_library(struct file*);
+ static int aout32_core_dump(long signr, struct pt_regs * regs, struct file *file);
+ 
+ static struct linux_binfmt aout32_format = {
+-	NULL, THIS_MODULE, load_aout32_binary, load_aout32_library, aout32_core_dump,
+-	PAGE_SIZE
++	.module		= THIS_MODULE,
++	.load_binary	= load_aout32_binary,
++	.load_shlib	= load_aout32_library,
++	.core_dump	= aout32_core_dump,
++	.min_coredump	= PAGE_SIZE,
+ };
+ 
+ static void set_brk(unsigned long start, unsigned long end)
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -67,27 +67,15 @@ int suid_dumpable = 0;
+ EXPORT_SYMBOL(suid_dumpable);
+ /* The maximal length of core_pattern is also specified in sysctl.c */
+ 
+-static struct linux_binfmt *formats;
++static LIST_HEAD(formats);
+ static DEFINE_RWLOCK(binfmt_lock);
+ 
+ int register_binfmt(struct linux_binfmt * fmt)
+ {
+-	struct linux_binfmt ** tmp = &formats;
+-
+ 	if (!fmt)
+ 		return -EINVAL;
+-	if (fmt->next)
+-		return -EBUSY;
+ 	write_lock(&binfmt_lock);
+-	while (*tmp) {
+-		if (fmt == *tmp) {
+-			write_unlock(&binfmt_lock);
+-			return -EBUSY;
+-		}
+-		tmp = &(*tmp)->next;
+-	}
+-	fmt->next = formats;
+-	formats = fmt;
++	list_add(&fmt->lh, &formats);
+ 	write_unlock(&binfmt_lock);
+ 	return 0;	
+ }
+@@ -96,20 +84,10 @@ EXPORT_SYMBOL(register_binfmt);
+ 
+ int unregister_binfmt(struct linux_binfmt * fmt)
+ {
+-	struct linux_binfmt ** tmp = &formats;
+-
+ 	write_lock(&binfmt_lock);
+-	while (*tmp) {
+-		if (fmt == *tmp) {
+-			*tmp = fmt->next;
+-			fmt->next = NULL;
+-			write_unlock(&binfmt_lock);
+-			return 0;
+-		}
+-		tmp = &(*tmp)->next;
+-	}
++	list_del(&fmt->lh);
+ 	write_unlock(&binfmt_lock);
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ EXPORT_SYMBOL(unregister_binfmt);
+@@ -156,7 +134,7 @@ asmlinkage long sys_uselib(const char __user * library)
+ 		struct linux_binfmt * fmt;
+ 
+ 		read_lock(&binfmt_lock);
+-		for (fmt = formats ; fmt ; fmt = fmt->next) {
++		list_for_each_entry(fmt, &formats, lh) {
+ 			if (!fmt->load_shlib)
+ 				continue;
+ 			if (!try_module_get(fmt->module))
+@@ -1290,7 +1268,7 @@ int search_binary_handler(struct linux_binprm *bprm,struct pt_regs *regs)
+ 	retval = -ENOENT;
+ 	for (try=0; try<2; try++) {
+ 		read_lock(&binfmt_lock);
+-		for (fmt = formats ; fmt ; fmt = fmt->next) {
++		list_for_each_entry(fmt, &formats, lh) {
+ 			int (*fn)(struct linux_binprm *, struct pt_regs *) = fmt->load_binary;
+ 			if (!fn)
+ 				continue;
+--- a/include/linux/binfmts.h
++++ b/include/linux/binfmts.h
+@@ -63,7 +63,7 @@ struct linux_binprm{
+  * linux accepts.
+  */
+ struct linux_binfmt {
+-	struct linux_binfmt * next;
++	struct list_head lh;
+ 	struct module *module;
+ 	int (*load_binary)(struct linux_binprm *, struct  pt_regs * regs);
+ 	int (*load_shlib)(struct file *);
 
