@@ -1,139 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbXGYFnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbXGYFnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759910AbXGYFnA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 01:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbXGYFmx
+	id S1753581AbXGYFnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 01:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbXGYFnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 01:42:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35877 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751323AbXGYFmw (ORCPT
+	Wed, 25 Jul 2007 01:43:15 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:23718 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751512AbXGYFnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 01:42:52 -0400
-Date: Tue, 24 Jul 2007 22:42:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joshua Wise <jwise@google.com>
-Cc: linux-kernel@vger.kernel.org, Tim Hockin <thockin@google.com>,
-       Mike Waychison <mikew@google.com>,
-       Masoud Asgharifard Sharbiani <masouds@google.com>,
-       Andrew Morton <akpm@google.com>
-Subject: Re: [PATCH] Print utsname on Oops on all architectures
-Message-Id: <20070724224209.5dd511b3.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707051847030.617@internets.corp.google.com>
-References: <Pine.LNX.4.64.0707051847030.617@internets.corp.google.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Jul 2007 01:43:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=5eOb0yEdTbzv1mCbmrL+IY2G7rdkz7oznXzStDfGCTOE2qzMzGo/VHCQaNAZgPTgHyG3w6+NAc7hA069AQxMsyjCBNxqtX4QA7yxaTmzhRXOkNZ6F2foltYPRYzIJNNOIMxeZtwsxuCyt3EVOF/D6ygmZqRU/S5TDmbXhybNkUw=  ;
+X-YMail-OSG: lpmCvSsVM1mo194_EoBDCy2zl_wTyfVx2kEv2jWAF_R8FBXi
+Message-ID: <46A6E2EE.4040207@yahoo.com.au>
+Date: Wed, 25 Jul 2007 15:43:10 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Dave Airlie <airlied@gmail.com>
+CC: Bret Towe <magnade@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear
+ mappings
+References: <dda83e780707241027k369c2f01j6d16b21266df3a05@mail.gmail.com>	 <46A6C72A.9020801@yahoo.com.au> <21d7e9970707242137x51ca8a64wadfb06c7b543af38@mail.gmail.com>
+In-Reply-To: <21d7e9970707242137x51ca8a64wadfb06c7b543af38@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jul 2007 18:52:27 -0700 (PDT) Joshua Wise <jwise@google.com> wrote:
-
-> Background:
->  This patch is a follow-on to "Info dump on Oops or panic()" [1].
->  
->  On some architectures, the kernel printed some information on the running
->  kernel, but not on all architectures. The information printed was generally
->  the version and build number, but it was not located in a consistant place,
->  and some architectures did not print it at all.
+Dave Airlie wrote:
+>>
+>> Is this with a binary-only module? We saw an issue with that in SLES9
+>> where the module is returning a locked page from its nopage handler
+>> when it isn't really supposed to. It might be fixed in latest drivers,
+>> have you tried them?
 > 
-> Description:
->  This patch uses the already-existing die_chain to print utsname information
->  on Oops. This patch also removes the architecture-specific utsname
->  printers. To avoid crashing the system further (and hence not printing the
->  Oops) in the case where the system is so hopelessly smashed that utsname
->  might be destroyed, we vsprintf the utsname data into a static buffer
->  first, and then just print that on crash.
 > 
-> Testing:
->  I wrote a module that does a *(int*)0 = 0; and observed that I got my
->  utsname data printed.
-> 
-> Potential impact:
->  This adds another line to the Oops output, causing the first few lines to
->  potentially scroll off the screen. This also adds a few more pointer
->  dereferences in the Oops path, because it adds to the die_chain notifier
->  chain, reducing the likelihood that the Oops will be printed if there is
->  very bad memory corruption.
+> Doesn't sound like it he mentions radeon drm module which is open...
 
-There are strange happenings due to this patch on i386:
+OK. Well from the task trace, X is getting stuck on a locked page. And
+as it is never getting unlocked, I'd be almost positive it comes from
+a driver's nopage. I know some ATI driver did that in the past. Would
+the radeon drm module do anything similar?
 
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-hdc: max request size: 128KiB
-hdc: 156355584 sectors (80054 MB) w/1819KiB Cache, CHS=65535/16/63, UDMA(33)
-hdc: cache flushes supported
- hdc:<0>Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
- hdc1 hdc2 hdc3 hdc4 <<0>Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
- hdc5<0>Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
- hdc6 >
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-initcall 0xc052a060: idedisk_init+0x0/0x10() returned 0.
-initcall 0xc052a060 ran for 38 msecs: idedisk_init+0x0/0x10()
-Calling initcall 0xc052a070: ide_cdrom_init+0x0/0x10()
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-initcall 0xc052a070: ide_cdrom_init+0x0/0x10() returned 0.
-initcall 0xc052a070 ran for 3 msecs: ide_cdrom_init+0x0/0x10()
-Calling initcall 0xc052a080: idetape_init+0x0/0x90()
-initcall 0xc052a080: idetape_init+0x0/0x90() returned 0.
-initcall 0xc052a080 ran for 0 msecs: idetape_init+0x0/0x90()
-Calling initcall 0xc052a110: idefloppy_init+0x0/0x20()
-ide-floppy driver 0.99.newide
-initcall 0xc052a110: idefloppy_init+0x0/0x20() returned 0.
-initcall 0xc052a110 ran for 0 msecs: idefloppy_init+0x0/0x20()
-Calling initcall 0xc052a3e0: spi_transport_init+0x0/0x30()
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-Linux 2.6.23-rc1-mm1 #7 SMP Tue Jul 24 22:34:40 PDT 2007 i686
-initcall 0xc052a3e0: spi_transport_init+0x0/0x30() returned 0.
-initcall 0xc052a3e0 ran for 3 msecs: spi_transport_init+0x0/0x30()
-Calling initcall 0xc052a410: fc_transport_init+0x0/0x50()
-initcall 0xc052a410: fc_transport_init+0x0/0x50() returned 0.
-initcall 0xc052a410 ran for 0 msecs: fc_transport_init+0x0/0x50()
-Calling initcall 0xc052a460: init_sd+0x0/0x90()
-initcall 0xc052a460: init_sd+0x0/0x90() returned 0.
-initcall 0xc052a460 ran for 0 msecs: init_sd+0x0/0x90()
-
-and it gets no further.
-
-I'll drop it - let's start again?
+-- 
+SUSE Labs, Novell Inc.
