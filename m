@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934299AbXGYSRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934104AbXGYSUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934299AbXGYSRX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765164AbXGYSRN
+	id S934104AbXGYSUU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbXGYSUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:17:13 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:25632 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755064AbXGYSRL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:17:11 -0400
-Message-ID: <46A7941F.2050300@ru.mvista.com>
-Date: Wed, 25 Jul 2007 22:19:11 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
- for CF	interface
-References: <20070725165318.5331.23795.stgit@localhost.localdomain> <20070725165326.5331.19920.stgit@localhost.localdomain> <46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com> <20070725180145.GA29689@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20070725180145.GA29689@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 25 Jul 2007 14:20:09 -0400
+Received: from mga02.intel.com ([134.134.136.20]:30751 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754607AbXGYSUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 14:20:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,581,1175497200"; 
+   d="scan'208";a="270529000"
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>
+In-Reply-To: <20070725120358.GA30755@elte.hu>
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>
+	 <20070725110159.GA15076@elte.hu>  <20070725120358.GA30755@elte.hu>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 25 Jul 2007 11:20:05 -0700
+Message-Id: <1185387605.14095.16.camel@tongli.jf.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+X-OriginalArrivalTime: 25 Jul 2007 18:20:05.0345 (UTC) FILETIME=[6C9F1D10:01C7CEE8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Wed, 2007-07-25 at 14:03 +0200, Ingo Molnar wrote:
 
-Scott Wood wrote:
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/linux/sched.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux/include/linux/sched.h
+> ===================================================================
+> --- linux.orig/include/linux/sched.h
+> +++ linux/include/linux/sched.h
+> @@ -681,7 +681,7 @@ enum cpu_idle_type {
+>  #define SCHED_LOAD_SHIFT	10
+>  #define SCHED_LOAD_SCALE	(1L << SCHED_LOAD_SHIFT)
+>  
+> -#define SCHED_LOAD_SCALE_FUZZ	(SCHED_LOAD_SCALE >> 5)
+> +#define SCHED_LOAD_SCALE_FUZZ	(SCHED_LOAD_SCALE >> 1)
+>  
+>  #ifdef CONFIG_SMP
+>  #define SD_LOAD_BALANCE		1	/* Do load balancing on this domain. */
 
->>    Also, what mmio-ide in the compat properly means in the context of 
->>ide_platform which is able to handle both port and memory mapped IDE.
+Hi Ingo,
 
-> I/O-space is only valid in the context of PCI, ISA, or similar buses, and
-> the bus-specific reg format indicates whether it's mmio-space or
-> io-space.
+The problem I see is that the current load balancing code is quite
+hueristic and can be quite inaccurate sometimes. Its goal is to maintain
+roughly equal load on each core, where load is defined to be the sum of
+the weights of all tasks on a core. If all tasks have the same weight,
+this is a simple problem. If different weights exist, this is an NP-hard
+problem and our current hueristic can perform badly under various
+workloads. A simple example, if we have four tasks on two cores and they
+have weights 1, 5, 7, 7. The balanced partition would have 1 and 7 on
+core 1 and 5 and 7 on core 2. But you can see the load isn't evenly
+distributed; in fact, it's not possible to evenly distribute the load in
+this case. Thus, my opinion is that only balancing the load as we do now
+is not enough to achieve SMP fairness. My patch was intended to address
+this problem.
 
-    You could save time on lecturing me (and use it to look on the driver ;-).
+  tong
 
->>I think we must get rid with this crap, and since this IDE register
->>mapping is pretty much board specific, call it something like
->>"mpc8349emitx-ide" instead.
-
-> What is board specific about a set of standard IDE registers at a given
-
-    The regisrer mapping used is highly non-standard.
-
-> address?  Do we need to make board-specific glue code for all of the
-
-    We're already in board specific code, so why the heck not? :-)
-
-> various ns16550-compatibles out there as well?
-
-    I never suggested that -- what I did suggest was make of_serial.c 
-recognize certain chip types and register them with 8250 driver.
-
-> -Scott
-
-MBR, Sergei
+PS. I now have a lockless implementation of my patch. Will post later
+today.
