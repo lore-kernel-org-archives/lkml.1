@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934456AbXGYR2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934526AbXGYR27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934456AbXGYR2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 13:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758482AbXGYR20
+	id S934526AbXGYR27 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 13:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbXGYR2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 13:28:26 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56682 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932158AbXGYR2Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 13:28:25 -0400
-Date: Wed, 25 Jul 2007 18:34:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Andi Kleen <andi@firstfloor.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       =?UTF-8?B?U8OpYmFzdGllbiBE?= =?UTF-8?B?dWd1w6k=?= 
-	<sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
- platform devices - broke my serial console
-Message-ID: <20070725183434.7902c953@the-village.bc.nu>
-In-Reply-To: <46A77E92.6020902@garzik.org>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
-	<p73ir88sax1.fsf@bingen.suse.de>
-	<20070725164808.41404dc7@the-village.bc.nu>
-	<200707251006.42948.bjorn.helgaas@hp.com>
-	<46A77E92.6020902@garzik.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 25 Jul 2007 13:28:30 -0400
+Received: from pat.uio.no ([129.240.10.15]:41696 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755682AbXGYR23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 13:28:29 -0400
+Subject: Re: [patch] nfs: fix locking in nfs/inode.c in
+	nfs_free_open_context
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Christian Krafft <krafft@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070725170837.5fba5fd1@localhost>
+References: <20070725170837.5fba5fd1@localhost>
+Content-Type: text/plain
+Date: Wed, 25 Jul 2007 13:28:22 -0400
+Message-Id: <1185384502.6585.97.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.104)
+X-UiO-Scanned: A2AC0103E329E23C0CD73CAEC8060C1AB9FA86CF
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 226 total 2968963 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 12:47:14 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+On Wed, 2007-07-25 at 17:08 +0200, Christian Krafft wrote:
 
-> Bjorn Helgaas wrote:
-> > The IR driver would be the clear owner of the entire device.  Of course,
-> > this still only works if we get rid of the 8250 blind probe for 0x3e8
-> > or figure out some API for the IR driver to tell the 8250 driver to get
-> > its mitts off.
-> 
-> 
-> Load driver B before loading driver A.
+> Obviously the locking code in nfs_free_open_context is wrong.
+> Checking the list for entries and removing the entry should be an atomic operation.
 
-Completely impractical. Devices may be hotplug, there may be combinations
-of ordering required and since you have to build serial in for serial
-console its a total non starter
+Wrong. It is quite safe to test the structure member ctx->list for
+emptiness outside the spinlock because we have an explicit guarantee
+that nobody else has a reference to this structure, plus the
+atomic_dec_and_test() in kref_put() has acted as a memory barrier for
+us.
 
+> Also list_del_init should be used, because list_del will leave the empty list in
+> an undefined condition.
 
-Alan
+Huh? We're freeing the context. It will _never_ _ever_ _ever_ be used
+again. If anything tries to use ctx->list after this, then that is a
+major bug.
+
+Patch rejected...
+
+Trond
+
