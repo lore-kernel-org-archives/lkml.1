@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbXGYK0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762640AbXGYK2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761394AbXGYK0V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 06:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbXGYK0O
+	id S1762640AbXGYK2P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 06:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758803AbXGYK15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 06:26:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44125 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756844AbXGYK0N (ORCPT
+	Wed, 25 Jul 2007 06:27:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41515 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756473AbXGYK14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 06:26:13 -0400
-Date: Wed, 25 Jul 2007 12:26:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch] mm: reduce pagetable-freeing latencies
-Message-ID: <20070725102608.GB9045@one.firstfloor.org>
-References: <20070724083855.GA858@elte.hu> <20070724015441.8604d85d.akpm@linux-foundation.org> <1185270045.5439.249.camel@localhost.localdomain> <p73abtmt2y7.fsf@bingen.suse.de> <1185312559.5439.276.camel@localhost.localdomain> <1185345850.8197.64.camel@twins> <20070725094605.GA9045@one.firstfloor.org> <1185358093.5439.325.camel@localhost.localdomain>
+	Wed, 25 Jul 2007 06:27:56 -0400
+Date: Wed, 25 Jul 2007 11:27:52 +0100
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Florian Lohoff <flo@rfc822.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1 sky2 boot crash in sky2_mac_intr
+Message-ID: <20070725112752.11d21751@oldman.hamilton.local>
+In-Reply-To: <20070725072202.GA4905@paradigm.rfc822.org>
+References: <20070724082205.GA19480@paradigm.rfc822.org>
+	<20070724095008.0eb154fe@oldman.hamilton.local>
+	<20070724094042.GA6414@paradigm.rfc822.org>
+	<6bffcb0e0707241630p3599ad99sfd778097b307e78c@mail.gmail.com>
+	<20070725072202.GA4905@paradigm.rfc822.org>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185358093.5439.325.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Plan is fixed array or 4 or maybe 8 entries (pointers), that shouldn't
-> be -too- bad. The code path I'm a bit worried about is
+On Wed, 25 Jul 2007 09:22:02 +0200
+Florian Lohoff <flo@rfc822.org> wrote:
 
-Yep.
+> On Wed, Jul 25, 2007 at 01:30:31AM +0200, Michal Piotrowski wrote:
+> > >I'll try the above and keep you posted. The crash itself seems to be a
+> > >2.6.23-rc1 regression though. I never experienced this with 2.6.22-rc5
+> > >which i was running before.
+> > 
+> > Can you try to figure out what is causing this crash and then use 
+> > git-bisect?
+> 
+> Are there so many changes between 2.6.22-rc5 and 2.6.23-rc1 for the sky2?
+> 
+> As the crash is not that reproducible, just occasionally on boot i guess
+> bisecting is more or less waste of time.
+> 
+> Flo
+> -- 
+> Florian Lohoff                  flo@rfc822.org             +49-171-2280134
+> 	Those who would give up a little freedom to get a little 
+>           security shall soon have neither - Benjamin Franklin
 
-> unmap_mapping_ranges() which goes into zapping page tables from deep
-> within filesystems.
+I would suspect these as possible causes of the regression was one of these
+patches.
 
-Your aim is to conserve stack space? 
-The worst case has to work without overflow anyways, so using VLAs don't 
-help you. Just allocate the largest size you can safely afford.
+commit 8f70920f2f2a699b4ad35e625071cd92f4ba6ca3
+Author: Stephen Hemminger <shemminger@linux-foundation.org>
+Date:   Mon Jun 4 17:23:25 2007 -0700
 
-This is also easier to test; if it is too large it is better when
-the overflow triggers always.
+    sky2: GPIO register
+    
+    The General Purpose I/O register is yet another hardware workaround
+    catchall. Enable workaround that vendor driver does to stay
+    but for bug compatiable.
+    
+    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
-They are more useful in user space with larger stacks when you don't 
-know the maximum size.
+commit 451af33552286b426940a32126bd3ece243223a3
+Author: Stephen Hemminger <shemminger@linux-foundation.org>
+Date:   Mon Jun 4 17:23:24 2007 -0700
 
--Andi
+    sky2: enable clocks before probe
+    
+    Catch-22: On Yukon EX (88E8071) need to have internal clocks enabled
+    before reading chip id. It is harmless on other chips.
+    
+    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+commit fc99fe0618f355b708ce88fedaca9783072ac3d5
+Author: Stephen Hemminger <shemminger@linux-foundation.org>
+Date:   Mon Jun 4 17:23:22 2007 -0700
+
+    sky2: Add PCI device specfic register 4 & 5
+    
+    Need to setup more PCI control control registers are on Yukon EX.
+    Some of these also exist on Yukon EC-U as well.
+    
+    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
