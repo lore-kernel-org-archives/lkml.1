@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbXGYPjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933292AbXGYPkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932555AbXGYPjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 11:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757949AbXGYPji
+	id S933292AbXGYPkX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 11:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762477AbXGYPkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 11:39:38 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:32304 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757744AbXGYPjh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 11:39:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=eImakQnOsKXaz0bIDkm4zcjJOz5n0aAvhtN2GNnKDWFkyTjuwfGbdX61LEL2qv/Gwozo+eSQcrQJQ3N/xLrNImKmuJxJu5SXgDlfnyEUQqXFRrJNsbmoxNBajTwcifU7U6T/QQgnGyFJY5H4XS51jRMV/5/17NQr0De6GvnsJI8=
-Message-ID: <ed10ee420707250839s60904507xb777b61c2d043bd@mail.gmail.com>
-Date: Wed, 25 Jul 2007 08:39:36 -0700
-From: "SL Baur" <steve@xemacs.org>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-Cc: jschopp <jschopp@austin.ibm.com>, "Andy Whitcroft" <apw@shadowen.org>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Randy Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070725011346.GA3572@stusta.de>
+	Wed, 25 Jul 2007 11:40:09 -0400
+Received: from ns.suse.de ([195.135.220.2]:37922 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760614AbXGYPkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 11:40:07 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch] fix the softlockup watchdog to actually work
+References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org>
+	<20070717154934.GA24231@elte.hu>
+	<20070725014912.35c7e325.akpm@linux-foundation.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 25 Jul 2007 18:34:54 +0200
+In-Reply-To: <20070725014912.35c7e325.akpm@linux-foundation.org>
+Message-ID: <p73ejiwsaq9.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky>
-	 <46A534EA.6030008@intel.com> <46A5C12B.3080904@shadowen.org>
-	 <20070724021526.3d92286b.akpm@linux-foundation.org>
-	 <20070724172217.GA10725@linux-sh.org>
-	 <Pine.LNX.4.64.0707242000120.18990@fbirervta.pbzchgretzou.qr>
-	 <46A64587.2010704@shadowen.org> <20070724194901.GE6019@stusta.de>
-	 <46A661FB.7040504@austin.ibm.com> <20070725011346.GA3572@stusta.de>
-X-Google-Sender-Auth: 9c59fa0223341c21
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/24/07, Adrian Bunk <bunk@stusta.de> wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> One possibility is that sched_clock() is bollixed and (say) it's returning
+> a 32-bit value.  That'll cause the softlockup logic to get a bit sick when
+> time wraps.
 
-> There are more important things than exploiting the corner cases of
-> codingstyle, e.g. could you teach checkpatch.pl to give exactly two
-> errors for the following code?
->
->
->         while (a);
->                 for (b = 0; b < 50; b++);
->                         for (c = 0; c < sizeof(struct module); c++)
->                                 d = e;
+FYI, The current ff x86 sched_clock() [which you likely have, it's not
+mainline] tends to warp backwards by 80-90ms during cpu freq changes
+on AMD on one of my test systems. I haven't tracked down why it does
+that yet. Intel or systems with no cpufreq or cpufreq not changing
+frequencies regularly are not affected
 
-There are three errors there.  The while (a) busy wait needs a cpu_relax()
-or something, the first for is at the wrong level of indentation and the
-second for is at the wrong level of indentation relative to the first one.
+-Andi
