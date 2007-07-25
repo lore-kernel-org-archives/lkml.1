@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935066AbXGYSrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934633AbXGYStB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935066AbXGYSrW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761260AbXGYSrM
+	id S934633AbXGYStB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759836AbXGYSsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:47:12 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:43698 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753481AbXGYSrL (ORCPT
+	Wed, 25 Jul 2007 14:48:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:39000 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755529AbXGYSsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:47:11 -0400
-Message-ID: <46A79AA1.3030608@freescale.com>
-Date: Wed, 25 Jul 2007 13:46:57 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.7.10) Gecko/20050909 Red Hat/1.7.10-1.1.3.2
-X-Accept-Language: en-us, en
+	Wed, 25 Jul 2007 14:48:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pdA5+C0dRZI3EM/mTcAixKYJB/OQgb2tWD66cQJNyc+FqLv/iTkBddR31nxhc04Gd+fQ3/0oa8sbLH8/iEo1aTcIIMMafClAKRSnrO+hUXjLC8MoRcmaSsbi2ohMdp9ifgmRcpO2ZrniIR3BRVVXjarmLX/6CPV3HuAR+0ZEnN4=
+Message-ID: <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com>
+Date: Wed, 25 Jul 2007 20:48:50 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc1-mm1
+Cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
- for CF	interface
-References: <20070725165318.5331.23795.stgit@localhost.localdomain> <20070725165326.5331.19920.stgit@localhost.localdomain> <46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com> <20070725180145.GA29689@ld0162-tx32.am.freescale.net> <46A7968D.3070707@ru.mvista.com>
-In-Reply-To: <46A7968D.3070707@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
->    I acn undertand your complaint in the context of an OF driver (which 
-> we don't have yet) but "mmio-ide" just means nothing to the current 
-> driver, and it doesn't convery enough info on the programming interface 
-> for the conceivable OF driver, it also does need to know at least 
-> "reg-stride" (and maybe "reg-size" in case only 16/32-bit accesses can 
-> be used).  Well, if such driver will be written, I/O mapping support 
-> will probably be dropped from it, so indeed, calling it mmio-ide.c would 
-> make sense.  But that can be added when this driver is done, and for now 
+On 25/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
+>
+>
 
-I don't think the details of what Linux code currently exists should 
-drive the device tree binding.  That the current patches use 
-platform_device glue code is an implementation detail (and one I'd 
-rather see go away, in favor of a driver that supports both 
-platform_device and of_device).
+Andi, this might be interesting for you
 
-> I'd really prefer the board name to appear in the "compatible" prop (to 
-> which "mmio-ide" can be appended)...
+make allmodconfig
+make
+[...]
+WARNING: Absolute relocations present
+Offset     Info     Type     Sym.Value Sym.Name
+c02041b3 00705601   R_386_32 c0308aa8  _sdata
 
-Sure, that's always good...  it was the "instead" that I objected to.
+Regards,
+Michal
 
--Scott
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
