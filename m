@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764194AbXGYIfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbXGYIkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764194AbXGYIfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 04:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbXGYIfd
+	id S1758131AbXGYIkP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 04:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbXGYIkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 04:35:33 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:42398
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753961AbXGYIfc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 04:35:32 -0400
-Date: Wed, 25 Jul 2007 01:33:45 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Rene Herman <rene.herman@gmail.com>
-cc: Ray Lee <ray-lk@madrabbit.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-In-Reply-To: <Pine.LNX.4.64.0707250130200.18679@asgard.lang.hm>
-Message-ID: <Pine.LNX.4.64.0707250132520.18679@asgard.lang.hm>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> 
- <200707102015.44004.kernel@kolivas.org>  <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-  <46A57068.3070701@yahoo.com.au>  <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-  <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
- <Pine.LNX.4.64.0707242130470.2229@asgard.lang.hm> <46A7031D.5080300@gmail.com>
- <Pine.LNX.4.64.0707250104180.2229@asgard.lang.hm> <46A709DC.4080501@gmail.com>
- <Pine.LNX.4.64.0707250130200.18679@asgard.lang.hm>
+	Wed, 25 Jul 2007 04:40:04 -0400
+Received: from mail.beamnet.de ([87.106.41.124]:58682 "EHLO server2.beamnet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751966AbXGYIkD (ORCPT <rfc822;<linux-kernel@vger.kernel.org>>);
+	Wed, 25 Jul 2007 04:40:03 -0400
+X-Greylist: delayed 1119 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jul 2007 04:40:03 EDT
+Subject: [PATCH] usb-serial: fix oti6858.c segfault in termios handling
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Message-Id: <12789.1185351681.852842@server2.beamnet.de>
+Date: Wed, 25 Jul 2007 10:21:21 +0200
+From: Thomas Viehmann <tv@beamnet.de>
+To: <linux-kernel@vger.kernel.org>
+Cc: <linux-usb-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007, david@lang.hm wrote:
+The oti6858 usb serial driver should use 
+kernel_termios_to_user_termios/
+user_termios_to_kernel_termios to avoid segfaults because the kernel
+uses a structure differing from that of user space with a different 
+size.
 
-> Subject: Re: -mm merge plans for 2.6.23
-> 
-> On Wed, 25 Jul 2007, Rene Herman wrote:
->
->>  On 07/25/2007 10:07 AM, david@lang.hm wrote:
->> 
->> >   On Wed, 25 Jul 2007, Rene Herman wrote:
->> 
->> > >   Something like this?
->>
->>  [ ... ]
->> 
->> >   when the swap readahead is enabled does it make a significant 
->> >   difference
->> >   in the time to do the random access?
->>
->>  I don't use swap prefetch (nor -ck or -mm). If someone who has the patch
->>  applied waits to hit enter until swap prefetch has prefetched it all back
->>  in again, it certainly will.
->>
->>  Swap prefetch's potential to do larger reads back from swapspace than a
->>  random segfaulting app could well be very significant. Reads are dwarved
->>  by seeks. If this program does what you wanted, please use it to show us.
->
-> I haven't used swap prefetch either, the call was put out for what could be 
-> used to test the performance, and I was suggesting a test.
->
-> if nobody else follows up on this I'll try to get some time to test it myself 
-> in a day or two.
+Signed-off-by: Thomas Viehmann <tv@beamnet.de>
+---
+I'm don't know the least thing about the type casting (it is lifted
+from kobil_sct.c), but I do get better success with the patch...
+--- linux-2.6.23-rc1/drivers/usb/serial/oti6858.c.orig
++++ linux-2.6.23-rc1/drivers/usb/serial/oti6858.c
+@@ -818,19 +818,22 @@
 
-this assumes that this isn't ruled an invalid test in the meantime.
+        switch (cmd) {
+                case TCGETS:
+-                       if (copy_to_user(user_arg, port->tty->termios,
+-                                               sizeof(struct 
+ktermios))) {
++                       if (kernel_termios_to_user_termios(
++                                            (struct ktermios __user 
+*)arg,
++                                            port->tty->termios))
+                                return -EFAULT;
+-                       }
+                        return 0;
 
-in any case thanks for codeing this up so quickly.
+                case TCSETS:
+                case TCSETSW:                  case TCSETSF:   -      
+                  if (copy_from_user(port->tty->termios, user_arg,
+-                                               sizeof(struct 
+ktermios))) {
++                       if 
+(user_termios_to_kernel_termios(port->tty->termios,
++                                               (struct ktermios 
+__user *)arg))
+                                return -EFAULT;
+-                       }
+                        oti6858_set_termios(port, NULL);
+                        return 0;
 
-David Lang
+--
+Thomas Viehmann, http://thomas.viehmann.net/
