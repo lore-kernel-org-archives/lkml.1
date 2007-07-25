@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934628AbXGYRqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933667AbXGYRwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934628AbXGYRqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 13:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765891AbXGYRqH
+	id S933667AbXGYRwS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 13:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXGYRwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 13:46:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:47567 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764501AbXGYRqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 13:46:06 -0400
-Message-ID: <46A78C1B.8070509@goop.org>
-Date: Wed, 25 Jul 2007 10:44:59 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 25 Jul 2007 13:52:07 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:25518 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752597AbXGYRwG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 13:52:06 -0400
+Message-ID: <46A78E3F.1030904@ru.mvista.com>
+Date: Wed, 25 Jul 2007 21:54:07 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, hpa@zytor.com, kaos@ocs.com.au,
-       xyzzy@speakeasy.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
-References: <21803.1185331847@ocs10w.ocs.com.au> <46A6DB04.3000003@zytor.com> <46A6ECB7.7090208@goop.org> <20070724.232914.56812376.davem@davemloft.net> <alpine.LFD.0.999.0707250954400.3607@woody.linux-foundation.org> <20070725173646.GI27237@ftp.linux.org.uk>
-In-Reply-To: <20070725173646.GI27237@ftp.linux.org.uk>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+ for CF	interface
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain> <46A78322.3080607@ru.mvista.com>
+In-Reply-To: <46A78322.3080607@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Wed, Jul 25, 2007 at 09:56:12AM -0700, Linus Torvalds wrote:
->   
->> We don't just do the "ud2" instruction - we also do the file and line 
->> number information after it. Which means that __builtin_trap() is useless.
->>
->> So we might as well keep the loop, since both are two-byte instructions 
->> that tell gcc that it will never continue.
->>     
->
-> Actually, the worse problem is that gcc will happily merge these guys.
-> And that's a killer.
->   
+Hello, I wrote:
 
-Merge __builtin_traps()?  Ugh.  But also, there's no real long-term
-guarantee that it will keep generating ud2a.  The *only* mention of it
-in the manual is a discussion that it will emit a call to abort() on
-arches which don't otherwise support it.
+>>diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+>>index db0d003..f8f0e8a 100644
+>>--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+>>+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+>>@@ -37,6 +37,15 @@
+>> 		reg = <00000000 10000000>;
+>> 	};
+>> 
+>>+	ide@f0000000 {
+>>+		compatible = "mmio-ide";
+>>+		device_type = "ide";
 
-    J
+>     Why not "ata"?
+
+    Also, what mmio-ide in the compat properly means in the context of 
+ide_platform which is able to handle both port and memory mapped IDE. I think 
+we must get rid with this crap, and since this IDE register mapping is pretty 
+much board specific, call it something like "mpc8349emitx-ide" instead.
+
+MBR, Sergei
