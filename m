@@ -1,92 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763809AbXGYHOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763985AbXGYHPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763809AbXGYHOs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbXGYHOf
+	id S1763985AbXGYHPB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761670AbXGYHOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:14:35 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:37749 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759788AbXGYHOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:14:33 -0400
-Date: Wed, 25 Jul 2007 09:23:45 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Marcin ??lusarz <marcin.slusarz@gmail.com>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070725072345.GA1843@ff.dom.local>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos>
+	Wed, 25 Jul 2007 03:14:42 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:42482 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760610AbXGYHOj (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:14:39 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Rene Herman <rene.herman@gmail.com>
+Cc: david@lang.hm, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+In-Reply-To: Your message of "Wed, 25 Jul 2007 07:30:37 +0200."
+             <46A6DFFD.9030202@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <200707102015.44004.kernel@kolivas.org> <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <46A57068.3070701@yahoo.com.au> <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com> <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com> <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>
+            <46A6DFFD.9030202@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185322771.4175.102.camel@chaos>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: multipart/signed; boundary="==_Exmh_1185347660_3413P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 25 Jul 2007 03:14:20 -0400
+Message-ID: <30701.1185347660@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 02:19:31AM +0200, Thomas Gleixner wrote:
-> On Tue, 2007-07-24 at 22:04 +0200, Ingo Molnar wrote:
-> > Marcin, could you try the patch below too? [without having any other 
-> > patch applied.] It basically turns the critical section into an irqs-off 
-> > critical section and thus checks whether your problem is related to that 
-> > particular area of code.
-> > 
-> 
-> I read back on this thread and I think the problem is somewhere else:
+--==_Exmh_1185347660_3413P
+Content-Type: text/plain; charset="us-ascii"
+Content-Id: <30677.1185347635.1@turing-police.cc.vt.edu>
 
-So do I. Of course, I certainly miss most of the details, but I can't
-imagine how this yesterday Ingo's patch couldn't work - unless
-Marcin's test wasn't long enough...
+On Wed, 25 Jul 2007 07:30:37 +0200, Rene Herman said:
 
-IMHO, the main problem is that such delicate things shouldn't be
-changed this way. If current ideas work for Marcin they will probably
-break other boxes. Very similar symptoms were reported before Ingo's
-patch too, so it looks like this place is very fragile. If such
-things could happen:
+> Yes, but what's locate's usage scenario? I've never, ever wanted to use it. 
+> When do you know the name of something but not where it's located, other 
+> than situations which "which" wouldn't cover and after just having 
+> installed/unpacked something meaning locate doesn't know about it yet either?
 
-(from: arch/i386/kernel/io_apic.c)
-> static void ack_ioapic_quirk_irq(unsigned int irq)
-> ...
-> /*
->  * It appears there is an erratum which affects at least version 0x11
->  * of I/O APIC (that's the 82093AA and cores integrated into various
->  * chipsets).  Under certain conditions a level-triggered interrupt is
->  * erroneously delivered as edge-triggered one but the respective IRR
->  * bit gets set nevertheless.  As a result the I/O unit expects an EOI
->  * message but it will never arrive and further interrupts are blocked
->  * from the source.  The exact reason is so far unknown, but the
->  * phenomenon was observed when two consecutive interrupt requests
->  * from a given source get delivered to the same CPU and the source is
->  * temporarily disabled in between.
-...
+My favorite use - with 5 Fedora kernels and as many -mm kernels on my laptop,
+doing a 'locate moby' finds all the moby.c and moby.o and moby.ko for
+the various releases. For bonus points, something like:
 
-there is no reason to think this is all.
+ls -lt `locate iwl3945.ko`
 
-I can also see this comment in arch/x86_64/kernel/io_apic.c:
+to find all 19 copies that are on my system, and remind me which ones were
+compiled when.  Or just when you remember the name of some one-off 100-line
+Perl program that you wrote 6 months ago, but not sure which directory you
+left it in... ;)
 
-> static void setup_IO_APIC_irq(int apic, int pin, unsigned int irq,
->                               int trigger, int polarity)
-...
->        /* Mask level triggered irqs.
->         * Use IRQ_DELAYED_DISABLE for edge triggered irqs.
->         */
+You want hard numbers? Here you go - 'locate' versus 'find'
+(/usr/src/ has about 290K files on it):
 
-It seems somebody have seen a difference, probably after testing,
-but it wasn't respected.
+%  strace locate iwl3945.ko  >| /tmp/foo3 2>&1
+% wc /tmp/foo3
+  96  592 6252 /tmp/foo3
+% strace find /usr/src /lib -name iwl3945.ko >| /tmp/foo4 2>&1
+% wc /tmp/foo4
+  328380  1550032 15708205 /tmp/foo4
 
-I also presume ne2k/lib8390.c solution could be a result of "real
-life", and I don't think Marcin's tests can be enough here. 
+# echo 1 > /proc/sys/vm/drop_caches     (to empty the caches
 
-So, my point is that such places first of all need some documented
-knobs in config or elsewere, which make it possible for users to
-easily go back to previous method (i.e. from 2.6.21 to 2.6.20 here).
+% time locate iwl3945.ko > /dev/null
 
-Regards,
-Jarek P.
+real    0m0.872s
+user    0m0.867s
+sys     0m0.008s
+
+% time find /usr/src /lib -name iwl3945.ko > /dev/null
+find: /usr/src/lost+found: Permission denied
+
+real    1m12.241s
+user    0m1.128s
+sys     0m3.566s
+
+So 96 system calls in 1 second, against 328K calls in a minute.  There's your
+use case, right there.  Now if we can just find a way for that find/updatedb
+to not be as painful to the rest of the system.....
+
+
+
+
+
+--==_Exmh_1185347660_3413P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGpvhMcC3lWbTT17ARApzIAKDeWs0+L/41cIMa80MBkaM7fEdMKwCgimtj
+Mfu/czdM6pdPQMmynnE381I=
+=uMEx
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1185347660_3413P--
