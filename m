@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764635AbXGYWYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763580AbXGYW2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764635AbXGYWYm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 18:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbXGYWYe
+	id S1763580AbXGYW2J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 18:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbXGYW15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 18:24:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40516 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbXGYWYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 18:24:33 -0400
-Message-ID: <46A7CD97.4020903@redhat.com>
-Date: Wed, 25 Jul 2007 18:24:23 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 25 Jul 2007 18:27:57 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:48399 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbXGYW14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 18:27:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mUcpjxem15HgAltACEsrzeR+DCyUKZzpTjGn0jQUolWuxlFFoERPHVi6xD1ongqxzz7VCtd6MCJxDrna1xpNV9T7pc1q9hvHwSdULBmvaqTQwBICowjrChAT/0pyGx/gsydsYbTKe66WCM3chIZROwUw0bQcMXHPm1dHHX9lGfY=
+Message-ID: <9a8748490707251527v3553355ldd0d2233425e298b@mail.gmail.com>
+Date: Thu, 26 Jul 2007 00:27:47 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: -mm merge plans for 2.6.23
+Cc: "Ingo Molnar" <mingo@elte.hu>, rene.herman@gmail.com,
+       Valdis.Kletnieks@vt.edu, david@lang.hm, nickpiggin@yahoo.com.au,
+       ray-lk@madrabbit.org, akpm@linux-foundation.org, ck@vds.kolivas.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070725150509.4d80a85e.pj@sgi.com>
 MIME-Version: 1.0
-To: "Li, Tong N" <tong.n.li@intel.com>
-CC: Chris Friesen <cfriesen@nortel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>	 <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu>	 <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>	 <20070725192442.GC4463@elte.hu> <46A7B4DE.4030301@nortel.com>	 <46A7B8A9.4040400@redhat.com> <1185398148.3162.5.camel@tongli.jf.intel.com>
-In-Reply-To: <1185398148.3162.5.camel@tongli.jf.intel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46A58B49.3050508@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
+	 <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>
+	 <46A6DFFD.9030202@gmail.com>
+	 <30701.1185347660@turing-police.cc.vt.edu> <46A7074B.50608@gmail.com>
+	 <20070725082822.GA13098@elte.hu> <46A70D37.3060005@gmail.com>
+	 <20070725113401.GA23341@elte.hu> <20070725150509.4d80a85e.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li, Tong N wrote:
-> On Wed, 2007-07-25 at 16:55 -0400, Chris Snook wrote:
->> Chris Friesen wrote:
->>> Ingo Molnar wrote:
->>>
->>>> the 3s is the problem: change that to 60s! We no way want to 
->>>> over-migrate for SMP fairness, the change i did gives us reasonable 
->>>> long-term SMP fairness without the need for high-rate rebalancing.
->>> Actually, I do have requirements from our engineering guys for 
->>> short-term fairness.  They'd actually like decent fairness over even 
->>> shorter intervals...1 second would be nice, 2 is acceptable.
->>>
->>> They are willing to trade off random peak performance for predictability.
->>>
->>> Chris
->>>
->> The sysctls for CFS have nanosecond resolution.  They default to 
->> millisecond-order values, but you can set them much lower.  See sched_fair.c for 
->> the knobs and their explanations.
->>
->> 	-- Chris
-> 
-> This is incorrect. Those knobs control local-CPU fairness granularity
-> but have no control over fairness across CPUs.
-> 
-> I'll do some benchmarking as Ingo suggested.
-> 
->   tong
+On 26/07/07, Paul Jackson <pj@sgi.com> wrote:
+> > and the fact is: updatedb discards a considerable portion of the cache
+> > completely unnecessarily: on a reasonably complex box no way do all the
+>
+> I'm wondering how much of this updatedb problem is due to poor layout
+> of swap and other file systems across disk spindles.
+>
+> I'll wager that those most impacted by updatedb have just one disk.
+>
+[snip]
+>
+> Question:
+>   Could those who have found this prefetch helps them alot say how
+>   many disks they have?  In particular, is their swap on the same
+>   disk spindle as their root and user files?
+>
 
-CFS naturally enforces cross-CPU fairness anyway, as Ingo demonstrated. 
-Lowering the local CPU parameters should cause system-wide fairness to converge 
-faster.  It might be worthwhile to create a more explicit knob for this, but I'm 
-inclined to believe we could do it in much less than 700 lines.  Ingo's 
-one-liner to improve the 10/8 balancing case, and the resulting improvement, 
-were exactly what I was saying should be possible and desirable.  TCP Nagle 
-aside, it generally shouldn't take 700 lines of code to speed up the rate of 
-convergence of something that already converges.
+Swap prefetch helps me.
 
-Until now I've been watching the scheduler rewrite from the sidelines, but I'm 
-digging into it now.  I'll try to give some more constructive criticism soon.
+In my case I have a single (10K RPM, Ultra 160 SCSI) disk.
 
-	-- Chris
+# fdisk -l /dev/sda
+
+Disk /dev/sda: 36.7 GB, 36703918080 bytes
+255 heads, 63 sectors/track, 4462 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1               1         974     7823623+  83  Linux
+/dev/sda2             975        1218     1959930   83  Linux
+/dev/sda3            1219        1341      987997+  82  Linux swap
+/dev/sda4            1342        4462    25069432+  83  Linux
+
+sda1 is "/", sda2 is "/usr/local/" and sda4 is "/home/"
+
+
+But, I don't think updatedb is the problem, at least not just updatedb
+on its own.
+My machine has 2GB of RAM, so a single updatedb on its own will not
+cause it to start swapping, but it does eat up a chunk of mem no doubt
+about that.
+The problem with updatedb is simply that it can be a contributing
+factor to stuff being swapped out, but any memory hungry application
+can do that - just try building an allyesconfig kernel and see how
+much the linker eats towards the end.
+
+What swap prefetch helps is not updatedb specifically, In my
+experience it helps any case where you have applications running, then
+start some memory hungry job that runs for a limited time, push the
+previously started apps out to swap and then dies (like updatedb or a
+compile job).
+
+Without swap prefetch those apps that were pushed to swap won't be
+brought back in before they are used (at which time the user is going
+to have to sit there and wait for them).
+With swap prefetch, the apps that got swapped out will slowly make
+their way back once the mem hungry app has died and will then be fully
+or partly back in memory when the user comes back to them.
+
+That's how swap prefetch helps, it's got nothing to do with updatedb
+as such - at least not as I see it.
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
