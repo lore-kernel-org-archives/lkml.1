@@ -1,96 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932558AbXGYBOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932278AbXGYBQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932558AbXGYBOW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 21:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758361AbXGYBOP
+	id S932278AbXGYBQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 21:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759667AbXGYBQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 21:14:15 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43534 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758142AbXGYBOO (ORCPT
+	Tue, 24 Jul 2007 21:16:16 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:58233 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758361AbXGYBQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 21:14:14 -0400
-Date: Wed, 25 Jul 2007 03:13:46 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: jschopp <jschopp@austin.ibm.com>
-Cc: Andy Whitcroft <apw@shadowen.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-Message-ID: <20070725011346.GA3572@stusta.de>
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A534EA.6030008@intel.com> <46A5C12B.3080904@shadowen.org> <20070724021526.3d92286b.akpm@linux-foundation.org> <20070724172217.GA10725@linux-sh.org> <Pine.LNX.4.64.0707242000120.18990@fbirervta.pbzchgretzou.qr> <46A64587.2010704@shadowen.org> <20070724194901.GE6019@stusta.de> <46A661FB.7040504@austin.ibm.com>
+	Tue, 24 Jul 2007 21:16:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=j6TvK3jBCakKP266hQ1ANcojMPZg39Vg8zcCo2FZDlFEYdWPGIuU7aFZcnINWem4qhDW4yJKKofnK9kB2r6O67BWsJq1pf/1SqawYYlyfxottEu3VT5qTPtMo1xX37J9hXiEiXDlchJkR2oVzXxssrSg9fGi+lpD3ByzNGTLE1c=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: Time Problems with 2.6.23-rc1-gf695baf2
+Date: Wed, 25 Jul 2007 03:14:18 +0200
+User-Agent: KMail/1.9.6
+Cc: "Eric Sesterhenn / Snakebyte" <snakebyte@gmx.de>,
+       linux-kernel@vger.kernel.org,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <20070723221630.GA28951@alice> <6bffcb0e0707241614s7b563b5bu114d2ecb227b1557@mail.gmail.com> <200707250240.49867.bzolnier@gmail.com>
+In-Reply-To: <200707250240.49867.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46A661FB.7040504@austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200707250314.19232.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 03:32:59PM -0500, jschopp wrote:
->>> Yep I think the consensus is we need a
->>> "--i-don't-agree-just-check-things-which-will-get-me-rejected-out-of-hand"
->>> option of some sort which will restrict output to the real errors.
->> No, the default should be to show only the real errors.
->
-> CodingStyle violations are real errors.
->
-> If we have agreed that code should look a certain way, and there is a patch 
-> that doesn't look that way, that is an error.  Maybe not a runtime error, 
-> but a readability error.  A reviewability error.  A maintainability error.  
-> A big waste of everybodies time.
->
-> I personally don't care if code is indented with 2 spaces, 4 spaces, or a 
-> tab.  What I do care about is that all the code is indented consistently so 
-> we don't waste an ounce of our energy reading code/patches and thinking 
-> about indentation or even worse spending our time arguing over it on 
-> mailing lists when there are better things to argue about.
->
-> Back when I wrote the early versions of this script I didn't write it 
-> because I'm anal retentive about CodingStyle.  I wrote it for the exact 
-> opposite reason.  I was tired of seeing email on mailing lists reviewing 
-> patches saying there was indentation with spaces instead of tabs, or 
-> trailing whitespace, or { on the wrong line.  It was a waste of the 
-> reviewers time, it was a waste of the developers time, it was a waste of 
-> the time of everybody on the mailing lists.  We should spend all that 
-> energy arguing over the merits of what the code does.
+On Wednesday 25 July 2007, Bartlomiej Zolnierkiewicz wrote:
+> 
+> Hi,
+> 
+> On Wednesday 25 July 2007, Michal Piotrowski wrote:
+> > Hi,
+> > 
+> > On 24/07/07, Eric Sesterhenn / Snakebyte <snakebyte@gmx.de> wrote:
+> > > hi,
+> > >
+> > > seems like the clock got screwed or something similar. During bootup the
+> > > computer hangs (no response on keyboard leds when pressing caps lock),
+> > > the only way to make sure it resumes booting is by repeatedly pressing
+> > > the power switch,
+> > 
+> > :)
+> > 
+> > > see second 13 to 510, after pressing it about ten
+> > > times, it continues booting.
+> > 
+> > Probing IDE interface...
+> > 
+> > [   13.867939] VP_IDE: VIA vt82c686a (rev 22) IDE UDMA66 controller on
+> > pci0000:00:04.1
+> > [   13.868062]     ide0: BM-DMA at 0xd800-0xd807, BIOS settings:
+> > hda:DMA, hdb:pio
+> > [   13.868268]     ide1: BM-DMA at 0xd808-0xd80f, BIOS settings:
+> > hdc:DMA, hdd:DMA
+> > [   13.868574] Probing IDE interface ide0...
+> > [  387.279576] Clocksource tsc unstable (delta = 370195339890 ns)
+> > [  496.200082] hda: ST340823A, ATA DISK drive
+> > [  510.264511] hda: selected mode 0x44
+> > [  510.264826] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> > 
+> > Could you please try to revert these commits
+> 
+> It doesn't seem like a IDE bug et all, rather seems to be some issue
+> related to the recent "lack of the proper clocksource fallback" bug...
 
-There's a relatively small amount of common codingstyle mistakes 
-accounting for most of these mistakes.
+or ACPI
 
-> So let's argue over the CodingStyle once and be done with the argument 
-> instead of having the argument every day on the mailing lists forever.  We 
-> end up with more time to argue over much more interesting subjects and we 
-> end up with consistent code that is easy to read, review, and maintain.
+> > > [   13.506890] ACPI Exception (processor_throttling-0084): AE_NOT_FOUND, Evaluating _PTC [20070126]
+> > > [   13.507101] ACPI Exception (processor_throttling-0147): AE_NOT_FOUND, Evaluating _TSS [20070126]
 
-It's also important to note that there are slightly different 
-codingstyles in different parts of the kernel, and you won't get people 
-to agree on one.
-
-A common codingstyle is important, but unifying the last bits is simply 
-not worth the hassle.
-
-There are more important things than exploiting the corner cases of 
-codingstyle, e.g. could you teach checkpatch.pl to give exactly two 
-errors for the following code?
-
-
-	while (a);
-		for (b = 0; b < 50; b++);
-			for (c = 0; c < sizeof(struct module); c++)
-				d = e;
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Bart
