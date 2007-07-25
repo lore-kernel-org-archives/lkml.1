@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764946AbXGYVYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbXGYV1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764946AbXGYVYM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 17:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbXGYVX7
+	id S1763648AbXGYV1P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 17:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXGYV1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 17:23:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50084 "EHLO mx1.redhat.com"
+	Wed, 25 Jul 2007 17:27:00 -0400
+Received: from gate.crashing.org ([63.228.1.57]:48663 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754565AbXGYVX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 17:23:59 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754565AbXGYV07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 17:26:59 -0400
+Subject: Re: [patch] agp: don't lock pages
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       airlied@gmail.com, magnade@gmail.com
+In-Reply-To: <20070725111922.GF29011@wotan.suse.de>
+References: <20070725111922.GF29011@wotan.suse.de>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 07:26:53 +1000
+Message-Id: <1185398813.5439.342.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-X-Fcc: ~/Mail/linus
-Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Nathan Lynch <ntl@pobox.com>, Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: x86_64 has 2 x arch_vma_name() - can we drop one?
-In-Reply-To: Sam Ravnborg's message of  Wednesday, 25 July 2007 22:59:59 +0200 <20070725205959.GA29548@uranus.ravnborg.org>
-X-Shopping-List: (1) Obnoxious secretion suicides
-   (2) Cretaceous Alcoholic load livers
-   (3) Postdoctoral translucent yies
-   (4) Traitorous bread
-Message-Id: <20070725212321.247864D058D@magilla.localdomain>
-Date: Wed, 25 Jul 2007 14:23:21 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your version should work, but I would do it a little differently.
+On Wed, 2007-07-25 at 13:19 +0200, Nick Piggin wrote:
+> Hi,
+> 
+> Does this patch solve the X problem? Does anyone see anything wrong
+> with it or know why agp was locking the pages?
 
+We need to do a little bit of auditing here, but I suspect it will turn
+out all right. I think the reason it locked them in the first place was
+to avoid AGP pages mapped into process space from being swapped out.
 
-Thanks,
-Roland
+I think that should be taken care of by appropriate vma flags nowadays,
+but we need to double check. It also might have been a way around dodgy
+refcounting at one point but I think we got that right nowadays (I
+remember fixing issues in that area when we removed PageReserved from
+those pages back then).
 
----
-[PATCH] x86_64: fix arch_vma_name
+Ben.
 
-The function arch_vma_name() is declared weak and thus it was
-not noticed that x86_64 had two almost identical implementations.
+> --
+> AGP should not need to lock pages. They are not protecting any race
+> because there is no lock_page calls, only SetPageLocked.
+> 
+> This is causing hangs with d00806b183152af6d24f46f0c33f14162ca1262a.
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> 
+> diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
+> index d535c40..3db4f40 100644
+> --- a/drivers/char/agp/generic.c
+> +++ b/drivers/char/agp/generic.c
+> @@ -1170,7 +1170,6 @@ void *agp_generic_alloc_page(struct agp_
+>  	map_page_into_agp(page);
+>  
+>  	get_page(page);
+> -	SetPageLocked(page);
+>  	atomic_inc(&agp_bridge->current_memory_agp);
+>  	return page_address(page);
+>  }
+> @@ -1187,7 +1186,6 @@ void agp_generic_destroy_page(void *addr
+>  	page = virt_to_page(addr);
+>  	unmap_page_from_agp(page);
+>  	put_page(page);
+> -	unlock_page(page);
+>  	free_page((unsigned long)addr);
+>  	atomic_dec(&agp_bridge->current_memory_agp);
+>  }
+> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+> index a124060..2f319f4 100644
+> --- a/drivers/char/agp/intel-agp.c
+> +++ b/drivers/char/agp/intel-agp.c
+> @@ -213,7 +213,6 @@ static void *i8xx_alloc_pages(void)
+>  	}
+>  	global_flush_tlb();
+>  	get_page(page);
+> -	SetPageLocked(page);
+>  	atomic_inc(&agp_bridge->current_memory_agp);
+>  	return page_address(page);
+>  }
+> @@ -229,7 +228,6 @@ static void i8xx_destroy_pages(void *add
+>  	change_page_attr(page, 4, PAGE_KERNEL);
+>  	global_flush_tlb();
+>  	put_page(page);
+> -	unlock_page(page);
+>  	__free_pages(page, 2);
+>  	atomic_dec(&agp_bridge->current_memory_agp);
+>  }
+> diff --git a/drivers/char/agp/sgi-agp.c b/drivers/char/agp/sgi-agp.c
+> index cda608c..98cf8ab 100644
+> --- a/drivers/char/agp/sgi-agp.c
+> +++ b/drivers/char/agp/sgi-agp.c
+> @@ -51,7 +51,6 @@ static void *sgi_tioca_alloc_page(struct
+>  		return NULL;
+>  
+>  	get_page(page);
+> -	SetPageLocked(page);
+>  	atomic_inc(&agp_bridge->current_memory_agp);
+>  	return page_address(page);
+>  }
 
-It was introduced in syscall32.c by: c633090e3105e779c97d4978e5e3d7d66b291cfb
-It was introduced in mm/init.c by: 2aae950b21e4bc789d1fc6668faf67e8748300b7
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
-CC: Sam Ravnborg <sam@ravnborg.org>
----
- arch/x86_64/ia32/ia32_binfmt.c |    5 +++--
- arch/x86_64/ia32/syscall32.c   |    8 --------
- 2 files changed, 3 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86_64/ia32/ia32_binfmt.c b/arch/x86_64/ia32/ia32_binfmt.c
-index b70f3e7..90b37fc 100644
---- a/arch/x86_64/ia32/ia32_binfmt.c
-+++ b/arch/x86_64/ia32/ia32_binfmt.c
-@@ -41,8 +41,9 @@ int sysctl_vsyscall32 = 1;
- #undef ARCH_DLINFO
- #define ARCH_DLINFO do {  \
- 	if (sysctl_vsyscall32) { \
--	NEW_AUX_ENT(AT_SYSINFO, (u32)(u64)VSYSCALL32_VSYSCALL); \
--	NEW_AUX_ENT(AT_SYSINFO_EHDR, VSYSCALL32_BASE);    \
-+		current->mm->context.vdso = (void *)VSYSCALL32_BASE;	\
-+		NEW_AUX_ENT(AT_SYSINFO, (u32)(u64)VSYSCALL32_VSYSCALL); \
-+		NEW_AUX_ENT(AT_SYSINFO_EHDR, VSYSCALL32_BASE);    \
- 	}	\
- } while(0)
- 
-diff --git a/arch/x86_64/ia32/syscall32.c b/arch/x86_64/ia32/syscall32.c
-index fc4419f..6df8ec7 100644
---- a/arch/x86_64/ia32/syscall32.c
-+++ b/arch/x86_64/ia32/syscall32.c
-@@ -49,14 +49,6 @@ int syscall32_setup_pages(struct linux_binprm *bprm, int exstack)
- 	return ret;
- }
- 
--const char *arch_vma_name(struct vm_area_struct *vma)
--{
--	if (vma->vm_start == VSYSCALL32_BASE &&
--	    vma->vm_mm && vma->vm_mm->task_size == IA32_PAGE_OFFSET)
--		return "[vdso]";
--	return NULL;
--}
--
- static int __init init_syscall32(void)
- { 
- 	char *syscall32_page = (void *)get_zeroed_page(GFP_KERNEL);
