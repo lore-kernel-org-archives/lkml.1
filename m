@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764325AbXGYHUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764209AbXGYHWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764325AbXGYHUA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764053AbXGYHTt
+	id S1764209AbXGYHWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbXGYHWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:19:49 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:36194 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761894AbXGYHTs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:19:48 -0400
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-From: Eric St-Laurent <ericstl34@sympatico.ca>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Matthew Hawkins <darthmdh@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org,
-       Paul Jackson <pj@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Rene Herman <rene.herman@gmail.com>
-In-Reply-To: <1185346076.6528.12.camel@Homer.simpson.net>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <46A57068.3070701@yahoo.com.au>
-	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	 <46A58B49.3050508@yahoo.com.au>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
-	 <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au>
-	 <b21f8390707242319gb17e4c9h274635b4c7fc1801@mail.gmail.com>
-	 <1185346076.6528.12.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Wed, 25 Jul 2007 03:19:44 -0400
-Message-Id: <1185347984.7105.134.camel@perkele>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jul 2007 03:22:05 -0400
+Received: from hydra.gt.owl.de ([195.71.99.218]:53923 "EHLO hydra.gt.owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752799AbXGYHWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:22:03 -0400
+Date: Wed, 25 Jul 2007 09:22:02 +0200
+From: Florian Lohoff <flo@rfc822.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1 sky2 boot crash in sky2_mac_intr
+Message-ID: <20070725072202.GA4905@paradigm.rfc822.org>
+References: <20070724082205.GA19480@paradigm.rfc822.org> <20070724095008.0eb154fe@oldman.hamilton.local> <20070724094042.GA6414@paradigm.rfc822.org> <6bffcb0e0707241630p3599ad99sfd778097b307e78c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mP3DRpeJDSE+ciuQ"
+Content-Disposition: inline
+In-Reply-To: <6bffcb0e0707241630p3599ad99sfd778097b307e78c@mail.gmail.com>
+Organization: rfc822 - pure communication
+X-SpiderMe: mh-200707250919@listme.rfc822.org
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-25-07 at 08:47 +0200, Mike Galbraith wrote:
 
-> Heh.  Here we have a VM developer expressing his interest in the problem
-> space, and you offer him a steaming jug of STFU because he doesn't say
-> what you want to hear.  I wonder how many killfiles you just entered.
-> 
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Agreed.
+On Wed, Jul 25, 2007 at 01:30:31AM +0200, Michal Piotrowski wrote:
+> >I'll try the above and keep you posted. The crash itself seems to be a
+> >2.6.23-rc1 regression though. I never experienced this with 2.6.22-rc5
+> >which i was running before.
+>=20
+> Can you try to figure out what is causing this crash and then use=20
+> git-bisect?
 
-(a bit OT)
+Are there so many changes between 2.6.22-rc5 and 2.6.23-rc1 for the sky2?
 
-People should understand that it's not (I think) about a desktop
-workload vs enterprise workloads war.
+As the crash is not that reproducible, just occasionally on boot i guess
+bisecting is more or less waste of time.
 
-I see it mostly as a progression versus regressions trade-off. And
-adding potentially useless or unmaintained code is a regression from the
-maintainers POV.
+Flo
+--=20
+Florian Lohoff                  flo@rfc822.org             +49-171-2280134
+	Those who would give up a little freedom to get a little=20
+          security shall soon have neither - Benjamin Franklin
 
-The best way to justify a patch and have it integrated is to have a
-scientific testing method with repeatable numbers.
+--mP3DRpeJDSE+ciuQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Con has done so for his patch, his benchmark demonstrated good
-improvements.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-But I feel some of his supporters have indirectly harmed his cause by
-their comments.  Also, the fact that Con recently stopped maintaining
-his work out of frustration also don't help having his patch merged. 
+iD8DBQFGpvoaUaz2rXW+gJcRAkKvAJ42pgvV9+D6A5IGdkfmGtCh+/oaAgCgrhSu
+TeO5shqNXhla0nn9aXaNLvQ=
+=1qvr
+-----END PGP SIGNATURE-----
 
-Again I'm not personally pushing this patch, I don't need it.
-
-Con has worked for many years on two area that still cause problems for
-desktop users: scheduler interactivity and pagecache trashing.  Now that
-the scheduler has been fixed, let's have the VM fixed too.
-
-Sorry for the slightly OT post, and please don't start a flame war...
-
-
-- Eric
-
-
+--mP3DRpeJDSE+ciuQ--
