@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762310AbXGYWWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764255AbXGYWXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762310AbXGYWWj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 18:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbXGYWWc
+	id S1764255AbXGYWXN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 18:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbXGYWW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 18:22:32 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:33532 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750822AbXGYWWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 18:22:31 -0400
-Subject: Re: -mm merge plans for 2.6.23
-From: Zan Lynx <zlynx@acm.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, rene.herman@gmail.com,
-       Valdis.Kletnieks@vt.edu, david@lang.hm, nickpiggin@yahoo.com.au,
-       ray-lk@madrabbit.org, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       ck@vds.kolivas.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070725150509.4d80a85e.pj@sgi.com>
-References: <46A58B49.3050508@yahoo.com.au>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
-	 <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>
-	 <46A6DFFD.9030202@gmail.com> <30701.1185347660@turing-police.cc.vt.edu>
-	 <46A7074B.50608@gmail.com> <20070725082822.GA13098@elte.hu>
-	 <46A70D37.3060005@gmail.com> <20070725113401.GA23341@elte.hu>
-	 <20070725150509.4d80a85e.pj@sgi.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IBxGqHANLpnHXsRehCQK"
-Date: Wed, 25 Jul 2007 16:22:12 -0600
-Message-Id: <1185402132.9409.21.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-Envelope-From: zlynx@acm.org
+	Wed, 25 Jul 2007 18:22:58 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:53569
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750822AbXGYWW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 18:22:57 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
+Date: Wed, 25 Jul 2007 18:22:54 -0400
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>
+References: <1184980678.6344.1.camel@localhost.localdomain> <20070723171238.1a832b31.akpm@linux-foundation.org> <1185238908.1803.63.camel@localhost.localdomain>
+In-Reply-To: <1185238908.1803.63.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707251822.54745.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 23 July 2007 9:01:48 pm Rusty Russell wrote:
+> > IOW, I'd be interested in hearing Rob and Randy's opinions on it all,
+> > please.
+>
+> So they can see what we're talking about, here's an example of the
+> output:
+>
+> 	http://lguest.ozlabs.org/lguest-journey.c.bz2
 
---=-IBxGqHANLpnHXsRehCQK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Er, so you read the readme, and then you type "make Preparation!" (which I 
+wouldn't have guessed from the comment at the end of the readme), and it 
+spits this to stdout.  Ok, I can add "make 'Preparation!' > lguest.txt" to my 
+update script so I can mirror a copy of the output on the web.
 
-On Wed, 2007-07-25 at 15:05 -0700, Paul Jackson wrote:
-[snip]
-> Question:
->   Could those who have found this prefetch helps them alot say how
->   many disks they have?  In particular, is their swap on the same
->   disk spindle as their root and user files?
->=20
-> Answer - for me:
->   On my system where updatedb is a big problem, I have one, slow, disk.
->   On my system where updatedb is a small problem, swap is on a separate
->     spindle.
->   On my system where updatedb is -no- problem, I have so much memory
->     I never use swap.
->=20
-> I'd expect the laptop crowd to mostly have a single, slow, disk, and
-> hence to find updatedb more painful.
+Are there any other build targets that produce documentation which I should 
+know about?
 
-A well done swap-to-flash would help here.  I sometimes do it anyway to
-a 4GB CF card but I can tell it's hitting the read/update/write cycles
-on the flash blocks.  The sad thing is that it is still a speed
-improvement over swapping to laptop disk.
---=20
-Zan Lynx <zlynx@acm.org>
+> Cheers,
+> Rusty.
 
---=-IBxGqHANLpnHXsRehCQK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
-
-iD8DBQBGp80UG8fHaOLTWwgRAoDzAJ9TmBn/QvPI6JZs6QbqHtyTZoohoACfX/aw
-LrxpMh3c7H/9bkv0t9pzsNw=
-=FL34
------END PGP SIGNATURE-----
-
---=-IBxGqHANLpnHXsRehCQK--
-
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
