@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbXGYFnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbXGYFyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753581AbXGYFnZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 01:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbXGYFnP
+	id S1761327AbXGYFyF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 01:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXGYFxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 01:43:15 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:23718 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751512AbXGYFnO (ORCPT
+	Wed, 25 Jul 2007 01:53:55 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:57265
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835AbXGYFxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 01:43:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=5eOb0yEdTbzv1mCbmrL+IY2G7rdkz7oznXzStDfGCTOE2qzMzGo/VHCQaNAZgPTgHyG3w6+NAc7hA069AQxMsyjCBNxqtX4QA7yxaTmzhRXOkNZ6F2foltYPRYzIJNNOIMxeZtwsxuCyt3EVOF/D6ygmZqRU/S5TDmbXhybNkUw=  ;
-X-YMail-OSG: lpmCvSsVM1mo194_EoBDCy2zl_wTyfVx2kEv2jWAF_R8FBXi
-Message-ID: <46A6E2EE.4040207@yahoo.com.au>
-Date: Wed, 25 Jul 2007 15:43:10 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 25 Jul 2007 01:53:54 -0400
+Date: Tue, 24 Jul 2007 22:51:36 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Rene Herman <rene.herman@gmail.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+In-Reply-To: <46A6DFFD.9030202@gmail.com>
+Message-ID: <Pine.LNX.4.64.0707242248090.2229@asgard.lang.hm>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> 
+ <200707102015.44004.kernel@kolivas.org>  <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+  <46A57068.3070701@yahoo.com.au>  <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+  <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+ <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
+ <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm> <46A6DFFD.9030202@gmail.com>
 MIME-Version: 1.0
-To: Dave Airlie <airlied@gmail.com>
-CC: Bret Towe <magnade@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear
- mappings
-References: <dda83e780707241027k369c2f01j6d16b21266df3a05@mail.gmail.com>	 <46A6C72A.9020801@yahoo.com.au> <21d7e9970707242137x51ca8a64wadfb06c7b543af38@mail.gmail.com>
-In-Reply-To: <21d7e9970707242137x51ca8a64wadfb06c7b543af38@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie wrote:
+On Wed, 25 Jul 2007, Rene Herman wrote:
+
+> On 07/25/2007 07:12 AM, david@lang.hm wrote:
+>
+>>  On Wed, 25 Jul 2007, Rene Herman wrote:
+>
+>> >  It certainly doesn't run for me ever. Always kind of a "that's not the 
+>> >  point" comment but I just keep wondering whenever I see anyone complain 
+>> >  about updatedb why the _hell_ they are running it in the first place. If 
+>> >  anyone who never uses "locate" for anything simply disable updatedb, the 
+>> >  problem will for a large part be solved.
+>> > 
+>> >  This not just meant as a cheap comment; while I can think of a few 
+>> >  similar loads even on the desktop (scanning a browser cache, a media 
+>> >  player indexing a large amount of media files, ...) I've never heard of 
+>> >  problems _other_ than updatedb. So just junk that crap and be happy.
 >>
->> Is this with a binary-only module? We saw an issue with that in SLES9
->> where the module is returning a locked page from its nopage handler
->> when it isn't really supposed to. It might be fixed in latest drivers,
->> have you tried them?
-> 
-> 
-> Doesn't sound like it he mentions radeon drm module which is open...
+>>  but if you do use locate then the alturnative becomes sitting around and
+>>  waiting for find to complete on a regular basis.
+>
+> Yes, but what's locate's usage scenario? I've never, ever wanted to use it. 
+> When do you know the name of something but not where it's located, other than 
+> situations which "which" wouldn't cover and after just having 
+> installed/unpacked something meaning locate doesn't know about it yet either?
 
-OK. Well from the task trace, X is getting stuck on a locked page. And
-as it is never getting unlocked, I'd be almost positive it comes from
-a driver's nopage. I know some ATI driver did that in the past. Would
-the radeon drm module do anything similar?
+which only finds executables that are in the path.
 
--- 
-SUSE Labs, Novell Inc.
+I commonly use locate to find config files (or sample config files) for 
+packages that were installed at some point in the past with fairly default 
+configs and now I want to go and tweak them. so I start reading 
+documentation and then need to find out where $disto moved the files to 
+this release (I commonly am working on machines with over a half dozen 
+different distro releases, and none of them RedHat)
+
+David Lang
