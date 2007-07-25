@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763051AbXGYHP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763426AbXGYHTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763051AbXGYHP2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbXGYHPE
+	id S1763426AbXGYHTm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXGYHTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:15:04 -0400
-Received: from gate.crashing.org ([63.228.1.57]:32827 "EHLO gate.crashing.org"
+	Wed, 25 Jul 2007 03:19:34 -0400
+Received: from il.qumranet.com ([82.166.9.18]:60049 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764165AbXGYHPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:15:01 -0400
-Date: Wed, 25 Jul 2007 02:14:12 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: sam@ravnborg.org
-cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Andy Fleming <afleming@freescale.com>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-Subject: modpost warning question
-Message-ID: <Pine.LNX.4.64.0707250210520.14366@blarg.am.freescale.net>
+	id S1752799AbXGYHTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:19:33 -0400
+Message-ID: <46A6F983.3040005@qumranet.com>
+Date: Wed, 25 Jul 2007 10:19:31 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Shaohua Li <shaoh.li@gmail.com>
+CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] [RFC 4/8]KVM: move gfn_to_page out of kmap/unmap
+ pars
+References: <1185173499.2645.68.camel@sli10-conroe.sh.intel.com>	 <46A5C884.8060200@qumranet.com> <288dbef70707240618l71bd8678n28a39e663dab3c1c@mail.gmail.com>
+In-Reply-To: <288dbef70707240618l71bd8678n28a39e663dab3c1c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 25 Jul 2007 10:19:32 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing the following warning:
+Shaohua Li wrote:
+> 2007/7/24, Avi Kivity <avi@qumranet.com>:
+>> Shaohua Li wrote:
+>> > gfn_to_page might sleep with swap support. Move it out of the kmap
+>> calls.
+>> >
+>> >
+>>
+>> I'd like to apply this to the kvm.git master branch so we don't have to
+>> maintain it.  Was this tested on a highmem machine?  If not, I can do
+>> it.
+> My test system has 1G memory, so it should work. I only tested 32bit
+> system, better check a x64 build.
+>
 
-WARNING: vmlinux.o(.init.text+0x1acdc): Section mismatch: reference to
-.exit.text:gfar_mdio_exit (between 'gfar_init' and 'gfar_mdio_init')
+This is now in, after minor merge fixups.
 
-I don't understand why its not ok to access .exit.text from .init.text
 
-The following addresses the issue, however I don't particularly like it:
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
-index ac3596f..100bf41 100644
---- a/drivers/net/gianfar_mii.c
-+++ b/drivers/net/gianfar_mii.c
-@@ -245,7 +245,7 @@ int __init gfar_mdio_init(void)
- 	return driver_register(&gianfar_mdio_driver);
- }
-
--void __exit gfar_mdio_exit(void)
-+void gfar_mdio_exit(void)
- {
- 	driver_unregister(&gianfar_mdio_driver);
- }
-diff --git a/drivers/net/gianfar_mii.h b/drivers/net/gianfar_mii.h
-index 5d34004..b373091 100644
---- a/drivers/net/gianfar_mii.h
-+++ b/drivers/net/gianfar_mii.h
-@@ -42,5 +42,5 @@ struct gfar_mii {
- int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum);
- int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value);
- int __init gfar_mdio_init(void);
--void __exit gfar_mdio_exit(void);
-+void gfar_mdio_exit(void);
- #endif /* GIANFAR_PHY_H */
