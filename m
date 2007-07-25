@@ -1,118 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761870AbXGYJTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761515AbXGYJYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761870AbXGYJTR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 05:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbXGYJTD
+	id S1761515AbXGYJYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 05:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbXGYJYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 05:19:03 -0400
-Received: from ns.oss.ntt.co.jp ([222.151.198.98]:49233 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756267AbXGYJTB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 05:19:01 -0400
-Subject: [PATCH RFC] e1000: clear ICR before requesting an IRQ line
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: e1000-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       john.ronciak@intel.com, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, auke-jan.h.kok@intel.com
-In-Reply-To: <1184898043.28418.3.camel@sebastian.kern.oss.ntt.co.jp>
-References: <1184666997.5271.5.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20070718154659.c8b5ffea.akpm@linux-foundation.org>
-	 <1184896459.27369.36.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1184896944.27369.50.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1184898043.28418.3.camel@sebastian.kern.oss.ntt.co.jp>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Wed, 25 Jul 2007 18:18:57 +0900
-Message-Id: <1185355137.15252.82.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jul 2007 05:24:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59837 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756687AbXGYJYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 05:24:05 -0400
+Date: Wed, 25 Jul 2007 11:23:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch] fix the softlockup watchdog to actually work
+Message-ID: <20070725092342.GA29814@elte.hu>
+References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070725014912.35c7e325.akpm@linux-foundation.org> <20070725085204.GA22067@elte.hu> <20070725020003.63144fd6.akpm@linux-foundation.org> <20070725090439.GA26286@elte.hu> <20070725021730.a9a624b3.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070725021730.a9a624b3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I made an interesting finding while testing the two patches below.
 
-http://lkml.org/lkml/2007/7/19/685
-http://lkml.org/lkml/2007/7/19/687
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-These patches modify the traditional CONFIG_DEBUG_KERNEL in such a way
-that the request_irq prints a warning if after calling the handler it
-returned IRQ_HANDLED .
+> >   * 2^30ns == 1.074s.
+> >   */
+> > -static unsigned long get_timestamp(void)
+> > +static unsigned long get_timestamp(int this_cpu)
+> >  {
+> > -	return sched_clock() >> 30;  /* 2^30 ~= 10^9 */
+> > +	return cpu_clock(this_cpu) >> 30;  /* 2^30 ~= 10^9 */
+> >  }
+> >  
+> >  void touch_softlockup_watchdog(void)
+> >  {
+> > -	__raw_get_cpu_var(touch_timestamp) = get_timestamp();
+> > +	int this_cpu = raw_smp_processor_id();
+> > +
+> > +	per_cpu(touch_timestamp, this_cpu) = get_timestamp(this_cpu);
+> >  }
+> >  EXPORT_SYMBOL(touch_softlockup_watchdog);
+> >  
+> > @@ -95,7 +97,7 @@ void softlockup_tick(void)
+> >  		return;
+> 
+> argh.  afacit this was never sent, except as part of some jumbopatch 
+> called "sched: implement cpu_clock(cpu) high-speed time source".
+> 
+> That patch helped.
+> 
+> It's all a plot.
 
-The code looks like this:
+sorry, it's really my fault: i decoupled it from the jumbopatch (so that 
+the new API could go in first) but forgot to re-send that crutial bit. 
+There's also the patch below (Jens Cc:-ed) to update blktrace. I guess i 
+should do a softlockup.git tree to avoid such foul-ups in the future.
 
-int request_irq(unsigned int irq, irq_handler_t handler,
-                unsigned long irqflags, const char *devname, void *dev_id)
-.....
-        if (irqflags & IRQF_DISABLED) {
-                unsigned long flags;
+	Ingo
 
-                local_irq_save(flags);
-                retval = handler(irq, dev_id);
-                local_irq_restore(flags);
-        } else
-                retval = handler(irq, dev_id);
-        if (retval == IRQ_HANDLED) {
-                printk(KERN_WARNING
-                       "%s (IRQ %d) handled a spurious interrupt\n",
-                       devname, irq);
-        }
-.....
+----------------------->
+Subject: blktrace: use cpu_clock() instead of sched_clock()
+From: Ingo Molnar <mingo@elte.hu>
 
-I discovered that the e1000 driver handles the "fake" interrupt, which,
-in principle, is not correct because it obviously isn't a real interrupt
-and it could have been an interrupt coming from another device that is
-sharing the IRQ line.
+use cpu_clock() instead of sched_clock(). (the latter is not a proper
+clock-source)
 
-The problem is that the interrupt handler assumes that if ICR!=0 it was
-its device who generated the interrupt and, consequently, it should be
-handled. But, unfortunately, that is not always the case. If the network
-link is active when we open the device (e1000_open) the ICR will have
-the E1000_ICR_LSC bit set (by the way, is this the expected behavior?).
-This means that _any_ interrupt coming in after allocating our interrupt
-(e1000_request_irq) will be handled, no matter where it came from.
-
-The solution I came up with is clearing the ICR before calling
-request_irq. I have to admit that I am not familiar enough with this
-driver, so it is quite likely that this is not the right fix. I would
-appreciate your comments on this.
-
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ block/blktrace.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff -urNp linux-2.6.22-orig/drivers/net/e1000/e1000_main.c linux-2.6.22-pendirq/drivers/net/e1000/e1000_main.c
---- linux-2.6.22-orig/drivers/net/e1000/e1000_main.c	2007-07-19 18:18:53.000000000 +0900
-+++ linux-2.6.22-pendirq/drivers/net/e1000/e1000_main.c	2007-07-25 17:22:54.000000000 +0900
-@@ -1378,6 +1378,17 @@ e1000_alloc_queues(struct e1000_adapter 
+Index: linux/block/blktrace.c
+===================================================================
+--- linux.orig/block/blktrace.c
++++ linux/block/blktrace.c
+@@ -41,7 +41,7 @@ static void trace_note(struct blk_trace 
+ 		const int cpu = smp_processor_id();
+ 
+ 		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
+-		t->time = sched_clock() - per_cpu(blk_trace_cpu_offset, cpu);
++		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
+ 		t->device = bt->dev;
+ 		t->action = action;
+ 		t->pid = pid;
+@@ -159,7 +159,7 @@ void __blk_add_trace(struct blk_trace *b
+ 
+ 		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
+ 		t->sequence = ++(*sequence);
+-		t->time = sched_clock() - per_cpu(blk_trace_cpu_offset, cpu);
++		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
+ 		t->sector = sector;
+ 		t->bytes = bytes;
+ 		t->action = what;
+@@ -488,17 +488,17 @@ void blk_trace_shutdown(request_queue_t 
  }
  
- /**
-+ * e1000_clear_interrupts
-+ * @adapter: address of board private structure
-+ *
-+ * Mask interrupts
-+ **/
-+static void
-+e1000_clear_interrupts(struct e1000_adapter *adapter) {
-+	E1000_READ_REG(&adapter->hw, ICR);
-+}
-+
-+/**
-  * e1000_open - Called when a network interface is made active
-  * @netdev: network interface device structure
-  *
-@@ -1431,6 +1442,9 @@ e1000_open(struct net_device *netdev)
- 	 * so we have to setup our clean_rx handler before we do so.  */
- 	e1000_configure(adapter);
+ /*
+- * Average offset over two calls to sched_clock() with a gettimeofday()
++ * Average offset over two calls to cpu_clock() with a gettimeofday()
+  * in the middle
+  */
+-static void blk_check_time(unsigned long long *t)
++static void blk_check_time(unsigned long long *t, int this_cpu)
+ {
+ 	unsigned long long a, b;
+ 	struct timeval tv;
  
-+	/* Discard any possible pending interrupts. */
-+	e1000_clear_interrupts(adapter);
-+
- 	err = e1000_request_irq(adapter);
- 	if (err)
- 		goto err_req_irq;
-
-
+-	a = sched_clock();
++	a = cpu_clock(this_cpu);
+ 	do_gettimeofday(&tv);
+-	b = sched_clock();
++	b = cpu_clock(this_cpu);
+ 
+ 	*t = tv.tv_sec * 1000000000 + tv.tv_usec * 1000;
+ 	*t -= (a + b) / 2;
+@@ -510,16 +510,16 @@ static void blk_check_time(unsigned long
+ static void blk_trace_check_cpu_time(void *data)
+ {
+ 	unsigned long long *t;
+-	int cpu = get_cpu();
++	int this_cpu = get_cpu();
+ 
+-	t = &per_cpu(blk_trace_cpu_offset, cpu);
++	t = &per_cpu(blk_trace_cpu_offset, this_cpu);
+ 
+ 	/*
+ 	 * Just call it twice, hopefully the second call will be cache hot
+ 	 * and a little more precise
+ 	 */
+-	blk_check_time(t);
+-	blk_check_time(t);
++	blk_check_time(t, this_cpu);
++	blk_check_time(t, this_cpu);
+ 
+ 	put_cpu();
+ }
