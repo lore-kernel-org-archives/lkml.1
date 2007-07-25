@@ -1,197 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbXGYK5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbXGYLBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762290AbXGYK5G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 06:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXGYK4z
+	id S1762943AbXGYLBO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 07:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758803AbXGYLBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 06:56:55 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:38604 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755639AbXGYK4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 06:56:54 -0400
-Date: Wed, 25 Jul 2007 14:56:46 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/2] Use list_head in binfmt handling
-Message-ID: <20070725105646.GA11047@localhost.sw.ru>
-References: <200707250521.l6P5LIOp018521@imap1.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707250521.l6P5LIOp018521@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+	Wed, 25 Jul 2007 07:01:00 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:37421 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755639AbXGYLA7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 07:00:59 -0400
+Message-ID: <46A72CEB.7050101@gmail.com>
+Date: Wed, 25 Jul 2007 12:58:51 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: david@lang.hm
+CC: Ray Lee <ray-lk@madrabbit.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>  <200707102015.44004.kernel@kolivas.org>  <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>  <46A57068.3070701@yahoo.com.au>  <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>  <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <Pine.LNX.4.64.0707242130470.2229@asgard.lang.hm> <46A7031D.5080300@gmail.com> <Pine.LNX.4.64.0707250104180.2229@asgard.lang.hm> <46A709DC.4080501@gmail.com> <Pine.LNX.4.64.0707250130200.18679@asgard.lang.hm> <Pine.LNX.4.64.0707250132520.18679@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707250132520.18679@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 10:16:44PM -0700, akpm@linux-foundation.org wrote:
-> arch/sparc64/kernel/binfmt_aout32.c:41: warning: missing braces around initializer
-> arch/sparc64/kernel/binfmt_aout32.c:41: warning: (near initialization for `aout32_format.lh')
-> arch/sparc64/kernel/binfmt_aout32.c:41: warning: initialization from incompatible pointer type
-> arch/sparc64/kernel/binfmt_aout32.c:41: warning: initialization from incompatible pointer type
-> arch/sparc64/kernel/binfmt_aout32.c:41: warning: initialization from incompatible pointer type
-> arch/sparc64/kernel/binfmt_aout32.c:41: warning: initialization from incompatible pointer type
-> arch/sparc64/kernel/binfmt_aout32.c:43: warning: initialization makes pointer from integer without a cast
+On 07/25/2007 10:33 AM, david@lang.hm wrote:
 
-> --- a/arch/sparc64/kernel/binfmt_aout32.c~use-list_head-in-binfmt-handling-fix
-> +++ a/arch/sparc64/kernel/binfmt_aout32.c
-> @@ -38,8 +38,12 @@ static int load_aout32_library(struct fi
->  static int aout32_core_dump(long signr, struct pt_regs * regs, struct file *file);
->  
->  static struct linux_binfmt aout32_format = {
-> -	NULL, THIS_MODULE, load_aout32_binary, load_aout32_library, aout32_core_dump,
-> -	PAGE_SIZE
-> +	.lh	=	LIST_HEAD_INIT(aout32_format.lh),
-> +	.module =	THIS_MODULE,
-> +	.load_binary =	load_aout32_binary,
-> +	.load_shlib =	load_aout32_library,
-> +	.core_dump =	aout32_core_dump,
-> +	.min_coredump =	PAGE_SIZE,
->  };
+>> I haven't used swap prefetch either, the call was put out for what 
+>> could be used to test the performance, and I was suggesting a test.
+>>
+>> if nobody else follows up on this I'll try to get some time to test it 
+>> myself in a day or two.
+> 
+> this assumes that this isn't ruled an invalid test in the meantime.
 
-Doh! Thanks, Andrew.
+Let's save a little time and guess. While two instances of the hog are 
+running no physical memory is free (as together they take up 1.5x physical) 
+meaning that swap-prefetch wouldn't get a change to do anything and wouldn't 
+make a difference. As such, the two instances test as you suggested would in 
+fact not be testing anything it seems.
 
-list_head initialization is unneeded, because register_binfmt() will
-reinitialize it anyway.
+However, if you quit one, and idle long enough to continue with the other 
+one until swap-prefetch prefetched all its memory back in, it should be a 
+difference on the order of minutes, even total if swap prefetch fetched it 
+back in without seeking al over swap-space, and "total" isn't applicable if 
+the idle time really is free.
 
-Here is final version which was test-compiled on sparc64 and on mips
-(after irixelf.c BROKEN removal):
+A program randomly touching single pages all over memory is a contrived 
+worst case scenario and not a real-world issue. It is a boundary condition 
+though, and it's simply quite impossible to think of any example where 
+swap-prefetch would _not_ give you a snappier feeling machine after you've 
+been idling.
 
+So really the only question would seem to be -- does it hurt any if you have 
+_not_ been?
 
-
-[PATCH 1/2] Use list_head in binfmt handling
-
-Switch single-linked binfmt formats list to usual list_head's.
-This leads to one-liners in register_binfmt() and unregister_binfmt().
-The downside is one pointer more in struct linux_binfmt. This is not a
-problem, since the set of registered binfmts on typical box is very small --
-(ELF + something distro enabled for you).
-
-Test-booted, played with executable .txt files, modprobe/rmmod binfmt_misc.
-
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
-
- arch/mips/kernel/irixelf.c          |    7 +++++--
- arch/sparc64/kernel/binfmt_aout32.c |    7 +++++--
- fs/exec.c                           |   34 ++++++----------------------------
- include/linux/binfmts.h             |    2 +-
- 4 files changed, 17 insertions(+), 33 deletions(-)
-
---- a/arch/mips/kernel/irixelf.c
-+++ b/arch/mips/kernel/irixelf.c
-@@ -47,8 +47,11 @@ static int irix_core_dump(long signr, struct pt_regs * regs,
-                           struct file *file);
- 
- static struct linux_binfmt irix_format = {
--	NULL, THIS_MODULE, load_irix_binary, load_irix_library,
--	irix_core_dump, PAGE_SIZE
-+	.module		= THIS_MODULE,
-+	.load_binary	= load_irix_binary,
-+	.load_shlib	= load_irix_library,
-+	.core_dump	= irix_core_dump,
-+	.min_coredump	= PAGE_SIZE,
- };
- 
- /* Debugging routines. */
---- a/arch/sparc64/kernel/binfmt_aout32.c
-+++ b/arch/sparc64/kernel/binfmt_aout32.c
-@@ -38,8 +38,11 @@ static int load_aout32_library(struct file*);
- static int aout32_core_dump(long signr, struct pt_regs * regs, struct file *file);
- 
- static struct linux_binfmt aout32_format = {
--	NULL, THIS_MODULE, load_aout32_binary, load_aout32_library, aout32_core_dump,
--	PAGE_SIZE
-+	.module		= THIS_MODULE,
-+	.load_binary	= load_aout32_binary,
-+	.load_shlib	= load_aout32_library,
-+	.core_dump	= aout32_core_dump,
-+	.min_coredump	= PAGE_SIZE,
- };
- 
- static void set_brk(unsigned long start, unsigned long end)
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -67,27 +67,15 @@ int suid_dumpable = 0;
- EXPORT_SYMBOL(suid_dumpable);
- /* The maximal length of core_pattern is also specified in sysctl.c */
- 
--static struct linux_binfmt *formats;
-+static LIST_HEAD(formats);
- static DEFINE_RWLOCK(binfmt_lock);
- 
- int register_binfmt(struct linux_binfmt * fmt)
- {
--	struct linux_binfmt ** tmp = &formats;
--
- 	if (!fmt)
- 		return -EINVAL;
--	if (fmt->next)
--		return -EBUSY;
- 	write_lock(&binfmt_lock);
--	while (*tmp) {
--		if (fmt == *tmp) {
--			write_unlock(&binfmt_lock);
--			return -EBUSY;
--		}
--		tmp = &(*tmp)->next;
--	}
--	fmt->next = formats;
--	formats = fmt;
-+	list_add(&fmt->lh, &formats);
- 	write_unlock(&binfmt_lock);
- 	return 0;	
- }
-@@ -96,20 +84,10 @@ EXPORT_SYMBOL(register_binfmt);
- 
- int unregister_binfmt(struct linux_binfmt * fmt)
- {
--	struct linux_binfmt ** tmp = &formats;
--
- 	write_lock(&binfmt_lock);
--	while (*tmp) {
--		if (fmt == *tmp) {
--			*tmp = fmt->next;
--			fmt->next = NULL;
--			write_unlock(&binfmt_lock);
--			return 0;
--		}
--		tmp = &(*tmp)->next;
--	}
-+	list_del(&fmt->lh);
- 	write_unlock(&binfmt_lock);
--	return -EINVAL;
-+	return 0;
- }
- 
- EXPORT_SYMBOL(unregister_binfmt);
-@@ -156,7 +134,7 @@ asmlinkage long sys_uselib(const char __user * library)
- 		struct linux_binfmt * fmt;
- 
- 		read_lock(&binfmt_lock);
--		for (fmt = formats ; fmt ; fmt = fmt->next) {
-+		list_for_each_entry(fmt, &formats, lh) {
- 			if (!fmt->load_shlib)
- 				continue;
- 			if (!try_module_get(fmt->module))
-@@ -1290,7 +1268,7 @@ int search_binary_handler(struct linux_binprm *bprm,struct pt_regs *regs)
- 	retval = -ENOENT;
- 	for (try=0; try<2; try++) {
- 		read_lock(&binfmt_lock);
--		for (fmt = formats ; fmt ; fmt = fmt->next) {
-+		list_for_each_entry(fmt, &formats, lh) {
- 			int (*fn)(struct linux_binprm *, struct pt_regs *) = fmt->load_binary;
- 			if (!fn)
- 				continue;
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -63,7 +63,7 @@ struct linux_binprm{
-  * linux accepts.
-  */
- struct linux_binfmt {
--	struct linux_binfmt * next;
-+	struct list_head lh;
- 	struct module *module;
- 	int (*load_binary)(struct linux_binprm *, struct  pt_regs * regs);
- 	int (*load_shlib)(struct file *);
+Rene.
 
