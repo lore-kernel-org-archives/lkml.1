@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932510AbXGYNiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765705AbXGYNjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932510AbXGYNiw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759747AbXGYNim
+	id S1765705AbXGYNjj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759948AbXGYNjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:38:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51132 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Jul 2007 09:39:32 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3497 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759464AbXGYNil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:38:41 -0400
-Date: Wed, 25 Jul 2007 15:38:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: John Sigler <linux.kernel@free.fr>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Pin-pointing the root of unusual application latencies
-Message-ID: <20070725133835.GA17616@elte.hu>
-References: <469600F7.3060603@free.fr> <20070723095357.GA886@elte.hu> <46A4B7C2.1070304@free.fr> <20070723160442.GA7995@elte.hu> <46A5B8E3.4060004@free.fr> <46A74A58.1070704@free.fr> <20070725130536.GA12334@elte.hu> <46A74E05.50504@free.fr>
+	id S1760344AbXGYNjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:39:31 -0400
+Date: Wed, 25 Jul 2007 09:37:59 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, wwoods@redhat.com
+Subject: Re: [PATCH]: allow individual core dump methods to be unlimited when sending to a pipe
+Message-ID: <20070725133759.GA420@hmsreliant.homelinux.net>
+References: <20070722153947.GA11941@hmsreliant.homelinux.net> <20070724020939.7644f18c.akpm@linux-foundation.org> <20070724151738.GB23976@hmsreliant.homelinux.net> <20070724220358.864db265.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46A74E05.50504@free.fr>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070724220358.864db265.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* John Sigler <linux.kernel@free.fr> wrote:
-
-> > does your test-app have higher priority than softirq--4 ?
+On Tue, Jul 24, 2007 at 10:03:58PM -0700, Andrew Morton wrote:
 > 
-> PID 4 is [softirq-timer/0] and has priority 50 in SCHED_FIFO. My 
-> process has priority 80 in SCHED_RR. It is waiting for IRQ10.
+> SuperH allmodconfig broke:
 > 
-> My user-space app has higher priority than everything except PID 2 
-> which is [posix_cpu_timer]
+> fs/binfmt_flat.c:83: warning: initialization from incompatible pointer type
+> fs/binfmt_flat.c:94: error: conflicting types for 'flat_core_dump'
+> fs/binfmt_flat.c:78: error: previous declaration of 'flat_core_dump' was here
+> fs/binfmt_flat.c:94: error: conflicting types for 'flat_core_dump'
+> fs/binfmt_flat.c:78: error: previous declaration of 'flat_core_dump' was here
+> fs/binfmt_flat.c: In function `decompress_exec':
+> fs/binfmt_flat.c:293: warning: label `out' defined but not used
+> fs/binfmt_flat.c: In function `load_flat_file':
+> fs/binfmt_flat.c:462: warning: unsigned int format, long int arg (arg 3)
+> fs/binfmt_flat.c:462: warning: unsigned int format, long int arg (arg 4)
+> fs/binfmt_flat.c:518: warning: comparison of distinct pointer types lacks a cast
+> fs/binfmt_flat.c:549: warning: passing arg 1 of `ksize' makes pointer from integer without a cast
+> fs/binfmt_flat.c:601: warning: passing arg 1 of `ksize' makes pointer from integer without a cast
+> fs/binfmt_flat.c: At top level:
+> fs/binfmt_flat.c:78: warning: 'flat_core_dump' used but never defined
+> fs/binfmt_flat.c:94: warning: 'flat_core_dump' defined but not used
 
-well what priority does the IRQ 10 kernel thread have? It should be prio 
-80 too if it's in your critical path.
+Damn!  Sorry about that.  At least I have a mediocre excuse in that it was on an
+arch I didn't have hardware to test with.  Should have caught that sooner
+though.  Heres the patch for it.
 
-	Ingo
+Regards
+Neil
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+
+
+ binfmt_flat.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+index e8f8198..cc24c5d 100644
+--- a/fs/binfmt_flat.c
++++ b/fs/binfmt_flat.c
+@@ -75,7 +75,7 @@ static int load_flat_shared_library(int id, struct lib_info *p);
+ #endif
+ 
+ static int load_flat_binary(struct linux_binprm *, struct pt_regs * regs);
+-static int flat_core_dump(long signr, struct pt_regs * regs, struct file *file, u32 limit);
++static int flat_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit);
+ 
+ static struct linux_binfmt flat_format = {
+ 	.module		= THIS_MODULE,
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
