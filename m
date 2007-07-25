@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbXGYUGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbXGYUJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbXGYUGK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 16:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbXGYUF5
+	id S1755957AbXGYUJi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 16:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXGYUJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 16:05:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48230 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751794AbXGYUF4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 16:05:56 -0400
-Date: Wed, 25 Jul 2007 13:05:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>
-Subject: Re: 2.6.23-rc1-mm1
-Message-Id: <20070725130502.b0e4c8df.akpm@linux-foundation.org>
-In-Reply-To: <46A744D1.3070300@fr.ibm.com>
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
-	<46A744D1.3070300@fr.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jul 2007 16:09:30 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59002 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752323AbXGYUJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 16:09:28 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19w0Ktqzc5wsCPLGwh2d5+5l+z31yhF+01BpioSoX
+	pd1gkWq+7xcdhp
+Date: Wed, 25 Jul 2007 22:09:24 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
+In-Reply-To: <46A7AC17.9060309@ru.mvista.com>
+Message-ID: <Pine.LNX.4.60.0707252203160.6234@poirot.grange>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>
+ <Pine.LNX.4.60.0707252130090.6234@poirot.grange> <46A7A8FB.5090909@ru.mvista.com>
+ <Pine.LNX.4.60.0707252150540.6234@poirot.grange> <46A7AC17.9060309@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 14:40:49 +0200
-Cedric Le Goater <clg@fr.ibm.com> wrote:
+On Thu, 26 Jul 2007, Sergei Shtylyov wrote:
 
-> Hello,
+> Guennadi Liakhovetski wrote:
 > 
-> Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
+> > >   Wrong list to submit sych stuff, post to linux-ide.
 > 
-> found that one on ppc,
+> > Not entirely. The patch (or other patches in the series) would also touch
+> > ARM platforms in the mainline, currently using that driver. As I didn't 
 > 
-> drivers/char/hw_random/pasemi-rng.c:140: error: unknown field 'type' specified in initializer
-> drivers/char/hw_random/pasemi-rng.c:140: warning: initialization makes pointer from integer without a cast
-> 
-> hwrng-add-type-categories.patch modifies a struct of the wrong type.
-> 
-> the pasemi-rng driver registers a 'of_platform_driver' not a 'hwrng'.
-> 
+>    Was worth cross-posting to linux-ide anyway to get the IDE experts'
+> feedback. ;-)
 
-OK, thanks.  Those patches generated a decent-sized flamewar anyway so I
-think I'll drop them as obviosuly some more thought/discussion is needed
-there.
+linux-arm* mailing lists do not allow cross-posting.
 
+> > have a chance to test them due to lack of hardware, I posted on arm, asking
+> > if anyone would test those platforms for me.
+> 
+>   ... and they laughed at you? ;-)
+
+No, noone had that hardware either:-) Those who had preferred to forget 
+about it, I guess.
+
+> > It was largely in accordance with my own opinion, so, I chose to accept
+> > it:-)
+> 
+>    It's not clear why you decided to waste time on it then. :-)
+
+Because I myself was in the situation where my local version of the driver 
+was filling with #ifdef's supporting all possible variations of our 
+hardware, so, I switched it to platform_driver to clean up that mess. And 
+then decided to ask if others would consider it useful. Just in case. I 
+hoped they wouldn't.
+
+> > > > doubt, just wanted to double-check. So, why do we now need a new legacy
+> > > > (a/drivers/ide/legacy/ide_platform.c) driver when a "modern" driver
+> > > > exists?
+> 
+> > >   Good question (I know the answer but won't tell ;-).
+> 
+> > You've been very cooperative, thanks.
+> 
+>    In fact, I also highly doubt that we need it.  What we'd need is an OF
+> driver.
+
+Great, thanks. Now we have to find out why Alan acked it (added to cc).
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
