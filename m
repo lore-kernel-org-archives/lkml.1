@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935262AbXGYTSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935542AbXGYTSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935262AbXGYTSE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbXGYTRy
+	id S935542AbXGYTSg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761764AbXGYTS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:17:54 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:52664 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759490AbXGYTRx (ORCPT
+	Wed, 25 Jul 2007 15:18:27 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37454 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761726AbXGYTS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:17:53 -0400
-Message-ID: <46A7A1D5.7020003@freescale.com>
-Date: Wed, 25 Jul 2007 14:17:41 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.7.10) Gecko/20050909 Red Hat/1.7.10-1.1.3.2
-X-Accept-Language: en-us, en
+	Wed, 25 Jul 2007 15:18:26 -0400
+Message-ID: <46A7A1EF.8060307@zytor.com>
+Date: Wed, 25 Jul 2007 12:18:07 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver
-References: <20070725165318.5331.23795.stgit@localhost.localdomain> <46A79DE0.8060405@ru.mvista.com> <46A79F14.9040409@freescale.com> <46A7A17C.8090505@ru.mvista.com>
-In-Reply-To: <46A7A17C.8090505@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.23-rc1-mm1
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com> <20070725185328.GA28199@uranus.ravnborg.org>
+In-Reply-To: <20070725185328.GA28199@uranus.ravnborg.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
->> It doesn't buy us anything in here, but it's conceivable that someone 
->> may want to write a driver that uses a shift in the I/O accessor 
->> rather than an array of port offsets,
+Sam Ravnborg wrote:
+> On Wed, Jul 25, 2007 at 08:48:50PM +0200, Michal Piotrowski wrote:
+>> On 25/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
+>>>
+>>>
+>> Andi, this might be interesting for you
+>>
+>> make allmodconfig
+>> make
+>> [...]
+>> WARNING: Absolute relocations present
+>> Offset     Info     Type     Sym.Value Sym.Name
+>> c02041b3 00705601   R_386_32 c0308aa8  _sdata
 > 
+> Who did spit out this warning. Can you please provide make V=1
+> where we see the lines preceeding the warning.
 > 
->    It wouldn't be IDE driver then, and neither it would be libata which 
-> also does this another way this (despite pata_platform uses shifts too 
-> -- not in the accessors, so no speed loss).
-
-The device tree is not just for Linux.
-
->> equivalent of the cntlzw innstruction, and shift makes it clear that 
->> the stride must be power-of-two).  Plus, using shift is consistent 
->> with what we do on ns16550.
+> And config please.
 > 
-> 
->    Why the heck should we care about the UART code taling about IDE?!
 
-Consistency?
+config: "make allmodconfig"
 
->    So, let me consider your argument purely speculative and invalid. ;-)
+System.map would be more interesting, especially what is at 0xc02041b3.
 
-Consider it whatever you want. :-)
-
--Scott
+	-hpa
