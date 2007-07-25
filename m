@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762428AbXGYKPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbXGYK0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762428AbXGYKPB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 06:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757828AbXGYKOy
+	id S1761394AbXGYK0V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 06:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbXGYK0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 06:14:54 -0400
-Received: from linux.dunaweb.hu ([62.77.196.1]:60220 "EHLO linux.dunaweb.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755650AbXGYKOx convert rfc822-to-8bit (ORCPT
+	Wed, 25 Jul 2007 06:26:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44125 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756844AbXGYK0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 06:14:53 -0400
-Message-ID: <46A72284.3090702@dunaweb.hu>
-Date: Wed, 25 Jul 2007 12:14:28 +0200
-From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: NVIDIA libata status outdated
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Jul 2007 06:26:13 -0400
+Date: Wed, 25 Jul 2007 12:26:08 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch] mm: reduce pagetable-freeing latencies
+Message-ID: <20070725102608.GB9045@one.firstfloor.org>
+References: <20070724083855.GA858@elte.hu> <20070724015441.8604d85d.akpm@linux-foundation.org> <1185270045.5439.249.camel@localhost.localdomain> <p73abtmt2y7.fsf@bingen.suse.de> <1185312559.5439.276.camel@localhost.localdomain> <1185345850.8197.64.camel@twins> <20070725094605.GA9045@one.firstfloor.org> <1185358093.5439.325.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185358093.5439.325.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Plan is fixed array or 4 or maybe 8 entries (pointers), that shouldn't
+> be -too- bad. The code path I'm a bit worried about is
 
-it seems your "Libata status" page needs some update.
+Yep.
 
-"
+> unmap_mapping_ranges() which goes into zapping page tables from deep
+> within filesystems.
 
+Your aim is to conserve stack space? 
+The worst case has to work without overflow anyways, so using VLAs don't 
+help you. Just allocate the largest size you can safely afford.
 
-      NVIDIA
+This is also easier to test; if it is too large it is better when
+the overflow triggers always.
 
-Driver name: *sata_nv*
+They are more useful in user space with larger stacks when you don't 
+know the maximum size.
 
-Summary: No TCQ/NCQ in early chipsets. NCQ support added in later 
-chipsets. Looks like a PATA controller, but with full SATA control 
-including hotplug and PM.
-
-*Update:* NVIDIA has provided information (under NDA) that permits 
-implementation of NCQ support, and a sample Linux implementation 
-<http://www.kernel.org/pub/linux/kernel/people/jgarzik/libata/archive/2.6.17-nv-adma.patch.bz2> 
-(patch) as well. Unfortunately, the patch needs debugging, and no one 
-seems to have the time or motivation.
-
-*NOTE:* Newer NVIDIA chipsets are AHCI 
-<http://linux-ata.org/driver-status.html#ahci>, and use the ahci driver 
-rather than the sata_nv driver.
-"
-
-There have been changes since you wrote the above.
-ADMA has been incorporated mainstream for a while now
-and SWNCQ is now in -mm. AHCI support is obvious.
-
-Best regards,
-Zoltán Böszörményi
-
+-Andi
 
