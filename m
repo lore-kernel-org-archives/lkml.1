@@ -1,121 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762935AbXGYNcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763652AbXGYNfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762935AbXGYNcU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXGYNcM
+	id S1763652AbXGYNfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXGYNf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:32:12 -0400
-Received: from smtpq3.groni1.gr.home.nl ([213.51.130.202]:33952 "EHLO
-	smtpq3.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbXGYNcL (ORCPT
+	Wed, 25 Jul 2007 09:35:29 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:53226 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbXGYNf2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:32:11 -0400
-Message-ID: <46A75062.1050809@gmail.com>
-Date: Wed, 25 Jul 2007 15:30:10 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: Jos Poortvliet <jos@mijnkamer.nl>
-CC: Ingo Molnar <mingo@elte.hu>, david@lang.hm,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Valdis.Kletnieks@vt.edu,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>,
-       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-References: <46A57068.3070701@yahoo.com.au>	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>	 <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>	 <46A6DFFD.9030202@gmail.com>	 <30701.1185347660@turing-police.cc.vt.edu> <46A7074B.50608@gmail.com>	 <20070725082822.GA13098@elte.hu> <46A70D37.3060005@gmail.com> <5c77e14b0707250353r48458316x5e6adde6dbce1fbd@mail.gmail.com>
-In-Reply-To: <5c77e14b0707250353r48458316x5e6adde6dbce1fbd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
-X-AtHome-MailScanner: Found to be clean
+	Wed, 25 Jul 2007 09:35:28 -0400
+Date: Wed, 25 Jul 2007 15:32:53 +0200
+From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
+       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
+       mjg59@srcf.ucam.org, castet.matthieu@free.fr, shaohua.li@intel.com
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
+ platform devices - broke my serial console
+Message-ID: <20070725153253.4d7e7e37@frecb000686.frec.bull.fr>
+In-Reply-To: <200707250716.44609.bjorn.helgaas@hp.com>
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
+	<200707240948.45916.bjorn.helgaas@hp.com>
+	<20070725094554.55c46d8b@frecb000686.frec.bull.fr>
+	<200707250716.44609.bjorn.helgaas@hp.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 25/07/2007 15:40:07,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 25/07/2007 15:40:09,
+	Serialize complete at 25/07/2007 15:40:09
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/25/2007 12:53 PM, Jos Poortvliet wrote:
 
-> On 7/25/07, *Rene Herman* <rene.herman@gmail.com 
-> <mailto:rene.herman@gmail.com>> wrote:
+  Hi Bjorn,
 
->> Also note I'm not against swap prefetch or anything. I don't use it and
->> do not believe I have a pressing need for it, but do suspect it has 
->> potential to make quite a bit of difference on some things -- if only
->> to drastically reduce seeks if it means it's swapping in larger chunks
->> than a randomly faulting program would.
+On Wed, 25 Jul 2007 07:16:44 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+
+> On Wednesday 25 July 2007 01:45:54 am Sébastien Dugué wrote:
+> >   looks like the commit was dropped, nevertheless here is some more info
+> > to try and understand what may be going on so it may benefit the posterity ;-)
 > 
-> I wonder what your hardware is. Con talked about the diff in hardware 
-> between most endusers and the kernel developers. 
-
-I'm afraid you will need to categorize me more as an innocent bystander than 
-a kernel developer and, as such, I have an endusery x86 with 768M (but I 
-still think of myself as one of the cool kids!)
-
-> Yes, swap prefetch doesn't help if you have 3 GB ram, but it DOES do a
-> lot on a 256 mb laptop...
-
-Rather, it does not help if you are not swapping or idling. Probably largely 
-due to me being a rather serial person I seem to never even push my git tree 
-from cache. Hence my belief that "I don't have a pressing need for it".
-
-Taking a laptop as an example is interesting in itself by the way since a 
-spundown disk (most applicable to laptops) is an argument against swap 
-prefetch even when idle and when I'm not mistaken the feature actually 
-disables itself when the machine's set to laptop mode...
-
-> After using OO.o, the system continues to be slow for a long time. With
-> swap prefetch, it's back up speed much faster. Con has showed a benchmark
-> for this with speedups of 10 times and more, users mentioned they liked
-> it.
-
-After using and quiting OO.o. If you simply don't have any memory free to 
-prefetch into swap prefetch won't help any. The fact that it helps the case 
-of OO.o having pushed out firefox is fairly obvious.
-
-> Nick has been talking about 'fixing the updatedb thing' for years now, no
-> patch yet. Besides, he won't fix OO.o nor all other userspace stuff - so
-> actually, he does NOT even promise an alternative. Not that I think
-> fixing updatedb would be cool, btw - it sure would, but it's no reason
-> not to include swap prefetch - it's mostly unrelated.
-
-Well, the trouble at least to some is that they indeed seem to be rather 
-unrelated. Why does the updatedb run even cause swapout? (itself ofcourse a 
-pre-condition for swap-prefetch to help).
-
-> I think everyone with >1 gb ram should stop saying 'I don't need it' 
-> because that's obvious for that hardware. Just like ppl having a dual- 
-> or quadcore shouldn't even talk about scheduler interactivity stuff...
-
-Actually, interactivity is largely about latency and latency is largely or 
-partly independent of CPU speed -- if something's keeping the system from 
-scheduling for too long it's likely that it's hogging the CPU for a fixed 
-number of usecs and those pass in the same amount of time on all CPUs (we 
-hope...).
-
-But that's a tangent anyway. I'm just glad that I get to say that I believe 
-I don't need it with my 768M!
-
-> Apparently, it didn't get in yet - and I find it hard to believe Andrew 
-> holds swapprefetch for reasons like the above. So it must be something 
-> else.
+> Thank you very much.
 > 
-> Nick is saying tests have already proven swap prefetch to be helpfull, 
-> that's not the problem. He calls the requirements to get in 'fuzzy'. OK.
-> Beer is fuzzy, do we need to offer beer to someone? If Andrew promises 
-> to come to FOSDEM again next year, I'll offer him a beer, if that 
-> helps... Anything else? A nice massage?
+> Your machine does indeed describe both UARTs in ACPI, and the PNP probe
+> finds them correctly.  The only wrinkle is that the PNP probe names the
+> ports in the order they appear in the ACPI namespace, and your firmware
+> has them "backwards":
+> 
+>                     Device (COMB)
+>                     {
+>                         Name (_HID, EisaId ("PNP0501"))
+>                         Name (_DDN, "COM2")
+>                         Name (_UID, 0x02)
+> 
+>                     Device (COMA)
+>                     {
+>                         Name (_HID, EisaId ("PNP0501"))
+>                         Name (_DDN, "COM1")
+>                         Name (_UID, 0x01)
 
-Personally I'd go for sexual favours directly (but then again, I always do).
 
-But please also note that I even _literally_ said above that I myself am not 
-against swap-prefetch or anything and yet I get what appears to be an least 
-somewhat adversary rant directed at me. Which in itself is fine, but not too 
-helpful...
+  Yes, that's what I thought was weird in the DSDT, but thought the PnP layer
+would map those devices according to UID or at least DDN. It seems that's
+not the case.
 
-Nick Piggin is the person to convince it seems and if I've read things right 
-(I only stepped into this thing at the updatedb mention, so maybe I haven't) 
-his main question is _why_ the hell it helps updatedb. As long as you don't 
-know this, then even a solution that helps could be papering over a problem 
-which you'd much rather fix at the root rather than at the symptom.
+> 
+> There's nothing illegal about this, but with the current PNPACPI,
+> it causes the names to be reversed.  The blind probe tries 0x3f8
+> first, and names that ttyS0.  But the PNP probe, using the namespace
+> order, finds the "COM2" port at 0x2f8 first:
+> 
+>   00:0b: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
+>   00:0c: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
 
-Rene.
+  Oh I see, didn't notice this though.
+
+> 
+> So I think your serial console would work without "legacy_serial.force"
+> if you used "console=ttyS1" instead of "console=ttyS0".  But you
+> shouldn't have to do that, of course.
+
+  Will try ttyS1 just to confirm...
+
+  Waiting for reboot...
+
+  OK boots fine with the serial console fully operational again.
+
+> 
+> The _DDN is a "DOS device name", and the _UID is a "logical device ID
+> that does not change across reboots."  Both are optional, and PNPACPI
+> ignores them.  But maybe we could change PNPACPI to sort by them if
+> they are present.  I'll think about this a bit.
+
+  That would be nice, but I wish you good luck with all those
+crappy BIOSes out there.
+
+  Thanks,
+
+  Sébastien.
+
 
