@@ -1,87 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762478AbXGYWvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763354AbXGYW7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762478AbXGYWvi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 18:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbXGYWv3
+	id S1763354AbXGYW7o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 18:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759442AbXGYW7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 18:51:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54644 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756293AbXGYWv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 18:51:28 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-Date: Wed, 25 Jul 2007 18:51:22 -0400
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200707251238.50218.lenb@kernel.org> <alpine.LFD.0.999.0707251147130.3607@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707251147130.3607@woody.linux-foundation.org>
+	Wed, 25 Jul 2007 18:59:33 -0400
+Received: from qb-out-0506.google.com ([72.14.204.232]:51653 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757040AbXGYW7c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 18:59:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lL9lmuvHR0vy7kQLkBWSK37kpHlbv6thzc1mPaicw713bgw/u5+PpTk4kIotJ6wEyigXY7coX4JZLM1TPddCoW+T5hU1KCKo+2q8ZffF4+oS0Y3s+X7WxXS7CFX8awodoxVKTn/MAFNxVSL3dg7u2cd6i33csHoGEtsBZTy1XTI=
+Message-ID: <a781481a0707251559n1fc8bb1y343e980deb25377b@mail.gmail.com>
+Date: Thu, 26 Jul 2007 04:29:31 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Michael Halcrow" <mhalcrow@us.ibm.com>
+Subject: Re: [PATCH 4/7] eCryptfs: Comments for some structs
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, toml@us.ibm.com
+In-Reply-To: <20070725205135.GU14091@halcrow.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707251851.22777.lenb@kernel.org>
+References: <20070725204855.GQ14091@halcrow.austin.ibm.com>
+	 <20070725205135.GU14091@halcrow.austin.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 July 2007 14:48, Linus Torvalds wrote:
+Trivial nits ...
 
-> ... ACPI now seems to select CPU hotplug. Why? 
+On 7/26/07, Michael Halcrow <mhalcrow@us.ibm.com> wrote:
+> [...]
+> +/**
+> + * ecryptfs_global_auth_tok structs refer to authentication token keys
+> + * in the user keyring that apply to newly created files. A list of
+> + * these objects hangs off of the mount_crypt_stat struct for any
+> + * given eCryptfs mount. This struct maintains a reference to both the
+> + * key contents and the key itself so that the key can be put on
+> + * unmount.
+> + */
 
-ACPI=y SMP=y systems require SUSPEND_SMP=y for system sleep support,
-and that requires HOTPLUG_CPU=y.
+/** is used to annotate kernel-doc style comments, which this
+one isn't -- IIRC, kernel-doc doesn't like this (?)
 
-Note that ACPI=y SMP=n systems do not need it,
-and thus will not select HOTPLUG_CPU=y
+>  struct ecryptfs_global_auth_tok {
+>  #define ECRYPTFS_AUTH_TOK_INVALID 0x00000001
+>         u32 flags;
+> -       struct list_head mount_crypt_stat_list;
+> -       struct key *global_auth_tok_key;
+> -       struct ecryptfs_auth_tok *global_auth_tok;
+> -       unsigned char sig[ECRYPTFS_SIG_SIZE_HEX + 1];
 
-> That is just *broken*. Sure, if you select STR or hibernation, we need CPU 
-> hotplug, but just for picking ACPI? Why?
+> +       struct list_head mount_crypt_stat_list; /* Default auth_tok list for
+> +                                                * the mount_crypt_stat */
+> +       struct key *global_auth_tok_key; /* The key from the user's keyring for
+> +                                         * the sig */
 
-My assumption is that if somebody selects CONFIG_ACPI,
-that 99% of the time, they intend that to include support for
-the ACPI hooks for system sleep states.
+Tsk. You could consider using kernel-doc style itself to comment the
+structure -- this stuff goes up there and doesn't look icky.
 
-Conversely, supporting the 1% of people who don't want it
-isn't worth messing with the 99% who do, nor is
-the burden of yet another config option to maintain and
-#ifdefs in the code.
+> +       struct ecryptfs_auth_tok *global_auth_tok; /* The key contents */
+> +       unsigned char sig[ECRYPTFS_SIG_SIZE_HEX + 1]; /* The key identifier */
+>  };
+>
+> +/**
+> + * Typically, eCryptfs will use the same ciphers repeatedly throughout
+> + * the course of its operations. In order to avoid unnecessarily
+> + * destroying and initializing the same cipher repeatedly, eCryptfs
+> + * keeps a list of crypto API contexts around to use when needed.
+> + */
 
-On UP, they'd get ACPI system sleep support 100% of the time
-by default, but on SMP this option had become problematic.
+Again, you could consider using kernel-doc style comments here.
 
-We used to have this:
+>  struct ecryptfs_key_tfm {
+>         struct crypto_blkcipher *key_tfm;
+>         size_t key_size;
+>         struct mutex key_tfm_mutex;
+> -       struct list_head key_tfm_list;
+> +       struct list_head key_tfm_list; /* The module's tfm list */
+>         unsigned char cipher_name[ECRYPTFS_MAX_CIPHER_NAME_SIZE + 1];
+>  };
 
-if ACPI
-...
-config ACPI_SLEEP
-        bool "Sleep States"
-        depends on X86 && (!SMP || SUSPEND_SMP)
-        depends on PM
-        default y
 
-So the poster-child failure was i386/defconfig itself...
-It couldn't support suspend to RAM because it didn't include
-CONFIG_ACPI_SLEEP.  Not trivial for a user to select it
-when it doesn't even appear on the menu.  It doesn't appear
-because CONFIG_SUSPEND_SMP isn't enabled, but that doesn't
-appear either -- because CONFIG_HOTPLUG_CPU isn't selected.
-
-Most users don't want that.
-
-So today we have this:
-
-menuconfig ACPI
-	...
-        select HOTPLUG_CPU if X86 && SMP
-        select SUSPEND_SMP if X86 && SMP
-
-Which I think leads to fewer surprises, and less complicated code.
-(even though using select itself is fraught with peril:-)
-
-thanks,
--Len
-
+Satyam
