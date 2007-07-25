@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765484AbXGYNRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765704AbXGYNSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765484AbXGYNRu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761006AbXGYNRm
+	id S1765704AbXGYNSb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761006AbXGYNSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:17:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:32956 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760614AbXGYNRm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:17:42 -0400
-Date: Wed, 25 Jul 2007 14:17:38 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [M68KNOMMU]: create hw_irq.h
-Message-ID: <20070725131738.GA7043@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Greg Ungerer <gerg@snapgear.com>, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <200707251207.l6PC7KiH032176@goober> <20070725121724.GA4923@infradead.org> <46A74415.7000408@snapgear.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 25 Jul 2007 09:18:23 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:52137 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760879AbXGYNSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:18:22 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: =?iso-8859-15?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
+Date: Wed, 25 Jul 2007 07:16:44 -0600
+User-Agent: KMail/1.9.6
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
+       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
+       mjg59@srcf.ucam.org, castet.matthieu@free.fr, shaohua.li@intel.com
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707240948.45916.bjorn.helgaas@hp.com> <20070725094554.55c46d8b@frecb000686.frec.bull.fr>
+In-Reply-To: <20070725094554.55c46d8b@frecb000686.frec.bull.fr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <46A74415.7000408@snapgear.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200707250716.44609.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 10:37:41PM +1000, Greg Ungerer wrote:
-> Christoph Hellwig wrote:
-> >On Wed, Jul 25, 2007 at 10:07:20PM +1000, Greg Ungerer wrote:
-> >>Need an include/asm-m68knommu/hw_irq.h for kernel/hrtimer.c
-> >
-> >hrtimer.c should be fixed not to include it instead.
-> 
-> Indirectly it is coming from include/linux/irq.h
-> (which means that compilation of a few kernel/irq/*.c files
-> fail on m68knommu without hw_irq.h existing too)
+On Wednesday 25 July 2007 01:45:54 am Sébastien Dugué wrote:
+>   looks like the commit was dropped, nevertheless here is some more info
+> to try and understand what may be going on so it may benefit the posterity ;-)
 
-sorry.  m68knommu uses genirq now and it'll have to provide hw_irq.h.
-Generic code just shouldn't include it direclty.
+Thank you very much.
 
-Objection to the patch taken back.
+Your machine does indeed describe both UARTs in ACPI, and the PNP probe
+finds them correctly.  The only wrinkle is that the PNP probe names the
+ports in the order they appear in the ACPI namespace, and your firmware
+has them "backwards":
 
-(And yes, long-term we need to fix up the mess of irq-related headers,
- and Al announced he's gonna start that once 2.6.23 is out)
+                    Device (COMB)
+                    {
+                        Name (_HID, EisaId ("PNP0501"))
+                        Name (_DDN, "COM2")
+                        Name (_UID, 0x02)
 
+                    Device (COMA)
+                    {
+                        Name (_HID, EisaId ("PNP0501"))
+                        Name (_DDN, "COM1")
+                        Name (_UID, 0x01)
+
+There's nothing illegal about this, but with the current PNPACPI,
+it causes the names to be reversed.  The blind probe tries 0x3f8
+first, and names that ttyS0.  But the PNP probe, using the namespace
+order, finds the "COM2" port at 0x2f8 first:
+
+  00:0b: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
+  00:0c: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
+
+So I think your serial console would work without "legacy_serial.force"
+if you used "console=ttyS1" instead of "console=ttyS0".  But you
+shouldn't have to do that, of course.
+
+The _DDN is a "DOS device name", and the _UID is a "logical device ID
+that does not change across reboots."  Both are optional, and PNPACPI
+ignores them.  But maybe we could change PNPACPI to sort by them if
+they are present.  I'll think about this a bit.
+
+Thanks again,
+  Bjorn
