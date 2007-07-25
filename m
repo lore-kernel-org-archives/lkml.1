@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934786AbXGYSaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934926AbXGYSal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934786AbXGYSaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765116AbXGYSaI
+	id S934926AbXGYSal (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932999AbXGYSaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:30:08 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3014 "EHLO spitz.ucw.cz"
+	Wed, 25 Jul 2007 14:30:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3019 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752194AbXGYSaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:30:06 -0400
-Date: Wed, 25 Jul 2007 13:39:20 +0000
+	id S1761083AbXGYSaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 14:30:10 -0400
+Date: Wed, 25 Jul 2007 14:18:14 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: 2.6.22 - Suspend and Weird Load Averages
-Message-ID: <20070725133919.GA9256@ucw.cz>
-References: <469E1AFE.7010108@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Dor Laor <dor.laor@qumranet.com>, Avi Kivity <avik@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [kvm-devel] [RFC] Deferred interrupt handling.
+Message-ID: <20070725141813.GE9256@ucw.cz>
+References: <005901c7c921$79c006c0$6d401440$@com> <20070718123040.615795b7@the-village.bc.nu> <64F9B87B6B770947A9F8391472E032160CC16C92@ehost011-8.exch011.intermedia.net> <20070718174736.0baf6d0e@the-village.bc.nu> <469E43D5.70802@qumranet.com> <64F9B87B6B770947A9F8391472E032160CC16D06@ehost011-8.exch011.intermedia.net> <20070718183358.0a0886aa@the-village.bc.nu> <64F9B87B6B770947A9F8391472E032160CC16F3C@ehost011-8.exch011.intermedia.net> <20070718224649.3e49a978@the-village.bc.nu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <469E1AFE.7010108@gmail.com>
+In-Reply-To: <20070718224649.3e49a978@the-village.bc.nu>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> For the first time since 1997 I have a machine (Mac 
-> Mini) running a stock kernel which I am 
-> suspending/resuming for 2 days now without any problems. 
-> Amongst the various hardware and kernel versions that 
-> I've used so far this combination is the first to 
-> suspend/resume without issues!
-> 
-> But one thing that annoys me a bit is that the load 
-> averages spike up quite a bit after resume although it 
-> doesn't feel like the machine is loaded  -
-> 
-> Before Resume -
-> parag@parag-desktop:~$ uptime
-> 09:35:14 up  5:18,  2 users,  load average: 0.08, 0.87, 
-> 1.00
-> After Resume -
-> parag@parag-desktop:~$ uptime
-> 09:36:37 up  5:18,  2 users,  load average: 12.53, 3.83, 
-> 1.98
-> parag@parag-desktop:~$
-> 
-> Is this a known problem? Worth fixing?
+I guess this will also allow UIO to work without _any_ kernel parts,
+with only slight performance penalty in 'almost-never-happens'
+deadlock case?
 
-Known, and Rafael/Nigel have patches to fix that.
-
-OTOH I'm not sure it is a problem -- lets just say that suspend is
-hard work and therefore it raises load avg?
+(Greg, details are below, and better description is in the lkml
+thread).
 							Pavel
+
+> > - Our dummy handler will always return IRQ_HANDLED in case any other
+> > previous
+> >   irqaction did not return such. It will also issue the timer and mask
+> > the irq in this case.
+> 
+> Ok
+> 
+> >   btw, if I'm not mistaken only after bad 99900/100000 the irq is
+> > disabled.
+> 
+> (and with GIT providing that they occurred in a short time period)
+> 
+> > - If the timer pops before the guest acks the irq, the timer handler
+> > will
+> >   ack the irq and unmask it. The timer's job is only to prevent
+> > deadlocks.
+> 
+> Ok I see what you are doing. It's either inspired or insane and I am not
+> quite sure which of the two. I agree it should work although may cause
+> performance crunches now and then and will also need care getting the
+> locking right.
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
