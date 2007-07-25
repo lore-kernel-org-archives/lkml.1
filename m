@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXGYQ2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933568AbXGYQas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933224AbXGYQ2S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 12:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbXGYQ2K
+	id S933568AbXGYQas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 12:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbXGYQai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 12:28:10 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:55557 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbXGYQ2J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 12:28:09 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46A779E1.603@s5r6.in-berlin.de>
-Date: Wed, 25 Jul 2007 18:27:13 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Wed, 25 Jul 2007 12:30:38 -0400
+Received: from mout1.freenet.de ([195.4.92.91]:40076 "EHLO mout1.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752559AbXGYQai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 12:30:38 -0400
+X-Greylist: delayed 3811 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Jul 2007 12:30:37 EDT
+From: Karsten Wiese <fzu@wemgehoertderstaat.de>
+To: John Sigler <linux.kernel@free.fr>
+Subject: Re: Pin-pointing the root of unusual application latencies
+Date: Wed, 25 Jul 2007 18:31:34 +0200
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <469600F7.3060603@free.fr> <200707251728.00207.fzu@wemgehoertderstaat.de> <46A77054.8040203@free.fr>
+In-Reply-To: <46A77054.8040203@free.fr>
 MIME-Version: 1.0
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-CC: Andreas Micklei <andreas.micklei@ivistar.de>,
-       Andreas Messer <andreas.messer@stud-mail.uni-wuerzburg.de>,
-       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Subject: Re: [BUG] firewire: mass-storage i/o-problems
-References: <200707222332.12270.andreas.messer@stud-mail.uni-wuerzburg.de> <46A3E973.6090701@s5r6.in-berlin.de> <20070723063741.GA32240@roarinelk.homelinux.net> <46A45B65.9000704@s5r6.in-berlin.de> <20070723084505.GB349@roarinelk.homelinux.net> <46A49244.9010402@s5r6.in-berlin.de> <20070723183336.GA3736@roarinelk.homelinux.net> <20070723184405.GB3736@roarinelk.homelinux.net> <46A6598B.5080004@s5r6.in-berlin.de> <20070725051208.GA13710@roarinelk.homelinux.net>
-In-Reply-To: <20070725051208.GA13710@roarinelk.homelinux.net>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707251831.34969.fzu@wemgehoertderstaat.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manuel Lauss wrote:
-> I tried 2.6.23 in the meantime, it's *MUCH* harder to trigger; in fact
-> I had to skip through movies for ~10 minutes to get the orb timeout.
-> The disk was inaccessible for a few seconds then recovered fine.
+Am Mittwoch, 25. Juli 2007 schrieb John Sigler:
+> Karsten Wiese wrote:
 > 
->> Could you (and everyone else who has repeated I/O errors with the new
->> drivers, but not with the old drivers) test the attached patches, one
->> patch at a time?  They apply to 2.6.22.
+> > John Sigler wrote:
+> > 
+> >> Is there some form of priority inheritance? Does the IRQ handler get a 
+> >> priority boost if a high priority task is waiting for it?
+> > 
+> > No. But that would be "nice to have".
 > 
-> Will do.
+> No to the first question? to the second question? or to both? :-)
+> 
+To the second.
+I checked some soundcard drivers some time ago in -rt kernels, looking for
+that "priority boosted by consuming process threaded interrupt handler".
+Then there was no such.
 
-There are a few firewire fixes in 2.6.23-rc1 relative to 2.6.22, but I
-don't believe they've got something to do with this issue.  Hence it
-would be practical to test the patches on 2.6.22, but if you prefer you
-could also test them on 2.6.23-*.  Thanks,
--- 
-Stefan Richter
--=====-=-=== -=== ==--=
-http://arcgraph.de/sr/
+> In kernel/futex.c does "PI" stand for Priority Inheritance?
+> 
+I guess so, yes.
+
+> e.g.
+> 
+> /*
+>   * Priority Inheritance state:
+>   */
+> struct futex_pi_state {
+> 	/*
+> 	 * list of 'owned' pi_state instances - these have to be
+> 	 * cleaned up in do_exit() if the task exits prematurely:
+> 	 */
+> 	struct list_head list;
+> 
+> 	/*
+> 	 * The PI object:
+> 	 */
+> 	struct rt_mutex pi_mutex;
+> 
+> 	struct task_struct *owner;
+> 	atomic_t refcount;
+> 
+> 	union futex_key key;
+> };
+> 
+> 
+
+
