@@ -1,83 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762470AbXGYJ6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbXGYKH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762470AbXGYJ6t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 05:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbXGYJ6m
+	id S1760097AbXGYKH7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 06:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698AbXGYKHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 05:58:42 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:22679 "EHLO kernel.dk"
+	Wed, 25 Jul 2007 06:07:51 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:11388 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757456AbXGYJ6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 05:58:42 -0400
-Date: Wed, 25 Jul 2007 11:59:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patch] fix the softlockup watchdog to actually work
-Message-ID: <20070725095910.GL3287@kernel.dk>
-References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070725014912.35c7e325.akpm@linux-foundation.org> <20070725085204.GA22067@elte.hu> <20070725020003.63144fd6.akpm@linux-foundation.org> <20070725090439.GA26286@elte.hu> <20070725021730.a9a624b3.akpm@linux-foundation.org> <20070725092342.GA29814@elte.hu>
+	id S1755639AbXGYKHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 06:07:50 -0400
+Message-ID: <46A720C8.5070803@openvz.org>
+Date: Wed, 25 Jul 2007 14:07:04 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070725092342.GA29814@elte.hu>
+To: sukadev@us.ibm.com
+CC: Serge Hallyn <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 13/16] Switch to operating with pid_numbers instead of
+ pids
+References: <468DF6F7.1010906@openvz.org> <468DF907.2060809@openvz.org> <20070725003619.GF3287@us.ibm.com>
+In-Reply-To: <20070725003619.GF3287@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25 2007, Ingo Molnar wrote:
+sukadev@us.ibm.com wrote:
+> Pavel Emelianov [xemul@openvz.org] wrote:
+> | Make alloc_pid() initialize pid_numbers and hash them
+> | into the hashtable, not the struct pid itself.
+> | 
+> | Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+> | 
+> | ---
+> | 
+> |  pid.c |   47 +++++++++++++++++++++++++++++++++--------------
+> |  1 files changed, 33 insertions(+), 14 deletions(-)
+> | 
+> | --- ./kernel/pid.c.ve12	2007-07-05 11:06:41.000000000 +0400
+> | +++ ./kernel/pid.c	2007-07-05 11:08:23.000000000 +0400
+> | @@ -28,8 +28,10 @@
+> |  #include <linux/hash.h>
+> |  #include <linux/pid_namespace.h>
+> |  #include <linux/init_task.h>
+> | +#include <linux/proc_fs.h>
+> | 
+> | -#define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
+> | +#define pid_hashfn(nr, ns)	\
+> | +	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+> |  static struct hlist_head *pid_hash;
+> |  static int pidhash_shift;
+> |  struct pid init_struct_pid = INIT_STRUCT_PID;
+> | @@ -194,7 +198,7 @@ fastcall void put_pid(struct pid *pid)
+> |  	if (!pid)
+> |  		return;
+> | 
+> | -	ns = pid->numbers[0].ns;
+> | +	ns = pid->numbers[pid->level].ns;
+> |  	if ((atomic_read(&pid->count) == 1) ||
+> |  	     atomic_dec_and_test(&pid->count))
+> |  		kmem_cache_free(ns->pid_cachep, pid);
+> | @@ -210,13 +214,17 @@ static void delayed_put_pid(struct rcu_h
+> |  fastcall void free_pid(struct pid *pid)
+> |  {
+> |  	/* We can be called with write_lock_irq(&tasklist_lock) held */
+> | +	int i;
+> |  	unsigned long flags;
+> | 
+> |  	spin_lock_irqsave(&pidmap_lock, flags);
+> | -	hlist_del_rcu(&pid->pid_chain);
+> | +	for (i = 0; i <= pid->level; i++)
+> | +		hlist_del_rcu(&pid->numbers[i].pid_chain);
+> |  	spin_unlock_irqrestore(&pidmap_lock, flags);
+> | 
+> | -	free_pidmap(&init_pid_ns, pid->nr);
+> | +	for (i = 0; i <= pid->level; i++)
+> | +		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
+> | +
+> |  	call_rcu(&pid->rcu, delayed_put_pid);
+> |  }
+> | 
+> | @@ -224,30 +232,43 @@ struct pid *alloc_pid(struct pid_namespa
+> |  {
+> |  	struct pid *pid;
+> |  	enum pid_type type;
+> | -	int nr = -1;
+> | +	struct pid_namespace *ns;
+> | +	int i, nr;
+> | 
+> | -	pid = kmem_cache_alloc(init_pid_ns.pid_cachep, GFP_KERNEL);
+> | +	pid = kmem_cache_alloc(pid_ns->pid_cachep, GFP_KERNEL);
+> |  	if (!pid)
+> |  		goto out;
+> | 
+> | -	nr = alloc_pidmap(current->nsproxy->pid_ns);
+> | -	if (nr < 0)
+> | -		goto out_free;
+> | +	ns = pid_ns;
+> | +	for (i = pid_ns->level; i >= 0; i--) {
+> | +		nr = alloc_pidmap(ns);
+> | +		if (nr < 0)
+> | +			goto out_free;
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > >   * 2^30ns == 1.074s.
-> > >   */
-> > > -static unsigned long get_timestamp(void)
-> > > +static unsigned long get_timestamp(int this_cpu)
-> > >  {
-> > > -	return sched_clock() >> 30;  /* 2^30 ~= 10^9 */
-> > > +	return cpu_clock(this_cpu) >> 30;  /* 2^30 ~= 10^9 */
-> > >  }
-> > >  
-> > >  void touch_softlockup_watchdog(void)
-> > >  {
-> > > -	__raw_get_cpu_var(touch_timestamp) = get_timestamp();
-> > > +	int this_cpu = raw_smp_processor_id();
-> > > +
-> > > +	per_cpu(touch_timestamp, this_cpu) = get_timestamp(this_cpu);
-> > >  }
-> > >  EXPORT_SYMBOL(touch_softlockup_watchdog);
-> > >  
-> > > @@ -95,7 +97,7 @@ void softlockup_tick(void)
-> > >  		return;
-> > 
-> > argh.  afacit this was never sent, except as part of some jumbopatch 
-> > called "sched: implement cpu_clock(cpu) high-speed time source".
-> > 
-> > That patch helped.
-> > 
-> > It's all a plot.
-> 
-> sorry, it's really my fault: i decoupled it from the jumbopatch (so that 
-> the new API could go in first) but forgot to re-send that crutial bit. 
-> There's also the patch below (Jens Cc:-ed) to update blktrace. I guess i 
-> should do a softlockup.git tree to avoid such foul-ups in the future.
-> 
-> 	Ingo
-> 
-> ----------------------->
-> Subject: blktrace: use cpu_clock() instead of sched_clock()
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> use cpu_clock() instead of sched_clock(). (the latter is not a proper
-> clock-source)
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> If pid_ns->level is say 3 and alloc_pidmap() succeeds when i=0,1
 
-I tested it, seems to work fine for me.
+It cannot :) If level is 3, then we'll allocate for 3, 2, 1, 0 sequence.
+The loop is descending, not ascending...
 
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+> and fails when i=2, we would try to free_pidmap() even from 
+> pid->pid_number[2].pid_ns. This would incorrectly a)
+> drop reference count on that pid namespace, and incorrectly
+> increment pidmap->nr_free.
+> 
+> Should we use kmem_cache_zalloc() and check for a non-NULL pid_ns
+> before calling free_pidmap() below ?
+> 
+> | 
+> | +		pid->numbers[i].nr = nr;
+> | +		pid->numbers[i].ns = ns;
+> | +		ns = ns->parent;
+> | +	}
+> | +
+> | +	pid->level = pid_ns->level;
+> |  	atomic_set(&pid->count, 1);
+> | -	pid->nr = nr;
+> |  	for (type = 0; type < PIDTYPE_MAX; ++type)
+> |  		INIT_HLIST_HEAD(&pid->tasks[type]);
+> | 
+> |  	spin_lock_irq(&pidmap_lock);
+> | -	hlist_add_head_rcu(&pid->pid_chain, &pid_hash[pid_hashfn(pid->nr)]);
+> | +	for (i = pid->level; i >= 0; i--)
+> | +		hlist_add_head_rcu(&pid->numbers[i].pid_chain,
+> | +				&pid_hash[pid_hashfn(pid->numbers[i].nr,
+> | +					pid->numbers[i].ns)]);
+> |  	spin_unlock_irq(&pidmap_lock);
+> | -
+> |  out:
+> |  	return pid;
+> | 
+> |  out_free:
+> | -	kmem_cache_free(init_pid_ns.pid_cachep, pid);
+> | +	for (i++; i <= pid->level; i++)
+> | +		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
+> 
+> i.e all pid->numbers[] may not be initialized here right ?
 
--- 
-Jens Axboe
+The numbers from i up to pid->level are initialized, so this
+loop looks correct.
+
+Thanks,
+Pavel
 
