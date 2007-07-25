@@ -1,107 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763652AbXGYNfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbXGYNfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763652AbXGYNfh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXGYNf3
+	id S1759409AbXGYNfu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760136AbXGYNfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:35:29 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:53226 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751603AbXGYNf2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:35:28 -0400
-Date: Wed, 25 Jul 2007 15:32:53 +0200
-From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
-       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
-       mjg59@srcf.ucam.org, castet.matthieu@free.fr, shaohua.li@intel.com
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
- platform devices - broke my serial console
-Message-ID: <20070725153253.4d7e7e37@frecb000686.frec.bull.fr>
-In-Reply-To: <200707250716.44609.bjorn.helgaas@hp.com>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
-	<200707240948.45916.bjorn.helgaas@hp.com>
-	<20070725094554.55c46d8b@frecb000686.frec.bull.fr>
-	<200707250716.44609.bjorn.helgaas@hp.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 25/07/2007 15:40:07,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 25/07/2007 15:40:09,
-	Serialize complete at 25/07/2007 15:40:09
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=UTF-8
+	Wed, 25 Jul 2007 09:35:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53770 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757275AbXGYNfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:35:30 -0400
+Message-ID: <46A7519A.20108@redhat.com>
+Date: Wed, 25 Jul 2007 09:35:22 -0400
+From: Chris Lalancette <clalance@redhat.com>
+User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Vojtech Pavlik <vojtech@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH]: Add command-line option to i8042 to completely disable
+ it
+References: <46A4DFD2.2010501@redhat.com> <20070725000504.f8ce49c1.akpm@linux-foundation.org> <20070725080355.GA14726@suse.cz>
+In-Reply-To: <20070725080355.GA14726@suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-  Hi Bjorn,
-
-On Wed, 25 Jul 2007 07:16:44 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-
-> On Wednesday 25 July 2007 01:45:54 am Sébastien Dugué wrote:
-> >   looks like the commit was dropped, nevertheless here is some more info
-> > to try and understand what may be going on so it may benefit the posterity ;-)
+Vojtech Pavlik wrote:
+>>
+>>That's an unfortunate fix.  Is there really no way in which we
+>>can auto-detect such a situation without requiring a manual
+>>setting?
 > 
-> Thank you very much.
 > 
-> Your machine does indeed describe both UARTs in ACPI, and the PNP probe
-> finds them correctly.  The only wrinkle is that the PNP probe names the
-> ports in the order they appear in the ACPI namespace, and your firmware
-> has them "backwards":
+> The fact that the current detection hangs suggests that the scenario is
+> possible to detect.
 > 
->                     Device (COMB)
->                     {
->                         Name (_HID, EisaId ("PNP0501"))
->                         Name (_DDN, "COM2")
->                         Name (_UID, 0x02)
-> 
->                     Device (COMA)
->                     {
->                         Name (_HID, EisaId ("PNP0501"))
->                         Name (_DDN, "COM1")
->                         Name (_UID, 0x01)
 
+Hm, OK.  I'll go back and look at i8042_flush() to see if I can detect this
+erroneous situation automatically and fail the i8042_controller_init() if I see it.
 
-  Yes, that's what I thought was weird in the DSDT, but thought the PnP layer
-would map those devices according to UID or at least DDN. It seems that's
-not the case.
-
-> 
-> There's nothing illegal about this, but with the current PNPACPI,
-> it causes the names to be reversed.  The blind probe tries 0x3f8
-> first, and names that ttyS0.  But the PNP probe, using the namespace
-> order, finds the "COM2" port at 0x2f8 first:
-> 
->   00:0b: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
->   00:0c: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
-
-  Oh I see, didn't notice this though.
-
-> 
-> So I think your serial console would work without "legacy_serial.force"
-> if you used "console=ttyS1" instead of "console=ttyS0".  But you
-> shouldn't have to do that, of course.
-
-  Will try ttyS1 just to confirm...
-
-  Waiting for reboot...
-
-  OK boots fine with the serial console fully operational again.
-
-> 
-> The _DDN is a "DOS device name", and the _UID is a "logical device ID
-> that does not change across reboots."  Both are optional, and PNPACPI
-> ignores them.  But maybe we could change PNPACPI to sort by them if
-> they are present.  I'll think about this a bit.
-
-  That would be nice, but I wish you good luck with all those
-crappy BIOSes out there.
-
-  Thanks,
-
-  Sébastien.
-
-
+Chris Lalancette
