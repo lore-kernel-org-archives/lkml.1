@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763635AbXGYTIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbXGYTLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763635AbXGYTIh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbXGYTIa
+	id S932336AbXGYTLv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbXGYTLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:08:30 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3957 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753884AbXGYTI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:08:29 -0400
-Date: Wed, 25 Jul 2007 19:01:15 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: MMC/SD Root filesystem suspend/resume problems
-Message-ID: <20070725190115.GB10208@ucw.cz>
-References: <1184860419.29634.10.camel@localhost.localdomain> <20070719190309.28708be8@poseidon.drzeus.cx> <1185110313.6819.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 25 Jul 2007 15:11:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33054 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752692AbXGYTLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 15:11:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: which signal is sent to freeze process?
+Date: Wed, 25 Jul 2007 21:19:32 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       "Agarwal, Lomesh" <lomesh.agarwal@intel.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+References: <46A506F8.2020206@colorfullife.com> <46A50AF0.70305@colorfullife.com> <46A64984.1070808@colorfullife.com>
+In-Reply-To: <46A64984.1070808@colorfullife.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1185110313.6819.8.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200707252119.33285.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > Lots of Linux handhelds use MMC/SD devices as the root file system.
-> > > This has worked quite reliably for many kernel versions. In 2.6.22,
-> > > it seems that if you suspend such a system then resume it, the device
-> > > locks up. Trying to execute anything on the filesystem results in a
-> > > "Permission Denied" message. I did see a message from the MMC
-> > > subsystem saying it had redetected the card. There are also messages
-> > > on the console like "MMC: killing requests for dead queue" each time
-> > > you suspend/resume.
-> > 
-> > The card is removed when you suspend and readded when you resume.
-> > That's the only safe thing we can do until we get suspend support in
-> > the filesystems.
-> > 
-> > If you really want to shoot yourself in the foot, there is a Kconfig
-> > option that keeps the card around across the suspend.
+On Tuesday, 24 July 2007 20:48, Manfred Spraul wrote:
+> > Hi!
+> >
+> > Can you generate small testcase that demonstrates the problem?
+> >
+> > > Then what would be the correct way to handle resume process. The other
+> > > way of course is to make all the applications check the errno in case of
+> > > failure. But that seems more more problematic then system call checking.
+> > > What do you say?
+> >
+> > Hmm, does that testcase behave correctly over SIGSTOP/SIGCONT? I'm not
+> > saying kernel behaves nicely here, but perhaps fixing the apps to
+> > check errno properly is the right thing to do? :-)
+> Perhaps the kernel should use ERESTARTNOHAND instead of EINTR?
+> The current code is more than odd:
+> - select() and sys_ppoll() both use ERESTARTNOHAND (i.e.: 
+> the functions do not return to user space with SIGSTOP/SIGCONT or freezer())
 > 
-> I enabled the MMC_UNSAFE_RESUME option and the problems I was seeing was
-> "fixed". I think having this option is a bad idea (in its current form)
-> as it doesn't actually stop filesystem corruption.
+> - sys_poll() uses EINTR (i.e.: SIGSTOP/SIGCONT/freezer() return to user space)
 > 
-> With the option disabled, if a filesystem is mounted when you suspend my
-> tests show the filesystem is corrupted. At least if the option is
-> enabled, the filesystem is only corrupted if you remove the card whilst
-> suspended which is more preferable.
+> Attached is a patch that switches sys_poll to ERESTARTNOHAND and a poll test app.
+> Boot tested with FC6.
+> 
+> What do you think? With ERESTARTNOHAND, poll would only return to user space if the app has a SIGCONT handler installed.
 
-Are we talking _corruption_ here, or are we talking 'the kind of
-corruption recoverable by fsck that happens on powerfail'?
+Well, I don't know why sys_poll() uses EINTR, so I don't know if that's not for
+a reason.  Using ERESTARTNOHAND instead of it seems to be a good idea, though.
 
-							Pavel
+Greetings,
+Rafael
+
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
