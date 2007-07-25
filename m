@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761677AbXGYVP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764677AbXGYVQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761677AbXGYVP6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 17:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbXGYVPu
+	id S1764677AbXGYVQi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 17:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXGYVQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 17:15:50 -0400
-Received: from mga01.intel.com ([192.55.52.88]:11522 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753182AbXGYVPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 17:15:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,581,1175497200"; 
-   d="scan'208";a="272700956"
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-From: "Li, Tong N" <tong.n.li@intel.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46A7B8A9.4040400@redhat.com>
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>
-	 <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu>
-	 <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>
-	 <20070725192442.GC4463@elte.hu> <46A7B4DE.4030301@nortel.com>
-	 <46A7B8A9.4040400@redhat.com>
-Content-Type: text/plain
+	Wed, 25 Jul 2007 17:16:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:21489 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbXGYVQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 17:16:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=df1rDFxVmWqt5W4Rni9mpZKl6TJTBAXSMV0sE93fSuiQytM2Ocew8aMY8SpqTVnMw85Q7IcTEaJYFLqPI7qmbOWNSI9PRgYl6wOnGGoetcGmevOyFnkyqIzE1J3rvcpcPkCctex/+hvZiLuyC1xCIjja4jLmSdmVw5qBSREb7lw=
+Message-ID: <46A7BCE3.3040709@googlemail.com>
+Date: Wed, 25 Jul 2007 23:13:07 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, gregkh@suse.de
+Subject: Re: 2.6.23-rc1-mm1
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com> <20070725185328.GA28199@uranus.ravnborg.org> <46A7A1EF.8060307@zytor.com> <46A7B983.90407@googlemail.com> <46A7BB12.7060504@googlemail.com> <46A7BC79.7020902@zytor.com>
+In-Reply-To: <46A7BC79.7020902@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 25 Jul 2007 14:15:48 -0700
-Message-Id: <1185398148.3162.5.camel@tongli.jf.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
-X-OriginalArrivalTime: 25 Jul 2007 21:15:49.0183 (UTC) FILETIME=[F93D1CF0:01C7CF00]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-25 at 16:55 -0400, Chris Snook wrote:
-> Chris Friesen wrote:
-> > Ingo Molnar wrote:
-> > 
-> >> the 3s is the problem: change that to 60s! We no way want to 
-> >> over-migrate for SMP fairness, the change i did gives us reasonable 
-> >> long-term SMP fairness without the need for high-rate rebalancing.
-> > 
-> > Actually, I do have requirements from our engineering guys for 
-> > short-term fairness.  They'd actually like decent fairness over even 
-> > shorter intervals...1 second would be nice, 2 is acceptable.
-> > 
-> > They are willing to trade off random peak performance for predictability.
-> > 
-> > Chris
-> > 
+H. Peter Anvin wrote:
+> Gabriel C wrote:
+>>> WARNING: Absolute relocations present
+>>> Offset     Info     Type     Sym.Value Sym.Name
+>>> c0202e73 00703601   R_386_32 c03071bc  _sdata
+>>>
+>>> $ grep c03071bc System.map
+>>> c03071bc R __tracedata_end
+>>> c03071bc A _sdata
 > 
-> The sysctls for CFS have nanosecond resolution.  They default to 
-> millisecond-order values, but you can set them much lower.  See sched_fair.c for 
-> the knobs and their explanations.
+> What is at 0xc0202e73?
+
+grep returns nothing for 0xc0202e73
+
 > 
-> 	-- Chris
+> 	-hpa
+> 
 
-This is incorrect. Those knobs control local-CPU fairness granularity
-but have no control over fairness across CPUs.
-
-I'll do some benchmarking as Ingo suggested.
-
-  tong
+Gabriel
