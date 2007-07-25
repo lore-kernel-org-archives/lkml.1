@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbXGYAH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXGYAT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762148AbXGYAH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 20:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbXGYAHQ
+	id S932178AbXGYAT3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 20:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbXGYATU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 20:07:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57486 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754255AbXGYAHO (ORCPT
+	Tue, 24 Jul 2007 20:19:20 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:57615 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755023AbXGYATT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 20:07:14 -0400
-Date: Tue, 24 Jul 2007 17:06:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mel Gorman <mel@skynet.ie>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
-Message-Id: <20070724170648.97c1749b.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707241639440.9018@schroedinger.engr.sgi.com>
-References: <1185185020.8197.11.camel@twins>
-	<20070723112143.GB19437@skynet.ie>
-	<1185190711.8197.15.camel@twins>
-	<Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com>
-	<1185256869.8197.27.camel@twins>
-	<Pine.LNX.4.64.0707240007100.3128@schroedinger.engr.sgi.com>
-	<1185261894.8197.33.camel@twins>
-	<Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com>
-	<20070724120751.401bcbcb@schroedinger.engr.sgi.com>
-	<20070724122542.d4ac734a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0707241234460.13653@schroedinger.engr.sgi.com>
-	<20070724151046.d8fbb7da.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0707241541310.7288@schroedinger.engr.sgi.com>
-	<20070724161247.ee1a2546.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0707241639440.9018@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Jul 2007 20:19:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=AhLRiCdetZcY5hcb4ClvTO9BvtPePIS9DkYxUOwuGxa0CjdI80/vB7QOc4UQO8sHaG6WwoXkg9xnHe7jIRXShefQkR6f53j7Hvi9Uy2xTua3jTDnK0m05hXwpLriMjHmt+b1Vj5GBu257AnFOvVl9iBBElmYj6IZu46JkKN9W5Q=
+Message-ID: <3ae72650707241719w6c7f2dc7s1bc29d7f1dfd4288@mail.gmail.com>
+Date: Wed, 25 Jul 2007 02:19:18 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Simon Arlott" <simon@fire.lp0.eu>
+Subject: Re: sysfs/udev broken in 2.6.23-rc1 [input, i2c, ...] (Was: sysfs/udev broken in latest git?)
+Cc: "Cornelia Huck" <cornelia.huck@de.ibm.com>, "Greg KH" <gregkh@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <46A62F6A.8010403@simon.arlott.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46A59EAA.9030105@simon.arlott.org.uk>
+	 <20070724072540.GA835@suse.de>
+	 <20070724100314.3c606131@gondolin.boeblingen.de.ibm.com>
+	 <20070724084654.GB13152@suse.de>
+	 <3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com>
+	 <20070724145433.4848ada1@gondolin.boeblingen.de.ibm.com>
+	 <46A628AC.3060900@simon.arlott.org.uk>
+	 <3ae72650707240934o68047677n97e6081ff3f42ce7@mail.gmail.com>
+	 <46A62F6A.8010403@simon.arlott.org.uk>
+X-Google-Sender-Auth: abaac181bcd889cd
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Jul 2007 16:58:51 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+On 7/24/07, Simon Arlott <simon@fire.lp0.eu> wrote:
+> On 24/07/07 17:34, Kay Sievers wrote:
+> > On 7/24/07, Simon Arlott <simon@fire.lp0.eu> wrote:
+> >> On 24/07/07 13:54, Cornelia Huck wrote:
+> >> > On Tue, 24 Jul 2007 11:20:02 +0200,
+> >> > "Kay Sievers" <kay.sievers@vrfy.org> wrote:
+> >> >
+> >> >> It looks fine to me. "device" links must never point to anything else
+> >> >> than a bus device.
 
-> On Tue, 24 Jul 2007, Andrew Morton wrote:
-> 
-> > __GFP_COMP I'm not so sure about. 
-> > drivers/char/drm/drm_pci.c:drm_pci_alloc() (and other places like infiniband)
-> > pass it into dma_alloc_coherent() which some architectures implement via slab.  umm,
-> > arch/arm/mm/consistent.c is one such.
-> 
-> Should  drm_pci_alloc really aright in setting __GFP_COMP? 
+While it's still true, for input we have special rules because the
+"stacked class devices" existed only there. At least for
+SYSFS_DEPRECATED, all input devices should have a "device" symlink
+pointing to the bus-device.
 
-I don't see what's special about that dma_alloc_coherent() call.
+> >> > Hm, but then
+> >> > 1. The patch sneaks this check in (the old code only checked for
+> >> >    dev->parent)
+> >> > 2. The code is rather inconsistent now, since none of the other code
+> >> >    paths check for dev->parent->bus...
 
-> dma_alloc_coherent does not set __GFP_COMP for other higher order allocs 
-> and expects to be able to operate on the page structs indepedently. That 
-> is not the case for a compound page.
-> 
-> Creates a really interesting case for SLAB. Slab did not use __GFP_COMP in 
-> order to be able to allow the use page->private (No longer an issue since 
-> the 2.6.22 cleanups and avoiding the use of page->private for the compound 
-> head).
-> 
-> Now the __GFP_COMP flag is passed through for any higher order page alloc 
-> (such as a kmalloc allocation > PAGE_SIZE). Then we may have allocated one 
-> slab that is a compound page amoung others higher order pages allocated 
-> without __GFP_COMP. May have caused rare and strange failures in 2.6.21 
-> and earlier because of the concurrent page->private use in compound head 
-> pages and arch pages.
-> 
-> SLUB will always use __GFP_COMP so the pages are consistent regardless if 
-> __GFP_COMP is passed in or not.
-> 
-> The strange scenarios come about by expecting a page allocation when 
-> sometimes we just substitute a slab alloc.
-> 
-> We could filter __GFP_COMP out to avoid the BUG()? Or deal with it on a 
-> case by case basis?
+Yeah, that's true.
 
-Fix callers, I'd suggest.  There are a number of fishy-looking open-coded
-usages of __GFP_COMP around the place.
+> >> Removing the dev->parent->bus check fixes it:
 
-It's a bit sad that some architectures are using slab for dma_alloc_coherent()
-while others go to alloc_pages().
+Yes, let's remove the check, I will check now if we possibly need to
+fix more than this or only the block-device patch.
+
+Thanks,
+Kay
