@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935365AbXGYSt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934890AbXGYSxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935365AbXGYSt1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 14:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935233AbXGYStJ
+	id S934890AbXGYSxK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 14:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764638AbXGYSw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 14:49:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58511 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935141AbXGYStG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 14:49:06 -0400
-Date: Wed, 25 Jul 2007 11:48:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Len Brown <lenb@kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-In-Reply-To: <200707251238.50218.lenb@kernel.org>
-Message-ID: <alpine.LFD.0.999.0707251147130.3607@woody.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 25 Jul 2007 14:52:59 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43009 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762604AbXGYSw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 14:52:58 -0400
+Date: Wed, 25 Jul 2007 20:53:28 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.23-rc1-mm1
+Message-ID: <20070725185328.GA28199@uranus.ravnborg.org>
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 25 Jul 2007, Len Brown wrote:
+On Wed, Jul 25, 2007 at 08:48:50PM +0200, Michal Piotrowski wrote:
+> On 25/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
+> >
+> >
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> Andi, this might be interesting for you
 > 
-> Fixes regressions -- a build failure, an oops, some dmesg spam.
-> Also fixes some D-state issues and adds ACPI module auto-loading.
-> Yes, I'd hoped to get the last two in before rc1.
-> I'm hopeful that a couple-days into rc2 is sufficiently early for them.
+> make allmodconfig
+> make
+> [...]
+> WARNING: Absolute relocations present
+> Offset     Info     Type     Sym.Value Sym.Name
+> c02041b3 00705601   R_386_32 c0308aa8  _sdata
 
-I hate pulling this, but I did. However, what I hate even more after 
-having done so is that ACPI now seems to select CPU hotplug. Why?
+Who did spit out this warning. Can you please provide make V=1
+where we see the lines preceeding the warning.
 
-That is just *broken*. Sure, if you select STR or hibernation, we need CPU 
-hotplug, but just for picking ACPI? Why?
+And config please.
 
-		Linus
+	Sam
