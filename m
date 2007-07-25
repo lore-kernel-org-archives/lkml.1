@@ -1,86 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbXGYRmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933848AbXGYRno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933236AbXGYRmm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 13:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759296AbXGYRme
+	id S933848AbXGYRno (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 13:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759225AbXGYRnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 13:42:34 -0400
-Received: from gw.goop.org ([64.81.55.164]:47513 "EHLO mail.goop.org"
+	Wed, 25 Jul 2007 13:43:31 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38842 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754656AbXGYRmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 13:42:33 -0400
-Message-ID: <46A78B47.1070500@goop.org>
-Date: Wed, 25 Jul 2007 10:41:27 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1756989AbXGYRn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 13:43:29 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCH 1/2] [POWERPC] Add support of platforms without PHY to gianfar
+	driver
+Date: Wed, 25 Jul 2007 21:43:12 +0400
+Message-ID: <20070725174312.5818.61155.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, hpa@zytor.com, kaos@ocs.com.au,
-       xyzzy@speakeasy.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
-References: <21803.1185331847@ocs10w.ocs.com.au> <46A6DB04.3000003@zytor.com> <46A6ECB7.7090208@goop.org> <20070724.232914.56812376.davem@davemloft.net> <alpine.LFD.0.999.0707250954400.3607@woody.linux-foundation.org> <20070725171956.GF27237@ftp.linux.org.uk>
-In-Reply-To: <20070725171956.GF27237@ftp.linux.org.uk>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Wed, Jul 25, 2007 at 09:56:12AM -0700, Linus Torvalds wrote:
->   
->> On Tue, 24 Jul 2007, David Miller wrote:
->>     
->>> From: Jeremy Fitzhardinge <jeremy@goop.org>
->>> Date: Tue, 24 Jul 2007 23:24:55 -0700
->>>
->>>       
->>>> H. Peter Anvin wrote:
->>>>         
->>>>> How far back was __builtin_trap() supported?
->>>>>           
->>>> I think its relatively recent, but it might be within our supported
->>>> compiler window.
->>>>         
->>> I'm pretty sure it is.
->>>       
->> .. and I'm pretty sure it's immaterial.
->>
->> We don't just do the "ud2" instruction - we also do the file and line 
->> number information after it. Which means that __builtin_trap() is useless.
->>
->> So we might as well keep the loop, since both are two-byte instructions 
->> that tell gcc that it will never continue.
->>     
->
-> Umm...  Actually, we might be able to do something like
-> {
-> 	l: __builtin_trap();
-> 	static struct ... v __attribute__((section(...))) = { &&l, n, file };
-> }
->
-> except that it would need block-local labels and those are ugly (so's
-> &&<label>, while we are at it)...
->   
 
-I couldn't get it to work.  It would be nice, because it would more or
-less eliminate the need for asm in setting up BUGs - particularly the
-nasty asm setting up the structure.
+Gianfar driver is now able to work without real phy subnode,
+that is necessary to cope with fixed-link situation, when
+SoC is connected to the Ethernet inteface or embedded switch 
+without any PHY. In this case, fixed-speed property will
+describe such a situation for gianfar driver.
 
-But it just doesn't work.  The label &&l ends up pointing to is not
-anywhere near the __builtin_trap instruction; I found it tended to point
-to the start of the function prologue.
+The property is in form <duplexity speed>
 
-I reported it as a gcc bug, but they refused to hear of it.  Details at
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29305
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-    J
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
+---
+
+ arch/powerpc/sysdev/fsl_soc.c |   39 +++++++++++++++++++++++----------------
+ drivers/net/gianfar.c         |   17 ++++++++++++++---
+ 2 files changed, 37 insertions(+), 19 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index cad1757..6864534 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -255,29 +255,36 @@ static int __init gfar_of_init(void)
+ 			    FSL_GIANFAR_DEV_HAS_EXTENDED_HASH;
+ 
+ 		ph = of_get_property(np, "phy-handle", NULL);
+-		phy = of_find_node_by_phandle(*ph);
++		if (ph == NULL) {
++			unsigned int *bus_id;
+ 
+-		if (phy == NULL) {
+-			ret = -ENODEV;
+-			goto unreg;
+-		}
++			bus_id = of_get_property(np, "fixed_speed",NULL);
++			gfar_data.bus_id = (bus_id[0]<<16) | bus_id[1];
++		} else {
++			phy = of_find_node_by_phandle(*ph);
+ 
+-		mdio = of_get_parent(phy);
++			if (phy == NULL) {
++				ret = -ENODEV;
++				goto unreg;
++			}
++
++			mdio = of_get_parent(phy);
++
++			id = of_get_property(phy, "reg", NULL);
++			ret = of_address_to_resource(mdio, 0, &res);
++			if (ret) {
++				of_node_put(phy);
++				of_node_put(mdio);
++				goto unreg;
++			}
++
++			gfar_data.phy_id = *id;
++			gfar_data.bus_id = res.start;
+ 
+-		id = of_get_property(phy, "reg", NULL);
+-		ret = of_address_to_resource(mdio, 0, &res);
+-		if (ret) {
+ 			of_node_put(phy);
+ 			of_node_put(mdio);
+-			goto unreg;
+ 		}
+ 
+-		gfar_data.phy_id = *id;
+-		gfar_data.bus_id = res.start;
+-
+-		of_node_put(phy);
+-		of_node_put(mdio);
+-
+ 		ret =
+ 		    platform_device_add_data(gfar_dev, &gfar_data,
+ 					     sizeof(struct
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 1b854bf..cf08ced 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -93,6 +93,7 @@
+ #include <linux/crc32.h>
+ #include <linux/mii.h>
+ #include <linux/phy.h>
++#include <linux/phy_fixed.h>
+ 
+ #include "gianfar.h"
+ #include "gianfar_mii.h"
+@@ -445,11 +446,21 @@ static int init_phy(struct net_device *dev)
+ 	priv->oldspeed = 0;
+ 	priv->oldduplex = -1;
+ 
+-	snprintf(phy_id, BUS_ID_SIZE, PHY_ID_FMT, priv->einfo->bus_id, priv->einfo->phy_id);
+-
+ 	interface = gfar_get_interface(dev);
+ 
+-	phydev = phy_connect(dev, phy_id, &adjust_link, 0, interface);
++	if (priv->einfo->phy_id) {
++		snprintf(phy_id, BUS_ID_SIZE, PHY_ID_FMT, priv->einfo->bus_id, priv->einfo->phy_id);
++		phydev = phy_connect(dev, phy_id, &adjust_link, 0, interface);
++	} else {
++		struct fixed_info *phyinfo;
++		int phy_addr = (priv->einfo->bus_id >> 16);
++		
++		phyinfo = fixed_mdio_get_phydev(phy_addr-1);
++		phydev = phyinfo->phydev;
++		snprintf(phydev->dev.bus_id, BUS_ID_SIZE, PHY_ID_FMT,
++			(priv->einfo->bus_id & 0xffff) , phy_addr);
++		memset(phyinfo->regs,0xff,sizeof(phyinfo->regs[0])*phyinfo->regs_num);
++	}
+ 
+ 	if (IS_ERR(phydev)) {
+ 		printk(KERN_ERR "%s: Could not attach to PHY\n", dev->name);
 
