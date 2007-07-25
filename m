@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbXGYOya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932757AbXGYOyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932525AbXGYOya (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 10:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXGYOyW
+	id S932757AbXGYOyy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 10:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761702AbXGYOyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 10:54:22 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:23827 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761214AbXGYOyV (ORCPT
+	Wed, 25 Jul 2007 10:54:44 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:33855 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761835AbXGYOyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 10:54:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rcP9GEuAbrhYEr8CzSxhsijSkag7WAHBv5kVEBddj/DTCCLB/6kD/0BMO2gJ9I6f2nrDUcmrWFOqNEQ0RfiiBi+YjySEk2KLDmY7/Bsh01xOovvcQ1QtvuROMKC5nkCvzW0AksgLFlI0HhmqD/PxL4aIMYH1DBVPI0BBHJfCFXU=
-Message-ID: <dda83e780707250754k5d611439ta9d383981ab12eb9@mail.gmail.com>
-Date: Wed, 25 Jul 2007 07:54:20 -0700
-From: "Bret Towe" <magnade@gmail.com>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear mappings
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46A6C72A.9020801@yahoo.com.au>
+	Wed, 25 Jul 2007 10:54:43 -0400
+Message-ID: <46A7636F.5010108@pimpmylinux.org>
+Date: Wed, 25 Jul 2007 16:51:27 +0200
+From: Gabriel C <crazy@pimpmylinux.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: Fwd: [PATCH] Fix arch/i386/kernel/nmi.c - 'unknown_nmi_panic_callback'
+ declared 'static' but never defined warning
+References: <46A3AE06.9030706@googlemail.com>	 <20070724183636.63844865.akpm@linux-foundation.org> <1820d69d0707250657y36c902deya66c2171dade843f@mail.gmail.com>
+In-Reply-To: <1820d69d0707250657y36c902deya66c2171dade843f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dda83e780707241027k369c2f01j6d16b21266df3a05@mail.gmail.com>
-	 <46A6C72A.9020801@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/24/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> Bret Towe wrote:
-> > for a while in -git I've had an issue that on boot when gdm loads the
-> > screen stays black
-> > using ctrl-f1 doesn't return to a console and killing X doesn't help any
-> > ssh'ing into the box does work top only shows 100% io-wait
-> > dmesg shows nothing odd
-> >
-> > the work around I have is at the moment is to just move the radeon drm
-> > module
-> > out of the way so it doesn't load on boot and X works just fine like that
-> > I did some bisecting which took a few days and tracked it down to
-> > commit d00806b183152af6d24f46f0c33f14162ca1262a
-> >
-> > its way to complex for me to revert it on top of -rc1 to verify that's
-> > the issue tho
-> > I keep forgetting to get a trace of what its waiting on when I'm in that
-> > kernel
-> > I assume that would be of use and Ill get that later
-> >
-> > the box this is happening on is a g4 mac mini the built in card is a
-> > radeon 9200
-> > I'm not seeing any issues on an amd64 box with radeon card it's also a
-> > 9600 tho
->
-> Is this with a binary-only module? We saw an issue with that in SLES9
-> where the module is returning a locked page from its nopage handler
-> when it isn't really supposed to. It might be fixed in latest drivers,
-> have you tried them?
+Gabriel C wrote:
+> ---------- Forwarded message ----------
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: 25.07.2007 03:36
+> Subject: Re: [PATCH] Fix arch/i386/kernel/nmi.c -
+> 'unknown_nmi_panic_callback' declared 'static' but never defined warning
+> To: Gabriel C <nix.or.die@googlemail.com>
+> Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <
+> mingo@redhat.com>, Andi Kleen <ak@suse.de>
+> 
+> On Sun, 22 Jul 2007 21:20:38 +0200 Gabriel C <nix.or.die@googlemail.com>
+> wrote:
+> 
+>> I get this warning when CONFIG_SYSCTL is not set :
+>>
+>> ...
+>>
+>> arch/i386/kernel/nmi.c:52: warning: 'unknown_nmi_panic_callback' declared
+> 'static' but never defined
+>> ...
+>>
+>> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+>>
+>> ---
+>>
+>> diff --git a/arch/i386/kernel/nmi.c b/arch/i386/kernel/nmi.c
+>> index 03b7f55..cf11121 100644
+>> --- a/arch/i386/kernel/nmi.c
+>> +++ b/arch/i386/kernel/nmi.c
+>> @@ -49,8 +49,9 @@ static unsigned int nmi_hz = HZ;
+>>  static DEFINE_PER_CPU(short, wd_enabled);
+>>
+>>  /* local prototypes */
+>> +#ifdef CONFIG_SYSCTL
+>>  static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu);
+>> -
+>> +#endif
+>>  static int endflag __initdata = 0;
+> 
+> guys, please take a closer look at the code which you're changing?  We can
+> obviously move do_nmi_callback() down to above
+> __trigger_all_cpu_backtrace() and then do away with this declaration
+> altogether.
+> 
 
-you mean the drivers ati releases? no its all open source drivers
-I didn't think ati release powerpc versions of their drivers?
-not that id use them ether way
+I will try to do it better next time , sorry.
 
-> Thanks,
-> Nick
->
-> --
-> SUSE Labs, Novell Inc.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Oh and I just realized the fix ( whatever it will be at least ) need be done for arch/x86_64/kernel/nmi.c too.
+
+
+Regards,
+
+Gabriel
+
+
+
+
