@@ -1,88 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933240AbXGYPaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932860AbXGYPe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933240AbXGYPaj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 11:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763633AbXGYPaI
+	id S932860AbXGYPe3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 11:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbXGYPeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 11:30:08 -0400
-Received: from seanodes.co.fr.clara.net ([212.43.220.11]:50745 "EHLO
-	seanodes.co.fr.clara.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762617AbXGYPaG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 11:30:06 -0400
-Date: Wed, 25 Jul 2007 17:29:56 +0200
-From: Alban Crequy <alban.crequy@seanodes.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] error management in add_disk()
-Message-ID: <20070725172956.2fa5b63e@alban>
-In-Reply-To: <20070724132805.GR21668@ftp.linux.org.uk>
-References: <20070724135753.18fccf4f@alban>
-	<20070724132805.GR21668@ftp.linux.org.uk>
-Organization: Seanodes
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.3; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Jul 2007 11:34:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39355 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756708AbXGYPeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 11:34:21 -0400
+Message-ID: <46A76D58.40604@redhat.com>
+Date: Wed, 25 Jul 2007 11:33:44 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Eric St-Laurent <ericstl34@sympatico.ca>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Fengguang Wu <fengguang.wu@gmail.com>, Dave Jones <davej@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>
+Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
+References: <20070721210005.000228000@chello.nl>	 <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com>	 <20070722081010.GA6317@mail.ustc.edu.cn>	 <1185093236.6344.87.camel@localhost.localdomain>	 <46A46E4B.7050007@yahoo.com.au> <1185338106.7105.44.camel@perkele>	 <46A6DD7F.1050505@yahoo.com.au> <1185344325.7105.91.camel@perkele> <46A6F732.3080905@yahoo.com.au>
+In-Reply-To: <46A6F732.3080905@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Tue, 24 Jul 2007 14:28:05 +0100,
-Al Viro <viro@ftp.linux.org.uk> a écrit :
-
->On Tue, Jul 24, 2007 at 01:57:53PM +0200, Alban Crequy wrote:
->> Hi,
->> 
->> I have a problem with the error management of add_disk() and
->> del_gendisk().
->> 
->> add_disk() adds an entry in /sys/block/<name>. The filename
->> in /sys/block is not (struct gen_disk)->disk_name but more or less
->> the first KOBJ_NAME_LEN characters of (struct gen_disk)->disk_name.
->> 
->> #define KOBJ_NAME_LEN                   20
->> 
->> My problem occurs when we try to add 2 disks with different names,
->> but when the KOBJ_NAME_LEN first characters are the same.
->
->So don't do that.
-
-I no more do that. But I still think it would be better if we found a
-way to manage errors in that case.
-
-I fear that parts of kernel make this error. For example, old version of
-GFS has this code:
-
-http://csourcesearch.net/package/gfs-kernel/2.6.9/gfs-kernel-2.6.9-27/src/gfs/diaper.c
-  char buf[BDEVNAME_SIZE];
-  bdevname(real, buf);
-  snprintf(gd->disk_name, sizeof(gd->disk_name), "diapered_%s", buf);
-
-Since BDEVNAME_SIZE is 32 and KOBJ_NAME_LEN is 20, the bug happens quite
-easily.
-
-I did not check closely if this is a problem, but there is other parts
-in the current kernel that build the disk_name with snprintf("...%s...")
-
->> The attached test module triggers the problem. You can try something
->> like: for i in $(seq 1 100) ; do insmod ./adddiskbug.ko ; rmmod
->> adddiskbug ; done
->> 
->> The attached patch fixes the problem by changing the prototype of
->> add_disk() and register_disk() to return errors.
+Nick Piggin wrote:
+> Eric St-Laurent wrote:
+>> On Wed, 2007-25-07 at 15:19 +1000, Nick Piggin wrote:
+>>
+>>
+>>> What *I* think is supposed to happen is that newly read in pages get
+>>> put on the inactive list, and unless they get accessed againbefore
+>>> being reclaimed, they are allowed to fall off the end of the list
+>>> without disturbing active data too much.
+>>>
+>>> I think there is a missing piece here, that we used to ease the reclaim
+>>> pressure off the active list when the inactive list grows relatively
+>>> much larger than it (which could indicate a lot of use-once pages in
+>>> the system).
+>>
+>>
+>> Maybe a new list should be added to put newly read pages in it. If they
+>> are not used or used once after a certain period, they can be moved to
+>> the inactive list (or whatever).
+>>
+>> Newly read pages...
+>>
+>> - ... not used after this period are excessive readahead, we discard
+>> immediately.
+>> - ... used only once after this period, we discard soon.
+>> - ... used many/frequently are moved to active list.
+>>
+>> Surely the scan rate (do I make sense?) should be different for this
+>> newly-read list and the inactive list. 
 > 
->This is bogus.  Just what would callers do with these error values?
->Ignore them silently?  Bail out?  Can't do - at that point disk just
->might have been opened already.  add_disk() is the point of no return;
->we are already past the last point where we could bail out.
+> A new list could be a possibility. One problem with adding lists is just
+> trying to work out how to balance scanning rates between them, another
+> problem is CPU overhead of moving pages from one to another... but don't
+> let me stop you if you want to jump in and try something :)
+> 
+> 
+>> I also remember your split mapped/unmapped active list patches from a
+>> while ago.
+>>
+>> Can someone point me to a up-to-date documentation about the Linux VM?
+>> The books and documents I've seen are outdated.
+> 
+> If you just want to play with page reclaim algorithms, try reading over
+> mm/vmscan.c. If you don't know much about the Linux VM internals before,
+> don't worry too much about the fine details and start by getting an idea
+> of how pages move between the active and inactive lists.
 
-I missed that point - that the disk might have been opened.  Where is
-the point of no return in add_disk() exactly?  Is it really before the
-kobject_add() that causes the problem?
+I've got a nice list of problems with the VM at
+http://linux-mm.org/PageoutFailureModes :)
 
-In this case, perhaps we can 1/ check that the kobject_add() will not
-fail before the point of no return, 2/ pass this point and then 3/ do
-the kobject_add(). And add appropriate locking to ensure that nobody
-add another disk with the same 20-characters truncated name between 1/
-and 3/.
+I should post my latest version of the split LRU
+lists code.  I'm still working on SEQ replacement
+for the anonymous pages...
 
+> OK here is one which just changes the rate that the active and inactive
+> lists get scanned. Data corruption bugs should be minimal ;)
+
+I had something like that in mind for the file
+pages.  I am a bit nervous about introducing
+such a change while file and anonymous pages
+share the same LRU, though...
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
