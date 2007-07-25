@@ -1,117 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbXGYAUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932350AbXGYAWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932121AbXGYAUJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 20:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760413AbXGYATn
+	id S932350AbXGYAWS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 20:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757038AbXGYAWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 20:19:43 -0400
-Received: from www.osadl.org ([213.239.205.134]:57369 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932274AbXGYATg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 20:19:36 -0400
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Marcin ??lusarz <marcin.slusarz@gmail.com>,
-       Jarek Poplawski <jarkao2@o2.pl>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070724200431.GA22190@elte.hu>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
-	 <20070629150759.GC2771@ff.dom.local>
-	 <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com>
-	 <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu>
-	 <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
-	 <20070724200431.GA22190@elte.hu>
-Content-Type: text/plain
-Date: Wed, 25 Jul 2007 02:19:31 +0200
-Message-Id: <1185322771.4175.102.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Tue, 24 Jul 2007 20:22:08 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:8650 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756585AbXGYAWG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 20:22:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=r1EIQSlAoYbEuX81ZpJ87tU53Mn6xQuAx17CcagMTEHRQRImlmb0UZucCTQNAilJT7h4zOPBX1x05TcHfkrouphm+b915R89odlk18qSpZHsv2rLqDGbwweGosdM0+P3MLx22oQ4LqEpEqPXqH41RGelfdA8a4QI3bLloTgqmY4=
+Message-ID: <a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com>
+Date: Wed, 25 Jul 2007 05:52:05 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: crash with 2.6.22.1 crash:ll_rw_blk.c blk_remove_plug()
+Cc: wharms@bfs.de, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "pm list" <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <20070722221717.GV11657@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <469DD37C.8050200@bfs.de> <20070718103342.GI11657@kernel.dk>
+	 <469DF233.5080902@bfs.de> <20070718110724.GN11657@kernel.dk>
+	 <469E072E.7080400@bfs.de> <20070718123142.GV11657@kernel.dk>
+	 <46A38B1E.3090605@bfs.de>
+	 <a781481a0707221020m3c3a397fifa9076aefc63148a@mail.gmail.com>
+	 <20070722221717.GV11657@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-24 at 22:04 +0200, Ingo Molnar wrote:
-> Marcin, could you try the patch below too? [without having any other 
-> patch applied.] It basically turns the critical section into an irqs-off 
-> critical section and thus checks whether your problem is related to that 
-> particular area of code.
-> 
+On 7/23/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Sun, Jul 22 2007, Satyam Sharma wrote:
+> > Hi Walter,
+> >
+> > Thanks for reporting this.
+> >
+> > On 7/22/07, walter harms <wharms@bfs.de> wrote:
+> >> hello all,
+> >> on my asus notebook tm620 there is a crash with 2.6.22 and 2.6.21
+> >
+> > Did this happen when you were resuming from a suspend-to-ram/disk?
+> > [ I ask because I see swsusp in the trace below, linux-pm added to Cc: ]
+> >
+> >> ....
+> >> Using IPI Shortcut mode
+> >> WARNING: at block/ll_rw_blk.c:1575 blk_remove_plug()
+> >>  [<c01ac87e>] blk_remove_plug+0x36/0x5a
+> >>  [<c01ac8b6>] __generic_unplug_device+0x14/0x1f
+> >>  [<c01ad587>] __make_request+0x39b/0x49c
+> >>  [<c01abc8c>] generic_make_request+0x228/0x255
+> >>  [<c01adb54>] submit_bio+0xa5/0xac
+> >>  [<c013e233>] mempool_alloc+0x37/0xae
+> >>  [<c01314dc>] submit+0xc2/0x11d
+> >>  [<c0131585>] bio_read_page+0x24/0x27
+> >>  [<c013188b>] swsusp_check+0x4f/0xaf
+> >>  [<c012f6c2>] software_resume+0x5f/0x108
+> >>  [<c037867e>] kernel_init+0xb0/0x212
+> >>  [<c0103a16>] ret_from_fork+0x6/0x1c
+> >>  [<c03785ce>] kernel_init+0x0/0x212
+> >>  [<c03785ce>] kernel_init+0x0/0x212
+> >>  [<c010465b>] kernel_thread_helper+0x7/0x10
+> >>  =======================
+> >
+> > Surprising, that's a WARN_ON(!irqs_disabled()) but IRQs are disabled
+> > alright on that codepath. OTOH, __make_request() is heavily goto-driven,
+> > uses the non-save/restore variants of spin_lock_irq, and does not even
+> > balance locks / unlocks for some error paths ... gaah.
+>
+> __make_request() must be called from process context, hence
+> spin_lock_irq() is perfectly already and the fastest way to go. And of
+> course the locking is balanced! So please save your 'gaah's for code
+> you actually took the time to try and understand.
 
-I read back on this thread and I think the problem is somewhere else:
+You're right, I didn't really look at that code for long (it even explicitly
+comments about what's going with the locking in there!) sorry about
+that.
 
-delayed disable relies on the ability to re-trigger the interrupt in the
-case that a real interrupt happens after the software disable was set.
-In this case we actually disable the interrupt on the hardware level
-_after_ it occurred.
+[ Off-topic: BTW does every call to __make_request() end up in
+blk_remove_plug()? Since you're explicitly making the assumption
+that it *must* be called from process context (and hence the use of
+the non-save/restore variants), you could consider putting a
+WARN_ON(irqs_disabled()) over there, and perhaps a WARN_ON
+(!spin_is_locked(queue_lock)) in blk_remove_plug() instead, and
+other such similar functions that currently have the !irqs_disabled
+check. This way you'd effectively cover _both_ the assertions,
+and in appropriate places -- just a suggestion. ]
 
-On enable_irq, we need to re-trigger the interrupt. On i386 this relies
-on a hardware resend mechanism (send_IPI_self()). 
+> But it does look like unbalanced irq disable/enable calls. I'd guess in
+> the suspend/resume path. Obviously something more esoteric, since this
+> is the first such report for 2.6.22, so like some not-very-used driver
+> for instance.
 
-Actually we only need the resend for edge type interrupts. Level type
-interrupts come back once enable_irq() re-enables the interrupt line.
+Now that I do look at the codepath, it does seem surprising irqs were
+not disabled there. There are a bunch of calls to _other_ functions
+between the spin_lock_irq and the blk_remove_plug via
+__generic_unplug_device that would also have complained about
+!irqs_disabled.
 
-I assume that the interrupt in question is level triggered because it is
-shared and above the legacy irqs 0-15:
+Walter, does this happen reproducibly?
 
-	17:         12   IO-APIC-fasteoi   eth1, eth0
-
-Looking into the IO_APIC code, the resend via send_IPI_self() happens
-unconditionally. So the resend is done for level and edge interrupts.
-This makes the problem more mysterious.
-
-The code in question lib8390.c does
-
-	disable_irq();
-	fiddle_with_the_network_card_hardware()
-	enable_irq();
-
-The fiddle_with_the_network_card_hardware() might cause interrupts,
-which are cleared in the same code path again,
-
-Marcin found that when he disables the irq line on the hardware level
-(removing the delayed disable) the card is kept alive.
-
-So the difference is that we can get a resend on enable_irq, when an
-interrupt happens during the time, where we are in the disabled region.
-
-No idea how this affects the network card, as the code there must be
-able to handle interrupts, which are not originated from the card due to
-interrupt sharing.
-
-Marcin, can you please try the patch below ? It's just a debugging aid
-to gather some more data about that problem.
-
-If the patch fixes the problem, then we should try to disable the resend
-mechanism for not edge type irq lines on the irq_chip level (i.e. the
-IOAPIC code)
-
-Thanks,
-
-	tglx
-
---- linux-2.6.orig/kernel/irq/resend.c
-+++ linux-2.6/kernel/irq/resend.c
-@@ -62,6 +62,15 @@ void check_irq_resend(struct irq_desc *desc, unsigned int irq)
- 	 */
- 	desc->chip->enable(irq);
- 
-+	/*
-+	 * Temporary hack to figure out more about the problem, which
-+	 * is causing the ancient network cards to die.
-+	 */
-+	if (desc->handle_irq != handle_edge_irq) {
-+		printk(KERN_DEBUG "Skip resend for irq %u\n", irq);
-+		return;
-+	}
-+
- 	if ((status & (IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
- 		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
- 
-
-
+Satyam
