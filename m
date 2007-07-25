@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbXGYNfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765289AbXGYNhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759409AbXGYNfu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760136AbXGYNfb
+	id S1765289AbXGYNhc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758443AbXGYNhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:35:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53770 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757275AbXGYNfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:35:30 -0400
-Message-ID: <46A7519A.20108@redhat.com>
-Date: Wed, 25 Jul 2007 09:35:22 -0400
-From: Chris Lalancette <clalance@redhat.com>
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
+	Wed, 25 Jul 2007 09:37:20 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:43998 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756567AbXGYNhT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:37:19 -0400
+Date: Wed, 25 Jul 2007 15:36:50 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>, jgarzik@pobox.com
+Cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
+Subject: [-mm patch] one e1000 driver should be enough for everyone
+Message-ID: <20070725133650.GB3572@stusta.de>
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Vojtech Pavlik <vojtech@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH]: Add command-line option to i8042 to completely disable
- it
-References: <46A4DFD2.2010501@redhat.com> <20070725000504.f8ce49c1.akpm@linux-foundation.org> <20070725080355.GA14726@suse.cz>
-In-Reply-To: <20070725080355.GA14726@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vojtech Pavlik wrote:
->>
->>That's an unfortunate fix.  Is there really no way in which we
->>can auto-detect such a situation without requiring a manual
->>setting?
-> 
-> 
-> The fact that the current detection hangs suggests that the scenario is
-> possible to detect.
-> 
+On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.22-rc6-mm1:
+>...
+>  git-e1000new.patch
+>...
+>  git trees
+>...
 
-Hm, OK.  I'll go back and look at i8042_flush() to see if I can detect this
-erroneous situation automatically and fail the i8042_controller_init() if I see it.
+Both e1000 drivers compiled into the kernel resulted in the following 
+compile error:
 
-Chris Lalancette
+<--  snip  -->
+
+...
+  LD      drivers/net/built-in.o
+drivers/net/e1000/built-in.o: In function `e1000_read_mac_addr':
+(.text+0xb9f2): multiple definition of `e1000_read_mac_addr'
+drivers/net/e1000new/built-in.o:(.text+0x821a): first defined here
+drivers/net/e1000/built-in.o: In function `e1000_phy_setup_autoneg':
+(.text+0x8799): multiple definition of `e1000_phy_setup_autoneg'
+drivers/net/e1000new/built-in.o:(.text+0xa9bd): first defined here
+...
+make[3]: *** [drivers/net/built-in.o] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+
+BTW:
+Unless I'm misunderstanding anything, the new driver should support a 
+superset of what the old driver supported.
+Therefore, it would be good if the final merge into Linus' tree will
+do an
+  rm -r drivers/net/e1000
+  mv drivers/net/e1000new drivers/net/e1000
+
+--- linux-2.6.23-rc1-mm1/drivers/net/Kconfig.old	2007-07-25 15:06:13.000000000 +0200
++++ linux-2.6.23-rc1-mm1/drivers/net/Kconfig	2007-07-25 15:09:59.000000000 +0200
+@@ -2036,7 +2036,7 @@
+ 
+ config E1000
+ 	tristate "Intel(R) PRO/1000 Gigabit Ethernet support"
+-	depends on PCI
++	depends on PCI && E1000NEW=n
+ 	---help---
+ 	  This driver supports Intel(R) PRO/1000 gigabit ethernet family of
+ 	  adapters.  For more information on how to identify your adapter, go 
+
