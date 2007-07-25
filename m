@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbXGYBfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932863AbXGYBhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932646AbXGYBfh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 21:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbXGYBf3
+	id S932863AbXGYBhA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 21:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759793AbXGYBgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 21:35:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44532
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1759793AbXGYBf2 (ORCPT
+	Tue, 24 Jul 2007 21:36:52 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:39645 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758897AbXGYBgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 21:35:28 -0400
-Date: Tue, 24 Jul 2007 18:35:27 -0700 (PDT)
-Message-Id: <20070724.183527.45743058.davem@davemloft.net>
-To: darthmdh@gmail.com
-Cc: akpm@linux-foundation.org, ray-lk@madrabbit.org, nickpiggin@yahoo.com.au,
-       jesper.juhl@gmail.com, linux-kernel@vger.kernel.org, ck@vds.kolivas.org,
-       linux-mm@kvack.org, pj@sgi.com
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <b21f8390707241826o1422ca3aga9b6516a55dd961d@mail.gmail.com>
-References: <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	<20070723221846.d2744f42.akpm@linux-foundation.org>
-	<b21f8390707241826o1422ca3aga9b6516a55dd961d@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Jul 2007 21:36:51 -0400
+Date: Tue, 24 Jul 2007 21:36:21 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: v2.6.22.1-rt5
+In-reply-to: <20070724191027.GA13268@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Message-id: <200707242136.21457.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070724120436.GA14466@elte.hu>
+ <200707241156.03149.gene.heskett@gmail.com> <20070724191027.GA13268@elte.hu>
+User-Agent: KMail/1.9.7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Matthew Hawkins" <darthmdh@gmail.com>
-Date: Wed, 25 Jul 2007 11:26:57 +1000
+On Tuesday 24 July 2007, Ingo Molnar wrote:
+>* Gene Heskett <gene.heskett@gmail.com> wrote:
+>> The above stanza still needs some tlc.  I built a 2.6.22.1-rt6 (rt5
+>> wouldn't build) using the same old config that a make oldconfig didn't
+>> fuss about, but the reboot never completed, see the attached, heavily
+>> smunched camera shot of the panic.
+>>
+>> Kinda looks like hda/sda confusion, with rt3 (this boot), its hda*,
+>> what is it now?  fstab or kernel config error?
+>
+>yeah, as long as your filesystems are created with a proper label, all
+>that you need to do is to change all 'hda' to 'sda' in the new kernel's
+>/etc/grub.conf entry. (or enable the old IDE code in the .config, under
+>CONFIG_IDE)
+>
+>	Ingo
 
-> On 7/24/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > The other consideration here is, as Nick points out, are the problems which
-> > people see this patch solving for them solveable in other, better ways?
-> > IOW, is this patch fixing up preexisting deficiencies post-facto?
-> 
-> So let me get this straight - you don't want to merge swap prefetch
-> which exists now and solves issues many people are seeing, and has
-> been tested more than a gazillion other bits & pieces that do get
-> merged - because it could be possible that in the future some other
-> patch, which doesn't yet exist and nobody is working on, may solve the
-> problem better?
+Changing the "root (hd0,0)" to (sd0,0) failed.  Grub can't parse the (sd0,0).
 
-I have to generally agree that the objections to the swap prefetch
-patches have been conjecture and in general wasting time and
-frustrating people.
-
-There is a point at which it might be wise to just step back and let
-the river run it's course and see what happens.  Initially, it's good
-to play games of "what if", but after several months it's not a
-productive thing and slows down progress for no good reason.
-
-If a better mechanism gets implemented, great!  We'll can easily
-replace the swap prefetch stuff at such time.  But until then swap
-prefetch is what we have and it's sat long enough in -mm with no major
-problems to merge it.
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+WHERE CAN THE MATTER BE
+	Oh, dear, where can the matter be
+	When it's converted to energy?
+	There is a slight loss of parity.
+	Johnny's so long at the fair.
