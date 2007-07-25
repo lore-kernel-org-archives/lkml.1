@@ -1,146 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbXGYAgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbXGYAjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932358AbXGYAgl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 20:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760256AbXGYAg3
+	id S932443AbXGYAjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 20:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760347AbXGYAjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 20:36:29 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38774 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760204AbXGYAg1 (ORCPT
+	Tue, 24 Jul 2007 20:39:40 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:48021 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759317AbXGYAjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 20:36:27 -0400
-Date: Tue, 24 Jul 2007 17:36:19 -0700
-From: sukadev@us.ibm.com
-To: Pavel Emelianov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 13/16] Switch to operating with pid_numbers instead of pids
-Message-ID: <20070725003619.GF3287@us.ibm.com>
-References: <468DF6F7.1010906@openvz.org> <468DF907.2060809@openvz.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 24 Jul 2007 20:39:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=FJ5Y3CX7dgAA60EpoVFzbw15WMOgCIZIBxdQl3KfsU34wAMjQWsVZ+vzAEUMtzR3BIbTiiExQZLyQxwDc8qwHRpHl/z+k6qnZv2Rs0TI8qZBgQDOXoobOR7K3L+rm4dXPyY6DIMUvw0Yuvh4CwjaNyHOea+p8dI0baZG1AjEqZY=  ;
+X-YMail-OSG: c6oUS8sVM1mDihvnXJrPhUxxMJMJv9TH79TUu2KVhBuMDT1BSzBW23APEVOqW5ETnoOCdiczCA--
+From: David Brownell <david-b@pacbell.net>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [patch 2.6.23-rc1] dma_free_coherent() needs irqs enabled (sigh)
+Date: Tue, 24 Jul 2007 17:35:55 -0700
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+References: <200707241429.05615.david-b@pacbell.net> <200707241608.12198.david-b@pacbell.net> <20070724231157.GA30861@flint.arm.linux.org.uk>
+In-Reply-To: <20070724231157.GA30861@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <468DF907.2060809@openvz.org>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Message-Id: <200707241735.55427.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov [xemul@openvz.org] wrote:
-| Make alloc_pid() initialize pid_numbers and hash them
-| into the hashtable, not the struct pid itself.
-| 
-| Signed-off-by: Pavel Emelianov <xemul@openvz.org>
-| 
-| ---
-| 
-|  pid.c |   47 +++++++++++++++++++++++++++++++++--------------
-|  1 files changed, 33 insertions(+), 14 deletions(-)
-| 
-| --- ./kernel/pid.c.ve12	2007-07-05 11:06:41.000000000 +0400
-| +++ ./kernel/pid.c	2007-07-05 11:08:23.000000000 +0400
-| @@ -28,8 +28,10 @@
-|  #include <linux/hash.h>
-|  #include <linux/pid_namespace.h>
-|  #include <linux/init_task.h>
-| +#include <linux/proc_fs.h>
-| 
-| -#define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
-| +#define pid_hashfn(nr, ns)	\
-| +	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
-|  static struct hlist_head *pid_hash;
-|  static int pidhash_shift;
-|  struct pid init_struct_pid = INIT_STRUCT_PID;
-| @@ -194,7 +198,7 @@ fastcall void put_pid(struct pid *pid)
-|  	if (!pid)
-|  		return;
-| 
-| -	ns = pid->numbers[0].ns;
-| +	ns = pid->numbers[pid->level].ns;
-|  	if ((atomic_read(&pid->count) == 1) ||
-|  	     atomic_dec_and_test(&pid->count))
-|  		kmem_cache_free(ns->pid_cachep, pid);
-| @@ -210,13 +214,17 @@ static void delayed_put_pid(struct rcu_h
-|  fastcall void free_pid(struct pid *pid)
-|  {
-|  	/* We can be called with write_lock_irq(&tasklist_lock) held */
-| +	int i;
-|  	unsigned long flags;
-| 
-|  	spin_lock_irqsave(&pidmap_lock, flags);
-| -	hlist_del_rcu(&pid->pid_chain);
-| +	for (i = 0; i <= pid->level; i++)
-| +		hlist_del_rcu(&pid->numbers[i].pid_chain);
-|  	spin_unlock_irqrestore(&pidmap_lock, flags);
-| 
-| -	free_pidmap(&init_pid_ns, pid->nr);
-| +	for (i = 0; i <= pid->level; i++)
-| +		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
-| +
-|  	call_rcu(&pid->rcu, delayed_put_pid);
-|  }
-| 
-| @@ -224,30 +232,43 @@ struct pid *alloc_pid(struct pid_namespa
-|  {
-|  	struct pid *pid;
-|  	enum pid_type type;
-| -	int nr = -1;
-| +	struct pid_namespace *ns;
-| +	int i, nr;
-| 
-| -	pid = kmem_cache_alloc(init_pid_ns.pid_cachep, GFP_KERNEL);
-| +	pid = kmem_cache_alloc(pid_ns->pid_cachep, GFP_KERNEL);
-|  	if (!pid)
-|  		goto out;
-| 
-| -	nr = alloc_pidmap(current->nsproxy->pid_ns);
-| -	if (nr < 0)
-| -		goto out_free;
-| +	ns = pid_ns;
-| +	for (i = pid_ns->level; i >= 0; i--) {
-| +		nr = alloc_pidmap(ns);
-| +		if (nr < 0)
-| +			goto out_free;
+On Tuesday 24 July 2007, Russell King wrote:
+> > > 
+> > > I think you got the year wrong:
+> > > 
+> > > 5edf71ae (Russell King      2005-11-25 15:52:51 +0000 364)      WARN_ON(irqs_disabled());
+> > > 
+> > > which is due to this commit:
+> > > 
+> > > [ARM] Do not call flush_tlb_kernel_range() with IRQs disabled.
+> > 
+> > This little "to do" list item has been sitting in my mailbox way
+> > too long then.  Certainly since it was fair to say "last year"!  ;)
+> 
+> Are you intentionally not reading what I said?
 
-If pid_ns->level is say 3 and alloc_pidmap() succeeds when i=0,1
-and fails when i=2, we would try to free_pidmap() even from 
-pid->pid_number[2].pid_ns. This would incorrectly a)
-drop reference count on that pid namespace, and incorrectly
-increment pidmap->nr_free.
+Hardly.  Go back and read what *I* wrote!
 
-Should we use kmem_cache_zalloc() and check for a non-NULL pid_ns
-before calling free_pidmap() below ?
+It just took a while to notice that behavioral change, since
+I don't normally run the relevant regression tests using lockdep.
+It was sometime in the first half of 2006, ergo "since it was
+fair to say 'last year'".
 
-| 
-| +		pid->numbers[i].nr = nr;
-| +		pid->numbers[i].ns = ns;
-| +		ns = ns->parent;
-| +	}
-| +
-| +	pid->level = pid_ns->level;
-|  	atomic_set(&pid->count, 1);
-| -	pid->nr = nr;
-|  	for (type = 0; type < PIDTYPE_MAX; ++type)
-|  		INIT_HLIST_HEAD(&pid->tasks[type]);
-| 
-|  	spin_lock_irq(&pidmap_lock);
-| -	hlist_add_head_rcu(&pid->pid_chain, &pid_hash[pid_hashfn(pid->nr)]);
-| +	for (i = pid->level; i >= 0; i--)
-| +		hlist_add_head_rcu(&pid->numbers[i].pid_chain,
-| +				&pid_hash[pid_hashfn(pid->numbers[i].nr,
-| +					pid->numbers[i].ns)]);
-|  	spin_unlock_irq(&pidmap_lock);
-| -
-|  out:
-|  	return pid;
-| 
-|  out_free:
-| -	kmem_cache_free(init_pid_ns.pid_cachep, pid);
-| +	for (i++; i <= pid->level; i++)
-| +		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
+A bunch of piecemeal workarounds followed; and recently they were
+all replaced with a more fundamental fix.  This doc patch was the
+tail end of the process of recovering from that change ... and the
+warnings are there to help other folk from seeing the same issue
+in other contexts.
 
-i.e all pid->numbers[] may not be initialized here right ?
+- Dave
+
+
