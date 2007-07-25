@@ -1,69 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932350AbXGYM4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762884AbXGYNEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932350AbXGYM4r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 08:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758637AbXGYM4k
+	id S1762884AbXGYNEK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbXGYND4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 08:56:40 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:48902 "EHLO atlrel6.hp.com"
+	Wed, 25 Jul 2007 09:03:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35460 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755355AbXGYM4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 08:56:39 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Date: Wed, 25 Jul 2007 06:55:07 -0600
-User-Agent: KMail/1.9.6
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "=?iso-8859-1?q?S=E9bastien?= =?iso-8859-1?q?_Dugu=E9?=" 
-	<sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707242034.42679.bjorn.helgaas@hp.com> <86802c440707242127n17a27a29u6d821044bfba8cf9@mail.gmail.com>
-In-Reply-To: <86802c440707242127n17a27a29u6d821044bfba8cf9@mail.gmail.com>
+	id S1752696AbXGYNDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:03:55 -0400
+Date: Wed, 25 Jul 2007 15:03:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       shaohua.li@intel.com, rusty@rustcorp.com.au, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 1/3] SCHED: Generic hooks for trapping task preemption
+Message-ID: <20070725130340.GA11590@elte.hu>
+References: <11853673872732-git-send-email-avi@qumranet.com> <11853673871109-git-send-email-avi@qumranet.com> <20070725124911.GC6841@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707250655.07746.bjorn.helgaas@hp.com>
+In-Reply-To: <20070725124911.GC6841@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 July 2007 10:27:26 pm Yinghai Lu wrote:
-> On 7/24/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Tuesday 24 July 2007 02:33:05 pm Yinghai Lu wrote:
-> > > I have a system that has the same problem, and it turns out that FW
-> > > missed PNP0501 is DSDT for uart. and add that it into DSDT works well.
-> >
-> > Is this FW that has been shipped?  Can you give any more details,
-> > like DMI info and a copy of the DSDT?  We can't expect users to
-> > upgrade their firmware or use a custom DSDT.
-> 
-> The system is not shipped yet.
-> Normally PNP0501 is coming with superio section in DSDT. So i think
-> late BIOS if have acpi there, that should be there already.
-> Problem is that some new design may get rid of superio, but SB could
-> have extra uart for serial port. at that case BIOS may not have that
-> PNP0501...
 
-If the system has a non-PCI UART that is usable by the OS, it
-should be described by ACPI.  This is true regardless of whether
-the UART is attached via superio or elsewhere.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-So in this case, my patch just helped expose a defect in the
-firmware, and it sounds like the firmware was fixed before
-ever being shipped.
+> ok, this looks very clean, i've added it to my scheduler tree. You've 
+> tested this with KVM, on both 32-bit and 64-bit, correct?
 
-> or we can make legacy_serial.force=1 is default at this point.
+alas, it didnt build ;-) Tidied and fixed up patch below.
 
-At which point?  We already do the legacy probe if there are no
-PNP devices.  Do you mean we should also do the legacy probe if
-there are PNP devices, but no serial devices were found?  That
-might be reasonable to do, but wouldn't have prevented the problem
-on Sebastien's machine, because his machine *does* have PNP UARTs.
+	Ingo
 
-Bjorn
+---------------->
+Subject: sched: arch preempt notifier mechanism
 
+This adds a general mechanism whereby a task can request the scheduler to
+notify it whenever it is preempted or scheduled back in.  This allows the
+task to swap any special-purpose registers like the fpu or Intel's VT
+registers.
+
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/preempt.h |   44 ++++++++++++++++++++++++++++
+ include/linux/sched.h   |    5 +++
+ kernel/Kconfig.preempt  |    2 +
+ kernel/sched.c          |   73 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 4 files changed, 122 insertions(+), 2 deletions(-)
+
+Index: linux/include/linux/preempt.h
+===================================================================
+--- linux.orig/include/linux/preempt.h
++++ linux/include/linux/preempt.h
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/thread_info.h>
+ #include <linux/linkage.h>
++#include <linux/list.h>
+ 
+ #ifdef CONFIG_DEBUG_PREEMPT
+   extern void fastcall add_preempt_count(int val);
+@@ -60,4 +61,47 @@ do { \
+ 
+ #endif
+ 
++#ifdef CONFIG_PREEMPT_NOTIFIERS
++
++struct preempt_notifier;
++
++/**
++ * preempt_ops - notifiers called when a task is preempted and rescheduled
++ * @sched_in: we're about to be rescheduled:
++ *    notifier: struct preempt_notifier for the task being scheduled
++ *    cpu:  cpu we're scheduled on
++ * @sched_out: we've just been preempted
++ *    notifier: struct preempt_notifier for the task being preempted
++ *    next: the task that's kicking us out
++ */
++struct preempt_ops {
++	void (*sched_in)(struct preempt_notifier *notifier, int cpu);
++	void (*sched_out)(struct preempt_notifier *notifier,
++			  struct task_struct *next);
++};
++
++/**
++ * preempt_notifier - key for installing preemption notifiers
++ * @link: internal use
++ * @ops: defines the notifier functions to be called
++ *
++ * Usually used in conjunction with container_of().
++ */
++struct preempt_notifier {
++	struct hlist_node link;
++	struct preempt_ops *ops;
++};
++
++void preempt_notifier_register(struct preempt_notifier *notifier);
++void preempt_notifier_unregister(struct preempt_notifier *notifier);
++
++static inline void preempt_notifier_init(struct preempt_notifier *notifier,
++				     struct preempt_ops *ops)
++{
++	INIT_HLIST_NODE(&notifier->link);
++	notifier->ops = ops;
++}
++
++#endif
++
+ #endif /* __LINUX_PREEMPT_H */
+Index: linux/include/linux/sched.h
+===================================================================
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -935,6 +935,11 @@ struct task_struct {
+ 	struct sched_class *sched_class;
+ 	struct sched_entity se;
+ 
++#ifdef CONFIG_PREEMPT_NOTIFIERS
++	/* list of struct preempt_notifier: */
++	struct hlist_head preempt_notifiers;
++#endif
++
+ 	unsigned short ioprio;
+ #ifdef CONFIG_BLK_DEV_IO_TRACE
+ 	unsigned int btrace_seq;
+Index: linux/kernel/Kconfig.preempt
+===================================================================
+--- linux.orig/kernel/Kconfig.preempt
++++ linux/kernel/Kconfig.preempt
+@@ -63,3 +63,5 @@ config PREEMPT_BKL
+ 	  Say Y here if you are building a kernel for a desktop system.
+ 	  Say N if you are unsure.
+ 
++config PREEMPT_NOTIFIERS
++	bool
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -1592,6 +1592,10 @@ static void __sched_fork(struct task_str
+ 	INIT_LIST_HEAD(&p->run_list);
+ 	p->se.on_rq = 0;
+ 
++#ifdef CONFIG_PREEMPT_NOTIFIERS
++	INIT_HLIST_HEAD(&p->preempt_notifiers);
++#endif
++
+ 	/*
+ 	 * We mark the process as running here, but have not actually
+ 	 * inserted it onto the runqueue yet. This guarantees that
+@@ -1673,6 +1677,63 @@ void fastcall wake_up_new_task(struct ta
+ 	task_rq_unlock(rq, &flags);
+ }
+ 
++#ifdef CONFIG_PREEMPT_NOTIFIERS
++
++/**
++ * preempt_notifier_register - tell me when current is being being preempted
++ *                         and rescheduled
++ */
++void preempt_notifier_register(struct preempt_notifier *notifier)
++{
++	hlist_add_head(&notifier->link, &current->preempt_notifiers);
++}
++EXPORT_SYMBOL_GPL(preempt_notifier_register);
++
++/**
++ * preempt_notifier_unregister - no longer interested in preemption notifications
++ *
++ * This is safe to call from within a preemption notifier.
++ */
++void preempt_notifier_unregister(struct preempt_notifier *notifier)
++{
++	hlist_del(&notifier->link);
++}
++EXPORT_SYMBOL_GPL(preempt_notifier_unregister);
++
++static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
++{
++	struct preempt_notifier *notifier;
++	struct hlist_node *node;
++
++	hlist_for_each_entry(notifier, node, &curr->preempt_notifiers, link)
++		notifier->ops->sched_in(notifier, raw_smp_processor_id());
++}
++
++static void
++fire_sched_out_preempt_notifiers(struct task_struct *curr,
++				 struct task_struct *next)
++{
++	struct preempt_notifier *notifier;
++	struct hlist_node *node;
++
++	hlist_for_each_entry(notifier, node, &curr->preempt_notifiers, link)
++		notifier->ops->sched_out(notifier, next);
++}
++
++#else
++
++static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
++{
++}
++
++static void
++fire_sched_out_preempt_notifiers(struct task_struct *curr,
++				 struct task_struct *next)
++{
++}
++
++#endif
++
+ /**
+  * prepare_task_switch - prepare to switch tasks
+  * @rq: the runqueue preparing to switch
+@@ -1685,8 +1746,11 @@ void fastcall wake_up_new_task(struct ta
+  * prepare_task_switch sets up locking and calls architecture specific
+  * hooks.
+  */
+-static inline void prepare_task_switch(struct rq *rq, struct task_struct *next)
++static inline void
++prepare_task_switch(struct rq *rq, struct task_struct *prev,
++		    struct task_struct *next)
+ {
++	fire_sched_out_preempt_notifiers(prev, next);
+ 	prepare_lock_switch(rq, next);
+ 	prepare_arch_switch(next);
+ }
+@@ -1728,6 +1792,7 @@ static inline void finish_task_switch(st
+ 	prev_state = prev->state;
+ 	finish_arch_switch(prev);
+ 	finish_lock_switch(rq, prev);
++	fire_sched_in_preempt_notifiers(current);
+ 	if (mm)
+ 		mmdrop(mm);
+ 	if (unlikely(prev_state == TASK_DEAD)) {
+@@ -1768,7 +1833,7 @@ context_switch(struct rq *rq, struct tas
+ {
+ 	struct mm_struct *mm, *oldmm;
+ 
+-	prepare_task_switch(rq, next);
++	prepare_task_switch(rq, prev, next);
+ 	mm = next->mm;
+ 	oldmm = prev->active_mm;
+ 	/*
+@@ -6335,6 +6400,10 @@ void __init sched_init(void)
+ 
+ 	set_load_weight(&init_task);
+ 
++#ifdef CONFIG_PREEMPT_NOTIFIERS
++	INIT_HLIST_HEAD(&init_task.preempt_notifiers);
++#endif
++
+ #ifdef CONFIG_SMP
+ 	nr_cpu_ids = highest_cpu + 1;
+ 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
