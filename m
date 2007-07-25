@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764169AbXGYH0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765033AbXGYH03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764169AbXGYH0P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762999AbXGYHZ5
+	id S1765033AbXGYH03 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764378AbXGYHZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:25:57 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9907 "EHLO kernel.dk"
+	Wed, 25 Jul 2007 03:25:59 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:53124 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762923AbXGYHZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:25:56 -0400
-Date: Wed, 25 Jul 2007 09:26:24 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Paul Mundt <lethal@linux-sh.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bsg: Fix build for CONFIG_BLOCK=n
-Message-ID: <20070725072624.GG3287@kernel.dk>
-References: <20070725072354.GA18706@linux-sh.org>
-MIME-Version: 1.0
+	id S1763196AbXGYHZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:25:58 -0400
+Date: Wed, 25 Jul 2007 09:27:12 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Andy Fleming <afleming@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org
+Subject: Re: modpost warning question
+Message-ID: <20070725072712.GB24093@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0707250210520.14366@blarg.am.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070725072354.GA18706@linux-sh.org>
+In-Reply-To: <Pine.LNX.4.64.0707250210520.14366@blarg.am.freescale.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25 2007, Paul Mundt wrote:
-> BLK_DEV_BSG was added outside of the if BLOCK check, which allows it to
-> be enabled when CONFIG_BLOCK=n. This leads to many screenlengths of
-> errors, starting with a parse error on the request_queue_t definition.
-> Obviously this wasn't intended for CONFIG_BLOCK=n usage, so just move the
-> option back in to the block.
+On Wed, Jul 25, 2007 at 02:14:12AM -0500, Kumar Gala wrote:
+> I'm seeing the following warning:
 > 
-> Caught with a randconfig on sh.
+> WARNING: vmlinux.o(.init.text+0x1acdc): Section mismatch: reference to
+> .exit.text:gfar_mdio_exit (between 'gfar_init' and 'gfar_mdio_init')
 > 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> I don't understand why its not ok to access .exit.text from .init.text
 
-That's definitely correct.
+Several architectures discards .exit.text in the final linker
+script (arch/$(ARCH)/kernel/vmlinux.lds.S
 
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+So any references to .exit.text will when a module is build-in result
+in a linker error because ld will flag it as an error when we reference
+a symbol in a discarded section.
 
--- 
-Jens Axboe
+For the popular architectures (i386,x86_64) we discard .exit.text at
+runtime so here we do not see the error from ld (sadly).
 
+	Sam
