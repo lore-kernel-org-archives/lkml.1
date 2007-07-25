@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761263AbXGYUpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761987AbXGYUqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761263AbXGYUpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 16:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbXGYUp3
+	id S1761987AbXGYUqn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 16:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbXGYUqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 16:45:29 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:51394 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754523AbXGYUp2 (ORCPT
+	Wed, 25 Jul 2007 16:46:36 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:31401 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753352AbXGYUqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 16:45:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=rNHjs6DD8kCVpWertcKiC5vpgzEXgUP8egIPjbC7l7NAf+tEWNqSqjRIyjRZNsW9m952ceGhWg09qD0Xe9sG8I1iRgYXlUGd9tlqpe46zB2odkHkjKSXxFlzZWjrHYARkwZWHc8/6/9b3GFRz1I9dFDyu1HqCtRq3O5ynH54HMQ=
-Message-ID: <46A7B59F.8070507@googlemail.com>
-Date: Wed, 25 Jul 2007 22:42:07 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Wed, 25 Jul 2007 16:46:35 -0400
+Date: Wed, 25 Jul 2007 14:54:01 -0600
+From: dougthompson@xmission.com
+To: greg@kroah.com, ralf@linux-mips.org, egor@pasemi.com,
+       dougthompson@xmission.com, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 0/4] drivers edac fix misc rc1 issues
+Message-ID: <46a7b869.B9+GCdU0ymLKXy4w%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, p.hardwick@option.com
-Subject: Re: 2.6.23-rc1-mm1 - drivers/char/nozomi.c overflow in implicit constant
- conversion , warnings
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
-In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From:	Doug Thompson <dougthompson@xmission.com>
 
-...
+This EDAC patch set was applied against: 2.6.23-rc1
 
-drivers/char/nozomi.c: In function 'interrupt_handler':
-drivers/char/nozomi.c:1298: warning: overflow in implicit constant conversion
-drivers/char/nozomi.c: In function 'nozomi_card_init':
-drivers/char/nozomi.c:1568: warning: overflow in implicit constant conversion
-drivers/char/nozomi.c:1592: warning: overflow in implicit constant conversion
-drivers/char/nozomi.c: In function 'nozomi_card_exit':
-drivers/char/nozomi.c:1673: warning: overflow in implicit constant conversion
+4 Patches in this set
 
-...
+1) Fixed workq reset undefined problem and found missing workq
+   value reset and possible deadlock as we found in edac_device code.
+   Each edac_mc control structure is scanned by a workq trigger event
+   and that period valu can be modified by a sysfs control.
+   This control didn't update the workq value. Now it does
 
+2) Fixed the sysfs of the edac_pci scanning devices. Removed
+   Old incorrect code and now reference counters are used on the kobjects
+   and reference count on the edac_core.ko module, to keep it in
+   memory until all references have cleared
 
-config is a allmodconfig.
+3) Fixed the missing include/asm-mips/edac.h for MIPS which required
+   for proper operation on MIPS
 
+4) Fixed a 'depends on' state for the PPC_PASEMI driver.
+   Was originally just PPC, but that was incorrect, and would compile
+   on all PPC. Now just PPC_PASEMI builds will build this driver.
 
-Regards,
-
-Gabriel C 
+Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
