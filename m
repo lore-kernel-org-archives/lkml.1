@@ -1,58 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932828AbXGYQXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933066AbXGYQZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932828AbXGYQXz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 12:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXGYQXr
+	id S933066AbXGYQZq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 12:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXGYQZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 12:23:47 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:36914 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752061AbXGYQXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 12:23:46 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Date: Wed, 25 Jul 2007 10:11:35 -0600
-User-Agent: KMail/1.9.6
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "=?iso-8859-1?q?S=E9bastien?= =?iso-8859-1?q?_Dugu=E9?=" 
-	<sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707250655.07746.bjorn.helgaas@hp.com> <86802c440707250857u22e5afa3kefb06a997c38c3b8@mail.gmail.com>
-In-Reply-To: <86802c440707250857u22e5afa3kefb06a997c38c3b8@mail.gmail.com>
+	Wed, 25 Jul 2007 12:25:38 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1626 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752559AbXGYQZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 12:25:37 -0400
+Message-ID: <46A7797A.6070908@shadowen.org>
+Date: Wed, 25 Jul 2007 17:25:30 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mel Gorman <mel@skynet.ie>
+CC: Andrew Morton <akpm@linux-foundation.org>, bob.picco@hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix corruption of memmap on IA64 SPARSEMEM when mem_section
+ is not a power of 2
+References: <20070313104201.GA16842@skynet.ie> <20070724220116.0d9fb8b5.akpm@linux-foundation.org> <20070725144944.GD32445@skynet.ie>
+In-Reply-To: <20070725144944.GD32445@skynet.ie>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707251011.35891.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 July 2007 09:57:47 am Yinghai Lu wrote:
-> On 7/25/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Tuesday 24 July 2007 10:27:26 pm Yinghai Lu wrote:
-> > > or we can make legacy_serial.force=1 is default at this point.
-> >
-> > At which point?  We already do the legacy probe if there are no
-> > PNP devices.  Do you mean we should also do the legacy probe if
-> > there are PNP devices, but no serial devices were found?  That
-> > might be reasonable to do, but wouldn't have prevented the problem
-> > on Sebastien's machine, because his machine *does* have PNP UARTs.
+Mel Gorman wrote:
+> On (24/07/07 22:01), Andrew Morton didst pronounce:
+>> On Tue, 13 Mar 2007 10:42:02 +0000 mel@skynet.ie (Mel Gorman) wrote:
+>>
+>>> There are problems in the use of SPARSEMEM and pageblock flags that causes
+>>> problems on ia64.
+>>>
+>>> <SNIP>
+>> SuperH allmodconfig blew up:
+>>
+>> mm/sparse.c: In function `sparse_init':
+>> mm/sparse.c:482: error: implicit declaration of function `sparse_early_usemap_alloc'
+>> mm/sparse.c:482: warning: assignment makes pointer from integer without a cast
+>> mm/sparse.c: In function `sparse_add_one_section':
+>> mm/sparse.c:553: error: implicit declaration of function `__kmalloc_section_usemap'
+>> mm/sparse.c:553: warning: assignment makes pointer from integer without a cast
 > 
-> but still could have problem. if the system does not have any uart,
-> and So we can not find that in DSDT...and we add legacy again...that
-> is not right.
+> This error is due to a bad interaction between
+> generic-virtual-memmap-support-for-sparsemem.patch and
+> fix-corruption-of-memmap-on-ia64-sparsemem-when-mem_section-is-not-a-power-of-2.patch
+> . Functions that are needed whether CONFIG_SPARSEMEM_VMEMMAP is set are
+> not are depending on CONFIG_SPARSEMEM_VMEMMAP . This breaks on arch/sh
+> for example where SPARSEMEM may be set but not NUMA.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> ---
+>  sparse.c |   58 +++++++++++++++++++++++++++++-----------------------------
+>  1 file changed, 29 insertions(+), 29 deletions(-)
+> 
+> 
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc1-mm1-clean/mm/sparse.c linux-2.6.23-rc1-mm1-005-sh-sparsemem-fix/mm/sparse.c
+> --- linux-2.6.23-rc1-mm1-clean/mm/sparse.c	2007-07-25 13:43:30.000000000 +0100
+> +++ linux-2.6.23-rc1-mm1-005-sh-sparsemem-fix/mm/sparse.c	2007-07-25 14:27:58.000000000 +0100
+> @@ -220,6 +220,35 @@ void *alloc_bootmem_high_node(pg_data_t 
+>  	return NULL;
+>  }
+>  
+> +static unsigned long usemap_size(void)
+> +{
+> +	unsigned long size_bytes;
+> +	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
+> +	size_bytes = roundup(size_bytes, sizeof(unsigned long));
+> +	return size_bytes;
+> +}
+> +
+> +#ifdef CONFIG_MEMORY_HOTPLUG
+> +static unsigned long *__kmalloc_section_usemap(void)
+> +{
+> +	return kmalloc(usemap_size(), GFP_KERNEL);
+> +}
+> +#endif /* CONFIG_MEMORY_HOTPLUG */
+> +
+> +static unsigned long *sparse_early_usemap_alloc(unsigned long pnum)
+> +{
+> +	unsigned long *usemap;
+> +	struct mem_section *ms = __nr_to_section(pnum);
+> +	int nid = sparse_early_nid(ms);
+> +
+> +	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+> +	if (usemap)
+> +		return usemap;
+> +
+> +	printk(KERN_WARNING "%s: allocation failed\n", __FUNCTION__);
+> +	return NULL;
+> +}
+> +
+>  #ifdef CONFIG_SPARSEMEM_VMEMMAP
+>  /*
+>   * Virtual Memory Map support
+> @@ -254,35 +283,6 @@ void *alloc_bootmem_high_node(pg_data_t 
+>   * 	require one PTE/TLB per PAGE_SIZE chunk of the virtual memory map.
+>   */
+>  
+> -static unsigned long usemap_size(void)
+> -{
+> -	unsigned long size_bytes;
+> - 	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
+> -	size_bytes = roundup(size_bytes, sizeof(unsigned long));
+> -	return size_bytes;
+> -}
+> -
+> -#ifdef CONFIG_MEMORY_HOTPLUG
+> -static unsigned long *__kmalloc_section_usemap(void)
+> -{
+> -	return kmalloc(usemap_size(), GFP_KERNEL);
+> -}
+> -#endif /* CONFIG_MEMORY_HOTPLUG */
+> -
+> -static unsigned long *sparse_early_usemap_alloc(unsigned long pnum)
+> -{
+> -	unsigned long *usemap;
+> -	struct mem_section *ms = __nr_to_section(pnum);
+> -	int nid = sparse_early_nid(ms);
+> -
+> -	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+> -	if (usemap)
+> -		return usemap;
+> -
+> -	printk(KERN_WARNING "%s: allocation failed\n", __FUNCTION__);
+> -	return NULL;
+> -}
+> -
+>  /*
+>   * Allocate a block of memory to be used to back the virtual memory map
+>   * or to back the page tables that are used to create the mapping.
 
-I'm sorry, I don't understand what you're saying.
+This also affects NUMA-Q in some SPARSEMEM configurations.  Applying
+this fixes it up.
 
-The behavior with my patch is: If we have PNPBIOS or ACPI, and it
-does not describe any UARTs, we assume the box has no UARTs.  If we
-don't have PNPBIOS or ACPI, we blindly probe for legacy UARTs.
+Looks very much like diff has dropped the stuff within my #ifdef
+'incorrectly' and as such is a merge error.  This should probabally be
+considered a fix to this patch:
 
-What behavior are you suggesting?
+fix-corruption-of-memmap-on-ia64-sparsemem-when-mem_section-is-not-a-power-of-2.patch
 
-Bjorn
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+-apw
