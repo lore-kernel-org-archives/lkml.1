@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762035AbXGYJsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761743AbXGYJyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762035AbXGYJsj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 05:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXGYJsc
+	id S1761743AbXGYJyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 05:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXGYJxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 05:48:32 -0400
-Received: from wudika.de ([213.239.211.247]:46033 "EHLO wudika.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755706AbXGYJsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 05:48:31 -0400
-Message-ID: <46A71C6C.2050207@felicis.org>
-Date: Wed, 25 Jul 2007 11:48:28 +0200
-From: Martin Roehricht <ml@felicis.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: highest and lowest priority job of a runqueue
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jul 2007 05:53:50 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:17583 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756687AbXGYJxt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 05:53:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=iF3YF6tcowC5N0ZKLhxxwo09nVAI1bO0K0kSM/DozB6ldDfC+ivOQV66e+x91ab/P3bQ8NLeNsMqCxEIeLQ4nsc+IEetc2yCyeZ/C8dIrOpqDxNaPXMNWc6I/OX9jk6Rtzw7DIUKYHmjV64Yvs+r5hScYR3F3QkFnn/C/+hv3pg=
+From: Denis Cheng <crquan@gmail.com>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Denis Cheng <crquan@gmail.com>
+Subject: [PATCH] gfs2/locking/dlm: use an temp variable to reduce a spin_unlock
+Date: Wed, 25 Jul 2007 17:53:58 +0800
+Message-Id: <11853572382497-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+this is more clear.
 
-I have some questions concerning the current 2.6.22 scheduler 
-implementation. I was wondering how I may retrieve
-(a) the priority/load of the highest and the lowest priority task of a
-    runqueue (in a multiprocessor system), and
-(b) the corresponding pointer to this task?
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ fs/gfs2/locking/dlm/plock.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-I thought I might use (given a list with tmp pointers to all CPUs)
-	rq = cpu_rq(tmp->cpu);
-	task_load = rq->curr->load_weight;
-but this always returns 128 regardless of the fact if a task currently
-runs on that CPU or not. I guess it returns the load of the migration
-thread, but I'm not sure. I would like to migrate specific tasks
-throughout find_busiest_group().
+diff --git a/fs/gfs2/locking/dlm/plock.c b/fs/gfs2/locking/dlm/plock.c
+index fba1f1d..1f7b038 100644
+--- a/fs/gfs2/locking/dlm/plock.c
++++ b/fs/gfs2/locking/dlm/plock.c
+@@ -346,15 +346,16 @@ static ssize_t dev_write(struct file *file, const char __user *u, size_t count,
+ 
+ static unsigned int dev_poll(struct file *file, poll_table *wait)
+ {
++	unsigned int mask = 0;
++
+ 	poll_wait(file, &send_wq, wait);
+ 
+ 	spin_lock(&ops_lock);
+-	if (!list_empty(&send_list)) {
+-		spin_unlock(&ops_lock);
+-		return POLLIN | POLLRDNORM;
+-	}
++	if (!list_empty(&send_list))
++		mask = POLLIN | POLLRDNORM;
+ 	spin_unlock(&ops_lock);
+-	return 0;
++
++	return mask;
+ }
+ 
+ static const struct file_operations dev_fops = {
+-- 
+1.5.2.2
 
-Furthermore, is it correct, that the current migration strategy
-(move_tasks()) chooses automatically the highest priority task?
-
-Thanks for your help,
-Martin
