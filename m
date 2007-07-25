@@ -1,121 +1,356 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbXGYXe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXGYXkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbXGYXe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 19:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbXGYXev
+	id S1755528AbXGYXkz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 19:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbXGYXkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 19:34:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44202 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751621AbXGYXeu (ORCPT
+	Wed, 25 Jul 2007 19:40:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:49730 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbXGYXkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 19:34:50 -0400
-Date: Wed, 25 Jul 2007 16:34:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [GIT PATCH] more USB patches for 2.6.22
-In-Reply-To: <20070720034456.GA5826@kroah.com>
-Message-ID: <alpine.LFD.0.999.0707251628200.3607@woody.linux-foundation.org>
-References: <20070720034456.GA5826@kroah.com>
+	Wed, 25 Jul 2007 19:40:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:to:cc:subject:message-id:references:
+	mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+	b=pxmKNlGIITML0QuxZM4MaZKvcb4qIr7qnlMnBC8ublt5+Mw0Hzxhsbddwq5BSJG+P
+	3pJDEXcEa5MThiRpf5Txg==
+Date: Wed, 25 Jul 2007 16:40:06 -0700
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, Kirill Korotaev <dev@openvz.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i386-show-unhandled-signals-v3
+Message-ID: <20070725234005.GA11292@google.com>
+References: <20070718154759.GA26425@google.com> <46A76210.5020903@openvz.org> <200707251657.44217.ak@suse.de> <20070725140455.cbbc0dde.akpm@linux-foundation.org> <4517d1380707251407v178068baxcc76a86f8337cc27@mail.gmail.com> <20070725162528.7d485ff8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070725162528.7d485ff8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
+From: masouds@google.com (Masoud Asgharifard Sharbiani)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 19 Jul 2007, Greg KH wrote:
->
-> Here are some more USB patches and fixes against your 2.6.22 git tree.
+On Wed, Jul 25, 2007 at 04:25:28PM -0700, Andrew Morton wrote:
+> On Wed, 25 Jul 2007 14:07:56 -0700
+> "Masoud Sharbiani" <masouds@google.com> wrote:
 > 
-> They add a new usb gadget driver, more urb->status cleanups, a new sysfs
-> attribute to get the raw config of the usb device, and some bugfixes and
-> documentation updates.
+> > On 7/25/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > On Wed, 25 Jul 2007 16:57:43 +0200
+> > > Andi Kleen <ak@suse.de> wrote:
+> > >
+> > > > On Wednesday 25 July 2007 16:45, Kirill Korotaev wrote:
+> > > > > plz don't enable it by default... :/
+> > > > > any user can spam syslog with these messages and if syslog is run as root
+> > > > > can take the whole diskspace...
+> > > >
+> > > > There are plenty of other ways to cause syslog messages anyways;
+> > >
+> > > tell us what they are and we'll fix them?
+> > >
+> > > > this argument is 100% bogus.
+> > >
+> > > people don't like leaving themselves open to logspamming.
+> > >
+> > >
+> > > For this particular issue: someone please send a patch.
+> > >
+> > Andrew,
+> > This is rate limited; Do you need me to rewrite it with it being
+> > disabled by default?
+> > 
+> 
+> Yes please.
+> 
+> Look: if there's a way in which an unprivileged user can trigger a printk
+> we fix it, end of story.  I don't know why this even slightly
+> controversial.
+> 
 
-I have a flaky(?) USB multi-card reader, and I just got an oops with it on 
-x86-64. It was preceded by some of the IO errors:
+Fair enough. Here it is:
+---------------
+Hello,
+This patch makes the i386 behave the same way that x86_64 does when a
+segfault happens. A line gets printed to the kernel log so that tools
+that need to check for failures can behave more uniformly between
+different kernels. Like x86_64, it can be disabled by setting
+debug.show_unhandled_signals sysctl variable to 0 (or by doing
+echo 0 > /proc/sys/debug/show_unhandled_signals)
 
-	end_request: I/O error, dev sdc, sector 0
-	sd 11:0:0:1: [sdc] Result: hostbyte=0x07 driverbyte=0x00
-	end_request: I/O error, dev sdc, sector 0
-	Buffer I/O error on device sdc, logical block 0
-	usb 2-5: reset high speed USB device using ehci_hcd and address 10
-	usb 2-5: reset high speed USB device using ehci_hcd and address 10
-	usb 2-5: reset high speed USB device using ehci_hcd and address 10
-	usb 2-5: reset high speed USB device using ehci_hcd and address 10
-	usb 2-5: reset high speed USB device using ehci_hcd and address 10
-	usb 2-5: reset high speed USB device using ehci_hcd and address 10
-	usb 2-5: device descriptor read/all, error 0
-
-but the oops itself happened when I then removed the USB device due to 
-the errors, causing this:
-
-	usb 2-5: USB disconnect, address 10
-	sd 11:0:0:1: [sdc] Result: hostbyte=0x07 driverbyte=0x00
-	end_request: I/O error, dev sdc, sector 0
-	Buffer I/O error on device sdc, logical block 0
-	sd 11:0:0:1: [sdc] Result: hostbyte=0x07 driverbyte=0x00
-	end_request: I/O error, dev sdc, sector 0
-	Buffer I/O error on device sdc, logical block 0
-	sd 11:0:0:1: [sdc] Result: hostbyte=0x01 driverbyte=0x00
-	end_request: I/O error, dev sdc, sector 0
-	Buffer I/O error on device sdc, logical block 0
-	sd 11:0:0:1: [sdc] Result: hostbyte=0x01 driverbyte=0x00
-	end_request: I/O error, dev sdc, sector 0
-	Buffer I/O error on device sdc, logical block 0
-	sd 11:0:0:1: [sdc] Result: hostbyte=0x01 driverbyte=0x00
-	end_request: I/O error, dev sdc, sector 0
-	Buffer I/O error on device sdc, logical block 0
-	Dev sdc: unable to read RDB block 0
-	sd 11:0:0:1: [sdc] Result: hostbyte=0x01 driverbyte=0x00
-	end_request: I/O error, dev sdc, sector 0
-	Buffer I/O error on device sdc, logical block 0
-	 unable to read partition table
-	sd 11:0:0:1: [sdc] Attached SCSI removable disk
-	sd 11:0:0:1: Attached scsi generic sg3 type 0
-	usb-storage: device scan complete
-
-and finally the oops itself:
+Also, all of the lines being printed are now using printk_ratelimit()
+to deny the ability of DoS from a local user with a program like the
+following:
+main()
+{
+       while (1)
+               if (!fork()) *(int *)0 = 0;
+}
 
 
-	general protection fault: 0000 [1] SMP
-	CPU 0
-	Modules linked in:
-	Pid: 214, comm: khubd Not tainted 2.6.22-g20082208 #56
-	RIP: 0010:[<ffffffff80274670>]  [<ffffffff80274670>] kfree+0x27/0x81
-	RSP: 0018:ffff81012bd0dd90  EFLAGS: 00010212
-	RAX: 037d001b2d7d01b8 RBX: ffff810001000000 RCX: ffffffff80314f0f
-	RDX: ffff81012337b738 RSI: 037c811b2e7d01b8 RDI: ff241b0cff251c0b
-	RBP: ff241b0cff251c0b R08: ffffffff8062eed0 R09: ffff81012bc0f430
-	R10: 0000000000000287 R11: ffffffff803ed953 R12: ffff81008642f140
-	R13: 0000000000000000 R14: 0000000000001540 R15: 0000000000000008
-	FS:  0000000000000000(0000) GS:ffffffff806a0000(0000) knlGS:0000000000000000
-	CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-	CR2: 00002b02340410a0 CR3: 000000010bd4b000 CR4: 00000000000006e0
-	Process khubd (pid: 214, threadinfo ffff81012bd0c000, task ffff81012bed36b0)
-	Stack:  ffff81012337b738 ffff81011e9fa800 ffff81008642f140 ffffffff803f50c4
-	 ffff81012337b738 ffff81011e9fa800 ffffffff8064ae70 ffff81011e9fa888
-	 ffff81012ad60978 ffff81012ad60800 ffff81012ad60800 ffffffff803ed96c
-	Call Trace:
-	 [<ffffffff803f50c4>] usb_destroy_configuration+0x85/0xee
-	 [<ffffffff803ed96c>] usb_release_dev+0x19/0x55
-	 [<ffffffff803140c9>] kobject_cleanup+0x52/0x70
-	 [<ffffffff803140e7>] kobject_release+0x0/0x9
-	 [<ffffffff80314f0f>] kref_put+0x5d/0x68
-	 [<ffffffff803ef78f>] hub_thread+0x390/0xb27
-	 [<ffffffff8023dcb1>] autoremove_wake_function+0x0/0x2e
-	 [<ffffffff803ef3ff>] hub_thread+0x0/0xb27
-	 [<ffffffff8023db95>] kthread+0x47/0x76
-	 [<ffffffff8020c0f8>] child_rip+0xa/0x12
-	 [<ffffffff8023db4e>] kthread+0x0/0x76
-	 [<ffffffff8020c0ee>] child_rip+0x0/0x12
+cheers,
+Masoud
 
-	Code: 48 8b 06 25 00 40 02 00 48 3d 00 40 02 00 75 04 48 8b 76 10
-	RIP  [<ffffffff80274670>] kfree+0x27/0x81
-	 RSP <ffff81012bd0dd90>
+Signed-off-by: Masoud Sharbiani <masouds@google.com
 
-Looks like another reference counting bug...
-
-		Linus
+diff --git a/arch/i386/kernel/signal.c b/arch/i386/kernel/signal.c
+index d574e38..f5dd856 100644
+--- a/arch/i386/kernel/signal.c
++++ b/arch/i386/kernel/signal.c
+@@ -199,6 +199,13 @@ asmlinkage int sys_sigreturn(unsigned long __unused)
+ 	return eax;
+ 
+ badframe:
++	if (show_unhandled_signals && printk_ratelimit())
++		printk("%s%s[%d] bad frame in sigreturn frame:%p eip:%lx"
++		       " esp:%lx oeax:%lx\n",
++		    current->pid > 1 ? KERN_INFO : KERN_EMERG,
++		    current->comm, current->pid, frame, regs->eip,
++		    regs->esp, regs->orig_eax);
++
+ 	force_sig(SIGSEGV, current);
+ 	return 0;
+ }	
+diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
+index 18c1c28..c20283c 100644
+--- a/arch/i386/kernel/traps.c
++++ b/arch/i386/kernel/traps.c
+@@ -611,6 +611,13 @@ fastcall void __kprobes do_general_protection(struct pt_regs * regs,
+ 
+ 	current->thread.error_code = error_code;
+ 	current->thread.trap_no = 13;
++	if (show_unhandled_signals && unhandled_signal(current, SIGSEGV) &&
++	    printk_ratelimit())
++		printk(KERN_INFO
++		    "%s[%d] general protection eip:%lx esp:%lx error:%lx\n",
++		    current->comm, current->pid,
++		    regs->eip, regs->esp, error_code);
++
+ 	force_sig(SIGSEGV, current);
+ 	return;
+ 
+diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
+index 1ecb3e4..52c940b 100644
+--- a/arch/i386/mm/fault.c
++++ b/arch/i386/mm/fault.c
+@@ -283,6 +283,8 @@ static inline int vmalloc_fault(unsigned long address)
+ 	return 0;
+ }
+ 
++int show_unhandled_signals = 0;
++
+ /*
+  * This routine handles page faults.  It determines the address,
+  * and the problem, and then passes it off to one of the appropriate
+@@ -470,6 +472,14 @@ bad_area_nosemaphore:
+ 		if (is_prefetch(regs, address, error_code))
+ 			return;
+ 
++		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
++		    printk_ratelimit()) {
++			printk("%s%s[%d]: segfault at %08lx eip %08lx "
++			    "esp %08lx error %lx\n",
++			    tsk->pid > 1 ? KERN_INFO : KERN_EMERG,
++			    tsk->comm, tsk->pid, address, regs->eip,
++			    regs->esp, error_code);
++		}
+ 		tsk->thread.cr2 = address;
+ 		/* Kernel addresses are always protection faults */
+ 		tsk->thread.error_code = error_code | (address >= TASK_SIZE);
+diff --git a/arch/x86_64/kernel/signal.c b/arch/x86_64/kernel/signal.c
+index 290f5d8..f9506f6 100644
+--- a/arch/x86_64/kernel/signal.c
++++ b/arch/x86_64/kernel/signal.c
+@@ -480,7 +480,7 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
+ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
+ { 
+ 	struct task_struct *me = current; 
+-	if (exception_trace)
++	if (show_unhandled_signals && printk_ratelimit())
+ 		printk("%s[%d] bad frame in %s frame:%p rip:%lx rsp:%lx orax:%lx\n",
+ 	       me->comm,me->pid,where,frame,regs->rip,regs->rsp,regs->orig_rax); 
+ 
+diff --git a/arch/x86_64/kernel/traps.c b/arch/x86_64/kernel/traps.c
+index 74cbeb2..b9660c4 100644
+--- a/arch/x86_64/kernel/traps.c
++++ b/arch/x86_64/kernel/traps.c
+@@ -580,7 +580,8 @@ static void __kprobes do_trap(int trapnr, int signr, char *str,
+ 		tsk->thread.error_code = error_code;
+ 		tsk->thread.trap_no = trapnr;
+ 
+-		if (exception_trace && unhandled_signal(tsk, signr))
++		if (show_unhandled_signals && unhandled_signal(tsk, signr) &&
++		    printk_ratelimit())
+ 			printk(KERN_INFO
+ 			       "%s[%d] trap %s rip:%lx rsp:%lx error:%lx\n",
+ 			       tsk->comm, tsk->pid, str,
+@@ -684,7 +685,8 @@ asmlinkage void __kprobes do_general_protection(struct pt_regs * regs,
+ 		tsk->thread.error_code = error_code;
+ 		tsk->thread.trap_no = 13;
+ 
+-		if (exception_trace && unhandled_signal(tsk, SIGSEGV))
++		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
++		    printk_ratelimit())
+ 			printk(KERN_INFO
+ 		       "%s[%d] general protection rip:%lx rsp:%lx error:%lx\n",
+ 			       tsk->comm, tsk->pid,
+diff --git a/arch/x86_64/mm/fault.c b/arch/x86_64/mm/fault.c
+index 635e58d..0412824 100644
+--- a/arch/x86_64/mm/fault.c
++++ b/arch/x86_64/mm/fault.c
+@@ -221,16 +221,6 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ 	return 0;
+ } 
+ 
+-int unhandled_signal(struct task_struct *tsk, int sig)
+-{
+-	if (is_init(tsk))
+-		return 1;
+-	if (tsk->ptrace & PT_PTRACED)
+-		return 0;
+-	return (tsk->sighand->action[sig-1].sa.sa_handler == SIG_IGN) ||
+-		(tsk->sighand->action[sig-1].sa.sa_handler == SIG_DFL);
+-}
+-
+ static noinline void pgtable_bad(unsigned long address, struct pt_regs *regs,
+ 				 unsigned long error_code)
+ {
+@@ -302,7 +292,7 @@ static int vmalloc_fault(unsigned long address)
+ }
+ 
+ int page_fault_trace = 0;
+-int exception_trace = 1;
++int show_unhandled_signals = 0;
+ 
+ /*
+  * This routine handles page faults.  It determines the address,
+@@ -495,7 +485,8 @@ bad_area_nosemaphore:
+ 		    (address >> 32))
+ 			return;
+ 
+-		if (exception_trace && unhandled_signal(tsk, SIGSEGV)) {
++		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
++		    printk_ratelimit()) {
+ 			printk(
+ 		       "%s%s[%d]: segfault at %016lx rip %016lx rsp %016lx error %lx\n",
+ 					tsk->pid > 1 ? KERN_INFO : KERN_EMERG,
+diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
+index 9a0e98a..5096168 100644
+--- a/arch/x86_64/mm/init.c
++++ b/arch/x86_64/mm/init.c
+@@ -697,41 +697,6 @@ int kern_addr_valid(unsigned long addr)
+ 	return pfn_valid(pte_pfn(*pte));
+ }
+ 
+-#ifdef CONFIG_SYSCTL
+-#include <linux/sysctl.h>
+-
+-extern int exception_trace, page_fault_trace;
+-
+-static ctl_table debug_table2[] = {
+-	{
+-		.ctl_name	= 99,
+-		.procname	= "exception-trace",
+-		.data		= &exception_trace,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= proc_dointvec
+-	},
+-	{}
+-}; 
+-
+-static ctl_table debug_root_table2[] = { 
+-	{
+-		.ctl_name = CTL_DEBUG,
+-		.procname = "debug",
+-		.mode = 0555,
+-		.child = debug_table2
+-	},
+-	{}
+-}; 
+-
+-static __init int x8664_sysctl_init(void)
+-{ 
+-	register_sysctl_table(debug_root_table2);
+-	return 0;
+-}
+-__initcall(x8664_sysctl_init);
+-#endif
+-
+ /* A pseudo VMA to allow ptrace access for the vsyscall page.  This only
+    covers the 64bit vsyscall page now. 32bit has a real VMA now and does
+    not need special handling anymore. */
+diff --git a/include/asm-x86_64/proto.h b/include/asm-x86_64/proto.h
+index 85255db..4fad501 100644
+--- a/include/asm-x86_64/proto.h
++++ b/include/asm-x86_64/proto.h
+@@ -75,8 +75,6 @@ extern void setup_node_bootmem(int nodeid, unsigned long start, unsigned long en
+ extern void early_quirks(void);
+ extern void check_efer(void);
+ 
+-extern int unhandled_signal(struct task_struct *tsk, int sig);
+-
+ extern void select_idle_routine(const struct cpuinfo_x86 *c);
+ 
+ extern unsigned long table_start, table_end;
+diff --git a/include/linux/signal.h b/include/linux/signal.h
+index ea91abe..0ae3388 100644
+--- a/include/linux/signal.h
++++ b/include/linux/signal.h
+@@ -237,12 +237,15 @@ extern int group_send_sig_info(int sig, struct siginfo *info, struct task_struct
+ extern int __group_send_sig_info(int, struct siginfo *, struct task_struct *);
+ extern long do_sigpending(void __user *, unsigned long);
+ extern int sigprocmask(int, sigset_t *, sigset_t *);
++extern int show_unhandled_signals;
+ 
+ struct pt_regs;
+ extern int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka, struct pt_regs *regs, void *cookie);
+ 
+ extern struct kmem_cache *sighand_cachep;
+ 
++int unhandled_signal(struct task_struct *tsk, int sig);
++
+ /*
+  * In POSIX a signal is sent either to a specific thread (Linux task)
+  * or to the process as a whole (Linux thread group).  How the signal
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 39d1227..ef8156a 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -255,6 +255,16 @@ flush_signal_handlers(struct task_struct *t, int force_default)
+ 	}
+ }
+ 
++int unhandled_signal(struct task_struct *tsk, int sig)
++{
++	if (is_init(tsk))
++		return 1;
++	if (tsk->ptrace & PT_PTRACED)
++		return 0;
++	return (tsk->sighand->action[sig-1].sa.sa_handler == SIG_IGN) ||
++		(tsk->sighand->action[sig-1].sa.sa_handler == SIG_DFL);
++}
++
+ 
+ /* Notify the system that a driver wants to block all signals for this
+  * process, and wants to be notified if any signals at all were to be
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 7063ebc..af7002f 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1153,6 +1153,16 @@ static ctl_table fs_table[] = {
+ };
+ 
+ static ctl_table debug_table[] = {
++#ifdef CONFIG_X86
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "exception_trace",
++		.data		= &show_unhandled_signals,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= proc_dointvec
++	},
++#endif
+ 	{ .ctl_name = 0 }
+ };
+ 
