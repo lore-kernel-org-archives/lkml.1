@@ -1,107 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbXGYDSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbXGYDpC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761935AbXGYDSc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 23:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbXGYDSX
+	id S1762069AbXGYDpC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 23:45:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbXGYDow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 23:18:23 -0400
-Received: from holomorphy.com ([66.93.40.71]:40615 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752970AbXGYDSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 23:18:22 -0400
-Date: Tue, 24 Jul 2007 20:20:11 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: CONFIG_PAGE_SHIFT (aka software PAGE_SIZE)
-Message-ID: <20070725032011.GN6909@holomorphy.com>
-References: <20070706222651.GG5777@v2.random> <1183764801.10287.233.camel@localhost> <20070706235228.GL5777@v2.random> <20070717174737.GM6909@holomorphy.com> <20070717193308.GD25301@v2.random> <20070718133222.GM11781@holomorphy.com> <20070724194418.GH19559@v2.random>
+	Tue, 24 Jul 2007 23:44:52 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:37441 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755994AbXGYDow (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 23:44:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=IPwB1/bHMJSB7RlcIgCvoQ1ijUKVe8DLhcD/3eLrDr9vm+zANftmBk5b5zC3m+g7FD5CaNwhGRt4Zs02GL8LOrsrdnHvecq9WGA1T/JjeAgYC30xYXtpN1lCVgL9cWxbHCx8mC/LTFdxnTg+5EzJq7r0EEh2OjQ8L0/cF2/fGpo=  ;
+X-YMail-OSG: GkPcvu8VM1mD1Mby7oqErVcVd8JY9xSJKVd8ZaipnxW6s_mZ
+Message-ID: <46A6C72A.9020801@yahoo.com.au>
+Date: Wed, 25 Jul 2007 13:44:42 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070724194418.GH19559@v2.random>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bret Towe <magnade@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear
+ mappings
+References: <dda83e780707241027k369c2f01j6d16b21266df3a05@mail.gmail.com>
+In-Reply-To: <dda83e780707241027k369c2f01j6d16b21266df3a05@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 06:32:22AM -0700, William Lee Irwin III wrote:
->> Actually I'd worked on what was called MPSS (Multiple Page Size Support)
->> before I ever started on pgcl. Some large portion of the pgcl proposal
->> as I presented it internally was to reduce the order of large page
->> allocations and provide a promotion and demotion mechanism enabling
->> different processes to have different sized translations for the same
->> large page, and hence no out-of-context pagetable/TLB updates during
->> promotion and demotion, essentially by making the TLB translation to
->> page relation M:N. ISTR describing this in a KS presentation for which
->> IIRC you were present. But that's neither here nor there.
+Bret Towe wrote:
+> for a while in -git I've had an issue that on boot when gdm loads the
+> screen stays black
+> using ctrl-f1 doesn't return to a console and killing X doesn't help any
+> ssh'ing into the box does work top only shows 100% io-wait
+> dmesg shows nothing odd
+> 
+> the work around I have is at the moment is to just move the radeon drm 
+> module
+> out of the way so it doesn't load on boot and X works just fine like that
+> I did some bisecting which took a few days and tracked it down to
+> commit d00806b183152af6d24f46f0c33f14162ca1262a
+> 
+> its way to complex for me to revert it on top of -rc1 to verify that's
+> the issue tho
+> I keep forgetting to get a trace of what its waiting on when I'm in that 
+> kernel
+> I assume that would be of use and Ill get that later
+> 
+> the box this is happening on is a g4 mac mini the built in card is a 
+> radeon 9200
+> I'm not seeing any issues on an amd64 box with radeon card it's also a 
+> 9600 tho
 
-On Tue, Jul 24, 2007 at 09:44:18PM +0200, Andrea Arcangeli wrote:
-> Well the whole difference between you back then and SGI now, is that
-> your stuff wasn't being pushed to be merged very hard (it was proposed
-> but IIRC more as research topic, like the large PAGE_SIZE also fallen
-> into that same research area). See now the emails from SGI fs folks
-> about variable order page size, they want it merged badly instead.
+Is this with a binary-only module? We saw an issue with that in SLES9
+where the module is returning a locked page from its nopage handler
+when it isn't really supposed to. It might be fixed in latest drivers,
+have you tried them?
 
-Neither were research topics, but I'm tired of correcting the history
-of my failures. I've got enough ongoing failures as things stand.
+Thanks,
+Nick
 
-
-On Tue, Jul 24, 2007 at 09:44:18PM +0200, Andrea Arcangeli wrote:
-> My whole point is that the single moment the variable order page size
-> isn't pure research anymore like MPSS, the CONFIG_PAGE_SHIFT isn't
-> research anymore either, like the tail packing in pagecache with
-> kmalloc also isn't research anymore.
-
-There was never any research involved in the page clustering per se.
-It was supposed to be a generally advantageous thing that Linus had
-at least once explicitly approved of that just so happened to relieve
-mem_map[] pressure on 64GB i386, the side effect intended to attract
-corporate patronage.
-
-That last fact was not only demonstrable, it was used in the first
-ever public demonstration of a 64GB i386 machine running Linux, which
-I personally carried out.
-
-Beyond active hindrances and lacks of cooperation, a "competing
-solution" with distro backing appeared that removed the last vestige
-of corporate patronage from the project. It ended up bitrotting
-faster than I could singlehandedly do all the maintenance, testing,
-and coding work on it while also trying to get anything else done.
-
-MPSS was not as well-developed at the time the hugetlb "solution"
-killed it, but is not terribly dissimilar in how it came into
-being, developed, and then died, apart from less active hindrance.
-
-The one and only aspect in which any research was involved was a
-proposal, never accepted or pursued, to investigate how larger
-base page sizes implemented via page clustering mitigated external
-fragmentation for the purposes of MPSS and also how certain
-techniques borrowed from page clustering could reduce the frequency
-of and performance penalties associated with demotion in MPSS. The
-proposal has never been publicly circulated, though some of its content
-was described in the KS presentation as "future directions" or similar.
-
-
-On Tue, Jul 24, 2007 at 09:44:18PM +0200, Andrea Arcangeli wrote:
-> About the fs deciding the size of the pagecache granularity I totally
-> dislike that design, there's no reason why the fs should control that,
-[...]
-
-This is all valid commentary, though I don't have any particular
-response to it.
-
-In any event, I've never been involved in a research project, though
-I would've liked to have been. The emphasis in all cases was enabling
-specific functionality in production, using techniques whose viability
-had furthermore already been demonstrated elsewhere, by others.
-
-In both instances, insurmountable nontechnical obstacles were present,
-which remain in place and effectively limit the scale and scope of any
-sort of project I can personally lead with any sort of likelihood of
-mainline acceptance.
-
-Where I am limited, you are not. Good luck to you.
-
-
--- wli
+-- 
+SUSE Labs, Novell Inc.
