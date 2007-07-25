@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762295AbXGYKIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761718AbXGYKKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762295AbXGYKIZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 06:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbXGYKIM
+	id S1761718AbXGYKKW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 06:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbXGYKKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 06:08:12 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:49844 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755698AbXGYKIK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 06:08:10 -0400
-Subject: Re: modpost warning question
-From: chengong <g.chen@freescale.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <20070725072712.GB24093@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0707250210520.14366@blarg.am.freescale.net>
-	 <20070725072712.GB24093@uranus.ravnborg.org>
+	Wed, 25 Jul 2007 06:10:10 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55122 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755698AbXGYKKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 06:10:09 -0400
+Subject: Re: [patch] mm: reduce pagetable-freeing latencies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <20070725094605.GA9045@one.firstfloor.org>
+References: <20070724083855.GA858@elte.hu>
+	 <20070724015441.8604d85d.akpm@linux-foundation.org>
+	 <1185270045.5439.249.camel@localhost.localdomain>
+	 <p73abtmt2y7.fsf@bingen.suse.de>
+	 <1185312559.5439.276.camel@localhost.localdomain>
+	 <1185345850.8197.64.camel@twins> <20070725094605.GA9045@one.firstfloor.org>
 Content-Type: text/plain
-Date: Wed, 25 Jul 2007 18:08:03 +0800
-Message-Id: <1185358083.4996.6.camel@localhost.localdomain>
+Date: Wed, 25 Jul 2007 20:08:13 +1000
+Message-Id: <1185358093.5439.325.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jul 2007 10:08:05.0632 (UTC) FILETIME=[B1806000:01C7CEA3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-07-25 at 09:27 +0200, Sam Ravnborg wrote:
-> On Wed, Jul 25, 2007 at 02:14:12AM -0500, Kumar Gala wrote:
-> > I'm seeing the following warning:
-> > 
-> > WARNING: vmlinux.o(.init.text+0x1acdc): Section mismatch: reference to
-> > .exit.text:gfar_mdio_exit (between 'gfar_init' and 'gfar_mdio_init')
-> > 
-> > I don't understand why its not ok to access .exit.text from .init.text
+On Wed, 2007-07-25 at 11:46 +0200, Andi Kleen wrote:
+> > You could perhaps use C99 variable length arrays to avoid the stack
+> > waste when not needed, however Andi once told me that generates rather
+> > dubious code.
 > 
-> Several architectures discards .exit.text in the final linker
-> script (arch/$(ARCH)/kernel/vmlinux.lds.S
+> It generates frame pointers, but that's not that bad.  I'm not 
+> aware of any other bad side effects. Ok the compiler will limit
+> your goto usage, but that's more a good thing.
 > 
-> So any references to .exit.text will when a module is build-in result
-> in a linker error because ld will flag it as an error when we reference
-> a symbol in a discarded section.
-But why? Just make kernel size smaller?
-> 
-> For the popular architectures (i386,x86_64) we discard .exit.text at
-> runtime so here we do not see the error from ld (sadly).
->From which version? On my machine I have seen the same problem when
-building i386 target with the version 2.6.21.
-> 
-> 	Sam
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> But since you always have to strictly limit the array in kernel code anyways
+> you could as well just allocate the fixed limit.
+
+Plan is fixed array or 4 or maybe 8 entries (pointers), that shouldn't
+be -too- bad. The code path I'm a bit worried about is
+unmap_mapping_ranges() which goes into zapping page tables from deep
+within filesystems.
+
+At worst, I can reduce the fixed array to 1 entry. That means that if
+the batch can't manage to get a page to use for the page list, it will
+end up doing the flush for each page :-) But that should rarely happen,
+in fact, I would expect it to be able to get a page the next time around
+because it just freed one...
+
+Ben.
+
 
