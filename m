@@ -1,131 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbXGYEHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbXGYEKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751870AbXGYEHE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 00:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750731AbXGYEGy
+	id S1752151AbXGYEKx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 00:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbXGYEKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 00:06:54 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:34806 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750709AbXGYEGx (ORCPT
+	Wed, 25 Jul 2007 00:10:46 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:37626 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750709AbXGYEKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 00:06:53 -0400
+	Wed, 25 Jul 2007 00:10:45 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=ApZDk85ghIzsKRH3PxkRYCtQCt7XGj7gsUrT3yWHZ0EOaJGYMrQ8wbNV8KLS5swplViKLTVrf8jEp0NJEribNb+08WBYYCYB5/yqJbV3YSXoTN7dd4vThl3UKLqD51qCEwIBBRLGn8lbHl4kEkWuzSWMDbLqLv0Fu9JTOzNysX0=  ;
-X-YMail-OSG: tDQvMSgVM1nLs_SF0BRFZSryFGf3o.pEygUSNZwmJrEDuX1HenJYVZDDby.lHGp7ZBHBzJiaN4Wg5Pg8rekSVwLFgxGKT_eWmZapmfR7JbSNvt.wXlg-
-Message-ID: <46A6CC56.6040307@yahoo.com.au>
-Date: Wed, 25 Jul 2007 14:06:46 +1000
+  b=dlCZAZEGqPB1qyRlYtH5k0Q6DGQOZy47e3jKgMq24yebzSafoVrKBgDb/Q+0CM5U1qT9Tn2wOXQ3LhKH1glfSNv4MQ88hNWDKNhs5mrOM1M68ugWCws6K4mGRG9KQ78c2dEjgl8rMj+bV2j2EI7wbOo6Gea4Ef1MQXFE0JXYeBY=  ;
+X-YMail-OSG: Wawh3Y0VM1lHAL1XTsUsEx5_.Bj5cX.zwDpDLY7XEuQuR0bYeYPmzlPrvx5EQ0W8tE4kMT3Uig--
+Message-ID: <46A6CD3D.8010507@yahoo.com.au>
+Date: Wed, 25 Jul 2007 14:10:37 +1000
 From: Nick Piggin <nickpiggin@yahoo.com.au>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
 X-Accept-Language: en
 MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	 <200707102015.44004.kernel@kolivas.org>	 <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	 <46A57068.3070701@yahoo.com.au>	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>	 <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-In-Reply-To: <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered	unnecessarily
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>	 <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>	 <alpine.LFD.0.999.0707231054290.3607@woody.linux-foundation.org>	 <1185270756.5439.256.camel@localhost.localdomain>	 <alpine.LFD.0.999.0707241021210.3607@woody.linux-foundation.org>	 <1185298932.6586.22.camel@localhost>	 <alpine.LFD.0.999.0707241108360.3607@woody.linux-foundation.org>	 <1185313061.5439.283.camel@localhost.localdomain>	 <1185314112.6586.93.camel@localhost> <1185316368.5439.293.camel@localhost.localdomain>
+In-Reply-To: <1185316368.5439.293.camel@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> On 7/23/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
->> Also a random day at the desktop, it is quite a broad scope and
->> pretty well impossible to analyse.
+Benjamin Herrenschmidt wrote:
+> On Tue, 2007-07-24 at 17:55 -0400, Trond Myklebust wrote:
+> 
+>>If you want to use bitops as spinlocks you should rather be using
+>><linux/bit_spinlock.h>. That also does the right thing w.r.t.
+>>pre-emption and sparse locking annotations.
 > 
 > 
-> It is pretty broad, but that's also what swap prefetch is targetting.
-> As for hard to analyze, I'm not sure I agree. One can black-box test
-> this stuff with only a few controls. e.g., if I use the same apps each
-> day (mercurial, firefox, xorg, gcc), and the total I/O wait time
-> consistently goes down on a swap prefetch kernel (normalized by some
-> control statistic, such as application CPU time or total I/O, or
-> something), then that's a useful measurement.
+> Heh, I didn't know about those... A bit annoying that I can't override
+> them in the arch, I might be able to save a barrier or two here. Our
 
-I'm not saying that we can't try to tackle that problem, but first of
-all you have a really nice narrow problem where updatedb seems to be
-causing the kernel to completely do the wrong thing. So we start on
-that.
+I guess the test_and_set_bit_lock / clear_bit_unlock will allow you to
+override them in a way.
 
+The big performance problem I see on my powerpc system is not the bit
+spinlocks (open-coded or not), but the bit sleep locks.
 
->> If we can first try looking at
->> some specific problems that are easily identified.
-> 
-> 
-> Always easier, true. Let's start with "My mouse jerks around under
-> memory load." A Google Summer of Code student working on X.Org claims
-> that mlocking the mouse handling routines gives a smooth cursor under
-> load ([1]). It's surprising that the kernel would swap that out in the
-> first place.
-> 
-> [1] 
-> http://vignatti.wordpress.com/2007/07/06/xorg-input-thread-summary-or-something/ 
-
-OK, I'm not sure what the point is though. Under heavy memory load,
-things are going to get swapped out... and swap prefetch isn't going
-to help there (at least, not during the memory load).
-
-There are also other issues like whether the CPU scheduler is at fault,
-etc. Interactive workloads are always the hardest to work out. updatedb
-is a walk in the park by comparison.
-
-
->> Looking at your past email, you have a 1GB desktop system and your
->> overnight updatedb run is causing stuff to get swapped out such that
->> swap prefetch makes it significantly better. This is really
->> intriguing to me, and I would hope we can start by making this
->> particular workload "not suck" without swap prefetch (and hopefully
->> make it even better than it currently is with swap prefetch because
->> we'll try not to evict useful file backed pages as well).
-> 
-> 
-> updatedb is an annoying case, because one would hope that there would
-> be a better way to deal with that highly specific workload. It's also
-> pretty stat dominant, which puts it roughly in the same category as a
-> git diff. (They differ in that updatedb does a lot of open()s and
-> getdents on directories, git merely does a ton of lstat()s instead.)
-
-Yeah, and I suspect we might be able to do better use-once of
-inode and dentry caches. It isn't really highly specific: lots
-of things tend to just scan over a few files once -- updatedb
-just scans a lot so the problem becomes more noticable.
-
-
-> Anyway, my point is that I worry that tuning for an unusual and
-> infrequent workload (which updatedb certainly is), is the wrong way to
-> go.
-
-Well it runs every day or so for every desktop Linux user, and
-it has similarities with other workloads. We don't want to optimise
-it at the expense of other things, but it _really_ should not be
-pushing a 1-2GB desktop into swap, I don't think.
-
-
->> After that we can look at other problems that swap prefetch helps
->> with, or think of some ways to measure your "whole day" scenario.
->>
->> So when/if you have time, I can cook up a list of things to monitor
->> and possibly a patch to add some instrumentation over this updatedb
->> run.
-> 
-> 
-> That would be appreciated. Don't spend huge amounts of time on it,
-> okay? Point me the right direction, and we'll see how far I can run
-> with it.
-
-I guess /proc/meminfo, /proc/zoneinfo, /proc/vmstat, /proc/slabinfo
-before and after the updatedb run with the latest kernel would be a
-first step. top and vmstat output during the run wouldn't hurt either.
-
-Thanks,
-Nick
+Anyway, I'll finally send out the lock bitops patches again today...
 
 -- 
 SUSE Labs, Novell Inc.
