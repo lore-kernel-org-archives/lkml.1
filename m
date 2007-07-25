@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765658AbXGYPSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765571AbXGYPV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765658AbXGYPSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 11:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757594AbXGYPSd
+	id S1765571AbXGYPV2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 11:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbXGYPVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 11:18:33 -0400
-Received: from wudika.de ([213.239.211.247]:40441 "EHLO wudika.de"
+	Wed, 25 Jul 2007 11:21:17 -0400
+Received: from mga03.intel.com ([143.182.124.21]:5571 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755001AbXGYPSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 11:18:32 -0400
-Message-ID: <46A769C2.6030701@felicis.org>
-Date: Wed, 25 Jul 2007 17:18:26 +0200
-From: Martin Roehricht <ml@felicis.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	id S1753741AbXGYPVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 11:21:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,581,1175497200"; 
+   d="scan'208";a="254622672"
+Message-ID: <46A76A66.9000304@intel.com>
+Date: Wed, 25 Jul 2007 08:21:10 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mingo@elte.hu
-Subject: Re: highest and lowest priority job of a runqueue
-References: <8KLFD-G9-5@gated-at.bofh.it>
-In-Reply-To: <8KLFD-G9-5@gated-at.bofh.it>
+To: Jeff Garzik <jeff@garzik.org>
+CC: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
+Subject: Re: [-mm patch] one e1000 driver should be enough for everyone
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <20070725133650.GB3572@stusta.de> <46A754C7.9080004@garzik.org> <20070725144615.GC3572@stusta.de> <46A7669C.5010104@garzik.org>
+In-Reply-To: <46A7669C.5010104@garzik.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Jul 2007 15:21:11.0368 (UTC) FILETIME=[6EAC3480:01C7CECF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/25/2007 11:50 AM, Martin Roehricht wrote:
-> I thought I might use (given a list with tmp pointers to all CPUs)
-> 	rq = cpu_rq(tmp->cpu);
-> 	task_load = rq->curr->load_weight;
-> but this always returns 128 regardless of the fact if a task currently
-> runs on that CPU or not. I guess it returns the load of the migration
-> thread, but I'm not sure. I would like to migrate specific tasks
-> throughout find_busiest_group().
+Jeff Garzik wrote:
+> Adrian Bunk wrote:
+>> I found the discussion, and Christoph's e1000e sounds like the best name 
+>> ("new" doesn't say whether it's a new driver for old hardware or a 
+>> driver for new hardware).
+> 
+> Yeah, I think "e1000new" is a lame name.
 
-Okay, I think I found that my assumption should be just fine and I had 
-trouble with some debugging output via the show_schedstat() function.
-The "rq->curr->load_weight" returns what it is supposed to return. :-)
+Moreover, Andrew should probably just drop this driver from -mm for now.
 
-I am still uncertain on how to resolve the specific highest or lowest 
-priority job:
-> I was wondering how I may retrieve
-> (a) the priority/load of the highest and the lowest priority task of a
->     runqueue (in a multiprocessor system), and
-> (b) the corresponding pointer to this task?
+> e1000e is good, or even e1001e if we wanted even more symmetry :)
 
-I will try something of the form (pseudocode like):
+I'm working on "e1000e" right now...
 
-int idx;
-struct list_head *head;
-struct task_struct *task;
+>> No problem for me, but this obviously implies that global code in the 
+>> new driver has to be renamed.
+> 
+> Yes.  A global namespace is a global namespace.
 
-idx = sched_find_first_bit(rq->active->bitmap);
-head = array->queue + idx;
-task = list_entry(head, struct task_struct, run_list);
+yes, these are some of the kinks I still need to address. Allthough minor, it's 
+going to take me some time to get it to the first step before I want to submit 
+it (patience :))
 
-For the lowest priority task a function like "sched_find_last_bit()" 
-might be useful.
-Would this be a good way to succeed?
+>> And please ensure that they will always support distinct PCI IDs, or 
+>> there will be the following common pattern if both drivers support
+>> a card:
+> 
+> IIRC I think Auke said there is some minor PCI ID overlap that must be 
+> addressed in the transition.  Disappointing and it raises transition 
+> issues, but that's the way the split falls out naturally AFAICS.
 
-> Furthermore, is it correct, that the current migration strategy
-> (move_tasks()) chooses automatically the highest priority task?
+I'll submit it with only ich9 id's at first, but it will be able to drive (sysfs 
+bind) to some other devices too. This allows me to keep an eye out on the future 
+structure that I want to give it without removing too much code that I might 
+then later have to add back.
 
-Thanks,
-Martin
+Auke
