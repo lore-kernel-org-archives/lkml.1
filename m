@@ -1,113 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbXGYLST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763928AbXGYLTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932179AbXGYLST (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 07:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbXGYLSJ
+	id S1763928AbXGYLTc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 07:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758551AbXGYLTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 07:18:09 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:26704 "EHLO kernel.dk"
+	Wed, 25 Jul 2007 07:19:24 -0400
+Received: from ns1.suse.de ([195.135.220.2]:45873 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756314AbXGYLSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 07:18:07 -0400
-Date: Wed, 25 Jul 2007 13:18:36 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: wharms@bfs.de, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: crash with 2.6.22.1 crash:ll_rw_blk.c blk_remove_plug()
-Message-ID: <20070725111836.GR3287@kernel.dk>
-References: <469DD37C.8050200@bfs.de> <20070718103342.GI11657@kernel.dk> <469DF233.5080902@bfs.de> <20070718110724.GN11657@kernel.dk> <469E072E.7080400@bfs.de> <20070718123142.GV11657@kernel.dk> <46A38B1E.3090605@bfs.de> <a781481a0707221020m3c3a397fifa9076aefc63148a@mail.gmail.com> <20070722221717.GV11657@kernel.dk> <a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com>
-MIME-Version: 1.0
+	id S1756415AbXGYLTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 07:19:23 -0400
+Date: Wed, 25 Jul 2007 13:19:22 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, airlied@gmail.com,
+       magnade@gmail.com
+Subject: [patch] agp: don't lock pages
+Message-ID: <20070725111922.GF29011@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25 2007, Satyam Sharma wrote:
-> On 7/23/07, Jens Axboe <jens.axboe@oracle.com> wrote:
->> On Sun, Jul 22 2007, Satyam Sharma wrote:
->> > Hi Walter,
->> >
->> > Thanks for reporting this.
->> >
->> > On 7/22/07, walter harms <wharms@bfs.de> wrote:
->> >> hello all,
->> >> on my asus notebook tm620 there is a crash with 2.6.22 and 2.6.21
->> >
->> > Did this happen when you were resuming from a suspend-to-ram/disk?
->> > [ I ask because I see swsusp in the trace below, linux-pm added to Cc: ]
->> >
->> >> ....
->> >> Using IPI Shortcut mode
->> >> WARNING: at block/ll_rw_blk.c:1575 blk_remove_plug()
->> >>  [<c01ac87e>] blk_remove_plug+0x36/0x5a
->> >>  [<c01ac8b6>] __generic_unplug_device+0x14/0x1f
->> >>  [<c01ad587>] __make_request+0x39b/0x49c
->> >>  [<c01abc8c>] generic_make_request+0x228/0x255
->> >>  [<c01adb54>] submit_bio+0xa5/0xac
->> >>  [<c013e233>] mempool_alloc+0x37/0xae
->> >>  [<c01314dc>] submit+0xc2/0x11d
->> >>  [<c0131585>] bio_read_page+0x24/0x27
->> >>  [<c013188b>] swsusp_check+0x4f/0xaf
->> >>  [<c012f6c2>] software_resume+0x5f/0x108
->> >>  [<c037867e>] kernel_init+0xb0/0x212
->> >>  [<c0103a16>] ret_from_fork+0x6/0x1c
->> >>  [<c03785ce>] kernel_init+0x0/0x212
->> >>  [<c03785ce>] kernel_init+0x0/0x212
->> >>  [<c010465b>] kernel_thread_helper+0x7/0x10
->> >>  =======================
->> >
->> > Surprising, that's a WARN_ON(!irqs_disabled()) but IRQs are disabled
->> > alright on that codepath. OTOH, __make_request() is heavily goto-driven,
->> > uses the non-save/restore variants of spin_lock_irq, and does not even
->> > balance locks / unlocks for some error paths ... gaah.
->>
->> __make_request() must be called from process context, hence
->> spin_lock_irq() is perfectly already and the fastest way to go. And of
->> course the locking is balanced! So please save your 'gaah's for code
->> you actually took the time to try and understand.
->
-> You're right, I didn't really look at that code for long (it even 
-> explicitly
-> comments about what's going with the locking in there!) sorry about
-> that.
->
-> [ Off-topic: BTW does every call to __make_request() end up in
-> blk_remove_plug()? Since you're explicitly making the assumption
-> that it *must* be called from process context (and hence the use of
-> the non-save/restore variants), you could consider putting a
-> WARN_ON(irqs_disabled()) over there, and perhaps a WARN_ON
-> (!spin_is_locked(queue_lock)) in blk_remove_plug() instead, and
-> other such similar functions that currently have the !irqs_disabled
-> check. This way you'd effectively cover _both_ the assertions,
-> and in appropriate places -- just a suggestion. ]
+Hi,
 
-No, blk_remove_plug() will only be called for sync bios, or where we
-have to wait for request allocation (which will unplug the device).
+Does this patch solve the X problem? Does anyone see anything wrong
+with it or know why agp was locking the pages?
 
-__generic_make_request() already does a might_sleep() check, so it
-should catch this already.
+--
+AGP should not need to lock pages. They are not protecting any race
+because there is no lock_page calls, only SetPageLocked.
 
->> But it does look like unbalanced irq disable/enable calls. I'd guess in
->> the suspend/resume path. Obviously something more esoteric, since this
->> is the first such report for 2.6.22, so like some not-very-used driver
->> for instance.
->
-> Now that I do look at the codepath, it does seem surprising irqs were
-> not disabled there. There are a bunch of calls to _other_ functions
-> between the spin_lock_irq and the blk_remove_plug via
-> __generic_unplug_device that would also have complained about
-> !irqs_disabled.
->
-> Walter, does this happen reproducibly?
+This is causing hangs with d00806b183152af6d24f46f0c33f14162ca1262a.
 
-As I previously wrote, it's like some of the device power up or resume
-routines that botch the irq enable/disable stuff. It'd be interesting to
-start stripping down the config until the warning goes away - or enable
-CONFIG_PM_DEBUG which may help as well.
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
--- 
-Jens Axboe
-
+diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
+index d535c40..3db4f40 100644
+--- a/drivers/char/agp/generic.c
++++ b/drivers/char/agp/generic.c
+@@ -1170,7 +1170,6 @@ void *agp_generic_alloc_page(struct agp_
+ 	map_page_into_agp(page);
+ 
+ 	get_page(page);
+-	SetPageLocked(page);
+ 	atomic_inc(&agp_bridge->current_memory_agp);
+ 	return page_address(page);
+ }
+@@ -1187,7 +1186,6 @@ void agp_generic_destroy_page(void *addr
+ 	page = virt_to_page(addr);
+ 	unmap_page_from_agp(page);
+ 	put_page(page);
+-	unlock_page(page);
+ 	free_page((unsigned long)addr);
+ 	atomic_dec(&agp_bridge->current_memory_agp);
+ }
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index a124060..2f319f4 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -213,7 +213,6 @@ static void *i8xx_alloc_pages(void)
+ 	}
+ 	global_flush_tlb();
+ 	get_page(page);
+-	SetPageLocked(page);
+ 	atomic_inc(&agp_bridge->current_memory_agp);
+ 	return page_address(page);
+ }
+@@ -229,7 +228,6 @@ static void i8xx_destroy_pages(void *add
+ 	change_page_attr(page, 4, PAGE_KERNEL);
+ 	global_flush_tlb();
+ 	put_page(page);
+-	unlock_page(page);
+ 	__free_pages(page, 2);
+ 	atomic_dec(&agp_bridge->current_memory_agp);
+ }
+diff --git a/drivers/char/agp/sgi-agp.c b/drivers/char/agp/sgi-agp.c
+index cda608c..98cf8ab 100644
+--- a/drivers/char/agp/sgi-agp.c
++++ b/drivers/char/agp/sgi-agp.c
+@@ -51,7 +51,6 @@ static void *sgi_tioca_alloc_page(struct
+ 		return NULL;
+ 
+ 	get_page(page);
+-	SetPageLocked(page);
+ 	atomic_inc(&agp_bridge->current_memory_agp);
+ 	return page_address(page);
+ }
