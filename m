@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934062AbXGYRKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933676AbXGYRMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934062AbXGYRKR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 13:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbXGYRKE
+	id S933676AbXGYRMz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 13:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbXGYRMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 13:10:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41508 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753481AbXGYRKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 13:10:03 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: John Sigler <linux.kernel@free.fr>
-Subject: Re: Pin-pointing the root of unusual application latencies
-Date: Wed, 25 Jul 2007 13:09:54 -0400
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <469600F7.3060603@free.fr> <20070725133835.GA17616@elte.hu> <46A758B5.9070602@free.fr>
-In-Reply-To: <46A758B5.9070602@free.fr>
+	Wed, 25 Jul 2007 13:12:47 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:1222 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752061AbXGYRMq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 13:12:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=G+Q811n3ts4yORZ8HopAk4YXTL+uwMR53ttS16nmXmgPgXCMxpr/hi8vRL5LfyovYVzebrZsxK33zQDE8QA7qo9DGDn5jiu8EOOGB0b0D7/F8i/exWG06zAVho6dOHKm7BpgyLyYZEAn27V9K+6G3Eu9lGQmh/xEQgMBhhhq+Hc=
+Message-ID: <526ad3230707251012r25188175g5fa460fe90ca9d61@mail.gmail.com>
+Date: Wed, 25 Jul 2007 10:12:45 -0700
+From: "Siddharth Taneja" <siddharth.taneja@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: TCP MD5 and Scatter Gather offloading.
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707251309.54240.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 July 2007 10:05, John Sigler wrote:
+Hello,
 
-> # cat /proc/interrupts
->             CPU0
->    0:         37    XT-PIC-XT        timer
->    1:          2    XT-PIC-XT        i8042
->    2:          0    XT-PIC-XT        cascade
->    7:          0    XT-PIC-XT        acpi
->   10:        175    XT-PIC-XT        eth2, Dta1xx
->   11:       1129    XT-PIC-XT        eth0
->   12:          4    XT-PIC-XT        eth1
->   14:      21482    XT-PIC-XT        ide0
-> NMI:          0
-> LOC:     161632
-> ERR:          0
-> MIS:          0
-> 
-> IRQ 10 is shared between a NIC and an I/O board.
-> 
-> For eth2, the kernel said:
-> ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKC]
->    -> GSI 10 (level, low) -> IRQ 10
-> 
-> For Dta1xx, the kernel said:
-> ACPI: PCI Interrupt 0000:02:0e.0[A] -> Link [LNKC]
->    -> GSI 10 (level, low) -> IRQ 10
-> 
-> Is it possible to avoid the two boards sharing IRQ 10?
+I am using a vanilla 2.6.22.1 kernel and I see the same kind of
+problem as had been mentioned some time back on this list
 
-Maybe.  In this configuration, INTA of the two devices
-is physically connected to the same wire on the device-side
-of the interrupt re-mapper -- so you'd have to change the configuration.
-If you have an IOAPIC and can enable it, that will not hurt --
-though unless something else changes, these devices are still
-tied together on the device-side of the  mapper.
-So if you can physically move one of the devices to another slot
-that is your best bet.
+http://lkml.org/lkml/2007/5/22/45
 
-I'd need a bunch of info from your system to tell you what
-you can do ahead of time, including full dmesg, lspci -vv
-and acpidump.
+The issue is essentially that with the MD5 option enabled for the
+specific TCP connection, the SYN and SYN-ACKS are passed fine and the
+connection establishes fine, but the other end (a cisco router)
+complains about incorrect MD5 signatures on any other message that is
+sent after this.
 
--Len
+Setting the scatter-gather offloading option on the NIC seems to
+correct this problem. Recently I had seen a checkin (as a response to
+the problem mentioned in the above link) where the TSO option was
+turned off to make MD5 work (my kernel has that fix). Is a similar
+solution needed here too?
+
+This is the information about my system:
+> uname -a
+Linux stdalone 2.6.22.1 #1 SMP Mon Jul 23 20:15:21 PDT 2007 i686 i686
+i386 GNU/Linux
+
+> ethtool -i eth0
+driver: e1000
+version: 7.3.20-k2
+firmware-version: N/A
+bus-info: 0000:01:0a.0
+
+> ethtool -k eth0
+Offload parameters for eth0:
+rx-checksumming: on
+tx-checksumming: on
+scatter-gather: off
+tcp segmentation offload: off
+
+Thanks for your help.
+
+Siddharth
+
+PS: I would like to be CC'ed on the reply to this email. Thanks.
