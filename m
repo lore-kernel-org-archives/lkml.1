@@ -1,82 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765992AbXGYOqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765505AbXGYOtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765992AbXGYOqx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 10:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbXGYOqo
+	id S1765505AbXGYOtz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 10:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755056AbXGYOts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 10:46:44 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44037 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755056AbXGYOqn (ORCPT
+	Wed, 25 Jul 2007 10:49:48 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:33884 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755622AbXGYOts (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 10:46:43 -0400
-Date: Wed, 25 Jul 2007 16:46:16 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Auke Kok <auke-jan.h.kok@intel.com>, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: [-mm patch] one e1000 driver should be enough for everyone
-Message-ID: <20070725144615.GC3572@stusta.de>
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <20070725133650.GB3572@stusta.de> <46A754C7.9080004@garzik.org>
+	Wed, 25 Jul 2007 10:49:48 -0400
+Date: Wed, 25 Jul 2007 15:49:44 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: bob.picco@hp.com, apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix corruption of memmap on IA64 SPARSEMEM when mem_section is not a power of 2
+Message-ID: <20070725144944.GD32445@skynet.ie>
+References: <20070313104201.GA16842@skynet.ie> <20070724220116.0d9fb8b5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <46A754C7.9080004@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070724220116.0d9fb8b5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 09:48:55AM -0400, Jeff Garzik wrote:
-> Adrian Bunk wrote:
->> BTW:
->> Unless I'm misunderstanding anything, the new driver should support a 
->> superset of what the old driver supported.
->> Therefore, it would be good if the final merge into Linus' tree will
->> do an
->>   rm -r drivers/net/e1000
->>   mv drivers/net/e1000new drivers/net/e1000
->
-> Based on the most recent discussion, e1000new (or whatever it will be 
-> called) should support only the newer PCI-Express chips, while e1000 will 
-> retain support for the older chips.
+On (24/07/07 22:01), Andrew Morton didst pronounce:
+> On Tue, 13 Mar 2007 10:42:02 +0000 mel@skynet.ie (Mel Gorman) wrote:
+> 
+> > There are problems in the use of SPARSEMEM and pageblock flags that causes
+> > problems on ia64.
+> > 
+> > <SNIP>
+> 
+> SuperH allmodconfig blew up:
+> 
+> mm/sparse.c: In function `sparse_init':
+> mm/sparse.c:482: error: implicit declaration of function `sparse_early_usemap_alloc'
+> mm/sparse.c:482: warning: assignment makes pointer from integer without a cast
+> mm/sparse.c: In function `sparse_add_one_section':
+> mm/sparse.c:553: error: implicit declaration of function `__kmalloc_section_usemap'
+> mm/sparse.c:553: warning: assignment makes pointer from integer without a cast
 
-I found the discussion, and Christoph's e1000e sounds like the best name 
-("new" doesn't say whether it's a new driver for old hardware or a 
-driver for new hardware).
+This error is due to a bad interaction between
+generic-virtual-memmap-support-for-sparsemem.patch and
+fix-corruption-of-memmap-on-ia64-sparsemem-when-mem_section-is-not-a-power-of-2.patch
+. Functions that are needed whether CONFIG_SPARSEMEM_VMEMMAP is set are
+not are depending on CONFIG_SPARSEMEM_VMEMMAP . This breaks on arch/sh
+for example where SPARSEMEM may be set but not NUMA.
 
-> Over the long term this will allow e1000new to grow without affecting 
-> support for the older, stable chips.
->
-> So, e1000 is not going away.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-No problem for me, but this obviously implies that global code in the 
-new driver has to be renamed.
+---
+ sparse.c |   58 +++++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 29 insertions(+), 29 deletions(-)
 
-And please ensure that they will always support distinct PCI IDs, or 
-there will be the following common pattern if both drivers support
-a card:
-- user tries driver A
-- driver A doesn't work (although it should have worked)
-- user tries driver B
-- driver B works
-- a later kernel removes support for this card from driver B
-- user tries driver A
-- driver A still doesn't work
-- user writes bug report
 
-Users should report bugs early instead of bouncing between different 
-drivers.
-
-> 	Jeff
-
-cu
-Adrian
-
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc1-mm1-clean/mm/sparse.c linux-2.6.23-rc1-mm1-005-sh-sparsemem-fix/mm/sparse.c
+--- linux-2.6.23-rc1-mm1-clean/mm/sparse.c	2007-07-25 13:43:30.000000000 +0100
++++ linux-2.6.23-rc1-mm1-005-sh-sparsemem-fix/mm/sparse.c	2007-07-25 14:27:58.000000000 +0100
+@@ -220,6 +220,35 @@ void *alloc_bootmem_high_node(pg_data_t 
+ 	return NULL;
+ }
+ 
++static unsigned long usemap_size(void)
++{
++	unsigned long size_bytes;
++	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
++	size_bytes = roundup(size_bytes, sizeof(unsigned long));
++	return size_bytes;
++}
++
++#ifdef CONFIG_MEMORY_HOTPLUG
++static unsigned long *__kmalloc_section_usemap(void)
++{
++	return kmalloc(usemap_size(), GFP_KERNEL);
++}
++#endif /* CONFIG_MEMORY_HOTPLUG */
++
++static unsigned long *sparse_early_usemap_alloc(unsigned long pnum)
++{
++	unsigned long *usemap;
++	struct mem_section *ms = __nr_to_section(pnum);
++	int nid = sparse_early_nid(ms);
++
++	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	if (usemap)
++		return usemap;
++
++	printk(KERN_WARNING "%s: allocation failed\n", __FUNCTION__);
++	return NULL;
++}
++
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+ /*
+  * Virtual Memory Map support
+@@ -254,35 +283,6 @@ void *alloc_bootmem_high_node(pg_data_t 
+  * 	require one PTE/TLB per PAGE_SIZE chunk of the virtual memory map.
+  */
+ 
+-static unsigned long usemap_size(void)
+-{
+-	unsigned long size_bytes;
+- 	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
+-	size_bytes = roundup(size_bytes, sizeof(unsigned long));
+-	return size_bytes;
+-}
+-
+-#ifdef CONFIG_MEMORY_HOTPLUG
+-static unsigned long *__kmalloc_section_usemap(void)
+-{
+-	return kmalloc(usemap_size(), GFP_KERNEL);
+-}
+-#endif /* CONFIG_MEMORY_HOTPLUG */
+-
+-static unsigned long *sparse_early_usemap_alloc(unsigned long pnum)
+-{
+-	unsigned long *usemap;
+-	struct mem_section *ms = __nr_to_section(pnum);
+-	int nid = sparse_early_nid(ms);
+-
+-	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+-	if (usemap)
+-		return usemap;
+-
+-	printk(KERN_WARNING "%s: allocation failed\n", __FUNCTION__);
+-	return NULL;
+-}
+-
+ /*
+  * Allocate a block of memory to be used to back the virtual memory map
+  * or to back the page tables that are used to create the mapping.
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
