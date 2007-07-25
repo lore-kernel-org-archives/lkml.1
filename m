@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764785AbXGYLHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764370AbXGYLJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764785AbXGYLHe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 07:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759747AbXGYLHW
+	id S1764370AbXGYLJU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 07:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759654AbXGYLJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 07:07:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:13200 "EHLO
+	Wed, 25 Jul 2007 07:09:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:16025 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759529AbXGYLHT (ORCPT
+	with ESMTP id S1759413AbXGYLJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 07:07:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=lkfqd7F5TwEVxy2q4wsdXZYOM98g3iKulnvw7iJd1vObM9c8UNPbLTK5f5UJp6HokGkoEY1l7gSrvXqVSasbnh8OrAnaJZXm+EkUFIumY2mWq1660jPGeou2KK9R6UnGIiQzR/kUArv6NcYTgTxGeduoYYp7ytmvCy8n/nskeSA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] bsg: Fix build for CONFIG_BLOCK=n
-Date: Wed, 25 Jul 2007 13:04:56 +0200
-User-Agent: KMail/1.9.6
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20070725072354.GA18706@linux-sh.org>
-In-Reply-To: <20070725072354.GA18706@linux-sh.org>
+	Wed, 25 Jul 2007 07:09:08 -0400
+Date: Wed, 25 Jul 2007 14:09:08 +0300
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: James Bottomley <James.Bottomley@steeleye.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       Mike Christie <michaelc@cs.wisc.edu>, Roland Dreier <rdreier@cisco.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org
+Subject: [PATCH trivial] include linux/mutex.h from scsi_transport_iscsi.h
+Message-ID: <20070725110907.GF3826@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707251304.56505.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+scsi/scsi_transport_iscsi.h uses struct mutex, so while
+linux/mutex.h seems to be pulled in indirectly
+by one of the headers it includes, the right thing
+is to include linux/mutex.h directly.
 
-Hi,
+Signed-off-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
 
-On Wednesday 25 July 2007, Paul Mundt wrote:
-> BLK_DEV_BSG was added outside of the if BLOCK check, which allows it to
-> be enabled when CONFIG_BLOCK=n. This leads to many screenlengths of
-> errors, starting with a parse error on the request_queue_t definition.
-> Obviously this wasn't intended for CONFIG_BLOCK=n usage, so just move the
-> option back in to the block.
-> 
-> Caught with a randconfig on sh.
+---
 
-also pointed out in my bsg review from a week ago ;)
+diff --git a/include/scsi/scsi_transport_iscsi.h b/include/scsi/scsi_transport_iscsi.h
+index 706c0cd..7530e98 100644
+--- a/include/scsi/scsi_transport_iscsi.h
++++ b/include/scsi/scsi_transport_iscsi.h
+@@ -24,6 +24,7 @@
+ #define SCSI_TRANSPORT_ISCSI_H
+ 
+ #include <linux/device.h>
++#include <linux/mutex.h>
+ #include <scsi/iscsi_if.h>
+ 
+ struct scsi_transport_template;
 
-http://lkml.org/lkml/2007/7/17/487
 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
-Thanks for fixing this up.
-
-Bart
+-- 
+MST
