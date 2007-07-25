@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbXGYUJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbXGYUK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbXGYUJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 16:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXGYUJa
+	id S1757275AbXGYUK6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 16:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXGYUKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 16:09:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59002 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752323AbXGYUJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 16:09:28 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19w0Ktqzc5wsCPLGwh2d5+5l+z31yhF+01BpioSoX
-	pd1gkWq+7xcdhp
-Date: Wed, 25 Jul 2007 22:09:24 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
-In-Reply-To: <46A7AC17.9060309@ru.mvista.com>
-Message-ID: <Pine.LNX.4.60.0707252203160.6234@poirot.grange>
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>
- <Pine.LNX.4.60.0707252130090.6234@poirot.grange> <46A7A8FB.5090909@ru.mvista.com>
- <Pine.LNX.4.60.0707252150540.6234@poirot.grange> <46A7AC17.9060309@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Wed, 25 Jul 2007 16:10:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42681 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752589AbXGYUKu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 16:10:50 -0400
+Date: Wed, 25 Jul 2007 13:10:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: mel@skynet.ie (Mel Gorman)
+Cc: bob.picco@hp.com, apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix corruption of memmap on IA64 SPARSEMEM when
+ mem_section is not a power of 2
+Message-Id: <20070725131003.1bb80194.akpm@linux-foundation.org>
+In-Reply-To: <20070725125501.GA32445@skynet.ie>
+References: <20070313104201.GA16842@skynet.ie>
+	<20070724220116.0d9fb8b5.akpm@linux-foundation.org>
+	<20070725125501.GA32445@skynet.ie>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007, Sergei Shtylyov wrote:
+On Wed, 25 Jul 2007 13:55:02 +0100
+mel@skynet.ie (Mel Gorman) wrote:
 
-> Guennadi Liakhovetski wrote:
+> > mm/sparse.c: In function `sparse_init':
+> > mm/sparse.c:482: error: implicit declaration of function `sparse_early_usemap_alloc'
+> > mm/sparse.c:482: warning: assignment makes pointer from integer without a cast
+> > mm/sparse.c: In function `sparse_add_one_section':
+> > mm/sparse.c:553: error: implicit declaration of function `__kmalloc_section_usemap'
+> > mm/sparse.c:553: warning: assignment makes pointer from integer without a cast
 > 
-> > >   Wrong list to submit sych stuff, post to linux-ide.
+> I'm looking at this now and getting a superh cross-compiler built to
+> build-test any fix. My first impression is that
+> sparse_early_usemap_alloc() needs to be defined whether
+> CONFIG_SPARSEMEM_VMEMMAP is set or not. Right now,
+> sparse_early_usemap_alloc() is only defined when it is set and it's not
+> clear why although "by accident" is the most likely explanation.
 > 
-> > Not entirely. The patch (or other patches in the series) would also touch
-> > ARM platforms in the mainline, currently using that driver. As I didn't 
-> 
->    Was worth cross-posting to linux-ide anyway to get the IDE experts'
-> feedback. ;-)
 
-linux-arm* mailing lists do not allow cross-posting.
+Thanks.
 
-> > have a chance to test them due to lack of hardware, I posted on arm, asking
-> > if anyone would test those platforms for me.
-> 
->   ... and they laughed at you? ;-)
-
-No, noone had that hardware either:-) Those who had preferred to forget 
-about it, I guess.
-
-> > It was largely in accordance with my own opinion, so, I chose to accept
-> > it:-)
-> 
->    It's not clear why you decided to waste time on it then. :-)
-
-Because I myself was in the situation where my local version of the driver 
-was filling with #ifdef's supporting all possible variations of our 
-hardware, so, I switched it to platform_driver to clean up that mess. And 
-then decided to ask if others would consider it useful. Just in case. I 
-hoped they wouldn't.
-
-> > > > doubt, just wanted to double-check. So, why do we now need a new legacy
-> > > > (a/drivers/ide/legacy/ide_platform.c) driver when a "modern" driver
-> > > > exists?
-> 
-> > >   Good question (I know the answer but won't tell ;-).
-> 
-> > You've been very cooperative, thanks.
-> 
->    In fact, I also highly doubt that we need it.  What we'd need is an OF
-> driver.
-
-Great, thanks. Now we have to find out why Alan acked it (added to cc).
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+There's an sh cross-compiler in http://userweb.kernel.org/~akpm/cross-compilers/,
+btw.
