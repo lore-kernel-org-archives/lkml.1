@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933136AbXGYPaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933240AbXGYPaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933136AbXGYPaT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 11:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762886AbXGYPaG
+	id S933240AbXGYPaj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 11:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763633AbXGYPaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 11:30:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:38397 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757346AbXGYPaE (ORCPT
+	Wed, 25 Jul 2007 11:30:08 -0400
+Received: from seanodes.co.fr.clara.net ([212.43.220.11]:50745 "EHLO
+	seanodes.co.fr.clara.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762617AbXGYPaG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 11:30:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=dDEWv/q0LlMEQd+yDSCVKxLYGDr1YLDh4q0ufdFMy8mxmm61cR113JRI4brLEA8PUO+ilE+//hTDkMA7JNvP/213TfM89E8LfWMLQDCexERzClO167W74JZh/KPgO9kUW9JHv1D+Ko08zQ7YiHWKeTWKqZLa34K9WB0YywznH/M=
-Message-ID: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>
-Date: Wed, 25 Jul 2007 17:30:02 +0200
-From: "Kacper Wysocki" <kacperw@online.no>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: howto get a patch merged (WAS: Re: -mm merge plans for 2.6.23)
-Cc: "Rene Herman" <rene.herman@gmail.com>, david@lang.hm,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>, Valdis.Kletnieks@vt.edu,
-       "Ray Lee" <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org,
-       "ck list" <ck@vds.kolivas.org>, linux-mm@kvack.org,
-       "Paul Jackson" <pj@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 47a3a519e1bcf863
+	Wed, 25 Jul 2007 11:30:06 -0400
+Date: Wed, 25 Jul 2007 17:29:56 +0200
+From: Alban Crequy <alban.crequy@seanodes.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] error management in add_disk()
+Message-ID: <20070725172956.2fa5b63e@alban>
+In-Reply-To: <20070724132805.GR21668@ftp.linux.org.uk>
+References: <20070724135753.18fccf4f@alban>
+	<20070724132805.GR21668@ftp.linux.org.uk>
+Organization: Seanodes
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.3; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/07, Ingo Molnar <mingo@elte.hu> wrote:
+Le Tue, 24 Jul 2007 14:28:05 +0100,
+Al Viro <viro@ftp.linux.org.uk> a écrit :
+
+>On Tue, Jul 24, 2007 at 01:57:53PM +0200, Alban Crequy wrote:
+>> Hi,
+>> 
+>> I have a problem with the error management of add_disk() and
+>> del_gendisk().
+>> 
+>> add_disk() adds an entry in /sys/block/<name>. The filename
+>> in /sys/block is not (struct gen_disk)->disk_name but more or less
+>> the first KOBJ_NAME_LEN characters of (struct gen_disk)->disk_name.
+>> 
+>> #define KOBJ_NAME_LEN                   20
+>> 
+>> My problem occurs when we try to add 2 disks with different names,
+>> but when the KOBJ_NAME_LEN first characters are the same.
 >
-> * Rene Herman <rene.herman@gmail.com> wrote:
->
-> > Nick Piggin is the person to convince it seems and if I've read things
-> > right (I only stepped into this thing at the updatedb mention, so
-> > maybe I haven't) his main question is _why_ the hell it helps
-> > updatedb. [...]
-[snip howto get a patch merged]
-> But a "here is a solution, take it or leave it" approach, before having
-> communicated the problem to the maintainer and before having debugged
-> the problem is the wrong way around. It might still work out fine if the
-> solution is correct (especially if the patch is small and obvious), but
-> if there are any non-trivial tradeoffs involved, or if nontrivial amount
-> of code is involved, you might see your patch at the end of a really
-> long (and constantly growing) waiting list of patches.
+>So don't do that.
 
-Is that what happened with swap prefetch these two years? The approach
-has been wrong?
+I no more do that. But I still think it would be better if we found a
+way to manage errors in that case.
 
-In this particular instance, there are lots of people who have looked
-at, tried, tested, reported on, advocated, and most importantly -been
-using for several years- swap prefetch. That's a lot of people, it's
-hard to coordinate a unified approach, eh?
+I fear that parts of kernel make this error. For example, old version of
+GFS has this code:
 
-You are the gatekeepers. The dudes with the keys. The guys who must
-claim technical and moral superiority over the rabble, the rest of us.
+http://csourcesearch.net/package/gfs-kernel/2.6.9/gfs-kernel-2.6.9-27/src/gfs/diaper.c
+  char buf[BDEVNAME_SIZE];
+  bdevname(real, buf);
+  snprintf(gd->disk_name, sizeof(gd->disk_name), "diapered_%s", buf);
 
-I always believed that the linux development model consisted of
-collaboration with technical merit as the prime goal in mind. But the
-sheer volume of patches and the small number of keyholders precludes
-such a scenario. So the gatekeepers have trusted advisors, and it's
-quicker to look at numbers than to try out all the random (and often
-crappy) patches that flow in.
+Since BDEVNAME_SIZE is 32 and KOBJ_NAME_LEN is 20, the bug happens quite
+easily.
 
-It's easier to ask for more testing, more feedback, more "unbiased",
-easier to just drop it rather than to look at the new code itself.
-It's easier and less risky to try and understand a problem yourself,
-and write your own code. After all, you trust your own code, right?
+I did not check closely if this is a problem, but there is other parts
+in the current kernel that build the disk_name with snprintf("...%s...")
 
-Life is so much simpler without any alien objects around.
-However, cool things usually come from outside such a stable environment.
+>> The attached test module triggers the problem. You can try something
+>> like: for i in $(seq 1 100) ; do insmod ./adddiskbug.ko ; rmmod
+>> adddiskbug ; done
+>> 
+>> The attached patch fixes the problem by changing the prototype of
+>> add_disk() and register_disk() to return errors.
+> 
+>This is bogus.  Just what would callers do with these error values?
+>Ignore them silently?  Bail out?  Can't do - at that point disk just
+>might have been opened already.  add_disk() is the point of no return;
+>we are already past the last point where we could bail out.
 
-The problem isn't debugging the wrong way around. The problem is no
-matter how many people read it, test it, use it, brag about it,
-measure it, it doesn't matter at all unless they can convince one of
-these few dudes that he should really turn that key.
+I missed that point - that the disk might have been opened.  Where is
+the point of no return in add_disk() exactly?  Is it really before the
+kobject_add() that causes the problem?
 
-0K
+In this case, perhaps we can 1/ check that the kobject_add() will not
+fail before the point of no return, 2/ pass this point and then 3/ do
+the kobject_add(). And add appropriate locking to ensure that nobody
+add another disk with the same 20-characters truncated name between 1/
+and 3/.
+
