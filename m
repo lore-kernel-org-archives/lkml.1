@@ -1,101 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766016AbXGYNl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764557AbXGYNsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766016AbXGYNl0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbXGYNlS
+	id S1764557AbXGYNsW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXGYNsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:41:18 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54995 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751603AbXGYNlR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:41:17 -0400
-Date: Wed, 25 Jul 2007 15:38:39 +0200
-From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-To: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
-       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
-       mjg59@srcf.ucam.org, castet.matthieu@free.fr, shaohua.li@intel.com
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
- platform devices - broke my serial console
-Message-ID: <20070725153839.353b0153@frecb000686.frec.bull.fr>
-In-Reply-To: <20070725153253.4d7e7e37@frecb000686.frec.bull.fr>
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
-	<200707240948.45916.bjorn.helgaas@hp.com>
-	<20070725094554.55c46d8b@frecb000686.frec.bull.fr>
-	<200707250716.44609.bjorn.helgaas@hp.com>
-	<20070725153253.4d7e7e37@frecb000686.frec.bull.fr>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Wed, 25 Jul 2007 09:48:09 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:41184 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750847AbXGYNsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:48:07 -0400
+Date: Wed, 25 Jul 2007 15:57:18 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcin ??lusarz <marcin.slusarz@gmail.com>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070725135718.GB1843@ff.dom.local>
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos>
 Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 25/07/2007 15:45:53,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 25/07/2007 15:45:55,
-	Serialize complete at 25/07/2007 15:45:55
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185322771.4175.102.camel@chaos>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 15:32:53 +0200 Sébastien Dugué <sebastien.dugue@bull.net> wrote:
+On Wed, Jul 25, 2007 at 02:19:31AM +0200, Thomas Gleixner wrote:
+...
+> Looking into the IO_APIC code, the resend via send_IPI_self() happens
+> unconditionally. So the resend is done for level and edge interrupts.
+> This makes the problem more mysterious.
+> 
+> The code in question lib8390.c does
+> 
+> 	disable_irq();
+> 	fiddle_with_the_network_card_hardware()
+> 	enable_irq();
+...
+> 
+> No idea how this affects the network card, as the code there must be
+> able to handle interrupts, which are not originated from the card due to
+> interrupt sharing.
 
-> 
->   Hi Bjorn,
-> 
-> On Wed, 25 Jul 2007 07:16:44 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> 
-> > On Wednesday 25 July 2007 01:45:54 am Sébastien Dugué wrote:
-> > >   looks like the commit was dropped, nevertheless here is some more info
-> > > to try and understand what may be going on so it may benefit the posterity ;-)
-> > 
-> > Thank you very much.
-> > 
-> > Your machine does indeed describe both UARTs in ACPI, and the PNP probe
-> > finds them correctly.  The only wrinkle is that the PNP probe names the
-> > ports in the order they appear in the ACPI namespace, and your firmware
-> > has them "backwards":
-> > 
-> >                     Device (COMB)
-> >                     {
-> >                         Name (_HID, EisaId ("PNP0501"))
-> >                         Name (_DDN, "COM2")
-> >                         Name (_UID, 0x02)
-> > 
-> >                     Device (COMA)
-> >                     {
-> >                         Name (_HID, EisaId ("PNP0501"))
-> >                         Name (_DDN, "COM1")
-> >                         Name (_UID, 0x01)
-> 
-> 
->   Yes, that's what I thought was weird in the DSDT, but thought the PnP layer
-> would map those devices according to UID or at least DDN. It seems that's
-> not the case.
-> 
-> > 
-> > There's nothing illegal about this, but with the current PNPACPI,
-> > it causes the names to be reversed.  The blind probe tries 0x3f8
-> > first, and names that ttyS0.  But the PNP probe, using the namespace
-> > order, finds the "COM2" port at 0x2f8 first:
-> > 
-> >   00:0b: ttyS0 at I/O 0x2f8 (irq = 3) is a 16550A
-> >   00:0c: ttyS1 at I/O 0x3f8 (irq = 4) is a 16550A
-> 
->   Oh I see, didn't notice this though.
-> 
-> > 
-> > So I think your serial console would work without "legacy_serial.force"
-> > if you used "console=ttyS1" instead of "console=ttyS0".  But you
-> > shouldn't have to do that, of course.
-> 
->   Will try ttyS1 just to confirm...
-> 
->   Waiting for reboot...
-> 
->   OK boots fine with the serial console fully operational again.
+I think, in this last yesterday's patch Ingo could be right, yet!
+The comment at the beginnig points this is done like that because
+of chip's slowness. And problems with timing are mysterious.
 
-  But I also need to change my inittab. At least it confirms the
-root cause of the problem.
+On the other hand author of this code didn't use spin_lock_irqsave
+for some reason, probably after testing this option too. So, I hope
+this is the right path, but alas, I'm not sure this patch has to
+prove this 100%.
 
-  Sébastien.
+Anyway, in my opinion this situation where interrupts could/have_to
+be used for such strange things should confirm the need of more
+options for handling irqs individually.
+
+Thanks,
+Jarek P.
