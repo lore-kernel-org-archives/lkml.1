@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbXGYCca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbXGYCgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762513AbXGYCca (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Jul 2007 22:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760056AbXGYCcU
+	id S932394AbXGYCgH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jul 2007 22:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbXGYCf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Jul 2007 22:32:20 -0400
-Received: from mx2.suse.de ([195.135.220.15]:48288 "EHLO mx2.suse.de"
+	Tue, 24 Jul 2007 22:35:56 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:43255 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755706AbXGYCcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Jul 2007 22:32:19 -0400
-Date: Wed, 25 Jul 2007 04:32:17 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH RFC] extent mapped page cache
-Message-ID: <20070725023217.GA32076@wotan.suse.de>
-References: <20070710210326.GA29963@think.oraclecorp.com> <20070724160032.7a7097db@think.oraclecorp.com> <1185307985.6586.50.camel@localhost> <1185312343.5535.5.camel@lappy> <20070724192509.5bc9b3fe@think.oraclecorp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753440AbXGYCfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Jul 2007 22:35:55 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
+Date: Tue, 24 Jul 2007 20:34:42 -0600
+User-Agent: KMail/1.9.6
+Cc: "Jeff Garzik" <jeff@garzik.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       "=?iso-8859-1?q?S=E9bastien?= =?iso-8859-1?q?_Dugu=E9?=" 
+	<sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <46A65D7D.6040409@garzik.org> <86802c440707241333qcaac27fw8a265098cd164be8@mail.gmail.com>
+In-Reply-To: <86802c440707241333qcaac27fw8a265098cd164be8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070724192509.5bc9b3fe@think.oraclecorp.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200707242034.42679.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 07:25:09PM -0400, Chris Mason wrote:
-> On Tue, 24 Jul 2007 23:25:43 +0200
-> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> The tree is a critical part of the patch, but it is also the easiest to
-> rip out and replace.  Basically the code stores a range by inserting
-> an object at an index corresponding to the end of the range.
-> 
-> Then it does searches by looking forward from the start of the range.
-> More or less any tree that can search and return the first key >=
-> than the requested key will work.
-> 
-> So, I'd be happy to rip out the tree and replace with something else.
-> Going completely lockless will be tricky, its something that will deep
-> thought once the rest of the interface is sane.
+On Tuesday 24 July 2007 02:33:05 pm Yinghai Lu wrote:
+> I have a system that has the same problem, and it turns out that FW
+> missed PNP0501 is DSDT for uart. and add that it into DSDT works well.
 
-Just having the other tree and managing it is what makes me a little
-less positive of this approach, especially using it to store pagecache
-state when we already have the pagecache tree.
+Is this FW that has been shipped?  Can you give any more details,
+like DMI info and a copy of the DSDT?  We can't expect users to
+upgrade their firmware or use a custom DSDT.
 
-Having another tree to store block state I think is a good idea as I
-said in the fsblock thread with Dave, but I haven't clicked as to why
-it is a big advantage to use it to manage pagecache state. (and I can
-see some possible disadvantages in locking and tree manipulation overhead).
-
+Bjorn
