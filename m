@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765354AbXGYXRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932487AbXGYXS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765354AbXGYXRf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 19:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761038AbXGYXRZ
+	id S932487AbXGYXS6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 19:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbXGYXSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 19:17:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37118 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760155AbXGYXRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 19:17:23 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1/JYU9e30nJUT90+Gs0eHAvGC0koj3ndYjnAkchlU
-	jarvRF1MdXv5kM
-Date: Thu, 26 Jul 2007 01:17:14 +0200
-From: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>
-To: Len Brown <lenb@kernel.org>
-Cc: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Time Problems with 2.6.23-rc1-gf695baf2
-Message-ID: <20070725231714.GA24867@alice>
-References: <20070723221630.GA28951@alice> <6bffcb0e0707241614s7b563b5bu114d2ecb227b1557@mail.gmail.com> <20070725113349.GB5469@alice> <200707251250.22469.lenb@kernel.org>
+	Wed, 25 Jul 2007 19:18:51 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40216 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755561AbXGYXSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 19:18:50 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Satya <satyakiran@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: pte_offset_map for ppc assumes HIGHPTE
+References: <acbcf3840707251516w301f834cj5f6a81a494d359ed@mail.gmail.com>
+X-Yow: Those aren't WINOS--that's my JUGGLER, my AERIALIST,
+ my SWORD SWALLOWER, and my LATEX NOVELTY SUPPLIER!!
+Date: Thu, 26 Jul 2007 01:18:48 +0200
+In-Reply-To: <acbcf3840707251516w301f834cj5f6a81a494d359ed@mail.gmail.com>
+	(Satya's message of "Wed\, 25 Jul 2007 17\:16\:01 -0500")
+Message-ID: <jewswodqcn.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200707251250.22469.lenb@kernel.org>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.22.1 (x86_64)
-X-Uptime: 01:14:56 up 14:27,  6 users,  load average: 0.63, 0.60, 0.51
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Len Brown (lenb@kernel.org) wrote:
-> > > > > [   13.506890] ACPI Exception (processor_throttling-0084): AE_NOT_FOUND, Evaluating _PTC [20070126]
-> > > > > [   13.507101] ACPI Exception (processor_throttling-0147): AE_NOT_FOUND, Evaluating _TSS [20070126]
-> 
-> Note that these are just noise -- new code being verbose when looking for an optional feature.
-> 
-> The fact that hitting the power button a bunch of times
-> to make the system move along suggests some sort of missing interrupt problem --
-> most likely the timer itself.
-> 
-> [   13.868574] Probing IDE interface ide0...
-> [  387.279576] Clocksource tsc unstable (delta = 370195339890 ns)
-> 
-> 5-minutes -- a long probe:-)
-> 
-> > CONFIG_NO_HZ=y
-> 
-> does CONFIG_NO_HZ=n make a difference?
+Satya <satyakiran@gmail.com> writes:
 
-[   41.007654] EXT3 FS on hda1, internal journal
-[  322.133656] Clocksource tsc unstable (delta = 276476174785 ns)
-Boot went fine but the system got pretty unresponsive later, 2-3 seconds
-delay after keypresses on an idle system and a hang during shutdown which i had to resolve by
-pressing the power button (not to switch it of the hard way, but to keep it rebooting)
+> hello,
+> The implementation of pte_offset_map() for ppc assumes that PTEs are
+> kept in highmem (CONFIG_HIGHPTE). There is only one implmentation of
+> pte_offset_map() as follows (include/asm-ppc/pgtable.h):
+>
+> #define pte_offset_map(dir, addr)               \
+>          ((pte_t *) kmap_atomic(pmd_page(*(dir)), KM_PTE0) + pte_index(addr))
+>
+> Shouldn't this be made conditional according to CONFIG_HIGHPTE is
+> defined or not
 
-> > CONFIG_HIGH_RES_TIMERS=y
-> 
-> does CONFIG_HIGH_RES_TIMERS=n make a difference?
+kmap_atomic is always defined with or without CONFIG_HIGHPTE.
 
-doesnt change anything
+> (as implemented in include/asm-i386/pgtable.h) ?
 
-> does "irqpoll" make any difference?
-> does "notsc" make any difference?
-> does "idle=poll" make any difference?
+I don't think that needs it either.
 
-I tried these with the HIGH_RES_TIMERS=n, irqpoll and notsc dont change
-a thing, idle=poll makes it boot normally
+Andreas.
 
-
-Greetings, Eric
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
