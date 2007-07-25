@@ -1,100 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbXGYGZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761315AbXGYG0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762734AbXGYGZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 02:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbXGYGZU
+	id S1761315AbXGYG0G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 02:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbXGYGZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 02:25:20 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:58535
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752932AbXGYGZT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 02:25:19 -0400
-Date: Tue, 24 Jul 2007 23:23:28 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Eric St-Laurent <ericstl34@sympatico.ca>,
-       Rene Herman <rene.herman@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-In-Reply-To: <46A6E80B.6030704@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0707242316410.2229@asgard.lang.hm>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> 
- <200707102015.44004.kernel@kolivas.org>  <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-  <46A57068.3070701@yahoo.com.au>  <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-  <46A58B49.3050508@yahoo.com.au>  <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-  <46A6CC56.6040307@yahoo.com.au>  <46A6D7D2.4050708@gmail.com>
- <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au>
- <Pine.LNX.4.64.0707242252250.2229@asgard.lang.hm> <46A6E80B.6030704@yahoo.com.au>
+	Wed, 25 Jul 2007 02:25:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:59962 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753498AbXGYGZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 02:25:51 -0400
+Message-ID: <46A6ECB7.7090208@goop.org>
+Date: Tue, 24 Jul 2007 23:24:55 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Keith Owens <kaos@ocs.com.au>, Trent Piepho <xyzzy@speakeasy.org>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
+References: <21803.1185331847@ocs10w.ocs.com.au> <46A6DB04.3000003@zytor.com>
+In-Reply-To: <46A6DB04.3000003@zytor.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007, Nick Piggin wrote:
+H. Peter Anvin wrote:
+> INT 6 is #UD, so the __builtin_trap() replaces the ud2a as well as the loop.
+>   
 
-> david@lang.hm wrote:
->>  On Wed, 25 Jul 2007, Nick Piggin wrote:
->
->> >  OK, this is where I start to worry. Swap prefetch AFAIKS doesn't fix
->> >  the updatedb problem very well, because if updatedb has caused swapout
->> >  then it has filled memory, and swap prefetch doesn't run unless there
->> >  is free memory (not to mention that updatedb would have paged out other
->> >  files as well).
->> > 
->> >  And drop behind doesn't fix your usual problem where you are downloading
->> >  from a server, because that is use-once write(2) data which is the
->> >  problem. And this readahead-based drop behind also doesn't help if data
->> >  you were reading happened to be a sequence of small files, or otherwise
->> >  not in good readahead order.
->> > 
->> >  Not to say that neither fix some problems, but for such conceptually
->> >  big changes, it should take a little more effort than a constructed test
->> >  case and no consideration of the alternatives to get it merged.
->>
->>
->>  well, there appears to be a fairly large group of people who have
->>  subjective opinions that it helps them. but those were dismissed becouse
->>  they aren't measurements.
->
-> Not at all. But there is also seems to be some people also experiencing
-> problems with basic page reclaim on some of the workloads where these
-> things help. I am not dismissing anybody's claims about anything; I want
-> to try to solve some of these problems.
->
-> Interestingly, some of the people ranting the most about how the VM sucks
-> are the ones helping least in solving these basic problems.
->
->
->>  so now the measurements of the constructed test case aren't acceptable.
->>
->>  what sort of test case would be acceptable?
->
-> Well I never said real world tests aren't acceptable, they are. There is
-> a difference between an "it feels better for me", and some actual real
-> measurement and analysis of said workload.
->
-> And constructed test cases of course are useful as well, I didn't say
-> they weren't. I don't know what you mean by "acceptable", but you should
-> read my last paragraph again.
+__builtin_trap() emits an actual ud2a; the effect is an int 6, of course.
 
-this problem has been around for many years, with many different people 
-working on solutions. it's hardly a case of getting a proposal and trying 
-to get it in without anyone looking at other options.
+> How far back was __builtin_trap() supported?
 
-it seems that there are some people (not nessasarily including you) who 
-will oppose this feature until a test is created that shows that it's 
-better. the question is what sort of test will be accepted as valid? I'm 
-not useing this patch, but it sounds as if the people who are useing it 
-are interested in doing whatever testing is required, but so far the 
-situation seems to be a series of "here's a test", "that test isn't valid, 
-try again" loops. which don't seem to be doing anyone any good and are 
-frustrating lots of people, so like several people over the last few days 
-O'm asking the question, "what sort of test would be acceptable as proof 
-that this patch does some good?"
+I think its relatively recent, but it might be within our supported
+compiler window.
 
-David Lang
+    J
