@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765289AbXGYNHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbXGYNOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765289AbXGYNHB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbXGYNGx
+	id S1763632AbXGYNOI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbXGYNN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:06:53 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:50780 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752696AbXGYNGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:06:52 -0400
-Date: Wed, 25 Jul 2007 14:06:49 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Daniel Phillips <phillips@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] add __GFP_ZERO to GFP_LEVEL_MASK
-Message-ID: <20070725130649.GC32445@skynet.ie>
-References: <1185185020.8197.11.camel@twins> <20070723112143.GB19437@skynet.ie> <1185190711.8197.15.camel@twins> <Pine.LNX.4.64.0707231615310.427@schroedinger.engr.sgi.com> <1185256869.8197.27.camel@twins> <Pine.LNX.4.64.0707240007100.3128@schroedinger.engr.sgi.com> <1185261894.8197.33.camel@twins> <Pine.LNX.4.64.0707240030110.3295@schroedinger.engr.sgi.com> <20070724120751.401bcbcb@schroedinger.engr.sgi.com> <20070724122542.d4ac734a.akpm@linux-foundation.org>
+	Wed, 25 Jul 2007 09:13:57 -0400
+Received: from il.qumranet.com ([82.166.9.18]:58969 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753871AbXGYNN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:13:56 -0400
+Message-ID: <46A74C93.7080705@qumranet.com>
+Date: Wed, 25 Jul 2007 16:13:55 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070724122542.d4ac734a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+To: Ingo Molnar <mingo@elte.hu>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       shaohua.li@intel.com, rusty@rustcorp.com.au, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 1/3] SCHED: Generic hooks for trapping task preemption
+References: <11853673872732-git-send-email-avi@qumranet.com> <11853673871109-git-send-email-avi@qumranet.com> <20070725124911.GC6841@elte.hu> <20070725125220.GA8914@elte.hu>
+In-Reply-To: <20070725125220.GA8914@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 25 Jul 2007 16:13:55 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (24/07/07 12:25), Andrew Morton didst pronounce:
-> On Tue, 24 Jul 2007 12:07:51 -0700
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > Then there are some other flags. I am wondering why they are in
-> > GFP_LEVEL_MASK?
-> > 
-> > __GFP_COLD	Does not make sense for slab allocators since we have
-> > 		to touch the page immediately.
-> > 
-> > __GFP_COMP	No effect. Added by the page allocator on their own
-> > 		if a higher order allocs are used for a slab.
-> > 
-> > __GFP_MOVABLE	The movability of a slab is determined by the
-> > 		options specified at kmem_cache_create time. If this is
-> > 		specified at kmalloc time then we will have some random
-> > 		slabs movable and others not. 
-> 
-> Yes, they seem inappropriate.  Especially the first two.
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>   
+>>> This adds a general mechanism whereby a task can request the 
+>>> scheduler to notify it whenever it is preempted or scheduled back 
+>>> in.  This allows the task to swap any special-purpose registers like 
+>>> the fpu or Intel's VT registers.
+>>>       
+>> ok, this looks very clean, i've added it to my scheduler tree. You've 
+>> tested this with KVM, on both 32-bit and 64-bit, correct?
+>>     
+>
+> note: i've done a hook -> notifier rename - 'hook' is way too generic 
+> sounding and also slightly loaded. (updated patch below)
+>
+>   
 
-And the third one is also inappropriate by the definition of GFP_LEVEL_MASK
-Christoph is using. If GFP_LEVEL_MASK is to be used to filter out flags
-that are unsuitable for higher allocators such as slab and vmalloc, then
-they shouldn't be using __GFP_MOVABLE because they are unlikely to do the
-correct thing with the pages.
-
-When the flags were added, I was treating GFP_LEVEL_MASK as a set of
-allowed flags to the allocator.
+Okay, both i386 and x86_64 are happy (with the missing 'next' argument
+added, but with the old hook name).
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
