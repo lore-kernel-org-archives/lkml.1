@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932164AbXGYRVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933334AbXGYRXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932164AbXGYRVK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 13:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765490AbXGYRUx
+	id S933334AbXGYRXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 13:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761124AbXGYRXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 13:20:53 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47587 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765448AbXGYRUw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 13:20:52 -0400
-Date: Wed, 25 Jul 2007 18:19:56 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, jeremy@goop.org, hpa@zytor.com,
-       kaos@ocs.com.au, xyzzy@speakeasy.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH][RFC] getting rid of stupid loop in BUG()
-Message-ID: <20070725171956.GF27237@ftp.linux.org.uk>
-References: <21803.1185331847@ocs10w.ocs.com.au> <46A6DB04.3000003@zytor.com> <46A6ECB7.7090208@goop.org> <20070724.232914.56812376.davem@davemloft.net> <alpine.LFD.0.999.0707250954400.3607@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707250954400.3607@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	Wed, 25 Jul 2007 13:23:24 -0400
+Received: from mga01.intel.com ([192.55.52.88]:21425 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754780AbXGYRXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 13:23:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,581,1175497200"; 
+   d="scan'208";a="272614284"
+Date: Wed, 25 Jul 2007 10:23:14 -0700 (PDT)
+From: Tong Li <tong.n.li@intel.com>
+X-X-Sender: tongli@tongli.jf.intel.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+In-Reply-To: <20070725120358.GA30755@elte.hu>
+Message-ID: <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>
+ <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 09:56:12AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 24 Jul 2007, David Miller wrote:
-> >
-> > From: Jeremy Fitzhardinge <jeremy@goop.org>
-> > Date: Tue, 24 Jul 2007 23:24:55 -0700
-> > 
-> > > H. Peter Anvin wrote:
-> > > > How far back was __builtin_trap() supported?
-> > > 
-> > > I think its relatively recent, but it might be within our supported
-> > > compiler window.
-> > 
-> > I'm pretty sure it is.
-> 
-> .. and I'm pretty sure it's immaterial.
-> 
-> We don't just do the "ud2" instruction - we also do the file and line 
-> number information after it. Which means that __builtin_trap() is useless.
-> 
-> So we might as well keep the loop, since both are two-byte instructions 
-> that tell gcc that it will never continue.
+On Wed, 25 Jul 2007, Ingo Molnar wrote:
 
-Umm...  Actually, we might be able to do something like
-{
-	l: __builtin_trap();
-	static struct ... v __attribute__((section(...))) = { &&l, n, file };
-}
+> they now nicely converte to the expected 80% long-term CPU usage.
+>
+> so, could you please try the patch below, does it work for you too?
+>
 
-except that it would need block-local labels and those are ugly (so's
-&&<label>, while we are at it)...
+Thanks for the patch. It doesn't work well on my 8-way box. Here's the 
+output at two different times. It's also changing all the time.
+
+[time 1]
+  3717 tongli    20   0  7864  108   16 R   85  0.0   1:38.00 loop
+  3721 tongli    20   0  7864  108   16 R   85  0.0   1:37.51 loop
+  3723 tongli    20   0  7864  108   16 R   84  0.0   1:30.48 loop
+  3714 tongli    20   0  7864  108   16 R   83  0.0   1:33.25 loop
+  3720 tongli    20   0  7864  108   16 R   81  0.0   1:31.89 loop
+  3715 tongli    20   0  7864  108   16 R   78  0.0   1:36.38 loop
+  3719 tongli    20   0  7864  108   16 R   78  0.0   1:28.80 loop
+  3718 tongli    20   0  7864  108   16 R   78  0.0   1:33.84 loop
+  3722 tongli    20   0  7864  108   16 R   76  0.0   1:34.69 loop
+  3716 tongli    20   0  7864  108   16 R   70  0.0   1:33.15 loop
+
+[time 2]
+  3721 tongli    20   0  7864  108   16 R   91  0.0   1:44.67 loop
+  3720 tongli    20   0  7864  108   16 R   89  0.0   1:40.55 loop
+  3722 tongli    20   0  7864  108   16 R   86  0.0   1:41.40 loop
+  3723 tongli    20   0  7864  108   16 R   82  0.0   1:38.94 loop
+  3715 tongli    20   0  7864  108   16 R   82  0.0   1:43.09 loop
+  3717 tongli    20   0  7864  108   16 R   79  0.0   1:46.38 loop
+  3718 tongli    20   0  7864  108   16 R   79  0.0   1:40.72 loop
+  3714 tongli    20   0  7864  108   16 R   77  0.0   1:40.17 loop
+  3719 tongli    20   0  7864  108   16 R   73  0.0   1:35.41 loop
+  3716 tongli    20   0  7864  108   16 R   61  0.0   1:38.66 loop
+
+I'm running 2.6.23-rc1 with your patch on a two-socket quad-core system. 
+Top refresh rate is the default 3s.
+
+   tong
