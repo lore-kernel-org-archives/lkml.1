@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764593AbXGYHYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764666AbXGYHZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764593AbXGYHYd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 03:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbXGYHYY
+	id S1764666AbXGYHZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 03:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762348AbXGYHZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 03:24:24 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:57753 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761894AbXGYHYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 03:24:23 -0400
-Date: Wed, 25 Jul 2007 16:23:54 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] bsg: Fix build for CONFIG_BLOCK=n
-Message-ID: <20070725072354.GA18706@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+	Wed, 25 Jul 2007 03:25:12 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:50150 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753741AbXGYHZL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 03:25:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ZA/20nxc9iazCARtqkA4XlvpzQamRzlzYCtmNIbeOBYknyyMw4xAs3EkUkcB5dN576isw6Zr7PM8dZk3N+4klOHXXYtwjeGt413vWpAhEIY7jH8cjVSUnc3FIEM0ennzj68uclfzaCW9JaEOc2ep8HgUKAyyDMupLbbuk8UHIpU=
+Message-ID: <e9f486400707250025k163d34cdk97cf2722db739634@mail.gmail.com>
+Date: Wed, 25 Jul 2007 09:25:09 +0200
+From: "Henri Hunnekens" <henrihunnekens@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: TSC calibration sometimes not correct with RT patch.
+Cc: mingo@elte.hu
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BLK_DEV_BSG was added outside of the if BLOCK check, which allows it to
-be enabled when CONFIG_BLOCK=n. This leads to many screenlengths of
-errors, starting with a parse error on the request_queue_t definition.
-Obviously this wasn't intended for CONFIG_BLOCK=n usage, so just move the
-option back in to the block.
+I've seen that the calbration of the TSC timer was not always done
+correctly, which resulted in incorrect timers.
 
-Caught with a randconfig on sh.
+I found out that local_irq_disable is used before the calibration is
+started. However with the RT patch applied this does not mean that the
+interrupts are disabled and therefore the calibration may fails when
+it's interrupted by an interrupt. Correct me if I'm wrong.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+I think that this local_irq_disable must be replaced with the
+raw_local_irq_disable which does disable the interrupts.
 
---
+I'm not able to verify if this solves the problem because it is very
+hard to reproduce. Maybe someone can verify if my assumption is
+correcly.
 
- block/Kconfig |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/block/Kconfig b/block/Kconfig
-index ca2ef4e..2484e0e 100644
---- a/block/Kconfig
-+++ b/block/Kconfig
-@@ -49,8 +49,6 @@ config LSF
- 
- 	  If unsure, say Y.
- 
--endif # BLOCK
--
- config BLK_DEV_BSG
- 	bool "Block layer SG support v4 (EXPERIMENTAL)"
- 	depends on EXPERIMENTAL
-@@ -64,4 +62,6 @@ config BLK_DEV_BSG
- 	protocols (e.g. Task Management Functions and SMP in Serial
- 	Attached SCSI).
- 
-+endif # BLOCK
-+
- source block/Kconfig.iosched
+Currently I'm using kernel version 2.6.20-RT8, but I've checked that
+latest kernel version with the latest RT patch and they have the same
+implementation.
