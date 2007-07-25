@@ -1,61 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933095AbXGYP3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933136AbXGYPaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933095AbXGYP3G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 11:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbXGYP2z
+	id S933136AbXGYPaT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 11:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762886AbXGYPaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 11:28:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37128 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757973AbXGYP2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 11:28:54 -0400
-Message-ID: <46A76C09.6000602@redhat.com>
-Date: Wed, 25 Jul 2007 11:28:09 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Wed, 25 Jul 2007 11:30:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:38397 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757346AbXGYPaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 11:30:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=dDEWv/q0LlMEQd+yDSCVKxLYGDr1YLDh4q0ufdFMy8mxmm61cR113JRI4brLEA8PUO+ilE+//hTDkMA7JNvP/213TfM89E8LfWMLQDCexERzClO167W74JZh/KPgO9kUW9JHv1D+Ko08zQ7YiHWKeTWKqZLa34K9WB0YywznH/M=
+Message-ID: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>
+Date: Wed, 25 Jul 2007 17:30:02 +0200
+From: "Kacper Wysocki" <kacperw@online.no>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: howto get a patch merged (WAS: Re: -mm merge plans for 2.6.23)
+Cc: "Rene Herman" <rene.herman@gmail.com>, david@lang.hm,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>, Valdis.Kletnieks@vt.edu,
+       "Ray Lee" <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org,
+       "ck list" <ck@vds.kolivas.org>, linux-mm@kvack.org,
+       "Paul Jackson" <pj@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Eric St-Laurent <ericstl34@sympatico.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Fengguang Wu <fengguang.wu@gmail.com>, Dave Jones <davej@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
-References: <20070721210005.000228000@chello.nl>	 <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com>	 <20070722081010.GA6317@mail.ustc.edu.cn>	 <1185093236.6344.87.camel@localhost.localdomain>	 <46A46E4B.7050007@yahoo.com.au> <1185338106.7105.44.camel@perkele> <46A6DD7F.1050505@yahoo.com.au>
-In-Reply-To: <46A6DD7F.1050505@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 47a3a519e1bcf863
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
+On 7/25/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Rene Herman <rene.herman@gmail.com> wrote:
+>
+> > Nick Piggin is the person to convince it seems and if I've read things
+> > right (I only stepped into this thing at the updatedb mention, so
+> > maybe I haven't) his main question is _why_ the hell it helps
+> > updatedb. [...]
+[snip howto get a patch merged]
+> But a "here is a solution, take it or leave it" approach, before having
+> communicated the problem to the maintainer and before having debugged
+> the problem is the wrong way around. It might still work out fine if the
+> solution is correct (especially if the patch is small and obvious), but
+> if there are any non-trivial tradeoffs involved, or if nontrivial amount
+> of code is involved, you might see your patch at the end of a really
+> long (and constantly growing) waiting list of patches.
 
-> What *I* think is supposed to happen is that newly read in pages get
-> put on the inactive list, and unless they get accessed againbefore
-> being reclaimed, they are allowed to fall off the end of the list
-> without disturbing active data too much.
-> 
-> I think there is a missing piece here, that we used to ease the reclaim
-> pressure off the active list when the inactive list grows relatively
-> much larger than it (which could indicate a lot of use-once pages in
-> the system).
-> 
-> Andrew got rid of that logic for some reason which I don't know, but I
-> can't see that use-once would be terribly effective today (so your
-> results don't surprise me too much).
+Is that what happened with swap prefetch these two years? The approach
+has been wrong?
 
-I suspect that reason is that use-once works great for
-page cache pages, but anonymous pages share the same
-LRUs and need a more balanced aging approach.
+In this particular instance, there are lots of people who have looked
+at, tried, tested, reported on, advocated, and most importantly -been
+using for several years- swap prefetch. That's a lot of people, it's
+hard to coordinate a unified approach, eh?
 
-The result: an LRU list that works ok for both types
-of pages most of the time, but falls over in some
-workloads.
+You are the gatekeepers. The dudes with the keys. The guys who must
+claim technical and moral superiority over the rabble, the rest of us.
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+I always believed that the linux development model consisted of
+collaboration with technical merit as the prime goal in mind. But the
+sheer volume of patches and the small number of keyholders precludes
+such a scenario. So the gatekeepers have trusted advisors, and it's
+quicker to look at numbers than to try out all the random (and often
+crappy) patches that flow in.
+
+It's easier to ask for more testing, more feedback, more "unbiased",
+easier to just drop it rather than to look at the new code itself.
+It's easier and less risky to try and understand a problem yourself,
+and write your own code. After all, you trust your own code, right?
+
+Life is so much simpler without any alien objects around.
+However, cool things usually come from outside such a stable environment.
+
+The problem isn't debugging the wrong way around. The problem is no
+matter how many people read it, test it, use it, brag about it,
+measure it, it doesn't matter at all unless they can convince one of
+these few dudes that he should really turn that key.
+
+0K
