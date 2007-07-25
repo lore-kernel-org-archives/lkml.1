@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762798AbXGYTNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935107AbXGYTNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762798AbXGYTNN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 15:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbXGYTM4
+	id S935107AbXGYTNv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 15:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761004AbXGYTNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 15:12:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:11204 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755453AbXGYTMy (ORCPT
+	Wed, 25 Jul 2007 15:13:41 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:58973 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760956AbXGYTNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 15:12:54 -0400
-Date: Wed, 25 Jul 2007 22:12:57 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Mike Christie <michaelc@cs.wisc.edu>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       Roland Dreier <rdreier@cisco.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       general@lists.openfabrics.org
-Subject: Re: [PATCH trivial] include linux/mutex.h from scsi_transport_iscsi.h
-Message-ID: <20070725191257.GA2311@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070725110907.GF3826@mellanox.co.il> <46A79C00.200@cs.wisc.edu>
+	Wed, 25 Jul 2007 15:13:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=iY5cq7/XVV/bsOThGLvP2WQuexxZ2VthfG5MVXypHHGnspaoOslKm18LcaK6F0yzfQTOyXlCx5wQTIYgidGR6yBCBSrJqXaaBAHFQoyVoYYfh7aLNSzQzbAK/6AN0kYr/kQ/mJqDrSoIwjNU7pMMsK9RC7MZ0ikwi7t3L7aUYRU=
+Message-ID: <f158dc670707251213i65501f9eh6d35a8712583cd90@mail.gmail.com>
+Date: Wed, 25 Jul 2007 13:13:34 -0600
+From: "Latchesar Ionkov" <lucho@ionkov.net>
+To: "Eric Van Hensbergen" <ericvh@gmail.com>
+Subject: Re: net/9p/mux.c: use-after-free
+Cc: "Adrian Bunk" <bunk@stusta.de>, v9fs-developer@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <a4e6962a0707251143ie0b0ce8s7d4a9078fed7eb26@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46A79C00.200@cs.wisc.edu>
-User-Agent: Mutt/1.5.11
+References: <20070723012014.GV26212@stusta.de>
+	 <a4e6962a0707251143ie0b0ce8s7d4a9078fed7eb26@mail.gmail.com>
+X-Google-Sender-Auth: a269294c00286a8d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Mike Christie <michaelc@cs.wisc.edu>:
-> Subject: Re: [PATCH trivial] include linux/mutex.h from scsi_transport_iscsi.h
-> 
-> Michael S. Tsirkin wrote:
-> >scsi/scsi_transport_iscsi.h uses struct mutex, so while
-> >linux/mutex.h seems to be pulled in indirectly
-> >by one of the headers it includes, the right thing
-> >is to include linux/mutex.h directly.
+Yep, it's a leak.
+
+Thanks,
+    Lucho
+
+On 7/25/07, Eric Van Hensbergen <ericvh@gmail.com> wrote:
+> On 7/22/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > The Coverity checker spotted the following use-after-free
+> > in net/9p/mux.c:
 > >
-> 
-> Is that part about always including the header directly right?
-
-Think so. Analogous patches by me has been accepted in various
-subsystems. See e.g. f8916c11a4dc4cb2367e9bee1788f4e0f1b4eabc.
-
-> If so 
-> then were you going to include list.h too,
-
-Makes sense. I'll repost.
-
-> and were you going to fix up 
-> some of the other iscsi code?
-
-Not at the moment.
-The reason I noticed this is because I'm doing some other project.
-I'll post patches for other files if/when I notice any issues.
-
--- 
-MST
+> > <--  snip  -->
+> >
+> > ...
+> > struct p9_conn *p9_conn_create(struct p9_transport *trans, int msize,
+> >                                     unsigned char *extended)
+> > {
+> > ...
+> >         if (!m->tagpool) {
+> >                 kfree(m);
+> >                 return ERR_PTR(PTR_ERR(m->tagpool));
+> >         }
+> > ...
+> >
+> > <--  snip  -->
+> >
+>
+> I've got a fix for this one:
+>         if (!m->tagpool) {
+>                 mtmp = ERR_PTR(PTR_ERR(m->tagpool));
+>                 kfree(m);
+>                 return mtmp;
+>         }
+>
+> but I was wondering about one of the other returns further down the function:
+>
+> ...
+>         memset(&m->poll_waddr, 0, sizeof(m->poll_waddr));
+>         m->poll_task = NULL;
+>         n = p9_mux_poll_start(m);
+>         if (n)
+>                 return ERR_PTR(n);
+>
+>         n = trans->poll(trans, &m->pt);
+> ...
+>
+> lucho: doesn't that constitute a leak?  Shouldn't we be doing:
+>
+>         if (n) {
+>                 kfree(m);
+>                 return ERR_PTR(n);
+>         }
+>
+>          -eric
+>
