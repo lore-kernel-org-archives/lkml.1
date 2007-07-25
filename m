@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765289AbXGYNhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763058AbXGYNiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765289AbXGYNhc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 09:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758443AbXGYNhU
+	id S1763058AbXGYNiM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 09:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760632AbXGYNh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 09:37:20 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43998 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756567AbXGYNhT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 09:37:19 -0400
-Date: Wed, 25 Jul 2007 15:36:50 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Auke Kok <auke-jan.h.kok@intel.com>, jgarzik@pobox.com
-Cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Subject: [-mm patch] one e1000 driver should be enough for everyone
-Message-ID: <20070725133650.GB3572@stusta.de>
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
+	Wed, 25 Jul 2007 09:37:57 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:60723 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757275AbXGYNh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 09:37:56 -0400
+Message-ID: <46A75230.4090400@fr.ibm.com>
+Date: Wed, 25 Jul 2007 15:37:52 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH -mm] fix order of container subsystems in init/Kconfig
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.22-rc6-mm1:
->...
->  git-e1000new.patch
->...
->  git trees
->...
+some cosmetic changes to init/Kconfig to make the subsystem list
+under containers look nicer when CONFIG_CONTAINERS=y.
 
-Both e1000 drivers compiled into the kernel resulted in the following 
-compile error:
+also changed the 'select' to 'depends on' for the namespace 
+subsystem.
 
-<--  snip  -->
-
-...
-  LD      drivers/net/built-in.o
-drivers/net/e1000/built-in.o: In function `e1000_read_mac_addr':
-(.text+0xb9f2): multiple definition of `e1000_read_mac_addr'
-drivers/net/e1000new/built-in.o:(.text+0x821a): first defined here
-drivers/net/e1000/built-in.o: In function `e1000_phy_setup_autoneg':
-(.text+0x8799): multiple definition of `e1000_phy_setup_autoneg'
-drivers/net/e1000new/built-in.o:(.text+0xa9bd): first defined here
-...
-make[3]: *** [drivers/net/built-in.o] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
 ---
+ init/Kconfig |   32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
-BTW:
-Unless I'm misunderstanding anything, the new driver should support a 
-superset of what the old driver supported.
-Therefore, it would be good if the final merge into Linus' tree will
-do an
-  rm -r drivers/net/e1000
-  mv drivers/net/e1000new drivers/net/e1000
-
---- linux-2.6.23-rc1-mm1/drivers/net/Kconfig.old	2007-07-25 15:06:13.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/net/Kconfig	2007-07-25 15:09:59.000000000 +0200
-@@ -2036,7 +2036,7 @@
+Index: 2.6.23-rc1-mm1/init/Kconfig
+===================================================================
+--- 2.6.23-rc1-mm1.orig/init/Kconfig
++++ 2.6.23-rc1-mm1/init/Kconfig
+@@ -310,6 +310,22 @@ config CONTAINER_DEBUG
  
- config E1000
- 	tristate "Intel(R) PRO/1000 Gigabit Ethernet support"
--	depends on PCI
-+	depends on PCI && E1000NEW=n
- 	---help---
- 	  This driver supports Intel(R) PRO/1000 gigabit ethernet family of
- 	  adapters.  For more information on how to identify your adapter, go 
-
+ 	  Say N if unsure
+ 
++config CONTAINER_NS
++        bool "Namespace container subsystem"
++        depends on CONTAINERS
++        help
++          Provides a simple namespace container subsystem to
++          provide hierarchical naming of sets of namespaces,
++          for instance virtual servers and checkpoint/restart
++          jobs.
++
++config CONTAINER_CPUACCT
++	bool "Simple CPU accounting container subsystem"
++	depends on CONTAINERS
++	help
++	  Provides a simple Resource Controller for monitoring the
++	  total CPU consumed by the tasks in a container
++
+ config CPUSETS
+ 	bool "Cpuset support"
+ 	depends on SMP && CONTAINERS
+@@ -341,27 +357,11 @@ config SYSFS_DEPRECATED
+ 	  If you are using a distro that was released in 2006 or later,
+ 	  it should be safe to say N here.
+ 
+-config CONTAINER_NS
+-        bool "Namespace container subsystem"
+-        select CONTAINERS
+-        help
+-          Provides a simple namespace container subsystem to
+-          provide hierarchical naming of sets of namespaces,
+-          for instance virtual servers and checkpoint/restart
+-          jobs.
+-
+ config PROC_PID_CPUSET
+ 	bool "Include legacy /proc/<pid>/cpuset file"
+ 	depends on CPUSETS
+ 	default y
+ 
+-config CONTAINER_CPUACCT
+-	bool "Simple CPU accounting container subsystem"
+-	depends on CONTAINERS
+-	help
+-	  Provides a simple Resource Controller for monitoring the
+-	  total CPU consumed by the tasks in a container
+-
+ config RELAY
+ 	bool "Kernel->user space relay support (formerly relayfs)"
+ 	help
