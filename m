@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761743AbXGYJyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762470AbXGYJ6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761743AbXGYJyA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 05:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXGYJxu
+	id S1762470AbXGYJ6t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 05:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbXGYJ6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 05:53:50 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:17583 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756687AbXGYJxt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 05:53:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:x-mailer;
-        b=iF3YF6tcowC5N0ZKLhxxwo09nVAI1bO0K0kSM/DozB6ldDfC+ivOQV66e+x91ab/P3bQ8NLeNsMqCxEIeLQ4nsc+IEetc2yCyeZ/C8dIrOpqDxNaPXMNWc6I/OX9jk6Rtzw7DIUKYHmjV64Yvs+r5hScYR3F3QkFnn/C/+hv3pg=
-From: Denis Cheng <crquan@gmail.com>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Denis Cheng <crquan@gmail.com>
-Subject: [PATCH] gfs2/locking/dlm: use an temp variable to reduce a spin_unlock
-Date: Wed, 25 Jul 2007 17:53:58 +0800
-Message-Id: <11853572382497-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.2.2
+	Wed, 25 Jul 2007 05:58:42 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:22679 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757456AbXGYJ6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 05:58:42 -0400
+Date: Wed, 25 Jul 2007 11:59:10 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch] fix the softlockup watchdog to actually work
+Message-ID: <20070725095910.GL3287@kernel.dk>
+References: <20070717114453.GA8212@elte.hu> <469CCF8F.4010107@goop.org> <20070717154934.GA24231@elte.hu> <20070725014912.35c7e325.akpm@linux-foundation.org> <20070725085204.GA22067@elte.hu> <20070725020003.63144fd6.akpm@linux-foundation.org> <20070725090439.GA26286@elte.hu> <20070725021730.a9a624b3.akpm@linux-foundation.org> <20070725092342.GA29814@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070725092342.GA29814@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this is more clear.
+On Wed, Jul 25 2007, Ingo Molnar wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > >   * 2^30ns == 1.074s.
+> > >   */
+> > > -static unsigned long get_timestamp(void)
+> > > +static unsigned long get_timestamp(int this_cpu)
+> > >  {
+> > > -	return sched_clock() >> 30;  /* 2^30 ~= 10^9 */
+> > > +	return cpu_clock(this_cpu) >> 30;  /* 2^30 ~= 10^9 */
+> > >  }
+> > >  
+> > >  void touch_softlockup_watchdog(void)
+> > >  {
+> > > -	__raw_get_cpu_var(touch_timestamp) = get_timestamp();
+> > > +	int this_cpu = raw_smp_processor_id();
+> > > +
+> > > +	per_cpu(touch_timestamp, this_cpu) = get_timestamp(this_cpu);
+> > >  }
+> > >  EXPORT_SYMBOL(touch_softlockup_watchdog);
+> > >  
+> > > @@ -95,7 +97,7 @@ void softlockup_tick(void)
+> > >  		return;
+> > 
+> > argh.  afacit this was never sent, except as part of some jumbopatch 
+> > called "sched: implement cpu_clock(cpu) high-speed time source".
+> > 
+> > That patch helped.
+> > 
+> > It's all a plot.
+> 
+> sorry, it's really my fault: i decoupled it from the jumbopatch (so that 
+> the new API could go in first) but forgot to re-send that crutial bit. 
+> There's also the patch below (Jens Cc:-ed) to update blktrace. I guess i 
+> should do a softlockup.git tree to avoid such foul-ups in the future.
+> 
+> 	Ingo
+> 
+> ----------------------->
+> Subject: blktrace: use cpu_clock() instead of sched_clock()
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> use cpu_clock() instead of sched_clock(). (the latter is not a proper
+> clock-source)
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- fs/gfs2/locking/dlm/plock.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+I tested it, seems to work fine for me.
 
-diff --git a/fs/gfs2/locking/dlm/plock.c b/fs/gfs2/locking/dlm/plock.c
-index fba1f1d..1f7b038 100644
---- a/fs/gfs2/locking/dlm/plock.c
-+++ b/fs/gfs2/locking/dlm/plock.c
-@@ -346,15 +346,16 @@ static ssize_t dev_write(struct file *file, const char __user *u, size_t count,
- 
- static unsigned int dev_poll(struct file *file, poll_table *wait)
- {
-+	unsigned int mask = 0;
-+
- 	poll_wait(file, &send_wq, wait);
- 
- 	spin_lock(&ops_lock);
--	if (!list_empty(&send_list)) {
--		spin_unlock(&ops_lock);
--		return POLLIN | POLLRDNORM;
--	}
-+	if (!list_empty(&send_list))
-+		mask = POLLIN | POLLRDNORM;
- 	spin_unlock(&ops_lock);
--	return 0;
-+
-+	return mask;
- }
- 
- static const struct file_operations dev_fops = {
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+
 -- 
-1.5.2.2
+Jens Axboe
 
