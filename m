@@ -1,78 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761382AbXGZDVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbXGZDbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761382AbXGZDVu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 23:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbXGZDVn
+	id S1761356AbXGZDbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 23:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbXGZDb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 23:21:43 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:56258 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756226AbXGZDVm (ORCPT
+	Wed, 25 Jul 2007 23:31:27 -0400
+Received: from qsrv03ps.mx.bigpond.com ([144.140.82.183]:25110 "EHLO
+	qsrv03ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756550AbXGZDbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 23:21:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=opDije1rbkPrDXQDStQOmVsS6TlHnme8173Kp6BHW9z3jYg0xSrevmZkqUy+bTKB2
-	xKOvH3tOSzvmunu1hqj8g==
-Message-ID: <4517d1380707252021j1c7af370wcd23edebd3085c51@mail.gmail.com>
-Date: Wed, 25 Jul 2007 20:21:28 -0700
-From: "Masoud Sharbiani" <masouds@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: i386-show-unhandled-signals-v3
-Cc: "Andi Kleen" <ak@suse.de>, "Kirill Korotaev" <dev@openvz.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070725165805.1bcd5a02.akpm@linux-foundation.org>
+	Wed, 25 Jul 2007 23:31:25 -0400
+Message-ID: <46A7F7BE.1030100@bigpond.net.au>
+Date: Thu, 26 Jul 2007 11:24:14 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070613)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070718154759.GA26425@google.com> <46A76210.5020903@openvz.org>
-	 <200707251657.44217.ak@suse.de>
-	 <20070725140455.cbbc0dde.akpm@linux-foundation.org>
-	 <4517d1380707251407v178068baxcc76a86f8337cc27@mail.gmail.com>
-	 <20070725162528.7d485ff8.akpm@linux-foundation.org>
-	 <20070725234005.GA11292@google.com>
-	 <20070725165805.1bcd5a02.akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Gregory Haskins <ghaskins@novell.com>, jim.houston@ccur.com,
+       joe.korty@ccur.com, rostedt@goodmis.org, tglx@linutronix.de,
+       dwalker@mvista.com, David Bahi <DBahi@novell.com>,
+       Moiz Kohari <MKohari@novell.com>, Sven Dietrich <SDietrich@novell.com>,
+       dsaxena@plexity.net, williams@redhat.com, abogani@texware.it,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Minor errors in 2.6.23-rc1-rt2 series
+References: <4695E5BB0200005A0002763E@mcclure.wal.novell.com> <20070712130958.GB17494@elte.hu>
+In-Reply-To: <20070712130958.GB17494@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------050100050505060704070002"
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06ps.mx.bigpond.com from [124.177.164.224] using ID pwil3058@bigpond.net.au at Thu, 26 Jul 2007 01:24:57 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 25 Jul 2007 16:40:06 -0700
-> masouds@google.com (Masoud Asgharifard Sharbiani) wrote:
->
-> > > Look: if there's a way in which an unprivileged user can trigger a printk
-> > > we fix it, end of story.  I don't know why this even slightly
-> > > controversial.
-> > >
-> >
-> > Fair enough. Here it is:
->
-> My favourite words.
->
-> > ---------------
-> > Hello,
-> > This patch makes the i386 behave the same way that x86_64 does when a
-> > segfault happens. A line gets printed to the kernel log so that tools
-> > that need to check for failures can behave more uniformly between
-> > different kernels. Like x86_64, it can be disabled by setting
-> > debug.show_unhandled_signals sysctl variable to 0 (or by doing
-> > echo 0 > /proc/sys/debug/show_unhandled_signals)
->
-> Do we really need the ratelimiting?  If the admin turns this on then he's
-> presumably prepared for the consequences.
->
-> I guess "yes", as people (even distros) are likely to turn this on and
-> forget about it.
->
-> The patch is larger than I expected, ho hum.
->
+This is a multi-part message in MIME format.
+--------------050100050505060704070002
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-So, we happy? What else I can chop from this patch to make it more
-acceptable for the people involved?
-Please be advised that with this patch, the old exception_trace that
-was enabled becomes disabled by default; x86_64 had that enabled, and
-i386 didn't have anything...
-cheers,
-Masoud
+I've just been reviewing these patches and have spotted a couple of
+errors that look like they were caused by fuzz during the patch process.
+
+A patch that corrects the errors is attached.
+
+Cheers
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+ -- Ambrose Bierce
+
+
+--------------050100050505060704070002
+Content-Type: text/plain;
+ name="fix-fuzz-related-errors"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix-fuzz-related-errors"
+
+diff -r e02fd64426b9 arch/i386/boot/compressed/Makefile
+--- a/arch/i386/boot/compressed/Makefile	Thu Jul 26 10:33:58 2007 +1000
++++ b/arch/i386/boot/compressed/Makefile	Thu Jul 26 11:17:35 2007 +1000
+@@ -9,10 +9,9 @@ EXTRA_AFLAGS	:= -traditional
+ EXTRA_AFLAGS	:= -traditional
+ 
+ LDFLAGS_vmlinux := -T
+-CFLAGS := -m32 -D__KERNEL__ -Iinclude -O2  -fno-strict-aliasing
+ hostprogs-y	:= relocs
+ 
+-CFLAGS  := -m32 -D__KERNEL__ $(LINUX_INCLUDE) -O2 \
++CFLAGS  := -m32 -D__KERNEL__ $(LINUX_INCLUDE) -Iinclude -O2 \
+ 	   -fno-strict-aliasing -fPIC \
+ 	   $(call cc-option,-ffreestanding) \
+ 	   $(call cc-option,-fno-stack-protector)
+diff -r e02fd64426b9 arch/i386/kernel/smp.c
+--- a/arch/i386/kernel/smp.c	Thu Jul 26 10:33:58 2007 +1000
++++ b/arch/i386/kernel/smp.c	Thu Jul 26 11:17:35 2007 +1000
+@@ -651,7 +651,6 @@ fastcall notrace void smp_reschedule_int
+ fastcall notrace void smp_reschedule_interrupt(struct pt_regs *regs)
+ {
+ 	trace_special(regs->eip, 0, 0);
+-	trace_special(regs->eip, 0, 0);
+ 	ack_APIC_irq();
+ 	set_tsk_need_resched(current);
+ }
+diff -r e02fd64426b9 include/asm-mips/mipsregs.h
+--- a/include/asm-mips/mipsregs.h	Thu Jul 26 10:33:58 2007 +1000
++++ b/include/asm-mips/mipsregs.h	Thu Jul 26 11:17:35 2007 +1000
+@@ -710,7 +710,7 @@ do {									\
+ 	unsigned long long __val;					\
+ 	unsigned long __flags;						\
+ 									\
+-	local_irq_save(flags);					\
++	local_irq_save(__flags);					\
+ 	if (sel == 0)							\
+ 		__asm__ __volatile__(					\
+ 			".set\tmips64\n\t"				\
+
+--------------050100050505060704070002--
