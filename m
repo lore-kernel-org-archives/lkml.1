@@ -1,147 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765372AbXGZMD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765323AbXGZMEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765372AbXGZMD2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 08:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbXGZMC7
+	id S1765323AbXGZMEX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 08:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbXGZMEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 08:02:59 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:34581 "EHLO smtp4-g19.free.fr"
+	Thu, 26 Jul 2007 08:04:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35917 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751982AbXGZMCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 08:02:54 -0400
-Message-ID: <46A88D5E.9060204@free.fr>
-Date: Thu, 26 Jul 2007 14:02:38 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	id S1751712AbXGZMEN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 08:04:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: YOSHIFUJI Hideaki /
+	 =?utf-8?q?=E5=90=89=E8=97=A4=E8=8B=B1=E6=98=8E?= 
+	<yoshfuji@linux-ipv6.org>
+Subject: Re: [2.6.23-rc1 REGRESSION] ThinkPad T42 poweroff failure by "PM: Introduce pm_power_off_prepare"
+Date: Thu, 26 Jul 2007 14:12:33 +0200
+User-Agent: KMail/1.9.5
+Cc: pavel@ucw.cz, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <20070724.171917.30313741.yoshfuji@linux-ipv6.org> <200707251446.56809.rjw@sisk.pl> <20070725.102840.72654660.yoshfuji@linux-ipv6.org>
+In-Reply-To: <20070725.102840.72654660.yoshfuji@linux-ipv6.org>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Pin-pointing the root of unusual application latencies
-References: <469600F7.3060603@free.fr> <20070725133835.GA17616@elte.hu> <46A758B5.9070602@free.fr> <200707251309.54240.lenb@kernel.org> <46A85CE9.7070506@free.fr> <46A87B3D.3020003@free.fr>
-In-Reply-To: <46A87B3D.3020003@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707261412.33839.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> John Sigler wrote:
+On Wednesday, 25 July 2007 17:28, YOSHIFUJI Hideaki / 吉藤英明 wrote:
+> Hello.
 > 
->> Len Brown wrote:
->>
->>> John Sigler wrote:
->>>
->>>> # cat /proc/interrupts
->>>>             CPU0
->>>>    0:         37    XT-PIC-XT        timer
->>>>    1:          2    XT-PIC-XT        i8042
->>>>    2:          0    XT-PIC-XT        cascade
->>>>    7:          0    XT-PIC-XT        acpi
->>>>   10:        175    XT-PIC-XT        eth2, Dta1xx
->>>>   11:       1129    XT-PIC-XT        eth0
->>>>   12:          4    XT-PIC-XT        eth1
->>>>   14:      21482    XT-PIC-XT        ide0
->>>> NMI:          0
->>>> LOC:     161632
->>>> ERR:          0
->>>> MIS:          0
->>>>
->>>> IRQ 10 is shared between a NIC and an I/O board.
->>>>
->>>> For eth2, the kernel said:
->>>> ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKC]
->>>>    -> GSI 10 (level, low) -> IRQ 10
->>>>
->>>> For Dta1xx, the kernel said:
->>>> ACPI: PCI Interrupt 0000:02:0e.0[A] -> Link [LNKC]
->>>>    -> GSI 10 (level, low) -> IRQ 10
->>>>
->>>> Is it possible to avoid the two boards sharing IRQ 10?
->>>
->>> Maybe.  In this configuration, INTA of the two devices
->>> is physically connected to the same wire on the device-side
->>> of the interrupt re-mapper -- so you'd have to change the configuration.
->>> If you have an IOAPIC and can enable it, that will not hurt --
->>
->> I believe this board does not provide an IO-APIC.
->> Even the LAPIC is disabled in the BIOS.
->> (Why would they do that??)
->>
->>> though unless something else changes, these devices are still
->>> tied together on the device-side of the mapper.
->>> So if you can physically move one of the devices to another slot
->>> that is your best bet.
+> In article <200707251446.56809.rjw@sisk.pl> (at Wed, 25 Jul 2007 14:46:55 +0200), "Rafael J. Wysocki" <rjw@sisk.pl> says:
 > 
-> The NICs are on-board, therefore it is not possible to move them.
+> > On Wednesday, 25 July 2007 00:19, YOSHIFUJI Hideaki / 吉藤英明 wrote:
+> :
+> > > Linux 2.6.23-rc1 fails to power off my ThinkPad T42.
+> > > Git-bisect told me that the following commit is to blame,
+> > > and by reverting that commit, it works appropriately.
+> > 
+> > (1) Can you please apply the appended patch and see if the message gets
+> >     printed when you try to power off the system?
 > 
-> The motherboard only has one PCI slot, so the manufacturer includes
-> a backplane (is that what it's called?) to provide two PCI slots.
-> 
-> The results I've given so far were with the I/O board inserted in
-> the bottom slot. If it is inserted in the top slot, the results are
-> different indeed.
-> 
-> # cat /proc/interrupts
->            CPU0
->   0:         37    XT-PIC-XT        timer
->   1:          2    XT-PIC-XT        i8042
->   2:          0    XT-PIC-XT        cascade
->   5:      20270    XT-PIC-XT        Dta1xx
->   7:          0    XT-PIC-XT        acpi
->  10:          4    XT-PIC-XT        eth2
->  11:       2639    XT-PIC-XT        eth0
->  12:          4    XT-PIC-XT        eth1
->  14:      13984    XT-PIC-XT        ide0
-> NMI:          0
-> LOC:     518501
-> ERR:          0
-> MIS:          0
+> Yup, I got it.  Last lines are:
 
-With a 4-port NIC (instead of the I/O board) inserted in the top slot.
+Hmm, it looks like we have a code ordering issue in there.
 
-# cat /proc/interrupts
-            CPU0
-   0:         37    XT-PIC-XT        timer
-   1:          2    XT-PIC-XT        i8042
-   2:          0    XT-PIC-XT        cascade
-   5:          0    XT-PIC-XT        eth3
-   7:          0    XT-PIC-XT        acpi
-  10:          4    XT-PIC-XT        eth1, eth5
-  11:          4    XT-PIC-XT        eth2, eth6
-  12:        265    XT-PIC-XT        eth0, eth4
-  14:      12726    XT-PIC-XT        ide0
-NMI:          0
-LOC:      12704
-ERR:          0
-MIS:          0
+Can you please check if the appended patch helps?
 
-With the 4-port NIC inserted in the bottom slot.
+Greetings,
+Rafael
 
-# cat /proc/interrupts
-            CPU0
-   0:         37    XT-PIC-XT        timer
-   1:          2    XT-PIC-XT        i8042
-   2:          0    XT-PIC-XT        cascade
-   5:          4    XT-PIC-XT        eth2, eth3
-   7:          0    XT-PIC-XT        acpi
-  10:         99    XT-PIC-XT        eth0, eth5
-  11:          4    XT-PIC-XT        eth1, eth6
-  12:          0    XT-PIC-XT        eth4
-  14:      12138    XT-PIC-XT        ide0
-NMI:          0
-LOC:       3554
-ERR:          0
-MIS:          0
 
-As far as I understand, this board has 4 interrupt lines, and they are 
-mapped (by the BIOS? by Linux?) to ISA IRQs 5, 10, 11, and 12.
+---
+ drivers/base/power/shutdown.c |    2 --
+ include/linux/device.h        |    3 +++
+ kernel/power/disk.c           |    1 +
+ kernel/sys.c                  |    3 +++
+ 4 files changed, 7 insertions(+), 2 deletions(-)
 
-If I insert another 4-port NIC in the remaining slot, eth7 through eth10 
-will spread to these IRQs. Correct?
-
-Suppose 3 NICs share the same interrupt line, and each receives 1500 
-packets per second. (I suppose that translates to 1500 interrupt 
-requests per second.) Will the system cope with 4500 interrupt requests 
-from 3 different devices on the same interrupt line? How different is it 
-from 4500 interrupt requests from a single device not sharing the line?
-
-Regards.
+Index: linux-2.6.23-rc1/drivers/base/power/shutdown.c
+===================================================================
+--- linux-2.6.23-rc1.orig/drivers/base/power/shutdown.c	2007-07-09 01:32:17.000000000 +0200
++++ linux-2.6.23-rc1/drivers/base/power/shutdown.c	2007-07-26 12:24:37.000000000 +0200
+@@ -44,7 +44,5 @@ void device_shutdown(void)
+ 			dev->driver->shutdown(dev);
+ 		}
+ 	}
+-
+-	sysdev_shutdown();
+ }
+ 
+Index: linux-2.6.23-rc1/kernel/sys.c
+===================================================================
+--- linux-2.6.23-rc1.orig/kernel/sys.c	2007-07-23 22:07:02.000000000 +0200
++++ linux-2.6.23-rc1/kernel/sys.c	2007-07-26 12:08:07.000000000 +0200
+@@ -804,6 +804,7 @@ static void kernel_restart_prepare(char 
+ 	blocking_notifier_call_chain(&reboot_notifier_list, SYS_RESTART, cmd);
+ 	system_state = SYSTEM_RESTART;
+ 	device_shutdown();
++	sysdev_shutdown();
+ }
+ 
+ /**
+@@ -860,6 +861,7 @@ void kernel_shutdown_prepare(enum system
+ void kernel_halt(void)
+ {
+ 	kernel_shutdown_prepare(SYSTEM_HALT);
++	sysdev_shutdown();
+ 	printk(KERN_EMERG "System halted.\n");
+ 	machine_halt();
+ }
+@@ -876,6 +878,7 @@ void kernel_power_off(void)
+ 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+ 	if (pm_power_off_prepare)
+ 		pm_power_off_prepare();
++	sysdev_shutdown();
+ 	printk(KERN_EMERG "Power down.\n");
+ 	machine_power_off();
+ }
+Index: linux-2.6.23-rc1/kernel/power/disk.c
+===================================================================
+--- linux-2.6.23-rc1.orig/kernel/power/disk.c	2007-07-26 12:13:58.000000000 +0200
++++ linux-2.6.23-rc1/kernel/power/disk.c	2007-07-26 12:14:23.000000000 +0200
+@@ -216,6 +216,7 @@ int hibernation_platform_enter(void)
+ 		 * sleep state after all
+ 		 */
+ 		error = hibernation_ops->prepare();
++		sysdev_shutdown();
+ 		if (!error)
+ 			error = hibernation_ops->enter();
+ 	} else {
+Index: linux-2.6.23-rc1/include/linux/device.h
+===================================================================
+--- linux-2.6.23-rc1.orig/include/linux/device.h	2007-07-23 22:06:59.000000000 +0200
++++ linux-2.6.23-rc1/include/linux/device.h	2007-07-26 12:48:05.000000000 +0200
+@@ -551,6 +551,9 @@ extern void put_device(struct device * d
+ /* drivers/base/power/shutdown.c */
+ extern void device_shutdown(void);
+ 
++/* drivers/base/sys.c */
++extern void sysdev_shutdown(void);
++
+ 
+ /* drivers/base/firmware.c */
+ extern int __must_check firmware_register(struct kset *);
