@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbXGZEB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbXGZEIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740AbXGZEB5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 00:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbXGZEBs
+	id S1753656AbXGZEIP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 00:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbXGZEIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 00:01:48 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:50046 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750726AbXGZEBs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 00:01:48 -0400
-Message-ID: <46A81C39.4050009@gmail.com>
-Date: Thu, 26 Jul 2007 05:59:53 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Thu, 26 Jul 2007 00:08:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60471 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750757AbXGZEIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 00:08:04 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
+Date: Thu, 26 Jul 2007 00:07:59 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200707252340.46505.a1426z@gawab.com>
+In-Reply-To: <200707252340.46505.a1426z@gawab.com>
 MIME-Version: 1.0
-To: Robert Deaton <false.hopes@gmail.com>
-CC: linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>,
-       linux-mm@kvack.org
-Subject: updatedb
-References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>	 <46A773EA.5030103@gmail.com> <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>
-In-Reply-To: <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+Message-Id: <200707260007.59203.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/25/2007 07:15 PM, Robert Deaton wrote:
+On Wednesday 25 July 2007 16:40, Al Boldi wrote:
+> Linus Torvalds wrote:
+> > On Wed, 25 Jul 2007, Len Brown wrote:
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
+> > > release
+> > >
+> > > Fixes regressions -- a build failure, an oops, some dmesg spam.
+> > > Also fixes some D-state issues and adds ACPI module auto-loading.
+> > > Yes, I'd hoped to get the last two in before rc1.
+> > > I'm hopeful that a couple-days into rc2 is sufficiently early for them.
+> >
+> > I hate pulling this, but I did. However, what I hate even more after
+> > having done so is that ACPI now seems to select CPU hotplug. Why?
+> >
+> > That is just *broken*. Sure, if you select STR or hibernation, we need CPU
+> > hotplug,
+> 
+> You are kidding, right?  CPU hotplug is broken big time; it kills a machine 
+> like virus-scanner.  I always turn it of as a rule.  And now you want 
+> STR/STD to be dependent on it?  Even on UP?  Why?
 
-> On 7/25/07, Rene Herman <rene.herman@gmail.com> wrote:
+CPU_HOTPLUG is needed to take the non-boot processors off-line before the suspend,
+and to bring them on-line upon the resume.  If you have specific problems
+with bringing logical processors offline and online, then please speak up
+because many are depending on this functionality working.
 
->> And there we go again -- off into blabber-land. Why does swap-prefetch 
->> help updatedb? Or doesn't it? And if it doesn't, why should anyone 
->> trust anything else someone who said it does says?
+SMP system sleep support has always depended on CPU_HOTPLUG, per above.
 
-> I don't think anyone has ever argued that swap-prefetch directly helps 
-> the performance of updatedb in any way
+No, uniprocessor system sleep does not depend on CPU_HOTPLUG.
 
-People have argued (claimed, rather) that swap-prefetch helps their system 
-after updatedb has run -- you are doing so now.
-
-> however, I do recall people mentioning that updatedb, being a ram
-> intensive task, will often cause things to be swapped out while it runs
-> on say a nightly cronjob.
-
-Problem spot no. 1.
-
-RAM intensive? If I run updatedb here, it never grows itself beyond 2M. Yes, 
-two. I'm certainly willing to accept that me and my systems are possibly not 
-the reference but assuming I'm _very_ special hasn't done much for me either 
-in the past.
-
-The thing updatedb does do, or at least has the potential to do, is fill 
-memory with cached inodes/dentries but Linux does not swap to make room for 
-caches. So why will updatedb "often cause things to be swapped out"?
-
-[ snip ]
-
-> Swap prefetch, on the other hand, would have kicked in shortly after
-> updatedb finished, leaving the applications in swap for a speedy
-> recovery when the person comes back to their computer.
-
-Problem spot no. 2.
-
-If updatedb filled all of RAM with inodes/dentries, that RAM is now used 
-(ie, not free) and swap-prefetch wouldn't have anywhere to prefetch into so 
-would _not_ have kicked in.
-
-So what's happening? If you sit down with a copy op "top" in one terminal 
-and updatedb in another, what does it show?
-
-Rene.
-
+-Len
