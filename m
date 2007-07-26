@@ -1,145 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933169AbXGZKLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764710AbXGZKOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933169AbXGZKLv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 06:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757955AbXGZKLk
+	id S1764710AbXGZKOe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 06:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbXGZKOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 06:11:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:54821 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbXGZKLj (ORCPT
+	Thu, 26 Jul 2007 06:14:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44181 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753054AbXGZKOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 06:11:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=DDq83O2IxJPpkHGLn8FeGIiGRrKBQuuYiJ+Shrh326jnMrS7y1/WHqFK+SvJndr6xytTOw9fZ00l7viP1tMvaJkwYhIQFGeDKq/bLhxoTSkcDCEUEdw/qfrPrBnrYCIoCn4P2k4eZDZXXPr2ifpnySVLiY+iIymJpu/1fEazsk4=
-Message-ID: <46A8727F.3030005@googlemail.com>
-Date: Thu, 26 Jul 2007 12:07:59 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
-MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: david@lang.hm, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-References: <200707251238.50218.lenb@kernel.org> <200707251851.22777.lenb@kernel.org> <Pine.LNX.4.64.0707251917320.21378@asgard.lang.hm> <200707260026.08183.lenb@kernel.org>
-In-Reply-To: <200707260026.08183.lenb@kernel.org>
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 26 Jul 2007 06:14:22 -0400
+Date: Thu, 26 Jul 2007 03:14:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: "Masoud Sharbiani" <masouds@google.com>,
+       "Kirill Korotaev" <dev@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: i386-show-unhandled-signals-v3
+Message-Id: <20070726031406.3866ddc5.akpm@linux-foundation.org>
+In-Reply-To: <200707261146.23886.ak@suse.de>
+References: <20070718154759.GA26425@google.com>
+	<4517d1380707251407v178068baxcc76a86f8337cc27@mail.gmail.com>
+	<20070725162528.7d485ff8.akpm@linux-foundation.org>
+	<200707261146.23886.ak@suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown wrote:
-> On Wednesday 25 July 2007 22:20, david@lang.hm wrote:
->> On Wed, 25 Jul 2007, Len Brown wrote:
->>
->>> On Wednesday 25 July 2007 14:48, Linus Torvalds wrote:
->>>
->>>> ... ACPI now seems to select CPU hotplug. Why?
->>> ACPI=y SMP=y systems require SUSPEND_SMP=y for system sleep support,
->>> and that requires HOTPLUG_CPU=y.
->>>
-
-Well *require* if I want SUSPEND*.
-
->>> Note that ACPI=y SMP=n systems do not need it,
->>> and thus will not select HOTPLUG_CPU=y
->>>
->>>> That is just *broken*. Sure, if you select STR or hibernation, we need CPU
->>>> hotplug, but just for picking ACPI? Why?
->>> My assumption is that if somebody selects CONFIG_ACPI,
->>> that 99% of the time, they intend that to include support for
->>> the ACPI hooks for system sleep states.
->>>
->>> Conversely, supporting the 1% of people who don't want it
->>> isn't worth messing with the 99% who do, nor is
->>> the burden of yet another config option to maintain and
->>> #ifdefs in the code.
->> so you are saying that you know better then we do what we need?
-> 
-> Feel free to share what you know about the benefits vs. the costs
-> of maintaining CONFIG_ACPI_SLEEP as a build option.
-> 
->> some people configure ACPI only becouse their system won't work properly 
->> without it. they have no intention of ever doing a STR or hibernate.
-> 
-> I agree.
-> 
-> Further, I expect that 100% - (some people %) = 99%
-> 
-> If you feel that your system has been degraded
-> because it now includes what used to be excluded under
-> CONFIG_ACPI_SLEEP=n, please let me know how.
-
-Even if I want to SUSPEND* to <something> I can't on my Dell Precision 530 boxes , 
-SCSI is broken with suspend therefore all these boxes have the whole SUSPEND* off, 
-all I need is ACPI.
-
-So why you think I want to have this all enabled by default now ? 
-Just to bloat the kernel with something doesn't even work for me ?
-
-And I don't get from where you have the '99%' thing ?
-
- > 
->>> On UP, they'd get ACPI system sleep support 100% of the time
->>> by default, but on SMP this option had become problematic.
->>>
->>> We used to have this:
->>>
->>> if ACPI
->>> ...
->>> config ACPI_SLEEP
->>>        bool "Sleep States"
->>>        depends on X86 && (!SMP || SUSPEND_SMP)
->>>        depends on PM
->>>        default y
->>>
->>> So the poster-child failure was i386/defconfig itself...
->>> It couldn't support suspend to RAM because it didn't include
->>> CONFIG_ACPI_SLEEP.  Not trivial for a user to select it
->>> when it doesn't even appear on the menu.  It doesn't appear
->>> because CONFIG_SUSPEND_SMP isn't enabled, but that doesn't
->>> appear either -- because CONFIG_HOTPLUG_CPU isn't selected.
->> so have something like
->>
->> config ACPI_SLEEP
->>          select HOTPLUG_CPU if X86 && SMP
->>          select SUSPEND_SMP if X86 && SMP
->>
->> instead of makeing it dependant on ACPI.
-> 
-> If more config options where better, then this
-> would indeed be an improvement over 2.6.22.
-> But more config options isn't better -- except for "some people":-)
-
-But in this case some config / new config is better.
-
-I do not need ACPI to SUSPEND but to make the box work properly.
-
-Ohh and isn't better to make 'ACPI_PROCESSOR  select SUSPEND_SMP and HOTPLUG_CPU if X86 && SMP' ?
-
-...
-
-config ACPI_PROCESSOR
-        tristate "Processor"
-        default y
-        help
-          This driver installs ACPI as the idle handler for Linux, and uses
-          ACPI C2 and C3 processor states to save power, on systems that
-          support it.  It is required by several flavors of cpufreq
-          Performance-state drivers.
-
-...
-
-Is more logical for me to do it here but I may be wrong.
+On Thu, 26 Jul 2007 11:46:23 +0200 Andi Kleen <ak@suse.de> wrote:
 
 > 
-> thanks.
-> -Len
+> > Look: if there's a way in which an unprivileged user can trigger a printk
+> > we fix it, end of story. 
 > 
+> I'm firmly against disabling it on x86-64 by default.
+
+We know you are, and the consensus and past practice disagree with you, as
+you well know.
+
+> The printks are extremly
+> useful and have found many bugs in the past.
+
+So you turn it on if your applications are playing up.  bfd.
 
 
-Gabriel
+Still waiting for your report of all the other means by which unpriviliged
+users can spam the logs, btw.  Of course, your attitude here makes a
+mockery of all our other care and effort in this area.
 
