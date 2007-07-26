@@ -1,34 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934775AbXGZR67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935477AbXGZSAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934775AbXGZR67 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763125AbXGZR6w
+	id S935477AbXGZSAK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:00:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXGZR7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:58:52 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59776 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763405AbXGZR6v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:58:51 -0400
-Date: Thu, 26 Jul 2007 10:58:50 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, ak@suse.de, apw@shadowen.org,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: bind_zonelist() - are we definitely sizing this correctly?
-In-Reply-To: <20070726142550.GA14891@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0707261057480.2374@schroedinger.engr.sgi.com>
-References: <20070726141756.GB18825@skynet.ie> <20070726142550.GA14891@skynet.ie>
+	Thu, 26 Jul 2007 13:59:53 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:51953 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763424AbXGZR7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 13:59:51 -0400
+Message-ID: <46A8E0E8.6080209@hp.com>
+Date: Thu, 26 Jul 2007 13:59:04 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
+       sakkiped@starentnetworks.com
+Subject: Re: [Lksctp-developers] [PATCH] IPv6: ipv6_addr_type() doesn't know
+ about RFC4193 addresses
+References: <18087.57717.495366.413571@zeus.sw.starentnetworks.com>	<20070725.171203.102545287.davem@davemloft.net> <18087.62656.490978.692574@zeus.sw.starentnetworks.com>
+In-Reply-To: <18087.62656.490978.692574@zeus.sw.starentnetworks.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007, Mel Gorman wrote:
+Dave Johnson wrote:
+> David Miller writes:
+>> Contrarily, there may be ipv6_addr_type() call sites that really
+>> do want to reject rfc4193 addresses.
+> 
+> A quick look through the callers and only these functions should be
+> effected, they check either RESERVED or UNICAST from ipv6_addr_type():
+> 
+> net/ipv6/addrconf.c:                ipv6_dev_get_saddr()
+> net/ipv6/exthdrs.c:                 ipv6_dest_hao()   
+> net/ipv6/ip6_tunnel.c:              ip6_tnl_set_cap()
+> net/ipv6/netfilter/ip6t_REJECT.c:   send_reset()
+> net/ipv6/route.c:                   ip6_route_add()
+> net/ipv6/route.c:                   ip6_pkt_drop()
+> net/sctp/ipv6.c:                    sctp_v6_available()
+> net/sctp/ipv6.c:                    sctp_v6_addr_valid()
+> 
 
-> This could have done with a comment.
+Well, it's not just for SCTP.  ULA address are considered of Global scope.
+See this message
+	http://marc.info/?l=linux-netdev&m=118492205915816&w=2
 
-See the exhaustive description by Paul include/linux/mmzone.h
-
+-vlad
