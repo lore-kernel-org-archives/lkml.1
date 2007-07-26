@@ -1,187 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763246AbXGZGdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbXGZGnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763246AbXGZGdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 02:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbXGZGd2
+	id S1762750AbXGZGnY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 02:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXGZGnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 02:33:28 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:15221 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755914AbXGZGd0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 02:33:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=VU2FXJmOlgM3Zuw8puc0OxHnk2QN9LeS9OGL9V5SPKyeWtgV3mOaDtLUanew76/zhB/b4D3ZeqbqVxcb0NKujjZoAIXwpCCgDGuoG6hXEZZ4srOfJpaGFrmkrlZ5ipqo/r3LnIUEnSBaKRqcWPhv33nV7Fh7pLhgX0Odisn1Ibw=
-Message-ID: <2c0942db0707252333uc7631fduadb080193f6ad323@mail.gmail.com>
-Date: Wed, 25 Jul 2007 23:33:24 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: -mm merge plans for 2.6.23
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Eric St-Laurent" <ericstl34@sympatico.ca>,
-       "Rene Herman" <rene.herman@gmail.com>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070725215717.df1d2eea.akpm@linux-foundation.org>
+	Thu, 26 Jul 2007 02:43:16 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:17451 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755126AbXGZGnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 02:43:15 -0400
+Message-ID: <46A8424E.1010805@openvz.org>
+Date: Thu, 26 Jul 2007 10:42:22 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: sukadev@us.ibm.com
+CC: Serge Hallyn <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 13/16] Switch to operating with pid_numbers instead of
+ pids
+References: <468DF6F7.1010906@openvz.org> <468DF907.2060809@openvz.org> <20070725003619.GF3287@us.ibm.com> <46A720C8.5070803@openvz.org> <20070725191334.GA19976@us.ibm.com>
+In-Reply-To: <20070725191334.GA19976@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	 <46A58B49.3050508@yahoo.com.au>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
-	 <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au>
-	 <2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com>
-	 <20070725215717.df1d2eea.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 639a1296112fc6d8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 25 Jul 2007 09:09:01 -0700
-> "Ray Lee" <ray-lk@madrabbit.org> wrote:
->
-> > No, there's a third case which I find the most annoying. I have
-> > multiple working sets, the sum of which won't fit into RAM. When I
-> > finish one, the kernel had time to preemptively swap back in the
-> > other, and yet it didn't. So, I sit around, twiddling my thumbs,
-> > waiting for my music player to come back to life, or thunderbird,
-> > or...
->
-> Yes, I'm thinking that's a good problem statement and it isn't something
-> which the kernel even vaguely attempts to address, apart from normal
-> demand paging.
->
-> We could perhaps improve things with larger and smarter fault readaround,
-> perhaps guided by refault-rate measurement.  But that's still demand-paged
-> rather than being proactive/predictive/whatever.
->
-> None of this is swap-specific though: exactly the same problem would need
-> to be solved for mmapped files and even plain old pagecache.
+sukadev@us.ibm.com wrote:
+> Pavel Emelianov [xemul@openvz.org] wrote:
+> | sukadev@us.ibm.com wrote:
+> | >Pavel Emelianov [xemul@openvz.org] wrote:
+> | >| Make alloc_pid() initialize pid_numbers and hash them
+> | >| into the hashtable, not the struct pid itself.
+> | >| 
+> | >| Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+> | >| 
+> | >| ---
+> | >| 
+> | >|  pid.c |   47 +++++++++++++++++++++++++++++++++--------------
+> | >|  1 files changed, 33 insertions(+), 14 deletions(-)
+> | >| 
+> | >| --- ./kernel/pid.c.ve12	2007-07-05 11:06:41.000000000 +0400
+> | >| +++ ./kernel/pid.c	2007-07-05 11:08:23.000000000 +0400
+> | >| @@ -28,8 +28,10 @@
+> | >|  #include <linux/hash.h>
+> | >|  #include <linux/pid_namespace.h>
+> | >|  #include <linux/init_task.h>
+> | >| +#include <linux/proc_fs.h>
+> | >| 
+> | >| -#define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
+> | >| +#define pid_hashfn(nr, ns)	\
+> | >| +	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+> | >|  static struct hlist_head *pid_hash;
+> | >|  static int pidhash_shift;
+> | >|  struct pid init_struct_pid = INIT_STRUCT_PID;
+> | >| @@ -194,7 +198,7 @@ fastcall void put_pid(struct pid *pid)
+> | >|  	if (!pid)
+> | >|  		return;
+> | >| 
+> | >| -	ns = pid->numbers[0].ns;
+> | >| +	ns = pid->numbers[pid->level].ns;
+> | >|  	if ((atomic_read(&pid->count) == 1) ||
+> | >|  	     atomic_dec_and_test(&pid->count))
+> | >|  		kmem_cache_free(ns->pid_cachep, pid);
+> | >| @@ -210,13 +214,17 @@ static void delayed_put_pid(struct rcu_h
+> | >|  fastcall void free_pid(struct pid *pid)
+> | >|  {
+> | >|  	/* We can be called with write_lock_irq(&tasklist_lock) held */
+> | >| +	int i;
+> | >|  	unsigned long flags;
+> | >| 
+> | >|  	spin_lock_irqsave(&pidmap_lock, flags);
+> | >| -	hlist_del_rcu(&pid->pid_chain);
+> | >| +	for (i = 0; i <= pid->level; i++)
+> | >| +		hlist_del_rcu(&pid->numbers[i].pid_chain);
+> | >|  	spin_unlock_irqrestore(&pidmap_lock, flags);
+> | >| 
+> | >| -	free_pidmap(&init_pid_ns, pid->nr);
+> | >| +	for (i = 0; i <= pid->level; i++)
+> | >| +		free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
+> | >| +
+> | >|  	call_rcu(&pid->rcu, delayed_put_pid);
+> | >|  }
+> | >| 
+> | >| @@ -224,30 +232,43 @@ struct pid *alloc_pid(struct pid_namespa
+> | >|  {
+> | >|  	struct pid *pid;
+> | >|  	enum pid_type type;
+> | >| -	int nr = -1;
+> | >| +	struct pid_namespace *ns;
+> | >| +	int i, nr;
+> | >| 
+> | >| -	pid = kmem_cache_alloc(init_pid_ns.pid_cachep, GFP_KERNEL);
+> | >| +	pid = kmem_cache_alloc(pid_ns->pid_cachep, GFP_KERNEL);
+> | >|  	if (!pid)
+> | >|  		goto out;
+> | >| 
+> | >| -	nr = alloc_pidmap(current->nsproxy->pid_ns);
+> | >| -	if (nr < 0)
+> | >| -		goto out_free;
+> | >| +	ns = pid_ns;
+> | >| +	for (i = pid_ns->level; i >= 0; i--) {
+> | >| +		nr = alloc_pidmap(ns);
+> | >| +		if (nr < 0)
+> | >| +			goto out_free;
+> | >
+> | >If pid_ns->level is say 3 and alloc_pidmap() succeeds when i=0,1
+> | 
+> | It cannot :) If level is 3, then we'll allocate for 3, 2, 1, 0 sequence.
+> | The loop is descending, not ascending...
+> 
+> Aah descending - thats right. But I still think there is a problem.
+> 
+> Here is your code that I am referring to:
+> 
+>         pid = kmem_cache_alloc(pid_ns->pid_cachep, GFP_KERNEL);
+>         if (!pid)
+>                 goto out;
+> 
+>         ns = pid_ns;
+>         for (i = pid_ns->level; i >= 0; i--) {
+>                 nr = alloc_pidmap(ns);
+>                 if (nr < 0)
+>                         goto out_free;
+> 
+>                 pid->numbers[i].nr = nr;
+>                 pid->numbers[i].ns = ns;
+>                 ns = ns->parent;
+>         }
+> 
+> 	pid->level = pid_ns->level;
+> 
+> 	<snip>
+> 
+> out:
+> 	return pid;
+> out_free:
+>         for (i++; i <= pid->level; i++)
+>                 free_pidmap(pid->numbers[i].ns, pid->numbers[i].nr);
+> 
+>         kmem_cache_free(pid_ns->pid_cachep, pid);
+>         pid = NULL;
+> 	goto out;
+> 
+> <end code>
+> 
+> Lets say initially pid_ns->level = 3 and alloc_pidmap() succeeds for
+> i=3 and i=2 but fails for i=1 and we execute "goto out_free".
+> 
+> But pid->level is uninitialized at this point right ?
+> 
+> Even if it were set to zero (using kmem_cache_zalloc()), we may not
+> free the two pidmap entries we allocated for i=3 and i=2.
 
-<nod> Could be what I'm noticing, but it's important to note that as
-others have shown improvement with Con's swap prefetch, it's easily
-arguable that targeting just swap is good enough for a first
-approximation.
+Yes. I found this after detailed look at the code and (hope) fixed.
 
-> In fact I'd restate the problem as "system is in steady state A, then there
-> is a workload shift causing transition to state B, then the system goes
-> idle.  We now wish to reinstate state A in anticipation of a resumption of
-> the original workload".
+> Suka
+> 
 
-Yes, that's a fair transformation / generalization. It's always nice
-talking to someone with more clarity than one's self.
+Thanks,
+Pavel
 
-> swap-prefetch solves a part of that.
->
-> A complete solution for anon and file-backed memory could be implemented
-> (ta-da) in userspace using the kernel inspection tools in -mm's maps2-*
-> patches.
-> We would need to add a means by which userspace can repopulate
-> swapcache,
-
-Okay, let's run with that for argument's sake.
-
-> but that doesn't sound too hard (especially when you haven't
-> thought about it).
-
-I've always thought your sense of humor was underappreciated.
-
-> And userspace can right now work out which pages from which files are in
-> pagecache so this application can handle pagecache, swap and file-backed
-> memory.  (file-backed memory might not even need special treatment, given
-> that it's pagecache anyway).
-
-So in your proposed scheme, would userspace be polling, er, <goes and
-looks through email for maps2 stuff, only finds Rusty's patches to
-it>, well, /proc/<pids>/something_or_another?
-
-A userspace daemon that wakes up regularly to poll a bunch of proc
-files fills me with glee. Wait, is that glee? I think, no... wait...
-horror, yes, horror is what I'm feeling.
-
-I'm wrong, right? I love being wrong about this kind of stuff.
-
-> And userspace can do a much better implementation of this
-> how-to-handle-large-load-shifts problem, because it is really quite
-> complex.  The system needs to be monitored to determine what is the "usual"
-> state (ie: the thing we wish to reestablish when the transient workload
-> subsides).  The system then needs to be monitored to determine when the
-> exceptional workload has started, and when it has subsided, and userspace
-> then needs to decide when to start reestablishing the old working set, at
-> what rate, when to abort doing that, etc.
-
-Oy. I mean this in the most respectful way possible, but you're too
-smart for your own good.
-
-I mean, sure, it's possible one could have multiply-chained transient
-workloads each of which have their optimum workingset, of which
-there's little overlap with the previous. Mainframes made their names
-on such loads. Workingset A starts, generates data, finishes and
-invokes workingset B, of which the only thing they share in common is
-said data. B finishes and invokes C, etc.
-
-So, yeah, that's way too complex to stuff into the kernel. Even if it
-were possible to do so, I cringe at the thought. And I can't believe
-that would be a common enough pattern nowadays to justify any
-hueristics on anyone's part. It's certainly complex enough that I'd
-like to punt that scenario out of the conversation entirely -- I think
-it has the potential to give a false impression as to how involved of
-a process we're talking about here.
-
-Let's go back to your restatement:
-
-> In fact I'd restate the problem as "system is in steady state A, then there
-> is a workload shift causing transition to state B, then the system goes
-> idle.  We now wish to reinstate state A in anticipation of a resumption of
-> the original workload".
-
-I'll take an 80% solution for that one problem, and happily declare
-that the kernel's job is done. In particular, when a resource hog
-exits (or whatever hueristics prefetch is currently hooking in to),
-the kernel (or userspace, if that interface could be made sane) could
-exercise a completely workload agnostic refetch of the last n things
-evicted, where n is determined by what's suddenly become free (or
-whatever Con came up with).
-
-Just, y'know, MRU style.
-
-> All this would end up needing runtime configurability and tweakability and
-> customisability.  All standard fare for userspace stuff - much easier than
-> patching the kernel.
-
-We're talking about patching the kernel for whatever API you're coming
-up with to repopulate pagecache, swap, and inodes, aren't we? If we
-are, it doesn't seem like we're saving any work here. Also we're
-talking about a creating a new user-visible API instead of augmenting
-a pre-existing hueristic -- page replacement -- that the kernel
-doesn't export and so can change at a moment's notice. Augmenting an
-opaque hueristic seems a lot more friendly to long-term maintenance.
-
-> So.  We can
->
-> a) provide a way for userspace to reload pagecache and
->
-> b) merge maps2 (once it's finished) (pokes mpm)
->
-> and we're done?
-
-Eh, dunno. Maybe?
-
-We're assuming we come up with an API for userspace to get
-notifications of evictions (without polling, though poll() would be
-fine -- you know what I mean), and an API for re-victing those things
-on demand. If you think that adding that API and maintaining it is
-simpler/better than including a variation on the above hueristic I
-offered, then yeah, I guess we are. It'll all have that vague
-userspace s2ram odor about it, but I'm sure it could be made to work.
-
-As I think I've successfully Peter Principled my way through this
-conversation to my level of incompetence, I'll shut up now.
-
-Ray
