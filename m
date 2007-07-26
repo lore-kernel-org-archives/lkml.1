@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936598AbXGZUjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936826AbXGZUkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936598AbXGZUjz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 16:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934382AbXGZUjp
+	id S936826AbXGZUkT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 16:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935002AbXGZUjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 16:39:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38283 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764714AbXGZUjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 16:39:44 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: CONFIG_SUSPEND? (was: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1)
-Date: Thu, 26 Jul 2007 22:48:08 +0200
-User-Agent: KMail/1.9.5
-Cc: Len Brown <lenb@kernel.org>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-References: <200707251238.50218.lenb@kernel.org> <200707262117.26353.rjw@sisk.pl> <alpine.LFD.0.999.0707261255380.3442@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707261255380.3442@woody.linux-foundation.org>
+	Thu, 26 Jul 2007 16:39:49 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:44191 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934784AbXGZUjr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 16:39:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=X39x/tZbx3l75dmpkz/RaHVgAUkAluI9H/P1hgWWbWj3PnWExy+SCPgECmvZLmP+dEJ982qdLwN1DRapl9G+yfk49eMmNujsxwbHepFzztfnxoCVNf853Q8102QJaGMsKObB9u6WYyd4rmk741JUw1IuOaLJPWi5SAZ66GkvtU8=
+Message-ID: <86802c440707261339o617cc492v89b3ab2cd9acf553@mail.gmail.com>
+Date: Thu, 26 Jul 2007 13:39:47 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH 1/5] x86_64: get mp_bus_to_node as early v2
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070726201815.GB6387@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707262248.09187.rjw@sisk.pl>
+References: <86802c440707261305t13bce632r7d82d598b9f8a308@mail.gmail.com>
+	 <20070726201815.GB6387@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 July 2007 21:57, Linus Torvalds wrote:
-> 
-> On Thu, 26 Jul 2007, Rafael J. Wysocki wrote:
-> > 
-> > Hmm, perhaps we should introduce a CONFIG_SUSPEND and change
-> > CONFIG_SOFTWARE_SUSPEND into CONFIG_HIBERNATION, both depending on
-> > CONFIG_PM?
-> > 
-> > There's quite some code needed only for suspend compiled in when CONFIG_PM is
-> > set ...
-> 
-> Sounds like a good idea, although I suspect that CONFIG_PM really *is* 
-> fairly close to CONFIG_SUSPEND. The thing is, all the stuff it enabled is 
-> largely useless without at least STR.
-
-My point is we have ACPI dependent on PM, so if you want ACPI, you end
-up with all of the STR stuff built in, which is what you don't like (if I
-understand that correctly).  If we have CONFIG_SUSPEND, you'll be able to
-choose ACPI alone. :-)
-
-> (Yes, I realize that you can do per-driver suspend events etc, but I 
-> suspect not a lot of people have used it).
+On 7/26/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Thu, Jul 26, 2007 at 01:05:09PM -0700, Yinghai Lu wrote:
+> >
+> +#ifdef CONFIG_ACPI_NUMA
+>         int pxm;
+> -
+> -       /* Allocate per-root-bus (not per bus) arch-specific data.
+> -        * TODO: leak; this memory is never freed.
+> -        * It's arguable whether it's worth the trouble to care.
+> -        */
+> -       sd = kzalloc(sizeof(*sd), GFP_KERNEL);
+> -       if (!sd) {
+> -               printk(KERN_ERR "PCI: OOM, not probing PCI bus %02x\n", busnum);
+> -               return NULL;
+> -       }
+> +       int node;
+> +#endif
 >
-> But from a logical standpoint, it does make sense to have a separate 
-> config option for the STR support.
+>         if (domain != 0) {
+>                 printk(KERN_WARNING "PCI: Multiple domains not supported\n");
+> -               kfree(sd);
+>                 return NULL;
+>         }
+>
+> -       sd->node = -1;
+> -
+> -       pxm = acpi_get_pxm(device->handle);
+>  #ifdef CONFIG_ACPI_NUMA
+> -       if (pxm >= 0)
+> -               sd->node = pxm_to_node(pxm);
+> +       pxm = acpi_get_pxm(device->handle);
+> +       if (pxm >= 0) {
+> +               node = pxm_to_node(pxm);
+> +               printk(KERN_INFO "bus %02x -> pxm %d -> node %02x\n",
+> +                       busnum, pxm, node);
+> +               set_mp_bus_to_node(busnum, node);
+> +       }
+>  #endif
+> The local variable 'node' is only used in the above if statement.
+> So moving the definition inside the if statement will save one pair
+> of ugly #ifdef/#endif
 
-Exactly.
+yes, that could be move there. but that pair ugly #ifdef/#endif still
+need for pxm...
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+YH
