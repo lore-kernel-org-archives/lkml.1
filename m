@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936829AbXGZUlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936508AbXGZUpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936829AbXGZUlw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 16:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbXGZUlp
+	id S936508AbXGZUpY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 16:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbXGZUpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 16:41:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43405 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764788AbXGZUlo (ORCPT
+	Thu, 26 Jul 2007 16:45:13 -0400
+Received: from [12.38.223.190] ([12.38.223.190]:32961 "EHLO
+	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932349AbXGZUpM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 16:41:44 -0400
-Date: Thu, 26 Jul 2007 13:41:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: IRQF_DISABLED problem
-In-Reply-To: <20070726201355.GP19275@parisc-linux.org>
-Message-ID: <alpine.LFD.0.999.0707261323180.3442@woody.linux-foundation.org>
-References: <20070726201355.GP19275@parisc-linux.org>
+	Thu, 26 Jul 2007 16:45:12 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18089.1986.267726.233112@zeus.sw.starentnetworks.com>
+Date: Thu, 26 Jul 2007 16:44:50 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+Cc: lksctp-developers@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Srinivas Akkipeddi <sakkiped@starentnetworks.com>
+Subject: Re: [PATCH] SCTP: IPv4 mapped addr not returned in SCTPv6 accept()
+In-Reply-To: <46A8F926.1070606@hp.com>
+References: <18087.57737.908842.337891@zeus.sw.starentnetworks.com>
+	<46A8E027.10802@hp.com>
+	<18088.61269.5608.925496@zeus.sw.starentnetworks.com>
+	<46A8F926.1070606@hp.com>
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 26 Jul 2007, Matthew Wilcox wrote:
+Vlad Yasevich writes:
+> Ok.  First, this is a different bug, so I would prefer a separate patch.
+> Also, I see the problem and it's ugly, but this solution is not really correct,
+> both conceptually and code wise.
 > 
-> I noticed that we only look at the first action in the chain when
-> determining whether to re-enable local interrupts during handle_IRQ_event.
+> Conceptually, the v4 code should never worry about V4-mapped addresses and shouldn't
+> muck with them.  They are IPv6 addresses and there should be a clean separation.
+> 
+> Code wise, the code in the __sctp_connect() is terrible.
+> 
+> Does the attached patch work for you in this case.
 
-You can't really share an interrupt handler that wants to run with 
-interrupts on with one that wants to run with them off.
+yes, with the v4mapped in ipv6.c and your patch, connect and accept
+both work with v4 mapped addresses.
 
-That said, I think the whole IRQF_DISABLED thing should go away. It is 
-total legacy crud, methinks - it used to be SA_INTERRUPT, and it's always 
-worked the way IRQF_DISABLED works now: it only looks at the first one in 
-the chain.
+Note instead of:
 
-> But we don't try to exclude sharing interrupts with mixtures of
-> IRQF_DISABLED set and clear.
+> +	af = sctp_get_af_specific(sa_addr->sa.sa_family);
+> +	af->to_sk_daddr(sa_addr, sk);
 
-I think you should just consider it to be a "if you mix them, you get 
-randomr results".
+you should have:
 
-> I just tried to do that locally, and one
-> of my USB ports disappears, because it shares an interrupt with qla2xxx
-> which sets IRQF_DISABLED, and UHCI doesn't.
+> +	af = sctp_get_af_specific(sa_addr->sa_family);
+> +	af->to_sk_daddr((union sctp_addr *)sa_addr, sk);
 
-There really is no excuse for using IRQF_DISABLED unless you're something 
-like a system device (like the timer interrupt or similar) and you have an 
-exclusive irq handler. A SCSI driver almost certainly has no business 
-doing it.
 
-Generally, I would say that "IRQF_DISABLED | IRQF_SHARED" is an insane 
-combination, but a quick grep shows that it's distressingly common.
+-- 
+Dave Johnson
+Starent Networks
 
-The real fix is to just leave it as it is. It's always worked that way. 
-IRQF_DISABLED basically cannot have any sane behaviour in the presense of 
-mixing.
-
-		Linus
