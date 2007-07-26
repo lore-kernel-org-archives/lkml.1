@@ -1,129 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765323AbXGZMEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765901AbXGZMFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765323AbXGZMEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 08:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbXGZMEO
+	id S1765901AbXGZMFw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 08:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbXGZMFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 08:04:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35917 "EHLO ogre.sisk.pl"
+	Thu, 26 Jul 2007 08:05:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35926 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbXGZMEN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 08:04:13 -0400
+	id S1754338AbXGZMFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 08:05:45 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: YOSHIFUJI Hideaki /
-	 =?utf-8?q?=E5=90=89=E8=97=A4=E8=8B=B1=E6=98=8E?= 
-	<yoshfuji@linux-ipv6.org>
-Subject: Re: [2.6.23-rc1 REGRESSION] ThinkPad T42 poweroff failure by "PM: Introduce pm_power_off_prepare"
-Date: Thu, 26 Jul 2007 14:12:33 +0200
+To: "Parag Warudkar" <parag.warudkar@gmail.com>
+Subject: Re: 2.6.22 - Suspend and Weird Load Averages
+Date: Thu, 26 Jul 2007 14:14:22 +0200
 User-Agent: KMail/1.9.5
-Cc: pavel@ucw.cz, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20070724.171917.30313741.yoshfuji@linux-ipv6.org> <200707251446.56809.rjw@sisk.pl> <20070725.102840.72654660.yoshfuji@linux-ipv6.org>
-In-Reply-To: <20070725.102840.72654660.yoshfuji@linux-ipv6.org>
+Cc: "Pavel Machek" <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       "Nigel Cunningham" <ncunningham@linuxmail.org>
+References: <469E1AFE.7010108@gmail.com> <20070725133919.GA9256@ucw.cz> <82e4877d0707251240t4c5dcff7wb3c7523e577ddb76@mail.gmail.com>
+In-Reply-To: <82e4877d0707251240t4c5dcff7wb3c7523e577ddb76@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707261412.33839.rjw@sisk.pl>
+Message-Id: <200707261414.23430.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 25 July 2007 17:28, YOSHIFUJI Hideaki / 吉藤英明 wrote:
-> Hello.
+On Wednesday, 25 July 2007 21:40, Parag Warudkar wrote:
+> Hi Pavel!
 > 
-> In article <200707251446.56809.rjw@sisk.pl> (at Wed, 25 Jul 2007 14:46:55 +0200), "Rafael J. Wysocki" <rjw@sisk.pl> says:
+> On 7/25/07, Pavel Machek <pavel@ucw.cz> wrote:
 > 
-> > On Wednesday, 25 July 2007 00:19, YOSHIFUJI Hideaki / 吉藤英明 wrote:
-> :
-> > > Linux 2.6.23-rc1 fails to power off my ThinkPad T42.
-> > > Git-bisect told me that the following commit is to blame,
-> > > and by reverting that commit, it works appropriately.
-> > 
-> > (1) Can you please apply the appended patch and see if the message gets
-> >     printed when you try to power off the system?
+> > Known, and Rafael/Nigel have patches to fix that.
 > 
-> Yup, I got it.  Last lines are:
+> Thanks for the info - Rafael/Nigel do you have any patches for me to
+> try/modify -
 
-Hmm, it looks like we have a code ordering issue in there.
+Well, I don't.
 
-Can you please check if the appended patch helps?
+> I am just curious to see what approach the patches take 
+> to fix this - I had started thinking about TASK_SUSPENDED which would
+> be equivalent to TASK_UNINTERRUPTIBLE for all purposes except load
+> calculation (not counted in nr_uninterruptible) but somehow I think
+> there might be a less intrusive / more correct way to do this.
+
+We wanted to save the pre-suspend load averages and restore them during the
+resume.
 
 Greetings,
 Rafael
 
 
----
- drivers/base/power/shutdown.c |    2 --
- include/linux/device.h        |    3 +++
- kernel/power/disk.c           |    1 +
- kernel/sys.c                  |    3 +++
- 4 files changed, 7 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.23-rc1/drivers/base/power/shutdown.c
-===================================================================
---- linux-2.6.23-rc1.orig/drivers/base/power/shutdown.c	2007-07-09 01:32:17.000000000 +0200
-+++ linux-2.6.23-rc1/drivers/base/power/shutdown.c	2007-07-26 12:24:37.000000000 +0200
-@@ -44,7 +44,5 @@ void device_shutdown(void)
- 			dev->driver->shutdown(dev);
- 		}
- 	}
--
--	sysdev_shutdown();
- }
- 
-Index: linux-2.6.23-rc1/kernel/sys.c
-===================================================================
---- linux-2.6.23-rc1.orig/kernel/sys.c	2007-07-23 22:07:02.000000000 +0200
-+++ linux-2.6.23-rc1/kernel/sys.c	2007-07-26 12:08:07.000000000 +0200
-@@ -804,6 +804,7 @@ static void kernel_restart_prepare(char 
- 	blocking_notifier_call_chain(&reboot_notifier_list, SYS_RESTART, cmd);
- 	system_state = SYSTEM_RESTART;
- 	device_shutdown();
-+	sysdev_shutdown();
- }
- 
- /**
-@@ -860,6 +861,7 @@ void kernel_shutdown_prepare(enum system
- void kernel_halt(void)
- {
- 	kernel_shutdown_prepare(SYSTEM_HALT);
-+	sysdev_shutdown();
- 	printk(KERN_EMERG "System halted.\n");
- 	machine_halt();
- }
-@@ -876,6 +878,7 @@ void kernel_power_off(void)
- 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
- 	if (pm_power_off_prepare)
- 		pm_power_off_prepare();
-+	sysdev_shutdown();
- 	printk(KERN_EMERG "Power down.\n");
- 	machine_power_off();
- }
-Index: linux-2.6.23-rc1/kernel/power/disk.c
-===================================================================
---- linux-2.6.23-rc1.orig/kernel/power/disk.c	2007-07-26 12:13:58.000000000 +0200
-+++ linux-2.6.23-rc1/kernel/power/disk.c	2007-07-26 12:14:23.000000000 +0200
-@@ -216,6 +216,7 @@ int hibernation_platform_enter(void)
- 		 * sleep state after all
- 		 */
- 		error = hibernation_ops->prepare();
-+		sysdev_shutdown();
- 		if (!error)
- 			error = hibernation_ops->enter();
- 	} else {
-Index: linux-2.6.23-rc1/include/linux/device.h
-===================================================================
---- linux-2.6.23-rc1.orig/include/linux/device.h	2007-07-23 22:06:59.000000000 +0200
-+++ linux-2.6.23-rc1/include/linux/device.h	2007-07-26 12:48:05.000000000 +0200
-@@ -551,6 +551,9 @@ extern void put_device(struct device * d
- /* drivers/base/power/shutdown.c */
- extern void device_shutdown(void);
- 
-+/* drivers/base/sys.c */
-+extern void sysdev_shutdown(void);
-+
- 
- /* drivers/base/firmware.c */
- extern int __must_check firmware_register(struct kset *);
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
