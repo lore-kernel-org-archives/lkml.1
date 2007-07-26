@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763189AbXGZLCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763817AbXGZK6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763189AbXGZLCg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 07:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbXGZLC3
+	id S1763817AbXGZK6V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 06:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663AbXGZK6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 07:02:29 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:60676 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755945AbXGZLC3 (ORCPT
+	Thu, 26 Jul 2007 06:58:08 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:35452 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753905AbXGZK6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 07:02:29 -0400
-Message-ID: <46A87EC7.6070002@gmail.com>
-Date: Thu, 26 Jul 2007 13:00:23 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       Rene Herman <rene.herman@gmail.com>, Bongani Hlope <bhlope@mweb.co.za>,
-       Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
-Subject: Re: updatedb
-References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com> <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com> <46A81C39.4050009@gmail.com> <200707260839.51407.bhlope@mweb.co.za> <46A845BB.9080503@gmail.com> <20070726095829.GA26987@atjola.homenet>
-In-Reply-To: <20070726095829.GA26987@atjola.homenet>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Thu, 26 Jul 2007 06:58:06 -0400
+To: bunk@stusta.de
+Cc: apw@shadowen.org, fujita.tomonori@lab.ntt.co.jp, michaelc@cs.wisc.edu,
+       James.Bottomley@SteelEye.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, drfickle@us.ibm.com, mel@csn.ul.ie,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.23-rc1-mm1: SCSI_SRP_ATTRS compile error
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20070725180618.GE3572@stusta.de>
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+	<46A77C28.1050807@shadowen.org>
+	<20070725180618.GE3572@stusta.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070726194920K.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 26 Jul 2007 19:49:20 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/26/2007 11:58 AM, Björn Steinbrink wrote:
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.23-rc1-mm1: SCSI_SRP_ATTRS compile error
+Date: Wed, 25 Jul 2007 20:06:18 +0200
 
-> Will now go and see what happens if I play with swappiness.
+> On Wed, Jul 25, 2007 at 05:36:56PM +0100, Andy Whitcroft wrote:
+> > Of the machines we test releases on automatically this only compiles on
+> > NUMA-Q and does not boot there (some PCI issue).
+> > 
+> > 
+> > ppc64 (beavis):
+> > 
+> > drivers/built-in.o(.text+0xd2784): In function `.srp_rport_add':
+> > : undefined reference to `.scsi_tgt_it_nexus_create'
+> > drivers/built-in.o(.text+0xd2884): In function `.srp_rport_del':
+> > : undefined reference to `.scsi_tgt_it_nexus_destroy'
+> > make: *** [.tmp_vmlinux1] Error 1
+> > 
+> > 
+> > x86_64 (bl6-13):
+> > 
+> > ERROR: "scsi_tgt_it_nexus_destroy" [drivers/scsi/scsi_transport_srp.ko]
+> > undefined!
+> > ERROR: "scsi_tgt_it_nexus_create" [drivers/scsi/scsi_transport_srp.ko]
+> > undefined!
+> > make[1]: *** [__modpost] Error 1
+> >...
+> 
+> Caused-By  : git-scsi-target.patch
+> Workaround : enable CONFIG_SCSI_TGT
 
-I in fact managed to overlook _all_ of swappiness (*) and was quite frankly 
-under the impression that Linux would simply never swap anything out to make 
-room for cache. Which is basic enough a misunderstanding that I'll go sulk 
-in a corner now.
+Sorry about this.
 
-Rene.
+Andrew, could you drop the scsi-target tree from -mm?
 
-(*)
+I was surprised that the scsi-target tree is still in -mm (it had been
+tested in -mm before the mainline inclusion). I guess that it's the
+right way to push scsi-target stuff into -mm via James' scsi-misc.
 
-$ grep -ri swappiness Documentation
-$
 
-Sigh...
+> Is there any good reason why all the SCSI transport attributes options 
+> are user visible?
+
+No, I messed up the dependency somewhere. I'll fix it before it is
+merged into scsi-misc.
+
+Thanks,
