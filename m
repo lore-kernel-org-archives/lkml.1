@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934755AbXGZTsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935457AbXGZTus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934755AbXGZTsi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 15:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764084AbXGZTsa
+	id S935457AbXGZTus (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 15:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765800AbXGZTuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 15:48:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52256 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763109AbXGZTsa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 15:48:30 -0400
-Date: Thu, 26 Jul 2007 12:47:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, wwoods@redhat.com
-Subject: Re: [PATCH] core_pattern: Add ability for core_pattern to parse
- arguments when pattern is a pipe
-Message-Id: <20070726124731.0b7c4ecc.akpm@linux-foundation.org>
-In-Reply-To: <20070726193145.GC5701@hmsreliant.homelinux.net>
-References: <20070726173923.GA5701@hmsreliant.homelinux.net>
-	<20070726114832.faf14bb0.akpm@linux-foundation.org>
-	<20070726193145.GC5701@hmsreliant.homelinux.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Jul 2007 15:50:39 -0400
+Received: from h155.mvista.com ([63.81.120.155]:37056 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765651AbXGZTui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 15:50:38 -0400
+Message-ID: <46A8FB86.2010907@ru.mvista.com>
+Date: Thu, 26 Jul 2007 23:52:38 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<Pine.LNX.4.60.0707252130090.6234@poirot.grange>	<20070725213925.2f25906c@the-village.bc.nu> <Pine.LNX.4.60.0707262136530.6614@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0707262136530.6614@poirot.grange>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 15:31:45 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
+Hello.
 
-> On Thu, Jul 26, 2007 at 11:48:32AM -0700, Andrew Morton wrote:
-> > On Thu, 26 Jul 2007 13:40:19 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
-> > 
-> > > 	Currently, core dumps can be redirected to a pipe by placing the
-> > > following string template in /proc/sys/kernel/core_pattern:
-> > > |<path/to/application>
-> > > This patch extends this ability, allowing the core_pattern to contain arguments
-> > > to be passed as an argv array to the userspace helper application.  It also add
-> > > a format specifier, %c, which allows the RLIM_CORE value of the crashing
-> > > application to be passed on the command line, since RLIMIT_CORE is reduced to
-> > > zero when execing the userspace helper
-> > 
-> > This all seems to be getting a bit nutty.  Who needs this feature
-> > and what will they do with it, etc?
-> > 
-> Why nutty?  Ubuntu has had apport for a bit now, which monitors the system for
-> crashed process and attempts to help the user auto-file a bugreport with a
-> relevant distro based on its configuration.  Ubuntu has implemented lots of
-> their functionality with some patches that they never pushed upstream (and IMHO,
-> have some security issues).  This is my attempt to do what their doing sanely,
-> so the other distro's (primarily fedora) can take advantage of this technology.
-> Will Woods (who has been copied on this set of patches) can give you more detail
-> if you like.   As for this specific feature, I wanted to include it for the same
-> reason that I mentioned above.  core_pattern, when set to a pipe, reduces
-> RLIMIT_CORE to zero.  This patch lets you pass the real core limit value
-> directly to the application in the event it wants to save the core to disk, but
-> still wishes to respect the original ulimit value.
+Guennadi Liakhovetski wrote:
 
-Somewhere in there is a changelog trying to get out.
+>>>driver to using platform-device. I got a reply, that it's not worth it now 
+>>>that IDE is slowly becoming obsolete, and the pata_platform serves the 
+>>>perpose perfectly well. I found this argument reasonable, I had the same 
+>>>doubt, just wanted to double-check. So, why do we now need a new legacy 
+>>>(a/drivers/ide/legacy/ide_platform.c) driver when a "modern" driver 
+>>>exists?
 
-It's quite important to explan things like this: what the feature is *for*,
-why we want it in Linux, what it value is to our users, stuff like that. 
-Things with which we can justify the additional overhead/maintenance cost,
-etc.
+>>We don't *need* it but some people still want to use old IDE and the
+>>author was willing to make it neatly compatible so that anything that
+>>works with the pata_platform should be able to use the ide_platform
+>>driver and vice versa. For the shorter term that can only be a good thing
+>>- arch code doesn't need to care about which driver is used, end users
+>>can pick and it doesn't end up adding new ties between code and old IDE.
 
-So please, include a full changelog in v2?
+> Ok, thanks for the explanation Alan. So, there's no technical argument, 
+> just "being nice to the users", and add a new driver, which we know we'll 
+> have to remove soon, thus having to persuade its users, who by that time 
 
-> > You have a few open-coded kstrdup()s in there, btw.  And an open-coded
-> > free_argv_array() on the error path.  And a lot of checkpatch warnings.
-> I don't see what you're referring to.  free_argv_array is only called if it was
-> initially setup (keyed of the same ispipe variable), and all the memory for the
-> strcpy's in format_corename_argv is unwound and freed in the out_free label of
-> the same function on error.  If there is somethign I'm missing, please let me
-> know, I'm happy to fix it.
+    Define "soon". :-)
 
-The cleanup code at out_free() could, I think, just be a call to
-free_argv_array().
+> will get used to it and will not want to invest money into switching to 
+> another one...
 
-> I know its been a large number of patches over the last few days, and I'm sorry
-> for that.
+    Invest into what if the drivers are functionally identical?
 
-heh.  More than 100 patches is getting largeish.
+> Thanks
+> Guennadi
 
->  I've been trying to break this up into a sane amount of discrete
-> chunks that don't depend on one another.  If you would prefer that I roll them
-> up into a larger patch, I'm happy to do that as well.  Just let me know.
-
-Well if you have mutiple patches hitting on the same area it would be
-better to present it as a sequence-number patch series which all tells a
-nice story.  Start out describing the end-point and what value it all adds,
-follow that up with the various bits of implementation.
-
-Dribbling in various related patches at one-per-day makes it all a bit hard
-to follow and manage.
-
+MBR, Sergei
