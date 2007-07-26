@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935886AbXGZT7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934704AbXGZUAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935886AbXGZT7b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 15:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933010AbXGZT7X
+	id S934704AbXGZUAB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 16:00:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933556AbXGZT7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 15:59:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58504 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933104AbXGZT7W (ORCPT
+	Thu, 26 Jul 2007 15:59:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:62760 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936091AbXGZT7j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 15:59:22 -0400
-Date: Thu, 26 Jul 2007 12:59:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [2.6.23-rc1 REGRESSION] CPU hotplug totally broken on HPC nx6325
- (x86_64)
-In-Reply-To: <200707262122.50517.rjw@sisk.pl>
-Message-ID: <alpine.LFD.0.999.0707261258030.3442@woody.linux-foundation.org>
-References: <200707261440.50649.rjw@sisk.pl>
- <alpine.LFD.0.999.0707260924150.3442@woody.linux-foundation.org>
- <200707262122.50517.rjw@sisk.pl>
+	Thu, 26 Jul 2007 15:59:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=qdaKXP0aSYrtgWFg+Re8SIvxTTKlJsW1VRIHCpYsvhPBlG81rUolEIXvA6soSOD7SMgYDA612urU67SwOq9B4oPJy/2NqUiBchYFLWHjM3pmIy1JJWsI3yVyEhd0p9X7DJXVMf2UjD7fhE9h/aKtZgGgeK0DXAUljnrF2rrUgrs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Re: drivers/ide/pci/cs5535.c: array overrun
+Date: Thu, 26 Jul 2007 21:11:21 +0200
+User-Agent: KMail/1.9.6
+Cc: bunk@stusta.de, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <06FDA0246543E443ABBB36B1FCD5CC0603CF3360@SAUSEXMB2.amd.com> <20070724155952.GA13874@cosmic.amd.com>
+In-Reply-To: <20070724155952.GA13874@cosmic.amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200707262111.21296.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Hi,
 
-On Thu, 26 Jul 2007, Rafael J. Wysocki wrote:
-> > 
-> > Rafael, does reverting just this part (and leaving the "text_poke()" 
-> > cleanups) work for you?
+On Tuesday 24 July 2007, Jordan Crouse wrote:
+> > The Coverity checker spotted the following array overrun in 
+> > drivers/ide/pci/cs5535.c:
 > 
-> Yes, it does, with the appended fix on top. :-)
+> <-- snip -->
+> 
+> >	if (speed >= XFER_UDMA_0 && speed <= XFER_UDMA_7)
+> >		reg |= cs5535_udma_timings[speed - XFER_UDMA_0];
 
-Heh, I noticed that myself, but assumed you'd figure it out. 
+Not a bug per se since the upper layer will never feed this function
+with speed > XFER_UDMA_4 (thanks to ->ultra_mask being set to 0x1f).
 
-I ended up renaming "oaddr" as "addr", so the thing I committed is 
-slightly different from the patch (+ your fix), but it should be otherwise 
-100% equivalent.
+Worth fixing anyway.
 
-		Linus
+> Fix is attached.  Somebody got overzealous - the 5535 only supports
+> up to UDMA4, which matches the array.
+
+applied, thanks
+
+Bart
