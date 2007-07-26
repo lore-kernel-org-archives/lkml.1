@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764425AbXGZOJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765741AbXGZOK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764425AbXGZOJw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 10:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbXGZOJo
+	id S1765741AbXGZOK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 10:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761334AbXGZOKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 10:09:44 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:60939 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757163AbXGZOJo (ORCPT
+	Thu, 26 Jul 2007 10:10:11 -0400
+Received: from rrzd5.rz.uni-regensburg.de ([194.94.155.50]:20249 "EHLO
+	rrzd5.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761056AbXGZOKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 10:09:44 -0400
-Subject: Re: [RFC] fix slub krealloc()
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0707251153050.8731@schroedinger.engr.sgi.com>
-References: <1184773331.4002.4.camel@johannes.berg>
-	 <20070723133206.2220db7e@schroedinger.engr.sgi.com>
-	 <20070723134713.2b1218bd.akpm@linux-foundation.org>
-	 <20070723143724.1d0b26eb@schroedinger.engr.sgi.com>
-	 <1185352857.4006.4.camel@johannes.berg>
-	 <Pine.LNX.4.64.0707251153050.8731@schroedinger.engr.sgi.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-bGNXPE664PZ9XHZbKgzT"
-Date: Thu, 26 Jul 2007 16:08:46 +0200
-Message-Id: <1185458926.4006.12.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Thu, 26 Jul 2007 10:10:09 -0400
+X-Greylist: delayed 2000 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jul 2007 10:10:09 EDT
+From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
+Organization: Universitaet Regensburg, Klinikum
+To: linux-kernel@vger.kernel.org
+Date: Thu, 26 Jul 2007 15:36:20 +0200
+MIME-Version: 1.0
+Subject: Q: PCI-X @ 266MHz on HP rx6600 (Qlogic 4Gb FC HBA)
+Message-ID: <46A8BF75.161.5C8424A@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+X-mailer: Pegasus Mail for Windows (4.31)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Content-Conformance: HerringScan-0.25/Sophos-P=4.16.0+V=4.16+U=2.07.165+R=02 April 2007+T=237288@20070726.133542Z
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-bGNXPE664PZ9XHZbKgzT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I have a question: The Qlogic ISP2422 chip is said to handle PCI-X 266MHz. So does 
+the HP Itanium2 server rx6600. Basically that was the reason to select that 
+server. The FC-HBA is in a 266 MHz capable slot. However when booting SLES10 SP1 
+for IA64, the logs say:
 
-On Wed, 2007-07-25 at 11:53 -0700, Christoph Lameter wrote:
+<6>QLogic Fibre Channel HBA Driver
+<6>GSI 49 (level, low) -> CPU 3 (0x0300) vector 51
+<6>ACPI: PCI Interrupt 0000:0f:01.0[A] -> GSI 49 (level, low) -> IRQ 51
+<6>qla2xxx 0000:0f:01.0: Found an ISP2422, irq 51, iobase 0xc0000000b0040000
+[...]
+<6>qla2xxx 0000:0f:01.0: LOOP UP detected (4 Gbps).
+<6>qla2xxx 0000:0f:01.0: Topology - (F_Port), Host Loop address 0x0
+<6>scsi0 : qla2xxx
+<6>qla2xxx 0000:0f:01.0:
+<4> QLogic Fibre Channel HBA Driver: 8.01.07-k3
+<4>  QLogic HP AB378-60001 -
+<4>  ISP2422: PCI-X Mode 2 (133 MH4.00.26 [IP]  @ 0000:0f:01.0 hdma+, host#=0, 
+fw=4.00.26 [IP]
+<5>  Vendor: HP        Model: HSV200            Rev: 6100
+<5>  Type:   RAID                               ANSI SCSI revision: 02
+<5> 0:0:0:0: Attached scsi generic sg0 type 12
 
-> It will give you a ZERO_SIZE_PTR
->=20
-> void *krealloc(const void *p, size_t new_size, gfp_t flags)
-> {
->         void *ret;
->         size_t ks;
->=20
->         if (unlikely(!new_size)) {
->                 kfree(p);
->                 return ZERO_SIZE_PTR;
->         }
+Now does Linux support the speed of 266 MHz, and is it just displayed incorrectly, 
+or doesn't Linux support the speed of 266MHz yet?
 
-Oh, I thought looked and it returned NULL. Did it change or did I just
-look wrong? :)
+"lspci -v" says:
+0f:01.0 Fibre Channel: QLogic Corp. ISP2422-based 4Gb Fibre Channel to PCI-X HBA 
+(rev 02)
+        Subsystem: Hewlett-Packard Company Unknown device 12d6
+        Flags: bus master, 66MHz, medium devsel, latency 128, IRQ 51
+        I/O ports at 6000 [size=256]
+        Memory at b0040000 (64-bit, non-prefetchable) [size=4K]
+        Expansion ROM at b0000000 [disabled] [size=256K]
+        Capabilities: [44] Power Management version 2
+        Capabilities: [4c] PCI-X non-bridge device
+        Capabilities: [64] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 
+Enable-
+        Capabilities: [74] Vital Product Data
 
-johannes
+Please CC: any replies to my address as I'm not subscribed to the kernel list.
 
---=-bGNXPE664PZ9XHZbKgzT
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGqKrt/ETPhpq3jKURAn6uAKCGV23tYhuNukNm1ecz/xYqMeAcbQCgnBGh
-pzLNa90QQITHoTRFBl0FZVU=
-=XjQa
------END PGP SIGNATURE-----
-
---=-bGNXPE664PZ9XHZbKgzT--
+Regards,
+Ulrich Windl
 
