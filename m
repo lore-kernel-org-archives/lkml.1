@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764131AbXGZRWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765945AbXGZRZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764131AbXGZRWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760858AbXGZRWI
+	id S1765945AbXGZRZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761862AbXGZRZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:22:08 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:37874 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760575AbXGZRWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:22:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=QY6FijXIlV6PSC+KSrZa0Gi+nOmgZvgQPB35G2ZJi59+bjhV2n5psY0FtljLbCRq2sonzVT606KShZVQcBtwaq/HSm4/ZgixZPrOTy0+k3pVNpOo2yFzPW33DHzmT/E9;
-Message-ID: <46A8D837.1030400@simon.arlott.org.uk>
-Date: Thu, 26 Jul 2007 18:21:59 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 26 Jul 2007 13:25:33 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58745 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761606AbXGZRZc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 13:25:32 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH] Remove CTL_UNNUMBERED
+References: <20070726164518.GB16937@localhost.sw.ru>
+Date: Thu, 26 Jul 2007 11:24:12 -0600
+In-Reply-To: <20070726164518.GB16937@localhost.sw.ru> (Alexey Dobriyan's
+	message of "Thu, 26 Jul 2007 20:45:18 +0400")
+Message-ID: <m13azbulhf.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-CC: netdev@vger.kernel.org, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       lksctp-developers@lists.sourceforge.net,
-       Srinivas Akkipeddi <sakkiped@starentnetworks.com>
-Subject: Re: [PATCH] IPv6: ipv6_addr_type() doesn't know about RFC4193 addresses
-References: <18087.57717.495366.413571@zeus.sw.starentnetworks.com>
-In-Reply-To: <18087.57717.495366.413571@zeus.sw.starentnetworks.com>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/07/07 00:49, Dave Johnson wrote:
-> ipv6_addr_type() doesn't check for 'Unique Local IPv6 Unicast
-> Addresses' (RFC4193) and returns IPV6_ADDR_RESERVED for that range.
+Alexey Dobriyan <adobriyan@sw.ru> writes:
 
-> +	if ((st & htonl(0xFE000000)) == htonl(0xFC000000))
-> +		return (IPV6_ADDR_UNICAST |
-> +			IPV6_ADDR_SCOPE_TYPE(IPV6_ADDR_SCOPE_GLOBAL));			/* RFC 4193 */
+> CTL_UNNUMBERED is unneeded, because it expands to
+>
+> 	.ctl_name = 0
+>
+> The same effect can be achieved by skipping .ctl_name initialization,
+> saving one line per sysctl.
+>
+> Update docs and headers telling people to not add CTL_ numbers and
+> giving example.
+>
+> This is probably all we can do to stop the flow of new CTL_ numbers,
+> because most of sysctls are copy-pasted. CTL_UNNUMBERED doesn't solve
+> this problem at all.
+>
+> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
 
-But ULA's scope isn't global, shouldn't it be IPV6_ADDR_SCOPE_ORGLOCAL ?
+Nack.  Not unless you update the documentation and explanations
+properly.
 
--- 
-Simon Arlott
+The important part is that we stop assigning binary numbers.  You
+are removing part of the description of why we can not assign bianry
+numbers and how that is important.
+
+CTL_UNNUMBERED may be an irritant to you but as for actually using the
+code I have look and it is about 6 of 1 half dozen of the other.
+
+Eric
