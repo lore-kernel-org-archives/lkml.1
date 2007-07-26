@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbXGZKJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXGZKJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761308AbXGZKJW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 06:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbXGZKJP
+	id S932095AbXGZKJv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 06:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbXGZKJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 06:09:15 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:51111 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbXGZKJP (ORCPT
+	Thu, 26 Jul 2007 06:09:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36656 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755030AbXGZKJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 06:09:15 -0400
-Date: Thu, 26 Jul 2007 13:09:02 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86-64: Calgary - fix section mismatch warnings in tce
-Message-ID: <20070726100902.GP4104@rhun.haifa.ibm.com>
-References: <20070726062330.GA1322@uranus.ravnborg.org> <20070726090611.GL4104@rhun.haifa.ibm.com> <20070726100238.GA2779@uranus.ravnborg.org>
+	Thu, 26 Jul 2007 06:09:41 -0400
+Date: Thu, 26 Jul 2007 03:09:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+Message-Id: <20070726030902.02f5eab0.akpm@linux-foundation.org>
+In-Reply-To: <20070726094024.GA15583@elte.hu>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	<46A57068.3070701@yahoo.com.au>
+	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	<46A58B49.3050508@yahoo.com.au>
+	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	<46A6CC56.6040307@yahoo.com.au>
+	<p73abtkrz37.fsf@bingen.suse.de>
+	<46A85D95.509@kingswood-consulting.co.uk>
+	<20070726092025.GA9157@elte.hu>
+	<20070726023401.f6a2fbdf.akpm@linux-foundation.org>
+	<20070726094024.GA15583@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070726100238.GA2779@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 12:02:38PM +0200, Sam Ravnborg wrote:
+On Thu, 26 Jul 2007 11:40:24 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-> Now I recall I saw it too :-(
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Thu, 26 Jul 2007 11:20:25 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > Once we give the kernel the knowledge that the dentry wont be used again 
+> > > by this app, the kernel can do a lot more intelligent decision and not 
+> > > baloon the dentry cache.
+> > > 
+> > > ( we _do_ want to baloon the dentry cache otherwise - for things like 
+> > >   "find" - having a fast VFS is important. But known-use-once things 
+> > >   like the daily updatedb job can clearly be annotated properly. )
+> > 
+> > Mutter.  /proc/sys/vm/vfs_cache_pressure has been there for what, 
+> > three years?  Are any distros raising it during the updatedb run yet?
+> 
+> but ... that's system-wide, and the 'dont baloon the dcache' is only a 
+> property of updatedb.
 
-> This one is beeter although the __init in the prototype declaration
-> should have no effect. (Also wonder why the prototypes are extern -
-> that should be a no-op too).
+Sure, but it's practical, isn't it?  Who runs (and cares about)
+vfs-intensive workloads during their wee-small-hours updatedb run?
 
-The __init in the prototype is for consistency's sake with the
-definition. The extern I have no idea... probably legacy from some
-other code, but they don't bother me.
+(OK, I do, but I kill the damn thing if it goes off)
 
-Anyway, forgot to mention earlier - thanks for your patch!
+> Still, it's useful to debug this thing.
+> 
+> below is an updatedb hack that sets vfs_cache_pressure down to 0 during 
+> an updatedb run. Could someone who is affected by the 'morning after' 
+> problem give it a try? If this works then we can think about any other 
+> measures ...
+> 
+> 	Ingo
+> 
+> --- /etc/cron.daily/mlocate.cron.orig
+> +++ /etc/cron.daily/mlocate.cron
+> @@ -1,4 +1,7 @@
+>  #!/bin/sh
+>  nodevs=$(< /proc/filesystems awk '$1 == "nodev" { print $2 }')
+>  renice +19 -p $$ >/dev/null 2>&1
+> +PREV=`cat /proc/sys/vm/vfs_cache_pressure 2>/dev/null`
+> +echo 0 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null
+>  /usr/bin/updatedb -f "$nodevs"
+> +[ "$PREV" != "" ] && echo $PREV > /proc/sys/vm/vfs_cache_pressure 2>/dev/null
 
-Cheers,
-Muli
+Setting it to zero will maximise the preservation of the vfs caches.  You
+wanted 10000 there.
+
+<bets that nobody will test this>
