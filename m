@@ -1,154 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932679AbXGZMq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933554AbXGZMrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932679AbXGZMq7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 08:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbXGZMqu
+	id S933554AbXGZMrW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 08:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbXGZMrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 08:46:50 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:44599 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755126AbXGZMqt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 08:46:49 -0400
-Subject: Re: [PATCH] Remove libsas PCI dependencies
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Meelis Roos <mroos@linux.ee>, linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <46A867AB.7050007@garzik.org>
-References: <Pine.SOC.4.64.0707261129220.17385@math.ut.ee>
-	 <46A867AB.7050007@garzik.org>
+	Thu, 26 Jul 2007 08:47:06 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55860 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933396AbXGZMrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 08:47:04 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19ab7ZS3d5ah7+usb3kLIMh9CT8Xdc9+yGsnZ8QQT
+	ghQ7Pci9ZX9sIP
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge
+	plans for 2.6.23]
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070726030902.02f5eab0.akpm@linux-foundation.org>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	 <46A57068.3070701@yahoo.com.au>
+	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	 <46A58B49.3050508@yahoo.com.au>
+	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	 <46A6CC56.6040307@yahoo.com.au> <p73abtkrz37.fsf@bingen.suse.de>
+	 <46A85D95.509@kingswood-consulting.co.uk> <20070726092025.GA9157@elte.hu>
+	 <20070726023401.f6a2fbdf.akpm@linux-foundation.org>
+	 <20070726094024.GA15583@elte.hu>
+	 <20070726030902.02f5eab0.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Thu, 26 Jul 2007 08:46:47 -0400
-Message-Id: <1185454007.3501.34.camel@localhost.localdomain>
+Date: Thu, 26 Jul 2007 14:46:58 +0200
+Message-Id: <1185454019.6449.12.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 05:21 -0400, Jeff Garzik wrote:
-> Meelis Roos wrote:
-> > Tried to compile everythin SCSI on my SBus-only sparc64, including SAS 
-> > supoort. Seems that libsas seems to depend on PCI - does it need to?
-> > 
-> >   MODPOST 446 modules
-> > ERROR: "pci_iommu_ops" [drivers/scsi/libsas/libsas.ko] undefined!
+On Thu, 2007-07-26 at 03:09 -0700, Andrew Morton wrote:
+
+> Setting it to zero will maximise the preservation of the vfs caches.  You
+> wanted 10000 there.
 > 
-> 
-> Does the attached patch fix things?  2.6.23-rc1 material, methinks.
-> 
-> libsas should -not- require PCI, even though aic94xx does.
+> <bets that nobody will test this>
 
-Realistically, even for parisc, I can't see anyone producing a non-PCI
-SAS device (even though I'd like one).
+drops caches prior to both updatedb runs.
 
-> Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> 
-> plain text document attachment (patch)
-> diff --git a/drivers/scsi/aic94xx/aic94xx_init.c b/drivers/scsi/aic94xx/aic94xx_init.c
-> index ab00aec..63bcde2 100644
-> --- a/drivers/scsi/aic94xx/aic94xx_init.c
-> +++ b/drivers/scsi/aic94xx/aic94xx_init.c
-> @@ -586,7 +586,7 @@ static int __devinit asd_pci_probe(struct pci_dev *dev,
->  		goto Err;
->  	}
->  	asd_ha->pcidev = dev;
-> -	asd_ha->sas_ha.pcidev = asd_ha->pcidev;
-> +	asd_ha->sas_ha.dev = &asd_ha->pcidev->dev;
->  	asd_ha->sas_ha.lldd_ha = asd_ha;
->  
->  	asd_ha->name = asd_dev->name;
-> @@ -605,8 +605,6 @@ static int __devinit asd_pci_probe(struct pci_dev *dev,
->  		goto Err_free;
->  	}
->  
-> -
-> -
->  	err = asd_dev->setup(asd_ha);
->  	if (err)
->  		goto Err_free;
-> diff --git a/drivers/scsi/libsas/sas_ata.c b/drivers/scsi/libsas/sas_ata.c
-> index ced2de3..77c4668 100644
-> --- a/drivers/scsi/libsas/sas_ata.c
-> +++ b/drivers/scsi/libsas/sas_ata.c
-> @@ -382,7 +382,7 @@ int sas_ata_init_host_and_port(struct domain_device *found_dev,
->  	struct ata_port *ap;
->  
->  	ata_host_init(&found_dev->sata_dev.ata_host,
-> -		      &ha->pcidev->dev,
-> +		      ha->dev,
->  		      sata_port_info.flags,
->  		      &sas_sata_ops);
->  	ap = ata_sas_port_alloc(&found_dev->sata_dev.ata_host,
-> @@ -448,10 +448,10 @@ static void sas_disc_task_done(struct sas_task *task)
->   * @task: the task to be executed
->   * @buffer: pointer to buffer to do I/O
->   * @size: size of @buffer
-> - * @pci_dma_dir: PCI_DMA_...
-> + * @dma_dir: DMA direction.  DMA_xxx
->   */
->  static int sas_execute_task(struct sas_task *task, void *buffer, int size,
-> -			    int pci_dma_dir)
-> +			    int dma_dir)
->  {
->  	int res = 0;
->  	struct scatterlist *scatter = NULL;
-> @@ -461,7 +461,7 @@ static int sas_execute_task(struct sas_task *task, void *buffer, int size,
->  	struct sas_internal *i =
->  		to_sas_internal(task->dev->port->ha->core.shost->transportt);
->  
-> -	if (pci_dma_dir != PCI_DMA_NONE) {
-> +	if (dma_dir != DMA_NONE) {
->  		scatter = kzalloc(sizeof(*scatter), GFP_KERNEL);
->  		if (!scatter)
->  			goto out;
-> @@ -474,11 +474,11 @@ static int sas_execute_task(struct sas_task *task, void *buffer, int size,
->  	task->scatter = scatter;
->  	task->num_scatter = num_scatter;
->  	task->total_xfer_len = size;
-> -	task->data_dir = pci_dma_dir;
-> +	task->data_dir = dma_dir;
->  	task->task_done = sas_disc_task_done;
-> -	if (pci_dma_dir != PCI_DMA_NONE &&
-> +	if (dma_dir != DMA_NONE &&
->  	    sas_protocol_ata(task->task_proto)) {
-> -		task->num_scatter = pci_map_sg(task->dev->port->ha->pcidev,
-> +		task->num_scatter = dma_map_sg(task->dev->port->ha->dev,
->  					       task->scatter,
->  					       task->num_scatter,
->  					       task->data_dir);
-> @@ -565,9 +565,9 @@ static int sas_execute_task(struct sas_task *task, void *buffer, int size,
->  		}
->  	}
->  ex_err:
-> -	if (pci_dma_dir != PCI_DMA_NONE) {
-> +	if (dma_dir != DMA_NONE) {
->  		if (sas_protocol_ata(task->task_proto))
-> -			pci_unmap_sg(task->dev->port->ha->pcidev,
-> +			dma_unmap_sg(task->dev->port->ha->dev,
->  				     task->scatter, task->num_scatter,
->  				     task->data_dir);
->  		kfree(scatter);
-> @@ -628,11 +628,11 @@ static void sas_get_ata_command_set(struct domain_device *dev)
->   * @features: the features register
->   * @buffer: pointer to buffer to do I/O
->   * @size: size of @buffer
-> - * @pci_dma_dir: PCI_DMA_...
-> + * @dma_dir: DMA direction.  DMA_xxx
->   */
->  static int sas_issue_ata_cmd(struct domain_device *dev, u8 command,
->  			     u8 features, void *buffer, int size,
-> -			     int pci_dma_dir)
-> +			     int dma_dir)
+root@Homer: df -i
+Filesystem            Inodes   IUsed   IFree IUse% Mounted on
+/dev/hdc3            12500992 1043544 11457448    9% /
+udev                  129162    1567  127595    2% /dev
+/dev/hdc1              26104      87   26017    1% /boot
+/dev/hda1             108144   90676   17468   84% /windows/C
+/dev/hda5              11136    3389    7747   31% /windows/D
+/dev/hda6                  0       0       0    -  /windows/E
 
-This should become enum dma_data_direction if we're going to go the
-generic route.
+vfs_cache_pressure=10000, updatedb freshly completed:
+procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+ 1  0     48  76348 420356 104748    0    0     0     0 1137  912  3  1 97  0
 
-Otherwise, everything else looks fine.
+ext3_inode_cache  315153 316274    524    7    1 : tunables   54   27    8 : slabdata  45182  45182      0
+dentry_cache      224829 281358    136   29    1 : tunables  120   60    8 : slabdata   9702   9702      0
+buffer_head       156624 159728     56   67    1 : tunables  120   60    8 : slabdata   2384   2384      0
 
-James
+vfs_cache_pressure=100 (stock), updatedb freshly completed:
 
+procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+1  0    148  83824 270088 116340    0    0     0     0 1095  330  2  1 97  0
+ 
+ext3_inode_cache  467257 502495    524    7    1 : tunables   54   27    8 : slabdata  71785  71785      0
+dentry_cache      292695 408958    136   29    1 : tunables  120   60    8 : slabdata  14102  14102      0
+buffer_head       118329 184384     56   67    1 : tunables  120   60    8 : slabdata   2752   2752      1
+
+Note:  updatedb doesn't bother my box, not running enough leaky apps I
+guess.
+
+	-Mike
 
