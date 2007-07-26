@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbXGZBfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbXGZBhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758368AbXGZBfw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 21:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbXGZBfp
+	id S1758468AbXGZBhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 21:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbXGZBhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 21:35:45 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:42261 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753646AbXGZBfo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 21:35:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JSJKlE80WHBmSmQNVN65q0eMSIWU+VdqJ5VfPmncZrJVEXNAomMeXo6fwg8VGFR6StRTIpDBYWfvCqdRQCW/6pjeXEN2cfvot85mhQTZayVs9yDGhxOYjAtyKIX3IFbCpHGcYnwFgZP5ufCm4xEoY3tVoNJcMeSahnC+FuEChGw=
-Message-ID: <86802c440707251835p7a1522aejbea949f2148b51fc@mail.gmail.com>
-Date: Wed, 25 Jul 2007 18:35:43 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Cc: "=?ISO-8859-1?Q?S=E9bastien_Dugu=E9?=" <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
-       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
-       mjg59@srcf.ucam.org, castet.matthieu@free.fr, shaohua.li@intel.com
-In-Reply-To: <86802c440707251737p3be3ae69qe3f91282bec8984a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Jul 2007 21:37:31 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35364 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753507AbXGZBha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 21:37:30 -0400
+Date: Thu, 26 Jul 2007 03:37:28 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH RFC] extent mapped page cache
+Message-ID: <20070726013728.GB20727@wotan.suse.de>
+References: <20070710210326.GA29963@think.oraclecorp.com> <20070724160032.7a7097db@think.oraclecorp.com> <1185307985.6586.50.camel@localhost> <1185312343.5535.5.camel@lappy> <20070724192509.5bc9b3fe@think.oraclecorp.com> <20070725023217.GA32076@wotan.suse.de> <20070725081853.4b325e7f@think.oraclecorp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
-	 <200707250716.44609.bjorn.helgaas@hp.com>
-	 <20070725153253.4d7e7e37@frecb000686.frec.bull.fr>
-	 <200707251641.23406.bjorn.helgaas@hp.com>
-	 <86802c440707251737p3be3ae69qe3f91282bec8984a@mail.gmail.com>
+In-Reply-To: <20070725081853.4b325e7f@think.oraclecorp.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/07, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On 7/25/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Wednesday 25 July 2007 07:32:53 am Sébastien Dugué wrote:
-> > > On Wed, 25 Jul 2007 07:16:44 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > >
-> > > > The _DDN is a "DOS device name", and the _UID is a "logical device ID
-> > > > that does not change across reboots."  Both are optional, and PNPACPI
-> > > > ignores them.  But maybe we could change PNPACPI to sort by them if
-> > > > they are present.  I'll think about this a bit.
-> > >
-> > >   That would be nice, but I wish you good luck with all those
-> > > crappy BIOSes out there.
-> >
-> > Yeah, it's an ugly world we live in.  Would you be able to try the
-> > attached patch just for testing?  It should sort devices with the
-> > same _HID by their _UID.  It doesn't have any effect on my systems,
-> > because my devices are already ordered by _UID by default.  But I
-> > think it should switch your COM1/COM2 ports back to the order you
-> > expect.
-> >
-> > Yinghai, you mentioned the same issue on boxes with multiple root
-> > bridges.  Any chance you could try this out there as well?
-> >
-> it doesn't solve pci_root_bus reverse problem.
->
-> is that too late for PNP0A03?
->
-> I wonder if we need to modify acpi_device_register to sort them.
+On Wed, Jul 25, 2007 at 08:18:53AM -0400, Chris Mason wrote:
+> On Wed, 25 Jul 2007 04:32:17 +0200
+> Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > Having another tree to store block state I think is a good idea as I
+> > said in the fsblock thread with Dave, but I haven't clicked as to why
+> > it is a big advantage to use it to manage pagecache state. (and I can
+> > see some possible disadvantages in locking and tree manipulation
+> > overhead).
+> 
+> Yes, there are definitely costs with the state tree, it will take some
+> careful benchmarking to convince me it is a feasible solution. But,
+> storing all the state in the pages themselves is impossible unless the
+> block size equals the page size. So, we end up with something like
+> fsblock/buffer heads or the state tree.
 
-local hack for pci_root reverse problem would be
+Yep, we have to have something.
 
- or in acpi_pci_register_driver, sort the acpi_pci_roots before using it.
+ 
+> One advantage to the state tree is that it separates the state from
+> the memory being described, allowing a simple kmap style interface
+> that covers subpages, highmem and superpages.
 
-YH
+I suppose so, although we should have added those interfaces long
+ago ;) The variants in fsblock are pretty good, and you could always
+do an arbitrary extent (rather than block) based API using the
+pagecache tree if it would be helpful.
+ 
+
+> It also more naturally matches the way we want to do IO, making for
+> easy clustering.
+
+Well the pagecache tree is used to reasonable effect for that now.
+OK the code isn't beautiful ;). Granted, this might be an area where
+the seperate state tree ends up being better. We'll see.
+
+ 
+> O_DIRECT becomes a special case of readpages and writepages....the
+> memory used for IO just comes from userland instead of the page cache.
+
+Could be, although you'll probably also need to teach the mm about
+the state tree and/or still manipulate the pagecache tree to prevent
+concurrency?
+
+But isn't the main aim of O_DIRECT to do as little locking and
+synchronisation with the pagecache as possible? I thought this is
+why your race fixing patches got put on the back burner (although
+they did look fairly nice from a correctness POV).
+
+Well I'm kind of handwaving when it comes to O_DIRECT ;) It does look
+like this might be another advantage of the state tree (although you
+aren't allowed to slow down buffered IO to achieve the locking ;)).
+
+ 
+> The ability to put in additional tracking info like the process that
+> first dirtied a range is also significant.  So, I think it is worth
+> trying.
+
+Definitely, and I'm glad you are. You haven't converted me yet, but
+I look forward to finding the best ideas from our two approaches when
+the patches are further along (ext2 port of fsblock coming along, so
+we'll be able to have races soon :P).
+
+Thanks,
+Nick
