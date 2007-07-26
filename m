@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbXGZRc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbXGZRiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934502AbXGZRc0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbXGZRbh
+	id S933502AbXGZRiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762721AbXGZRiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:31:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57331 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932976AbXGZRbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:31:36 -0400
-Date: Thu, 26 Jul 2007 21:21:18 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
- for CF	interface
-Message-ID: <20070726212118.7fe7abd3@localhost.localdomain>
-In-Reply-To: <46A79AA1.3030608@freescale.com>
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>
-	<20070725165326.5331.19920.stgit@localhost.localdomain>
-	<46A78322.3080607@ru.mvista.com>
-	<46A78E3F.1030904@ru.mvista.com>
-	<20070725180145.GA29689@ld0162-tx32.am.freescale.net>
-	<46A7968D.3070707@ru.mvista.com>
-	<46A79AA1.3030608@freescale.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 13:38:16 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:35522 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762351AbXGZRiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 13:38:15 -0400
+Date: Thu, 26 Jul 2007 18:37:23 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       David Gibson <david@gibson.dropbear.id.au>,
+       Ken Chen <kenchen@google.com>, Bill Irwin <wli@holomorphy.com>
+Subject: Re: [PATCH] Check for compound pages in set_page_dirty()
+In-Reply-To: <20070723135416.44edc896@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0707261834200.592@blonde.wat.veritas.com>
+References: <20070718141533.GA11657@kernel.dk>
+ <Pine.LNX.4.64.0707181619200.23261@blonde.wat.veritas.com>
+ <20070718182456.GE11657@kernel.dk> <20070718184006.GF11657@kernel.dk>
+ <Pine.LNX.4.64.0707182052220.18926@blonde.wat.veritas.com>
+ <20070719062934.GT11657@kernel.dk> <Pine.LNX.4.64.0707191720300.10512@blonde.wat.veritas.com>
+ <20070723135416.44edc896@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAACGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWdsQHVzLmlibS5jb20AY2xhbWV0ZXJAc2dpLmNvbQBqZW5zLmF4Ym9lQG9yYWNsZS5jb20AYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwB3bGlAaG9sb21vcnBoeS5jb20Aa2VuY2hlbkBnb29nbGUuY29tAGRhdmlkQGdpYnNvbi5kcm9wYmVhci5pZC5hdQA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 13:46:57 -0500
-Scott Wood wrote:
-
-> Sergei Shtylyov wrote:
-> >    I acn undertand your complaint in the context of an OF driver
-> > (which we don't have yet) but "mmio-ide" just means nothing to the
-> > current driver, and it doesn't convery enough info on the
-> > programming interface for the conceivable OF driver, it also does
-> > need to know at least "reg-stride" (and maybe "reg-size" in case
-> > only 16/32-bit accesses can be used).  Well, if such driver will be
-> > written, I/O mapping support will probably be dropped from it, so
-> > indeed, calling it mmio-ide.c would make sense.  But that can be
-> > added when this driver is done, and for now 
+On Mon, 23 Jul 2007, Christoph Lameter wrote:
+> On Thu, 19 Jul 2007 18:35:17 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
 > 
-> I don't think the details of what Linux code currently exists should 
-> drive the device tree binding.  That the current patches use 
-> platform_device glue code is an implementation detail (and one I'd 
-> rather see go away, in favor of a driver that supports both 
-> platform_device and of_device).
+> > I didn't see any attention to set_page_dirty in Christoph's
+> > Large Blocksize (variable page_cachesize) patches, but I expect
+> > he'd also be wanting set_page_dirty to act on compound_head.
 > 
-> > I'd really prefer the board name to appear in the "compatible" prop
-> > (to which "mmio-ide" can be appended)...
+> There is no need for special casing if set_page_dirty() is only
+> ever called for page heads. Make sure that direct I/O does not call
+> set_page_dirty for tail pages.
 > 
-> Sure, that's always good...  it was the "instead" that I objected to.
-> 
+> A VM_BUG_ON(PageTail(page)) could be used to make sure that this
+> does not happen in the future?
 
-Hmmm. So what is finally suggested devicetree node for this beast - can somebody refine?
+I expect we could take that approach in the current kernel, yes
+(though it would put those compound tests into the bio code that
+Jens was preferring to remove).  But I think not if your variable
+page_cache_size went in: imagine an mmap of the tail component page
+of an order-1 page_cache_size page, and that pte only being dirtied:
+wouldn't set_page_dirty on that page need to redirect to the head?
 
-I am a little bit confused about decided device_type and compatible fields...
-
--- 
-Sincerely, Vitaly
+Hugh
