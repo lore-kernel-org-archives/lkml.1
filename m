@@ -1,102 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbXGZDCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbXGZDKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbXGZDCy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 23:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756439AbXGZDCp
+	id S1760074AbXGZDKm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 23:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbXGZDKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 23:02:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:25696 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756695AbXGZDCo (ORCPT
+	Wed, 25 Jul 2007 23:10:34 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45323 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756073AbXGZDKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 23:02:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=MxX6vRdX/zsLSe/kkruCu1TovydLw/1CgOU9GykQIYyr81kfL1ekb8MQgzLXuPB81j5Dhz7HK7cLrC1xAjPa2sgSLHaGpCdbiYKkMO1VOzyLS7y6iFcq22mSrFvF1NJghbMkWWqtFSwklfuTJVgrEgJ0ZrV8u/1FmiXphTWCl+A=
-Date: Thu, 26 Jul 2007 11:03:54 +0000
-From: Dave Young <hidave.darkstar@gmail.com>
-To: gregkh@suse.de
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][resend] sysfs/file.c - use mutex instead of semaphore
-Message-ID: <20070726110354.GA3672@darkstar.te-china.tietoenator.com>
+	Wed, 25 Jul 2007 23:10:33 -0400
+Date: Wed, 25 Jul 2007 20:10:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "mel@csn.ul.ie" <mel@csn.ul.ie>
+Subject: Re: [PATCH] config_zone_movable [1/2] clean up zone config by
+ renumbering
+Message-Id: <20070725201016.7a8b6ec9.akpm@linux-foundation.org>
+In-Reply-To: <20070726115020.1ff4513b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070726115020.1ff4513b.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use mutex instead of semaphore in sysfs/file.c : sys_buffer.
+On Thu, 26 Jul 2007 11:50:20 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> I refreshed config_zone_movable patch set against 2.6.23-rc1.
+> Reflected comments on previous version.
+> Tested on ia64/NUMA system and my small i386 desktop.
+> 
+> Andrew, I like this patch but know that there are many types of memory layout. 
+> Could you test this set in -mm ?
+> I'll refresh this against rc1-mm1 if necessary.
 
----
-fs/sysfs/file.c |   14 +++++++-------
-1 file changed, 7 insertions(+), 7 deletions(-)
+Right now I want to concentrate on getting the present -mm queue vaguely
+stabilised, so I'd prefer to not be adding features or nontrivial cleanups
+for a few days at the minimum.
 
-diff -upr linux/fs/sysfs/file.c linux.new/fs/sysfs/file.c
---- linux/fs/sysfs/file.c	2007-07-26 10:55:11.000000000 +0000
-+++ linux.new/fs/sysfs/file.c	2007-07-26 10:57:13.000000000 +0000
-@@ -8,8 +8,8 @@
- #include <linux/namei.h>
- #include <linux/poll.h>
- #include <linux/list.h>
-+#include <linux/mutex.h>
- #include <asm/uaccess.h>
--#include <asm/semaphore.h>
- 
- #include "sysfs.h"
- 
-@@ -55,7 +55,7 @@ struct sysfs_buffer {
- 	loff_t			pos;
- 	char			* page;
- 	struct sysfs_ops	* ops;
--	struct semaphore	sem;
-+	struct mutex		mutex;
- 	int			needs_read_fill;
- 	int			event;
- };
-@@ -128,7 +128,7 @@ sysfs_read_file(struct file *file, char 
- 	struct sysfs_buffer * buffer = file->private_data;
- 	ssize_t retval = 0;
- 
--	down(&buffer->sem);
-+	mutex_lock(&buffer->mutex);
- 	if (buffer->needs_read_fill) {
- 		retval = fill_read_buffer(file->f_path.dentry,buffer);
- 		if (retval)
-@@ -139,7 +139,7 @@ sysfs_read_file(struct file *file, char 
- 	retval = simple_read_from_buffer(buf, count, ppos, buffer->page,
- 					 buffer->count);
- out:
--	up(&buffer->sem);
-+	mutex_unlock(&buffer->mutex);
- 	return retval;
- }
- 
-@@ -228,13 +228,13 @@ sysfs_write_file(struct file *file, cons
- 	struct sysfs_buffer * buffer = file->private_data;
- 	ssize_t len;
- 
--	down(&buffer->sem);
-+	mutex_lock(&buffer->mutex);
- 	len = fill_write_buffer(buffer, buf, count);
- 	if (len > 0)
- 		len = flush_write_buffer(file->f_path.dentry, buffer, len);
- 	if (len > 0)
- 		*ppos += len;
--	up(&buffer->sem);
-+	mutex_unlock(&buffer->mutex);
- 	return len;
- }
- 
-@@ -294,7 +294,7 @@ static int sysfs_open_file(struct inode 
- 	if (!buffer)
- 		goto err_out;
- 
--	init_MUTEX(&buffer->sem);
-+	mutex_init(&buffer->mutex);
- 	buffer->needs_read_fill = 1;
- 	buffer->ops = ops;
- 	file->private_data = buffer;
+This process would be greatly aided by developers testing it out and
+sending fixes (or at least, reports) for anything they encounter.
+
+
+> -Kame
+> 
+> ==
+> zone_ifdef_cleanup_by_renumbering.patch
+> 
+> Now, this patch defines zone_idx for not-configured-zones.
+> like 
+> 	enum_zone_type {
+> 		(ZONE_DMA configured)
+> 		(ZONE_DMA32 configured)
+> 		ZONE_NORMAL
+> 		(ZONE_HIGHMEM configured)
+> 		ZONE_MOVABLE
+> 		MAX_NR_ZONES,
+> 		(ZONE_DMA not-configured)
+> 		(ZONE_DMA32 not-configured)
+> 		(ZONE_HIGHMEM not-configured)
+> 	};
+> 
+> By this, we can determine zone is configured or not by
+> 
+> 	zone_idx < MAX_NR_ZONES.
+> 
+> We can avoid #ifdef for CONFIG_ZONE_xxx to some extent.
+> 
+> This patch also replaces CONFIG_ZONE_DMA_FLAG by is_configured_zone(ZONE_DMA).
+> 
+> Changelog: v1 -> v2
+> 	- rebased to 2.6.23-rc1
+> 	- Removed MAX_POSSIBLE_ZONES
+> 	- Added comments
+
+Is this patch a bugfix?
+
+box:/home/akpm> grep ifdef ~/x
+zone_ifdef_cleanup_by_renumbering.patch
+We can avoid #ifdef for CONFIG_ZONE_xxx to some extent.
++ * You can use this functio for avoiding #ifdef.
++ * #ifdef OCNFIG_ZONE_DMA
+-#ifdef CONFIG_HIGHMEM
+-#ifdef CONFIG_HIGHMEM
+-#ifdef CONFIG_ZONE_DMA32
+-#ifdef CONFIG_ZONE_DMA
+-#ifdef CONFIG_ZONE_DMA
+-#ifdef CONFIG_ZONE_DMA32
+-#ifdef CONFIG_HIGHMEM
+-#ifdef CONFIG_ZONE_DMA
+-#ifdef CONFIG_ZONE_DMA32
+-#ifdef CONFIG_HIGHMEM
+-#ifdef CONFIG_ZONE_DMA
+-#ifdef CONFIG_ZONE_DMA32
+-#ifdef CONFIG_HIGHMEM
+-#ifdef CONFIG_HIGHMEM
+-#ifdef CONFIG_HIGHMEM
+
+ooh, me like.
+
+>  /*
+> + * Test zone type is configured or not.
+> + * You can use this functio for avoiding #ifdef.
+> + *
+> + * #ifdef OCNFIG_ZONE_DMA
+
+typo there.
+
+
