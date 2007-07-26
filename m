@@ -1,32 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934519AbXGZRsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934298AbXGZRsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934519AbXGZRsK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935012AbXGZRri
+	id S934298AbXGZRsw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764410AbXGZRsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:47:38 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59248 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934203AbXGZRrh (ORCPT
+	Thu, 26 Jul 2007 13:48:41 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:49454 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764034AbXGZRsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:47:37 -0400
-Date: Thu, 26 Jul 2007 10:47:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [bug] SLUB & freeing locks [was: Re: 2.6.23-rc1: known regressions
- with patches]
-In-Reply-To: <20070726105009.GA7673@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707261047240.2374@schroedinger.engr.sgi.com>
-References: <46A47940.7030801@googlemail.com> <20070726091048.GA7366@elte.hu>
- <1185441963.8197.67.camel@twins> <1185442353.8197.71.camel@twins>
- <20070726105009.GA7673@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 26 Jul 2007 13:48:39 -0400
+Date: Thu, 26 Jul 2007 10:53:18 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: 2.6.23-rc1-mm1 -- mostly fails to build
+In-reply-to: <20070725225658.00e18aaa.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <46A8DF8E.8070601@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+ <46A77C28.1050807@shadowen.org> <20070725224143.GA668@shadowen.org>
+ <20070725225658.00e18aaa.akpm@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Wed, 25 Jul 2007 23:41:46 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+> 
+>> On Wed, Jul 25, 2007 at 05:36:56PM +0100, Andy Whitcroft wrote:
+>>
+>>> Will investigate the NUMA-Q explosion and report on that separatly.
+>> Ok, I've been looking at the NUMA-Q boot panic below:
+>>
+>> BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
+>>  printing eip:
+>> c111689f
+>> *pdpt = 0000000001387001
+>> *pde = 0000000000000000
+>> Oops: 0000 [#1]
+>> SMP
+>> Modules linked in:
+>> CPU:    0
+>> EIP:    0060:[<c111689f>]    Not tainted VLI
+>> EFLAGS: 00010286   (2.6.23-rc1-mm1-gc8131905-dirty #251)
+>> EIP is at pci_create_bus+0x11b/0x277
+>> eax: 00000000   ebx: c9352e00   ecx: c9073e94   edx: c9325400
+>> esi: c9325400   edi: c932559c   ebp: 00000002   esp: c9073e90
+>> ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+>> Process swapper (pid: 1, ti=c9072000 task=c9070030 task.ti=c9072000)
+>> Stack: c12adc4f c9325400 00000000 00000002 00000000 00000000 00000000 c934c800
+>>        000000d6 00000000 c1116a09 00000000 c9073ed5 c11b178a 00000000 c934c940
+>>        00000000 02fffff4 c12bd8ac c934c800 c12bd8b4 c9325000 c1119825 c934c800
+>> Call Trace:
+>>  [<c1116a09>] pci_scan_bus_parented+0xe/0x21
+>>  [<c11b178a>] pci_fixup_i450nx+0xa7/0x101
+>>  [<c1119825>] pci_do_fixups+0x2d/0x38
+>>  [<c111665c>] pci_device_add+0x48/0x77
+>>  [<c11166a5>] pci_scan_single_device+0x1a/0x1f
+>>  [<c11166bf>] pci_scan_slot+0x15/0x47
+>>  [<c111670a>] pci_scan_child_bus+0x19/0x7c
+>>  [<c1116a14>] pci_scan_bus_parented+0x19/0x21
+>>  [<c11b259d>] pcibios_scan_root+0x75/0x7e
+>>  [<c1369ee3>] pci_numa_init+0x2c/0xe4
+>>  [<c1354b87>] kernel_init+0x0/0xa1
+>>  [<c1354a15>] do_initcalls+0x73/0x1a3
+>>  [<c109032c>] proc_register+0xa0/0xa7
+>>  [<c10905cd>] create_proc_entry+0x73/0x86
+>>  [<c103a5c9>] register_irq_proc+0x75/0x92
+>>  [<c1354b87>] kernel_init+0x0/0xa1
+>>  [<c1354be6>] kernel_init+0x5f/0xa1
+>>  [<c10031c3>] kernel_thread_helper+0x7/0x10
+>>  =======================
+>> Code: ff 8b 83 84 00 00 00 c7 04 24 4f dc 2a c1 89 44 24 04 e8 f8 42 f0 ff 83 7c 24 14 00 75 15 8b 93 84 00 00 00 85 d2 74 0b 8b 43 44 <8b> 00 89 82 50 01 00 00 c7 44 24 04 9a 04 00 00 8d bb 88 00 00
+>> EIP: [<c111689f>] pci_create_bus+0x11b/0x277 SS:ESP 0068:c9073e90
+>> Kernel panic - not syncing: Attempted to kill init!
+>>
+>> This seems to have been caused by the introduction of the following
+>> code fragment into pci_create_bus:
+>>
+>>         if (!parent)
+>>                 set_dev_node(b->bridge, pcibus_to_node(b));
+>>
+>> This has come as part of the -mm patch below:
+>>
+>>     try-parent-numa_node-at-first-before-using-default-v2.patch
+>>
+>> This patch does not seem to be wrong in and of itself.  It does
+>> expose the fact that we are building busses with NULL sysdata.
+>> This has come up at least three times now.  Below is the patch
+>> proposed the last couple of times.  It is needed to allow any machine
+>> with i450nx quirk, plus for NUMA-Q systems.
+> 
+> All this could have happened due to my hamfisted repairing of yet another
+> reject storm, too.
+> 
+>> Andrew please could you add this to -mm again.
+>>
+> 
+> ok..
 
+Can we add .node and .iommu to pci_bus?
+
+YH
