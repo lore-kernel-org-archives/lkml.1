@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbXGZBPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbXGZBTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756289AbXGZBPv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 21:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbXGZBPn
+	id S1756802AbXGZBTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 21:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbXGZBTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 21:15:43 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:32764 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602AbXGZBPm (ORCPT
+	Wed, 25 Jul 2007 21:19:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53626 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752664AbXGZBTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 21:15:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NFqPsJy2c586ixj4IHlom3uL2JwQeADDinxoh4FHdxIXSyo5RpiElGcEgNFHlTxsVaJN7ZoaYZR4hUS8whFj0zior0bf0wsbIf+VEnH2bGr5ghUjOvU4YnRXiSWfoTMojeySwlvH491lhfJ/WxkdcgrXv/8UcEaJtPGMLVOdJ8g=
-Message-ID: <b21f8390707251815o767590acrf6a6c4d7290a26a8@mail.gmail.com>
-Date: Thu, 26 Jul 2007 11:15:41 +1000
-From: "Matthew Hawkins" <darthmdh@gmail.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-Cc: linux-kernel@vger.kernel.org, "ck list" <ck@vds.kolivas.org>,
-       linux-mm@kvack.org
-In-Reply-To: <2c0942db0707250902v58e23d52v434bde82ba28f119@mail.gmail.com>
+	Wed, 25 Jul 2007 21:19:09 -0400
+Date: Wed, 25 Jul 2007 18:18:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Trent Piepho <xyzzy@speakeasy.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 6/8] i386: bitops: Don't mark memory as clobbered
+ unnecessarily
+In-Reply-To: <Pine.LNX.4.58.0707251731370.30561@shell4.speakeasy.net>
+Message-ID: <alpine.LFD.0.999.0707251811130.3442@woody.linux-foundation.org>
+References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <20070723160558.22137.71943.sendpatchset@cselinux1.cse.iitk.ac.in>
+ <46A578A1.5010504@yahoo.com.au> <Pine.LNX.4.64.0707241154060.1433@cselinux1.cse.iitk.ac.in>
+ <46A5A929.4020706@yahoo.com.au> <Pine.LNX.4.58.0707240058370.30561@shell4.speakeasy.net>
+ <alpine.LFD.0.999.0707241236020.3607@woody.linux-foundation.org>
+ <Pine.LNX.4.58.0707251731370.30561@shell4.speakeasy.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <46A57068.3070701@yahoo.com.au>
-	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	 <46A58B49.3050508@yahoo.com.au>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
-	 <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>
-	 <46A6DFFD.9030202@gmail.com>
-	 <2c0942db0707250902v58e23d52v434bde82ba28f119@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/26/07, Ray Lee <ray-lk@madrabbit.org> wrote:
-> I'd just like updatedb to amortize its work better. If we had some way
-> to track all filesystem events, updatedb could keep a live and
-> accurate index on the filesystem. And this isn't just updatedb that
-> wants that, beagle and tracker et al also want to know filesystem
-> events so that they can index the documents themselves as well as the
-> metadata. And if they do it live, that spreads the cost out, including
-> the VM pressure.
 
-We already have this, its called inotify (and if I'm not mistaken,
-beagle already uses it).  Several years ago when it was still a little
-flakey patch, I built a custom filesystem indexer into an enterprise
-search engine using it (I needed to pull apart Unix mbox files).  The
-only trouble of course is the action is triggered immediately, which
-may not always be ideal (but that's a userspace problem)
 
--- 
-Matt
+On Wed, 25 Jul 2007, Trent Piepho wrote:
+> 
+> Specifically, check test6_memasm.s.  The C code looks like this:
+> 
+> extern int a; /* keep asm from being elided for having no used output */
+> static inline void bar(void) { asm("call bar" : "=m"(a) : : "memory"); }
+> /* float x can't alias asm's output int a */
+> void foo(float *x) { x[20] = 1; bar(); x[20] = 2; }
+> 
+> The asm code ends up like this:
+> foo:
+>         call bar
+>         movl    4(%esp), %eax   # x, x
+>         movl    $0x40000000, 80(%eax)   #,
+>         ret
+
+Hmm. I really think you should take this up with the gcc people. That 
+looks like a gcc bug - because there really is nothing that guarantees 
+that the asm doesn't change the array that "x" points to, and the asm 
+clearly talks about clobbering memory.
+
+> Notice that the first write to x[20] was NOT done.  It's also not done for a
+> volatile asm without a memory clobber.  But if you combine both volatile and a
+> memory clobber, then it is!  How to explain that?
+
+I can't explain it. I do think you've found a gcc bug.
+
+That said, the kernel mostly uses "asm volatile()" _together_ with a 
+memory clobber for these kinds of things, so it sounds like the kernel 
+wouldn't be impacted. But you're definitely right - the above report makes 
+me worry.
+
+> The difference between test2_volasm.s and test2_normasm.s is hard to explain
+> too.  It seems like some times gcc forgets that imull is commutative.  It will
+> emit "imull %edx, %eax" in some cases, but change an asm slightly and it will
+> decide it must do "imull %eax, %edx ; movl %edx, %eax" for no apparent reason.
+
+Well, that's likely just a subtle register allocation issue, and 
+understandable. Generating perfect code is impossible, you want to 
+generate good code on average.
+
+		Linus
