@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933697AbXGZWEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936186AbXGZWFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933697AbXGZWEZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 18:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935638AbXGZWEF
+	id S936186AbXGZWFX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 18:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765977AbXGZWFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 18:04:05 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:53719 "EHLO atlrel8.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932917AbXGZWED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 18:04:03 -0400
-Subject: RE: [PATCH] ia64: fix build failure on fs/quota.c
-From: Doug Chapman <doug.chapman@hp.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       vtaras@openvz.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A0205DE5E@scsmsx411.amr.corp.intel.com>
-References: <617E1C2C70743745A92448908E030B2A0205DE5E@scsmsx411.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 17:58:45 -0400
-Message-Id: <1185487125.20910.30.camel@dchapman.boston.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+	Thu, 26 Jul 2007 18:05:07 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:65129 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933825AbXGZWFF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 18:05:05 -0400
+From: Dirk Schoebel <dirk@liji-und-dirk.de>
+To: ck@vds.kolivas.org
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+Date: Fri, 27 Jul 2007 00:04:38 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Michael Chang" <thenewme91@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       Eric St-Laurent <ericstl34@sympatico.ca>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Rene Herman <rene.herman@gmail.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <b14e81f00707260719w63d8ab38jbf2a17a38bd07c1d@mail.gmail.com> <20070726111326.873f7b0a.akpm@linux-foundation.org>
+In-Reply-To: <20070726111326.873f7b0a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2470270.ABJPYyX5vq";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707270004.46211.dirk@liji-und-dirk.de>
+X-Provags-ID: V01U2FsdGVkX181fecueMJq6bAGCE1bJvDb5nI9d8HCUVnAnew
+ /euKnRP9EHs3zUNr3ymjfJS9xDFIkqipD98eFg+FpwYeMJYAtx
+ 6f+NK+Lrw9XIQqsZ/9y6A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 14:24 -0700, Luck, Tony wrote:
-> This issue wandered off onto a long thread "build fix for x86_64" which
-> died out without a final patch.  Here's the summary:
-> 
+--nextPart2470270.ABJPYyX5vq
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Ahh, thanks, I had not seen that thread.
+I don't really understand the reasons for all those discussions.
+As long as you have a maintainer, why don't you just put swap prefetch into=
+=20
+the kernel, marked experimental, default deactivated so anyone who just=20
+make[s] oldconfig (or defaultconfig) won't get it. If anyone finds a good=20
+solution for all those cache 'poisoning' problems and problems concerning=20
+swapin on workload changes and such swap prefetch can easily taken out agai=
+n=20
+and no one has to complain and continuing maintaining it.
+Actually the same goes for plugshed (having it might have kept Con as a=20
+valuable developer).
+I am actually waiting for more than 2 years that reiser4 will make it into =
+the=20
+kernel (sure, marked experimental or even highly experimental) so the=20
+patch-journey for every new kernel comes to an end. And most things in-kern=
+el=20
+will surely be tested more intense so bugs will come up much faster.=20
+(Constantly running MM kernels is not really an option since many things in=
+=20
+there can't be deactivated if they don't work as expected since lots of=20
+patches also concern 'vital' parts of the kernel.)
 
+=2E..just 2cents from a happy CK user for it made it possible to watch a mo=
+vie=20
+while compiling the system - which was impossible with mainline kernel, eve=
+n=20
+on dual core 2.2 GHz AMD64 with 4G RAM !
 
-> > +#if defined(CONFIG_X86_64) || (defined(CONFIG_IA64) && defined(CONFIG_COMPAT))
-> 
-> It was pointed out that x86-64 also has a CONFIG_COMPAT, so the "right"
-> #ifdef mess would be:
-> 
-> #if defined(CONFIG_COMPAT) && (defined(CONFIG_IA64) || defined(CONFIG_X86_64))
-> 
-> But this was thought too ugly.  Andi Kleen proposed making a new CONFIG
-> variable for this situation: CONFIG_COMPAT_FOR_U64_ALIGMNENT which could
-> be set in ia64 and x86-64 Kconfig files with:
-> 
-> config COMPAT_FOR_U64_ALIGMNENT
-> 	def_bool COMPAT
-> 
-> So the C-code would simply have:
-> 
-> #if defined(COMPAT_COMPAT_FOR_U64_ALIGMNENT)
-> 
-> (IIRC the syntax correctly).  Peter Anvin had some worries about future
-> issues ... but I think he agreed that this was Ok.
-> 
-> Anyone still have any objections to this?
+Dirk.
 
-No objections here.  I just tried this patch and it does fix my ia64
-build issue.  I agree it is a bit cleaner than the long #ifdef.
+--nextPart2470270.ABJPYyX5vq
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-thanks,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
 
-- Doug
+iD8DBQBGqRp+6YYnt7muP7IRArLyAJ91sIZPuxe6co3Swp7LjaCKGsoy5QCg6Hpy
+76zfIgZ9L7Iw7avW/ko6GeE=
+=CUXM
+-----END PGP SIGNATURE-----
 
-
+--nextPart2470270.ABJPYyX5vq--
