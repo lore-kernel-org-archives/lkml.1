@@ -1,39 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935838AbXGZQn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935933AbXGZQno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935838AbXGZQn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934752AbXGZQge
+	id S935933AbXGZQno (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935278AbXGZQjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:36:34 -0400
-Received: from hu-out-0506.google.com ([72.14.214.228]:15746 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763079AbXGZQgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:36:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=rG63BJ4VKf9UPiME6gNxpMBA3LM/2ejOHplUPuHfYrIDiEwOqjvordzJIcqkr3mn3dMN9hyE5YLGvAZfPJU8wIO3NFoOoLmspxrIC2KqExgMraBreQlaefKX7gPHeJwoP+GEdcWemK7UMdZlX+kaB6+WzVkJFEi7JhBoiAxMvys=
-Date: Thu, 26 Jul 2007 17:36:18 +0100
-From: Xudong Guan <xudong.guan@gmail.com>
-To: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1: no setup signature found...
-Message-ID: <20070726163618.GA13789@xguan-laptop>
-References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic>
+	Thu, 26 Jul 2007 12:39:51 -0400
+Received: from kai.krose.org ([140.186.190.96]:56773 "EHLO kai.krose.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935280AbXGZQju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 12:39:50 -0400
+X-Greylist: delayed 531 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jul 2007 12:39:50 EDT
+Message-ID: <46A8CC41.306@krose.org>
+Date: Thu, 26 Jul 2007 12:30:57 -0400
+From: Kyle Rose <krose@krose.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070726163053.GA4570@gollum.tnic>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Kyle Rose <krose@akamai.com>, linux-kernel@vger.kernel.org
+Subject: Re: sk98lin for 2.6.23-rc1
+References: <46A8BAD4.8020004@akamai.com> <Pine.LNX.4.64.0707261826180.12711@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0707261826180.12711@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18:30(+0200) Thu 26 Jul, Borislav Petkov wrote:
-> grub version:
-> Version: 0.97-29
 
-On my real machine with grub 0.97, there is no problem loading the
-same kernel.
+> Sorry for the nitpick, it can be done easier :)
 
-Xudong
+I'm sure it can.  I didn't want to have to figure out the kernel build
+system just to get this one driver working.  Hence my desire for it to
+remain in the kernel proper until sky2 utterly works. ;-)
+
+Kyle
+
