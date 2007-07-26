@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933283AbXGZOHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764425AbXGZOJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933283AbXGZOHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 10:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbXGZOHI
+	id S1764425AbXGZOJw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 10:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbXGZOJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 10:07:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37958 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753027AbXGZOHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 10:07:07 -0400
-Date: Thu, 26 Jul 2007 16:07:02 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       k-miyoshi@cb.jp.nec.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] add kdump_after_notifier
-Message-ID: <20070726140702.GA8949@suse.de>
-Mail-Followup-To: Takenori Nagano <t-nagano@ah.jp.nec.com>,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	k-miyoshi@cb.jp.nec.com, Andrew Morton <akpm@linux-foundation.org>
-References: <469F55D0.4050203@ah.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <469F55D0.4050203@ah.jp.nec.com>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 26 Jul 2007 10:09:44 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:60939 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757163AbXGZOJo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 10:09:44 -0400
+Subject: Re: [RFC] fix slub krealloc()
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0707251153050.8731@schroedinger.engr.sgi.com>
+References: <1184773331.4002.4.camel@johannes.berg>
+	 <20070723133206.2220db7e@schroedinger.engr.sgi.com>
+	 <20070723134713.2b1218bd.akpm@linux-foundation.org>
+	 <20070723143724.1d0b26eb@schroedinger.engr.sgi.com>
+	 <1185352857.4006.4.camel@johannes.berg>
+	 <Pine.LNX.4.64.0707251153050.8731@schroedinger.engr.sgi.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-bGNXPE664PZ9XHZbKgzT"
+Date: Thu, 26 Jul 2007 16:08:46 +0200
+Message-Id: <1185458926.4006.12.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Takenori Nagano <t-nagano@ah.jp.nec.com> [2007-07-19 14:15]:
-> 
-> In latest kernel, we can't use panic_notifier_list if kdump is enabled.
-> panic_notifier_list is very useful function for debug, failover, etc...
-> 
-> So this patch adds a control file /proc/sys/kernel/dump_after_notifier
-> and resolves a problem users can not use both kdump and panic_notifier_list
-> at the same time.
-> 
-> kdump_after_notifier = 0
->  -> panic()
->     -> crash_kexec(NULL)
-> 
-> kdump_after_notifier = 1
->  -> panic()
->     -> atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
->     -> crash_kexec(NULL)
 
-What's problematic about this patch? I also would like to see that
-feature.
+--=-bGNXPE664PZ9XHZbKgzT
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, 2007-07-25 at 11:53 -0700, Christoph Lameter wrote:
 
-Thanks,
-   Bernhard
+> It will give you a ZERO_SIZE_PTR
+>=20
+> void *krealloc(const void *p, size_t new_size, gfp_t flags)
+> {
+>         void *ret;
+>         size_t ks;
+>=20
+>         if (unlikely(!new_size)) {
+>                 kfree(p);
+>                 return ZERO_SIZE_PTR;
+>         }
+
+Oh, I thought looked and it returned NULL. Did it change or did I just
+look wrong? :)
+
+johannes
+
+--=-bGNXPE664PZ9XHZbKgzT
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGqKrt/ETPhpq3jKURAn6uAKCGV23tYhuNukNm1ecz/xYqMeAcbQCgnBGh
+pzLNa90QQITHoTRFBl0FZVU=
+=XjQa
+-----END PGP SIGNATURE-----
+
+--=-bGNXPE664PZ9XHZbKgzT--
+
