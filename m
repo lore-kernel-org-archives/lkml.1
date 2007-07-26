@@ -1,45 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934943AbXGZTRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935457AbXGZTTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934943AbXGZTRx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 15:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762664AbXGZTRq
+	id S935457AbXGZTTW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 15:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762768AbXGZTTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 15:17:46 -0400
-Received: from main.gmane.org ([80.91.229.2]:54011 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761238AbXGZTRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 15:17:45 -0400
-X-Injected-Via-Gmane: http://gmane.org/
+	Thu, 26 Jul 2007 15:19:14 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64022 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762664AbXGZTTN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 15:19:13 -0400
+Message-ID: <46A8F3AC.3000409@cv-sv.de>
+Date: Thu, 26 Jul 2007 21:19:08 +0200
+From: Christian Volkmann <haveaniceday@cv-sv.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.5) Gecko/20070719 SUSE/1.1.3-4.1 SeaMonkey/1.1.3
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: sk98lin for 2.6.23-rc1
-Date: Thu, 26 Jul 2007 20:17:31 +0100
-Organization: Linux Foundation
-Message-ID: <20070726201731.03d3f590@oldman>
-References: <46A8BAD4.8020004@akamai.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: haveaniceday@cv-sv.de
+Subject: Re: 2.6.22.1: OOps during shutdown: ( kernel not tained now)
+References: <46A5CFD3.9000207@cv-sv.de>
+In-Reply-To: <46A5CFD3.9000207@cv-sv.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 87.192.216.40
-In-Reply-To: <46A8BAD4.8020004@akamai.com>
-X-Newsreader: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+X-Provags-ID: V01U2FsdGVkX1/y+AQyrNVlQHWN2shzBJpn7nVvleEpB/SgKK9
+ P9TTR7AResbLHHoQwUyCCuIStXuk6NEb9wLp75d+teslEwdY1c
+ 0FMTFm397A0hokalOI6dw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 11:16:36 -0400
-Kyle Rose <krose@akamai.com> wrote:
+A bug report is at https://bugzilla.samba.org/show_bug.cgi?id=4819
 
-> From http://www.krose.org/~krose/computing.html:
-> 
-> Since the sky2 driver continues to suck ass (which is a technical
-> description for "it hangs all the time under load, at least on my
-> hardware" :-) ), I've fixed the sk98lin driver to compile for
-> linux-2.6.23-rc1. Those who continue to have problems with sky2 can
-> still use 2.6.23-rc1, simply by doing the following:
->
-
-Just don't build it with lock debugging enabled or you will see all the
-deadlocks lying below the surface.  Worse yet, read the macro hell
-of sky2le.h
 
