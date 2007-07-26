@@ -1,57 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXGZIEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbXGZIFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112AbXGZIEk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 04:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757979AbXGZIEQ
+	id S1755423AbXGZIFP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 04:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765492AbXGZIEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 04:04:16 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:54675 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756757AbXGZIEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 04:04:13 -0400
-Date: Thu, 26 Jul 2007 10:13:26 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070726081326.GA3197@ff.dom.local>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com>
+	Thu, 26 Jul 2007 04:04:32 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:50629 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760212AbXGZIE3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 04:04:29 -0400
+Subject: [PATCH] fix return value of i8042_aux_test_irq
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: dmitry.torokhov@gmail.com, dtor@mail.ru, vojtech@suse.cz,
+       akpm@linux-foundation.org
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Thu, 26 Jul 2007 17:04:25 +0900
+Message-Id: <1185437065.4805.19.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 09:16:10AM +0200, Marcin ¦lusarz wrote:
-> 2007/7/25, Thomas Gleixner <tglx@linutronix.de>:
-> >(...)
-> 
-> I've tested Jarek's patch, 2 Ingo's patches (2nd and 3rd) and Thomas'
-> patch (one patch at time of course) - all of them fixed the problem,
-> but the last one flooded my logs with "Skip resend for irq 17". All
-> tests were done on 2.6.21.3.
-> 
-> I wanted to test them all on 2.6.22.1, but I didn't have enough time.
-> I've verified only that 2.6.22.1 has the same problem. I can test it
-> later, but I can report results back at beginning of next week.
+I made an interesting finding while testing the two patches below.
+
+http://lkml.org/lkml/2007/7/19/685
+http://lkml.org/lkml/2007/7/19/687
+
+These patches modify the traditional CONFIG_DEBUG_KERNEL in such a way
+that the request_irq prints a warning if after calling the handler it
+returned IRQ_HANDLED .
+
+The code looks like this:
+
+int request_irq(unsigned int irq, irq_handler_t handler,
+                unsigned long irqflags, const char *devname, void
+*dev_id)
+.....
+        if (irqflags & IRQF_DISABLED) {
+                unsigned long flags;
+
+                local_irq_save(flags);
+                retval = handler(irq, dev_id);
+                local_irq_restore(flags);
+        } else
+                retval = handler(irq, dev_id);
+        if (retval == IRQ_HANDLED) {
+                printk(KERN_WARNING
+                       "%s (IRQ %d) handled a spurious interrupt\n",
+                       devname, irq);
+        }
+.....
+
+I discovered that i8042_aux_test_irq handles the "fake" interrupt,
+which, in principle, is not correct because it obviously isn't a real
+interrupt and it could have been a spurious interrupt as well.
+
+The problem is that the interrupt handler unconditionally returns IRQ
+handled, which does not seem correct. Anyway I am not very familiar with
+this code so I may be missing the whole point. I would appreciate your
+comments on this.
+
+Thank you in advance.
+
+Fernando
+
+--
+
+Do not return IRQ_HANDLED when we haven't handle the interrupt.
+
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
+
+diff -urNp linux-2.6.23-rc1-mm1-orig/drivers/input/serio/i8042.c linux-2.6.23-rc1-mm1/drivers/input/serio/i8042.c
+--- linux-2.6.23-rc1-mm1-orig/drivers/input/serio/i8042.c	2007-07-26 16:10:11.000000000 +0900
++++ linux-2.6.23-rc1-mm1/drivers/input/serio/i8042.c	2007-07-26 16:05:19.000000000 +0900
+@@ -516,6 +516,7 @@ static irqreturn_t __devinit i8042_aux_t
+ {
+ 	unsigned long flags;
+ 	unsigned char str, data;
++	int ret;
+ 
+ 	spin_lock_irqsave(&i8042_lock, flags);
+ 	str = i8042_read_status();
+@@ -524,10 +525,13 @@ static irqreturn_t __devinit i8042_aux_t
+ 		if (i8042_irq_being_tested &&
+ 		    data == 0xa5 && (str & I8042_STR_AUXDATA))
+ 			complete(&i8042_aux_irq_delivered);
++		ret = 1;
+ 	}
++	else
++		ret = 0;
+ 	spin_unlock_irqrestore(&i8042_lock, flags);
+ 
+-	return IRQ_HANDLED;
++	return IRQ_RETVAL(ret);
+ }
+ 
+ /*
 
 
-So, everything is clear - any changes are good!
-Except the signed-off ones... 
-
-Thanks Marcin,
-Jarek P.
-
-PS: Now, it seems to me Thomas could be the nearest. BTW, could somebody
-give me some tip, how these re-triggered interrupts are skipped on dev's
-reset before enable_irq?
