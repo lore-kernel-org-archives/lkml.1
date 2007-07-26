@@ -1,61 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761136AbXGZFVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758558AbXGZF1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761136AbXGZFVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 01:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXGZFVf
+	id S1758558AbXGZF1I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 01:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbXGZF04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 01:21:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51520 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752605AbXGZFVe (ORCPT
+	Thu, 26 Jul 2007 01:26:56 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44894 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751163AbXGZF0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 01:21:34 -0400
-Date: Wed, 25 Jul 2007 22:20:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: dougthompson@xmission.com
-Cc: greg@kroah.com, ralf@linux-mips.org, egor@pasemi.com,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] drivers edac fix reset edac_mc pollmsec
-Message-Id: <20070725222019.a8e3cc00.akpm@linux-foundation.org>
-In-Reply-To: <46a7b87d.9iKovb4wybPFkLX6%dougthompson@xmission.com>
-References: <46a7b87d.9iKovb4wybPFkLX6%dougthompson@xmission.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 01:26:55 -0400
+Date: Thu, 26 Jul 2007 07:26:28 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Shannon Nelson <shannon.nelson@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] DMA engine kconfig improvements
+Message-ID: <20070726052628.GL3572@stusta.de>
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 14:54:21 -0600 dougthompson@xmission.com wrote:
+On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.22-rc6-mm1:
+>...
+> +dma-arch-fix.patch
+> 
+>  Fix git-dma.patch
+>...
 
-> +void edac_mc_reset_delay_period(int value)
->  {
-> -	/* cancel the current workq request */
-> -	edac_mc_workq_teardown(mci);
-> +	struct mem_ctl_info *mci;
-> +	struct list_head *item;
-> +
-> +	mutex_lock(&mem_ctls_mutex);
-> +
-> +	/* scan the list and turn off all workq timers, doing so under lock
-> +	 */
-> +	list_for_each(item, &mc_devices) {
-> +		mci = list_entry(item, struct mem_ctl_info, link);
-> +
-> +		if (mci->op_state == OP_RUNNING_POLL)
-> +			cancel_delayed_work(&mci->work);
-> +	}
-> +
-> +	mutex_unlock(&mem_ctls_mutex);
+This results in an ARM-only driver in an X86-only menu...
 
-cancel_delayed_work() on its own looks a bit racy.  The work could
-presently be running on another CPU.
+What about the patch below instead that also improves a few other things?
 
-So generally we'll run flush_workqueue() or cancel_work_sync() after the
-cancel_delayed_work() to make sure that it has really gone away.
 
-Beware however that you're holding a lock here.  If any of the work
-functions which can be at mci->work also take mem_ctls_mutex then it is
-deadlocky to run flush_workqueue() or cancel_work_sync() while holding that
-lock.
+<--  snip  -->
+
+
+This patch contains the following changes to the DMA engine menus:
+- switch to menuconfig
+- INTEL_IOATDMA must depend on X86
+- INTEL_IOATDMA must select DCA
+- device drivers shouldn't "default m"
+- DCA shouldn't be a user visible option
+- make it clear in the INTEL_IOATDMA help text that this driver is for
+  rare hardware the user most likely doesn't has
+- let DMA_ENGINE be select'ed by the DMA devices, making it less likely
+  for a user to accidentally enable NET_DMA
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+
+ drivers/dca/Kconfig |    7 +----
+ drivers/dma/Kconfig |   59 +++++++++++++++++++++++++-------------------
+ 2 files changed, 36 insertions(+), 30 deletions(-)
+
+--- linux-2.6.23-rc1-mm1/drivers/dma/Kconfig.old	2007-07-26 06:45:46.000000000 +0200
++++ linux-2.6.23-rc1-mm1/drivers/dma/Kconfig	2007-07-26 07:08:46.000000000 +0200
+@@ -2,42 +2,51 @@
+ # DMA engine configuration
+ #
+ 
+-menu "DMA Engine support"
+-	depends on HAS_DMA
++menuconfig DMADEVICES
++	bool "DMA Engine support"
++	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
++	help
++	  Intel(R) DMA engines
++
++if DMADEVICES
++
++comment "DMA Devices"
++
++config INTEL_IOATDMA
++	tristate "Intel I/OAT DMA support"
++	depends on PCI && X86
++	select DMA_ENGINE
++	select DCA
++	help
++	  Enable support for the Intel(R) I/OAT DMA engine present
++	  in recent Intel Xeon CPUs.
++
++	  Say yes if you have such a CPU.
++
++	  If unsure, say N.
++
++config INTEL_IOP_ADMA
++	tristate "Intel IOP ADMA support"
++	depends on ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
++	select ASYNC_CORE
++	select DMA_ENGINE
++	help
++	  Enable support for the Intel(R) IOP Series RAID engines.
+ 
+ config DMA_ENGINE
+-	bool "Support for DMA engines"
+-	---help---
+-          DMA engines offload bulk memory operations from the CPU to dedicated
+-          hardware, allowing the operations to happen asynchronously.
++	bool
+ 
+ comment "DMA Clients"
++	depends on DMA_ENGINE
+ 
+ config NET_DMA
+ 	bool "Network: TCP receive copy offload"
+ 	depends on DMA_ENGINE && NET
+ 	default y
+-	---help---
++	help
+ 	  This enables the use of DMA engines in the network stack to
+ 	  offload receive copy-to-user operations, freeing CPU cycles.
+ 	  Since this is the main user of the DMA engine, it should be enabled;
+ 	  say Y here.
+ 
+-comment "DMA Devices"
+-
+-config INTEL_IOATDMA
+-	tristate "Intel I/OAT DMA support"
+-	depends on DMA_ENGINE && PCI
+-	default m
+-	---help---
+-	  Enable support for the Intel(R) I/OAT DMA engine.
+-
+-config INTEL_IOP_ADMA
+-        tristate "Intel IOP ADMA support"
+-        depends on DMA_ENGINE && (ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX)
+-	select ASYNC_CORE
+-        default m
+-        ---help---
+-          Enable support for the Intel(R) IOP Series RAID engines.
+-
+-endmenu
++endif
+--- linux-2.6.23-rc1-mm1/drivers/dca/Kconfig.old	2007-07-26 06:49:32.000000000 +0200
++++ linux-2.6.23-rc1-mm1/drivers/dca/Kconfig	2007-07-26 06:49:41.000000000 +0200
+@@ -3,9 +3,6 @@
+ #
+ 
+ config DCA
+-	tristate "DCA support for clients and providers"
+-	---help---
+-          This is a server to help modules that want to use Direct Cache
+-	  Access to find DCA providers that will supply correct CPU tags.
+-	default m
++	tristate
++
+ 
 
