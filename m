@@ -1,60 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935375AbXGZWk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936784AbXGZWlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935375AbXGZWk5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 18:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763710AbXGZWkq
+	id S936784AbXGZWlV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 18:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbXGZWks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 26 Jul 2007 18:40:48 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:32914 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761989AbXGZWkq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Jul 2007 18:40:46 -0400
-Received: from mga09.intel.com ([134.134.136.24]:2526 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753826AbXGZWkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 18:40:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,584,1175497200"; 
-   d="scan'208";a="110395045"
-Date: Thu, 26 Jul 2007 15:34:56 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch] sched: introduce SD_BALANCE_FORK for ht/mc/smp domains
-Message-ID: <20070726223455.GK3318@linux-os.sc.intel.com>
-References: <20070726183225.GJ3318@linux-os.sc.intel.com> <20070726221830.GA4113@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=okw08PqkaCEfALit3d92WjViwq4ZfT9KAkDZffRbMsH2wYahHRi9LDbntWZI+IX0lJTtC0oTQF+18JIAYttVq698QOqnKnZawEMnOINUvb6gvopcSteVKdF92mMqGBSfRCwXhKICMDCZmM+2v5LF/pZlWDc/YWx0NvgDWE7dEqM=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][dccp] Fix memory leak and clean up style - dccp_feat_empty_confirm()
+Date: Fri, 27 Jul 2007 00:39:37 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrea Bittau <a.bittau@cs.ucl.ac.uk>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       dccp@vger.kernel.org, Jesper Juhl <jesper.juhl@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070726221830.GA4113@elte.hu>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200707270039.37860.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 27, 2007 at 12:18:30AM +0200, Ingo Molnar wrote:
-> 
-> * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
-> 
-> > Introduce SD_BALANCE_FORK for HT/MC/SMP domains.
-> > 
-> > For HT/MC, as caches are shared, SD_BALANCE_FORK is the right thing to 
-> > do. Given that NUMA domain already has this flag and the scheduler 
-> > currently doesn't have the concept of running threads belonging to a 
-> > process as close as possible(i.e., forking may keep close, but 
-> > periodic balance later will likely take them far away), introduce 
-> > SD_BALANCE_FORK for SMP domain too.
-> > 
-> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> 
-> i'm not opposed to this fundamentally, but it would be nice to better 
-> map the effects of this change: do you have any particular workload 
-> under which you've tested this and under which you've seen it makes a 
-> difference? I'd expect this to improve fork-intense half-idle workloads 
-> perhaps - things like a make -j3 on a 4-core CPU.
 
-They might be doing more exec's and probably covered by exec balance.
+Greetings,
 
-There was a small pthread test case which was calculating the time to create
-all the threads and how much time each thread took to start running. It
-appeared as if the threads ran sequentially one after another on a DP system
-with four cores leading to this SD_BALANCE_FORK observation.
+There's a memory leak in net/dccp/feat.c::dccp_feat_empty_confirm().
+If we hit the 'default:' case of the 'switch' statement, then we 
+return without freeing 'opt', thus leaking 'struct dccp_opt_pend' 
+bytes.
+The leak is fixed easily enough by adding a kfree(opt); before the 
+return statement.
+The patch also changes the layout of the 'switch' to be more in line 
+with CodingStyle.
 
-thanks,
-suresh
+Patch has been compile tested.
+
+Please consider merging.
+
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ net/dccp/feat.c |   14 ++++++++++----
+ 1 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/net/dccp/feat.c b/net/dccp/feat.c
+index cd845df..5ebdd86 100644
+--- a/net/dccp/feat.c
++++ b/net/dccp/feat.c
+@@ -327,10 +327,16 @@ static void dccp_feat_empty_confirm(struct dccp_minisock *dmsk,
+ 	}
+ 
+ 	switch (type) {
+-	case DCCPO_CHANGE_L: opt->dccpop_type = DCCPO_CONFIRM_R; break;
+-	case DCCPO_CHANGE_R: opt->dccpop_type = DCCPO_CONFIRM_L; break;
+-	default:	     DCCP_WARN("invalid type %d\n", type); return;
+-
++	case DCCPO_CHANGE_L:
++		opt->dccpop_type = DCCPO_CONFIRM_R;
++		break;
++	case DCCPO_CHANGE_R:
++		opt->dccpop_type = DCCPO_CONFIRM_L;
++		break;
++	default:
++		DCCP_WARN("invalid type %d\n", type);
++		kfree(opt);
++		return;
+ 	}
+ 	opt->dccpop_feat = feature;
+ 	opt->dccpop_val	 = NULL;
+
+
+
+
+
+PS. Please keep me on Cc when replying.
+
+
