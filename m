@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932906AbXGZMhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765622AbXGZMlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932906AbXGZMhn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 08:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbXGZMhg
+	id S1765622AbXGZMlv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 08:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbXGZMlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 08:37:36 -0400
-Received: from pat.uio.no ([129.240.10.15]:41957 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754290AbXGZMhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 08:37:35 -0400
-Subject: Re: [patch] nfs: fix locking in nfs/inode.c in
-	nfs_free_open_context
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christian Krafft <krafft@de.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200707261323.38310.arnd@arndb.de>
-References: <20070725170837.5fba5fd1@localhost>
-	 <1185384502.6585.97.camel@localhost>  <200707261323.38310.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 08:37:31 -0400
-Message-Id: <1185453451.6585.174.camel@localhost>
+	Thu, 26 Jul 2007 08:41:39 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53840 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754864AbXGZMlh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 08:41:37 -0400
+Date: Thu, 26 Jul 2007 13:47:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcin ??lusarz <marcin.slusarz@gmail.com>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH][netdrvr] lib8390: comment on locking by Alan Cox Re:
+ 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070726134714.31882b7e@the-village.bc.nu>
+In-Reply-To: <20070726124401.GC3423@ff.dom.local>
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
+	<20070629150759.GC2771@ff.dom.local>
+	<4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com>
+	<20070724080534.GC18740@elte.hu>
+	<20070724094202.GA11610@elte.hu>
+	<alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
+	<20070724200431.GA22190@elte.hu>
+	<1185322771.4175.102.camel@chaos>
+	<20070725135718.GB1843@ff.dom.local>
+	<20070725154656.54fd6f13@the-village.bc.nu>
+	<20070726124401.GC3423@ff.dom.local>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, AWL=0.018)
-X-UiO-Scanned: 6C99B3DC640940634A4706117815A159F0C31BF0
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 449 total 2977580 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 13:23 +0200, Arnd Bergmann wrote:
-> On Wednesday 25 July 2007, Trond Myklebust wrote:
-> > 
-> > On Wed, 2007-07-25 at 17:08 +0200, Christian Krafft wrote:
-> > 
-> > > Obviously the locking code in nfs_free_open_context is wrong.
-> > > Checking the list for entries and removing the entry should be an atomic operation.
-> > 
-> > Wrong. It is quite safe to test the structure member ctx->list for
-> > emptiness outside the spinlock because we have an explicit guarantee
-> > that nobody else has a reference to this structure, plus the
-> > atomic_dec_and_test() in kref_put() has acted as a memory barrier for
-> > us.
+On Thu, 26 Jul 2007 14:44:01 +0200
+Jarek Poplawski <jarkao2@o2.pl> wrote:
+
+> Hi,
 > 
-> Well, the real question then is how the ctx can still be present in the
-> nfsi->open_files list. Since we are in nfs_free_open_context(), there
-> must not be any pointer to the ctx anywhere, but still we have this other
-> thread calling get_nfs_open_context() on it.
+> Very below is my patch proposal with a comment, which in my opinion
+> is precious enough to save it for future help in reading and
+> understanding the code.
+> 
+> I hope Alan will not blame me I've not asked for his permission before
+> sending, and he would ack this patch as it is or at least most of this.
 
-Yup. That is definitely a bug. I wish we had a 'kref_put_and_lock' to
-deal with these situations where you want to grab a lock atomically with
-the last put. It would make krefs a lot more useful...
-
-Trond
+Fine by me
 
