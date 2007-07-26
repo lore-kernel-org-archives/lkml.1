@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933782AbXGZRJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933187AbXGZRMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933782AbXGZRJt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762830AbXGZRJl
+	id S933187AbXGZRMc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762547AbXGZRMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:09:41 -0400
-Received: from hu-out-0506.google.com ([72.14.214.230]:27863 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762787AbXGZRJk (ORCPT
+	Thu, 26 Jul 2007 13:12:24 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60809 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761481AbXGZRMX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:09:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=adG9E+qLUYVRMC2cIwH4oNuUuU6YSx0hwdIoDStjbLzh/TY6wb487i6XJTGETunjgQd5tr+6PvoGQkXfU1YDOaCMQWT1il+XTxpX+lzQa0cJ2O3CgQOuH8fV8iU2/CDlqhe4d4rO5Owpx4CXw8kv093odY6HueIJLnaoaDZilNM=
-Date: Thu, 26 Jul 2007 18:09:23 +0100
-From: Xudong Guan <xudong.guan@gmail.com>
-To: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1: no setup signature found...
-Message-ID: <20070726170923.GA15125@xguan-laptop>
-References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <20070726163618.GA13789@xguan-laptop> <20070726165906.GB4570@gollum.tnic>
+	Thu, 26 Jul 2007 13:12:23 -0400
+Date: Thu, 26 Jul 2007 18:11:32 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] mm: reduce pagetable-freeing latencies
+In-Reply-To: <1185360414.5439.335.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0707261758280.370@blonde.wat.veritas.com>
+References: <20070724083855.GA858@elte.hu>  <20070724015441.8604d85d.akpm@linux-foundation.org>
+  <1185270045.5439.249.camel@localhost.localdomain>  <p73abtmt2y7.fsf@bingen.suse.de>
+  <1185312559.5439.276.camel@localhost.localdomain>  <1185345850.8197.64.camel@twins>
+ <20070725094605.GA9045@one.firstfloor.org>  <1185358093.5439.325.camel@localhost.localdomain>
+  <20070725102608.GB9045@one.firstfloor.org> <1185360414.5439.335.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070726165906.GB4570@gollum.tnic>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcAcGV0ZXJ6QGluZnJhZGVhZC5vcmcAYW5kaUBmaXJzdGZsb29yLm9yZwBtaW5nb0BlbHRlLmh1AA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18:59(+0200) Thu 26 Jul, Borislav Petkov wrote:
-> On Thu, Jul 26, 2007 at 05:36:18PM +0100, Xudong Guan wrote:
-> > On my real machine with grub 0.97, there is no problem loading the
-> > same kernel.
+On Wed, 25 Jul 2007, Benjamin Herrenschmidt wrote:
 > 
-> Do you mean the kernel with the 4fd06960f120e02e9abc802a09f9511c400042a5 commit
-> on top?
+> In fact, i discussed with peter and I think the best is to only have one
+> entry in the stack mmu_gather structure.
 
-No, I mean v2.6.23-rc1-171-ge4903fb (HEAD of torvalds-linux-2.6.git as of
-this writing), which can not be loaded by grub 0.91, but can be loaded
-by grub 0.97 (at least on my machine). Sorry for the confusion.
+Four or eight would be much nicer than one, but you're right there's
+a stackdepth worry: good spotting of those unmap_mapping_range cases,
+I'd certainly been thinking we were fairly near the top of the stack
+in unmap_vmas, which is not so (or not obviously so) in those cases.
 
-Xudong
+> If we fail to allocate a page
+> to batch entries, we flush that one and steal it :-) Then we have a page
+> to gather more.
+
+That will often be the case for anonymous pages, but not for pagecache
+pages.  I had wondered whether to make exit_mmap unmap the stack first
+(rather than text first as usually happens), but seems rather a hack.
+
+Hugh
