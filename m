@@ -1,126 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbXGZAlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbXGZAlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbXGZAlY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 20:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbXGZAlQ
+	id S1757516AbXGZAlw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 20:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXGZAlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 20:41:16 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33927 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751904AbXGZAlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 20:41:16 -0400
-Date: Thu, 26 Jul 2007 02:41:14 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       airlied@gmail.com, magnade@gmail.com
-Subject: Re: [patch] agp: don't lock pages
-Message-ID: <20070726004114.GA17294@wotan.suse.de>
-References: <20070725111922.GF29011@wotan.suse.de> <1185398813.5439.342.camel@localhost.localdomain>
+	Wed, 25 Jul 2007 20:41:44 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:28676 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbXGZAln (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 20:41:43 -0400
+X-IronPort-AV: i="4.16,582,1175486400"; 
+   d="scan'208"; a="46524099:sNHT27061216"
+Subject: Re: [GIT PULL try#2] Blackfin update
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bryan Wu <bryan.wu@analog.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707251125140.3607@woody.linux-foundation.org>
+References: <1185377216.12354.12.camel@roc-laptop>
+	 <alpine.LFD.0.999.0707251125140.3607@woody.linux-foundation.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Thu, 26 Jul 2007 08:41:38 +0800
+Message-Id: <1185410498.13974.7.camel@roc-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185398813.5439.342.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 26 Jul 2007 00:41:41.0952 (UTC) FILETIME=[BC101400:01C7CF1D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[forgot to cc Dave Jones...]
-
-
-On Thu, Jul 26, 2007 at 07:26:53AM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2007-07-25 at 13:19 +0200, Nick Piggin wrote:
-> > Hi,
-> > 
-> > Does this patch solve the X problem? Does anyone see anything wrong
-> > with it or know why agp was locking the pages?
+On Wed, 2007-07-25 at 11:26 -0700, Linus Torvalds wrote:
 > 
-> We need to do a little bit of auditing here, but I suspect it will turn
-> out all right. I think the reason it locked them in the first place was
-> to avoid AGP pages mapped into process space from being swapped out.
-> 
-> I think that should be taken care of by appropriate vma flags nowadays,
-> but we need to double check. It also might have been a way around dodgy
-> refcounting at one point but I think we got that right nowadays (I
-> remember fixing issues in that area when we removed PageReserved from
-> those pages back then).
-
-Yeah I had a bit of a look around, and it seems OK (but would
-appreciate an ack from someone who knows the code).
-
-These pages will never get seen by page reclaim, so we're OK
-there. There is a get_page before the SetPageLocked and a put_page
-right before the unlock_page, so refcounting should not be broken
-if it wasn't already: note that the lock_page doesn't pin a
-reference on a page in general -- we can use it as such for pagecache
-(although it isn't very clean), because the lock pins the page in
-pagecache and the pagecache holds a ref.
-
-Anyway, if Dave or David can take a look, that would be appreciated.
-We'll need this for 2.6.23.
-
-Nick
-
-> 
-> Ben.
-> 
-> > --
-> > AGP should not need to lock pages. They are not protecting any race
-> > because there is no lock_page calls, only SetPageLocked.
+> On Wed, 25 Jul 2007, Bryan Wu wrote:
 > > 
-> > This is causing hangs with d00806b183152af6d24f46f0c33f14162ca1262a.
-> > 
-> > Signed-off-by: Nick Piggin <npiggin@suse.de>
-> > 
-> > diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
-> > index d535c40..3db4f40 100644
-> > --- a/drivers/char/agp/generic.c
-> > +++ b/drivers/char/agp/generic.c
-> > @@ -1170,7 +1170,6 @@ void *agp_generic_alloc_page(struct agp_
-> >  	map_page_into_agp(page);
-> >  
-> >  	get_page(page);
-> > -	SetPageLocked(page);
-> >  	atomic_inc(&agp_bridge->current_memory_agp);
-> >  	return page_address(page);
-> >  }
-> > @@ -1187,7 +1186,6 @@ void agp_generic_destroy_page(void *addr
-> >  	page = virt_to_page(addr);
-> >  	unmap_page_from_agp(page);
-> >  	put_page(page);
-> > -	unlock_page(page);
-> >  	free_page((unsigned long)addr);
-> >  	atomic_dec(&agp_bridge->current_memory_agp);
-> >  }
-> > diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-> > index a124060..2f319f4 100644
-> > --- a/drivers/char/agp/intel-agp.c
-> > +++ b/drivers/char/agp/intel-agp.c
-> > @@ -213,7 +213,6 @@ static void *i8xx_alloc_pages(void)
-> >  	}
-> >  	global_flush_tlb();
-> >  	get_page(page);
-> > -	SetPageLocked(page);
-> >  	atomic_inc(&agp_bridge->current_memory_agp);
-> >  	return page_address(page);
-> >  }
-> > @@ -229,7 +228,6 @@ static void i8xx_destroy_pages(void *add
-> >  	change_page_attr(page, 4, PAGE_KERNEL);
-> >  	global_flush_tlb();
-> >  	put_page(page);
-> > -	unlock_page(page);
-> >  	__free_pages(page, 2);
-> >  	atomic_dec(&agp_bridge->current_memory_agp);
-> >  }
-> > diff --git a/drivers/char/agp/sgi-agp.c b/drivers/char/agp/sgi-agp.c
-> > index cda608c..98cf8ab 100644
-> > --- a/drivers/char/agp/sgi-agp.c
-> > +++ b/drivers/char/agp/sgi-agp.c
-> > @@ -51,7 +51,6 @@ static void *sgi_tioca_alloc_page(struct
-> >  		return NULL;
-> >  
-> >  	get_page(page);
-> > -	SetPageLocked(page);
-> >  	atomic_inc(&agp_bridge->current_memory_agp);
-> >  	return page_address(page);
-> >  }
+> > Please pull from 'for-linus' branch of
+> 
+> This really is too big for post-rc1.
+> 
+> I realize that this is all blackfin-only, and that it doesn't matter from 
+> a practical standpoint, but I want you guys to learn to follow the merge 
+> window, and the only way I can do that is by enforcing it.
+> 
+> 			Linus
+
+Exactly. In the 2.6.23-rc1 merge window, I am trying to submit blackfin
+driver patches and other new stuffs. So put those bug fixing and some
+small updates in this series.
+
+I will review the series again, submit critical bug fixing in rc2 and
+maybe split rest of them into following -rc.
+
+Thanks Jeff, after using you script, I generate this big email. It's
+beautiful but I missed merge window.
+
+Thanks a lot
+Best Regards,
+- Bryan Wu
