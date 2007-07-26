@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936452AbXGZSmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936350AbXGZSmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936452AbXGZSmU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964927AbXGZSlz
+	id S936350AbXGZSmn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935741AbXGZSmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:41:55 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:34017 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964921AbXGZSly (ORCPT
+	Thu, 26 Jul 2007 14:42:08 -0400
+Received: from poy.chewa.net ([194.242.114.73]:3976 "EHLO poy.chewa.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935174AbXGZSmH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:41:54 -0400
-Subject: Re: [PATCH] make schedule_on_each_cpu() look like on_each_cpu()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070726182727.GA173@tv-sign.ru>
-References: <1185448139.8197.78.camel@twins>
-	 <20070726182727.GA173@tv-sign.ru>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 20:41:32 +0200
-Message-Id: <1185475292.15205.17.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 14:42:07 -0400
+X-Greylist: delayed 2111 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jul 2007 14:42:06 EDT
+From: =?utf-8?q?R=C3=A9mi_Denis-Courmont?= <rdenis@simphalempin.com>
+Organization: Remlab.net
+To: Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: [PATCH] IPv6: ipv6_addr_type() doesn't know about RFC4193 addresses
+Date: Thu, 26 Jul 2007 21:06:48 +0300
+User-Agent: KMail/1.9.6
+Cc: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>,
+       netdev@vger.kernel.org, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
+       Srinivas Akkipeddi <sakkiped@starentnetworks.com>
+References: <18087.57717.495366.413571@zeus.sw.starentnetworks.com> <46A8D837.1030400@simon.arlott.org.uk>
+In-Reply-To: <46A8D837.1030400@simon.arlott.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707262106.49131.rdenis@simphalempin.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 22:27 +0400, Oleg Nesterov wrote:
-> On 07/26, Peter Zijlstra wrote:
+On Thursday 26 July 2007 20:21:59 Simon Arlott wrote:
+> On 26/07/07 00:49, Dave Johnson wrote:
+> > ipv6_addr_type() doesn't check for 'Unique Local IPv6 Unicast
+> > Addresses' (RFC4193) and returns IPV6_ADDR_RESERVED for that range.
 > >
-> > -int schedule_on_each_cpu(work_func_t func)
-> > +int schedule_on_each_cpu(void (*func)(void *info), void *info, int retry, int wait)
+> > +	if ((st & htonl(0xFE000000)) == htonl(0xFC000000))
+> > +		return (IPV6_ADDR_UNICAST |
+> > +			IPV6_ADDR_SCOPE_TYPE(IPV6_ADDR_SCOPE_GLOBAL));			/* RFC 4193 */
+>
+> But ULA's scope isn't global, shouldn't it be IPV6_ADDR_SCOPE_ORGLOCAL ?
 
-> Another off-topic question: shouldn't we kill the unused "retry"
-> parameter of on_each_cpu() instead of mirroring it here?
+Yes it is - global.
 
-I'm fine with doing so, but that will be a somewhat larger patch. If you
-(and perhaps Andrew?) think that is preferable I'll prepare such a
-patch.
-
-> > +out:
-> > +	for_each_possible_cpu(cpu) {
-> > +		if (works[cpu])
-> > +			kfree(works[cpu]);
-> > +	}
-> 
-> Small nit, kfree(NULL) is OK.
-
-Habbits die hard :-/
-
-
+-- 
+Rémi Denis-Courmont
