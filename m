@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXGZHHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbXGZHUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbXGZHHe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 03:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761238AbXGZHH0
+	id S932320AbXGZHUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 03:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761041AbXGZHUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 03:07:26 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:50580 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760978AbXGZHHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 03:07:25 -0400
-Date: Thu, 26 Jul 2007 16:06:52 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: jidong xiao <jidong.xiao@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: What's does KPROBE_ENTRY mean?
-Message-ID: <20070726070652.GA26229@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	jidong xiao <jidong.xiao@gmail.com>, linux-kernel@vger.kernel.org
-References: <4104961b0706202213p16df5ca5s579de4b949efbf16@mail.gmail.com> <4104961b0707252243l41addce8wca35d19c5de729ee@mail.gmail.com> <20070726061117.GA25926@linux-sh.org> <4104961b0707252350g163dc133r420422dd4dde40f2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4104961b0707252350g163dc133r420422dd4dde40f2@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 26 Jul 2007 03:20:47 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:29188 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759605AbXGZHUq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 03:20:46 -0400
+Date: Thu, 26 Jul 2007 01:20:42 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: serial flow control appears broken
+In-reply-to: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>
+To: Lee Howard <faxguy@howardsilvan.com>
+Cc: linux-serial@vger.kernel.org, tytso@mit.edu, rmk@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Message-id: <46A84B4A.6070902@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 02:50:38PM +0800, jidong xiao wrote:
-> Thanks.So if I don't care any probes, and I actually don't need to
-> take use of kprobes, then I can use the functions defined through
-> KPROBE_ENTRY() the same way as those defined via ENTRY(), right?
+Lee Howard wrote:
+> Hello.
 > 
-Yes, there's nothing special about KPROBE_ENTRY() other than the section
-placement. It even wraps in to ENTRY() after the .pushsection.
+> I have fax modems that will, in their proper behavior with certain 
+> features, send up to 64 kilobytes of data to the host DTE all at once.  
+> (So, the fax modem handles an incoming fax and periodically will send 
+> between 256 bytes and 64 kilobytes of data in bursts.)
+> 
+> When the DCE-DTE (modem-to-host) communication rate is established at 
+> 115200 bps data loss occurs systems using at least Linux kernels 2.6.5 
+> and 2.6.18 (and probably everything in-beween and then some more).  This 
+> is because the modem overflows the host's buffer.  This is evidenced in 
+> kernel logging:
+> 
+> Jul 23 14:01:30 gollum kernel: ttyS1: 1 input overrun(s)
+> Jul 23 17:09:45 gollum kernel: ttyS1: 1 input overrun(s)
+> 
+> Normally I would blame the modem itself for not honoring the host's flow 
+> control signals.  However, I have worked with the modem manufacturer 
+> closely on this matter for over three months now.  In that process they 
+> have improved the responsiveness of the modem and have fixed other 
+> problems, but the end result is that it truly does appear that the 
+> serial tty driver is not using flow control.  Whether software flow 
+> control (XON/XOFF) or hardware flow control (RTS/CTS) is used the result 
+> is the same.
+> 
+> This is evidenced in hardware flow control by a little LED labeled "RTS" 
+> that is on the external modem.  This LED lights up when pin 7 of the DB9 
+> serial connection is given +12Vdc current (signalling "RTS" is on - that 
+> the host can accept data).  The LED goes dark when the current is 
+> removed (signalling that the host cannot accept data).  This "RTS" LED 
+> never flickers at all, as it should, when receiving these bursts of data 
+> - the LED stays lit as long as the serial cable is connected to the 
+> host... and yet I will see those "input overrun" messages.  Thus, it 
+> seems quite clear that the Linux serial tty driver is not deasserting 
+> RTS as it should in hardware flow control.  (And probably the analogous 
+> problem exists in software flow control, too.)
+> 
+> Please tell me what I can do to help you resove and/or remedy this 
+> matter.  Also, please let me know if I have contacted the wrong people.  
+> (I have cross-posted to linux-kernel as a catch-all.  I am not 
+> subscribed to either linux-serial or linux-kernel mailing lists.  So 
+> please CC me in any list responses.)
+> 
+> If it is of any value to know (perhaps they have common code?), the same 
+> error occurs on FreeBSD 6.2 as well.   The problem does not occur on 
+> Windows.  The problem does not occur on RedHat 6.0 (kernel 2.2.5).
 
-As you can see from kernel/kprobes.c:
+What kind of serial port and machine is this on? From what I can see, a 
+standard 16550 UART (not a special variant) just doesn't have any 
+support for clearing RTS on its own when its input FIFO gets too full. 
+The kernel would have to do it in that case. I'm not seeing where it 
+would be controlling that automatically (as opposed to manually from the 
+application with TIOCM_RTS). I'm also not sure if the UART gives the 
+kernel enough information for it to even be able to control this line 
+properly automatically.
 
-	static int __kprobes in_kprobes_functions(unsigned long addr)
-	{
-		if (addr >= (unsigned long)__kprobes_text_start &&
-		    addr < (unsigned long)__kprobes_text_end)
-			return -EINVAL;
-		return 0;
-	}
+That's assuming it actually is a 16550 or similar with a 16-byte FIFO at 
+all, which assuming it's a non-ancient PC it should be, but who knows.
 
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-...
-
-and in __register_kprobe():
-
-        if (!kernel_text_address((unsigned long) p->addr) ||
-            in_kprobes_functions((unsigned long) p->addr))
-                return -EINVAL;
-
-So the only behavioural change for these symbols is that insertion of
-probes is prohibited. There is nothing inherently special about them
-otherwise, and platforms that don't enable kprobes aren't going to
-care either.
-
-One curious thing is that while KPROBE_ENTRY() unconditionally does
-a .pushsection .kprobes.text, __kprobes does this conditionally
-depending on CONFIG_KPROBES. While this doesn't hurt anything, it's
-inconsistent to say the least. We should probably either make __kprobes
-explicitly always use .kprobes.text, or just wrap KPROBE_ENTRY to ENTRY
-directly and forego the .pushsection when CONFIG_KPROBES=n.
