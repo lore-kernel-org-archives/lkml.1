@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbXGZAEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457AbXGZAJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbXGZAEq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 20:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbXGZAEi
+	id S1754457AbXGZAJd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 20:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbXGZAJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 20:04:38 -0400
-Received: from mx1.suse.de ([195.135.220.2]:41927 "EHLO mx1.suse.de"
+	Wed, 25 Jul 2007 20:09:26 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33026 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805AbXGZAEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 20:04:37 -0400
-Date: Wed, 25 Jul 2007 17:07:05 -0700
+	id S1751428AbXGZAJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 20:09:25 -0400
+Date: Wed, 25 Jul 2007 17:11:45 -0700
 From: Greg KH <gregkh@suse.de>
-To: Gabriel C <nix.or.die@googlemail.com>, Dave Hansen <haveblue@us.ibm.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-rc1-mm1
-Message-ID: <20070726000705.GB21056@suse.de>
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com> <20070725185328.GA28199@uranus.ravnborg.org> <46A7A1EF.8060307@zytor.com> <46A7B983.90407@googlemail.com> <46A7BB12.7060504@googlemail.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sysfs/udev broken in 2.6.23-rc1 [input, i2c, ...] (Was:
+	sysfs/udev broken in latest git?)
+Message-ID: <20070726001145.GC21056@suse.de>
+References: <20070724072540.GA835@suse.de> <20070724100314.3c606131@gondolin.boeblingen.de.ibm.com> <20070724084654.GB13152@suse.de> <3ae72650707240220l737fb031hb4e326b0f1fe0e45@mail.gmail.com> <20070724145433.4848ada1@gondolin.boeblingen.de.ibm.com> <46A628AC.3060900@simon.arlott.org.uk> <3ae72650707240934o68047677n97e6081ff3f42ce7@mail.gmail.com> <46A62F6A.8010403@simon.arlott.org.uk> <3ae72650707241719w6c7f2dc7s1bc29d7f1dfd4288@mail.gmail.com> <20070725095808.09b2cc2a@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46A7BB12.7060504@googlemail.com>
+In-Reply-To: <20070725095808.09b2cc2a@gondolin.boeblingen.de.ibm.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 11:05:22PM +0200, Gabriel C wrote:
-> Gabriel C wrote:
-> > H. Peter Anvin wrote:
-> >> Sam Ravnborg wrote:
-> >>> On Wed, Jul 25, 2007 at 08:48:50PM +0200, Michal Piotrowski wrote:
-> >>>> On 25/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
-> >>>>>
-> >>>>>
-> >>>> Andi, this might be interesting for you
-> >>>>
-> >>>> make allmodconfig
-> >>>> make
-> >>>> [...]
-> >>>> WARNING: Absolute relocations present
-> >>>> Offset     Info     Type     Sym.Value Sym.Name
-> >>>> c02041b3 00705601   R_386_32 c0308aa8  _sdata
-> >>> Who did spit out this warning. Can you please provide make V=1
-> >>> where we see the lines preceeding the warning.
-> >>>
-> >>> And config please.
-> >>>
-> >> config: "make allmodconfig"
-> >>
-> >> System.map would be more interesting, especially what is at 0xc02041b3.
-> > 
-> > I get here :
-> > 
-> > WARNING: Absolute relocations present
-> > Offset     Info     Type     Sym.Value Sym.Name
-> > c0202e73 00703601   R_386_32 c03071bc  _sdata
-> > 
-> > $ grep c03071bc System.map
-> > c03071bc R __tracedata_end
-> > c03071bc A _sdata
+On Wed, Jul 25, 2007 at 09:58:08AM +0200, Cornelia Huck wrote:
+> On Wed, 25 Jul 2007 02:19:18 +0200,
+> "Kay Sievers" <kay.sievers@vrfy.org> wrote:
 > 
+> > > >> Removing the dev->parent->bus check fixes it:
+> > 
+> > Yes, let's remove the check, I will check now if we possibly need to
+> > fix more than this or only the block-device patch.
 > 
-> Guessing is this patch ?
+> It seems this is the only place we check for dev->parent->bus in the
+> current git tree.
 > 
-> gregkh-driver-warn-when-statically-allocated-kobjects-are-used.patch:           __tracedata_end = .;
-> gregkh-driver-warn-when-statically-allocated-kobjects-are-used.patch:+  _sdata = .;                     /* End of text section */
+> Patch below.
 
-This patch is a horrible hack to try to see if kobjects are static and
-not dynamically created.
+Thanks for figuring this out, I'll add this to my tree.
 
-Dave, any ideas what is happening here?
+So what is the input layer doing so differently from everyone else here?
+Is it correct?  (sorry, am at a conference this week, so can't dig into
+it as much as I would like to until Friday...)
 
 thanks,
 
