@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936508AbXGZUpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936805AbXGZUs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936508AbXGZUpY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 16:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbXGZUpN
+	id S936805AbXGZUs2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 16:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933688AbXGZUsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 16:45:13 -0400
-Received: from [12.38.223.190] ([12.38.223.190]:32961 "EHLO
-	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932349AbXGZUpM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 16:45:12 -0400
+	Thu, 26 Jul 2007 16:48:22 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1029 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933397AbXGZUsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 16:48:21 -0400
+From: Roman Zippel <zippel@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] i2o: defined but not used.
+Date: Thu, 26 Jul 2007 22:47:41 +0200
+User-Agent: KMail/1.9.7
+Cc: Sebastian Siewior <sebastian@breakpoint.cc>, linux-kernel@vger.kernel.org
+References: <20070720225817.607502287@ayoka.breakpoint.cc> <20070721033133.ed47aa6a.akpm@linux-foundation.org>
+In-Reply-To: <20070721033133.ed47aa6a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18089.1986.267726.233112@zeus.sw.starentnetworks.com>
-Date: Thu, 26 Jul 2007 16:44:50 -0400
-From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-To: Vlad Yasevich <vladislav.yasevich@hp.com>
-Cc: lksctp-developers@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Srinivas Akkipeddi <sakkiped@starentnetworks.com>
-Subject: Re: [PATCH] SCTP: IPv4 mapped addr not returned in SCTPv6 accept()
-In-Reply-To: <46A8F926.1070606@hp.com>
-References: <18087.57737.908842.337891@zeus.sw.starentnetworks.com>
-	<46A8E027.10802@hp.com>
-	<18088.61269.5608.925496@zeus.sw.starentnetworks.com>
-	<46A8F926.1070606@hp.com>
-X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
+Content-Disposition: inline
+Message-Id: <200707262247.42795.zippel@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vlad Yasevich writes:
-> Ok.  First, this is a different bug, so I would prefer a separate patch.
-> Also, I see the problem and it's ugly, but this solution is not really correct,
-> both conceptually and code wise.
-> 
-> Conceptually, the v4 code should never worry about V4-mapped addresses and shouldn't
-> muck with them.  They are IPv6 addresses and there should be a clean separation.
-> 
-> Code wise, the code in the __sctp_connect() is terrible.
-> 
-> Does the attached patch work for you in this case.
+Hi,
 
-yes, with the v4mapped in ipv6.c and your patch, connect and accept
-both work with v4 mapped addresses.
+On Saturday 21 July 2007, Andrew Morton wrote:
 
-Note instead of:
+> On Sat, 21 Jul 2007 00:58:01 +0200 Sebastian Siewior 
+<sebastian@breakpoint.cc> wrote:
+> > Got with randconfig
+>
+> randconfig apparently generates impossible configs.  Please always
+> run `make oldconfig' after the randconfig, then do the test build.
 
-> +	af = sctp_get_af_specific(sa_addr->sa.sa_family);
-> +	af->to_sk_daddr(sa_addr, sk);
+If that should make any difference, that would be a bug and I'd like to see 
+that .config.
 
-you should have:
-
-> +	af = sctp_get_af_specific(sa_addr->sa_family);
-> +	af->to_sk_daddr((union sctp_addr *)sa_addr, sk);
-
-
--- 
-Dave Johnson
-Starent Networks
-
+bye, Roman
