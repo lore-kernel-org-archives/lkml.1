@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936276AbXGZWH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936438AbXGZWJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936276AbXGZWH7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 18:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934278AbXGZWHw
+	id S936438AbXGZWJR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 18:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934684AbXGZWJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 18:07:52 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:60559 "EHLO atlrel9.hp.com"
+	Thu, 26 Jul 2007 18:09:01 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:43699 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933340AbXGZWHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 18:07:52 -0400
-Subject: Re: Q: PCI-X @ 266MHz on HP rx6600 (Qlogic 4Gb FC HBA)
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Vasquez <andrew.vasquez@qlogic.com>
-In-Reply-To: <46A8BF75.161.5C8424A@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-References: <46A8BF75.161.5C8424A@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 16:03:38 -0600
-Message-Id: <1185487419.7134.485.camel@bluto.andrew>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S934549AbXGZWJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 18:09:00 -0400
+Date: Thu, 26 Jul 2007 18:08:53 -0400
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, neilb@suse.de
+Subject: Re: [PATCH] lockd and nfsd endianness annotation fixes
+Message-ID: <20070726220853.GN8125@fieldses.org>
+References: <E1IE6Hd-0005Dl-Hu@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1IE6Hd-0005Dl-Hu@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 15:36 +0200, Ulrich Windl wrote:
-> Hi,
-> 
-> I have a question: The Qlogic ISP2422 chip is said to handle PCI-X 266MHz. So does 
-> the HP Itanium2 server rx6600. Basically that was the reason to select that 
-> server. The FC-HBA is in a 266 MHz capable slot. However when booting SLES10 SP1 
-> for IA64, the logs say:
-> 
-> <6>QLogic Fibre Channel HBA Driver
-> <6>GSI 49 (level, low) -> CPU 3 (0x0300) vector 51
-> <6>ACPI: PCI Interrupt 0000:0f:01.0[A] -> GSI 49 (level, low) -> IRQ 51
-> <6>qla2xxx 0000:0f:01.0: Found an ISP2422, irq 51, iobase 0xc0000000b0040000
-> [...]
-> <6>qla2xxx 0000:0f:01.0: LOOP UP detected (4 Gbps).
-> <6>qla2xxx 0000:0f:01.0: Topology - (F_Port), Host Loop address 0x0
-> <6>scsi0 : qla2xxx
-> <6>qla2xxx 0000:0f:01.0:
-> <4> QLogic Fibre Channel HBA Driver: 8.01.07-k3
-> <4>  QLogic HP AB378-60001 -
-> <4>  ISP2422: PCI-X Mode 2 (133 MH4.00.26 [IP]  @ 0000:0f:01.0 hdma+, host#=0, 
-> fw=4.00.26 [IP]
-> <5>  Vendor: HP        Model: HSV200            Rev: 6100
-> <5>  Type:   RAID                               ANSI SCSI revision: 02
-> <5> 0:0:0:0: Attached scsi generic sg0 type 12
-> 
-> Now does Linux support the speed of 266 MHz, and is it just displayed incorrectly, 
-> or doesn't Linux support the speed of 266MHz yet?
-
-This is a bug in the driver.  The lookup table only goes to 133 MHz.
-
-static char *pci_bus_modes[] = {
-                "33", "66", "100", "133",
-
-The same problem exists in the scsi_misc tree.
-
-> "lspci -v" says:
-> 0f:01.0 Fibre Channel: QLogic Corp. ISP2422-based 4Gb Fibre Channel to PCI-X HBA 
-> (rev 02)
->         Subsystem: Hewlett-Packard Company Unknown device 12d6
->         Flags: bus master, 66MHz, medium devsel, latency 128, IRQ 51
->         I/O ports at 6000 [size=256]
->         Memory at b0040000 (64-bit, non-prefetchable) [size=4K]
->         Expansion ROM at b0000000 [disabled] [size=256K]
->         Capabilities: [44] Power Management version 2
->         Capabilities: [4c] PCI-X non-bridge device
->         Capabilities: [64] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 
-> Enable-
->         Capabilities: [74] Vital Product Data
+On Thu, Jul 26, 2007 at 05:33:49PM +0100, Al Viro wrote:
 > 
 
-lspci only tells you capabilities, not the speed that the card is
-running at.  I think you have to query the PCI bridge chipset to get
-this information.  I have run a proprietary tool on this configuration
-that does this and confirmed that the card is indeed running at 266 MHz.
+Oops, thanks; these are my fault.
 
-> Please CC: any replies to my address as I'm not subscribed to the kernel list.
+(How are you finding these?  I was assuming sparse, but running a make
+-C2 just now I didn't see anything that would have suggested these
+fixes.  I'm using whatever's current in Fedora--it says 0.3-1.fc7.  Do I
+need something more recent?)
+
+--b.
+
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+>  fs/lockd/svclock.c |    6 +++---
+>  fs/nfsd/nfs4xdr.c  |    2 +-
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> Regards,
-> Ulrich Windl
-
-Andrew
-
--- 
-Andrew Patterson
-Hewlett-Packard Company
-
+> diff --git a/fs/lockd/svclock.c b/fs/lockd/svclock.c
+> index b3efa45..a21e4bc 100644
+> --- a/fs/lockd/svclock.c
+> +++ b/fs/lockd/svclock.c
+> @@ -335,10 +335,10 @@ static void nlmsvc_freegrantargs(struct nlm_rqst *call)
+>  /*
+>   * Deferred lock request handling for non-blocking lock
+>   */
+> -static u32
+> +static __be32
+>  nlmsvc_defer_lock_rqst(struct svc_rqst *rqstp, struct nlm_block *block)
+>  {
+> -	u32 status = nlm_lck_denied_nolocks;
+> +	__be32 status = nlm_lck_denied_nolocks;
+>  
+>  	block->b_flags |= B_QUEUED;
+>  
+> @@ -352,7 +352,7 @@ nlmsvc_defer_lock_rqst(struct svc_rqst *rqstp, struct nlm_block *block)
+>  			status = nlm_drop_reply;
+>  	}
+>  	dprintk("lockd: nlmsvc_defer_lock_rqst block %p flags %d status %d\n",
+> -		block, block->b_flags, status);
+> +		block, block->b_flags, ntohl(status));
+>  
+>  	return status;
+>  }
+> diff --git a/fs/nfsd/nfs4xdr.c b/fs/nfsd/nfs4xdr.c
+> index b3d55c6..8ef0964 100644
+> --- a/fs/nfsd/nfs4xdr.c
+> +++ b/fs/nfsd/nfs4xdr.c
+> @@ -2450,7 +2450,7 @@ nfsd4_encode_rename(struct nfsd4_compoundres *resp, __be32 nfserr, struct nfsd4_
+>  }
+>  
+>  static void
+> -nfsd4_encode_secinfo(struct nfsd4_compoundres *resp, int nfserr,
+> +nfsd4_encode_secinfo(struct nfsd4_compoundres *resp, __be32 nfserr,
+>  		     struct nfsd4_secinfo *secinfo)
+>  {
+>  	int i = 0;
+> -- 
+> 1.5.3.GIT
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
