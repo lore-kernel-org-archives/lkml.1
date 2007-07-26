@@ -1,43 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936805AbXGZUs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936657AbXGZUtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936805AbXGZUs2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 16:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933688AbXGZUsW
+	id S936657AbXGZUtI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 16:49:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932568AbXGZUs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 16:48:22 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1029 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933397AbXGZUsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 16:48:21 -0400
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] i2o: defined but not used.
-Date: Thu, 26 Jul 2007 22:47:41 +0200
-User-Agent: KMail/1.9.7
-Cc: Sebastian Siewior <sebastian@breakpoint.cc>, linux-kernel@vger.kernel.org
-References: <20070720225817.607502287@ayoka.breakpoint.cc> <20070721033133.ed47aa6a.akpm@linux-foundation.org>
-In-Reply-To: <20070721033133.ed47aa6a.akpm@linux-foundation.org>
+	Thu, 26 Jul 2007 16:48:56 -0400
+Received: from mail-gw3.adaptec.com ([216.52.22.36]:37772 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764861AbXGZUsz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 16:48:55 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707262247.42795.zippel@linux-m68k.org>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: integer overflow in i2o_block
+Date: Thu, 26 Jul 2007 16:48:39 -0400
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01C5B32D@otce2k301.adaptec.com>
+In-Reply-To: <Pine.SOC.4.64.0707262322240.7082@math.ut.ee>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: integer overflow in i2o_block
+Thread-Index: AcfPw/wGLpEqRUdESVK3YnG3++bwswAAkg9w
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Meelis Roos" <mroos@linux.ee>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I would change tid from an int to an unsigned instead, he is the culprit
+that is promoting the unsigned to an signed.
 
-On Saturday 21 July 2007, Andrew Morton wrote:
+Sincerely -- Mark Salyzyn
 
-> On Sat, 21 Jul 2007 00:58:01 +0200 Sebastian Siewior 
-<sebastian@breakpoint.cc> wrote:
-> > Got with randconfig
->
-> randconfig apparently generates impossible configs.  Please always
-> run `make oldconfig' after the randconfig, then do the test build.
-
-If that should make any difference, that would be a bug and I'd like to see 
-that .config.
-
-bye, Roman
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org 
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Meelis Roos
+> Sent: Thursday, July 26, 2007 4:30 PM
+> To: Linux Kernel list
+> Subject: integer overflow in i2o_block
+> 
+> 
+> Got this warning on 32-bit ppc, seems real? And it seems I2O 
+> subsystem has no maintainer (only DPT_I2O has one)?
+> 
+>   CC [M]  drivers/message/i2o/i2o_block.o
+> drivers/message/i2o/i2o_block.c: In function 'i2o_block_transfer':
+> drivers/message/i2o/i2o_block.c:837: warning: integer 
+> overflow in expression
+> 
+> The line in question is
+> msg->u.head[1] = cpu_to_le32(I2O_CMD_PRIVATE << 24 | HOST_TID 
+> << 12 | tid);
+> and I2O_CMD_PRIVATE is defined as 0xFF. This gets "0xFF0100 | 
+> tid" and 
+> fits into 32-bit unsigned but not into 32-bit signed integer properly.
+> Target value head[*] is defined as u32 so the claculation 
+> does not fit 
+> during computation? Should we mark the shiftable inputas as unsigned?
+> 
+> -- 
+> Meelis Roos (mroos@linux.ee)
+> -
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
