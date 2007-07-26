@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765020AbXGZXcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762932AbXGZXiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765020AbXGZXcL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 19:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbXGZXb6
+	id S1762932AbXGZXiJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 19:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbXGZXh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 19:31:58 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:41155
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754957AbXGZXb5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 19:31:57 -0400
-Date: Thu, 26 Jul 2007 16:29:33 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Jeff Garzik <jeff@garzik.org>
-cc: Dirk Schoebel <dirk@liji-und-dirk.de>, ck@vds.kolivas.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       Eric St-Laurent <ericstl34@sympatico.ca>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rene Herman <rene.herman@gmail.com>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-In-Reply-To: <46A92DF4.6000301@garzik.org>
-Message-ID: <Pine.LNX.4.64.0707261627220.4183@asgard.lang.hm>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
- <20070726111326.873f7b0a.akpm@linux-foundation.org> <200707270004.46211.dirk@liji-und-dirk.de>
- <200707270033.41055.dirk@liji-und-dirk.de> <46A92DF4.6000301@garzik.org>
+	Thu, 26 Jul 2007 19:37:58 -0400
+Received: from mail.tmr.com ([64.65.253.246]:49331 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755929AbXGZXh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 19:37:57 -0400
+Message-ID: <46A9307A.5000502@tmr.com>
+Date: Thu, 26 Jul 2007 19:38:34 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Adrian Bunk <bunk@stusta.de>
+CC: Kyle Rose <krose@akamai.com>, linux-kernel@vger.kernel.org
+Subject: Re: sk98lin for 2.6.23-rc1
+References: <46A8BAD4.8020004@akamai.com> <20070726165701.GM3572@stusta.de>
+In-Reply-To: <20070726165701.GM3572@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007, Jeff Garzik wrote:
+Adrian Bunk wrote:
+> On Thu, Jul 26, 2007 at 11:16:36AM -0400, Kyle Rose wrote:
+>> >From http://www.krose.org/~krose/computing.html:
+>>
+>> Since the sky2 driver continues to suck ass (which is a technical
+>> description for "it hangs all the time under load, at least on my
+>> hardware" :-) ), I've fixed the sk98lin driver to compile for
+>> linux-2.6.23-rc1. Those who continue to have problems with sky2 can
+>> still use 2.6.23-rc1, simply by doing the following:
+>> ...
+>> Personally, I'd like to see sk98lin remain in the kernel proper until
+>> sky2 goes at least 6 months without reported problems.  The fact that I
+>> am not the only one still seeing issues is a clear indication that sky2
+>> (even with the recent patches in 2.6.23-rc1) is not yet ready to replace
+>> sk98lin.
+>> ...
+> 
+> This sounds good in theory.
+> 
+> The practical problem with this approach is that there are always many 
+> people who use the old driver when the new driver doesn't work for them 
+> instead of reporting their problems with the new driver.
+> 
+Yes, you've grasped the reason for leaving the old driver in, so people 
+can use their computers. Because when there is a new driver for 
+previously unsupported hardware people will be glad to put time into 
+debugging it to make the hardware useful. But when you take out a 
+working driver because you (ie. the responsible developer) have a new 
+idea which interests you, users don't want to use it because they have 
+something which works, so you take out the working driver to make work 
+for the users and create what you call a "better new driver" below.
 
-> Dirk Schoebel wrote:
->>  as long as the maintainer follows the kernel development things can be
->>  left in, if the maintainer can't follow anymore they are taken out quite
->>  fast again. (This statement mostly counts for parts of the kernel where a
->>  choice is possible or the coding overhead of making such choice possible
->>  is quite low.)
->
->
-> This is just not good engineering.
->
-> It is axiomatic that it is easy to add code, but difficult to remove code. 
-> It takes -years- to remove code that no one uses.  Long after the maintainer 
-> disappears, the users (and bug reports!) remain.
+The old driver wasn't requiring any resources to maintain, the old 
+hardware wasn't changing, there was no particular benefit to users in 
+breaking their configuration. This disregard for the users just gives 
+Linux critics an arguing point, "the next new kernel may withdraw 
+support for your hardware." Isn't that why 2.6.16 is still being 
+maintained? Nobody (sane) expects new drivers to be perfect, they just 
+don't expect the working drivers to be disabled.
 
-I'll point out that the code that's so hard to remove is the code that 
-exposes an API to userspace.
+> For these people a new driver will often suck when the old driver gets 
+> removed, but after the removal of the old driver they are finally forced 
+> to report their bugs resulting in a better new driver for everyone.
+> 
+"Better" is a very subjective thing, you see elegance of design perhaps, 
+I see works or not, and when I have to use statistical methods to see 
+latency or CPU overhead benefits, I frankly don't care.
 
-code that's an internal implementation (like a couple of the things being 
-discussed) gets removed much faster.
+Removing a working driver without a fully functional replacement forces 
+people to stop upgrading their kernel, or start maintaining old drivers 
+out of line. Problems of the "just occasionally goes away" type can take 
+months to debug, the load can't be duplicated in most cases, and there's 
+no log or oops data to help.
 
-> It is also axiomatic that adding code, particularly core code, often 
-> exponentially increases complexity.
 
-this is true and may be a valid argument (depending on how large and how 
-intrusive the proposed patch is)
+> The sky2 driver is since nearly 2 years in the kernel and Stephen is 
+> usually quite good at handling bugs.
+> 
+Where does sky2 come in? Does this mean the the recent suggestion to 
+"just change to skge and stop complaining" is also wrong?
 
-David Lang
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
