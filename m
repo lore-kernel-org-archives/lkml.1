@@ -1,86 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763400AbXGZRF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933782AbXGZRJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763400AbXGZRF7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764271AbXGZRFt
+	id S933782AbXGZRJt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762830AbXGZRJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:05:49 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:31373 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757724AbXGZRFp (ORCPT
+	Thu, 26 Jul 2007 13:09:41 -0400
+Received: from hu-out-0506.google.com ([72.14.214.230]:27863 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762787AbXGZRJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:05:45 -0400
-Date: Thu, 26 Jul 2007 10:10:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: hpa@zytor.com
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [patch] x86 boot code comments typos
-Message-Id: <20070726101035.9300f2d8.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 26 Jul 2007 13:09:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=adG9E+qLUYVRMC2cIwH4oNuUuU6YSx0hwdIoDStjbLzh/TY6wb487i6XJTGETunjgQd5tr+6PvoGQkXfU1YDOaCMQWT1il+XTxpX+lzQa0cJ2O3CgQOuH8fV8iU2/CDlqhe4d4rO5Owpx4CXw8kv093odY6HueIJLnaoaDZilNM=
+Date: Thu, 26 Jul 2007 18:09:23 +0100
+From: Xudong Guan <xudong.guan@gmail.com>
+To: Borislav Petkov <bbpetkov@yahoo.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1: no setup signature found...
+Message-ID: <20070726170923.GA15125@xguan-laptop>
+References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <20070726163618.GA13789@xguan-laptop> <20070726165906.GB4570@gollum.tnic>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070726165906.GB4570@gollum.tnic>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On 18:59(+0200) Thu 26 Jul, Borislav Petkov wrote:
+> On Thu, Jul 26, 2007 at 05:36:18PM +0100, Xudong Guan wrote:
+> > On my real machine with grub 0.97, there is no problem loading the
+> > same kernel.
+> 
+> Do you mean the kernel with the 4fd06960f120e02e9abc802a09f9511c400042a5 commit
+> on top?
 
-Fix comments typos in new x86 boot code.
+No, I mean v2.6.23-rc1-171-ge4903fb (HEAD of torvalds-linux-2.6.git as of
+this writing), which can not be loaded by grub 0.91, but can be loaded
+by grub 0.97 (at least on my machine). Sorry for the confusion.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/i386/boot/code16gcc.h  |    2 +-
- arch/i386/boot/header.S     |    2 +-
- arch/i386/boot/pm.c         |    2 +-
- arch/i386/boot/video-bios.c |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
-
---- linux-2623-rc1g2.orig/arch/i386/boot/pm.c
-+++ linux-2623-rc1g2/arch/i386/boot/pm.c
-@@ -80,7 +80,7 @@ static void move_kernel_around(void)
-  */
- static void mask_all_interrupts(void)
- {
--	outb(0xff, 0xa1);	/* Mask all interrupts on the seconday PIC */
-+	outb(0xff, 0xa1);	/* Mask all interrupts on the secondary PIC */
- 	io_delay();
- 	outb(0xfb, 0x21);	/* Mask all but cascade on the primary PIC */
- 	io_delay();
---- linux-2623-rc1g2.orig/arch/i386/boot/video-bios.c
-+++ linux-2623-rc1g2/arch/i386/boot/video-bios.c
-@@ -44,7 +44,7 @@ static int set_bios_mode(u8 mode)
- 		     : "+a" (ax)
- 		     : : "ebx", "ecx", "edx", "esi", "edi");
- 
--	do_restore = 1;		/* Assume video contents was lost */
-+	do_restore = 1;		/* Assume video contents were lost */
- 	new_mode = ax & 0x7f;	/* Not all BIOSes are clean with the top bit */
- 
- 	if (new_mode == mode)
---- linux-2623-rc1g2.orig/arch/i386/boot/code16gcc.h
-+++ linux-2623-rc1g2/arch/i386/boot/code16gcc.h
-@@ -2,7 +2,7 @@
-  * code16gcc.h
-  *
-  * This file is -include'd when compiling 16-bit C code.
-- * Note: this asm() needs to be emitted before gcc omits any code.
-+ * Note: this asm() needs to be emitted before gcc emits any code.
-  * Depending on gcc version, this requires -fno-unit-at-a-time or
-  * -fno-toplevel-reorder.
-  *
---- linux-2623-rc1g2.orig/arch/i386/boot/header.S
-+++ linux-2623-rc1g2/arch/i386/boot/header.S
-@@ -225,7 +225,7 @@ start_of_setup:
- 	int	$0x13
- #endif
- 
--# We will have entired with %cs = %ds+0x20, normalize %cs so
-+# We will have entered with %cs = %ds+0x20, normalize %cs so
- # it is on par with the other segments.
- 	pushw	%ds
- 	pushw	$setup2
+Xudong
