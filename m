@@ -1,41 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936273AbXGZSTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936397AbXGZSTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936273AbXGZSTY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934160AbXGZSTI
+	id S936397AbXGZSTq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934860AbXGZSTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:19:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36368 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934549AbXGZSTG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:19:06 -0400
-Date: Thu, 26 Jul 2007 11:18:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Len Brown <lenb@kernel.org>
-cc: Gabriel C <nix.or.die@googlemail.com>, david@lang.hm,
+	Thu, 26 Jul 2007 14:19:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50402 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934213AbXGZSTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 14:19:11 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: david@lang.hm
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
+Date: Thu, 26 Jul 2007 14:18:34 -0400
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-In-Reply-To: <200707261405.09278.lenb@kernel.org>
-Message-ID: <alpine.LFD.0.999.0707261116540.3442@woody.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org> <200707260026.08183.lenb@kernel.org>
- <46A8727F.3030005@googlemail.com> <200707261405.09278.lenb@kernel.org>
+References: <200707251238.50218.lenb@kernel.org> <200707261345.29902.lenb@kernel.org> <Pine.LNX.4.64.0707261056010.4183@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707261056010.4183@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707261418.34434.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Thu, 26 Jul 2007, Len Brown wrote:
+> > I was actually asking how somebody's _system_ has been degraded
+> > by this change -- but I haven't got an objective answer to that one yet.
 > 
-> Can you be specific about how much additional "bloat" your system
-> must endure with CONFIG_ACPI_SLEEP=y
+> how about the fact that Linus found the problem becouse his system didn't 
+> work right?
 
-All of CONFIG_HOTPLUG_CPU. 
+I guess I missed that message.  What system didn't work right,
+and how did it fail?
 
-Len, this is not about ACPI code. This is about CONFIG_HOTPLUG_CPU. Which 
-I don't want. And which you forced on me.
 
-		Linus
+> > The context for this is the EPA ENERGY STAR specification for Computers,
+> > which went into effect this month.  This spec says that systems which
+> > can not automatically go into suspend within 15 minutes of idle
+> > can _not_ earn a sticker.  No sticker, no client computer sales to governments.
+> > If Linux can't get STR working, broadly deployed, and enabled by default,
+> > then our plans for world domination are going to take a significant hit.
+> 
+> isn't the sticker and specification for hardware? but in any case not all 
+> hardware needs to get that sticker.
+
+No, the sticker is for the entire system (HW+SW) as shipped to the customer.
+ie. It is possible for the same hardware solution running Windows
+to earn a sticker and land a sale, while Linux fails to earn a sticker
+and loses the contract.
+
+You're right, not all systems need to earn the sticker.
+Indeed, ENERGY STAR is supposed to be a "premium" brand.
+However, several governments disqualify bids for large
+contracts if they do not meet ENERGY STAR.
+
+> > yes, I understand that there are SMP systems that want ACPI and don't
+> > need sleep or CONFIG_HOGPLUG_CPU.  However, I don't see major distros
+> > shipping kernels to their server customers that way, so I didn't think
+> > it would offend a significant part of the community's sense of freedom
+> > if this config option were removed.  Maybe I was wrong.
+> 
+> distros aren't everything
+
+Apparently a market for more config options of is alive and well.
+Thank you for helping make the future of Linux more clear to me.
+
+-Len
