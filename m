@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933884AbXGZPTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933806AbXGZPVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933884AbXGZPTs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 11:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762732AbXGZPTi
+	id S933806AbXGZPVg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 11:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758776AbXGZPV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 11:19:38 -0400
-Received: from web50103.mail.re2.yahoo.com ([206.190.38.31]:35222 "HELO
-	web50103.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760520AbXGZPTf (ORCPT
+	Thu, 26 Jul 2007 11:21:28 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59315 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757414AbXGZPV2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 11:19:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=o9mr4bnZ4hf5KZrxiF8kd3DWyTmXI1OUlutxX3vCSbXkDBc0dgfB3+vydyUnFVMnmyYbB8tiKC4PMXpEHJKeB2TwndsbxnqrcNF0fbNKB8bubOK+0NPbTmhB6zZoC0vTyfY6LYl+muAiwYpyzBvzxHhAONkaGbX2AwWMWSyyUfc=;
-X-YMail-OSG: gzLA9cgVM1mn9i_.ksPyqLgBfS3SsbGghBQIDjE65Hie30MRUnj3_bPBVUEhqMMunPn_xioQ.R0HnFmiugOUc2Il9awHfthd6stBqsoIEJfKCuaGSbRbFz5lNNuNRKpvOxAzeDN9c3M-
-Date: Thu, 26 Jul 2007 08:19:33 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Reply-To: dougthompson@xmission.com
-Subject: Re: [PATCH 3/4] include asm-mips add missing edac h file
-To: Andrew Morton <akpm@linux-foundation.org>, dougthompson@xmission.com
-Cc: greg@kroah.com, ralf@linux-mips.org, egor@pasemi.com,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <20070725222500.e537531d.akpm@linux-foundation.org>
+	Thu, 26 Jul 2007 11:21:28 -0400
+Message-ID: <46A8BBF2.5010406@zytor.com>
+Date: Thu, 26 Jul 2007 08:21:22 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <975861.36218.qm@web50103.mail.re2.yahoo.com>
+To: Jian-Xin Lai <laijx03@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: wrong constraints "=g" at include/asm-i386/string.h, line 186?
+References: <824323160707260458h490e9ae5la44aabcfa413bba7@mail.gmail.com>
+In-Reply-To: <824323160707260458h490e9ae5la44aabcfa413bba7@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 25 Jul 2007 14:55:01 -0600 dougthompson@xmission.com wrote:
+Jian-Xin Lai wrote:
+> Hi,
 > 
-> > --- /dev/null
-> > +++ linux-2.6.23-rc1/include/asm-mips/edac.h
-> > @@ -0,0 +1,35 @@
-> > +#ifndef ASM_EDAC_H
-> > +#define ASM_EDAC_H
-> > +
-> > +/* ECC atomic, DMA, SMP and interrupt safe scrub function */
-> > +
-> > +static __inline__ void atomic_scrub(void *va, u32 size)
+> The kernel version is 2.6.20.7. In include/asm-i386/string.h, line 169~185:
+> static inline char * strrchr(const char * s, int c)
+> {
+> int d0, d1;
+> register char * __res;
+> __asm__ __volatile__(
+>        "movb %%al,%%ah\n"
+>        "1:\tlodsb\n\t"
+>        "cmpb %%ah,%%al\n\t"
+>        "jne 2f\n\t"
+>        "leal -1(%%esi),%0\n"                                    (*)
+>        "2:\ttestb %%al,%%al\n\t"
+>        "jne 1b"
+>        :"=g" (__res), "=&S" (d0), "=&a" (d1)               (**)
+>        :"0" (0),"1" (s),"2" (c)
+>        :"memory");
+> return __res;
+> }
 > 
-> Please don't use __inline__ or __inline.  Good old "inline" will do.
-
-ok, thanks.
-
-I have to admit, since I don't know MIPS assembly, the guys at Sicortex.com developed
-this function.
-
+> The 'lea' instruction needs a register here (*), but "g" (**) means
+> any registers, memory or immediate integer. Is it correct? If the
+> compiler do not place the __res into a register, the compilation will
+> fail. Should it be "r"?
+> Thank you very much.
 > 
-> <cc's the checkpatch maintainer>
-> 
-> <edits the diff>
 
-thanks
+Yes, it should be "r", and it looks like the author hacked around the
+fact they had the wrong constraints by using the "register" keyword on
+the variable declaration.
 
-> 
-> > +{
-> > +	unsigned long *virt_addr = va;
-> > +	unsigned long temp;
-> > +	u32 i;
-> > +
-> > +	for (i = 0; i < size / sizeof(unsigned long); i++, virt_addr++) {
-> > +
-> > +		/*
-> > +		 * Very carefully read and write to memory atomically
-> > +		 * so we are interrupt, DMA and SMP safe.
-> > +		 *
-> > +		 * Intel: asm("lock; addl $0, %0"::"m"(*virt_addr));
-> > +		 */
-> > +
-> > +		__asm__ __volatile__ (
-> > +		"       .set    mips3                                   \n"
-> > +		"1:     ll      %0, %1          # atomic_add            \n"
-> > +		"       ll      %0, %1          # atomic_add            \n"
-> > +		"       addu    %0, $0                                  \n"
-> > +		"       sc      %0, %1                                  \n"
-> > +		"       beqz    %0, 1b                                  \n"
-> > +		"       .set    mips0                                   \n"
-> > +		: "=&r" (temp), "=m" (*virt_addr)
-> > +		: "m" (*virt_addr));
-> > +
-> > +	}
-> > +}
-> 
-> hm, I'd have thought that we could us plain old atomic_add() for this.
-
-This code is used as a primitive to perform software memory scrubbing.
-
-We (many people as I remember) had a discussion a couple of years ago on lkml on this, 
-so this is where this implementation pattern came from.
-
-It might be that your thought just could be correct now after some more research.
-
-doug t
-
+	-hpa
