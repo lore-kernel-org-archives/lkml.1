@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbXGZXX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbXGZX2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759353AbXGZXX0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 19:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXGZXXS
+	id S1758633AbXGZX2M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 19:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXGZX16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 19:23:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51919 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752882AbXGZXXS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 19:23:18 -0400
-Date: Thu, 26 Jul 2007 16:17:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: matthew@wil.cx, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: IRQF_DISABLED problem
-In-Reply-To: <alpine.LFD.0.999.0707261557150.3442@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0707261616050.3442@woody.linux-foundation.org>
-References: <20070726201355.GP19275@parisc-linux.org>
- <20070726.152352.70218024.davem@davemloft.net>
- <alpine.LFD.0.999.0707261557150.3442@woody.linux-foundation.org>
+	Thu, 26 Jul 2007 19:27:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52845 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751403AbXGZX15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 19:27:57 -0400
+Message-ID: <46A92DF4.6000301@garzik.org>
+Date: Thu, 26 Jul 2007 19:27:48 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Dirk Schoebel <dirk@liji-und-dirk.de>
+CC: ck@vds.kolivas.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>,
+       Eric St-Laurent <ericstl34@sympatico.ca>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rene Herman <rene.herman@gmail.com>
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070726111326.873f7b0a.akpm@linux-foundation.org> <200707270004.46211.dirk@liji-und-dirk.de> <200707270033.41055.dirk@liji-und-dirk.de>
+In-Reply-To: <200707270033.41055.dirk@liji-und-dirk.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dirk Schoebel wrote:
+> as long as the 
+> maintainer follows the kernel development things can be left in, if the 
+> maintainer can't follow anymore they are taken out quite fast again. (This 
+> statement mostly counts for parts of the kernel where a choice is possible or 
+> the coding overhead of making such choice possible is quite low.)
 
 
-On Thu, 26 Jul 2007, Linus Torvalds wrote:
-> 
->  (c) "one IRQF_DISABLED means that everything runs disabled". This is 
->      quite possibly buggy.
+This is just not good engineering.
 
-(Side note: I'm not claiming this (or it's mirror image (d)) is really any 
-better/worse than the current behaviour from a theoretical standpoint, but 
-at least the current behaviour is _tested_, which makes it better in 
-practice. So if we want to change this, I think we want to change it to 
-something that is _obviously_ better).
+It is axiomatic that it is easy to add code, but difficult to remove 
+code.  It takes -years- to remove code that no one uses.  Long after the 
+maintainer disappears, the users (and bug reports!) remain.
 
-		Linus
+It is also axiomatic that adding code, particularly core code, often 
+exponentially increases complexity.
+
+	Jeff
+
+
