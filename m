@@ -1,99 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936157AbXGZSHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936341AbXGZSIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936157AbXGZSHS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934576AbXGZSGy
+	id S936341AbXGZSIJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765458AbXGZSHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:06:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46429 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765458AbXGZSGw (ORCPT
+	Thu, 26 Jul 2007 14:07:50 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45768 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932123AbXGZSHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:06:52 -0400
-Date: Thu, 26 Jul 2007 11:05:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-Message-Id: <20070726110549.da3a7a0d.akpm@linux-foundation.org>
-In-Reply-To: <1185454019.6449.12.camel@Homer.simpson.net>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	<46A57068.3070701@yahoo.com.au>
-	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	<46A58B49.3050508@yahoo.com.au>
-	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	<46A6CC56.6040307@yahoo.com.au>
-	<p73abtkrz37.fsf@bingen.suse.de>
-	<46A85D95.509@kingswood-consulting.co.uk>
-	<20070726092025.GA9157@elte.hu>
-	<20070726023401.f6a2fbdf.akpm@linux-foundation.org>
-	<20070726094024.GA15583@elte.hu>
-	<20070726030902.02f5eab0.akpm@linux-foundation.org>
-	<1185454019.6449.12.camel@Homer.simpson.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 14:07:49 -0400
+Date: Thu, 26 Jul 2007 20:07:21 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
+Message-ID: <20070726180721.GN3572@stusta.de>
+References: <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org> <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org> <20070724175951.GC6019@stusta.de> <alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org> <20070724112843.0cc104c2.akpm@linux-foundation.org> <alpine.LFD.0.999.0707241207290.3607@woody.linux-foundation.org> <20070724194046.GD6019@stusta.de> <alpine.LFD.0.999.0707241246130.3607@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707241246130.3607@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 14:46:58 +0200 Mike Galbraith <efault@gmx.de> wrote:
-
-> On Thu, 2007-07-26 at 03:09 -0700, Andrew Morton wrote:
+On Tue, Jul 24, 2007 at 12:48:13PM -0700, Linus Torvalds wrote:
 > 
-> > Setting it to zero will maximise the preservation of the vfs caches.  You
-> > wanted 10000 there.
+> 
+> On Tue, 24 Jul 2007, Adrian Bunk wrote:
 > > 
-> > <bets that nobody will test this>
+> > > But do we 
+> > > care so much that it's worth inlining something like buffered_rmqueue()? 
+> > >...
+> > 
+> > Where is the problem with having buffered_rmqueue() inlined?
 > 
-> drops caches prior to both updatedb runs.
+> In this case, it was a pain to just even try to find the call chain, or 
+> read the asm.
 
-I think that was the wrong thing to do.  That will leave gobs of free
-memory for updatedb to populate with dentries and inodes.
+Optimization versus debugging is a common issue...
 
-Instead, fill all of memory up with pagecache, then do the updatedb.  See
-how much pagecache is left behind and see how large the vfs caches end up.
+As I said, it might make sense to disable this optimization depending on 
+some debugging option.
 
-> root@Homer: df -i
-> Filesystem            Inodes   IUsed   IFree IUse% Mounted on
-> /dev/hdc3            12500992 1043544 11457448    9% /
-> udev                  129162    1567  127595    2% /dev
-> /dev/hdc1              26104      87   26017    1% /boot
-> /dev/hda1             108144   90676   17468   84% /windows/C
-> /dev/hda5              11136    3389    7747   31% /windows/D
-> /dev/hda6                  0       0       0    -  /windows/E
+> I would encourage lots of kernel hackers to read the assembler code gcc 
+> generates. I suspect people being aware of code generation issues (and 
+> writing their code with that in mind) is a *much* bigger performance 
+> impact than gcc inlining random functions.
 > 
-> vfs_cache_pressure=10000, updatedb freshly completed:
-> procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
->  1  0     48  76348 420356 104748    0    0     0     0 1137  912  3  1 97  0
-> 
-> ext3_inode_cache  315153 316274    524    7    1 : tunables   54   27    8 : slabdata  45182  45182      0
-> dentry_cache      224829 281358    136   29    1 : tunables  120   60    8 : slabdata   9702   9702      0
-> buffer_head       156624 159728     56   67    1 : tunables  120   60    8 : slabdata   2384   2384      0
-> 
-> vfs_cache_pressure=100 (stock), updatedb freshly completed:
-> 
-> procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
-> 1  0    148  83824 270088 116340    0    0     0     0 1095  330  2  1 97  0
->  
-> ext3_inode_cache  467257 502495    524    7    1 : tunables   54   27    8 : slabdata  71785  71785      0
-> dentry_cache      292695 408958    136   29    1 : tunables  120   60    8 : slabdata  14102  14102      0
-> buffer_head       118329 184384     56   67    1 : tunables  120   60    8 : slabdata   2752   2752      1
-> 
-> Note:  updatedb doesn't bother my box, not running enough leaky apps I
-> guess.
-> 
+> So maybe I'm old-fashioned and crazy, but "readability of the asm result" 
+> actually is a worthwhile goal. Not because we care directly, but because 
+> I'd like to encourage people to do it, due to the *indirect* benefits.
 
-So you ended up with a couple hundred MB of pagecache preserved.
+This would lead to people trying to optimize code for one gcc version - 
+and the code might stay this way for 10 years.
 
-Capturing before-and-after /proc/meminfo would be nice - it's a useful
-summary.
+People should write readable C code. This also has the best chances of 
+resulting in good performance with the next gcc version on the next 
+generation hardware.
+
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
