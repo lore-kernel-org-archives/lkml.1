@@ -1,66 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbXGZAhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbXGZAlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbXGZAhn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 20:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbXGZAhe
+	id S1755453AbXGZAlY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 20:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbXGZAlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 20:37:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:45838 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbXGZAhc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 20:37:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NlDUL8ZoH1UC9uWlBp0R0HE0Smpi9DXMJNljZIAWOEbQnz03xo3iodwJRjg/HQ48ycJfl5r583qeSN5AlNkF1e8+DwxtYHu/8K9ZrA918jHkqA4qCbqZew3wSC8VwB/8tlIkBRpWhlFaZb4MuLDgf+jhlbes2jNurTN8ZXyA+2g=
-Message-ID: <86802c440707251737p3be3ae69qe3f91282bec8984a@mail.gmail.com>
-Date: Wed, 25 Jul 2007 17:37:32 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Cc: "=?ISO-8859-1?Q?S=E9bastien_Dugu=E9?=" <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
-       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
-       mjg59@srcf.ucam.org, castet.matthieu@free.fr, shaohua.li@intel.com
-In-Reply-To: <200707251641.23406.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Jul 2007 20:41:16 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33927 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbXGZAlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 20:41:16 -0400
+Date: Thu, 26 Jul 2007 02:41:14 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       airlied@gmail.com, magnade@gmail.com
+Subject: Re: [patch] agp: don't lock pages
+Message-ID: <20070726004114.GA17294@wotan.suse.de>
+References: <20070725111922.GF29011@wotan.suse.de> <1185398813.5439.342.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
-	 <200707250716.44609.bjorn.helgaas@hp.com>
-	 <20070725153253.4d7e7e37@frecb000686.frec.bull.fr>
-	 <200707251641.23406.bjorn.helgaas@hp.com>
+In-Reply-To: <1185398813.5439.342.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> On Wednesday 25 July 2007 07:32:53 am Sébastien Dugué wrote:
-> > On Wed, 25 Jul 2007 07:16:44 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> >
-> > > The _DDN is a "DOS device name", and the _UID is a "logical device ID
-> > > that does not change across reboots."  Both are optional, and PNPACPI
-> > > ignores them.  But maybe we could change PNPACPI to sort by them if
-> > > they are present.  I'll think about this a bit.
-> >
-> >   That would be nice, but I wish you good luck with all those
-> > crappy BIOSes out there.
->
-> Yeah, it's an ugly world we live in.  Would you be able to try the
-> attached patch just for testing?  It should sort devices with the
-> same _HID by their _UID.  It doesn't have any effect on my systems,
-> because my devices are already ordered by _UID by default.  But I
-> think it should switch your COM1/COM2 ports back to the order you
-> expect.
->
-> Yinghai, you mentioned the same issue on boxes with multiple root
-> bridges.  Any chance you could try this out there as well?
->
-it doesn't solve pci_root_bus reverse problem.
+[forgot to cc Dave Jones...]
 
-is that too late for PNP0A03?
 
-I wonder if we need to modify acpi_device_register to sort them.
+On Thu, Jul 26, 2007 at 07:26:53AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2007-07-25 at 13:19 +0200, Nick Piggin wrote:
+> > Hi,
+> > 
+> > Does this patch solve the X problem? Does anyone see anything wrong
+> > with it or know why agp was locking the pages?
+> 
+> We need to do a little bit of auditing here, but I suspect it will turn
+> out all right. I think the reason it locked them in the first place was
+> to avoid AGP pages mapped into process space from being swapped out.
+> 
+> I think that should be taken care of by appropriate vma flags nowadays,
+> but we need to double check. It also might have been a way around dodgy
+> refcounting at one point but I think we got that right nowadays (I
+> remember fixing issues in that area when we removed PageReserved from
+> those pages back then).
 
-YH
+Yeah I had a bit of a look around, and it seems OK (but would
+appreciate an ack from someone who knows the code).
+
+These pages will never get seen by page reclaim, so we're OK
+there. There is a get_page before the SetPageLocked and a put_page
+right before the unlock_page, so refcounting should not be broken
+if it wasn't already: note that the lock_page doesn't pin a
+reference on a page in general -- we can use it as such for pagecache
+(although it isn't very clean), because the lock pins the page in
+pagecache and the pagecache holds a ref.
+
+Anyway, if Dave or David can take a look, that would be appreciated.
+We'll need this for 2.6.23.
+
+Nick
+
+> 
+> Ben.
+> 
+> > --
+> > AGP should not need to lock pages. They are not protecting any race
+> > because there is no lock_page calls, only SetPageLocked.
+> > 
+> > This is causing hangs with d00806b183152af6d24f46f0c33f14162ca1262a.
+> > 
+> > Signed-off-by: Nick Piggin <npiggin@suse.de>
+> > 
+> > diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
+> > index d535c40..3db4f40 100644
+> > --- a/drivers/char/agp/generic.c
+> > +++ b/drivers/char/agp/generic.c
+> > @@ -1170,7 +1170,6 @@ void *agp_generic_alloc_page(struct agp_
+> >  	map_page_into_agp(page);
+> >  
+> >  	get_page(page);
+> > -	SetPageLocked(page);
+> >  	atomic_inc(&agp_bridge->current_memory_agp);
+> >  	return page_address(page);
+> >  }
+> > @@ -1187,7 +1186,6 @@ void agp_generic_destroy_page(void *addr
+> >  	page = virt_to_page(addr);
+> >  	unmap_page_from_agp(page);
+> >  	put_page(page);
+> > -	unlock_page(page);
+> >  	free_page((unsigned long)addr);
+> >  	atomic_dec(&agp_bridge->current_memory_agp);
+> >  }
+> > diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+> > index a124060..2f319f4 100644
+> > --- a/drivers/char/agp/intel-agp.c
+> > +++ b/drivers/char/agp/intel-agp.c
+> > @@ -213,7 +213,6 @@ static void *i8xx_alloc_pages(void)
+> >  	}
+> >  	global_flush_tlb();
+> >  	get_page(page);
+> > -	SetPageLocked(page);
+> >  	atomic_inc(&agp_bridge->current_memory_agp);
+> >  	return page_address(page);
+> >  }
+> > @@ -229,7 +228,6 @@ static void i8xx_destroy_pages(void *add
+> >  	change_page_attr(page, 4, PAGE_KERNEL);
+> >  	global_flush_tlb();
+> >  	put_page(page);
+> > -	unlock_page(page);
+> >  	__free_pages(page, 2);
+> >  	atomic_dec(&agp_bridge->current_memory_agp);
+> >  }
+> > diff --git a/drivers/char/agp/sgi-agp.c b/drivers/char/agp/sgi-agp.c
+> > index cda608c..98cf8ab 100644
+> > --- a/drivers/char/agp/sgi-agp.c
+> > +++ b/drivers/char/agp/sgi-agp.c
+> > @@ -51,7 +51,6 @@ static void *sgi_tioca_alloc_page(struct
+> >  		return NULL;
+> >  
+> >  	get_page(page);
+> > -	SetPageLocked(page);
+> >  	atomic_inc(&agp_bridge->current_memory_agp);
+> >  	return page_address(page);
+> >  }
