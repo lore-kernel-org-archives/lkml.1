@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935691AbXGZTHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935793AbXGZTJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935691AbXGZTHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 15:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761783AbXGZTHZ
+	id S935793AbXGZTJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 15:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762342AbXGZTJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 15:07:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37587 "EHLO mx1.redhat.com"
+	Thu, 26 Jul 2007 15:09:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37822 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761445AbXGZTHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 15:07:24 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] NOMMU: Fix SYSV IPC SHM
-To: torvalds@osdl.org, akpm@osdl.org, npiggin@suse.de
-Cc: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org, dhowells@redhat.com
-Date: Thu, 26 Jul 2007 20:06:15 +0100
-Message-ID: <20070726190615.32553.7958.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	id S1761445AbXGZTJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 15:09:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: CONFIG_SUSPEND? (was: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1)
+Date: Thu, 26 Jul 2007 21:17:25 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <200707251238.50218.lenb@kernel.org> <alpine.LFD.0.999.0707252353150.3442@woody.linux-foundation.org> <200707261345.29902.lenb@kernel.org>
+In-Reply-To: <200707261345.29902.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707262117.26353.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+On Thursday, 26 July 2007 19:45, Len Brown wrote:
+> On Thursday 26 July 2007 02:55, Linus Torvalds wrote:
+> > 
+> > On Thu, 26 Jul 2007, Len Brown wrote:
+> > > 
+> > > Feel free to share what you know about the benefits vs. the costs
+> > > of maintaining CONFIG_ACPI_SLEEP as a build option.
+> > 
+> > Why don't you just make CONFIG_ACPI_SLEEP dependent on SOFTWARE_SUSPEND 
+> > and STR?
+> 
+> CONFIG_STR doesn't exist.
 
-Fix the SYSV IPC SHM to work with the changes applied by the new fault handler
-patches when CONFIG_MMU=n.
+Hmm, perhaps we should introduce a CONFIG_SUSPEND and change
+CONFIG_SOFTWARE_SUSPEND into CONFIG_HIBERNATION, both depending on
+CONFIG_PM?
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+There's quite some code needed only for suspend compiled in when CONFIG_PM is
+set ...
 
- fs/ramfs/file-nommu.c |    7 ++++++-
- ipc/shm.c             |    2 ++
- 2 files changed, 8 insertions(+), 1 deletions(-)
+Greetings,
+Rafael
 
-diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-index cad2b7a..237fe8b 100644
---- a/fs/ramfs/file-nommu.c
-+++ b/fs/ramfs/file-nommu.c
-@@ -295,5 +295,10 @@ unsigned long ramfs_nommu_get_unmapped_area(struct file *file,
-  */
- int ramfs_nommu_mmap(struct file *file, struct vm_area_struct *vma)
- {
--	return vma->vm_flags & VM_SHARED ? 0 : -ENOSYS;
-+	if (!(vma->vm_flags & VM_SHARED))
-+		return -ENOSYS;
-+
-+	file_accessed(file);
-+	vma->vm_ops = &generic_file_vm_ops;
-+	return 0;
- }
-diff --git a/ipc/shm.c b/ipc/shm.c
-index d0259e3..d88ac5a 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -268,7 +268,9 @@ static int shm_mmap(struct file * file, struct vm_area_struct * vma)
- 	if (ret != 0)
- 		return ret;
- 	sfd->vm_ops = vma->vm_ops;
-+#ifdef CONFIG_MMU
- 	BUG_ON(!sfd->vm_ops->fault);
-+#endif
- 	vma->vm_ops = &shm_vm_ops;
- 	shm_open(vma);
- 
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
