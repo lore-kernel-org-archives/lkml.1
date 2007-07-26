@@ -1,120 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763665AbXGZGF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761361AbXGZGH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763665AbXGZGF7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 02:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbXGZGFv
+	id S1761361AbXGZGH2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 02:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbXGZGHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 02:05:51 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:8712 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755638AbXGZGFu (ORCPT
+	Thu, 26 Jul 2007 02:07:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48115 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754569AbXGZGHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 02:05:50 -0400
-X-IronPort-AV: i="4.16,582,1175486400"; 
-   d="scan'208"; a="35702573:sNHT28447601"
-Subject: Re: [GIT PULL try#2] Blackfin update
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Joe Perches <joe@perches.com>, michael.hennerich@analog.com,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: bryan.wu@analog.com
-In-Reply-To: <1185382018.1050.152.camel@localhost>
-References: <1185377216.12354.12.camel@roc-laptop>
-	 <1185382018.1050.152.camel@localhost>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Thu, 26 Jul 2007 14:10:46 +0800
-Message-Id: <1185430246.23987.4.camel@roc-desktop>
+	Thu, 26 Jul 2007 02:07:15 -0400
+Date: Wed, 25 Jul 2007 23:06:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Eric St-Laurent <ericstl34@sympatico.ca>,
+       Rene Herman <rene.herman@gmail.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+Message-Id: <20070725230609.d2d1be59.akpm@linux-foundation.org>
+In-Reply-To: <46A836E1.1000404@yahoo.com.au>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	<46A57068.3070701@yahoo.com.au>
+	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	<46A58B49.3050508@yahoo.com.au>
+	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	<46A6CC56.6040307@yahoo.com.au>
+	<46A6D7D2.4050708@gmail.com>
+	<1185341449.7105.53.camel@perkele>
+	<46A6E1A1.4010508@yahoo.com.au>
+	<2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com>
+	<20070725215717.df1d2eea.akpm@linux-foundation.org>
+	<46A836E1.1000404@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-X-OriginalArrivalTime: 26 Jul 2007 06:05:49.0398 (UTC) FILETIME=[03A4D760:01C7CF4B]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joe, please reply to all of this email, because some developers need
-to consider your review.
+On Thu, 26 Jul 2007 15:53:37 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Hi Michael, how do you think of Joe's idea as below.
+> Not that I want to say anything about swap prefetch getting merged: my
+> inbox is already full of enough "helpful suggestions" about that,
 
-Thanks, 
-Best Regards,
-- Bryan Wu
+give them the kernel interfaces, they can do it themselves ;)
 
-On Wed, 2007-07-25 at 09:46 -0700, Joe Perches wrote:
-> On Wed, 2007-07-25 at 23:26 +0800, Bryan Wu wrote:
-> > diff --git a/arch/blackfin/kernel/bfin_gpio.c
-> > b/arch/blackfin/kernel/bfin_gpio.c
-> > index bafcfa5..979cf79 100644
-> > --- a/arch/blackfin/kernel/bfin_gpio.c
-> > +++ b/arch/blackfin/kernel/bfin_gpio.c
-> > @@ -143,22 +148,100 @@ inline int check_gpio(unsigned short gpio)
-> 
-> []
-> 
-> > +#ifdef BF537_FAMILY
-> > +
-> > +#define PMUX_LUT_RES		0
-> > +#define PMUX_LUT_OFFSET		1
-> > +#define PMUX_LUT_ENTRIES	41
-> > +#define PMUX_LUT_SIZE		2
-> > +
-> > +static unsigned short port_mux_lut[PMUX_LUT_ENTRIES][PMUX_LUT_SIZE] = {
-> > +	{P_PPI0_D13, 11}, {P_PPI0_D14, 11}, {P_PPI0_D15, 11},
-> > +	{P_SPORT1_TFS, 11}, {P_SPORT1_TSCLK, 11}, {P_SPORT1_DTPRI, 11},
-> > +	{P_PPI0_D10, 10}, {P_PPI0_D11, 10}, {P_PPI0_D12, 10},
-> > +	{P_SPORT1_RSCLK, 10}, {P_SPORT1_RFS, 10}, {P_SPORT1_DRPRI, 10},
-> > +	{P_PPI0_D8, 9}, {P_PPI0_D9, 9}, {P_SPORT1_DRSEC, 9},
-> > +	{P_SPORT1_DTSEC, 9}, {P_TMR2, 8}, {P_PPI0_FS3, 8}, {P_TMR3, 7},
-> > +	{P_SPI0_SSEL4, 7}, {P_TMR4, 6}, {P_SPI0_SSEL5, 6}, {P_TMR5, 5},
-> > +	{P_SPI0_SSEL6, 5}, {P_UART1_RX, 4}, {P_UART1_TX, 4}, {P_TMR6, 4},
-> > +	{P_TMR7, 4}, {P_UART0_RX, 3}, {P_UART0_TX, 3}, {P_DMAR0, 3},
-> > +	{P_DMAR1, 3}, {P_SPORT0_DTSEC, 1}, {P_SPORT0_DRSEC, 1},
-> > +	{P_CAN0_RX, 1}, {P_CAN0_TX, 1}, {P_SPI0_SSEL7, 1},
-> > +	{P_SPORT0_TFS, 0}, {P_SPORT0_DTPRI, 0}, {P_SPI0_SSEL2, 0},
-> > +	{P_SPI0_SSEL3, 0}
-> > +};
-> 
-> Wouldn't this be better as a struct?
-> 
-> struct PMUX_LUT {
-> 	unsigned short res;
-> 	unsigned short offset;
-> }
-> 
-> struct PMUX_LUT port_mux_lut = {
-> 	{.res = P_PPI0_D13, .offset = 11},
-> 	{.res = P_PPi0_D14, .offset = 11},
-> etc?
-> 	};
-> 
-> > +
-> > +static void portmux_setup(unsigned short per, unsigned short
-> > function)
-> > +{
-> > +	u16 y, muxreg, offset;
-> 
-> Shouldn't y be int?
-> 
-> > @@ -179,22 +262,15 @@ static void default_gpio(unsigned short gpio)
-> >  
-> >  static int __init bfin_gpio_init(void)
-> >  {
-> > -	int i;
-> > -
-> > -	printk(KERN_INFO "Blackfin GPIO Controller\n");
-> >  
-> > -	for (i = 0; i < MAX_BLACKFIN_GPIOS; i += GPIO_BANKSIZE)
-> > -		reserved_map[gpio_bank(i)] = 0;
-> > +	str_ident = kzalloc(RESOURCE_LABEL_SIZE * 256, GFP_KERNEL);
-> 
-> 256?
-> 
-> perhaps better to use kcalloc(RESOURCE_LABEL_SIZE, 256, GFP_KERNEL)
-> and reference str_ident as an array of char* instead of the
-> multiplies in set_label, get_label and cmp_label?
-> 
-> > +	if (!str_ident)
-> > +		return -ENOMEM;
-> 
-> cheers,  Joe
+> so I'll
+> just be happy to have a look at little things like updatedb.
+
+Yes, that is a little thing.  I mean, even if the kernel's behaviour
+during an updatedb run was "perfect" (ie: does what we the designers
+curently intend it to do (whatever that is)) then the core problem isn't
+solved: short-term workload evicts your working set and you have to
+synchronously reestablish it.
