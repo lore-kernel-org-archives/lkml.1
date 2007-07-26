@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936153AbXGZS51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936264AbXGZS6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936153AbXGZS51 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765323AbXGZS5D
+	id S936264AbXGZS6e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934142AbXGZS6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:57:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:61423 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763234AbXGZS5A (ORCPT
+	Thu, 26 Jul 2007 14:58:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45371 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934213AbXGZS6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:57:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=glLd5Zm5iVzpZ0hlIruQS8sDV9NfdmrJWOxclw0nhS/sIhDkqqROjBJqNXG5MgC9yg4kErcjIqGueEy78SoRVqnGd0Xn7TfZXDAKOrdMNbAfJno8zUcXSOiYq9hE5KVkQJcRrsZ1S+ciTfSeTgduHmELokDUUMeCz50mwqrcVok=
-Message-ID: <46A8EDA2.4000905@googlemail.com>
-Date: Thu, 26 Jul 2007 20:53:22 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Thu, 26 Jul 2007 14:58:24 -0400
+Message-ID: <46A8EE78.4040702@zytor.com>
+Date: Thu, 26 Jul 2007 11:56:56 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: david@lang.hm, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: defconfig , ACPI=n  compile error
-References: <200707251238.50218.lenb@kernel.org> <200707260026.08183.lenb@kernel.org> <46A8727F.3030005@googlemail.com> <200707261405.09278.lenb@kernel.org>
-In-Reply-To: <200707261405.09278.lenb@kernel.org>
-Content-Type: text/plain; charset=iso-8859-1
+To: Joe Korty <joe.korty@ccur.com>
+CC: mingo@elte.hu, tglx@linutronix.de, sdietrich@novell.com,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jason.baietto@ccur.com
+Subject: Re: [PATCH] create /proc/all-interrupts
+References: <20070726180522.GA1486@tsunami.ccur.com>
+In-Reply-To: <20070726180522.GA1486@tsunami.ccur.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> config ACPI_PROCESSOR
->>         tristate "Processor"
->>         default y
->>         help
->>           This driver installs ACPI as the idle handler for Linux, and uses
->>           ACPI C2 and C3 processor states to save power, on systems that
->>           support it.  It is required by several flavors of cpufreq
->>           Performance-state drivers.
->>
->> ...
->>
->> Is more logical for me to do it here but I may be wrong.
+Joe Korty wrote:
+> Create /proc/all-interrupts for some architectures.
 > 
-> ACPI_PROCESSOR supports C-states and P-states and is not directly
-> related to support for system sleep states.  If your system is recent,
-> then it is likely that you want to enable this (and cpufreq) to save power --
-> even if you are not interested in system-wide sleep states.
-
-Btw nothing about HOTPLUG_CPU now but something is broken.
-
-do a defconfig , make menuconfig , disable ACPI , make , and you get :
-
-...
-
-In file included from arch/i386/kernel/acpi/cstate.c:16:
-include/acpi/processor.h:90: error: expected specifier-qualifier-list before 'acpi_integer'
-include/acpi/processor.h:108: error: expected specifier-qualifier-list before 'acpi_integer'
-include/acpi/processor.h:131: error: expected specifier-qualifier-list before 'acpi_integer'
-include/acpi/processor.h:149: error: expected specifier-qualifier-list before 'acpi_integer'
-include/acpi/processor.h:205: error: expected specifier-qualifier-list before 'acpi_handle'
-include/acpi/processor.h:319: warning: 'struct acpi_device' declared inside parameter list
-include/acpi/processor.h:319: warning: its scope is only this definition or declaration, which is probably not what you want
-include/acpi/processor.h:322: warning: 'struct acpi_device' declared inside parameter list
-make[2]: *** [arch/i386/kernel/acpi/cstate.o] Error 1
-make[1]: *** [arch/i386/kernel/acpi] Error 2
-
-...
-
-$ grep ACPI .config
-# Power management options (ACPI, APM)
-# CONFIG_ACPI is not set
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_X86_ACPI_CPUFREQ=y
-CONFIG_X86_POWERNOW_K8_ACPI=y
-CONFIG_X86_ACPI_CPUFREQ_PROC_INTF=y
-
-Looks like CONFIG_X86_POWERNOW_K8_ACPI selects only ACPI_PROCESSOR , guessing it should depend on ACPI ?
-
-
+> Create a version of /proc/interrupts that displays _every_
+> IRQ vector, not just those that someone thought might be
+> interesting, and add an entry in the commentary column
+> for those vectors which lacked such a comment.
 > 
-> -Len
+> Rationale: /proc/interrupts is not truly useful unless it
+> displays every IRQ vector, not just those somebody thought
+> would be interesting.  For example, since /proc/interrupts
+> does not display the rescheduling interrupt, the occurance
+> of rescheduling interrupt floods ends up affecting
+> latencies, yet without an entry in /proc/interrupts, it
+> is difficult to discern why latencies are being affected.
 > 
+> Rather than modify /proc/interrupts, this patch creates
+> a new version of /proc/interrupts, on the off-chance
+> that adding new lines to /proc/interrupts, and appending
+> new fields to the end of old lines, might break some
+> longstanding script.  However, these kinds of changes
+> traditionally do not affect scripts, so it might be
+> reasonable to fold /proc/all-interrupts back into
+> /proc/interrupts.
 
+I think that would be the right thing to do.  We have added things to
+/proc/interrupts in the past.
 
-Gabriel
+	-hpa
