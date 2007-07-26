@@ -1,102 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934868AbXGZQit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934770AbXGZQjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934868AbXGZQit (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934021AbXGZQfF
+	id S934770AbXGZQjW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934205AbXGZQfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:35:05 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35606 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934385AbXGZQfA (ORCPT
+	Thu, 26 Jul 2007 12:35:09 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53269 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934316AbXGZQfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:35:00 -0400
-To: torvalds@linux-foundation.org
-Subject: [PATCH] cyclone.c: silly use of volatile, __iomem fixes
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com
-Message-Id: <E1IE6Il-0005Kl-Mb@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Thu, 26 Jul 2007 17:34:59 +0100
+	Thu, 26 Jul 2007 12:35:07 -0400
+Date: Thu, 26 Jul 2007 17:41:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Lee Howard <faxguy@howardsilvan.com>
+Cc: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= 
+	<ukleinek@informatik.uni-freiburg.de>,
+       linux-serial@vger.kernel.org, tytso@mit.edu, rmk@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: serial flow control appears broken
+Message-ID: <20070726174150.4ffcabd4@the-village.bc.nu>
+In-Reply-To: <46A8CB96.1010501@howardsilvan.com>
+References: <46A7FE6A.4030309@howardsilvan.com>
+	<20070726123420.GA14163@informatik.uni-freiburg.de>
+	<46A8CB96.1010501@howardsilvan.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> The manufacturer is using a scope to look for RTS and they're not seeing 
+> it, either.  I just use my eyes to look at the LED, but I can see the 
+> CTS, DTR, DCD, RD, and TD lights blink, flicker, or dim... (and TD, RD, 
+> and CTS tend to go on and off rather quickly).
 
-u32* volatile cyclone_timer means volatile auto pointer to u32,
-which is clearly not what had been intended (we never even take
-the address of that variable, let alone pass it to something that
-could change it behind our back).  u32 volatile * is what the
-authors apparently wanted to say, but in reality we don't need that
-qualifier there at all - it's (properly) only passed to iomem helpers
-which takes care of that stuff just fine.
+And you have
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/ia64/kernel/cyclone.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/arch/ia64/kernel/cyclone.c b/arch/ia64/kernel/cyclone.c
-index 2fd96d9..790ef0d 100644
---- a/arch/ia64/kernel/cyclone.c
-+++ b/arch/ia64/kernel/cyclone.c
-@@ -38,11 +38,11 @@ static struct clocksource clocksource_cyclone = {
- 
- int __init init_cyclone_clock(void)
- {
--	u64* reg;
-+	u64 __iomem *reg;
- 	u64 base;	/* saved cyclone base address */
- 	u64 offset;	/* offset from pageaddr to cyclone_timer register */
- 	int i;
--	u32* volatile cyclone_timer;	/* Cyclone MPMC0 register */
-+	u32 __iomem *cyclone_timer;	/* Cyclone MPMC0 register */
- 
- 	if (!use_cyclone)
- 		return 0;
-@@ -51,7 +51,7 @@ int __init init_cyclone_clock(void)
- 
- 	/* find base address */
- 	offset = (CYCLONE_CBAR_ADDR);
--	reg = (u64*)ioremap_nocache(offset, sizeof(u64));
-+	reg = ioremap_nocache(offset, sizeof(u64));
- 	if(!reg){
- 		printk(KERN_ERR "Summit chipset: Could not find valid CBAR"
- 				" register.\n");
-@@ -69,7 +69,7 @@ int __init init_cyclone_clock(void)
- 
- 	/* setup PMCC */
- 	offset = (base + CYCLONE_PMCC_OFFSET);
--	reg = (u64*)ioremap_nocache(offset, sizeof(u64));
-+	reg = ioremap_nocache(offset, sizeof(u64));
- 	if(!reg){
- 		printk(KERN_ERR "Summit chipset: Could not find valid PMCC"
- 				" register.\n");
-@@ -81,7 +81,7 @@ int __init init_cyclone_clock(void)
- 
- 	/* setup MPCS */
- 	offset = (base + CYCLONE_MPCS_OFFSET);
--	reg = (u64*)ioremap_nocache(offset, sizeof(u64));
-+	reg = ioremap_nocache(offset, sizeof(u64));
- 	if(!reg){
- 		printk(KERN_ERR "Summit chipset: Could not find valid MPCS"
- 				" register.\n");
-@@ -93,7 +93,7 @@ int __init init_cyclone_clock(void)
- 
- 	/* map in cyclone_timer */
- 	offset = (base + CYCLONE_MPMC_OFFSET);
--	cyclone_timer = (u32*)ioremap_nocache(offset, sizeof(u32));
-+	cyclone_timer = ioremap_nocache(offset, sizeof(u32));
- 	if(!cyclone_timer){
- 		printk(KERN_ERR "Summit chipset: Could not find valid MPMC"
- 				" register.\n");
-@@ -110,7 +110,7 @@ int __init init_cyclone_clock(void)
- 			printk(KERN_ERR "Summit chipset: Counter not counting!"
- 					" DISABLED\n");
- 			iounmap(cyclone_timer);
--			cyclone_timer = 0;
-+			cyclone_timer = NULL;
- 			use_cyclone = 0;
- 			return -ENODEV;
- 		}
--- 
-1.5.3.GIT
-
-
+1.	The port set up correctly for flow control options in the
+kernel ?
+2.	Verified that the board vendor remembered to wire it ?
