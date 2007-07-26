@@ -1,123 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764073AbXGZHnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763428AbXGZHvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764073AbXGZHnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 03:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbXGZHnK
+	id S1763428AbXGZHvU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 03:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757218AbXGZHvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 03:43:10 -0400
-Received: from hu-out-0506.google.com ([72.14.214.235]:2670 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752624AbXGZHnI (ORCPT
+	Thu, 26 Jul 2007 03:51:10 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:46636 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757495AbXGZHvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 03:43:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Y+z7562Jdb85vZnyqTeUobjhSd10g+BhZ9UXkwYvzeSeXbyHi63ueMAmYi9sq874j6me5aXTgi1BoD2AxymmIHEm28g3zNIgCSpEKW/Ctp1LGko5l+i5G1oPU3PYBHmn+Vu7Yl6nNmPvEv8GNKjKu4YWbV7WHfNpc5Mm/F0Vt5U=
-Message-ID: <2c0942db0707260043h18d878baq9b3be72c01e2680a@mail.gmail.com>
-Date: Thu, 26 Jul 2007 00:43:05 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: -mm merge plans for 2.6.23
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Eric St-Laurent" <ericstl34@sympatico.ca>,
-       "Rene Herman" <rene.herman@gmail.com>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070725235037.e59f30fc.akpm@linux-foundation.org>
+	Thu, 26 Jul 2007 03:51:10 -0400
+Message-ID: <46A851F8.7080006@gmail.com>
+Date: Thu, 26 Jul 2007 09:49:12 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andika Triwidada <andika@gmail.com>
+CC: Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
+       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
+Subject: Re: updatedb
+References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>	 <46A773EA.5030103@gmail.com>	 <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>	 <46A81C39.4050009@gmail.com> <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com>
+In-Reply-To: <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
-	 <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au>
-	 <2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com>
-	 <20070725215717.df1d2eea.akpm@linux-foundation.org>
-	 <2c0942db0707252333uc7631fduadb080193f6ad323@mail.gmail.com>
-	 <20070725235037.e59f30fc.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 880223e3a919c8a7
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 25 Jul 2007 23:33:24 -0700 "Ray Lee" <ray-lk@madrabbit.org> wrote:
-> > If you think that adding that API and maintaining it is
-> > simpler/better than including a variation on the above hueristic I
-> > offered, then yeah, I guess we are. It'll all have that vague
-> > userspace s2ram odor about it, but I'm sure it could be made to work.
->
-> Actually, I overdesigned the API, I suspect.  What we _could_ do is to
-> provide a way of allowing userspace to say "pretend process A touched page
-> B": adopt its mm and go touch the page.  We in fact already have that:
-> PTRACE_PEEKTEXT.
+On 07/26/2007 08:23 AM, Andika Triwidada wrote:
 
-Huh. All right.
+> On 7/26/07, Rene Herman <rene.herman@gmail.com> wrote:
 
-> So I suspect this could all be done by polling maps2 and using PEEKTEXT.
-> The tricky part would be working out when to poll, and when to reestablish.
+>> RAM intensive? If I run updatedb here, it never grows itself beyond 2M.
+>> Yes, two. I'm certainly willing to accept that me and my systems are 
+>> possibly not the reference but assuming I'm _very_ special hasn't done
+>> much for me either in the past.
+> 
+> Might be insignificant, but updatedb calls find (~2M) and sort (~26M).
 
-Welllllll.... there is the taskstats interface. It's not required
-right now, though, and lacks most of what userspace would need, I
-think. It does at least currently provide a notification of process
-exit, which is a clue for when to start reestablishment. Gotta be
-another way we can get at that...
+It does? My updatedb certainly doesn't seem to (slackware 12.0). It's using 
+"Secure Locate". Different distributions using different versions of locate 
+it seems?
 
-Oh, stat on /proc, does that work? Huh, it does, sort of. It seems to
-be off by 12 or 13, but hey, that's something.
-
-Wish I had the time to look at the maps2 stuff, but regardless, it
-probably currently provides too much detail for continual polling? I
-suspect what we'd want to do is to take a detailed snapshot a little
-after the beginning of a process's lifetime (once the block-in counts
-subside), then poll aggregate residency or evicition counts to know
-which processes are suffering the burden of the transient workload.
-
-Eh, wait, that doesn't help with inodes. No matter, I guess; I'm the
-one who said targetting swap-in would be good enough for a first pass.
-
-On process exit, if userspace can get a hold of an estimate of the
-size of what just freed up, it could then spend
-min(that,evicted_count) on repopulation. That's probably already
-available by polling whatever `free` calls.
-
-> A neater implementation than PEEKTEXT would be to make the maps2 files
-> writeable(!) so as a party trick you could tar 'em up and then, when you
-> want to reestablish firefox's previous working set, do a untar in
-> /proc/$(pidof firefox)/
-
-I'm going to get into trouble if I wake up the other person in the
-house with my laughter. That's laughter in a positive sense, not a
-"you're daft" kind of way.
-
-Huh. <thinks> So, to go back a little bit, I guess one of my problems
-with polling is that it means that userspace can only approximate an
-MRU of what's been evicted. Perhaps an approximation is good enough, I
-don't know, but that's something to keep in mind. (Hmm, how many pages
-can an average desktop evict per second? If we poll everything once
-per second, that's how off we could be.)
-
-Another is a more philosophical hangup -- running a process that polls
-periodically to improve system performance seems backward. Okay, so
-that's my problem to get over, not yours.
-
-Another problem is what poor sod would be willing to write and test
-this, given that there's already a written and tested kernel patch to
-do much the same thing? Yeah, that's sorta rhetorical, but it's sorta
-not. Given that swap prefetch could be ripped out of 2.6.n+1 if it's
-introduced in 2.6.n, and nothing in userspace would be the wiser,
-where's the burden?  There is some, just as any kernel code has some,
-and as it's core code (versus, say, a driver), the burden is
-correspondingly greater per line, but given the massive changesets
-flowing through each release now, I have to think that the burden this
-introduces is marginal compared to the rest of the bulk sweeping
-through the kernel weekly.
-
-This is obviously where I'm totally conjecturing, and you'll know far,
-far better than I.
-
-Offline for about 20 hours or so, not that anyone would probably notice :-).
-
-Ray
+Rene.
