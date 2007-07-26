@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936548AbXGZUNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936662AbXGZUOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936548AbXGZUNg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 16:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933507AbXGZUN1
+	id S936662AbXGZUOQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 16:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934474AbXGZUN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 16:13:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:12981 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761555AbXGZUNZ (ORCPT
+	Thu, 26 Jul 2007 16:13:58 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52377 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933507AbXGZUN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 16:13:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=OwHAmerrag/5rVfqdX+PHbVrj1RrqNz1GKoU5nMJEYoywv1M3/WHJsVTnGa6zsWGWKJmFTYDFnZ4EP25iOLvs4nRA3oAo74bgQxDF6DrK/gIGgHF8d1LVOga78w55WGkRzpqN9zGMOv8ihYhMbhAcN768jJ6cEq3xOD9BsR/2Pw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
-Date: Thu, 26 Jul 2007 22:11:10 +0200
-User-Agent: KMail/1.9.6
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <20070725165318.5331.23795.stgit@localhost.localdomain> <20070725213925.2f25906c@the-village.bc.nu> <Pine.LNX.4.60.0707262136530.6614@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0707262136530.6614@poirot.grange>
+	Thu, 26 Jul 2007 16:13:57 -0400
+Date: Thu, 26 Jul 2007 14:13:56 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@osdl.org>
+Subject: IRQF_DISABLED problem
+Message-ID: <20070726201355.GP19275@parisc-linux.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707262211.10223.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
+I noticed that we only look at the first action in the chain when
+determining whether to re-enable local interrupts during handle_IRQ_event.
+But we don't try to exclude sharing interrupts with mixtures of
+IRQF_DISABLED set and clear.  I just tried to do that locally, and one
+of my USB ports disappears, because it shares an interrupt with qla2xxx
+which sets IRQF_DISABLED, and UHCI doesn't.
 
-On Thursday 26 July 2007, Guennadi Liakhovetski wrote:
-> On Wed, 25 Jul 2007, Alan Cox wrote:
-> 
-> > > driver to using platform-device. I got a reply, that it's not worth it now 
-> > > that IDE is slowly becoming obsolete, and the pata_platform serves the 
-> > > perpose perfectly well. I found this argument reasonable, I had the same 
-> > > doubt, just wanted to double-check. So, why do we now need a new legacy 
-> > > (a/drivers/ide/legacy/ide_platform.c) driver when a "modern" driver 
-> > > exists?
-> > 
-> > We don't *need* it but some people still want to use old IDE and the
-> > author was willing to make it neatly compatible so that anything that
-> > works with the pata_platform should be able to use the ide_platform
-> > driver and vice versa. For the shorter term that can only be a good thing
-> > - arch code doesn't need to care about which driver is used, end users
-> > can pick and it doesn't end up adding new ties between code and old IDE.
-> 
-> Ok, thanks for the explanation Alan. So, there's no technical argument, 
-> just "being nice to the users", and add a new driver, which we know we'll 
+Another possibility is to force it if *any* of the handlers want
+IRQF_DISABLED.  This seems to work:
 
-There are some rough edges (especially older and/or rare hardware,
-this goes for both cotrollers and devices) that SCSI/libata don't
-handle and IDE subsystem do.
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 203a518..d804a0b 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -308,6 +308,15 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 			goto mismatch;
+ #endif
+ 
++		/* If one handler wants interrupts to be disabled,
++		 * they must all be disabled.  Rather than walk the list of
++		 * handlers twice at interrupt time, just make sure the
++		 * head handler has its flag set
++		 */
++		if ((new->flags & IRQF_DISABLED) &&
++		    !(old->flags & IRQF_DISABLED)
++			old->flags |= IRQF_DISABLED);
++
+ 		/* add new interrupt at end of irq queue */
+ 		do {
+ 			p = &old->next;
 
-> have to remove soon, thus having to persuade its users, who by that time 
 
-Well, we've been hearing "soon" for two years now...
+This patch makes interrupts requested with IRQF_DISABLED non-matching
+fail, in case you think it's a better solution:
 
-> will get used to it and will not want to invest money into switching to 
-> another one...
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 203a518..2c99b88 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -293,10 +293,12 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+ 		 * Can't share interrupts unless both agree to and are
+ 		 * the same type (level, edge, polarity). So both flag
+ 		 * fields must have IRQF_SHARED set and the bits which
+-		 * set the trigger type must match.
++		 * set the trigger type must match and the disabled bit
++		 * must match.
+ 		 */
+ 		if (!((old->flags & new->flags) & IRQF_SHARED) ||
+-		    ((old->flags ^ new->flags) & IRQF_TRIGGER_MASK)) {
++		    ((old->flags ^ new->flags) &
++		     (IRQF_TRIGGER_MASK | IRQF_DISABLED))) {
+ 			old_name = old->name;
+ 			goto mismatch;
+ 		}
 
-PS wrt ide_arm.c changes, you really should have cc:ed the author... ;)
-
-Thanks,
-Bart
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
