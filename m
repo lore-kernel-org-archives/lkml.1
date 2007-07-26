@@ -1,103 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934703AbXGZRpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934571AbXGZRqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934703AbXGZRpu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764221AbXGZRpk
+	id S934571AbXGZRqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765622AbXGZRqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:45:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42523 "EHLO hera.kernel.org"
+	Thu, 26 Jul 2007 13:46:06 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:41023 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764424AbXGZRpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:45:39 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-Date: Thu, 26 Jul 2007 13:45:29 -0400
-User-Agent: KMail/1.9.5
-Cc: david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200707251238.50218.lenb@kernel.org> <200707260026.08183.lenb@kernel.org> <alpine.LFD.0.999.0707252353150.3442@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707252353150.3442@woody.linux-foundation.org>
+	id S932829AbXGZRqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 13:46:02 -0400
+Message-ID: <46A8DDD4.9090600@us.ibm.com>
+Date: Thu, 26 Jul 2007 10:45:56 -0700
+From: "David J. Wilder" <dwilder@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>, Ankita Garg <ankita@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux@bohmer.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>, zanussi@linux.vnet.ibm.com
+Subject: Re: [Question] Hooks for scheduler tracing (CFS)
+References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com> <1184615557.2698.3.camel@laptopd505.fenrus.org> <20070726072858.GC13061@in.ibm.com> <20070726073520.GA12206@elte.hu> <20070726074957.GA19398@in.ibm.com> <20070726075353.GA19885@elte.hu> <20070726095948.GB19398@in.ibm.com> <20070726110504.GB7673@elte.hu> <20070726130632.GB28556@Krystal>
+In-Reply-To: <20070726130632.GB28556@Krystal>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707261345.29902.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 July 2007 02:55, Linus Torvalds wrote:
-> 
-> On Thu, 26 Jul 2007, Len Brown wrote:
-> > 
-> > Feel free to share what you know about the benefits vs. the costs
-> > of maintaining CONFIG_ACPI_SLEEP as a build option.
-> 
-> Why don't you just make CONFIG_ACPI_SLEEP dependent on SOFTWARE_SUSPEND 
-> and STR?
 
-CONFIG_STR doesn't exist.
+> I guess they might have to switch to such an asynchronous delivery
+> system if they want to do this properly. Simply put, your polling
+> solution is exactly what I do, but I check a flag set by the writer
+> instead of waking up the readers unconditionally.
+>
+> Mathieu
+>   
 
-I agree it is an attractive notion to have a high level feature presented
-to the user, and that the tools should select what is needed to satisfy the
-user's request.  Unfortunately Kconfig is exceptionally bad at supporting
-this model.  "depend" frustrates users by making config options vanish
-without explanation, and "select" is fundamentally broken
-because it doesn't enforce dependencies.
+Ingo's solution could call waitqueue_active() inside wakeup_readers() to 
+determine if there are waiters. Right?
 
-> > If you feel that your system has been degraded
-> > because it now includes what used to be excluded under
-> > CONFIG_ACPI_SLEEP=n, please let me know how.
-> 
-> I feel that I get asked to include a feature that
->  (a) I have no interest in on that machine
->  (b) I didn't need to include before.
-> 
-> What was the advantage? And what was it that caused something like this to 
-> be a post-rc1 thing. That makes me really unhappy. This is a *regression*.
+>   
+>> 	Ingo
+>>
+>> ------------------------------------->
+>> Subject: relay: fix timer madness
+>> From: Ingo Molnar <mingo@elte.hu>
+>>
+>> remove timer calls (!!!) from deep within the tracing infrastructure.
+>> This was totally bogus code that can cause lockups and worse.
+>> Poll the buffer every 2 jiffies for now.
+>>
+>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>> ---
+>>  kernel/relay.c |   14 +++++---------
+>>  1 file changed, 5 insertions(+), 9 deletions(-)
+>>
+>> Index: linux-rt-rebase.q/kernel/relay.c
+>> ===================================================================
+>> --- linux-rt-rebase.q.orig/kernel/relay.c
+>> +++ linux-rt-rebase.q/kernel/relay.c
+>> @@ -319,6 +319,10 @@ static void wakeup_readers(unsigned long
+>>  {
+>>  	struct rchan_buf *buf = (struct rchan_buf *)data;
+>>  	wake_up_interruptible(&buf->read_wait);
+>> +	/*
+>> +	 * Stupid polling for now:
+>> +	 */
+>> +	mod_timer(&buf->timer, jiffies + 1);
+>>  }
+>>  
+>>  /**
+>> @@ -336,6 +340,7 @@ static void __relay_reset(struct rchan_b
+>>  		init_waitqueue_head(&buf->read_wait);
+>>  		kref_init(&buf->kref);
+>>  		setup_timer(&buf->timer, wakeup_readers, (unsigned long)buf);
+>> +		mod_timer(&buf->timer, jiffies + 1);
+>>  	} else
+>>  		del_timer_sync(&buf->timer);
+>>  
+>> @@ -604,15 +609,6 @@ size_t relay_switch_subbuf(struct rchan_
+>>  		buf->subbufs_produced++;
+>>  		buf->dentry->d_inode->i_size += buf->chan->subbuf_size -
+>>  			buf->padding[old_subbuf];
+>> -		smp_mb();
+>> -		if (waitqueue_active(&buf->read_wait))
+>> -			/*
+>> -			 * Calling wake_up_interruptible() from here
+>> -			 * will deadlock if we happen to be logging
+>> -			 * from the scheduler (trying to re-grab
+>> -			 * rq->lock), so defer it.
+>> -			 */
+>> -			__mod_timer(&buf->timer, jiffies + 1);
+>>  	}
+>>  
+>>  	old = buf->data;
+>>     
+>
+>   
 
-I'm sorry that one fewer config options has offended your feeling of freedom,
-honestly, I am.
-
-I was actually asking how somebody's _system_ has been degraded
-by this change -- but I haven't got an objective answer to that one yet.
-
-As I said in my pull request, I agree that the D-state fixes ideally
-should have merged a week earlier -- before the rc1 cutoff.
-Indeed, we had a hack that could have gone up much earlier.
-However, we waited for Rafael's more general list-blessed solution --
-and it turned out that solution tripped over CONFIG_ACPI_SLEEP=n.
-
-The reason is because there is a dependency between D-states and S-states.
-In particular, devices which are enabled to be system wakeup devices
-can be limited in what D-states they can enter (else they may
-no longer be able to wake up the system when it is suspended)
-
-I figured that rather than adding more ifdefs to solve that problem,
-it was simpler to remove ifdefs.  I was also shocked to find i386 defconfig
-with CONFIG_ACPI_SLEEP=n.  Maybe others are not shocked by this
-and there is a reason that defconfig on x86_64 supports sleep
-and i386 does not.  I assumed it was a bug, maybe I was wrong.
-
-The context for this is the EPA ENERGY STAR specification for Computers,
-which went into effect this month.  This spec says that systems which
-can not automatically go into suspend within 15 minutes of idle
-can _not_ earn a sticker.  No sticker, no client computer sales to governments.
-If Linux can't get STR working, broadly deployed, and enabled by default,
-then our plans for world domination are going to take a significant hit.
-
-yes, I understand that there are SMP systems that want ACPI and don't
-need sleep or CONFIG_HOGPLUG_CPU.  However, I don't see major distros
-shipping kernels to their server customers that way, so I didn't think
-it would offend a significant part of the community's sense of freedom
-if this config option were removed.  Maybe I was wrong.
-
-Obviously, your vote counts more than the sum total of a lot of the community,
-so if you want me to put a config option in to allow ACPI w/o ACPI_SLEEP,
-I'll simply do it for you.  However, I could do a better job of it
-if I had a clear understanding of what the technical benefit of
-that option is supposed to be, and how it will make Linux better.
-
--Len
