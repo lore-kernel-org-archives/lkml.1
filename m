@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764114AbXGZQVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932163AbXGZQW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764114AbXGZQVq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758496AbXGZQVg
+	id S932163AbXGZQW2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760733AbXGZQWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:21:36 -0400
-Received: from ns2.suse.de ([195.135.220.15]:45581 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756071AbXGZQVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:21:36 -0400
-Date: Thu, 26 Jul 2007 18:21:34 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] add kdump_after_notifier
-Message-ID: <20070726162134.GA13880@suse.de>
-Mail-Followup-To: kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <469F55D0.4050203@ah.jp.nec.com> <20070726140702.GA8949@suse.de> <20070726153240.GA15969@in.ibm.com> <20070726153440.GA19095@suse.de> <20070726154415.GB15969@in.ibm.com> <20070726154718.GA25561@suse.de> <20070726155444.GC15969@in.ibm.com> <20070726161431.GA32008@suse.de>
+	Thu, 26 Jul 2007 12:22:19 -0400
+Received: from homer.mvista.com ([63.81.120.155]:35454 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758432AbXGZQWS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 12:22:18 -0400
+Message-ID: <46A8CAB2.5050706@ru.mvista.com>
+Date: Thu, 26 Jul 2007 20:24:18 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070726161431.GA32008@suse.de>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+ for CF	interface
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain>	<46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com>	<20070725180145.GA29689@ld0162-tx32.am.freescale.net>	<46A7941F.2050300@ru.mvista.com> <46A798D8.7020906@freescale.com> <46A7A4EC.2020503@ru.mvista.com>
+In-Reply-To: <46A7A4EC.2020503@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bernhard Walle <bwalle@suse.de> [2007-07-26 18:14]:
-> * Vivek Goyal <vgoyal@in.ibm.com> [2007-07-26 17:54]:
-> > 
-> > That's true. Its not mainline. We had similar discussion in the past
-> > also. I think we should allow only audited code to be run after panic().
-> > Leaving it open to modules or unaudited code makes this solution
-> > something like LKCD where whole lot of code used to run after the crash,
-> > hence was unreliable.
-> > 
-> > If KDB goes mainline, then I think it is not a bad idea to call debugger
-> > first (if it is enabled) and then one can trigger crash dump from inside
-> > the debugger.
-> 
-> Well, after thinking again about this, I think the best solution would
-> to call kdump from KDB with a command as it was done by LKCD.
+Hello, I wrote:
 
-Ok, but that doesn't solve the problem (it would solve the opposite
-problem).
+>>>>>   Also, what mmio-ide in the compat properly means in the context 
+>>>>>of ide_platform which is able to handle both port and memory mapped 
+>>>>>IDE.
 
-My question is: Why cannot kdump use the notifier call chain? Wouldn't
-this simplify things in general, apart from KDB. Not talking about the
-priority of kdump now ...
+>>>>I/O-space is only valid in the context of PCI, ISA, or similar buses, 
+>>>>and
+>>>>the bus-specific reg format indicates whether it's mmio-space or
+>>>>io-space.
 
+>>>   You could save time on lecturing me (and use it to look on the 
+>>>driver ;-).
 
-Thanks,
-   Bernhard
+>>Sorry, I misread the question as being a mismatch between the 
+>>capabilities of the device binding and the driver, not about the 
+>>specific compatible name.
+
+>     That too. :-)
+
+>>Something like "generic-ide" would probably be better.
+
+>     I strongly disagree with "generic" part. The generic IDE could only be 
+> said of 1:1 I/O mapped IDE ports, not about this fancy mapping.
+
+    BTW, there's already something called drivers/ide/ide-generic.c... :-)
+
+MBR, Sergei
 
