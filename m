@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765458AbXGZPSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932912AbXGZPTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765458AbXGZPSH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 11:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758435AbXGZPRz
+	id S932912AbXGZPTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 11:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758435AbXGZPTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 11:17:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36493 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757965AbXGZPRy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 11:17:54 -0400
-Message-ID: <46A8BAEC.9070507@redhat.com>
-Date: Thu, 26 Jul 2007 12:17:00 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-Organization: Red Hat Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 26 Jul 2007 11:19:13 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59271 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757519AbXGZPTM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 11:19:12 -0400
+Message-ID: <46A8BB6C.6050903@zytor.com>
+Date: Thu, 26 Jul 2007 08:19:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ankita Garg <ankita@in.ibm.com>, Arjan van de Ven <arjan@infradead.org>,
-       linux@bohmer.net, LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Question] Hooks for scheduler tracing (CFS)
-References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com>	<1184615557.2698.3.camel@laptopd505.fenrus.org>	<20070726072858.GC13061@in.ibm.com> <20070726133138.GA30559@Krystal> <y0mps2f1asz.fsf@ton.toronto.redhat.com>
-In-Reply-To: <y0mps2f1asz.fsf@ton.toronto.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Xudong Guan <xudong.guan@gmail.com>
+CC: Borislav Petkov <bbpetkov@yahoo.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1: no setup signature found...
+References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop>
+In-Reply-To: <20070726150854.GA7034@xguan-laptop>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frank Ch. Eigler wrote:
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
->
->   
->> [...]
->> The problem is also in _stp_print_flush, not *only* in relay code:
->> void _stp_print_flush (void)
->> ...
->>                 spin_lock(&_stp_print_lock);
->>                 ...
->>                 spin_unlock(&_stp_print_lock);
->>
->> Those will turn into mutexes with -rt.
->>     
->
-> Indeed, plus systemtap-generated locking code uses rwlocks,
-> local_irq_save/restore or preempt_disable, in various places.  Could
-> someone point to a place that spells out what would be more
-> appropriate way of ensuring atomicity while being compatible with -rt?
->   
+Xudong Guan wrote:
+> On 13:26(+0200) Tue 24 Jul, Borislav Petkov wrote:
+>>    2.6.23-rc1 won't boot on my Asus M6N laptop and the last thing it shows after loading
+>> grub is "No setup signature found...," which, imho, comes from
+>> arch/i386/boot/header.S. I tried printing out the value of setup_sig like so
+> 
+> I hitted the same error message with v2.6.23-rc1-171-ge4903fb.
+> No problem with v2.6.21-3770-g01e73be.
+> Seems there has been some cleanup of the i386/boot code.
+> Anyone can give a quick clue, or should I do a bisect?
 
-https://ols2006.108.redhat.com/2007/Reprints/rostedt-Reprint.pdf
+The bisect will almost guaranteed show a change at the change to the new
+setup code.  The message means that the setup code wasn't loaded
+correctly into memory; the big question is *why*.
 
-And his slides too, haven't checked if they are already only at the OLS 
-site.
+What distro/version of grub are you running?  I'm wondering if there are
+some old version of grub out there which did the "load four sectors"
+way-anciently-obsolete crap; the other possibility that comes to mind is
+setting up the stack in an invalid manner.
 
-- Arnaldo
+	-hpa
