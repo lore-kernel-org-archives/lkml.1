@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765773AbXGZP4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932811AbXGZP5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765773AbXGZP4p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 11:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759799AbXGZP4i
+	id S932811AbXGZP5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 11:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760755AbXGZP5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 11:56:38 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:33609 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758975AbXGZP4h (ORCPT
+	Thu, 26 Jul 2007 11:57:11 -0400
+Received: from ns.oss.ntt.co.jp ([222.151.198.98]:51600 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760767AbXGZP5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 11:56:37 -0400
-Message-ID: <46A8C43D.8050302@bull.net>
-Date: Thu, 26 Jul 2007 17:56:45 +0200
-From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
-X-Accept-Language: en-us, en, fr, hu
+	Thu, 26 Jul 2007 11:57:10 -0400
+Message-ID: <2090.172.50.1.13.1185465429.squirrel@172.19.0.2>
+In-Reply-To: <20070726162913.2dc9a9b2@the-village.bc.nu>
+References: <1185437065.4805.19.camel@sebastian.kern.oss.ntt.co.jp>
+    <d120d5000707260654l74d61359v4f17790ab06ac0a3@mail.gmail.com>
+    <20070726151042.0ae34e0e@the-village.bc.nu>
+    <1446.172.50.1.13.1185461396.squirrel@172.19.0.2>
+    <20070726162913.2dc9a9b2@the-village.bc.nu>
+Date: Fri, 27 Jul 2007 00:57:09 +0900 (JST)
+Subject: Re: [PATCH] fix return value of i8042_aux_test_irq
+From: fernando@oss.ntt.co.jp
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: fernando@oss.ntt.co.jp, "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, vojtech@suse.cz,
+       akpm@linux-foundation.org
+User-Agent: SquirrelMail/1.4.8-2.el4
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Race condition around flush_cache_page() ?
-References: <20070726171323.a9c17eda.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070726171323.a9c17eda.kamezawa.hiroyu@jp.fujitsu.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/07/2007 18:01:19,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/07/2007 18:01:19,
-	Serialize complete at 26/07/2007 18:01:19
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation/cachetlb.txt says:
+On Fri, July 27, 2007 12:29 am, Alan Cox wrote:
+>> > A small number of boxes do share IRQ12 and it was switched to shared
+>> for
+>> > them.
+>> If that is the case interrupt handlers should be able to determine
+>> whether
+>> a certain interrupt comes from their respective devices, and return
+>> IRQ_HANDLED or IRQ_NONE accordingly. Returning IRQ_HANDLED
+>> unconditionally
+>> when IRQF_SHARED is set seems strange. Is this behavior intended?
+>
+> Sometimes you simple can't tell and in those cases you have no choice.
+As I mentioned in a previous email, i8042_interrupt considers that it
+should not handle an interrupt when there is no data to read and,
+accordingly, it returns IRQ_NONE in such cases. I was just wondering if we
+could follow the same approach to make i8042_aux_test_irq more
+IRQF_SHARED-friendly.
 
-"In general, when Linux is changing an existing virtual-->physical
-mapping to a new value, the sequence will be ...:
-
-           flush_cache_page(vma, addr, pfn);
-           set_pte(pte_pointer, new_pte_val);
-           flush_tlb_page(vma, addr);
-
-The cache level flush will always be first, because this allows
-us to properly handle systems whose caches are strict and require
-a virtual-->physical translation to exist for a virtual address
-when that virtual address is flushed from the cache."
-
-Let's assume we've got a multi threaded application, with 2 threads,
-each of them bound to its own CPU.
-Let's assume the CPU caches are tagged by virtual address and the 
-virtual-->physical translation must remain valid while we flush the
-cache.
-
-CPU #1 is in a loop that accesses the stuff on a given virtual page.
-
-CPU #2 executes the sequence above, trying to tear down the mapping
-of the same page. Once CPU#2 has completed flush_cache_page()
-(that is not a NO-OP), there is no valid stuff of the page any more
-in any of the the CPU caches. CPU #2 will continue somewhat later
-to invalidate the PTE due to some HW delays.
-
-In the mean time, CPU #1 detects a cache miss. It has the valid
-translation in its TLB, it can re-fetch the cache line from the page.
-
-Now CPU #2 can really invalidate the PTE and flush the TLB-s.
-
-We can end up a cache line of the CPU #1 that has no more valid
-virtual-->physical translation.
-
-As far as I can understand, there is a contradiction:
-- either we keep the valid translation while flushing, and
-  the other CPU can re-fetch the data
-- or we nuke the PTE first, and the flush wont work
-
-Can someone please explain me how it is assumed to work?
-
-Thanks,
-
-Zoltan Menyhart
+ - Fernando
 
