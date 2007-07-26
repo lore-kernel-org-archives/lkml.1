@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935232AbXGZQjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934854AbXGZQkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935232AbXGZQjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934385AbXGZQfN
+	id S934854AbXGZQkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934445AbXGZQfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:35:13 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35658 "EHLO
+	Thu, 26 Jul 2007 12:35:23 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43060 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934449AbXGZQfL (ORCPT
+	with ESMTP id S934369AbXGZQfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:35:11 -0400
+	Thu, 26 Jul 2007 12:35:22 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] misannotation in pppol2tp
-Cc: linux-kernel@vger.kernel.org, jchapman@katalix.com, davem@daveloft.net
-Message-Id: <E1IE6Iv-0005Lj-N2@ZenIV.linux.org.uk>
+Subject: [PATCH] cxgb3 gfp_t annotations
+Cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com
+Message-Id: <E1IE6J5-0005Mn-NU@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Thu, 26 Jul 2007 17:35:09 +0100
+Date: Thu, 26 Jul 2007 17:35:19 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Address of auto variable is not a userland pointer.  A good thing, too,
-since if pppol2tp_tunnel_getsockopt() would _really_ get a userland pointer
-as argument, it would be an instant roothole...
-
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/net/pppol2tp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/cxgb3/cxgb3_offload.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
-index f871760..266e8b3 100644
---- a/drivers/net/pppol2tp.c
-+++ b/drivers/net/pppol2tp.c
-@@ -2054,7 +2054,7 @@ end:
+diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
+index ebcf35e..e620ed4 100644
+--- a/drivers/net/cxgb3/cxgb3_offload.c
++++ b/drivers/net/cxgb3/cxgb3_offload.c
+@@ -699,7 +699,7 @@ static int do_cr(struct t3cdev *dev, struct sk_buff *skb)
+  * the buffer.
   */
- static int pppol2tp_tunnel_getsockopt(struct sock *sk,
- 				      struct pppol2tp_tunnel *tunnel,
--				      int optname, int __user *val)
-+				      int optname, int *val)
+ static struct sk_buff *cxgb3_get_cpl_reply_skb(struct sk_buff *skb, size_t len,
+-					       int gfp)
++					       gfp_t gfp)
  {
- 	int err = 0;
- 
-@@ -2077,7 +2077,7 @@ static int pppol2tp_tunnel_getsockopt(struct sock *sk,
-  */
- static int pppol2tp_session_getsockopt(struct sock *sk,
- 				       struct pppol2tp_session *session,
--				       int optname, int __user *val)
-+				       int optname, int *val)
- {
- 	int err = 0;
- 
+ 	if (likely(!skb_cloned(skb))) {
+ 		BUG_ON(skb->len < len);
 -- 
 1.5.3.GIT
 
