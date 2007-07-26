@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933600AbXGZQZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbXGZQ2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933600AbXGZQZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761519AbXGZQZt
+	id S933236AbXGZQ2s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760998AbXGZQ2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:25:49 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:36505 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761056AbXGZQZr (ORCPT
+	Thu, 26 Jul 2007 12:28:40 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:51442 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759715AbXGZQ2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:25:47 -0400
-Message-ID: <46A8CB13.1020306@bull.net>
-Date: Thu, 26 Jul 2007 18:25:55 +0200
-From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
-X-Accept-Language: en-us, en, fr, hu
+	Thu, 26 Jul 2007 12:28:39 -0400
+Date: Thu, 26 Jul 2007 18:28:38 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Kyle Rose <krose@akamai.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: sk98lin for 2.6.23-rc1
+In-Reply-To: <46A8BAD4.8020004@akamai.com>
+Message-ID: <Pine.LNX.4.64.0707261826180.12711@fbirervta.pbzchgretzou.qr>
+References: <46A8BAD4.8020004@akamai.com>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] flush icache before set_pte on ia64 take3
-References: <20070726171323.a9c17eda.kamezawa.hiroyu@jp.fujitsu.com>	<46A8BA30.7000508@bull.net> <20070727010825.a5934cb0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070727010825.a5934cb0.kamezawa.hiroyu@jp.fujitsu.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/07/2007 18:30:29,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/07/2007 18:30:30,
-	Serialize complete at 26/07/2007 18:30:30
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
 
-> Thank you for advise. Hmm..how about this ?
-> ==
->  /*
->   * synchronize icache and dcache if the hardware doesn't do it automatically
->   * and the page is executable.
->   */
-> static inline arch_sync_icache_dcache(pte_t pte, page) {
-> 
-> }
+On Jul 26 2007 11:16, Kyle Rose wrote:
+>
+>   1.
+>
+>      Make sure you have the headers for your kernel properly installed
+>      and linked to /usr/src/linux-$KVER.
 
-Why not?
+Why is this a requirement? Makefile not properly done?
 
-I just wanted to see if you change the existing interface or not.
+>   4.
+>
+>      Look in /tmp for a directory called Sk98something. Go to
 
-Thanks,
+Why /tmp? If untarred (with default options) in ~, it's in ~/tmp.
 
-Zoltan
+>   5.
+>
+>      Change into /tmp/Sk98something/all and execute:
+>
+>          sudo -H make -C /usr/src/linux-$KVER M=`pwd` modules
+>          sudo -H make -C /usr/src/linux-$KVER M=`pwd` modules_install
+
+This breaks with O= builds. See (1).
+
+
+Sorry for the nitpick, it can be done easier :)
+
+
+
+
+	Jan
+-- 
