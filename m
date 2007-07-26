@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933114AbXGZPML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932934AbXGZPNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933114AbXGZPML (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 11:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764534AbXGZPKY
+	id S932934AbXGZPNz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 11:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXGZPNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 11:10:24 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:47911 "EHLO snapgear.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758461AbXGZPKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 11:10:21 -0400
-Date: Fri, 27 Jul 2007 01:09:00 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200707261509.l6QF90Am004065@goober>
-To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: use setup_irq() in 68328 timer code
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
+	Thu, 26 Jul 2007 11:13:46 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54489 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756508AbXGZPNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 11:13:45 -0400
+Message-ID: <46A8BA30.7000508@bull.net>
+Date: Thu, 26 Jul 2007 17:13:52 +0200
+From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
+X-Accept-Language: en-us, en, fr, hu
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "tony.luck@intel.com" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] flush icache before set_pte on ia64 take3
+References: <20070726171323.a9c17eda.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070726171323.a9c17eda.kamezawa.hiroyu@jp.fujitsu.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/07/2007 17:18:26,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/07/2007 17:18:27,
+	Serialize complete at 26/07/2007 17:18:27
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use setup_irq() instead of request_irq() to set up system timer
-in 68328 timer code. With the old m68knommu irq code this
-was safe, but it is not now within the generic irq framework.
+I do not think changing the semantics of flush_cache_page()
+is a good idea. Please have a look at Documentation/cachetlb.txt.
+This is for virtual address tagged caches.
 
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
----
+The doc. does not say much about flush_icache_page().
+It is used in:
 
-diff -Naur linux-2.6.23-rc1-git2/arch/m68knommu/platform/68328/timers.c linux/arch/m68knommu/platform/68328/timers.c
---- linux-2.6.23-rc1-git2/arch/m68knommu/platform/68328/timers.c	2007-07-26 10:47:40.000000000 +1000
-+++ linux/arch/m68knommu/platform/68328/timers.c	2007-07-26 22:55:51.000000000 +1000
-@@ -18,10 +18,10 @@
- #include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/interrupt.h>
-+#include <linux/irq.h>
- #include <asm/setup.h>
- #include <asm/system.h>
- #include <asm/pgtable.h>
--#include <asm/irq.h>
- #include <asm/machdep.h>
- #include <asm/MC68VZ328.h>
- 
-@@ -53,14 +53,19 @@
- 
- /***************************************************************************/
- 
-+static struct irqaction m68328_timer_irq = {
-+	.name    = "timer",
-+	.flags   = IRQF_DISABLED | IRQF_TIMER,
-+};
-+
- void m68328_timer_init(irq_handler_t timer_routine)
- {
- 	/* disable timer 1 */
- 	TCTL = 0;
- 
- 	/* set ISR */
--	if (request_irq(TMR_IRQ_NUM, timer_routine, IRQ_FLG_LOCK, "timer", NULL)) 
--		panic("Unable to attach timer interrupt\n");
-+	m68328_timer_irq.handler = timer_routine;
-+	setup_irq(TMR_IRQ_NUM, &m68328_timer_irq);
- 
- 	/* Restart mode, Enable int, Set clock source */
- 	TCTL = TCTL_OM | TCTL_IRQEN | CLOCK_SOURCE;
+install_page(): can release any previously existing mapping
+		(similarly: for virtual address tagged I-cache)
+
+On the other hand, I do not see why it is used in these two
+cases, I think the virtual address tagged I-cache must have been
+flushed when the old PTE of the page was removed:
+
+do_no_page():
+	if (pte_none(*page_table)) {
+		flush_icache_page(vma, new_page);
+
+do_swap_page():
+	flush_icache_page(vma, page);
+
+Anyway, it is a NO-OP on the machines with physical address
+tagged caches.
+
+Sure, the names could have been chosen more carefully.
+
+Unless you have a very strong reason, do not change their
+semantics (would require updates for the other architectures).
+
+I can agree:
+- lazy_mmu_prot_update() is not the right place for a flush
+- to flush I-cache before inserting PTE (at least for the
+  machines with physical address tagged caches)
+
+Can we have a separate, specific exec_flush_phtag_icache_page()
+that is to be called before inserting a PTE with the exec bit on
+for physical address tagged I-caches) ?
+It is defined in asm-generic/cacheflush.h as NO-OP.
+
+Or exec_flush_icache_page_before_set_pte() ?
+
+Thanks,
+
+Zoltan
+
