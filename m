@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbXGZDQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbXGZDUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760703AbXGZDQj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 23:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756462AbXGZDQb
+	id S1760201AbXGZDUR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 23:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756073AbXGZDUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 23:16:31 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:26527 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755772AbXGZDQb (ORCPT
+	Wed, 25 Jul 2007 23:20:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55485 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756226AbXGZDUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 23:16:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K8dgs9yozOk633nsHeWzO2dW/acggWBapDWVxNbSr1wIhCLf9nG+c6TdMIi/jOBqm3zy201S7v11ygFhX6PTlhVgMTjz2TdkR1rt9nFZaNPzWcZhD8wJtzoxG11FA4FerRFjpYCVopDzEibMVk5UI+4I14QmJYcyx+aXCjzLbNU=
-Message-ID: <b21f8390707252016o7f24ca8eg99e6895c7ab5cc53@mail.gmail.com>
-Date: Thu, 26 Jul 2007 13:16:29 +1000
-From: "Matthew Hawkins" <darthmdh@gmail.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-Cc: linux-kernel@vger.kernel.org, "ck list" <ck@vds.kolivas.org>,
-       linux-mm@kvack.org
-In-Reply-To: <2c0942db0707251832i542249d5ve0006b3db0374678@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Jul 2007 23:20:03 -0400
+Date: Thu, 26 Jul 2007 12:21:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "mel@csn.ul.ie" <mel@csn.ul.ie>
+Subject: Re: [PATCH] config_zone_movable [1/2] clean up zone config by
+ renumbering
+Message-Id: <20070726122128.86db5056.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070725201016.7a8b6ec9.akpm@linux-foundation.org>
+References: <20070726115020.1ff4513b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070725201016.7a8b6ec9.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <46A58B49.3050508@yahoo.com.au>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
-	 <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>
-	 <46A6DFFD.9030202@gmail.com>
-	 <2c0942db0707250902v58e23d52v434bde82ba28f119@mail.gmail.com>
-	 <b21f8390707251815o767590acrf6a6c4d7290a26a8@mail.gmail.com>
-	 <2c0942db0707251832i542249d5ve0006b3db0374678@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/26/07, Ray Lee <ray-lk@madrabbit.org> wrote:
-> Yeah, I know about inotify, but it doesn't scale.
+On Wed, 25 Jul 2007 20:10:16 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Yeah, the nonrecursive behaviour is a bugger.  Also I found it helped
-to queue operations in userspace and execute periodically rather than
-trying to execute on every single notification.  Worked well for
-indexing, for virus scanning though you'd want to do some risk
-analysis.
+> On Thu, 26 Jul 2007 11:50:20 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > I refreshed config_zone_movable patch set against 2.6.23-rc1.
+> > Reflected comments on previous version.
+> > Tested on ia64/NUMA system and my small i386 desktop.
+> > 
+> > Andrew, I like this patch but know that there are many types of memory layout. 
+> > Could you test this set in -mm ?
+> > I'll refresh this against rc1-mm1 if necessary.
+> 
+> Right now I want to concentrate on getting the present -mm queue vaguely
+> stabilised, so I'd prefer to not be adding features or nontrivial cleanups
+> for a few days at the minimum.
+> 
+ok. I'll wait.
 
-It'd be nice to have a filesystem that handled that sort of thing
-internally *cough*winfs*cough*.  That was my hope for reiserfs a very
-long time ago with its pluggable fs modules feature.
+> This process would be greatly aided by developers testing it out and
+> sending fixes (or at least, reports) for anything they encounter.
+>
+yes. I'll test -mm.
+ 
 
--- 
-Matt
+> >  /*
+> > + * Test zone type is configured or not.
+> > + * You can use this functio for avoiding #ifdef.
+> > + *
+> > + * #ifdef OCNFIG_ZONE_DMA
+> 
+> typo there.
+> 
+Oooooo....I'll fix this typo when I send this again.....
+
+Thanks,
+-Kame
+
