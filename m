@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935971AbXGZTxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934704AbXGZT6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935971AbXGZTxw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 15:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbXGZTxo
+	id S934704AbXGZT6c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 15:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760953AbXGZT6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 15:53:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39038 "EHLO
+	Thu, 26 Jul 2007 15:58:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52032 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763880AbXGZTxn (ORCPT
+	by vger.kernel.org with ESMTP id S1754569AbXGZT6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 15:53:43 -0400
-Date: Thu, 26 Jul 2007 12:52:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Will Woods <wwoods@redhat.com>
-Cc: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] core_pattern: Add ability for core_pattern to parse
- arguments when pattern is a pipe
-Message-Id: <20070726125240.645c3322.akpm@linux-foundation.org>
-In-Reply-To: <1185478584.15670.31.camel@metroid.rdu.redhat.com>
-References: <20070726173923.GA5701@hmsreliant.homelinux.net>
-	<20070726114832.faf14bb0.akpm@linux-foundation.org>
-	<1185478584.15670.31.camel@metroid.rdu.redhat.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 15:58:22 -0400
+Date: Thu, 26 Jul 2007 12:57:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Len Brown <lenb@kernel.org>, david@lang.hm,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: CONFIG_SUSPEND? (was: Re: [GIT PATCH] ACPI patches for
+ 2.6.23-rc1)
+In-Reply-To: <200707262117.26353.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.999.0707261255380.3442@woody.linux-foundation.org>
+References: <200707251238.50218.lenb@kernel.org>
+ <alpine.LFD.0.999.0707252353150.3442@woody.linux-foundation.org>
+ <200707261345.29902.lenb@kernel.org> <200707262117.26353.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 15:36:24 -0400 Will Woods <wwoods@redhat.com> wrote:
 
-> On Thu, 2007-07-26 at 11:48 -0700, Andrew Morton wrote:
-> > On Thu, 26 Jul 2007 13:40:19 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
-> > 
-> > > 	Currently, core dumps can be redirected to a pipe by placing the
-> > > following string template in /proc/sys/kernel/core_pattern:
-> > > |<path/to/application>
-> > > This patch extends this ability, allowing the core_pattern to contain arguments
-> > > to be passed as an argv array to the userspace helper application.  It also add
-> > > a format specifier, %c, which allows the RLIM_CORE value of the crashing
-> > > application to be passed on the command line, since RLIMIT_CORE is reduced to
-> > > zero when execing the userspace helper
-> > 
-> > This all seems to be getting a bit nutty.  Who needs this feature
-> > and what will they do with it, etc?
+
+On Thu, 26 Jul 2007, Rafael J. Wysocki wrote:
 > 
-> We're using it for doing a system-wide crash dump handler. Currently
-> Ubuntu's using it with their Apport tool[1] for this purpose; I'm
-> adapting that for Fedora. 
-
-Can you please copy the relevant Ubuntu people on the patches then?  It
-would be valuable to get their input on the proposal.
-
-> The Ubuntu approach requires a kernel patch that adds a bunch of process
-> information (process pid, RLIMIT_CORE, etc) to the environment of the
-> crash handler[2]. Most of that information can instead be parsed out of
-> the ELF headers - which is what I wrote code to do[3]. The problem that
-> remains is determining the value of RLIMIT_CORE. (This is used to
-> determine whether the user wants a normal corefile, thus retaining
-> normal core dump behavior). 
+> Hmm, perhaps we should introduce a CONFIG_SUSPEND and change
+> CONFIG_SOFTWARE_SUSPEND into CONFIG_HIBERNATION, both depending on
+> CONFIG_PM?
 > 
-> As I understand it, getrlimit() won't return the correct values while
-> dumping to a pipe. So we need to pass the original RLIMIT_CORE to the
-> userspace helper somehow. It seems sensible to pass arguments to a
-> userspace program by using argv[]. So there we are.
+> There's quite some code needed only for suspend compiled in when CONFIG_PM is
+> set ...
 
-yup.  The changelog should clearly document this new kernel/userspace
-interface, please.  Things like what the argv format will be, which args
-are optional, etc.
+Sounds like a good idea, although I suspect that CONFIG_PM really *is* 
+fairly close to CONFIG_SUSPEND. The thing is, all the stuff it enabled is 
+largely useless without at least STR.
 
-> There's probably many other uses for this stuff but that's the specific
-> one we're targeting. Does that make sense? If there's an easier way to
-> get the original RLIMIT_CORE from inside the crash handler, I'd love to
-> hear it.
-> 
+(Yes, I realize that you can do per-driver suspend events etc, but I 
+suspect not a lot of people have used it).
 
-I'm still emerging from the "what the heck is this" state ;)
+But from a logical standpoint, it does make sense to have a separate 
+config option for the STR support.
 
-You need to tell us these things...
+		Linus
